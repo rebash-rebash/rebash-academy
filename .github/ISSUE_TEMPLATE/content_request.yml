@@ -1,0 +1,56 @@
+name: Content Request
+description: Suggest a new tutorial or learning path topic
+title: "[Content]: "
+labels: ["content-request"]
+body:
+  - type: markdown
+    attributes:
+      value: Suggest new content for REBASH Academy.
+  - type: input
+    id: title
+    attributes:
+      label: Topic Title
+      placeholder: e.g., Kubernetes Network Policies
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - getting-started
+        - linux
+        - networking
+        - git
+        - docker
+        - kubernetes
+        - terraform
+        - aws
+        - azure
+        - gcp
+        - gitlab
+        - python
+        - monitoring
+        - security
+        - devsecops
+        - ai
+        - other
+    validations:
+      required: true
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty
+      options:
+        - beginner
+        - intermediate
+        - advanced
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What should this tutorial cover?
+    validations:
+      required: true

@@ -1,0 +1,41 @@
+name: Lint
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate YAML
+        run: |
+          python3 -c "
+          import yaml
+          from pathlib import Path
+          yaml.safe_load(Path('mkdocs.yml').read_text())
+          for f in Path('.github/workflows').glob('*.yml'):
+              yaml.safe_load(f.read_text())
+          print('YAML OK')
+          "
+
+      - name: Lint and build
+        run: bash scripts/lint.sh
+
+      - name: Validate metadata and links
+        run: bash scripts/validate.sh

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  {% if page.meta and page.meta.description %}
+    <meta name="description" content="{{ page.meta.description }}">
+  {% endif %}
+  {% if page.meta and page.meta.tags %}
+    <meta name="keywords" content="{{ page.meta.tags | join(', ') }}">
+  {% endif %}
+  <link rel="canonical" href="{{ page.canonical_url }}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ page.title | striptags }}">
+  <meta property="og:description" content="{{ page.meta.description if page.meta and page.meta.description else config.site_description }}">
+  <meta property="og:url" content="{{ page.canonical_url }}">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.title | striptags }}">
+  <meta name="twitter:description" content="{{ page.meta.description if page.meta and page.meta.description else config.site_description }}">
+{% endblock %}
+
+{% block content %}
+  {{ super() }}
+  {% if config.extra.giscus and page.meta and page.meta.comments %}
+  <section class="giscus-container">
+    <script src="https://giscus.app/client.js"
+      data-repo="{{ config.extra.giscus.repo }}"
+      data-repo-id="{{ config.extra.giscus.repo_id }}"
+      data-category="{{ config.extra.giscus.category }}"
+      data-category-id="{{ config.extra.giscus.category_id }}"
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="bottom"
+      data-theme="preferred_color_scheme"
+      data-lang="en"
+      crossorigin="anonymous"
+      async>
+    </script>
+  </section>
+  {% endif %}
+{% endblock %}

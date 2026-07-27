@@ -1,0 +1,139 @@
+{% extends "main.html" %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-header { position: initial; }
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+    @media screen and (min-width: 76.25em) {
+      .md-sidebar--primary { display: none; }
+    }
+  </style>
+
+  <section class="rebash-hero">
+    <div class="rebash-hero__inner md-grid">
+      <div class="rebash-hero__content">
+        <span class="rebash-hero__badge">REBASH Academy</span>
+        <h1 class="rebash-hero__title">Learn by Building.</h1>
+        <p class="rebash-hero__subtitle">
+          Hands-on tutorials for Linux, Cloud, Kubernetes, Terraform, DevSecOps, and more.
+          Build real skills with labs, projects, and production-ready guides.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'getting-started/' | url }}" class="md-button md-button--primary">
+            Get Started
+          </a>
+          <a href="{{ 'learning-paths/' | url }}" class="md-button">
+            View Learning Paths
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rebash-section md-grid">
+    <h2 class="rebash-section__title">Popular Learning Paths</h2>
+    <div class="rebash-grid rebash-grid--3">
+      <a href="{{ 'learning-paths/' | url }}" class="rebash-card">
+        <span class="rebash-card__icon">🐧</span>
+        <h3>DevOps Engineer</h3>
+        <p>Linux → Networking → Docker → Kubernetes → Cloud → CI/CD → Security</p>
+      </a>
+      <a href="{{ 'aws/' | url }}" class="rebash-card">
+        <span class="rebash-card__icon">☁️</span>
+        <h3>AWS Engineer</h3>
+        <p>Linux, Terraform, AWS core services, and cloud security fundamentals.</p>
+      </a>
+      <a href="{{ 'devsecops/' | url }}" class="rebash-card">
+        <span class="rebash-card__icon">🔒</span>
+        <h3>DevSecOps Engineer</h3>
+        <p>Shift-left security, pipeline scanning, and supply chain protection.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="rebash-section md-grid">
+    <h2 class="rebash-section__title">Featured Tutorials</h2>
+    <div class="rebash-grid rebash-grid--4">
+      <a href="{{ 'linux/' | url }}" class="rebash-card rebash-card--small">
+        <h3>Linux</h3>
+        <p>Command line &amp; system admin</p>
+      </a>
+      <a href="{{ 'docker/' | url }}" class="rebash-card rebash-card--small">
+        <h3>Docker</h3>
+        <p>Container fundamentals</p>
+      </a>
+      <a href="{{ 'kubernetes/' | url }}" class="rebash-card rebash-card--small">
+        <h3>Kubernetes</h3>
+        <p>Orchestration at scale</p>
+      </a>
+      <a href="{{ 'terraform/' | url }}" class="rebash-card rebash-card--small">
+        <h3>Terraform</h3>
+        <p>Infrastructure as Code</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="rebash-section md-grid">
+    <h2 class="rebash-section__title">Projects</h2>
+    <div class="rebash-grid rebash-grid--2">
+      <a href="{{ 'projects/' | url }}" class="rebash-card">
+        <h3>Production Projects</h3>
+        <p>Build portfolio-ready projects covering full-stack DevOps workflows from infrastructure to deployment.</p>
+      </a>
+      <a href="{{ 'labs/' | url }}" class="rebash-card">
+        <h3>Hands-on Labs</h3>
+        <p>Guided lab exercises with step-by-step instructions and troubleshooting guides.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="rebash-section md-grid">
+    <h2 class="rebash-section__title">Latest Articles</h2>
+    <div class="rebash-grid rebash-grid--3">
+      <a href="{{ 'blog/' | url }}" class="rebash-card rebash-card--small">
+        <h3>Blog</h3>
+        <p>Articles, updates, and community highlights.</p>
+      </a>
+      <a href="{{ 'cheatsheets/' | url }}" class="rebash-card rebash-card--small">
+        <h3>Cheat Sheets</h3>
+        <p>Quick-reference command guides.</p>
+      </a>
+      <a href="{{ 'interview/' | url }}" class="rebash-card rebash-card--small">
+        <h3>Interview Prep</h3>
+        <p>Technical interview questions.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--community md-grid">
+    <h2 class="rebash-section__title">Community</h2>
+    <p class="rebash-section__lead">
+      Join the REBASH community. Star us on GitHub, contribute tutorials, and help others learn.
+    </p>
+    <div class="rebash-hero__actions">
+      <a href="https://github.com/rebash-academy/rebash-academy" class="md-button md-button--primary" target="_blank" rel="noopener">
+        GitHub
+      </a>
+      <a href="https://youtube.com/@rebash" class="md-button" target="_blank" rel="noopener">
+        YouTube
+      </a>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--newsletter md-grid">
+    <h2 class="rebash-section__title">Stay Updated</h2>
+    <p class="rebash-section__lead">
+      New tutorials and learning paths are added regularly. Watch the
+      <a href="{{ 'roadmap/' | url }}">roadmap</a> or follow us on social media for updates.
+    </p>
+  </section>
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{{ super() }}{% endblock %}
