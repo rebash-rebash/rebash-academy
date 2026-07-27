@@ -11,14 +11,7 @@ echo "==> Linting YAML files..."
 if command -v yamllint &>/dev/null; then
   yamllint -d relaxed mkdocs.yml .github/workflows/*.yml 2>/dev/null || ERRORS=$((ERRORS + 1))
 else
-  python3 -c "
-import yaml, sys
-from pathlib import Path
-for f in ['mkdocs.yml'] + list(Path('.github/workflows').glob('*.yml')):
-    if f.exists():
-        yaml.safe_load(f.read_text())
-        print(f'  OK: {f}')
-" || ERRORS=$((ERRORS + 1))
+  python3 scripts/validate_yaml.py || ERRORS=$((ERRORS + 1))
 fi
 
 echo "==> Checking Markdown files..."

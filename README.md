@@ -22,7 +22,7 @@ Built with [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/), 
 ### Local Development
 
 ```bash
-git clone https://github.com/rebash-academy/rebash-academy.git
+git clone https://github.com/rebash-rebash/rebash-academy.git
 cd rebash-academy
 
 python3 -m venv .venv
@@ -93,7 +93,7 @@ Set environment variables to enable analytics:
 ```bash
 export GOOGLE_ANALYTICS_KEY="G-XXXXXXXXXX"
 # or
-export PLAUSIBLE_DOMAIN="rebash-academy.github.io"
+export PLAUSIBLE_DOMAIN="rebash-rebash.github.io"
 ```
 
 ## Documentation Categories

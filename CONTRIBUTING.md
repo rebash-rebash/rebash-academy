@@ -13,7 +13,7 @@ add tutorials, and submit changes.
 ### Local Setup
 
 ```bash
-git clone https://github.com/rebash-academy/rebash-academy.git
+git clone https://github.com/rebash-rebash/rebash-academy.git
 cd rebash-academy
 
 python3 -m venv .venv
@@ -112,4 +112,4 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
 ## Questions?
 
-Open a [GitHub Issue](https://github.com/rebash-academy/rebash-academy/issues) or start a discussion.
+Open a [GitHub Issue](https://github.com/rebash-rebash/rebash-academy/issues) or start a discussion.

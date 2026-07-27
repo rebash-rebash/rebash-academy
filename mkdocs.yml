@@ -3,8 +3,8 @@
 site_name: REBASH Academy
 site_description: Learn by Building. Production-grade DevOps, Cloud, and Security knowledge base.
 site_author: Shaik Basha
-site_url: https://rebash-academy.github.io/rebash-academy/
-repo_url: https://github.com/rebash-academy/rebash-academy
+site_url: https://rebash-rebash.github.io/rebash-academy/
+repo_url: https://github.com/rebash-rebash/rebash-academy
 repo_name: rebash-academy
 edit_uri: edit/main/docs/
 
@@ -19,16 +19,16 @@ extra:
     description: Hands-on tutorials for Linux, Cloud, Kubernetes, Terraform, DevSecOps, and more.
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/rebash-academy/rebash-academy
+      link: https://github.com/rebash-rebash/rebash-academy
     - icon: fontawesome/brands/linkedin
-      link: https://linkedin.com/in/shaikbasha
+      link: https://www.linkedin.com/in/shaikkhadarbasha/
     - icon: fontawesome/brands/youtube
-      link: https://youtube.com/@rebash
+      link: "#"
     - icon: fontawesome/brands/x-twitter
-      link: https://x.com/rebash
+      link: "#"
   analytics:
     provider: google
-    property: !ENV GOOGLE_ANALYTICS_KEY
+    property: ""
   consent:
     title: Cookie consent
     description: >-
@@ -42,14 +42,14 @@ extra:
       - manage
   generator: false
   giscus:
-    repo: rebash-academy/rebash-academy
+    repo: rebash-rebash/rebash-academy
     repo_id: ""
     category: General
     category_id: ""
   robots: |
     User-agent: *
     Allow: /
-    Sitemap: https://rebash-academy.github.io/rebash-academy/sitemap.xml
+    Sitemap: https://rebash-rebash.github.io/rebash-academy/sitemap.xml
 
 extra_css:
   - assets/stylesheets/custom.css

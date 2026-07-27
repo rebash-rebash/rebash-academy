@@ -74,15 +74,16 @@ REBASH Academy is built with:
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](https://github.com/rebash-academy/rebash-academy/blob/main/CONTRIBUTING.md)
+We welcome contributions! See [CONTRIBUTING.md](https://github.com/rebash-rebash/rebash-academy/blob/main/CONTRIBUTING.md)
 for guidelines on adding tutorials, fixing issues, and improving documentation.
 
 ## Contact
 
-- **GitHub:** [rebash-academy/rebash-academy](https://github.com/rebash-academy/rebash-academy)
-- **LinkedIn:** [Shaik Basha](https://linkedin.com/in/shaikbasha)
-- **YouTube:** [@rebash](https://youtube.com/@rebash)
+- **GitHub:** [rebash-rebash/rebash-academy](https://github.com/rebash-rebash/rebash-academy)
+- **LinkedIn:** [Shaik Khadar Basha](https://www.linkedin.com/in/shaikkhadarbasha/)
+- **YouTube:** Coming soon
+- **X (Twitter):** Coming soon
 
 ## License
 
-Content is licensed under [MIT License](https://github.com/rebash-academy/rebash-academy/blob/main/LICENSE).
+Content is licensed under [MIT License](https://github.com/rebash-rebash/rebash-academy/blob/main/LICENSE).

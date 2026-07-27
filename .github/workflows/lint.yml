@@ -24,15 +24,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Validate YAML
-        run: |
-          python3 -c "
-          import yaml
-          from pathlib import Path
-          yaml.safe_load(Path('mkdocs.yml').read_text())
-          for f in Path('.github/workflows').glob('*.yml'):
-              yaml.safe_load(f.read_text())
-          print('YAML OK')
-          "
+        run: python3 scripts/validate_yaml.py
 
       - name: Lint and build
         run: bash scripts/lint.sh
