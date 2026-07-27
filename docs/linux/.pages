@@ -1,2 +1,30 @@
 title: Linux
 icon: material/linux
+nav:
+  - index.md
+  - Foundations:
+    - introduction-to-linux.md
+    - linux-filesystem-hierarchy.md
+    - essential-linux-commands.md
+  - Users & Permissions:
+    - file-permissions-and-ownership.md
+    - user-and-group-management.md
+  - Processes & Services:
+    - process-management.md
+    - systemd-service-management.md
+    - package-management.md
+  - Text & Scripting:
+    - text-processing-grep-sed-awk.md
+    - shell-scripting-fundamentals.md
+  - Remote Administration:
+    - ssh-remote-administration.md
+    - remote-systemd-services.md
+  - Storage & Operations:
+    - disk-and-filesystem-management.md
+    - log-management-journalctl.md
+    - cron-and-task-scheduling.md
+    - environment-variables-shell-config.md
+    - linux-networking-essentials.md
+    - file-archiving-and-compression.md
+    - linux-security-hardening-basics.md
+    - troubleshooting-linux-systems.md

@@ -1,5 +1,5 @@
 ---
-title: AWS
+title: Overview
 description: Amazon Web Services – compute, storage, networking, and serverless.
 difficulty: beginner
 estimated_time: "Varies"

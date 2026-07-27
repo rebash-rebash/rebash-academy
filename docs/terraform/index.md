@@ -1,5 +1,5 @@
 ---
-title: Terraform
+title: Overview
 description: Infrastructure as Code with Terraform modules and state management.
 difficulty: beginner
 estimated_time: "Varies"

@@ -1,5 +1,5 @@
 ---
-title: Architecture
+title: Overview
 description: System design patterns, diagrams, and reference architectures.
 difficulty: beginner
 estimated_time: "Varies"

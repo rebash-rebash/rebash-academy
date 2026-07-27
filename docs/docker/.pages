@@ -1,2 +1,30 @@
 title: Docker
 icon: material/docker
+nav:
+  - index.md
+  - Foundations:
+    - introduction-to-containers-and-docker.md
+    - docker-installation-and-setup.md
+    - docker-architecture-and-components.md
+  - Images & Dockerfile:
+    - running-your-first-container.md
+    - working-with-docker-images.md
+    - building-images-with-dockerfile.md
+  - Storage & Compose:
+    - dockerfile-best-practices-and-multi-stage-builds.md
+    - volumes-and-persistent-storage.md
+    - docker-compose-fundamentals.md
+  - Networking & Registry:
+    - docker-networking-fundamentals.md
+    - container-registries-and-distribution.md
+    - environment-variables-and-secrets.md
+  - Operations:
+    - container-logging-and-monitoring.md
+    - docker-security-hardening.md
+    - troubleshooting-docker-containers.md
+  - Production & Beyond:
+    - docker-in-ci-cd-pipelines.md
+    - production-docker-patterns.md
+    - docker-swarm-orchestration-basics.md
+    - from-docker-to-kubernetes.md
+    - docker-capstone-and-next-steps.md

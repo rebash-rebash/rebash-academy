@@ -1,5 +1,5 @@
 ---
-title: Monitoring
+title: Overview
 description: Observability, metrics, logging, and alerting stacks.
 difficulty: beginner
 estimated_time: "Varies"

@@ -54,17 +54,12 @@ TEMPLATE = dedent("""\
     - [ ] Objective 2
     - [ ] Objective 3
 
-    ## Architecture Diagram
-
-    ```mermaid
-    flowchart LR
-        A[Component A] --> B[Component B]
-        B --> C[Component C]
-    ```
-
     ## Theory
 
     Explain the core concepts here.
+
+    <!-- Optional: add ## Architecture Diagram with Mermaid only when a visual
+         clarifies multi-layer systems, data flow, or infrastructure topology. -->
 
     ## Hands-on Lab
 
@@ -176,7 +171,19 @@ def main() -> int:
 
     tutorial_path.write_text(content, encoding="utf-8")
     print(f"Created: {tutorial_path.relative_to(ROOT)}")
-    print(f"Add to navigation in mkdocs.yml under Tutorials > {args.category}")
+
+    pages_file = category_dir / ".pages"
+    if pages_file.exists():
+        pages_text = pages_file.read_text(encoding="utf-8")
+        entry = f"  - {slug}.md"
+        if entry not in pages_text:
+            pages_file.write_text(pages_text.rstrip() + "\n" + entry + "\n", encoding="utf-8")
+            print(f"Updated: {pages_file.relative_to(ROOT)}")
+        else:
+            print(f"Navigation entry already in {pages_file.relative_to(ROOT)}")
+    else:
+        print(f"Tip: add '{slug}.md' to {category}/.pages for sidebar navigation")
+
     return 0
 
 

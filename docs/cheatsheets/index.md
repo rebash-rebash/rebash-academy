@@ -1,5 +1,5 @@
 ---
-title: Cheat Sheets
+title: Overview
 description: Quick-reference guides for commands and concepts.
 difficulty: beginner
 estimated_time: "Varies"

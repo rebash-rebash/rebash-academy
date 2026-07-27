@@ -1,5 +1,5 @@
 ---
-title: AI for DevOps
+title: Overview
 description: AI-assisted operations, automation, and intelligent tooling.
 difficulty: beginner
 estimated_time: "Varies"

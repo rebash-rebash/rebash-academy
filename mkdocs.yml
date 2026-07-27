@@ -14,7 +14,7 @@ exclude_docs: |
 copyright: Copyright &copy; 2026 Shaik Basha
 
 extra:
-  homepage:
+  hero:
     tagline: Learn by Building.
     description: Hands-on tutorials for Linux, Cloud, Kubernetes, Terraform, DevSecOps, and more.
   social:
@@ -90,14 +90,11 @@ theme:
     - content.tabs.link
     - content.tooltips
     - header.autohide
-    - navigation.expand
     - navigation.footer
-    - navigation.indexes
     - navigation.instant
     - navigation.instant.progress
     - navigation.path
-    - navigation.prune
-    - navigation.sections
+    - navigation.indexes
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
@@ -106,7 +103,6 @@ theme:
     - search.share
     - search.suggest
     - toc.follow
-    - toc.integrate
 
 plugins:
   - search:
@@ -118,6 +114,7 @@ plugins:
       enable_git_follow: false
       type: date
       fallback_to_build_date: true
+      strict: false
   - minify:
       minify_html: true
   - glightbox:
@@ -180,36 +177,6 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-
-nav:
-  - Home: index.md
-  - Learning Paths: learning-paths/index.md
-  - Tutorials:
-    - getting-started/index.md
-    - linux/index.md
-    - networking/index.md
-    - git/index.md
-    - docker/index.md
-    - kubernetes/index.md
-    - terraform/index.md
-    - aws/index.md
-    - azure/index.md
-    - gcp/index.md
-    - gitlab/index.md
-    - python/index.md
-    - monitoring/index.md
-    - security/index.md
-    - devsecops/index.md
-    - ai/index.md
-  - Projects: projects/index.md
-  - Blog: blog/index.md
-  - About:
-    - about.md
-    - roadmap.md
-    - cheatsheets/index.md
-    - interview/index.md
-    - architecture/index.md
-    - labs/index.md
 
 hooks:
   - hooks/on_env.py

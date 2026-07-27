@@ -36,7 +36,17 @@ python3 scripts/create-tutorial.py docker "Build a Multi-Stage Dockerfile" \
   --time "45 min"
 ```
 
-Then add the new page to `mkdocs.yml` under the appropriate Tutorials section.
+Then add the new page to the category's `.pages` file (the create script does this automatically for Linux and other categories with `.pages`).
+
+Navigation is managed via `.pages` files — not `mkdocs.yml`:
+
+| File | Purpose |
+|------|---------|
+| `docs/.pages` | Top-level nav (Home, Tutorials, About, …) |
+| `docs/linux/.pages` | Linux section title, icon, and tutorial order |
+| `docs/<category>/.pages` | Per-category sidebar entries |
+
+Sidebar sections are **collapsible**: click the section label or arrow to expand/collapse topics (e.g. Linux → 20 tutorials).
 
 ### Tutorial Structure
 

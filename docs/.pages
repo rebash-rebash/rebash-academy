@@ -1,0 +1,29 @@
+nav:
+  - Home: index.md
+  - Learning Paths: learning-paths
+  - Tutorials:
+    - getting-started
+    - linux
+    - networking
+    - git
+    - docker
+    - kubernetes
+    - terraform
+    - aws
+    - azure
+    - gcp
+    - gitlab
+    - python
+    - monitoring
+    - security
+    - devsecops
+    - ai
+  - Projects: projects
+  - Blog: blog
+  - About:
+    - about.md
+    - roadmap.md
+    - cheatsheets
+    - interview
+    - architecture
+    - labs

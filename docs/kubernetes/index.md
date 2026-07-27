@@ -1,5 +1,5 @@
 ---
-title: Kubernetes
+title: Overview
 description: Orchestration, deployments, services, and cluster operations.
 difficulty: beginner
 estimated_time: "Varies"

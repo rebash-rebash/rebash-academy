@@ -1,6 +1,6 @@
 ---
-title: Git
-description: Version control workflows, branching strategies, and collaboration.
+title: Overview
+description: Git learning track — 20 tutorials from version control basics to CI/CD integration and signed commits.
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -12,24 +12,101 @@ comments: false
 
 # Git
 
-Version control workflows, branching strategies, and collaboration.
+Master version control from first commit to production DevOps workflows — branching, merging, rebasing, code review, and Git in CI/CD.
 
 ## Overview
 
-Welcome to the **Git** section of REBASH Academy. Tutorials in this category follow our
-[documentation standards](../about.md#documentation-standards) and include hands-on labs,
-architecture diagrams, and interview questions.
+The REBASH Academy **Git** track is a structured, 20-tutorial curriculum for developers and DevOps engineers. Every commit in infrastructure-as-code, every pull request in your pipeline, and every GitOps deployment starts here. Each tutorial follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, commands, best practices, and interview questions.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+!!! tip "Learning Path"
+    Git is step 3 in the [DevOps Engineer learning path](../learning-paths/index.md) — after [Linux](../linux/index.md) and [Networking](../networking/index.md).
+
+## Curriculum Plan
+
+```mermaid
+flowchart TD
+    M1[Module 1: Foundations] --> M2[Module 2: Essential Workflow]
+    M2 --> M3[Module 3: Branching]
+    M3 --> M4[Module 4: Collaboration]
+    M4 --> M5[Module 5: Recovery & Debugging]
+    M5 --> M6[Module 6: Advanced & DevOps]
+```
+
+### Module 1 – Foundations
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 1 | [Introduction to Git and Version Control](introduction-to-git-and-version-control.md) | Beginner | 30 min |
+| 2 | [Git Installation and Configuration](git-installation-and-configuration.md) | Beginner | 25 min |
+| 3 | [Understanding the Git Object Model](understanding-the-git-object-model.md) | Beginner | 40 min |
+
+### Module 2 – Essential Workflow
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 4 | [Creating and Cloning Repositories](creating-and-cloning-repositories.md) | Beginner | 30 min |
+| 5 | [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md) | Beginner | 35 min |
+| 6 | [Viewing History and Diffs](viewing-history-and-diffs.md) | Beginner | 35 min |
+
+### Module 3 – Branching
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 7 | [Branching Fundamentals](branching-fundamentals.md) | Beginner | 40 min |
+| 8 | [Merging and Merge Conflicts](merging-and-merge-conflicts.md) | Intermediate | 45 min |
+| 9 | [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md) | Intermediate | 50 min |
+
+### Module 4 – Collaboration
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 10 | [Working with Remotes](working-with-remotes.md) | Beginner | 40 min |
+| 11 | [Pull Requests and Code Review](pull-requests-and-code-review.md) | Intermediate | 45 min |
+| 12 | [gitignore and gitattributes](gitignore-and-gitattributes.md) | Beginner | 30 min |
+
+### Module 5 – Recovery & Debugging
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 13 | [Undoing Changes — Reset, Revert, and Stash](undoing-changes-reset-revert-stash.md) | Intermediate | 45 min |
+| 14 | [Cherry-pick and Reflog](cherry-pick-and-reflog.md) | Intermediate | 40 min |
+| 15 | [Git Bisect and Debugging History](git-bisect-and-debugging-history.md) | Intermediate | 40 min |
+
+### Module 6 – Advanced & DevOps
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 16 | [Git Hooks and Automation](git-hooks-and-automation.md) | Intermediate | 45 min |
+| 17 | [Advanced Git Workflows](advanced-git-workflows.md) | Intermediate | 45 min |
+| 18 | [Git Submodules and Subtrees](git-submodules-and-subtrees.md) | Advanced | 45 min |
+| 19 | [Signed Commits and Git Security](signed-commits-and-git-security.md) | Advanced | 40 min |
+| 20 | [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md) | Advanced | 50 min |
+
+**Total estimated time:** ~13 hours of hands-on learning
 
 ## Learning Objectives
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+After completing this track, you will be able to:
+
+- [ ] Use Git confidently for daily development and infrastructure-as-code
+- [ ] Branch, merge, and rebase without fear of losing work
+- [ ] Collaborate via remotes, pull requests, and code review
+- [ ] Recover from mistakes using reset, revert, stash, and reflog
+- [ ] Apply trunk-based, GitFlow, or GitHub Flow in team settings
+- [ ] Integrate Git with CI/CD, hooks, signing, and GitOps patterns
+
+## Who Is This For?
+
+| Audience | Benefit |
+|----------|---------|
+| **Developers** | Solid VCS skills from day one |
+| **DevOps / SRE** | Manage Terraform, Ansible, and K8s manifests in Git |
+| **Students** | Job-ready Git for interviews and internships |
+| **Team leads** | Branching strategies and review workflows |
 
 ## Related Sections
 
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Linux](../linux/index.md) — terminal and shell skills for Git commands
+- [GitLab CI/CD](../gitlab/index.md) — pipelines triggered by Git events
+- [Terraform](../terraform/index.md) — IaC stored and versioned in Git
+- [Interview Prep](../interview/index.md) — Git interview questions

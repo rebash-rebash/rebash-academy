@@ -1,5 +1,5 @@
 ---
-title: Azure
+title: Overview
 description: Microsoft Azure cloud services and architecture patterns.
 difficulty: beginner
 estimated_time: "Varies"

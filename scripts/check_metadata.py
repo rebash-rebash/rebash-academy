@@ -7,18 +7,28 @@ import re
 import sys
 from pathlib import Path
 
+try:
+    import yaml
+except ImportError:
+    yaml = None  # type: ignore[assignment]
+
 REQUIRED_FIELDS = ("title", "description", "author", "category", "tags")
 DOCS_DIR = Path(__file__).resolve().parent.parent / "docs"
 SKIP_FILES = {"includes/abbreviations.md"}
 
 
-def parse_front_matter(content: str) -> dict[str, str]:
-    """Extract simple key-value pairs from YAML front matter."""
+def parse_front_matter(content: str) -> dict:
+    """Extract YAML front matter as a dictionary."""
     match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
     if not match:
         return {}
 
-    meta: dict[str, str] = {}
+    if yaml is not None:
+        data = yaml.safe_load(match.group(1))
+        return data if isinstance(data, dict) else {}
+
+    # Minimal fallback parser
+    meta: dict = {}
     for line in match.group(1).splitlines():
         if ":" in line and not line.strip().startswith("-"):
             key, _, value = line.partition(":")
@@ -26,14 +36,25 @@ def parse_front_matter(content: str) -> dict[str, str]:
     return meta
 
 
+def field_present(meta: dict, field: str) -> bool:
+    value = meta.get(field)
+    if value is None:
+        return False
+    if field == "tags" and isinstance(value, list):
+        return len(value) > 0
+    return bool(str(value).strip())
+
+
 def main() -> int:
     errors: list[str] = []
+    checked = 0
 
     for md_file in sorted(DOCS_DIR.rglob("*.md")):
         rel = md_file.relative_to(DOCS_DIR).as_posix()
         if rel in SKIP_FILES or rel.startswith("includes/"):
             continue
 
+        checked += 1
         content = md_file.read_text(encoding="utf-8")
         meta = parse_front_matter(content)
 
@@ -42,7 +63,7 @@ def main() -> int:
             continue
 
         for field in REQUIRED_FIELDS:
-            if field not in meta or not meta[field]:
+            if not field_present(meta, field):
                 errors.append(f"{rel}: missing '{field}' in front matter")
 
     if errors:
@@ -51,7 +72,7 @@ def main() -> int:
             print(f"  - {error}")
         return 1
 
-    print(f"Metadata OK ({len(list(DOCS_DIR.rglob('*.md')))} files checked)")
+    print(f"Metadata OK ({checked} files checked)")
     return 0
 
 

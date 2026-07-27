@@ -1,5 +1,5 @@
 ---
-title: Python Automation
+title: Overview
 description: Automate DevOps tasks with Python scripts and libraries.
 difficulty: beginner
 estimated_time: "Varies"

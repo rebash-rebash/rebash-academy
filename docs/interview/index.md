@@ -1,5 +1,5 @@
 ---
-title: Interview Prep
+title: Overview
 description: Technical interview questions and preparation guides.
 difficulty: beginner
 estimated_time: "Varies"

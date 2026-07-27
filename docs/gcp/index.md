@@ -1,5 +1,5 @@
 ---
-title: Google Cloud
+title: Overview
 description: Google Cloud Platform services and GCP-native tooling.
 difficulty: beginner
 estimated_time: "Varies"

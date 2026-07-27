@@ -1,2 +1,30 @@
 title: Networking
 icon: material/lan
+nav:
+  - index.md
+  - Foundations:
+    - introduction-to-networking.md
+    - osi-and-tcp-ip-models.md
+    - ip-addressing-and-subnetting.md
+  - Data Link & Routing:
+    - ethernet-switching-and-vlans.md
+    - routing-fundamentals.md
+    - icmp-arp-dhcp-and-network-services.md
+  - Transport & DNS:
+    - tcp-and-udp-deep-dive.md
+    - dns-fundamentals.md
+    - dns-records-and-troubleshooting.md
+  - Application Layer:
+    - http-https-and-application-layer.md
+    - firewalls-and-access-control.md
+    - load-balancing-fundamentals.md
+    - reverse-proxy-and-ingress-basics.md
+  - Troubleshooting:
+    - network-troubleshooting-methodology.md
+    - packet-analysis-tcpdump-wireshark.md
+  - Cloud & Advanced:
+    - cloud-networking-vpc-and-subnets.md
+    - nat-and-port-forwarding.md
+    - vpn-and-tunneling-basics.md
+    - network-security-hardening.md
+    - network-automation-and-monitoring.md

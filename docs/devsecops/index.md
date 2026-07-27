@@ -1,5 +1,5 @@
 ---
-title: DevSecOps
+title: Overview
 description: Shift-left security, SAST/DAST, secrets, and supply chain.
 difficulty: beginner
 estimated_time: "Varies"

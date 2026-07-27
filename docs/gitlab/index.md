@@ -1,5 +1,5 @@
 ---
-title: GitLab CI/CD
+title: Overview
 description: Pipelines, runners, security scanning, and GitOps workflows.
 difficulty: beginner
 estimated_time: "Varies"

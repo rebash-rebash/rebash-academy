@@ -1,5 +1,5 @@
 ---
-title: Getting Started
+title: Overview
 description: Start your DevOps journey with foundational concepts and setup guides.
 difficulty: beginner
 estimated_time: "Varies"

@@ -1,5 +1,5 @@
 ---
-title: Labs
+title: Overview
 description: Hands-on lab exercises with step-by-step instructions.
 difficulty: beginner
 estimated_time: "Varies"

@@ -41,7 +41,7 @@ Every tutorial on REBASH Academy follows a consistent structure:
 1. **Overview** – What you'll learn and why it matters
 2. **Prerequisites** – Required knowledge and tools
 3. **Learning Objectives** – Measurable outcomes
-4. **Architecture Diagram** – Visual system overview (Mermaid)
+4. **Architecture Diagram** *(optional)* – Mermaid diagram when a visual helps explain multi-layer systems, data flow, or boot/network/storage architecture; skip for command-focused or procedural topics
 5. **Theory** – Core concepts explained clearly
 6. **Hands-on Lab** – Step-by-step practical exercises
 7. **Commands & Code** – Copy-paste ready examples

@@ -1,5 +1,5 @@
 ---
-title: Security
+title: Overview
 description: Cloud security, hardening, compliance, and threat modeling.
 difficulty: beginner
 estimated_time: "Varies"
