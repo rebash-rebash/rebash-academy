@@ -1,0 +1,185 @@
+/* REBASH Academy – Custom Styles */
+
+:root {
+  --rebash-blue: #1976d2;
+  --rebash-blue-dark: #1565c0;
+  --rebash-grey: #424242;
+  --rebash-grey-light: #f5f5f5;
+}
+
+/* Hero Section */
+.rebash-hero {
+  background: linear-gradient(135deg, var(--rebash-blue) 0%, var(--rebash-blue-dark) 100%);
+  color: #fff;
+  padding: 4rem 0 5rem;
+}
+
+.rebash-hero__inner {
+  max-width: 61rem;
+}
+
+.rebash-hero__badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2rem;
+  padding: 0.25rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.rebash-hero__title {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 1rem;
+  color: #fff;
+}
+
+.rebash-hero__subtitle {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  opacity: 0.92;
+  max-width: 42rem;
+  margin: 0 0 2rem;
+}
+
+.rebash-hero__actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rebash-hero__actions .md-button--primary {
+  background-color: #fff;
+  color: var(--rebash-blue);
+  border-color: #fff;
+}
+
+.rebash-hero__actions .md-button--primary:hover {
+  background-color: var(--rebash-grey-light);
+  color: var(--rebash-blue-dark);
+}
+
+.rebash-hero__actions .md-button:not(.md-button--primary) {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.rebash-hero__actions .md-button:not(.md-button--primary):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+}
+
+/* Sections */
+.rebash-section {
+  padding: 3rem 0;
+}
+
+.rebash-section__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem;
+  color: var(--md-default-fg-color);
+}
+
+.rebash-section__lead {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 42rem;
+  margin: 0 0 1.5rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.rebash-section--community,
+.rebash-section--newsletter {
+  background: var(--md-default-bg-color--light);
+  padding: 3rem 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Grid */
+.rebash-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.rebash-grid--2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.rebash-grid--3 {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.rebash-grid--4 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Cards */
+.rebash-card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  background: var(--md-default-bg-color);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.rebash-card:hover {
+  border-color: var(--rebash-blue);
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.12);
+  transform: translateY(-2px);
+}
+
+.rebash-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+}
+
+.rebash-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--md-default-fg-color--light);
+}
+
+.rebash-card--small {
+  padding: 1.25rem;
+}
+
+.rebash-card__icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Giscus comments */
+.giscus-container {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Footer social links enhancement */
+.md-footer-meta {
+  flex-wrap: wrap;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .rebash-hero__title {
+    font-size: 2rem;
+  }
+
+  .rebash-hero {
+    padding: 2.5rem 0 3rem;
+  }
+}
