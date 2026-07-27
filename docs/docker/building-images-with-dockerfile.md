@@ -50,26 +50,25 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart LR
     subgraph Host
-        CTX[Build Context<br/>directory on disk]
+        CTX["Build Context<br/>directory on disk"]
         DF[Dockerfile]
         CLI[docker build]
     end
 
     subgraph Engine
         DA[Docker daemon]
-        CACHE[(Layer cache)]
+        CACHE["(Layer cache")]
     end
 
     subgraph Output
-        IMG[Local image<br/>repo:tag]
+        IMG["Local image<br/>repo:tag"]
     end
 
     CTX --> CLI
     DF --> CLI
     CLI --> DA
     DA --> CACHE
-    DA --> IMG
-```
+    DA --> IMG```
 
 Each instruction in the Dockerfile typically creates one **immutable layer**. Cached layers speed rebuilds when inputs unchanged.
 

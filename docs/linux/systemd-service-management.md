@@ -47,7 +47,7 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph Boot
-        FW[Firmware/Kernel]
+        FW["Firmware/Kernel"]
         S1[systemd PID 1]
     end
 
@@ -59,9 +59,9 @@ flowchart TB
     end
 
     subgraph Paths
-        PKG[/usr/lib/systemd/system/]
-        ETC[/etc/systemd/system/]
-        RUN[/run/systemd/system/]
+        PKG["/usr/lib/systemd/system/"]
+        ETC["/etc/systemd/system/"]
+        RUN["/run/systemd/system/"]
     end
 
     subgraph CLI
@@ -79,8 +79,7 @@ flowchart TB
     RUN --> SVC
     CTL --> S1
     SVC --> JRN
-    SOCK --> JRN
-```
+    SOCK --> JRN```
 
 ## Theory
 

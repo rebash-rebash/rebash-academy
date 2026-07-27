@@ -56,9 +56,9 @@ After installation, your host runs the Docker daemon as a systemd service. The C
 ```mermaid
 flowchart LR
     USER[User — docker group]
-    CLI[Docker CLI<br/>/usr/bin/docker]
-    SOCK[/var/run/docker.sock]
-    DAEMON[dockerd<br/>systemd service]
+    CLI["Docker CLI<br/>/usr/bin/docker"]
+    SOCK["/var/run/docker.sock"]
+    DAEMON["dockerd<br/>systemd service"]
     CONTAINERD[containerd]
     RUNC[runc]
     CONT[Containers]
@@ -68,8 +68,7 @@ flowchart LR
     SOCK --> DAEMON
     DAEMON --> CONTAINERD
     CONTAINERD --> RUNC
-    RUNC --> CONT
-```
+    RUNC --> CONT```
 
 ## Theory
 

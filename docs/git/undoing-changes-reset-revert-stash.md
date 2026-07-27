@@ -48,16 +48,15 @@ By the end of this tutorial, you will be able to:
 flowchart TB
     WT[Working Tree]
     SA[Staging Area]
-    REPO[Repository / Commits]
+    REPO["Repository / Commits"]
 
     RESTORE1[git restore file] --> WT
     RESTORE2[git restore --staged] --> SA
-    RESET[git reset --soft/mixed/hard] --> SA
+    RESET["git reset --soft/mixed/hard"] --> SA
     RESET --> REPO
     REVERT[git revert] --> REPO
     STASH[git stash] --> WT
-    STASH --> SA
-```
+    STASH --> SA```
 
 ## Theory
 

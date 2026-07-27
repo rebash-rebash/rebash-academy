@@ -60,22 +60,21 @@ flowchart LR
     end
 
     subgraph Edge["Reverse Proxy / Ingress"]
-        RP[nginx / HAProxy / Ingress Controller]
+        RP["nginx / HAProxy / Ingress Controller"]
         TLS[TLS Termination]
     end
 
     subgraph Internal["Private Network"]
-        B1[Backend 1<br/>app:8080]
-        B2[Backend 2<br/>app:8080]
-        API[API Service<br/>api:3000]
+        B1["Backend 1<br/>app:8080"]
+        B2["Backend 2<br/>app:8080"]
+        API["API Service<br/>api:3000"]
     end
 
     C -->|HTTPS 443| RP
     RP --> TLS
     TLS -->|HTTP| B1
     TLS -->|HTTP| B2
-    TLS -->|/api/*| API
-```
+    TLS -->|/api/*| API```
 
 ## Theory
 

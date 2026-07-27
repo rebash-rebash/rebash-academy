@@ -50,22 +50,21 @@ By the end of this tutorial, you will be able to:
 
 ```mermaid
 flowchart TB
-    subgraph Compose Project
-        WEB[web service<br/>nginx:alpine]
-        API[api service<br/>custom build]
-        DB[(db service<br/>postgres:16)]
-        VOL[(named volume<br/>pgdata)]
-        NET[user-defined network<br/>app-net]
+    subgraph Compose["Project"]
+        WEB["web service<br/>nginx:alpine"]
+        API["api service<br/>custom build"]
+        DB["(db service<br/>postgres:16")]
+        VOL["(named volume<br/>pgdata")]
+        NET["user-defined network<br/>app-net"]
     end
 
-    USER[Browser / curl] -->|port 8080| WEB
+    USER["Browser / curl"] -->|port 8080| WEB
     WEB -->|proxy /api| API
     API -->|postgres:5432| DB
     DB --> VOL
     WEB --- NET
     API --- NET
-    DB --- NET
-```
+    DB --- NET```
 
 Compose creates a project-scoped network. Services resolve each other by **service name**.
 

@@ -49,14 +49,14 @@ By the end of this tutorial, you will be able to:
 flowchart TB
     subgraph Host
         APP[Application]
-        SS[ss / netstat]
+        SS["ss / netstat"]
         IP[ip command]
     end
 
     subgraph Stack
         NIC[Network Interface eth0]
         RT[Routing Table]
-        DNS[Resolver / systemd-resolved]
+        DNS["Resolver / systemd-resolved"]
     end
 
     subgraph External
@@ -72,8 +72,7 @@ flowchart TB
     APP --> DNS
     RT --> GW
     DNS --> DNSS
-    GW --> DEST
-```
+    GW --> DEST```
 
 ## Theory
 

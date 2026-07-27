@@ -54,17 +54,17 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph Client
-        APP[Application / Browser]
-        RES[Recursive Resolver<br/>8.8.8.8 · 1.1.1.1]
+        APP["Application / Browser"]
+        RES["Recursive Resolver<br/>8.8.8.8 · 1.1.1.1"]
     end
 
     subgraph Auth["Authoritative DNS — example.com zone"]
-        NS[NS Records<br/>ns1.example.com]
-        SOA[SOA Record<br/>serial · refresh · expire]
-        A[A / AAAA<br/>host → IP]
-        CNAME[CNAME<br/>alias → target]
-        MX[MX<br/>mail priority]
-        TXT[TXT<br/>SPF · DKIM · verify]
+        NS["NS Records<br/>ns1.example.com"]
+        SOA["SOA Record<br/>serial · refresh · expire"]
+        A["A / AAAA<br/>host → IP"]
+        CNAME["CNAME<br/>alias → target"]
+        MX["MX<br/>mail priority"]
+        TXT["TXT<br/>SPF · DKIM · verify"]
     end
 
     APP --> RES
@@ -73,8 +73,7 @@ flowchart TB
     NS --> A
     NS --> CNAME
     NS --> MX
-    NS --> TXT
-```
+    NS --> TXT```
 
 ## Theory
 

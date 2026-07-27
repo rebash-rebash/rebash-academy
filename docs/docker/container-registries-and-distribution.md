@@ -55,19 +55,18 @@ Registries sit between image builders and runtime consumers. The same image dige
 
 ```mermaid
 flowchart LR
-    DEV[Developer / CI Builder]
+    DEV["Developer / CI Builder"]
     BUILD[docker build]
-    REG[(Container Registry<br/>Hub / ECR / Artifact Registry)]
+    REG["(Container Registry<br/>Hub / ECR / Artifact Registry")]
     RUN1[Docker Host]
     RUN2[Kubernetes Node]
-    RUN3[Cloud Run / ECS]
+    RUN3["Cloud Run / ECS"]
 
     DEV --> BUILD
     BUILD -->|docker push| REG
     REG -->|docker pull| RUN1
     REG -->|kubelet pull| RUN2
-    REG -->|service pull| RUN3
-```
+    REG -->|service pull| RUN3```
 
 ## Theory
 

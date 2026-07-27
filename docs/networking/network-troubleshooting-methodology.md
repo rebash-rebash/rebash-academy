@@ -54,7 +54,7 @@ The OSI/TCP-IP layered model provides the framework for bottom-up troubleshootin
 ```mermaid
 flowchart TB
     subgraph L7["Layer 7 — Application"]
-        APP[HTTP / API / TLS cert validity]
+        APP["HTTP / API / TLS cert validity"]
     end
 
     subgraph L4["Layer 4 — Transport"]
@@ -70,7 +70,7 @@ flowchart TB
     end
 
     subgraph L1["Layer 1 — Physical"]
-        PHY[Cable · NIC · link up/down]
+        PHY["Cable · NIC · link up/down"]
     end
 
     APP --> TCP
@@ -82,8 +82,7 @@ flowchart TB
     style TCP fill:#b3e5fc
     style IP fill:#81d4fa
     style ARP fill:#4fc3f7
-    style PHY fill:#29b6f6
-```
+    style PHY fill:#29b6f6```
 
 ## Theory
 

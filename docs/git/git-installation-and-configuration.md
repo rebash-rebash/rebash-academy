@@ -70,8 +70,7 @@ flowchart TB
     LOCAL --> EFFECT
     GLOBAL --> EFFECT
     SYS --> EFFECT
-    ENV --> EFFECT
-```
+    ENV --> EFFECT```
 
 ## Theory
 

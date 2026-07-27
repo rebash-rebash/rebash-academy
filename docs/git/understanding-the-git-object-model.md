@@ -48,17 +48,16 @@ By the end of this tutorial, you will be able to:
 
 ```mermaid
 flowchart TB
-    COMMIT[Commit Object<br/>author · message · tree · parent]
-    TREE[Tree Object<br/>directory listing]
-    BLOB[Blob Object<br/>file content]
-    TAG[Tag Object<br/>annotated release]
+    COMMIT["Commit Object<br/>author · message · tree · parent"]
+    TREE["Tree Object<br/>directory listing"]
+    BLOB["Blob Object<br/>file content"]
+    TAG["Tag Object<br/>annotated release"]
 
     COMMIT -->|points to| TREE
     TREE -->|name → blob| BLOB
     TREE -->|name → tree| TREE
     TAG -->|points to| COMMIT
-    COMMIT -->|parent| COMMIT
-```
+    COMMIT -->|parent| COMMIT```
 
 ## Theory
 

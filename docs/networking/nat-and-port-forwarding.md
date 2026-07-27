@@ -55,13 +55,13 @@ NAT sits at the boundary between private and public address spaces.
 ```mermaid
 flowchart TB
     subgraph Private["Private Network 10.0.11.0/24"]
-        APP[App Server<br/>10.0.11.50]
-        DB[Database<br/>10.0.11.60]
+        APP["App Server<br/>10.0.11.50"]
+        DB["Database<br/>10.0.11.60"]
     end
 
     subgraph NATDevice["NAT Gateway / Router"]
-        SNAT[SNAT<br/>10.0.11.x → public IP]
-        DNAT[DNAT<br/>public:8080 → 10.0.11.50:80]
+        SNAT["SNAT<br/>10.0.11.x → public IP"]
+        DNAT["DNAT<br/>public:8080 → 10.0.11.50:80"]
     end
 
     subgraph Internet
@@ -73,8 +73,7 @@ flowchart TB
     SNAT --> SVC
     EXT -->|inbound :8080| DNAT
     DNAT --> APP
-    DB -.->|no direct inbound| EXT
-```
+    DB -.->|no direct inbound| EXT```
 
 ## Theory
 

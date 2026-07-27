@@ -71,8 +71,7 @@ sequenceDiagram
     end
 
     App->>LB: 200 OK {"status":"ok"}
-    LB->>Client: 200 OK (encrypted)
-```
+    LB->>Client: 200 OK (encrypted)```
 
 ## Theory
 

@@ -59,19 +59,19 @@ The diagram shows a typical network observability and automation stack: Promethe
 ```mermaid
 flowchart LR
     subgraph Git["Git Repository"]
-        TF[Terraform<br/>VPC · DNS · SG]
-        ANS[Ansible Playbooks<br/>Firewall · DNS]
+        TF["Terraform<br/>VPC · DNS · SG"]
+        ANS["Ansible Playbooks<br/>Firewall · DNS"]
     end
 
     subgraph CI["CI/CD Pipeline"]
         Plan[terraform plan]
-        Apply[ansible-playbook / apply]
+        Apply["ansible-playbook / apply"]
     end
 
     subgraph Targets["Monitored Infrastructure"]
-        NE[node_exporter<br/>Linux hosts]
-        SP[SmokePing<br/>Latency probes]
-        BB[Blackbox Exporter<br/>HTTP/TCP/ICMP]
+        NE["node_exporter<br/>Linux hosts"]
+        SP["SmokePing<br/>Latency probes"]
+        BB["Blackbox Exporter<br/>HTTP/TCP/ICMP"]
     end
 
     subgraph Observability["Observability Stack"]
@@ -85,8 +85,7 @@ flowchart LR
     SP --> Prom
     BB --> Prom
     Prom --> Graf
-    Prom --> Alert
-```
+    Prom --> Alert```
 
 ## Theory
 

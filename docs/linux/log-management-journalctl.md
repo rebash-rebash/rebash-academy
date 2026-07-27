@@ -50,17 +50,17 @@ flowchart TB
     subgraph Sources
         K[Kernel]
         S[systemd Units]
-        A[Applications via stdout/stderr]
+        A["Applications via stdout/stderr"]
     end
 
     subgraph journald
         J[systemd-journald]
-        R[(Journal Files<br/>/run/log/journal<br/>/var/log/journal)]
+        R["(Journal Files<br/>/run/log/journal<br/>/var/log/journal")]
     end
 
     subgraph Consumers
         C[journalctl CLI]
-        F[Forward to SIEM/syslog]
+        F["Forward to SIEM/syslog"]
         M[Monitoring alerts]
     end
 
@@ -70,8 +70,7 @@ flowchart TB
     J --> R
     R --> C
     R --> F
-    R --> M
-```
+    R --> M```
 
 ## Theory
 

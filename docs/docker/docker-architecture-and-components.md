@@ -57,17 +57,17 @@ flowchart TB
     subgraph USER_LAYER["User Layer"]
         CLI[Docker CLI]
         COMPOSE[Docker Compose]
-        SDK[Docker SDK / API clients]
+        SDK["Docker SDK / API clients"]
     end
 
     subgraph ENGINE["Docker Engine"]
-        DOCKERD[dockerd<br/>API · images · networks · volumes]
+        DOCKERD["dockerd<br/>API · images · networks · volumes"]
     end
 
     subgraph RUNTIME["Container Runtime"]
-        CONTAINERD[containerd<br/>image pull · snapshot · task]
+        CONTAINERD["containerd<br/>image pull · snapshot · task"]
         SHIM[containerd-shim]
-        RUNC[runc<br/>OCI runtime]
+        RUNC["runc<br/>OCI runtime"]
     end
 
     subgraph KERNEL["Linux Kernel"]
@@ -87,8 +87,7 @@ flowchart TB
     RUNC --> NS
     RUNC --> CG
     RUNC --> OFS
-    RUNC --> CONT
-```
+    RUNC --> CONT```
 
 ## Theory
 
@@ -170,8 +169,7 @@ flowchart BT
     L3["Layer 3 — app code"]
     L2["Layer 2 — dependencies"]
     L1["Layer 1 — base OS"]
-    RW --> L3 --> L2 --> L1
-```
+    RW --> L3 --> L2 --> L1```
 
 | Concept | Description |
 |---------|-------------|

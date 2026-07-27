@@ -50,17 +50,17 @@ By the end of this tutorial, you will be able to:
 flowchart LR
     subgraph Client
         A[ssh client]
-        B[~/.ssh/config]
+        B["~/.ssh/config"]
         C[Private Key]
         D[ssh-agent]
     end
     subgraph Network
-        E[Port 22 / TCP]
+        E["Port 22 / TCP"]
     end
     subgraph Server
         F[sshd]
         G[authorized_keys]
-        H[Shell / sftp-server]
+        H["Shell / sftp-server"]
     end
     A --> B
     A --> C
@@ -68,8 +68,7 @@ flowchart LR
     A -->|encrypted session| E
     E --> F
     F --> G
-    F --> H
-```
+    F --> H```
 
 ## Theory
 

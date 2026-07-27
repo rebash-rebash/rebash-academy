@@ -57,8 +57,7 @@ flowchart TB
         F2[feature] --> A --> C
         B --> Merged[Merge commit M]
         C --> Merged
-    end
-```
+    end```
 
 ## Theory
 

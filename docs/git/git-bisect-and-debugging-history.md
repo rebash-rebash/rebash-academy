@@ -45,19 +45,18 @@ By the end of this tutorial, you will be able to:
 
 ```mermaid
 flowchart TB
-    START[Start bisect<br/>bad=HEAD good=v1.4.0]
+    START["Start bisect<br/>bad=HEAD good=v1.4.0"]
     MID[Checkout middle commit]
     TEST{Test passes?}
-    GOOD[Mark good<br/>search upper half]
-    BAD[Mark bad<br/>search lower half]
+    GOOD["Mark good<br/>search upper half"]
+    BAD["Mark bad<br/>search lower half"]
     FOUND[First bad commit found]
 
     START --> MID --> TEST
     TEST -->|yes| GOOD --> MID
     TEST -->|no| BAD --> MID
     GOOD --> FOUND
-    BAD --> FOUND
-```
+    BAD --> FOUND```
 
 ## Theory
 

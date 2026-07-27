@@ -54,24 +54,23 @@ The diagram below contrasts centralized and distributed version control. Underst
 ```mermaid
 flowchart TB
     subgraph CVCS["Centralized VCS (e.g., SVN)"]
-        SVN_SRV[(Central Server<br/>single source of truth)]
-        DEV_A[Developer A<br/>working copy only]
-        DEV_B[Developer B<br/>working copy only]
+        SVN_SRV["(Central Server<br/>single source of truth")]
+        DEV_A["Developer A<br/>working copy only"]
+        DEV_B["Developer B<br/>working copy only"]
         DEV_A -->|commit / update| SVN_SRV
         DEV_B -->|commit / update| SVN_SRV
     end
 
     subgraph DVCS["Distributed VCS (Git)"]
-        REMOTE[(Remote — GitHub / GitLab / Bitbucket)]
-        DEV_C[Developer C<br/>full local repo]
-        DEV_D[Developer D<br/>full local repo]
-        CI[CI Runner<br/>full clone]
+        REMOTE["(Remote — GitHub / GitLab / Bitbucket")]
+        DEV_C["Developer C<br/>full local repo"]
+        DEV_D["Developer D<br/>full local repo"]
+        CI["CI Runner<br/>full clone"]
         DEV_C <-->|push / pull| REMOTE
         DEV_D <-->|push / pull| REMOTE
         CI <-->|fetch / clone| REMOTE
         DEV_C -.->|local commits<br/>no network| DEV_C
-    end
-```
+    end```
 
 ## Theory
 
@@ -173,11 +172,11 @@ A **tag** marks a specific commit — usually a release: `v1.4.2`, `prod-2026-07
 
 ```mermaid
 flowchart LR
-    DEV[Developer / Engineer]
-    GIT[(Git Repository)]
-    PR[Pull Request / MR]
-    CI[CI Pipeline<br/>GitHub Actions / GitLab CI]
-    CD[CD / GitOps<br/>Argo CD / Flux]
+    DEV["Developer / Engineer"]
+    GIT["(Git Repository")]
+    PR["Pull Request / MR"]
+    CI["CI Pipeline<br/>GitHub Actions / GitLab CI"]
+    CD["CD / GitOps<br/>Argo CD / Flux"]
     PROD[Production]
 
     DEV -->|commit / push| GIT
@@ -185,8 +184,7 @@ flowchart LR
     PR -->|trigger| CI
     CI -->|pass + merge| GIT
     GIT -->|sync| CD
-    CD --> PROD
-```
+    CD --> PROD```
 
 Every arrow depends on Git. Terraform Cloud reads VCS webhooks. Ansible Tower pulls playbooks from Git. Kubernetes operators watch Git branches. Learning Git is prerequisite to every other DevOps skill in this academy.
 

@@ -57,7 +57,7 @@ The diagram below shows a standard **multi-AZ VPC** with two public subnets (for
 ```mermaid
 flowchart TB
     subgraph Internet["Internet"]
-        Users[Users / Clients]
+        Users["Users / Clients"]
     end
 
     subgraph VPC["VPC 10.0.0.0/16"]
@@ -79,8 +79,8 @@ flowchart TB
             DBB[Database Replica]
         end
 
-        RTpub[Public Route Table<br/>0.0.0.0/0 → IGW]
-        RTpriv[Private Route Table<br/>0.0.0.0/0 → NAT]
+        RTpub["Public Route Table<br/>0.0.0.0/0 → IGW"]
+        RTpriv["Private Route Table<br/>0.0.0.0/0 → NAT"]
     end
 
     Users --> IGW
@@ -95,8 +95,7 @@ flowchart TB
     PubA --- RTpub
     PubB --- RTpub
     PrivA --- RTpriv
-    PrivB --- RTpriv
-```
+    PrivB --- RTpriv```
 
 ## Theory
 

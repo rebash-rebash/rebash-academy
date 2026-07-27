@@ -53,16 +53,16 @@ flowchart LR
         DR[docker run]
         IMG[Image]
         COMP[Compose service]
-        NET[bridge / overlay]
-        VOL[volume / bind mount]
+        NET["bridge / overlay"]
+        VOL["volume / bind mount"]
     end
 
     subgraph Kubernetes
         POD[Pod]
         DEP[Deployment]
         SVC[Service]
-        CNI[Pod network / CNI]
-        PV[PV / PVC]
+        CNI["Pod network / CNI"]
+        PV["PV / PVC"]
     end
 
     DR --> POD
@@ -72,8 +72,7 @@ flowchart LR
     NET --> CNI
     VOL --> PV
     DEP --> POD
-    SVC --> POD
-```
+    SVC --> POD```
 
 ## Theory
 

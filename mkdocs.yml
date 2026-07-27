@@ -127,7 +127,9 @@ plugins:
       zoomable: true
       draggable: true
   - mermaid2:
-      version: 10.9.0
+      version: 11.16.0
+      arguments:
+        securityLevel: loose
   - open-in-new-tab:
       add_icon: true
   - macros:

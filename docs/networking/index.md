@@ -25,11 +25,11 @@ The REBASH Academy **Networking** track is a structured, 20-tutorial curriculum 
 
 ```mermaid
 flowchart TD
-    M1[Module 1: Foundations] --> M2[Module 2: Data Link & Routing]
-    M2 --> M3[Module 3: Transport & DNS]
-    M3 --> M4[Module 4: Application Layer]
-    M4 --> M5[Module 5: Troubleshooting]
-    M5 --> M6[Module 6: Cloud & Advanced]
+    M1["Module 1: Foundations"] --> M2["Module 2: Data Link & Routing"]
+    M2 --> M3["Module 3: Transport & DNS"]
+    M3 --> M4["Module 4: Application Layer"]
+    M4 --> M5["Module 5: Troubleshooting"]
+    M5 --> M6["Module 6: Cloud & Advanced"]
 ```
 
 ### Module 1 – Foundations

@@ -55,15 +55,14 @@ A single `docker run` creates a container with an isolated process tree, optiona
 
 ```mermaid
 flowchart LR
-    HOST[Host :8080]
+    HOST["Host :8080"]
     BRIDGE[docker0 bridge]
-    CONT[Container<br/>nginx :80]
-    LOGS[(json-file logs<br/>/var/lib/docker)]
+    CONT["Container<br/>nginx :80"]
+    LOGS["(json-file logs<br/>/var/lib/docker")]
 
     HOST -->|NAT publish| BRIDGE
     BRIDGE --> CONT
-    CONT -->|stdout/stderr| LOGS
-```
+    CONT -->|stdout/stderr| LOGS```
 
 ## Theory
 
@@ -113,8 +112,7 @@ stateDiagram-v2
     Running --> Stopped: docker stop / exit
     Stopped --> Running: docker start
     Stopped --> Removed: docker rm
-    Running --> Removed: docker rm -f
-```
+    Running --> Removed: docker rm -f```
 
 | State | Description |
 |-------|-------------|

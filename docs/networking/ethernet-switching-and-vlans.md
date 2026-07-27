@@ -54,22 +54,21 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph VLAN10["VLAN 10 — Web (10.0.1.0/24)"]
-        S1[Server A<br/>MAC aa:bb:cc:01]
-        S2[Server B<br/>MAC aa:bb:cc:02]
+        S1["Server A<br/>MAC aa:bb:cc:01"]
+        S2["Server B<br/>MAC aa:bb:cc:02"]
     end
 
     subgraph VLAN20["VLAN 20 — DB (10.0.20.0/24)"]
-        S3[DB Server<br/>MAC ee:ff:00:01]
+        S3["DB Server<br/>MAC ee:ff:00:01"]
     end
 
-    SW[Managed Switch<br/>802.1Q trunk to router]
-    RTR[L3 Switch / Router<br/>Inter-VLAN routing]
+    SW["Managed Switch<br/>802.1Q trunk to router"]
+    RTR["L3 Switch / Router<br/>Inter-VLAN routing"]
 
     S1 --> SW
     S2 --> SW
     S3 --> SW
-    SW -->|trunk: VLAN 10, 20| RTR
-```
+    SW -->|trunk: VLAN 10, 20| RTR```
 
 Traffic within VLAN 10 stays on the same broadcast domain. Cross-VLAN communication requires Layer 3 routing through the router.
 

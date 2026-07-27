@@ -61,19 +61,18 @@ flowchart LR
     end
 
     subgraph Internet
-        TUN[Encrypted Tunnel<br/>IPsec / WireGuard]
+        TUN["Encrypted Tunnel<br/>IPsec / WireGuard"]
     end
 
     subgraph Cloud["AWS VPC 10.0.0.0/16"]
-        VPNGW[VPN Gateway / TGW]
+        VPNGW["VPN Gateway / TGW"]
         EC2[EC2 Instances]
     end
 
     SRV --> VPNC
     VPNC --> TUN
     TUN --> VPNGW
-    VPNGW --> EC2
-```
+    VPNGW --> EC2```
 
 ## Theory
 

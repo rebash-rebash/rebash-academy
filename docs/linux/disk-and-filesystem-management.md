@@ -48,24 +48,24 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph Hardware
-        A[Physical Disk /dev/sda]
+        A["Physical Disk /dev/sda"]
     end
     subgraph Partitions
-        B[/dev/sda1 boot]
-        C[/dev/sda2 LVM PV]
+        B["/dev/sda1 boot"]
+        C["/dev/sda2 LVM PV"]
     end
     subgraph LVM
         D[Volume Group vg0]
-        E[LV root /dev/vg0/root]
-        F[LV data /dev/vg0/data]
+        E["LV root /dev/vg0/root"]
+        F["LV data /dev/vg0/data"]
     end
     subgraph Filesystems
-        G[ext4 on /]
-        H[xfs on /var]
+        G["ext4 on /"]
+        H["xfs on /var"]
     end
-    subgraph Mount Points
-        I[/]
-        J[/var]
+    subgraph Mount["Points"]
+        I["/"]
+        J["/var"]
     end
     A --> B
     A --> C
@@ -75,8 +75,7 @@ flowchart TB
     E --> G
     F --> H
     G --> I
-    H --> J
-```
+    H --> J```
 
 ## Theory
 

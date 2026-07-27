@@ -50,11 +50,11 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart LR
     subgraph Git
-        PUSH[Push / PR / Tag]
+        PUSH["Push / PR / Tag"]
         SHA[Commit SHA]
     end
 
-    subgraph CI Runner
+    subgraph CI["Runner"]
         CLONE[Clone repo]
         BUILD[docker build]
         SCAN[Image scan]
@@ -62,7 +62,7 @@ flowchart LR
     end
 
     subgraph Registry
-        REG[(ghcr.io / registry.gitlab.com)]
+        REG["(ghcr.io / registry.gitlab.com")]
     end
 
     subgraph Deploy
@@ -77,8 +77,7 @@ flowchart LR
     SCAN --> PUSHIMG
     PUSHIMG --> REG
     REG --> STG
-    REG --> PROD
-```
+    REG --> PROD```
 
 ## Theory
 

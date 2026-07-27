@@ -48,16 +48,15 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart LR
     DEV[Developer]
-    KEY[Signing Key<br/>GPG or SSH]
+    KEY["Signing Key<br/>GPG or SSH"]
     COMMIT[Signed Commit]
-    REMOTE[GitHub / GitLab]
+    REMOTE["GitHub / GitLab"]
     VERIFY[Signature Verification]
 
     DEV -->|git commit -S| KEY
     KEY --> COMMIT
     COMMIT -->|push| REMOTE
-    REMOTE --> VERIFY
-```
+    REMOTE --> VERIFY```
 
 ## Theory
 

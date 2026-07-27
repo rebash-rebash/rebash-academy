@@ -48,16 +48,16 @@ By the end of this tutorial, you will be able to:
 
 ```mermaid
 flowchart TD
-    subgraph Admin Workstation
+    subgraph Admin["Workstation"]
         A[systemctl --host]
         B[journalctl --host]
     end
-    subgraph SSH Transport
+    subgraph SSH["Transport"]
         C[Encrypted SSH Session]
     end
-    subgraph Remote Server
+    subgraph Remote["Server"]
         D[systemd-manager user]
-        E[polkit / pkaction]
+        E["polkit / pkaction"]
         F[systemd PID 1]
         G[Unit Files]
         H[Running Services]
@@ -69,8 +69,7 @@ flowchart TD
     E -->|authorized| F
     E -->|denied| I[Access Denied]
     F --> G
-    F --> H
-```
+    F --> H```
 
 ## Theory
 

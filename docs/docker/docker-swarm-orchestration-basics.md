@@ -58,13 +58,13 @@ flowchart TB
         W2[Worker 2]
     end
 
-    subgraph Swarm Objects
-        SVC[Service api:3 replicas]
+    subgraph Swarm["Objects"]
+        SVC["Service api:3 replicas"]
         T1[Task]
         T2[Task]
         T3[Task]
         NET[Overlay network]
-        SEC[Secrets / Configs]
+        SEC["Secrets / Configs"]
     end
 
     M1 --- M2
@@ -77,8 +77,7 @@ flowchart TB
     T2 --> W2
     T3 --> W1
     NET --- T1
-    SEC --- SVC
-```
+    SEC --- SVC```
 
 ## Theory
 

@@ -58,31 +58,31 @@ The diagram shows defense-in-depth layers: DDoS scrubbing at the edge, WAF for a
 ```mermaid
 flowchart TB
     subgraph Internet
-        Attacker[Attackers / Bots]
+        Attacker["Attackers / Bots"]
         Users[Legitimate Users]
     end
 
     subgraph Edge["Edge Protection"]
-        DDoS[DDoS Mitigation<br/>Shield / Cloudflare / WAF]
+        DDoS["DDoS Mitigation<br/>Shield / Cloudflare / WAF"]
         WAF[Web Application Firewall]
         LB[Load Balancer — TLS termination]
     end
 
     subgraph VPC["Segmented VPC"]
         subgraph DMZ["Public Tier"]
-            Proxy[Reverse Proxy / Ingress]
+            Proxy["Reverse Proxy / Ingress"]
         end
         subgraph AppTier["Application Tier — Private"]
-            App[App Servers<br/>SG: 443 from DMZ only]
+            App["App Servers<br/>SG: 443 from DMZ only"]
         end
         subgraph DataTier["Data Tier — Private"]
-            DB[(Database<br/>SG: 5432 from App only)]
+            DB["(Database<br/>SG: 5432 from App only")]
         end
     end
 
     subgraph Observability["Audit & Monitoring"]
         Flow[VPC Flow Logs]
-        SIEM[SIEM / CloudWatch / Splunk]
+        SIEM["SIEM / CloudWatch / Splunk"]
     end
 
     Attacker --> DDoS
@@ -91,8 +91,7 @@ flowchart TB
     Proxy --> App
     App --> DB
     Flow --> SIEM
-    LB --> SIEM
-```
+    LB --> SIEM```
 
 ## Theory
 

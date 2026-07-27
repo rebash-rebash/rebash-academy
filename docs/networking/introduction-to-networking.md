@@ -63,7 +63,7 @@ flowchart TB
 
     subgraph EDGE["Network Edge"]
         FW[Firewall]
-        RTR[Router / Gateway]
+        RTR["Router / Gateway"]
         SW --> FW
         FW --> RTR
     end
@@ -77,13 +77,12 @@ flowchart TB
         IGW[Internet Gateway]
         ALB[Load Balancer]
         APP[App Servers]
-        DB[(Database)]
+        DB["(Database")]
         ISP --> IGW
         IGW --> ALB
         ALB --> APP
         APP --> DB
-    end
-```
+    end```
 
 ## Theory
 

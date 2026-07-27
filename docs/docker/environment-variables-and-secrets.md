@@ -54,14 +54,14 @@ Configuration flows from sources of truth into the container process environment
 ```mermaid
 flowchart TB
     subgraph sources["Configuration Sources"]
-        ENVFILE[.env file<br/>non-secrets only]
-        SECRET_MGR[Secret Manager<br/>Vault / AWS / GCP]
-        COMPOSE[Compose / Stack YAML]
+        ENVFILE[".env file<br/>non-secrets only"]
+        SECRET_MGR["Secret Manager<br/>Vault / AWS / GCP"]
+        COMPOSE["Compose / Stack YAML"]
     end
 
     subgraph docker["Docker Engine"]
-        RUN[docker run / compose up]
-        SWARM_SEC[Swarm secrets<br/>tmpfs mount]
+        RUN["docker run / compose up"]
+        SWARM_SEC["Swarm secrets<br/>tmpfs mount"]
     end
 
     subgraph container["Container"]
@@ -75,8 +75,7 @@ flowchart TB
     RUN -->|environment vars| PROC
     RUN --> SWARM_SEC
     SWARM_SEC --> MNT
-    MNT --> PROC
-```
+    MNT --> PROC```
 
 ## Theory
 

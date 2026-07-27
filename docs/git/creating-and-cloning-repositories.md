@@ -58,28 +58,27 @@ DevOps workflows typically flow from a hosted remote to local clones and CI runn
 ```mermaid
 flowchart TB
     subgraph HOSTING["Git Hosting Platform"]
-        REMOTE[(origin<br/>GitHub / GitLab / Gitea)]
+        REMOTE["(origin<br/>GitHub / GitLab / Gitea")]
     end
 
     subgraph DEV["Developer Workstations"]
-        CLONE1[non-bare clone<br/>working directory + .git]
+        CLONE1["non-bare clone<br/>working directory + .git"]
         CLONE2[non-bare clone]
     end
 
     subgraph CI["CI/CD Infrastructure"]
-        RUNNER[Pipeline runner<br/>shallow clone depth=1]
+        RUNNER["Pipeline runner<br/>shallow clone depth=1"]
     end
 
     subgraph SELF["Self-Hosted (optional)"]
-        BARE[bare repo on server<br/>/srv/git/project.git]
+        BARE["bare repo on server<br/>/srv/git/project.git"]
     end
 
     REMOTE <-->|push / fetch| CLONE1
     REMOTE <-->|push / fetch| CLONE2
     REMOTE -->|webhook trigger| RUNNER
     RUNNER -->|clone / fetch| REMOTE
-    BARE <-->|push mirror| REMOTE
-```
+    BARE <-->|push mirror| REMOTE```
 
 ## Theory
 

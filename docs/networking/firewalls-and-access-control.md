@@ -59,13 +59,13 @@ flowchart TB
     end
 
     subgraph Perimeter
-        NACL[Network ACL<br/>stateless · subnet boundary]
-        SG[Security Group<br/>stateful · instance ENI]
+        NACL["Network ACL<br/>stateless · subnet boundary"]
+        SG["Security Group<br/>stateful · instance ENI"]
     end
 
     subgraph Host
-        UFW[UFW / nftables<br/>host firewall]
-        APP[Application<br/>nginx · postgres]
+        UFW["UFW / nftables<br/>host firewall"]
+        APP["Application<br/>nginx · postgres"]
     end
 
     ATT --> NACL
@@ -75,8 +75,7 @@ flowchart TB
     APP -->|response| UFW
     UFW --> SG
     SG --> NACL
-    NACL --> ATT
-```
+    NACL --> ATT```
 
 ## Theory
 

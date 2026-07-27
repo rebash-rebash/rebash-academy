@@ -28,7 +28,7 @@ flowchart TD
     D --> E[Kubernetes]
     E --> F[Terraform]
     F --> G[Cloud]
-    G --> H[CI/CD]
+    G --> H["CI/CD"]
     H --> I[Monitoring]
     I --> J[Security]
     J --> K[Production Projects]

@@ -57,7 +57,7 @@ flowchart TB
     subgraph VM["Virtual Machine Stack"]
         APP_VM[Application]
         OS_GUEST[Guest OS — full kernel]
-        HYP[Hypervisor — KVM / VMware / Hyper-V]
+        HYP["Hypervisor — KVM / VMware / Hyper-V"]
         HOST_OS_VM[Host OS]
         HW_VM[Physical Hardware]
         APP_VM --> OS_GUEST
@@ -69,15 +69,14 @@ flowchart TB
     subgraph CONTAINER["Container Stack"]
         APP_C1[App Container A]
         APP_C2[App Container B]
-        ENGINE[Container Engine — Docker / containerd]
+        ENGINE["Container Engine — Docker / containerd"]
         HOST_OS_C[Host OS — shared kernel]
         HW_C[Physical Hardware]
         APP_C1 --> ENGINE
         APP_C2 --> ENGINE
         ENGINE --> HOST_OS_C
         HOST_OS_C --> HW_C
-    end
-```
+    end```
 
 ## Theory
 
@@ -167,11 +166,11 @@ flowchart LR
     DEV[Developer]
     DF[Dockerfile]
     BUILD[docker build]
-    IMG[(Image)]
-    REG[(Registry<br/>Docker Hub / ECR / GCR)]
+    IMG["(Image")]
+    REG["(Registry<br/>Docker Hub / ECR / GCR")]
     RUN[docker run]
     CONT[Container]
-    ORCH[Orchestrator<br/>Kubernetes / ECS]
+    ORCH["Orchestrator<br/>Kubernetes / ECS"]
 
     DEV --> DF
     DF --> BUILD
@@ -179,8 +178,7 @@ flowchart LR
     IMG --> REG
     REG --> RUN
     RUN --> CONT
-    CONT --> ORCH
-```
+    CONT --> ORCH```
 
 | Component | Role | Examples |
 |-----------|------|----------|

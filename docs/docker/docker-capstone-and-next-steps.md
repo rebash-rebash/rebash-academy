@@ -57,18 +57,18 @@ flowchart TB
     end
 
     subgraph Edge
-        NGX[nginx reverse proxy :80]
+        NGX["nginx reverse proxy :80"]
     end
 
     subgraph Application
-        WEB[web frontend :3000]
-        API[api service :8080]
+        WEB["web frontend :3000"]
+        API["api service :8080"]
         WORK[worker]
     end
 
     subgraph Data
-        REDIS[(redis)]
-        PG[(postgres)]
+        REDIS["(redis")]
+        PG["(postgres")]
     end
 
     USER --> NGX
@@ -77,8 +77,7 @@ flowchart TB
     API --> REDIS
     API --> PG
     WORK --> REDIS
-    WORK --> PG
-```
+    WORK --> PG```
 
 ## Project Overview — VoteStack
 

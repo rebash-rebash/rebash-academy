@@ -58,15 +58,15 @@ flowchart TB
     end
 
     subgraph LB["Load Balancer Tier"]
-        VIP[Virtual IP / DNS Name]
+        VIP["Virtual IP / DNS Name"]
         HC[Health Check Engine]
-        ALGO[Scheduler<br/>round-robin · least conn · ip hash]
+        ALGO["Scheduler<br/>round-robin · least conn · ip hash"]
     end
 
     subgraph Backends
-        W1[Web Server 1<br/>healthy]
-        W2[Web Server 2<br/>healthy]
-        W3[Web Server 3<br/>unhealthy]
+        W1["Web Server 1<br/>healthy"]
+        W2["Web Server 2<br/>healthy"]
+        W3["Web Server 3<br/>unhealthy"]
     end
 
     C1 --> VIP
@@ -78,8 +78,7 @@ flowchart TB
     HC -.->|fail| W3
     ALGO --> W1
     ALGO --> W2
-    ALGO -.-x|removed| W3
-```
+    ALGO -.-x|removed| W3```
 
 ## Theory
 

@@ -49,7 +49,7 @@ By the end of this tutorial, you will be able to:
 flowchart TB
     subgraph TBD["Trunk-Based"]
         MAIN1[main — always deployable]
-        FB1[short feature branches<br/>hours to days]
+        FB1["short feature branches<br/>hours to days"]
         FB1 --> MAIN1
     end
 
@@ -63,14 +63,13 @@ flowchart TB
     subgraph GF["GitFlow"]
         MAIN3[main]
         DEV[develop]
-        FEAT[feature/*]
-        REL[release/*]
-        HOT[hotfix/*]
+        FEAT["feature/*"]
+        REL["release/*"]
+        HOT["hotfix/*"]
         FEAT --> DEV --> REL --> MAIN3
         HOT --> MAIN3
         HOT --> DEV
-    end
-```
+    end```
 
 ## Theory
 

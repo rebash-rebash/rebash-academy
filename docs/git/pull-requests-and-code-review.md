@@ -50,7 +50,7 @@ flowchart LR
     CI --> REV[Code Review]
     REV -->|approve| MERGE[Merge to main]
     REV -->|changes requested| BR
-    MERGE --> DEPLOY[CD / GitOps Deploy]
+    MERGE --> DEPLOY["CD / GitOps Deploy"]
 ```
 
 ## Theory

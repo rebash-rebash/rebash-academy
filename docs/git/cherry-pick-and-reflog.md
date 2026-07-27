@@ -45,12 +45,12 @@ By the end of this tutorial, you will be able to:
 
 ```mermaid
 flowchart LR
-    MAIN[main: commit FIX]
-    REL[release/2.1]
+    MAIN["main: commit FIX"]
+    REL["release/2.1"]
     MAIN -->|git cherry-pick FIX| REL
 
     HEAD[HEAD moves]
-    REFLOG[(reflog<br/>90 day journal)]
+    REFLOG["(reflog<br/>90 day journal")]
     HEAD --> REFLOG
     REFLOG -->|git reset --hard SHA| RECOVER[Recovered state]
 ```

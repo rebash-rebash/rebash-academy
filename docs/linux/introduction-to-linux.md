@@ -52,26 +52,26 @@ The diagram below shows how hardware, firmware, the kernel, userspace, and your 
 ```mermaid
 flowchart TB
     subgraph HW["Hardware Layer"]
-        CPU[CPU / RAM / Disk / NIC]
+        CPU["CPU / RAM / Disk / NIC"]
     end
 
     subgraph FW["Firmware"]
-        UEFI[UEFI / BIOS]
+        UEFI["UEFI / BIOS"]
     end
 
     subgraph BL["Bootloader"]
-        GRUB[GRUB / systemd-boot]
+        GRUB["GRUB / systemd-boot"]
     end
 
     subgraph KS["Kernel Space"]
-        KERN[Linux Kernel<br/>scheduling · memory · drivers · syscalls]
+        KERN["Linux Kernel<br/>scheduling · memory · drivers · syscalls"]
     end
 
     subgraph US["User Space"]
-        INIT[PID 1 — systemd / init]
-        SVC[systemd units<br/>sshd · nginx · docker]
-        SHELL[Login shell<br/>bash · zsh]
-        APP[User applications<br/>git · python · kubectl]
+        INIT["PID 1 — systemd / init"]
+        SVC["systemd units<br/>sshd · nginx · docker"]
+        SHELL["Login shell<br/>bash · zsh"]
+        APP["User applications<br/>git · python · kubectl"]
     end
 
     CPU --> UEFI
@@ -83,8 +83,7 @@ flowchart TB
     SHELL --> APP
     SVC --> APP
     APP -->|syscalls| KERN
-    KERN --> CPU
-```
+    KERN --> CPU```
 
 ## Theory
 

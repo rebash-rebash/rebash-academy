@@ -55,17 +55,16 @@ Images flow from registries to local storage, where layers are deduplicated acro
 
 ```mermaid
 flowchart LR
-    REG[(Registry<br/>Docker Hub / ECR)]
+    REG["(Registry<br/>Docker Hub / ECR")]
     PULL[docker pull]
-    LOCAL[(Local Image Store<br/>/var/lib/docker/image)]
+    LOCAL["(Local Image Store<br/>/var/lib/docker/image")]
     TAG[docker tag]
     RUN[docker run]
-    CONT[Container<br/>writable layer]
+    CONT["Container<br/>writable layer"]
 
     REG --> PULL --> LOCAL
     LOCAL --> TAG --> LOCAL
-    LOCAL --> RUN --> CONT
-```
+    LOCAL --> RUN --> CONT```
 
 ## Theory
 

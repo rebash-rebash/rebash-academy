@@ -46,16 +46,15 @@ By the end of this tutorial, you will be able to:
 
 ```mermaid
 flowchart LR
-    LOCAL[Local Repo<br/>refs/heads/main]
-    RTB[Remote-tracking<br/>origin/main]
-    REMOTE[Remote Server<br/>GitHub/GitLab]
+    LOCAL["Local Repo<br/>refs/heads/main"]
+    RTB["Remote-tracking<br/>origin/main"]
+    REMOTE["Remote Server<br/>GitHub/GitLab"]
     CI[CI Pipeline]
 
     LOCAL -->|git push| REMOTE
     REMOTE -->|git fetch| RTB
     RTB -->|git merge / rebase| LOCAL
-    REMOTE -->|webhook| CI
-```
+    REMOTE -->|webhook| CI```
 
 ## Theory
 

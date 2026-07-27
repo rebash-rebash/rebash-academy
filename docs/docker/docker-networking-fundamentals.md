@@ -55,14 +55,14 @@ flowchart TB
         IPT[iptables NAT]
     end
 
-    subgraph Bridge docker0
-        C1[Container A<br/>172.17.0.2]
-        C2[Container B<br/>172.17.0.3]
+    subgraph Bridge["docker0"]
+        C1["Container A<br/>172.17.0.2"]
+        C2["Container B<br/>172.17.0.3"]
     end
 
-    subgraph UserBridge app-net
-        C3[Container C<br/>172.18.0.2]
-        C4[Container D<br/>172.18.0.3]
+    subgraph UserBridge["app-net"]
+        C3["Container C<br/>172.18.0.2"]
+        C4["Container D<br/>172.18.0.3"]
     end
 
     EXT[External client] -->|host:8080| IPT
@@ -71,8 +71,7 @@ flowchart TB
     C1 --- Bridge
     C2 --- Bridge
     Bridge --- ETH
-    UserBridge --- ETH
-```
+    UserBridge --- ETH```
 
 User-defined networks add automatic DNS between connected containers.
 

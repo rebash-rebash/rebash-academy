@@ -52,11 +52,10 @@ flowchart TB
     POST[post-commit hook]
     PUSH[git push]
     PREPUSH[pre-push hook]
-    SERVER[server-side<br/>pre-receive / update]
+    SERVER["server-side<br/>pre-receive / update"]
 
     COMMIT --> PRE --> MSG --> POST
-    PUSH --> PREPUSH --> SERVER
-```
+    PUSH --> PREPUSH --> SERVER```
 
 ## Theory
 

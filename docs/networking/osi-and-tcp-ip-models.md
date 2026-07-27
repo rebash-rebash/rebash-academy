@@ -52,7 +52,7 @@ The diagram below shows how the OSI and TCP/IP models align, and how data is enc
 ```mermaid
 flowchart TB
     subgraph APP["Application Layer"]
-        DATA[Application Data<br/>HTTP JSON DNS]
+        DATA["Application Data<br/>HTTP JSON DNS"]
     end
 
     subgraph L47["OSI Layers 5-7 / TCP/IP Application"]
@@ -62,7 +62,7 @@ flowchart TB
     end
 
     subgraph L4["Layer 4 — Transport"]
-        L4N[TCP / UDP<br/>Segment + Port]
+        L4N["TCP / UDP<br/>Segment + Port"]
     end
 
     subgraph L3["Layer 3 — Network"]
@@ -74,11 +74,10 @@ flowchart TB
     end
 
     subgraph L1["Layer 1 — Physical"]
-        L1N[Bits on wire / fiber / radio]
+        L1N["Bits on wire / fiber / radio"]
     end
 
-    DATA --> L7 --> L6 --> L5 --> L4N --> L3N --> L2N --> L1N
-```
+    DATA --> L7 --> L6 --> L5 --> L4N --> L3N --> L2N --> L1N```
 
 ## Theory
 

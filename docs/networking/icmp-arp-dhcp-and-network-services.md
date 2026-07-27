@@ -72,8 +72,7 @@ sequenceDiagram
     GW->>Host: ICMP Echo Reply
 
     Host->>NTP: NTP client query (UDP 123)
-    NTP->>Host: Time sync response
-```
+    NTP->>Host: Time sync response```
 
 ## Theory
 

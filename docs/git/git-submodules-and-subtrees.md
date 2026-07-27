@@ -47,17 +47,16 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph SUBMOD["Submodule"]
-        PARENT[Parent Repo<br/>records submodule SHA]
-        CHILD[Child Repo<br/>separate .git]
+        PARENT["Parent Repo<br/>records submodule SHA"]
+        CHILD["Child Repo<br/>separate .git"]
         PARENT -->|gitlink| CHILD
     end
 
     subgraph SUBTREE["Subtree"]
         PARENT2[Parent Repo]
-        MERGED[External code<br/>merged into subdir/]
+        MERGED["External code<br/>merged into subdir/"]
         PARENT2 --> MERGED
-    end
-```
+    end```
 
 ## Theory
 

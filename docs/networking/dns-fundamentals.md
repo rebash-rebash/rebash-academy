@@ -51,18 +51,18 @@ By the end of this tutorial, you will be able to:
 flowchart TB
     subgraph Client
         APP[Application]
-        STUB[Stub Resolver<br/>glibc / systemd-resolved]
+        STUB["Stub Resolver<br/>glibc / systemd-resolved"]
     end
 
     subgraph Resolver
-        REC[Recursive Resolver<br/>8.8.8.8 / corporate DNS]
-        CACHE[(Local Cache)]
+        REC["Recursive Resolver<br/>8.8.8.8 / corporate DNS"]
+        CACHE["(Local Cache")]
     end
 
     subgraph Authoritative
         ROOT[Root .]
         TLD[TLD .com]
-        AUTH[Auth NS<br/>example.com]
+        AUTH["Auth NS<br/>example.com"]
     end
 
     APP --> STUB
@@ -73,8 +73,7 @@ flowchart TB
     TLD -->|referral| AUTH
     AUTH -->|answer| REC
     REC --> STUB
-    STUB --> APP
-```
+    STUB --> APP```
 
 ## Theory
 

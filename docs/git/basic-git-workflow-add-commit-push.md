@@ -67,8 +67,7 @@ flowchart LR
     REPO -->|"git push"| REMOTE
     REMOTE -->|"webhook"| CI
     REMOTE -->|"git pull / fetch"| REPO
-    REPO -->|"checkout"| WD
-```
+    REPO -->|"checkout"| WD```
 
 ## Theory
 

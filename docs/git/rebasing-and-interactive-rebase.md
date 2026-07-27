@@ -48,17 +48,16 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph Before["Before rebase"]
-        M1[main: A-B-C]
-        F1[feature: A-B-D-E]
+        M1["main: A-B-C"]
+        F1["feature: A-B-D-E"]
     end
 
     subgraph After["After rebase feature onto main"]
-        M2[main: A-B-C]
+        M2["main: A-B-C"]
         F2[feature: A-B-C-D'-E']
     end
 
-    Before --> After
-```
+    Before --> After```
 
 ## Theory
 

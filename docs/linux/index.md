@@ -27,11 +27,11 @@ with theory, step-by-step labs, commands, best practices, and interview question
 
 ```mermaid
 flowchart TD
-    M1[Module 1: Foundations] --> M2[Module 2: Users & Permissions]
-    M2 --> M3[Module 3: Processes & Services]
-    M3 --> M4[Module 4: Text & Scripting]
-    M4 --> M5[Module 5: Remote Admin]
-    M5 --> M6[Module 6: Storage & Operations]
+    M1["Module 1: Foundations"] --> M2["Module 2: Users & Permissions"]
+    M2 --> M3["Module 3: Processes & Services"]
+    M3 --> M4["Module 4: Text & Scripting"]
+    M4 --> M5["Module 5: Remote Admin"]
+    M5 --> M6["Module 6: Storage & Operations"]
 ```
 
 ### Module 1 – Foundations

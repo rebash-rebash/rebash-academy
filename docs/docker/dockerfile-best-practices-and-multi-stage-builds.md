@@ -49,14 +49,14 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph Stage1["Stage 1: builder"]
-        B1[FROM golang:1.22 AS builder]
+        B1["FROM golang:1.22 AS builder"]
         B2[COPY source]
         B3[RUN go build]
     end
 
     subgraph Stage2["Stage 2: runtime"]
-        R1[FROM gcr.io/distroless/static]
-        R2[COPY --from=builder /app/binary]
+        R1["FROM gcr.io/distroless/static"]
+        R2["COPY --from=builder /app/binary"]
         R3[USER nonroot]
     end
 

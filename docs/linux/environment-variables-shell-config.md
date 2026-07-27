@@ -48,17 +48,17 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph Login
-        L1[SSH / Console login] --> LP[/etc/profile]
-        LP --> LBP[~/.bash_profile or ~/.profile]
+        L1["SSH / Console login"] --> LP["/etc/profile"]
+        LP --> LBP["~/.bash_profile or ~/.profile"]
     end
 
     subgraph Interactive
-        T1[New terminal tab] --> BR[~/.bashrc]
+        T1[New terminal tab] --> BR["~/.bashrc"]
         LBP --> BR
     end
 
     subgraph NonInteractive
-        S1[Script / cron / CI] --> ENV[Inherited environment only]
+        S1["Script / cron / CI"] --> ENV[Inherited environment only]
     end
 
     BR --> EV[Environment Variables]

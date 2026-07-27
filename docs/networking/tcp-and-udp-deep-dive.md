@@ -67,8 +67,7 @@ sequenceDiagram
     Server->>Client: ACK
     Server->>Client: FIN
     Client->>Server: ACK
-    Note over Client: TIME_WAIT (2×MSL)
-```
+    Note over Client: TIME_WAIT (2×MSL)```
 
 ## Theory
 

@@ -55,9 +55,9 @@ Security layers stack from the host kernel upward. Each runtime flag removes att
 ```mermaid
 flowchart TB
     HOST[Host kernel + patches]
-    SECCOMP[seccomp profile<br/>syscall filter]
-    CAPS[Linux capabilities<br/>CAP_DROP / CAP_ADD]
-    USER[Non-root UID / GID]
+    SECCOMP["seccomp profile<br/>syscall filter"]
+    CAPS["Linux capabilities<br/>CAP_DROP / CAP_ADD"]
+    USER["Non-root UID / GID"]
     RO[Read-only rootfs + tmpfs]
     APP[Application code]
 
@@ -65,8 +65,7 @@ flowchart TB
     SECCOMP --> CAPS
     CAPS --> USER
     USER --> RO
-    RO --> APP
-```
+    RO --> APP```
 
 ## Theory
 

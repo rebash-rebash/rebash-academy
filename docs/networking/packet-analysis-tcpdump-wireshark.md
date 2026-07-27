@@ -52,9 +52,9 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart LR
     subgraph Capture["Capture Point"]
-        NIC[eth0 / any interface]
-        TD[tcpdump / dumpcap]
-        PCAP[(capture.pcap)]
+        NIC["eth0 / any interface"]
+        TD["tcpdump / dumpcap"]
+        PCAP["(capture.pcap")]
     end
 
     subgraph Analysis
@@ -78,8 +78,7 @@ flowchart LR
     STREAM --> HTTP
     FILT --> SYN
     FILT --> RST
-    FILT --> TLS
-```
+    FILT --> TLS```
 
 ## Theory
 

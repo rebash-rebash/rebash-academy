@@ -50,9 +50,9 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     subgraph Host
-        ORCH[Docker Engine / Compose]
+        ORCH["Docker Engine / Compose"]
         subgraph Container
-            INIT[init / tini]
+            INIT["init / tini"]
             APP[Application]
             HC[HEALTHCHECK probe]
         end
@@ -61,7 +61,7 @@ flowchart TB
     end
 
     subgraph External
-        LB[Load balancer / proxy]
+        LB["Load balancer / proxy"]
         MON[Monitoring]
     end
 
@@ -72,8 +72,7 @@ flowchart TB
     APP --> LOG
     LB --> APP
     MON --> HC
-    MON --> LOG
-```
+    MON --> LOG```
 
 ## Theory
 

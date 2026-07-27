@@ -53,21 +53,20 @@ Application processes write to stdout/stderr. The container runtime captures str
 
 ```mermaid
 flowchart LR
-    APP[Application<br/>stdout / stderr]
-    ENGINE[Docker Engine<br/>logging driver]
+    APP["Application<br/>stdout / stderr"]
+    ENGINE["Docker Engine<br/>logging driver"]
     LOCAL[json-file on disk]
     SYSLOG[syslog]
-    FLUENT[Fluentd / Fluent Bit]
-    CLOUD[CloudWatch / Stackdriver]
-    ELK[Elasticsearch / Loki]
+    FLUENT["Fluentd / Fluent Bit"]
+    CLOUD["CloudWatch / Stackdriver"]
+    ELK["Elasticsearch / Loki"]
 
     APP --> ENGINE
     ENGINE --> LOCAL
     ENGINE --> SYSLOG
     ENGINE --> FLUENT
     FLUENT --> ELK
-    FLUENT --> CLOUD
-```
+    FLUENT --> CLOUD```
 
 ## Theory
 

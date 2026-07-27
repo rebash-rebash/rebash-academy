@@ -63,16 +63,15 @@ flowchart LR
         DB[Database 10.0.3.5]
     end
 
-    R1[Router R1<br/>10.0.1.1 · 10.0.2.1]
-    R2[Router R2<br/>10.0.2.2 · 10.0.3.1]
+    R1["Router R1<br/>10.0.1.1 · 10.0.2.1"]
+    R2["Router R2<br/>10.0.2.2 · 10.0.3.1"]
     IGW[Internet Gateway]
 
     H1 --> R1
     R1 --> R2
     R2 --> DB
     R2 --> IGW
-    H2 --> R1
-```
+    H2 --> R1```
 
 Each router maintains a routing table. Traffic from `10.0.1.10` to `10.0.3.5` crosses two routers because the destination is not on the local subnet.
 

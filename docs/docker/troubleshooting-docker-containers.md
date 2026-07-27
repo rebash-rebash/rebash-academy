@@ -51,15 +51,15 @@ By the end of this tutorial, you will be able to:
 
 ```mermaid
 flowchart TB
-    SYM[Symptom<br/>502 / exit 137 / hang]
-    SYM --> L1{Container<br/>running?}
-    L1 -->|No| EXIT[Check exit code<br/>logs / inspect]
-    L1 -->|Yes| L2{App healthy<br/>inside container?}
-    L2 -->|No| APP[exec + app logs<br/>config / env]
-    L2 -->|Yes| L3{Network path<br/>OK?}
-    L3 -->|No| NET[port / DNS / firewall]
-    L3 -->|Yes| L4{Storage / host<br/>OK?}
-    L4 -->|No| STORE[volumes / disk / perms]
+    SYM["Symptom<br/>502 / exit 137 / hang"]
+    SYM --> L1{"Container<br/>running?"}
+    L1 -->|No| EXIT["Check exit code<br/>logs / inspect"]
+    L1 -->|Yes| L2{"App healthy<br/>inside container?"}
+    L2 -->|No| APP["exec + app logs<br/>config / env"]
+    L2 -->|Yes| L3{"Network path<br/>OK?"}
+    L3 -->|No| NET["port / DNS / firewall"]
+    L3 -->|Yes| L4{"Storage / host<br/>OK?"}
+    L4 -->|No| STORE["volumes / disk / perms"]
     L4 -->|Yes| EXT[Upstream dependency]
 ```
 

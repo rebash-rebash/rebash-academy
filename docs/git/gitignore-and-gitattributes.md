@@ -48,15 +48,14 @@ flowchart TB
     FILES[Working Directory Files]
     GI[.gitignore patterns]
     GA[.gitattributes rules]
-    STAGE[git add / staging]
+    STAGE["git add / staging"]
     REPO[Repository]
 
     FILES --> GI
     GI -->|excluded| SKIP[Not tracked]
     GI -->|allowed| STAGE
     GA --> STAGE
-    STAGE --> REPO
-```
+    STAGE --> REPO```
 
 ## Theory
 

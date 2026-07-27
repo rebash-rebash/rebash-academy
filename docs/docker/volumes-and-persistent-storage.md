@@ -50,20 +50,19 @@ By the end of this tutorial, you will be able to:
 flowchart TB
     subgraph Container
         APP[Application process]
-        RW[Container writable layer<br/>ephemeral]
+        RW["Container writable layer<br/>ephemeral"]
     end
 
     subgraph Mounts
-        VOL[(Named volume<br/>/var/lib/docker/volumes)]
-        BIND[Bind mount<br/>host path]
-        TMP[tmpfs<br/>memory only]
+        VOL["(Named volume<br/>/var/lib/docker/volumes")]
+        BIND["Bind mount<br/>host path"]
+        TMP["tmpfs<br/>memory only"]
     end
 
     APP --> RW
     APP --> VOL
     APP --> BIND
-    APP --> TMP
-```
+    APP --> TMP```
 
 Named volumes are managed by Docker. Bind mounts reference explicit host paths. tmpfs exists only in memory.
 
