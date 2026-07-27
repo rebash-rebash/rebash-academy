@@ -7,6 +7,20 @@
   --rebash-grey-light: #f5f5f5;
 }
 
+/* Sidebar sections: collapsed by default, chevron indicates expand */
+.md-nav__item--nested > .md-nav__toggle ~ label.md-nav__link {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.md-nav__item--nested > .md-nav__toggle ~ label.md-nav__link .md-nav__icon {
+  transition: transform 0.15s ease;
+}
+
+.md-nav__item--nested > .md-nav__toggle:checked ~ label.md-nav__link .md-nav__icon {
+  transform: rotate(90deg);
+}
+
 /* Hero Section */
 .rebash-hero {
   background: linear-gradient(135deg, var(--rebash-blue) 0%, var(--rebash-blue-dark) 100%);

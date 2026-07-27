@@ -1,5 +1,5 @@
 /* REBASH Academy – Custom JavaScript */
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Placeholder for future interactive features
+  /* Navigation uses Material for MkDocs native collapsible sections. */
 });
