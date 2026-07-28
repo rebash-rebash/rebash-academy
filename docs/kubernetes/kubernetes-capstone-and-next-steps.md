@@ -562,6 +562,9 @@ DOCKER: "Docker track ✓"
 - [Terraform – Category Overview](../terraform/index.md) — **next track**
 - [GitLab CI/CD Overview](../gitlab/index.md)
 - [Learning Paths](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

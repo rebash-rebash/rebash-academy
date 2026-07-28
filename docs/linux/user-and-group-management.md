@@ -507,6 +507,9 @@ Validate after deployment: `visudo -c -f /etc/sudoers.d/deploy`.
 - [SSH Remote Administration](ssh-remote-administration.md)
 - [Linux Security Hardening Basics](linux-security-hardening-basics.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

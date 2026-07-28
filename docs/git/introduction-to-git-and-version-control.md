@@ -516,6 +516,9 @@ Make executable: `chmod +x ~/bin/git-preflight.sh && ~/bin/git-preflight.sh`
 - [Introduction to Networking](../networking/introduction-to-networking.md) — connectivity for remotes
 - [Git Installation and Configuration](git-installation-and-configuration.md) *(next in Module 1)*
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

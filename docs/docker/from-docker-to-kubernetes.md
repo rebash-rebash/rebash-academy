@@ -482,6 +482,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - [Production Docker Patterns](production-docker-patterns.md)
 - [Kubernetes – Category Overview](../kubernetes/index.md)
 - [Docker – Category Overview](index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

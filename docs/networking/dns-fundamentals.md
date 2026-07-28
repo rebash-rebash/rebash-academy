@@ -481,6 +481,9 @@ done < "${1:?hostfile}"
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

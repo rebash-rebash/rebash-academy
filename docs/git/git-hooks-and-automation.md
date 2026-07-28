@@ -410,6 +410,9 @@ repos:
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
 - [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
 - [Signed Commits and Git Security](signed-commits-and-git-security.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

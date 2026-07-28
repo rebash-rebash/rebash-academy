@@ -152,3 +152,7 @@ After completing this track, you will be able to:
 - [GitLab CI/CD](../gitlab/index.md) — pipelines triggered by Git events
 - [Terraform](../terraform/index.md) — IaC stored and versioned in Git
 - [Interview Prep](../interview/index.md) — Git interview questions
+
+- [Git Cheat Sheet](../cheatsheets/git.md)
+- [Git Interview Prep](../interview/git.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

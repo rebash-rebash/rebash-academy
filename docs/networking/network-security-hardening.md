@@ -492,6 +492,9 @@ Confirm the lab before moving on:
 - [Network Automation and Monitoring](network-automation-and-monitoring.md) *(next in Module 6)*
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Linux – Category Overview](../linux/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

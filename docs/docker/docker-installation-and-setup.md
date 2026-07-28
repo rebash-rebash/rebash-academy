@@ -462,6 +462,9 @@ Make executable: `chmod +x ~/bin/docker-verify.sh && ~/bin/docker-verify.sh`
 - [Docker Architecture and Components](docker-architecture-and-components.md) *(next in Module 1)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Git Installation and Configuration](../git/git-installation-and-configuration.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

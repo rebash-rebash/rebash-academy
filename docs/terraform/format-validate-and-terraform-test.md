@@ -243,6 +243,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Import, Moved, and Safe Refactors](import-moved-and-safe-refactors.md)
 - Next: [Secrets and Sensitive Values](secrets-and-sensitive-values.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

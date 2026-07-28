@@ -565,6 +565,9 @@ spec:
 - [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
 - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
 - [Volumes and Persistent Storage](../docker/volumes-and-persistent-storage.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

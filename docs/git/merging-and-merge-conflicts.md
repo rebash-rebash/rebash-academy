@@ -391,6 +391,9 @@ git status -sb
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

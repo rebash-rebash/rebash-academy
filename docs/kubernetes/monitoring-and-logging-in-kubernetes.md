@@ -470,6 +470,9 @@ kubectl logs -n votestack <pod> --previous   # crashed container
 - [Container Logging and Monitoring](../docker/container-logging-and-monitoring.md)
 - [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md)
 - [Kubernetes – Category Overview](index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

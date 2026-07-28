@@ -469,6 +469,9 @@ flux get helmreleases -A
 - [Git in CI/CD and DevOps](../git/git-in-ci-cd-and-devops.md)
 - [Docker in CI/CD Pipelines](../docker/docker-in-ci-cd-pipelines.md)
 - [Kubernetes – Category Overview](index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

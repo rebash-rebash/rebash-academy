@@ -507,6 +507,9 @@ DATABASE_HOST=localhost
 - [Container Registries and Distribution](container-registries-and-distribution.md) *(previous in Module 4)*
 - [Container Logging and Monitoring](container-logging-and-monitoring.md) *(next — Module 5)*
 - [Environment Variables and Shell Config](../linux/environment-variables-shell-config.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

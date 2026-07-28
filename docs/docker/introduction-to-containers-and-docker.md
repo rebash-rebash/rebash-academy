@@ -531,6 +531,9 @@ Make executable: `chmod +x ~/bin/container-preflight.sh && ~/bin/container-prefl
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md) — version Dockerfiles and configs
 - [Docker Installation and Setup](docker-installation-and-setup.md) *(next in Module 1)*
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

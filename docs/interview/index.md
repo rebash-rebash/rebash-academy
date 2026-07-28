@@ -1,7 +1,7 @@
 ---
 title: Interview Prep
-description: "Dedicated interview banks — planned. Each published tutorial already ends with interview questions."
-difficulty: beginner
+description: "Interview preparation guides for Linux, Networking, Git, Docker, Kubernetes, and Terraform."
+difficulty: intermediate
 estimated_time: "Varies"
 author: Shaik Basha
 last_updated: "2026-07-28"
@@ -13,24 +13,21 @@ comments: false
 
 # Interview Prep
 
-Technical interview questions and preparation guides.
+Revision maps for the published tracks. Each tutorial also includes its own interview questions — use both.
 
-## Status
+## Available now
 
-!!! info "Tutorials not published yet"
-    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
-
-## Study these ready tracks instead
-
-| Track | Why it helps now |
-|-------|------------------|
-| [Linux](../linux/index.md) | Interview questions in every tutorial |
-| [Docker](../docker/index.md) | Container interview checkpoints |
-| [Kubernetes](../kubernetes/index.md) | Orchestration interview practice |
-| [Terraform](../terraform/index.md) | IaC interview questions |
+| Guide | Track |
+|-------|--------|
+| [Linux](linux.md) | [Linux tutorials](../linux/index.md) |
+| [Networking](networking.md) | [Networking tutorials](../networking/index.md) |
+| [Git](git.md) | [Git tutorials](../git/index.md) |
+| [Docker](docker.md) | [Docker tutorials](../docker/index.md) |
+| [Kubernetes](kubernetes.md) | [Kubernetes tutorials](../kubernetes/index.md) |
+| [Terraform](terraform.md) | [Terraform tutorials](../terraform/index.md) |
 
 ## Related
 
-- [Getting Started](../getting-started/index.md) — recommended order for ready content
-- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
-- [Roadmap](../roadmap.md) — publication plan
+- [Cheat Sheets](../cheatsheets/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [Getting Started](../getting-started/index.md)

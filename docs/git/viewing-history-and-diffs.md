@@ -377,6 +377,9 @@ git log --since="$SINCE" \
 - [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

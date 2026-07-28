@@ -527,6 +527,9 @@ Confirm the lab before moving on:
 - [GitLab CI/CD Overview](../gitlab/index.md)
 - [Terraform Overview](../terraform/index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

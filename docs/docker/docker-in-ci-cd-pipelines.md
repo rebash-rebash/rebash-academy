@@ -446,6 +446,9 @@ build-kaniko:
 - [Git in CI/CD and DevOps](../git/git-in-ci-cd-and-devops.md)
 - [GitLab CI/CD Overview](../gitlab/index.md)
 - [Docker – Category Overview](index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

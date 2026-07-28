@@ -583,6 +583,9 @@ containers:
 - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md) *(next — Module 5)*
 - [Ingress and External Access](ingress-and-external-access.md)
 - [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

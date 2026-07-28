@@ -448,6 +448,9 @@ echo "net.ipv4.ip_forward = $(cat /proc/sys/net/ipv4/ip_forward)"
 - [IP Addressing and Subnetting](ip-addressing-and-subnetting.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -472,6 +472,9 @@ spec:
 - [Ingress and External Access](ingress-and-external-access.md)
 - [DNS Fundamentals](../networking/dns-fundamentals.md)
 - [Load Balancing Fundamentals](../networking/load-balancing-fundamentals.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

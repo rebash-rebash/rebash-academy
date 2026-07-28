@@ -421,6 +421,9 @@ HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://${HOST
 - [IP Addressing and Subnetting](ip-addressing-and-subnetting.md) *(next in Module 1)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

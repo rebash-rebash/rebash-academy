@@ -572,6 +572,9 @@ roleRef:
 - [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md) *(next in Module 5)*
 - [Namespaces and Resource Management](namespaces-and-resource-management.md)
 - [Networking – Reverse Proxy and Ingress](../networking/reverse-proxy-and-ingress-basics.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

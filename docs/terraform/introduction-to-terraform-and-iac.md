@@ -417,6 +417,9 @@ terraform output -json | head
 - Prior skills: [Introduction to Linux](../linux/introduction-to-linux.md), [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
 
 - Next: [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -517,6 +517,9 @@ Confirm the lab before moving on:
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md) *(next in Module 4)*
 - [Environment Variables and Secrets](environment-variables-and-secrets.md)
 - [From Docker to Kubernetes](from-docker-to-kubernetes.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

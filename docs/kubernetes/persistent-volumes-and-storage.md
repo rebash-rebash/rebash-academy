@@ -551,6 +551,9 @@ Each Pod (`postgres-0`, `postgres-1`, ...) receives a dedicated PVC (`data-postg
 - [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
 - [Volumes and Persistent Storage](../docker/volumes-and-persistent-storage.md)
 - [Production Patterns — HPA, PDB, and Affinity](production-patterns-hpa-pdb-and-affinity.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

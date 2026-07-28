@@ -388,6 +388,9 @@ echo "All commits in range are signed."
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 - [Git Hooks and Automation](git-hooks-and-automation.md)
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -496,6 +496,9 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - [Namespaces and Resource Management](namespaces-and-resource-management.md)
 - [Production Docker Patterns](../docker/production-docker-patterns.md)
 - [Kubernetes – Category Overview](index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

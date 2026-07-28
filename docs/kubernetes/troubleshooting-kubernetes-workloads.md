@@ -597,6 +597,9 @@ Usage: `chmod +x ~/bin/k8s-triage.sh && ~/bin/k8s-triage.sh troubleshoot-lab web
 - [Helm Package Management](helm-package-management.md) *(next in Module 5)*
 - [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md)
 - [Networking – Network Troubleshooting Methodology](../networking/network-troubleshooting-methodology.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -205,6 +205,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Registry Modules and Composition](registry-modules-and-composition.md)
 - Next: [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

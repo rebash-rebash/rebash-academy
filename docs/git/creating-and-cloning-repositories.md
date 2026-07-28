@@ -512,6 +512,9 @@ git push -u origin main
 - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md) *(next in Module 2)*
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 - [Introduction to Networking](../networking/introduction-to-networking.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

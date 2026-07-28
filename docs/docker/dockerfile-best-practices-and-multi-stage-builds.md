@@ -494,6 +494,9 @@ CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:application"]
 - [Volumes and Persistent Storage](volumes-and-persistent-storage.md) *(next)*
 - [Docker Security Hardening](docker-security-hardening.md)
 - [Production Docker Patterns](production-docker-patterns.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

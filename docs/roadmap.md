@@ -57,9 +57,10 @@ These sections keep stable URLs under `/aws/`, `/azure/`, `/gcp/`, `/gitlab/`, a
 
 ## Phase 5 – Community & Extras
 
-- [ ] Interview question banks per category (interview questions already live inside each tutorial)
-- [ ] Cheat sheet collection
+- [x] Interview guides for ready tracks (plus interview questions inside each tutorial)
+- [x] Cheat sheets for ready tracks
 - [ ] Hands-on lab catalog (labs already live inside each tutorial)
+- [x] DevOps Engineer learning path page
 - [ ] Open source project walkthroughs
 - [ ] Blog articles and video embeds
 

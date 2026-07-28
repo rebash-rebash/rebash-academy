@@ -484,6 +484,9 @@ In GitLab CI, tag images with `$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA`. For GitHub Ac
 - [Building Images with Dockerfile](building-images-with-dockerfile.md) *(next in Module 2)*
 - [Container Registries and Distribution](container-registries-and-distribution.md) *(Module 4)*
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

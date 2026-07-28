@@ -460,6 +460,9 @@ Confirm the lab before moving on:
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Linux – Category Overview](../linux/index.md)
 - [Docker – Category Overview](../docker/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

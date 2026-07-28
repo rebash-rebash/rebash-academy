@@ -500,6 +500,9 @@ kubectl cluster-info
 - [Introduction to Kubernetes and Orchestration](introduction-to-kubernetes-and-orchestration.md)
 - [Kubernetes – Category Overview](index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

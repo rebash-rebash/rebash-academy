@@ -420,6 +420,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 - [Kubernetes – Category Overview](../kubernetes/index.md) — **next track**
 - [GitLab CI/CD Overview](../gitlab/index.md)
 - [Learning Paths](../learning-paths/index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

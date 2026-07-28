@@ -466,6 +466,9 @@ Confirm the lab before moving on:
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md) *(next — Module 6)*
 - [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md)
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

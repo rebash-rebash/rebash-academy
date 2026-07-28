@@ -391,6 +391,9 @@ Confirm the lab before moving on:
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

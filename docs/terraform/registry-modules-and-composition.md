@@ -300,6 +300,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
 - Next: [Meta-Arguments — count, for_each, and lifecycle](meta-arguments-count-for-each-and-lifecycle.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -515,6 +515,9 @@ spec:
 - [Namespaces and Resource Management](namespaces-and-resource-management.md) *(next in Module 4)*
 - [Reverse Proxy and Ingress Basics](../networking/reverse-proxy-and-ingress-basics.md)
 - [Load Balancing Fundamentals](../networking/load-balancing-fundamentals.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

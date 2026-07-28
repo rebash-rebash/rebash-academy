@@ -515,6 +515,9 @@ Use this in deployment scripts to assert the target environment before running A
 - [Linux Filesystem Hierarchy](linux-filesystem-hierarchy.md) *(next in Module 1)*
 - [Essential Linux Commands](essential-linux-commands.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

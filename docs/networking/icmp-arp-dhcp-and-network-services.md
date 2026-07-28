@@ -476,6 +476,9 @@ sudo tcpdump -i eth0 -n arp
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [IP Addressing and Subnetting](ip-addressing-and-subnetting.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

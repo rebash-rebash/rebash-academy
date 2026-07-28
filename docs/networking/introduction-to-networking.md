@@ -475,6 +475,9 @@ Make executable: `chmod +x ~/bin/net-baseline.sh && ~/bin/net-baseline.sh`
 - [OSI and TCP/IP Models](osi-and-tcp-ip-models.md) *(next in Module 1)*
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

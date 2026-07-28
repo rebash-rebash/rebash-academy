@@ -491,6 +491,9 @@ systemd-analyze critical-chain default.target | head -20
 - [systemd Service Management](systemd-service-management.md)
 - [Process Management](process-management.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

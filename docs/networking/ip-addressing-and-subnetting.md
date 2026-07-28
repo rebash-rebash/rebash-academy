@@ -498,6 +498,9 @@ Usage: `chmod +x subnet-plan.sh && ./subnet-plan.sh 10.0.0.0/24 10.0.1.0/24 10.0
 - [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) *(next — Module 2)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

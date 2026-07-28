@@ -482,6 +482,9 @@ Make executable: `chmod +x ~/bin/docker-triage.sh`
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md) — network layer deep dive
 - [Network Troubleshooting Methodology](../networking/network-troubleshooting-methodology.md) — general network debug framework
 - [Docker Capstone and Next Steps](docker-capstone-and-next-steps.md) *(next in Module 6)*
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

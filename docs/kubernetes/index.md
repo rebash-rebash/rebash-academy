@@ -139,3 +139,7 @@ By completing this track, you will be able to:
 ## Related Sections
 
 Continue to [Terraform](../terraform/index.md) for infrastructure as code, [GitLab CI/CD](../gitlab/index.md) for pipelines, or browse [Learning Paths](../learning-paths/index.md).
+
+- [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- [Kubernetes Interview Prep](../interview/kubernetes.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

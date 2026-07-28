@@ -466,6 +466,9 @@ echo "conntrack: ${COUNT}/${MAX} (${PCT}%)"
 - [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md)
 - [Linux – Category Overview](../linux/index.md)
 - [Docker – Category Overview](../docker/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -444,6 +444,9 @@ ip route show default
 - [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

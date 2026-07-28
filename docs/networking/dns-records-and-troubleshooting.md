@@ -452,6 +452,9 @@ IP=$(dig +short "$DOMAIN" A | head -1)
 - [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md)
 - [Load Balancing Fundamentals](load-balancing-fundamentals.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

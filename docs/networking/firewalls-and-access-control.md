@@ -511,6 +511,9 @@ resource "aws_security_group" "web" {
 - [Load Balancing Fundamentals](load-balancing-fundamentals.md) *(next in Module 4)*
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [Network Security Hardening](network-security-hardening.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

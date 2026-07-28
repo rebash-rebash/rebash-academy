@@ -194,6 +194,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Remote State and Backends](remote-state-and-backends.md)
 - Next: [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

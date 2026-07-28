@@ -502,6 +502,9 @@ Reload: `source ~/.bashrc`
 - [Kubernetes Architecture and Components](kubernetes-architecture-and-components.md)
 - [Kubernetes – Category Overview](index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

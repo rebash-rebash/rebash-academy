@@ -513,6 +513,9 @@ Register it: `git config --global core.excludesfile ~/.gitignore_global`
 - [Understanding the Git Object Model](understanding-the-git-object-model.md) *(next in Module 1)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Introduction to Networking](../networking/introduction-to-networking.md) — SSH and HTTPS connectivity
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

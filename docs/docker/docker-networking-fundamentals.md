@@ -521,6 +521,9 @@ Only localhost can connect — useful for dev security.
 - [Container Registries and Distribution](container-registries-and-distribution.md) *(next in Module 4)*
 - [Networking – Introduction](../networking/introduction-to-networking.md)
 - [Networking – NAT and Port Forwarding](../networking/nat-and-port-forwarding.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

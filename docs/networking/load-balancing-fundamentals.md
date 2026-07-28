@@ -497,6 +497,9 @@ server {
 - [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md) *(next in Module 4)*
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

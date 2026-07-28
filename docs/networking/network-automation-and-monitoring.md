@@ -486,6 +486,9 @@ Confirm the lab before moving on:
 - [Network Security Hardening](network-security-hardening.md) *(previous in Module 6)*
 - [Linux – Category Overview](../linux/index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

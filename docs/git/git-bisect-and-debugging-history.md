@@ -374,6 +374,9 @@ test "$rc" -ne 1
 - [Viewing History and Diffs](viewing-history-and-diffs.md)
 - [Undoing Changes — Reset, Revert, and Stash](undoing-changes-reset-revert-stash.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

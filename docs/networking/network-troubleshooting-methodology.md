@@ -481,6 +481,9 @@ dig +short SERVICE.example.com @8.8.8.8
 - [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md) *(next in Module 5)*
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [DNS Records and Troubleshooting](dns-records-and-troubleshooting.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 - [AWS Troubleshooting VPC Connectivity](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-troubleshooting.html)

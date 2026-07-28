@@ -503,6 +503,9 @@ Run: `docker run myecho` prints `default message`; `docker run myecho hello` pri
 - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md) *(next in Module 3)*
 - [Running Your First Container](running-your-first-container.md)
 - [Linux – Package Management](../linux/package-management.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

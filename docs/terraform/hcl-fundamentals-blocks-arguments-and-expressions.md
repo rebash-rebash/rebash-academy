@@ -307,6 +307,9 @@ terraform destroy -input=false -auto-approve
 - Track overview: [Terraform](index.md)
 - Previous: [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
 - Next: [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

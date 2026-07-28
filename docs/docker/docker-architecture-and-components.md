@@ -529,6 +529,9 @@ Make executable: `chmod +x ~/bin/docker-arch-inspect.sh`
 - [Docker Installation and Setup](docker-installation-and-setup.md) *(previous in Module 1)*
 - [Running Your First Container](running-your-first-container.md) *(first in Module 2)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

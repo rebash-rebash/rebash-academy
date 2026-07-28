@@ -582,6 +582,9 @@ Deploy: `helm upgrade -i web ./chart -f values.yaml -f values-staging.yaml -n st
 - [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md) *(next — Module 6 Production)*
 - [Ingress and External Access](ingress-and-external-access.md)
 - [ConfigMaps and Secrets](configmaps-and-secrets.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

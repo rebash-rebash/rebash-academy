@@ -244,6 +244,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
 - Next: [Resources and Data Sources](resources-and-data-sources.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

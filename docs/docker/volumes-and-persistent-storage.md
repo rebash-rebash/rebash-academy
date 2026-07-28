@@ -505,6 +505,9 @@ Combines read-only container security with persistent logs and temp scratch spac
 - [Docker Compose Fundamentals](docker-compose-fundamentals.md) *(next)*
 - [Linux – Disk and Filesystem Management](../linux/disk-and-filesystem-management.md)
 - [Production Docker Patterns](production-docker-patterns.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

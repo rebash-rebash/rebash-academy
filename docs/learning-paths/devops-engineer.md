@@ -1,0 +1,51 @@
+---
+title: DevOps Engineer Learning Path
+description: "Recommended order through Linux, Networking, Git, Docker, Kubernetes, and Terraform on REBASH Academy."
+difficulty: beginner
+estimated_time: "Varies"
+author: Shaik Basha
+last_updated: "2026-07-28"
+category: learning-paths
+tags:
+  - learning-paths
+  - devops
+comments: false
+---
+
+# DevOps Engineer Learning Path
+
+This path matches how production platforms are built: operating system fluency, networks, version control, containers, orchestration, then Infrastructure as Code.
+
+## Ready modules (complete in order)
+
+| # | Track | Start here | Status |
+|---|--------|------------|--------|
+| 1 | [Linux](../linux/index.md) | [Introduction to Linux](../linux/introduction-to-linux.md) | Ready — 20 tutorials |
+| 2 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready — 20 tutorials |
+| 3 | [Git](../git/index.md) | [Introduction to Git](../git/introduction-to-git-and-version-control.md) | Ready — 20 tutorials |
+| 4 | [Docker](../docker/index.md) | [Introduction to Containers](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
+| 5 | [Kubernetes](../kubernetes/index.md) | [Introduction to Kubernetes](../kubernetes/introduction-to-kubernetes-and-orchestration.md) | Ready — 20 tutorials |
+| 6 | [Terraform](../terraform/index.md) | [Introduction to Terraform](../terraform/introduction-to-terraform-and-iac.md) | Ready — 20 tutorials |
+
+## Supporting assets
+
+| Asset | Linux | Networking | Git | Docker | Kubernetes | Terraform |
+|-------|-------|------------|-----|--------|------------|-----------|
+| Cheat sheet | [open](../cheatsheets/linux.md) | [open](../cheatsheets/networking.md) | [open](../cheatsheets/git.md) | [open](../cheatsheets/docker.md) | [open](../cheatsheets/kubernetes.md) | [open](../cheatsheets/terraform.md) |
+| Interview prep | [open](../interview/linux.md) | [open](../interview/networking.md) | [open](../interview/git.md) | [open](../interview/docker.md) | [open](../interview/kubernetes.md) | [open](../interview/terraform.md) |
+
+## Coming next on this path
+
+Cloud platforms (AWS / Azure / GCP), GitLab CI/CD, monitoring, and DevSecOps are reserved on the [roadmap](../roadmap.md). Finish the six ready tracks first.
+
+## Study rules
+
+- Finish each tutorial lab before skipping ahead
+- Keep a short incident notebook (symptom → cause → fix)
+- Use interview questions as a gate between modules
+
+## Related
+
+- [Getting Started](../getting-started/index.md)
+- [Learning Paths overview](index.md)
+- [Roadmap](../roadmap.md)

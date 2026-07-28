@@ -228,6 +228,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Secrets and Sensitive Values](secrets-and-sensitive-values.md)
 - Next: [Terraform in CI/CD Pipelines](terraform-in-ci-cd-pipelines.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

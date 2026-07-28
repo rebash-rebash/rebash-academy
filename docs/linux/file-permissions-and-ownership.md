@@ -502,6 +502,9 @@ echo "Shared directory ready: $(ls -ld "$DIR")"
 - [Linux Security Hardening Basics](linux-security-hardening-basics.md)
 - [Linux Filesystem Hierarchy](linux-filesystem-hierarchy.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -513,6 +513,9 @@ Plain `docker compose` on a single node supports most keys; validate with `docke
 - [Troubleshooting Docker Containers](troubleshooting-docker-containers.md) *(next in Module 5)*
 - [Linux Security Hardening Basics](../linux/linux-security-hardening-basics.md)
 - [Environment Variables and Secrets](environment-variables-and-secrets.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

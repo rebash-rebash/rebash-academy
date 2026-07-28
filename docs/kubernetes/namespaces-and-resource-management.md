@@ -565,6 +565,9 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md) *(next in Module 4)*
 - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
 - [Docker – Introduction to Containers](../docker/introduction-to-containers-and-docker.md) — cgroups foundation
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

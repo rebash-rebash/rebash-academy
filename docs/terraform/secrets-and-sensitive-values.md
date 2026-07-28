@@ -192,6 +192,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
 - Next: [Policy as Code Overview](policy-as-code-overview.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -1,6 +1,6 @@
 ---
 title: Cheat Sheets
-description: "Dedicated cheat sheet collection — planned. Use Commands sections inside tutorials until then."
+description: "Quick-reference cheat sheets for Linux, Networking, Git, Docker, Kubernetes, and Terraform."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -13,25 +13,21 @@ comments: false
 
 # Cheat Sheets
 
-Quick-reference guides for commands and concepts.
+Quick-reference guides for the published REBASH Academy tracks.
 
-## Status
+## Available now
 
-!!! info "Tutorials not published yet"
-    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
-
-## Study these ready tracks instead
-
-| Track | Why it helps now |
-|-------|------------------|
-| [Linux](../linux/index.md) | Essential commands and text processing |
-| [Git](../git/index.md) | Workflow and history commands |
-| [Docker](../docker/index.md) | Image and Compose commands |
-| [Kubernetes](../kubernetes/index.md) | kubectl essentials |
-| [Terraform](../terraform/index.md) | CLI workflow and state commands |
+| Cheat sheet | Track |
+|-------------|--------|
+| [Linux](linux.md) | [Linux tutorials](../linux/index.md) |
+| [Networking](networking.md) | [Networking tutorials](../networking/index.md) |
+| [Git](git.md) | [Git tutorials](../git/index.md) |
+| [Docker](docker.md) | [Docker tutorials](../docker/index.md) |
+| [Kubernetes](kubernetes.md) | [Kubernetes tutorials](../kubernetes/index.md) |
+| [Terraform](terraform.md) | [Terraform tutorials](../terraform/index.md) |
 
 ## Related
 
-- [Getting Started](../getting-started/index.md) — recommended order for ready content
-- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
-- [Roadmap](../roadmap.md) — publication plan
+- [Interview Prep](../interview/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [Getting Started](../getting-started/index.md)

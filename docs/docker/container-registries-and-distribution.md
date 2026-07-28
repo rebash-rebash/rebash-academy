@@ -458,6 +458,9 @@ Make executable: `chmod +x scripts/tag-and-push.sh`
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md) *(previous in Module 4)*
 - [Environment Variables and Secrets](environment-variables-and-secrets.md) *(next in Module 4)*
 - [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

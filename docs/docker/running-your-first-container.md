@@ -522,6 +522,9 @@ Make executable: `chmod +x ~/bin/docker-lifecycle-demo.sh && ~/bin/docker-lifecy
 - [Working with Docker Images](working-with-docker-images.md) *(next in Module 2)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

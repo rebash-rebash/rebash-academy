@@ -261,6 +261,9 @@ terraform destroy -input=false -auto-approve
 - Track overview: [Terraform](index.md)
 - Previous: [HCL Fundamentals — Blocks, Arguments, and Expressions](hcl-fundamentals-blocks-arguments-and-expressions.md)
 - Next: [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

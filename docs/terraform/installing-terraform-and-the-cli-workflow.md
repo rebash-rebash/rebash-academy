@@ -312,6 +312,9 @@ terraform destroy -input=false -auto-approve
 - Track overview: [Terraform](index.md)
 - Previous: [Introduction to Terraform and Infrastructure as Code](introduction-to-terraform-and-iac.md)
 - Next: [HCL Fundamentals — Blocks, Arguments, and Expressions](hcl-fundamentals-blocks-arguments-and-expressions.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

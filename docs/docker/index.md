@@ -153,3 +153,7 @@ After completing this track, you will be able to:
 - [Networking](../networking/index.md) — bridges, ports, and DNS
 - [Git](../git/index.md) — version Dockerfiles and Compose files
 - [Kubernetes](../kubernetes/index.md) — next step after this track
+
+- [Docker Cheat Sheet](../cheatsheets/docker.md)
+- [Docker Interview Prep](../interview/docker.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

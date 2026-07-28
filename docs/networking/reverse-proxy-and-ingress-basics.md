@@ -473,6 +473,9 @@ Confirm the lab before moving on:
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

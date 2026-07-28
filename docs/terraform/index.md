@@ -156,3 +156,7 @@ After completing this track, you will be able to:
 - [Docker](../docker/index.md) — images and registries you may provision
 - [Kubernetes](../kubernetes/index.md) — clusters often managed with Terraform
 - [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+
+- [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- [Terraform Interview Prep](../interview/terraform.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

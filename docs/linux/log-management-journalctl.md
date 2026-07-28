@@ -451,6 +451,9 @@ echo "Exported to $OUT"
 - [Cron and Task Scheduling](cron-and-task-scheduling.md) *(next)*
 - [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

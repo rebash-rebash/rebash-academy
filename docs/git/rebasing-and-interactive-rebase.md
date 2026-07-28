@@ -378,6 +378,9 @@ git push --force-with-lease origin feature/my-branch
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Undoing Changes — Reset, Revert, and Stash](undoing-changes-reset-revert-stash.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

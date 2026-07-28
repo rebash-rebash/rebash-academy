@@ -258,6 +258,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Policy as Code Overview](policy-as-code-overview.md)
 - Next: [Production Patterns and Capstone](production-patterns-and-capstone.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

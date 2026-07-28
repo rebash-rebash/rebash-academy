@@ -151,3 +151,7 @@ After completing this track, you will be able to:
 - [Networking](../networking/index.md) — next step in the DevOps path
 - [Docker](../docker/index.md) — containerize your applications
 - [Interview Prep](../interview/index.md) — Linux interview questions
+
+- [Linux Cheat Sheet](../cheatsheets/linux.md)
+- [Linux Interview Prep](../interview/linux.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

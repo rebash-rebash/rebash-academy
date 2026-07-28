@@ -210,6 +210,9 @@ terraform plan -input=false
 - Track overview: [Terraform](index.md)
 - Previous: [Terraform State Fundamentals](terraform-state-fundamentals.md)
 - Next: [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md)
+- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

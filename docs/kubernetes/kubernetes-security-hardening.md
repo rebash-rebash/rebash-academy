@@ -601,6 +601,9 @@ helm install falco falcosecurity/falco -n falco --create-namespace
 - [Docker Security Hardening](../docker/docker-security-hardening.md)
 - [Network Security Hardening](../networking/network-security-hardening.md)
 - [Kubernetes – Category Overview](index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

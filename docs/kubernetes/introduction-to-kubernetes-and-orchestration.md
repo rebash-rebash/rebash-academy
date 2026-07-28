@@ -478,6 +478,9 @@ Make executable: `chmod +x ~/bin/k8s-preflight.sh && ~/bin/k8s-preflight.sh`
 - [Docker – Category Overview](../docker/index.md)
 - [Kubernetes Architecture and Components](kubernetes-architecture-and-components.md) *(next in Module 1)*
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -612,6 +612,9 @@ find /var/log -type f -size +100M -exec ls -lh {} \; 2>/dev/null | \
 - [Essential Linux Commands](essential-linux-commands.md) *(next in Module 1)*
 - [File Permissions and Ownership](file-permissions-and-ownership.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

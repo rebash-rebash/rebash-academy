@@ -521,6 +521,9 @@ spec:
 - [Services and Cluster Networking](services-and-cluster-networking.md) *(next in series)*
 - [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

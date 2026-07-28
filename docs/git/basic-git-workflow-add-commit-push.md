@@ -494,6 +494,9 @@ Install as pre-commit hook: `cp verify-no-tfstate.sh .git/hooks/pre-commit && ch
 - [Viewing History and Diffs](viewing-history-and-diffs.md) *(next in Module 2)*
 - [Understanding the Git Object Model](understanding-the-git-object-model.md)
 - [Introduction to Networking](../networking/introduction-to-networking.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
