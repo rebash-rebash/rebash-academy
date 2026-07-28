@@ -4,6 +4,7 @@ description: Docker learning track — 20 tutorials from container fundamentals 
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -131,7 +132,7 @@ Modules and tutorials in order. Use the tables below for links, level, and time 
 After completing this track, you will be able to:
 
 - [ ] Explain containers vs VMs and run Docker on Linux
-- [ ] Build optimized images with Dockerfile and multi-stage builds
+- [ ] Build optimised images with Dockerfile and multi-stage builds
 - [ ] Manage data with volumes and orchestrate stacks with Compose
 - [ ] Configure container networking and push to registries
 - [ ] Secure, monitor, and troubleshoot containers in production
@@ -152,3 +153,7 @@ After completing this track, you will be able to:
 - [Networking](../networking/index.md) — bridges, ports, and DNS
 - [Git](../git/index.md) — version Dockerfiles and Compose files
 - [Kubernetes](../kubernetes/index.md) — next step after this track
+
+- [Docker Cheat Sheet](../cheatsheets/docker.md)
+- [Docker Interview Prep](../interview/docker.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

@@ -4,6 +4,7 @@ description: Compare GitFlow, GitHub Flow, trunk-based development, and release 
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -43,48 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Document team workflow in CONTRIBUTING.md
 - [ ] Migrate gradually between workflow models
 
-## Workflow Comparison Diagram
+## Architecture
 
-```d2
-direction: down
+Team workflows constrain which branches accept direct commits and how changes promote from development to release.
 
-TBD: Trunk-Based {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        MAIN1: "main — always deployable"
-        FB1: "short feature branches\nhours to days"
-        FB1 -> MAIN1
-    }
-    GHF: "GitHub Flow" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        MAIN2: main
-        FB2: "feature branch + PR"
-        FB2 -> MAIN2
-        DEPLOY: "deploy from main"
-        MAIN2 -> DEPLOY
-    }
-    GF: GitFlow {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        MAIN3: main
-        DEV: develop
-        FEAT: "feature/*"
-        REL: "release/*"
-        HOT: "hotfix/*"
-        FEAT -> DEV
-        DEV -> REL
-        REL -> MAIN3
-        HOT -> MAIN3
-        HOT -> DEV
-    }
-```
+![Architecture diagram for Advanced Git Workflows](../assets/images/advanced-git-workflows.svg)
 
 ## Theory
 
@@ -231,6 +195,8 @@ git tag -a v1.1.0 -m "Release 1.1.0"
 git log --oneline --graph --decorate -5
 ```
 
+**Expected result:** Branches match the workflow under test (feature, release, or trunk).
+
 ### Step 2 – Simulate hotfix (GitFlow-style)
 
 **Command:**
@@ -242,6 +208,8 @@ git switch main && git merge --no-ff hotfix/security-patch -m "Merge hotfix: sec
 git tag -a v1.0.1 -m "Hotfix 1.0.1"
 git log --oneline --graph --all --decorate -8
 ```
+
+**Expected result:** Promotion or release tag step succeeds.
 
 ### Step 3 – Trunk-based short branch
 
@@ -257,6 +225,8 @@ git branch -d fix/typo
 git log --oneline -3
 ```
 
+**Expected result:** You can point to which branches are protected from force-push.
+
 ### Step 4 – Clean up
 
 **Command:**
@@ -265,7 +235,25 @@ git log --oneline -3
 cd /tmp && rm -rf git-workflow-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab remotes cleaned up.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Workflow | Chosen workflow (GitHub Flow/GitFlow/trunk) demonstrated with branches |
+| Promotion | Tag or release step completed as documented |
+| Protection | You can state which branches forbid force-push |
+| Cleanup | Lab remotes/repos removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -289,6 +277,14 @@ cd /tmp && rm -rf git-workflow-lab
 - Hotfix: branch from tag, merge to `main`, tag patch release
 ```
 
+## Security Considerations
+
+- Document which branches are force-pushable; treat `main` and release lines as immutable history
+- Separate build identities from human identities for auditable releases
+- Gate promotion between environments on signed tags or attested builds
+- Avoid embedding long-lived cloud keys in workflow files — use OIDC federation
+- Review monorepo path filters so skipped CI cannot bypass security checks
+
 ## Common Mistakes
 
 !!! warning "GitFlow for Terraform without release cadence"
@@ -305,7 +301,7 @@ cd /tmp && rm -rf git-workflow-lab
 
 ## Best Practices
 
-!!! tip "Optimize for merge frequency, not branch count"
+!!! tip "Optimise for merge frequency, not branch count"
     Integrate to main daily; reduce merge conflict cost.
 
 !!! tip "Separate environment config from branch strategy"
@@ -363,6 +359,9 @@ cd /tmp && rm -rf git-workflow-lab
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

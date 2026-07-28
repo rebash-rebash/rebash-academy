@@ -1,0 +1,26 @@
+direction: down
+
+Login: Login {
+        L1: "SSH / Console login"
+        LP: "/etc/profile"
+        L1 -> LP
+        LBP: "~/.bash_profile or ~/.profile"
+        LP -> LBP
+    }
+    Interactive: Interactive {
+        T1: "New terminal tab"
+        BR: "~/.bashrc"
+        T1 -> BR
+        LBP -> BR
+    }
+    NonInteractive: NonInteractive {
+        S1: "Script / cron / CI"
+        ENV: "Inherited environment only"
+        S1 -> ENV
+    }
+    EV: "Environment Variables"
+    Interactive.BR -> EV
+    Login.LBP -> EV
+    Login.LP -> EV
+    P: "Child Processes"
+    EV -> P

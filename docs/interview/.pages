@@ -1,2 +1,10 @@
 title: Interview Prep
 icon: material/account-question
+nav:
+  - index.md
+  - linux.md
+  - networking.md
+  - git.md
+  - docker.md
+  - kubernetes.md
+  - terraform.md

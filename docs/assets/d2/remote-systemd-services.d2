@@ -1,0 +1,37 @@
+direction: down
+
+Admin: Workstation {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        A: "systemctl --host"
+        B: "journalctl --host"
+    }
+    SSH: Transport {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        C: "Encrypted SSH Session"
+    }
+    Remote: Server {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        D: "systemd-manager user"
+        E: "polkit / pkaction"
+        F: "systemd PID 1"
+        G: "Unit Files"
+        H: "Running Services"
+    }
+    Admin.A -> SSH.C
+    Admin.B -> SSH.C
+    SSH.C -> Remote.D
+    Remote.D -> Remote.E
+    Remote.E -> Remote.F: authorized
+    I: "Access Denied"
+    Remote.E -> I: denied
+    Remote.F -> Remote.G
+    Remote.F -> Remote.H

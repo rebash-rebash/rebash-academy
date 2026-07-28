@@ -1,0 +1,33 @@
+direction: down
+
+LAPTOP: "Your Machine" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        KUBECTL: "kubectl CLI"
+        KCFG: "~/.kube/config"
+        KIND: "kind cluster (example)" {
+          style: {
+            fill: "#dcfce7"
+            stroke: "#16a34a"
+          }
+            CP: "control-plane container\nAPI + etcd + scheduler"
+            W1: "worker container optional"
+        }
+        MINIKU: "minikube cluster (docker driver)" {
+          style: {
+            fill: "#ffedd5"
+            stroke: "#ea580c"
+          }
+            MK: "minikube VM/container\ncontrol-plane + kubelet"
+        }
+        DOCKER: "Docker Engine"
+    }
+    LAPTOP.KUBECTL -> LAPTOP.KCFG
+    LAPTOP.KCFG -> LAPTOP.KIND.CP
+    LAPTOP.KCFG -> LAPTOP.MINIKU.MK
+    KIND: KIND
+    KIND -> LAPTOP.DOCKER
+    MINIKU: MINIKU
+    MINIKU -> LAPTOP.DOCKER

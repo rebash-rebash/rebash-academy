@@ -4,6 +4,7 @@ description: Understand DNS hierarchy, recursive vs iterative resolution, resolv
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -45,34 +46,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Perform lookups with `dig` and interpret query flags and sections
 - [ ] Trace resolution paths with `dig +trace` for delegation debugging
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **DNS Fundamentals**.
 
-Client: Client {
-        APP: Application
-        STUB: "Stub Resolver\nglibc / systemd-resolved"
-    }
-    Resolver: Resolver {
-        REC: "Recursive Resolver\n8.8.8.8 / corporate DNS"
-        CACHE: "Local Cache"
-    }
-    Authoritative: Authoritative {
-        ROOT: "Root ."
-        TLD: "TLD .com"
-        AUTH: "Auth NS\nexample.com"
-    }
-    Client.APP -> Client.STUB
-    Client.STUB -> Resolver.REC
-    Resolver.REC -> Resolver.CACHE
-    Resolver.REC -> Authoritative.ROOT: iterative
-    Authoritative.ROOT -> Authoritative.TLD: referral
-    Authoritative.TLD -> Authoritative.AUTH: referral
-    Authoritative.AUTH -> Resolver.REC: answer
-    Resolver.REC -> Client.STUB
-    Client.STUB -> Client.APP
-```
+![Architecture diagram for DNS Fundamentals](../assets/images/dns-fundamentals.svg)
+
 
 ## Theory
 
@@ -99,14 +78,14 @@ www.api.example.com.
 |-------|---------|----------|
 | Root | `.` | Root server operators (13 logical clusters) |
 | TLD | `.com`, `.org`, `.io` | Registries (Verisign, etc.) |
-| Domain | `example.com` | Registrant / organization |
+| Domain | `example.com` | Registrant / organisation |
 | Subdomain | `api.example.com` | Domain owner via NS delegation |
 
 **Delegation** happens through **NS records** at each level. Parent zone says "ask these nameservers for child zone."
 
 ### Query Types: Recursive vs Iterative
 
-| Type | Who performs | Behavior |
+| Type | Who performs | Behaviour |
 |------|--------------|----------|
 | **Recursive** | Resolver on client's behalf | Client asks resolver; resolver chases referrals until final answer or NXDOMAIN |
 | **Iterative** | Each server in chain | Server returns best answer or referral to next level; querier continues |
@@ -270,7 +249,7 @@ curl -s -o /dev/null -w "%{http_code}\n" --connect-timeout 2 http://example.com 
 sudo sed -i '/127.0.0.99 example.com/d' /etc/hosts
 ```
 
-**Explanation:** `getent` uses nsswitch (sees hosts file); `dig` queries DNS directly. Demonstrates split behavior.
+**Explanation:** `getent` uses nsswitch (sees hosts file); `dig` queries DNS directly. Demonstrates split behaviour.
 
 **Expected output:**
 
@@ -318,7 +297,23 @@ dig +short -x 93.184.216.34
 dns.google.
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run `dig`/`nslookup` queries and confirm A/AAAA/NS answers match expected shapes.
+2. Explain recursion vs authoritative answers using your dig output flags.
+3. Fix resolver/`dig` install issues before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| A/AAAA | Queries return addresses or documented NXDOMAIN/SERVFAIL |
+| NS/SOA | Authority section or NS records visible for a public zone |
+| Recursion | Trace or `+norecurse` behaviour understood from output |
+| Local resolver | `/etc/resolv.conf` nameserver listed and reachable |
+| Cleanup | No persistent DNS config changes unless intentional |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -371,6 +366,14 @@ while read -r host; do
 done < "${1:?hostfile}"
 ```
 
+## Security Considerations
+
+- Prefer authenticated recursive resolvers you control; avoid sending corporate queries to random public resolvers on untrusted networks
+- Enable DNSSEC validation where supported and monitor for SERVFAIL vs NXDOMAIN differences during incidents
+- Restrict dynamic updates and zone transfers (AXFR/IXFR) to authorised secondaries only
+- Treat `/etc/resolv.conf` and VPC DNS settings as security-critical — hijacked resolvers enable phishing and MITM
+- Log and alert on unusual NXDOMAIN spikes and sudden CNAME chain changes for critical domains
+
 ## Common Mistakes
 
 !!! warning "Trusting dig when apps fail"
@@ -382,7 +385,7 @@ done < "${1:?hostfile}"
 !!! warning "Assuming NXDOMAIN means typo only"
     NXDOMAIN can mean DNS hijacking, split-horizon misconfiguration, or wrong search domain appended.
 
-!!! warning "Ignoring search domain behavior"
+!!! warning "Ignoring search domain behaviour"
     With `search example.com`, querying `api` may resolve `api.example.com`. Unexpected suffixes cause "works on my laptop" bugs.
 
 !!! warning "Using nslookup in scripts"
@@ -457,6 +460,9 @@ done < "${1:?hostfile}"
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

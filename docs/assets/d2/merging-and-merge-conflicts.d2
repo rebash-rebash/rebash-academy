@@ -1,0 +1,33 @@
+direction: down
+
+FF: "Fast-Forward Merge" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        M1: main
+        C1: C1
+        M1 -> C1
+        C2: C2
+        C1 -> C2
+        F1: feature
+        F1 -> C2
+    }
+    TW: "Three-Way Merge" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        M2: main
+        A: A
+        M2 -> A
+        B: B
+        A -> B
+        F2: feature
+        F2 -> A
+        C: C
+        A -> C
+        Merged: "Merge commit M"
+        B -> Merged
+        C -> Merged
+    }

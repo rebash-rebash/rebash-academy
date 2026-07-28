@@ -1,0 +1,21 @@
+direction: down
+
+Internet: Internet {
+        ATT: "External Clients"
+    }
+    Perimeter: Perimeter {
+        NACL: "Network ACL\nstateless · subnet boundary"
+        SG: "Security Group\nstateful · instance ENI"
+    }
+    Host: Host {
+        UFW: "UFW / nftables\nhost firewall"
+        APP: "Application\nnginx · postgres"
+    }
+    Internet.ATT -> Perimeter.NACL
+    Perimeter.NACL -> Perimeter.SG
+    Perimeter.SG -> Host.UFW
+    Host.UFW -> Host.APP
+    Host.APP -> Host.UFW: response
+    Host.UFW -> Perimeter.SG
+    Perimeter.SG -> Perimeter.NACL
+    Perimeter.NACL -> Internet.ATT

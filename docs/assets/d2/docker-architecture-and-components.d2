@@ -1,0 +1,47 @@
+direction: down
+
+USER_LAYER: "User Layer" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        CLI: "Docker CLI"
+        COMPOSE: "Docker Compose"
+        SDK: "Docker SDK / API clients"
+    }
+    ENGINE: "Docker Engine" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        DOCKERD: "dockerd\nAPI · images · networks · volumes"
+    }
+    RUNTIME: "Container Runtime" {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        CONTAINERD: "containerd\nimage pull · snapshot · task"
+        SHIM: containerd-shim
+        RUNC: "runc\nOCI runtime"
+    }
+    KERNEL: "Linux Kernel" {
+      style: {
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
+      }
+        NS: Namespaces
+        CG: cgroups
+        OFS: OverlayFS
+    }
+    CONT: "Running Container"
+    USER_LAYER.CLI -> ENGINE.DOCKERD
+    USER_LAYER.COMPOSE -> ENGINE.DOCKERD
+    USER_LAYER.SDK -> ENGINE.DOCKERD
+    ENGINE.DOCKERD -> RUNTIME.CONTAINERD
+    RUNTIME.CONTAINERD -> RUNTIME.SHIM
+    RUNTIME.SHIM -> RUNTIME.RUNC
+    RUNTIME.RUNC -> KERNEL.NS
+    RUNTIME.RUNC -> KERNEL.CG
+    RUNTIME.RUNC -> KERNEL.OFS
+    RUNTIME.RUNC -> CONT

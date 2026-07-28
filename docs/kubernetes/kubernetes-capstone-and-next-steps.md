@@ -4,6 +4,7 @@ description: Capstone project — deploy VoteStack on Kubernetes with GitOps, HP
 difficulty: advanced
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -49,57 +50,9 @@ By the end of this capstone, you will be able to:
 - [ ] Apply Pod Security Standards and Kyverno policies to the stack
 - [ ] Document operational runbooks and a learning path to Terraform and GitLab
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
-
-External: External {
-        USER: Browser
-        DNS: votestack.example.com
-    }
-    IngressLayer: ingress-nginx {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        ING: "Ingress + TLS"
-    }
-    Votestack: "namespace: votestack" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        WEB: "web Deployment"
-        API: "api Deployment + HPA"
-        WORK: "worker Deployment + HPA"
-        REDIS: "redis StatefulSet"
-        PG: "postgres StatefulSet + PVC"
-    }
-    Platform: Platform {
-        ARGO: "Argo CD"
-        PROM: "Prometheus / Grafana"
-        KYV: Kyverno
-    }
-    External.USER -> External.DNS
-    External.DNS -> IngressLayer.ING
-    IngressLayer.ING -> Votestack.WEB
-    IngressLayer.ING -> Votestack.API
-    Votestack.API -> Votestack.REDIS
-    Votestack.API -> Votestack.PG
-    Votestack.WORK -> Votestack.REDIS
-    Votestack.WORK -> Votestack.PG
-    Votestack: Votestack
-    Platform.ARGO -> Votestack: sync {
-      style.stroke-dash: 3
-    }
-    Platform.PROM -> Votestack.API: scrape {
-      style.stroke-dash: 3
-    }
-    Platform.KYV -> Votestack: enforce {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Kubernetes Capstone and Next Steps](../assets/images/kubernetes-capstone-and-next-steps.svg)
 
 ## Project Overview — VoteStack on Kubernetes
 
@@ -149,6 +102,42 @@ votestack-gitops/
 └── README.md
 ```
 
+## Theory
+
+Core ideas for this tutorial appear inline in the lab steps and Code Walkthrough. Read each step explanation before running commands.
+
+
+### Capstone production checklist
+
+A Kubernetes capstone should demonstrate Deployments with probes, Services, Ingress with TLS (or a documented local substitute), ConfigMaps/Secrets, resource requests/limits, and a clear teardown path. Add NetworkPolicies and restricted Pod Security if your cluster supports them. Document how you promote images (digest pins) and how you would recover from a bad rollout — interviewers care about operability as much as YAML fluency.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
 ## Hands-on Lab
 
 ### Lab 1 — Bootstrap GitOps (App of Apps)
@@ -186,6 +175,9 @@ kubectl apply -f apps/root-app.yaml
 argocd app sync votestack-root
 kubectl get all -n votestack
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 2 — Stateful data tier
 
@@ -230,6 +222,9 @@ spec:
           requests:
             storage: 10Gi
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 Apply SealedSecret for credentials (see [Kubernetes Security Hardening](kubernetes-security-hardening.md)).
 
@@ -287,6 +282,9 @@ curl -sf https://votestack.example.com/api/health
 curl -sf https://votestack.example.com/ -o /dev/null
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 4 — HPA, PDB, and spread (production patterns)
 
 Enable in `values-dev.yaml`:
@@ -318,6 +316,9 @@ kubectl get hpa,pdb -n votestack
 kubectl get pods -n votestack -o wide
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 5 — Observability stack integration
 
 Add ServiceMonitor to Helm chart (see [Monitoring and Logging](monitoring-and-logging-in-kubernetes.md)). Import VoteStack Grafana dashboard. Confirm alerts:
@@ -332,6 +333,9 @@ Log query in Loki:
 ```logql
 {namespace="votestack"} | json | level="error"
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 6 — Security hardening checklist
 
@@ -353,6 +357,9 @@ kubectl run bad --rm -it --image=nginx:latest -n votestack
 # Expected: blocked by admission policy
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 7 — Operations runbook
 
 ```bash
@@ -372,9 +379,59 @@ kubectl scale deployment votestack-api -n votestack --replicas=5
 kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Document results in `README.md` — architecture diagram, deploy steps, rollback procedure.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Deploy | Capstone app Deployments/Services are Ready |
+| Ingress | External access works via Ingress/port-forward as designed |
+| Hardening | Security contexts, probes, and resource limits present |
+| Cleanup | Namespace torn down or clearly labelled as a retained demo |
+
+VoteStack prod target architecture:
+
+```text
+Terraform → EKS cluster + RDS + ElastiCache + ECR
+     ↓
+GitOps repo → Helm deploys VoteStack to EKS
+     ↓
+CI pipeline → builds images, updates tags
+```
+
+### GitLab CI/CD track
+
+The [GitLab track](../gitlab/index.md) complements GitHub Actions patterns from Tutorial 16:
+
+- Multi-environment deploy pipelines with manual approval gates
+- Container registry integrated with CI
+- GitLab Agent for Kubernetes (agent-based deploy alternative)
+- Compliance frameworks and audit trails
+
+If your organisation standardizes on GitLab, port the VoteStack CI workflow — build, scan, update GitOps manifest — to `.gitlab-ci.yml`.
+
+### Recommended learning path
+
+![Recommended learning path diagram](../assets/images/kubernetes-capstone-and-next-steps-1.svg)
+
+
+1. Deploy VoteStack capstone as portfolio project
+2. Begin [Terraform – Introduction](../terraform/index.md) — provision a lab EKS cluster
+3. Migrate VoteStack GitOps target from kind/minikube to Terraform-managed EKS
+4. Optional: [GitLab CI/CD Overview](../gitlab/index.md) — enterprise pipeline patterns
+5. Follow [DevOps Engineer Learning Path](../learning-paths/index.md) for role certification goals
+
+## Code Walkthrough
 
 ```bash
 # End-to-end status
@@ -390,6 +447,16 @@ kubectl logs -n votestack deploy/votestack-api --tail=50
 kubectl describe pod -n votestack -l app=votestack-api
 kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 ```
+
+## Security Considerations
+
+- Apply restricted Pod Security, NetworkPolicies, and resource quotas on the capstone namespace
+- Keep registry credentials and DB passwords in Secrets/ESO — not in Helm values committed to Git
+- Use least-privilege CI and GitOps identities for deploy
+- Expose the app only via TLS Ingress; keep databases ClusterIP-only
+- Scan images and fail the pipeline on critical CVEs before promoting tags
+- Tear down or lock the lab namespace when finished so demos do not remain internet-facing
+
 
 ## Common Mistakes
 
@@ -497,24 +564,12 @@ The [GitLab track](../gitlab/index.md) complements GitHub Actions patterns from 
 - GitLab Agent for Kubernetes (agent-based deploy alternative)
 - Compliance frameworks and audit trails
 
-If your organization standardizes on GitLab, port the VoteStack CI workflow — build, scan, update GitOps manifest — to `.gitlab-ci.yml`.
+If your organisation standardizes on GitLab, port the VoteStack CI workflow — build, scan, update GitOps manifest — to `.gitlab-ci.yml`.
 
 ### Recommended learning path
 
-```d2
-direction: right
+![Capstone diagram](../assets/images/kubernetes-capstone-and-next-steps-1.svg)
 
-DOCKER: "Docker track ✓"
-    K8S: "Kubernetes track ✓"
-    TF: "Terraform track"
-    GL: "GitLab CI/CD"
-    LP: "Learning Paths"
-    DOCKER -> K8S
-    K8S -> TF
-    K8S -> GL
-    TF -> LP
-    GL -> LP
-```
 
 1. Deploy VoteStack capstone as portfolio project
 2. Begin [Terraform – Introduction](../terraform/index.md) — provision a lab EKS cluster
@@ -534,6 +589,9 @@ DOCKER: "Docker track ✓"
 - [Terraform – Category Overview](../terraform/index.md) — **next track**
 - [GitLab CI/CD Overview](../gitlab/index.md)
 - [Learning Paths](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

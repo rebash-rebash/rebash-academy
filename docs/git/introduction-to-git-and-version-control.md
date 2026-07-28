@@ -4,6 +4,7 @@ description: Understand why version control matters for DevOps, distributed vs c
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -47,41 +48,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify Git's role in GitOps, infrastructure-as-code, and configuration management workflows
 - [ ] Recognize common Git hosting platforms and their place in enterprise DevOps stacks
 
-## Architecture Diagram
+## Architecture
 
 The diagram below contrasts centralized and distributed version control. Understanding this distinction explains why Git works offline, why every clone is a full backup, and why CI runners only need network access during push/pull — not for every local commit.
 
-```d2
-direction: down
+![Architecture diagram for introduction to git and version control](../assets/images/introduction-to-git-and-version-control.svg)
 
-CVCS: "Centralized VCS (e.g., SVN)" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        SVN_SRV: "Central Server\nsingle source of truth"
-        DEV_A: "Developer A\nworking copy only"
-        DEV_B: "Developer B\nworking copy only"
-        DEV_A -> SVN_SRV: "commit / update"
-        DEV_B -> SVN_SRV: "commit / update"
-    }
-    DVCS: "Distributed VCS (Git)" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        REMOTE: "Remote — GitHub / GitLab / Bitbucket"
-        DEV_C: "Developer C\nfull local repo"
-        DEV_D: "Developer D\nfull local repo"
-        CI: "CI Runner\nfull clone"
-        DEV_C <-> REMOTE: "push / pull"
-        DEV_D <-> REMOTE: "push / pull"
-        CI <-> REMOTE: "fetch / clone"
-        DEV_C -> DEV_C: "local commits\nno network" {
-          style.stroke-dash: 3
-        }
-    }
-```
 
 ## Theory
 
@@ -145,7 +117,7 @@ Today Git is bundled with Xcode, pre-installed on most Linux distros, and embedd
 
 #### Repository (Repo)
 
-A **repository** is a directory (project folder) plus Git's hidden metadata in `.git/`. It contains every commit, branch, and tag. In production, repos are organized by team or service: `infra/terraform-modules`, `platform/k8s-manifests`, `app/payment-service`.
+A **repository** is a directory (project folder) plus Git's hidden metadata in `.git/`. It contains every commit, branch, and tag. In production, repos are organised by team or service: `infra/terraform-modules`, `platform/k8s-manifests`, `app/payment-service`.
 
 #### Working Directory, Staging Area, and Repository
 
@@ -181,22 +153,8 @@ A **tag** marks a specific commit — usually a release: `v1.4.2`, `prod-2026-07
 
 ### Git in the DevOps Toolchain
 
-```d2
-direction: right
+![Architecture diagram for introduction to git and version control](../assets/images/introduction-to-git-and-version-control-1.svg)
 
-DEV: "Developer / Engineer"
-    GIT: "Git Repository"
-    PR: "Pull Request / MR"
-    CI: "CI Pipeline\nGitHub Actions / GitLab CI"
-    CD: "CD / GitOps\nArgo CD / Flux"
-    PROD: Production
-    DEV -> GIT: "commit / push"
-    GIT -> PR
-    PR -> CI: trigger
-    CI -> GIT: "pass + merge"
-    GIT -> CD: sync
-    CD -> PROD
-```
 
 Every arrow depends on Git. Terraform Cloud reads VCS webhooks. Ansible Tower pulls playbooks from Git. Kubernetes operators watch Git branches. Learning Git is prerequisite to every other DevOps skill in this academy.
 
@@ -355,7 +313,25 @@ rm -rf git-explore
 
 **Explanation:** Remove temporary clones after exploration. Never store credentials in world-readable `/tmp` directories.
 
-## Commands & Code
+**Expected result:** Lab repository cleaned up; you can explain commit/branch/remote without notes.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Concepts | You can explain commit, branch, remote in your own words |
+| Lab repo | Local repo exists with at least one commit from the lab |
+| Status | `git status` is clean after the final lab step |
+| Cleanup | Temporary lab directory removed if required |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -415,6 +391,14 @@ fi
 ```
 
 Make executable: `chmod +x ~/bin/git-preflight.sh && ~/bin/git-preflight.sh`
+
+## Security Considerations
+
+- Treat every Git remote as a potential leak path — never commit secrets, even in private repos
+- Prefer signed commits and protected branches once you move beyond personal labs
+- Use dedicated machine users or deploy keys with least privilege for automation
+- Review `.gitignore` early so build artefacts and `.env` files never enter history
+- Assume pushed history is durable; force-pushing shared branches destroys auditability
 
 ## Common Mistakes
 
@@ -492,6 +476,9 @@ Make executable: `chmod +x ~/bin/git-preflight.sh && ~/bin/git-preflight.sh`
 - [Introduction to Networking](../networking/introduction-to-networking.md) — connectivity for remotes
 - [Git Installation and Configuration](git-installation-and-configuration.md) *(next in Module 1)*
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

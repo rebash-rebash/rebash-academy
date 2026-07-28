@@ -1,0 +1,29 @@
+direction: down
+
+Internet: Internet {
+        USER: "Client\nhttps://shop.example.com"
+    }
+    Edge: "Ingress Controller — nginx / Traefik" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        IC: "LoadBalancer IP\nTLS termination"
+        RULES: "Ingress rules\nhost + path routing"
+    }
+    Cluster: "Cluster Internal" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        SVC1: "Service web\nClusterIP :80"
+        SVC2: "Service api\nClusterIP :8080"
+        P1: "Pods web"
+        P2: "Pods api"
+    }
+    Internet.USER -> Edge.IC
+    Edge.IC -> Edge.RULES
+    Edge.RULES -> Cluster.SVC1: "/"
+    Edge.RULES -> Cluster.SVC2: "/api"
+    Cluster.SVC1 -> Cluster.P1
+    Cluster.SVC2 -> Cluster.P2

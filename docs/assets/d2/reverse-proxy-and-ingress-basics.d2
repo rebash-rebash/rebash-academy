@@ -1,0 +1,27 @@
+direction: right
+
+Internet: Internet {
+        C: Clients
+    }
+    Edge: "Reverse Proxy / Ingress" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        RP: "nginx / HAProxy / Ingress Controller"
+        TLS: "TLS Termination"
+    }
+    Internal: "Private Network" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        B1: "Backend 1\napp:8080"
+        B2: "Backend 2\napp:8080"
+        API: "API Service\napi:3000"
+    }
+    Internet.C -> Edge.RP: "HTTPS 443"
+    Edge.RP -> Edge.TLS
+    Edge.TLS -> Internal.B1: HTTP
+    Edge.TLS -> Internal.B2: HTTP
+    Edge.TLS -> Internal.API: "/api/*"

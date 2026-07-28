@@ -4,6 +4,7 @@ description: Master A, AAAA, CNAME, MX, TXT, NS, SOA, PTR, and SRV records, TTL 
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -25,7 +26,7 @@ comments: false
 
 ## Overview
 
-Knowing how DNS resolution works is half the battle — the other half is understanding **record types**, **TTL behavior**, and **zone configuration**. A misconfigured **CNAME at the zone apex**, an expired **MX record**, or a stale **TXT** entry for domain verification can take production offline or block email delivery for hours. DevOps engineers create and debug DNS records constantly: load balancer aliases, ACM certificate validation, SPF/DKIM, Kubernetes Ingress hostnames, and CDN cutovers.
+Knowing how DNS resolution works is half the battle — the other half is understanding **record types**, **TTL behaviour**, and **zone configuration**. A misconfigured **CNAME at the zone apex**, an expired **MX record**, or a stale **TXT** entry for domain verification can take production offline or block email delivery for hours. DevOps engineers create and debug DNS records constantly: load balancer aliases, ACM certificate validation, SPF/DKIM, Kubernetes Ingress hostnames, and CDN cutovers.
 
 This tutorial is **Tutorial 9** in **Module 3: Transport & DNS** of the REBASH Academy Networking series. You will learn every common record type, query them with **`dig`**, build systematic troubleshooting workflows, and avoid pitfalls that cause propagation delays and split-horizon confusion. Complete [DNS Fundamentals](dns-fundamentals.md) first.
 
@@ -49,35 +50,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `dig +trace`, `@nameserver`, and `+norecurse` for authoritative debugging
 - [ ] Build a repeatable DNS troubleshooting checklist for production incidents
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **DNS Records and Troubleshooting**.
 
-Client: Client {
-        APP: "Application / Browser"
-        RES: "Recursive Resolver\n8.8.8.8 · 1.1.1.1"
-    }
-    Auth: "Authoritative DNS — example.com zone" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NS: "NS Records\nns1.example.com"
-        SOA: "SOA Record\nserial · refresh · expire"
-        A: "A / AAAA\nhost → IP"
-        CNAME: "CNAME\nalias → target"
-        MX: "MX\nmail priority"
-        TXT: "TXT\nSPF · DKIM · verify"
-    }
-    Client.APP -> Client.RES
-    Client.RES -> Auth.NS
-    Auth.NS -> Auth.SOA
-    Auth.NS -> Auth.A
-    Auth.NS -> Auth.CNAME
-    Auth.NS -> Auth.MX
-    Auth.NS -> Auth.TXT
-```
+![Architecture diagram for DNS Records and Troubleshooting](../assets/images/dns-records-and-troubleshooting.svg)
+
 
 ## Theory
 
@@ -85,7 +63,7 @@ Client: Client {
 
 A **DNS zone** is the administrative boundary for a domain (e.g., `example.com`). **Authoritative nameservers** host the zone and answer queries from resolvers. Each record is a tuple:
 
-```
+```text
 name  TTL  class  type  rdata
 ```
 
@@ -132,7 +110,7 @@ Critical constraints:
 
 **MX** records direct email to mail servers with a **priority** (lower = preferred):
 
-```
+```text
 example.com.  3600  IN  MX  10  mail1.example.com.
 example.com.  3600  IN  MX  20  mail2.example.com.
 ```
@@ -224,6 +202,14 @@ dig www.github.com +trace 2>/dev/null | tail -15
 
 **Explanation:** Follow alias to final A record. Long chains increase resolution latency.
 
+**Expected result:**
+
+```text
+github.github.io.
+```
+
+One or more CNAME targets ending in a final A/AAAA when fully followed.
+
 ### Step 3 – Inspect MX and mail routing
 
 **Command:**
@@ -254,6 +240,14 @@ dig TXT google.com +noall +answer
 
 **Explanation:** Multiple TXT records return as separate lines. SPF and DMARC are critical for email deliverability.
 
+**Expected result:**
+
+```text
+"v=spf1 include:_spf.google.com ~all"
+```
+
+Quoted TXT strings; content varies by domain.
+
 ### Step 5 – Query authoritative nameserver directly
 
 **Command:**
@@ -265,7 +259,11 @@ dig @$AUTH_NS example.com SOA +noall +answer
 dig @$AUTH_NS example.com A +norecurse +noall +answer
 ```
 
-**Explanation:** Querying authoritative NS bypasses resolver cache — shows current zone data. `+norecurse` ensures iterative behavior.
+**Explanation:** Querying authoritative NS bypasses resolver cache — shows current zone data. `+norecurse` ensures iterative behaviour.
+
+**Expected result:**
+
+Authoritative answer section with AA flag set when querying the zone’s NS directly.
 
 ### Step 6 – Reverse DNS lookup
 
@@ -278,6 +276,14 @@ dig +short -x 1.1.1.1
 
 **Explanation:** `-x` performs reverse lookup. Missing PTR is common for cloud IPs unless explicitly configured.
 
+**Expected result:**
+
+```text
+dns.google.
+```
+
+PTR for 8.8.8.8 (or NXDOMAIN for addresses without PTR).
+
 ### Step 7 – Compare resolver answers (split-horizon simulation)
 
 **Command:**
@@ -289,6 +295,10 @@ dig +short example.com A @208.67.222.222
 ```
 
 **Explanation:** Public resolvers should agree for public zones. Disagreement suggests propagation in progress or geo/load-balanced DNS.
+
+**Expected result:**
+
+Public resolvers return the same public A/AAAA for `example.com`; differences indicate split-horizon or cache skew.
 
 ### Step 8 – Full troubleshooting workflow
 
@@ -307,7 +317,27 @@ echo "=== Trace ===" && dig +trace $DOMAIN A 2>/dev/null | grep -E "^($DOMAIN|[a
 
 **Explanation:** Reusable checklist for incident response — run before blaming application code.
 
-## Commands & Code
+**Expected result:**
+
+Workflow prints NS, A, and authoritative checks without unexplained SERVFAIL; you can state where failure would be isolated.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run CNAME, TXT, authoritative, and reverse lookups; compare to each step’s expected result.
+2. Explain how you would isolate a wrong A record vs a stale CNAME.
+3. Document any split-horizon differences between public resolvers.
+
+| Check | Pass criteria |
+|-------|----------------|
+| CNAME | Chain resolves to a final A/AAAA or is documented |
+| TXT | SPF/verification-style TXT visible for a known domain |
+| Authoritative | Query against NS returns consistent answers |
+| PTR | Reverse lookup for 8.8.8.8 (or lab IP) returns a name or NXDOMAIN |
+| Workflow | Troubleshooting script completes without unresolved errors you cannot explain |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -339,6 +369,14 @@ echo "--- PTR (if A exists) ---"
 IP=$(dig +short "$DOMAIN" A | head -1)
 [ -n "$IP" ] && dig +short -x "$IP" || echo "(no A record)"
 ```
+
+## Security Considerations
+
+- Lock down SPF, DKIM, and DMARC carefully; overly permissive SPF (`+all`) enables spoofing
+- Prefer CAA records to limit which CAs may issue certificates for your domains
+- Verify TXT challenge records before deleting them; leftover or forged validation records can aid domain takeover
+- Restrict who can edit production DNS zones; use change tickets and dual control for NS/SOA changes
+- When using dig against third-party nameservers, do not leak internal hostnames in query logs on shared resolvers
 
 ## Common Mistakes
 
@@ -387,7 +425,7 @@ IP=$(dig +short "$DOMAIN" A | head -1)
 | Internal works, external fails | Split-horizon misconfiguration | Align internal and external zones; test both resolvers |
 | Intermittent resolution | Unstable NS or lame delegation | Verify all NS in glue records respond; fix delegation |
 | Slow DNS lookups | Long CNAME chain | Flatten to A/AAAA; reduce hops |
-| `dig` differs from app behavior | `/etc/hosts` or nsswitch override | Compare `getent hosts` vs `dig`; inspect nsswitch.conf |
+| `dig` differs from app behaviour | `/etc/hosts` or nsswitch override | Compare `getent hosts` vs `dig`; inspect nsswitch.conf |
 
 ## Summary
 
@@ -428,6 +466,9 @@ IP=$(dig +short "$DOMAIN" A | head -1)
 - [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md)
 - [Load Balancing Fundamentals](load-balancing-fundamentals.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -4,6 +4,7 @@ description: Understand Pod anatomy, multi-container patterns, lifecycle phases,
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -48,51 +49,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Articulate why bare Pods are for labs — Deployments for production
 - [ ] Map Docker run flags to Pod spec fields
 
-## Architecture Diagram
+## Architecture
 
 A Pod creates a shared execution environment: one IP address, one set of network namespaces, optional shared volumes.
 
-```d2
-direction: down
-
-POD: "Pod — shared context" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NET: "Network namespace\nIP: 10.244.1.15"
-        VOL: "Shared volumes\nemptyDir / config"
-        MAIN: "Primary container" {
-          style: {
-            fill: "#dcfce7"
-            stroke: "#16a34a"
-          }
-            APP: "app :8080"
-        }
-        SIDE: "Sidecar container" {
-          style: {
-            fill: "#ffedd5"
-            stroke: "#ea580c"
-          }
-            LOG: log-shipper
-        }
-        INIT: "Init containers\nrun sequentially first" {
-          style: {
-            fill: "#f3e8ff"
-            stroke: "#9333ea"
-          }
-            INITC: fetch-config
-        }
-    }
-    NODE: "Worker Node\nkubelet + containerd"
-    SVC: "Service selector\napp=web"
-    POD: POD
-    NODE -> POD
-    POD.INIT.INITC -> POD.MAIN.APP
-    POD.MAIN.APP -> POD.VOL
-    POD.SIDE.LOG -> POD.VOL
-    SVC -> POD.NET
-```
+![Architecture diagram for Pods — The Atomic Unit](../assets/images/pods-the-atomic-unit.svg)
 
 ## Theory
 
@@ -173,22 +134,12 @@ spec:
 
 Container states: **Waiting** (reason: `ContainerCreating`, `ImagePullBackOff`), **Running**, **Terminated**.
 
-```d2
-direction: right
+![Pod Lifecycle Phases diagram](../assets/images/pods-the-atomic-unit-1.svg)
 
-PEND: Pending
-    RUN: Running
-    SUCC: Succeeded
-    FAIL: Failed
-    PEND -> RUN
-    RUN -> SUCC
-    RUN -> FAIL
-    PEND -> FAIL
-```
 
 ### Restart Policies
 
-| Policy | Behavior | Typical use |
+| Policy | Behaviour | Typical use |
 |--------|----------|-------------|
 | **Always** | Restart on any exit | Long-running apps (default for Deployments) |
 | **OnFailure** | Restart only on non-zero exit | Batch, init-heavy Pods |
@@ -492,7 +443,25 @@ kubectl delete -f ~/k8s-lab/module2/pods/ --ignore-not-found
 kubectl get pods
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Pod running | Lab Pod reaches Running / Ready |
+| Exec/logs | Logs and exec work as documented |
+| Spec fields | You can identify containers, volumes, and restartPolicy in the Pod spec |
+| Cleanup | Lab Pods deleted |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -515,6 +484,16 @@ kdebug() {
   kubectl logs "$1" --all-containers=true --tail=30
 }
 ```
+
+## Security Considerations
+
+- Do not run Pods as root when avoidable; set `runAsNonRoot` and drop capabilities
+- Avoid hostPath, hostNetwork, and privileged containers in application Pods
+- Set resource requests/limits so a single Pod cannot starve the node
+- Prefer one primary container per Pod unless a sidecars pattern is justified
+- Keep Pods ephemeral — do not store durable secrets only in container filesystems
+- Scrutinise images pulled into Pods; pin digests for anything beyond throwaway demos
+
 
 ## Common Mistakes
 
@@ -602,6 +581,9 @@ kdebug() {
 - [Installing Kubernetes and kubectl](installing-kubernetes-and-kubectl.md)
 - [Kubernetes – Category Overview](index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

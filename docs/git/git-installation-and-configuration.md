@@ -4,6 +4,7 @@ description: Install Git on Linux, macOS, and Windows; configure identity, edito
 difficulty: beginner
 estimated_time: "25 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -43,35 +44,18 @@ By the end of this tutorial, you will be able to:
 - [ ] Install Git on Debian/Ubuntu, RHEL-family, and macOS using official or PPA sources
 - [ ] Verify installation and locate the Git binary and system configuration files
 - [ ] Configure global and repository-local identity (`user.name`, `user.email`)
-- [ ] Set productive defaults: default branch, editor, pull behavior, and whitespace handling
+- [ ] Set productive defaults: default branch, editor, pull behaviour, and whitespace handling
 - [ ] Generate SSH key pairs and register them with GitHub or GitLab
 - [ ] Configure HTTPS credential helpers securely for automation and interactive use
 - [ ] Understand configuration precedence: system, global, local, and environment variables
 - [ ] Apply a production-ready `.gitconfig` baseline for DevOps engineers
 
-## Architecture Diagram
+## Architecture
 
 Git configuration flows through four layers. Later layers override earlier ones — a common source of "I changed my email but commits still show the old one" confusion.
 
-```d2
-direction: down
+![Architecture diagram for git installation and configuration](../assets/images/git-installation-and-configuration.svg)
 
-ENV: "Environment variables\nGIT_AUTHOR_NAME, GIT_DIR, ..."
-    SYS: "System config\n/etc/gitconfig"
-    GLOBAL: "Global config\n~/.gitconfig"
-    LOCAL: "Local config\n.git/config"
-    CMD: "Command-line flags\n--author, -c key=value"
-    SYS -> GLOBAL
-    GLOBAL -> LOCAL
-    LOCAL -> ENV
-    ENV -> CMD
-    EFFECT: "Effective config value"
-    CMD -> EFFECT: "wins for this invocation"
-    LOCAL -> EFFECT
-    GLOBAL -> EFFECT
-    SYS -> EFFECT
-    ENV -> EFFECT
-```
 
 ## Theory
 
@@ -120,7 +104,7 @@ Repository-local config overrides global — useful when a contractor uses a per
 | `fetch.prune` | `true` | Removes stale remote-tracking branches after fetch |
 | `core.autocrlf` | `input` (Linux/macOS) | Prevents CRLF corruption in shell scripts and Terraform |
 | `core.editor` | `vim`, `nano`, or `code --wait` | Required for interactive rebase and commit amend |
-| `color.ui` | `auto` | Readable diffs in terminal |
+| `colour.ui` | `auto` | Readable diffs in terminal |
 | `push.default` | `simple` | Push current branch to matching remote branch only |
 | `rebase.autoStash` | `true` | Stash local changes before rebase automatically |
 
@@ -243,7 +227,7 @@ git config --global push.default simple
 git config --global rebase.autoStash true
 ```
 
-**Explanation:** These defaults match common team policies. Align `pull.rebase` with your organization's documented workflow.
+**Explanation:** These defaults match common team policies. Align `pull.rebase` with your organisation's documented workflow.
 
 **Expected output:**
 
@@ -326,7 +310,25 @@ cd /tmp && rm -rf git-config-lab
 
 **Explanation:** Remove test repositories after configuration labs.
 
-## Commands & Code
+**Expected result:** Identity settings persist; no credentials written into the repository itself.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Version | `git --version` reports an installed client |
+| Identity | `git config user.name` and `user.email` are set |
+| Sanity | `git config --list --show-origin` shows expected sources |
+| Cleanup | No credentials committed; helper choice documented |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -412,6 +414,14 @@ credentials.json
 
 Register it: `git config --global core.excludesfile ~/.gitignore_global`
 
+## Security Considerations
+
+- Set `user.name` / `user.email` to identities your organisation recognises for audit trails
+- Store credentials in an OS keychain or credential helper — not in plaintext under `~/.git-credentials` on shared hosts
+- Prefer SSH keys or short-lived HTTPS tokens over long-lived personal access tokens
+- Keep Git itself updated; older clients miss security fixes for protocol and hook handling
+- Do not set `safe.directory=*` globally on multi-user machines without understanding the risks
+
 ## Common Mistakes
 
 !!! warning "Using different emails across machines"
@@ -429,7 +439,7 @@ Register it: `git config --global core.excludesfile ~/.gitignore_global`
 ## Best Practices
 
 !!! tip "Pin Git version in CI Dockerfiles"
-    Document `git --version` in build logs. Unexpected upgrades have changed default behaviors (e.g., `safe.directory`).
+    Document `git --version` in build logs. Unexpected upgrades have changed default behaviours (e.g., `safe.directory`).
 
 !!! tip "Use separate SSH keys per purpose"
     One key for personal GitHub, one deploy key per repo (read-only for CI), one for production bastion — limits blast radius if a key leaks.
@@ -489,6 +499,9 @@ Register it: `git config --global core.excludesfile ~/.gitignore_global`
 - [Understanding the Git Object Model](understanding-the-git-object-model.md) *(next in Module 1)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Introduction to Networking](../networking/introduction-to-networking.md) — SSH and HTTPS connectivity
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -1,15 +1,16 @@
 ---
 title: Dockerfile Best Practices and Multi-Stage Builds
-description: Optimize Dockerfiles with layer caching, slim bases, non-root users, health checks, and multi-stage builds for production-ready images.
+description: Optimise Dockerfiles with layer caching, slim bases, non-root users, health checks, and multi-stage builds for production-ready images.
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
   - dockerfile
   - multi-stage
-  - optimization
+  - optimisation
   - security
   - devops
 prerequisites:
@@ -42,39 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Write multi-stage Dockerfiles separating build and runtime
 - [ ] Run containers as non-root users with correct file permissions
 - [ ] Add `HEALTHCHECK` instructions for orchestrator integration
-- [ ] Compare image sizes and explain trade-offs of each optimization
+- [ ] Compare image sizes and explain trade-offs of each optimisation
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
-
-Stage1: "Stage 1: builder" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        B1: "FROM golang:1.22 AS builder"
-        B2: "COPY source"
-        B3: "RUN go build"
-    }
-    Stage2: "Stage 2: runtime" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        R1: "FROM gcr.io/distroless/static"
-        R2: "COPY --from=builder /app/binary"
-        R3: "USER nonroot"
-    }
-    Stage1.B1 -> Stage1.B2
-    Stage1.B2 -> Stage1.B3
-    Stage1.B3 -> Stage2.R2: "artifact only"
-    Stage2.R1 -> Stage2.R2
-    Stage2.R2 -> Stage2.R3
-    IMG: "Final image ~10MB"
-    Stage2.R3 -> IMG
-```
+![Architecture diagram for Dockerfile Best Practices and Multi-Stage Builds](../assets/images/dockerfile-best-practices-and-multi-stage-builds.svg)
 
 Only the runtime stage becomes the final image. Build tools never ship to production.
 
@@ -195,6 +168,38 @@ LABEL org.opencontainers.image.version="1.2.3"
 
 Supports supply-chain tooling and registry UI.
 
+
+### Why multi-stage is a security control
+
+Multi-stage builds are not only about smaller images. They keep compilers, unit-test tools, and build-time credentials out of the runtime artefact attackers will eventually pull. Copy only the binaries and assets you need into a minimal final stage, run as non-root, and prefer digest-pinned bases. Pair this with `.dockerignore` and BuildKit secret mounts so CI tokens never appear in `docker history`.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
 ## Hands-on Lab
 
 Build a Go HTTP server using single-stage vs multi-stage comparison.
@@ -258,7 +263,7 @@ docker images rebash-go:single
 
 **Expected output:** Image size approximately 800 MB–1 GB.
 
-### Step 3 – Build multi-stage optimized image
+### Step 3 – Build multi-stage optimised image
 
 **Command:**
 
@@ -360,7 +365,24 @@ rm -rf ~/lab/multistage
 
 **Explanation:** Remove lab containers and images.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Multi-stage build | Final image builds successfully from a multi-stage Dockerfile |
+| Smaller runtime | Final image lacks compiler/toolchain packages from the builder stage |
+| Non-root | Container process runs as non-root when required by the lab |
+| Cleanup | Intermediate/builder artefacts handled; lab containers removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -387,6 +409,16 @@ COPY --chown=app:app . .
 USER app
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:application"]
 ```
+
+## Security Considerations
+
+- Use multi-stage builds so compilers, tests, and secrets never ship in the final runtime image
+- Drop capabilities and run as non-root in the final stage; verify with `docker run --user`
+- Prefer distroless or minimal runtime bases when your language supports them
+- Mount BuildKit secrets for tokens instead of `ARG`/`ENV` that leak into history
+- Scan both builder and final images — builder stages can still leak into caches on shared CI runners
+- Pin base image digests in CI so “best practice” Dockerfiles remain reproducible under supply-chain attack
+
 
 ## Common Mistakes
 
@@ -470,11 +502,14 @@ CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:application"]
 - [Volumes and Persistent Storage](volumes-and-persistent-storage.md) *(next)*
 - [Docker Security Hardening](docker-security-hardening.md)
 - [Production Docker Patterns](production-docker-patterns.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
 - [Multi-stage builds](https://docs.docker.com/build/building/multi-stage/)
 - [Best practices for writing Dockerfiles](https://docs.docker.com/build/building/best-practices/)
 - [Google distroless images](https://github.com/GoogleContainerTools/distroless)
-- [BuildKit cache mounts](https://docs.docker.com/build/cache/optimize/)
+- [BuildKit cache mounts](https://docs.docker.com/build/cache/optimise/)
 - [OCI image annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md)

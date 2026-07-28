@@ -4,6 +4,7 @@ description: Monitor capacity with df and du, map block devices with lsblk, conf
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,45 +44,10 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose inode exhaustion vs block exhaustion
 - [ ] Identify large directories and open-but-deleted files consuming space
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+![Architecture diagram for disk and filesystem management](../assets/images/disk-and-filesystem-management.svg)
 
-Hardware: Hardware {
-        A: "Physical Disk /dev/sda"
-    }
-    Partitions: Partitions {
-        B: "/dev/sda1 boot"
-        C: "/dev/sda2 LVM PV"
-    }
-    LVM: LVM {
-        D: "Volume Group vg0"
-        E: "LV root /dev/vg0/root"
-        F: "LV data /dev/vg0/data"
-    }
-    Filesystems: Filesystems {
-        G: "ext4 on /"
-        H: "xfs on /var"
-    }
-    Mount: Points {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        I: "/"
-        J: "/var"
-    }
-    Hardware.A -> Partitions.B
-    Hardware.A -> Partitions.C
-    Partitions.C -> LVM.D
-    LVM.D -> LVM.E
-    LVM.D -> LVM.F
-    LVM.E -> Filesystems.G
-    LVM.F -> Filesystems.H
-    Filesystems.G -> Mount.I
-    Filesystems.H -> Mount.J
-```
 
 ## Theory
 
@@ -140,7 +106,7 @@ Each line: `device UUID=... fs_type options dump pass`
 
 Example:
 
-```
+```text
 UUID=a1b2c3d4-...  /data  xfs  defaults,nofail  0  2
 ```
 
@@ -293,7 +259,7 @@ sudo umount ~/lab/mnt
 
 Example fstab line you would add for persistence (do not apply blindly):
 
-```
+```text
 /home/YOURUSER/lab/disk.img  /home/YOURUSER/lab/mnt  ext4  loop,defaults,nofail  0  2
 ```
 
@@ -346,7 +312,22 @@ sudo lsof +L1 2>/dev/null | awk '/deleted/ {print $1, $2, $7, $NF}' | head -5
 
 **Expected output:** PID, size, and filename for deleted open files when present.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Inventory | `lsblk`/`df` output matches the devices you intended to touch |
+| Filesystem | Lab filesystem create/mount steps only use disposable devices |
+| Space | `df -h` shows expected mount usage after lab writes |
+| Cleanup | Lab mounts unmounted; no production disk reformatted |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -420,6 +401,14 @@ sudo chmod 644 /etc/fstab
 sudo mount -a   # validates entries — fails loudly on error
 ```
 
+## Security Considerations
+
+- Never run destructive partition or `mkfs` commands against the wrong device — double-check with `lsblk` and serials
+- Encrypt sensitive volumes (LUKS) and protect key material separately from the host image
+- Mount data volumes with `nosuid,nodev` (and `noexec` where practical) for multi-tenant data disks
+- Monitor free space and inodes; full disks break logging and can force unsafe emergency writes
+- Restrict who can use `mount`, `umount`, and `fdisk` via sudoers
+
 ## Common Mistakes
 
 !!! warning "Using /dev/sda1 in fstab on cloud VMs"
@@ -479,7 +468,7 @@ sudo mount -a   # validates entries — fails loudly on error
 6. What does the `nofail` mount option do?
 7. A log file was deleted but disk space was not freed. Why, and how do you fix it?
 8. Can you shrink an XFS filesystem online? What about ext4?
-9. What does `du -x` do, and why is it useful when analyzing `/`?
+9. What does `du -x` do, and why is it useful when analysing `/`?
 10. What is the purpose of `pass` field values 0, 1, and 2 in fstab?
 
 ## Related Tutorials
@@ -490,6 +479,9 @@ sudo mount -a   # validates entries — fails loudly on error
 - [Linux Filesystem Hierarchy](linux-filesystem-hierarchy.md)
 - [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

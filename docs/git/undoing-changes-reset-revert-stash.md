@@ -4,6 +4,7 @@ description: Discard, reset, revert, and stash changes safely; understand soft, 
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -42,27 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Know when NOT to reset shared history
 - [ ] Recover from accidental hard reset using reflog
 
-## Undo Operations Diagram
+## Architecture
 
-```d2
-direction: down
+Reset moves branch tips locally, revert adds an inverse commit for shared history, and stash shelves unfinished work.
 
-WT: "Working Tree"
-    SA: "Staging Area"
-    REPO: "Repository / Commits"
-    RESTORE1: "git restore file"
-    RESTORE1 -> WT
-    RESTORE2: "git restore --staged"
-    RESTORE2 -> SA
-    RESET: "git reset --soft/mixed/hard"
-    RESET -> SA
-    RESET -> REPO
-    REVERT: "git revert"
-    REVERT -> REPO
-    STASH: "git stash"
-    STASH -> WT
-    STASH -> SA
-```
+![Architecture diagram for Undoing Changes — Reset, Revert, and Stash](../assets/images/undoing-changes-reset-revert-stash.svg)
 
 ## Theory
 
@@ -188,6 +173,8 @@ echo "v3" >> app.txt && git add . && git commit -m "feat: v3"
 git log --oneline
 ```
 
+**Expected result:** Soft reset keeps changes staged; mixed keeps them unstaged; hard clears the working tree as shown.
+
 ### Step 2 – Soft reset
 
 **Command:**
@@ -198,6 +185,8 @@ git status
 git log --oneline -2
 git commit -m "feat: v3 improved message"
 ```
+
+**Expected result:** `git revert` adds a new commit that undoes the target change on the branch tip.
 
 ### Step 3 – Mixed reset and restore
 
@@ -212,6 +201,8 @@ git restore app.txt
 cat app.txt
 ```
 
+**Expected result:** Stash list gains an entry; `stash pop`/`apply` restores the working tree files.
+
 ### Step 4 – Stash workflow
 
 **Command:**
@@ -225,6 +216,8 @@ git stash pop
 git status
 ```
 
+**Expected result:** Reflog still references pre-reset commits for recovery.
+
 ### Step 5 – Revert (simulating shared branch)
 
 **Command:**
@@ -235,6 +228,8 @@ git revert --no-edit "$BAD"
 git log --oneline -5
 cat app.txt
 ```
+
+**Expected result:** Partial stash or path-limited undo behaves as the step describes.
 
 ### Step 6 – Hard reset and reflog recovery
 
@@ -248,6 +243,8 @@ git reset --hard "$BEFORE"
 git log --oneline -3
 ```
 
+**Expected result:** Status is clean after the final recovery path.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -256,7 +253,25 @@ git log --oneline -3
 cd /tmp && rm -rf git-undo-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab repository removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Soft/mixed/hard | Each reset mode leaves the expected working/index/HEAD state |
+| Revert | New revert commit undoes the change on a shared-style branch |
+| Stash | Stash pop/apply restores work; stash list behaves as shown |
+| Cleanup | Lab repo removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -280,6 +295,14 @@ git revert --no-edit HEAD
 git push origin main
 echo "Reverted $(git rev-parse HEAD~1) on main."
 ```
+
+## Security Considerations
+
+- Prefer `git revert` on shared history; `reset --hard` is for local recovery only
+- Stash contents can hold secrets — do not stash on shared jump hosts without clearing later
+- Confirm the target SHA twice before hard reset; reflog is time-limited insurance
+- Coordinate before resetting branches others may have based work on
+- After recovering from a bad reset, rotate any credentials that appeared in recovered files
 
 ## Common Mistakes
 
@@ -354,6 +377,9 @@ echo "Reverted $(git rev-parse HEAD~1) on main."
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
 - [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

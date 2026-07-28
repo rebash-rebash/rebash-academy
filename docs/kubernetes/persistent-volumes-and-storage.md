@@ -4,6 +4,7 @@ description: Provision durable storage with PersistentVolumes, PersistentVolumeC
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -48,48 +49,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Expand PVCs and handle storage class parameters
 - [ ] Know when to use StatefulSets instead of Deployments for stateful apps
 
-## Architecture Diagram
+## Architecture
 
 Administrators define StorageClasses; developers create PVCs; the provisioner binds PVs; Pods consume PVCs as volumes.
 
-```d2
-direction: right
-
-Admin: "Cluster Admin" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        SC: "StorageClass\nfast-ssd"
-    }
-    Dev: Developer {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        PVC: "PVC data-vol\n10Gi RWO"
-    }
-    System: "Control Plane" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        PROV: "Dynamic Provisioner\nEBS / hostPath / NFS"
-        PV: "PersistentVolume\n10Gi Bound"
-    }
-    Workload: Pod {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        MNT: "volumeMount\n/var/lib/data"
-    }
-    Admin.SC -> System.PROV
-    Dev.PVC -> System.PROV
-    System.PROV -> System.PV
-    Dev.PVC -> System.PV
-    Dev.PVC -> Workload.MNT
-```
+![Architecture diagram for Persistent Volumes and Storage](../assets/images/persistent-volumes-and-storage.svg)
 
 ## Theory
 
@@ -119,7 +83,7 @@ Most cloud block storage (EBS, GCE PD) supports **RWO** only. Shared filesystems
 
 When a PVC is deleted, the bound PV's fate depends on reclaim policy:
 
-| Policy | Behavior |
+| Policy | Behaviour |
 |--------|----------|
 | **Delete** | PV and underlying storage asset deleted (default for dynamic provisioning) |
 | **Retain** | PV released but data preserved — manual cleanup required |
@@ -165,7 +129,7 @@ spec:
 
 ### Deployments vs StatefulSets with Storage
 
-| Pattern | Storage behavior |
+| Pattern | Storage behaviour |
 |---------|------------------|
 | **Deployment + single PVC** | Only one Pod can mount RWO volume — other replicas fail or stay pending |
 | **Deployment + RWX PVC** | Multiple Pods share one volume — requires shared filesystem |
@@ -202,6 +166,25 @@ volumeBindingMode: WaitForFirstConsumer
 | **emptyDir** | Pod lifetime | Scratch space, caching, sidecar handoff |
 | **hostPath** | Node filesystem | Node-level data (avoid in multi-tenant prod) |
 | **PVC** | Independent of Pod | Databases, uploads, durable app state |
+
+
+### Claims, classes, and lifecycle
+
+Pods should request storage via PersistentVolumeClaims; StorageClasses decide provisioning and reclaim policy. Understand whether deleting a PVC deletes the underlying disk — especially on cloud providers where orphaned volumes cost money and retain data. Prefer CSI drivers over hostPath for portable workloads, encrypt at rest, and test backup/restore before trusting a volume for state.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
 ## Hands-on Lab
 
@@ -334,6 +317,9 @@ kubectl run curl-test2 --image=curlimages/curl:8.5.0 -n lab-storage --restart=Ne
 
 **Explanation:** The new Pod remounts the same PVC. Data written to the volume persists across Pod deletion.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 5 – Demonstrate RWO limitation with replicas
 
 **Command:**
@@ -349,6 +335,9 @@ kubectl get pods -n lab-storage -o wide
 ```bash
 kubectl scale deployment web --replicas=1 -n lab-storage
 ```
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 6 – Static PV lab (optional)
 
@@ -394,6 +383,9 @@ kubectl get pvc static-pvc -n lab-storage
 
 **Explanation:** Static provisioning pre-creates PVs. Useful for NFS exports or pre-provisioned cloud disks.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -404,7 +396,25 @@ kubectl delete namespace lab-storage
 kubectl get pv | grep Released
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| PVC bound | PersistentVolumeClaim reaches Bound |
+| Mount | Pod mounts the volume and can read/write as documented |
+| Persist | Data survives Pod delete/recreate |
+| Cleanup | Pods deleted; PVC/PV removed only when the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -450,6 +460,16 @@ spec:
 ```
 
 Each Pod (`postgres-0`, `postgres-1`, ...) receives a dedicated PVC (`data-postgres-0`, ...).
+
+## Security Considerations
+
+- Encrypt PersistentVolumes at rest using cloud/provider encryption
+- Prefer dynamic provisioning with StorageClasses that match performance *and* security needs
+- Restrict who can create PersistentVolumeClaims that map to expensive or shared disks
+- Avoid hostPath for application data; it couples Pods to nodes and bypasses scheduler isolation
+- Take backups before running volume-destructive labs (`rm`, fsck experiments)
+- Ensure deleted PVCs do not leave orphaned disks with residual customer data
+
 
 ## Common Mistakes
 
@@ -527,6 +547,9 @@ Each Pod (`postgres-0`, `postgres-1`, ...) receives a dedicated PVC (`data-postg
 - [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
 - [Volumes and Persistent Storage](../docker/volumes-and-persistent-storage.md)
 - [Production Patterns — HPA, PDB, and Affinity](production-patterns-hpa-pdb-and-affinity.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

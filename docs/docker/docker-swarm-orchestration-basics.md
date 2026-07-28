@@ -4,6 +4,7 @@ description: Initialize a Swarm cluster, deploy replicated services, roll update
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -44,43 +45,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Manage secrets and configs in Swarm
 - [ ] Deploy a multi-service stack from a Compose file with `docker stack deploy`
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
-
-Managers: Managers {
-        M1: "Manager 1 - Leader"
-        M2: "Manager 2"
-    }
-    Workers: Workers {
-        W1: "Worker 1"
-        W2: "Worker 2"
-    }
-    Swarm: Objects {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        SVC: "Service api:3 replicas"
-        T1: Task
-        T2: Task
-        T3: Task
-        NET: "Overlay network"
-        SEC: "Secrets / Configs"
-    }
-    Managers.M1 -> Managers.M2
-    Managers.M1 -> Workers.W1
-    Managers.M1 -> Workers.W2
-    Swarm.SVC -> Swarm.T1
-    Swarm.SVC -> Swarm.T2
-    Swarm.SVC -> Swarm.T3
-    Swarm.T1 -> Workers.W1
-    Swarm.T2 -> Workers.W2
-    Swarm.T3 -> Workers.W1
-    Swarm.NET -> Swarm.T1
-    Swarm.SEC -> Swarm.SVC
-```
+![Architecture diagram for Docker Swarm Orchestration Basics](../assets/images/docker-swarm-orchestration-basics.svg)
 
 ## Theory
 
@@ -108,7 +75,7 @@ Managers: Managers {
 
 ### Service modes
 
-| Mode | Behavior | Example |
+| Mode | Behaviour | Example |
 |------|----------|---------|
 | **replicated** | N identical tasks across cluster | Web API with 3 replicas |
 | **global** | One task per node | Log agent, monitoring exporter |
@@ -148,6 +115,53 @@ Secrets mount as files in `/run/secrets/` inside tasks — never in image layers
 
 `docker compose up` targets one host. **`docker stack deploy`** targets Swarm — interprets Compose v3 `deploy:` keys (replicas, placement, update_config). Not all Compose features work in stacks (e.g., `build:` is ignored — push images to a registry first).
 
+
+### When Swarm still makes sense
+
+Docker Swarm remains useful for small teams that want orchestration without operating a full Kubernetes control plane. Managers maintain desired state for services; workers run tasks. Overlay networks provide multi-host DNS similar in spirit to Kubernetes Services, while Swarm secrets encrypt data at rest on manager nodes and mount into tasks at runtime.
+
+Prefer Swarm when you already standardised on Docker Engine, need rolling updates with a short learning curve, and accept that the ecosystem (operators, CRDs, wide CNCF tooling) is thinner than Kubernetes. For greenfield platforms expecting many teams, autoscaling policies, and GitOps-at-scale, plan an exit path to Kubernetes early — map Swarm services to Deployments/Services conceptually before you are under pressure.
+
+### Field notes for docker swarm orchestration basics
+
+Re-read the Architecture diagram alongside the Hands-on Lab: each lab step should map to a box or arrow in that picture. If you cannot point to where a command fits, pause and revisit Theory before continuing — that habit prevents cargo-cult YAML and Compose snippets in production reviews.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
+
+### Further reading posture
+
+After finishing **docker swarm orchestration basics**, skim the Related Links once with a production lens: which linked tutorial closes the biggest gap in your current environment (security, networking, storage, or CI/CD)? Schedule that next — series order is a suggestion, risk order is a better personal syllabus.
+
+### Lab evidence to keep
+
+Keep a short note of the exact commands that proved the happy path and the failure path. Interviewers and future incident responders both benefit when you can show *how you knew* the system was healthy — not only that you followed a script.
+
 ## Hands-on Lab
 
 ### Lab 1 — Bootstrap a Swarm cluster
@@ -183,6 +197,9 @@ Label a node for placement:
 docker node update --label-add role=db node-worker-1
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 2 — Deploy a replicated service
 
 ```bash
@@ -213,6 +230,9 @@ Inspect service spec:
 docker service inspect web --pretty
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 3 — Rolling update and rollback
 
 Deploy versioned service:
@@ -234,6 +254,9 @@ docker service ps api
 # Manual rollback if needed
 docker service rollback api
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 | Update flag | Purpose |
 |-------------|---------|
@@ -258,6 +281,9 @@ docker service create \
 TASK_ID=$(docker ps -q --filter name=secure-api | head -1)
 docker exec "$TASK_ID" ls -la /run/secrets/
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 Secrets are only available to services granted access at create/update time.
 
@@ -334,7 +360,25 @@ Remove stack:
 docker stack rm myapp
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Swarm mode | `docker info` shows Swarm active (or lab documents single-node init) |
+| Service | Service replicas reach running state |
+| Update/rollback | Rolling update or rollback path demonstrated |
+| Cleanup | Services removed; leave Swarm only if you intend to keep it |
+
+## Code Walkthrough
 
 ### Essential Swarm commands
 
@@ -376,6 +420,16 @@ wget -qO- http://api:3000/health
 ```
 
 Service name `api` resolves to all healthy task IPs (VIP load balancing).
+
+## Security Considerations
+
+- Enable Swarm with TLS mutual authentication between managers and workers
+- Store Swarm secrets in Docker secrets — not as service environment variables
+- Restrict manager node access; managers hold cluster control-plane material
+- Rotate node join tokens after labs and never commit tokens to Git
+- Prefer overlay networks with encryption for sensitive multi-host traffic when required
+- Limit published ports on ingress and remove unused services promptly
+
 
 ## Common Mistakes
 
@@ -458,6 +512,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 - [Environment Variables and Secrets](environment-variables-and-secrets.md)
 - [Docker – Category Overview](index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

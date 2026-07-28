@@ -4,6 +4,7 @@ description: Configure container environment variables, Docker secrets, bind mou
 difficulty: intermediate
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -47,46 +48,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Integrate external secret managers conceptually (Vault, AWS Secrets Manager, GCP Secret Manager)
 - [ ] Debug missing or incorrect environment variables in running containers
 
-## Architecture Diagram
+## Architecture
 
 Configuration flows from sources of truth into the container process environment or mounted files — never through rebuilt image layers for secrets.
 
-```d2
-direction: down
-
-sources: "Configuration Sources" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        ENVFILE: ".env file\nnon-secrets only"
-        SECRET_MGR: "Secret Manager\nVault / AWS / GCP"
-        COMPOSE: "Compose / Stack YAML"
-    }
-    docker: "Docker Engine" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        RUN: "docker run / compose up"
-        SWARM_SEC: "Swarm secrets\ntmpfs mount"
-    }
-    container: Container {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        PROC: "Application process"
-        MNT: "/run/secrets/*"
-    }
-    sources.ENVFILE -> sources.COMPOSE
-    sources.SECRET_MGR -> sources.COMPOSE
-    sources.COMPOSE -> docker.RUN
-    docker.RUN -> container.PROC: "environment vars"
-    docker.RUN -> docker.SWARM_SEC
-    docker.SWARM_SEC -> container.MNT
-    container.MNT -> container.PROC
-```
+![Architecture diagram for Environment Variables and Secrets](../assets/images/environment-variables-and-secrets.svg)
 
 ## Theory
 
@@ -245,6 +211,9 @@ CMD ["python", "server.py"]
 
 **Explanation:** The app exposes non-sensitive config via env and checks for a secret file without printing the token value.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 2 – Build the image
 
 **Command:**
@@ -294,6 +263,9 @@ docker rm -f env-lab-2
 ```
 
 **Explanation:** Env files group configuration for repeatability. Do not store API keys in files committed to Git.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 5 – Mount a secret file with bind mount
 
@@ -347,6 +319,9 @@ docker compose down
 
 **Explanation:** Compose merges `environment`, `env_file`, and volumes. Keys in `environment` override `env_file` when both define the same variable.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Inspect container environment safely
 
 **Command:**
@@ -360,6 +335,9 @@ docker rm -f env-lab-4
 
 **Explanation:** `docker inspect` shows all environment variables — including secrets if you mistakenly passed them via `-e`. Never put secrets in env vars you plan to inspect or log.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 8 – Clean up
 
 **Command:**
@@ -368,7 +346,25 @@ docker rm -f env-lab-4
 cd /tmp && rm -rf env-secrets-lab
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Env injection | Container sees expected non-secret configuration via env |
+| Secret handling | Lab secret is supplied without committing real credentials to Git |
+| Inspect awareness | You can show where env values appear in `docker inspect` |
+| Cleanup | Containers and any local `.env` lab files handled safely |
+
+## Code Walkthrough
 
 | Command / directive | Description | Example |
 |---------------------|-------------|---------|
@@ -406,6 +402,16 @@ APP_PORT=8080
 DATABASE_HOST=localhost
 # Secrets: mount at /run/secrets/api_token instead of env vars
 ```
+
+## Security Considerations
+
+- Never commit `.env` files containing real credentials; provide `.env.example` with placeholders only
+- Prefer Docker secrets / external secret managers over plain `environment:` for production
+- Remember environment variables are visible via `docker inspect` to anyone who can talk to the daemon
+- Rotate lab credentials after demos; treat shared lab passwords as compromised
+- Avoid passing secrets on the CLI (`docker run -e PASS=…`) where shell history retains them
+- Scrub CI logs — echo and debug printing commonly leak secrets from env blocks
+
 
 ## Common Mistakes
 
@@ -483,6 +489,9 @@ DATABASE_HOST=localhost
 - [Container Registries and Distribution](container-registries-and-distribution.md) *(previous in Module 4)*
 - [Container Logging and Monitoring](container-logging-and-monitoring.md) *(next — Module 5)*
 - [Environment Variables and Shell Config](../linux/environment-variables-shell-config.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

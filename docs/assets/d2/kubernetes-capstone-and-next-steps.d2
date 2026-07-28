@@ -1,0 +1,47 @@
+direction: down
+
+External: External {
+        USER: Browser
+        DNS: votestack.example.com
+    }
+    IngressLayer: ingress-nginx {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        ING: "Ingress + TLS"
+    }
+    Votestack: "namespace: votestack" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        WEB: "web Deployment"
+        API: "api Deployment + HPA"
+        WORK: "worker Deployment + HPA"
+        REDIS: "redis StatefulSet"
+        PG: "postgres StatefulSet + PVC"
+    }
+    Platform: Platform {
+        ARGO: "Argo CD"
+        PROM: "Prometheus / Grafana"
+        KYV: Kyverno
+    }
+    External.USER -> External.DNS
+    External.DNS -> IngressLayer.ING
+    IngressLayer.ING -> Votestack.WEB
+    IngressLayer.ING -> Votestack.API
+    Votestack.API -> Votestack.REDIS
+    Votestack.API -> Votestack.PG
+    Votestack.WORK -> Votestack.REDIS
+    Votestack.WORK -> Votestack.PG
+    Votestack: Votestack
+    Platform.ARGO -> Votestack: sync {
+      style.stroke-dash: 3
+    }
+    Platform.PROM -> Votestack.API: scrape {
+      style.stroke-dash: 3
+    }
+    Platform.KYV -> Votestack: enforce {
+      style.stroke-dash: 3
+    }

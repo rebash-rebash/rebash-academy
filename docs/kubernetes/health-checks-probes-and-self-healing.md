@@ -4,6 +4,7 @@ description: Configure liveness, readiness, and startup probes so Kubernetes det
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -48,50 +49,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain how readiness failures affect Service endpoints and Ingress routing
 - [ ] Diagnose crash loops and probe-induced restart storms
 - [ ] Design probe endpoints that reflect application health, not just process existence
-- [ ] Relate probe behavior to Deployment rolling update success criteria
+- [ ] Relate probe behaviour to Deployment rolling update success criteria
 
-## Architecture Diagram
+## Architecture
 
 The kubelet runs probes locally on each node. Readiness state flows to the endpoints controller; liveness failures trigger container restarts.
 
-```d2
-direction: down
-
-Node: "Worker Node" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        KL: kubelet
-        Pod: "Pod: web" {
-          style: {
-            fill: "#dcfce7"
-            stroke: "#16a34a"
-          }
-            C: "Container nginx"
-            LP: "Liveness Probe"
-            RP: "Readiness Probe"
-            SP: "Startup Probe"
-        }
-        KL -> LP
-        KL -> RP
-        KL -> SP
-        LP -> C: "HTTP GET /healthz"
-        RP -> C: "HTTP GET /ready"
-        SP -> C: "TCP :8080"
-    }
-    API: "API Server"
-    EP: "Endpoints Controller"
-    SVC: "Service web-svc"
-    ING: Ingress
-    Node.Pod.RP -> API: "Ready=true/false"
-    API -> EP
-    EP -> SVC
-    SVC -> ING
-    RESTART: "Container Restart"
-    Node.Pod.LP -> RESTART: "Fail threshold"
-    RESTART -> Node.Pod.C
-```
+![Architecture diagram for Health Checks, Probes, and Self-Healing](../assets/images/health-checks-probes-and-self-healing.svg)
 
 ## Theory
 
@@ -181,23 +145,8 @@ Total time before restart (liveness): roughly `initialDelaySeconds + (periodSeco
 
 Probes are one layer of resilience:
 
-```d2
-direction: right
+![Self-Healing Mechanisms Beyond Probes diagram](../assets/images/health-checks-probes-and-self-healing-1.svg)
 
-RS: ReplicaSet
-    POD: Pods
-    RS -> POD: "desired replicas"
-    KL: kubelet
-    RESTART: "Restart container"
-    KL -> RESTART: "liveness fail"
-    NC: "Node Controller"
-    RESCH: "Reschedule pods"
-    NC -> RESCH: "node NotReady"
-    DC: "Deployment Controller"
-    DC -> RS: rollout
-    PDB: PodDisruptionBudget
-    PDB -> RS: "min available"
-```
 
 - **ReplicaSet** recreates deleted pods to match `replicas`
 - **Node controller** evicts pods when nodes fail
@@ -443,7 +392,25 @@ exec-probe-demo   1/1   Running   1 (5s ago)   45s
 kubectl delete namespace probe-lab --wait=false
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Probes | Liveness/readiness (and startup if used) configured on the Pod/Deployment |
+| Ready traffic | Unready Pods are removed from Service endpoints |
+| Failure behaviour | Induced failure shows restart or traffic shift as documented |
+| Cleanup | Lab workloads removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -483,6 +450,16 @@ containers:
       timeoutSeconds: 3
 ```
 
+## Security Considerations
+
+- Do not point liveness probes at dependencies (databases) — you will kill healthy Pods during dependency blips
+- Protect probe endpoints from expensive work; unauthenticated heavy probes become DoS vectors
+- Use readiness to remove Pods from Service endpoints before killing them on deploy
+- Set realistic timeouts and failure thresholds — aggressive probes amplify outages
+- Keep probe traffic on internal ports; do not expose admin health on public Ingress without need
+- Log probe failures centrally so crash loops are visible without exec into Pods
+
+
 ## Common Mistakes
 
 !!! warning "Using the same endpoint for liveness and readiness"
@@ -517,7 +494,7 @@ containers:
 |-------|-------|----------|
 | CrashLoopBackOff | Liveness fails immediately on start | Add startup probe; increase `initialDelaySeconds` |
 | Pod Running but no traffic | Readiness failing | Check `/ready` endpoint; verify dependencies |
-| Frequent restarts under load | Liveness timeout too short | Increase `timeoutSeconds`; optimize health handler |
+| Frequent restarts under load | Liveness timeout too short | Increase `timeoutSeconds`; optimise health handler |
 | Rollout stuck | New pods never Ready | `kubectl describe pod`; fix readiness probe path/port |
 | 502 from Ingress during deploy | Old pods terminated before new Ready | Tune `maxUnavailable`; fix readiness timing |
 | Probe works locally, fails in cluster | Wrong port or network policy | Verify `containerPort`; check NetworkPolicy |
@@ -559,6 +536,9 @@ containers:
 - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md) *(next — Module 5)*
 - [Ingress and External Access](ingress-and-external-access.md)
 - [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

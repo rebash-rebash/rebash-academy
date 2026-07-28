@@ -4,6 +4,7 @@ description: Master IPv4 addressing, CIDR notation, subnet masks, public and pri
 difficulty: beginner
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -47,6 +48,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `ipcalc` and Linux `ip` commands to verify subnet calculations
 - [ ] Avoid common cloud design mistakes like overlapping CIDR blocks
 - [ ] Plan subnet sizes for typical DevOps tiers (web, app, database, management)
+
+## Architecture
+
+IP addressing turns a host address and prefix length into network, broadcast, and usable host ranges — the same arithmetic behind VPC and subnet CIDR design.
+
+![Architecture diagram for IP Addressing and Subnetting](../assets/images/ip-addressing-and-subnetting.svg)
+
 
 ## Theory
 
@@ -240,6 +248,17 @@ ipcalc 10.0.1.16/28 | grep -E "Network|HostMin|HostMax|Hosts"
 
 **Explanation:** Demonstrates VLSM — different prefix lengths for different tier requirements. A /24 gives 254 hosts for web; /27 gives 30 for database; /28 gives 14 for management.
 
+**Expected result:**
+
+```text
+=== Web tier: 200 hosts needed → /24 ===
+Address:   10.0.1.0
+Netmask:   255.255.255.0 = 24
+Hosts/Net: 254
+```
+
+Each tier line shows a mask large enough for the stated host count.
+
 ### Step 4 – Inspect your system's IP and subnet
 
 **Command:**
@@ -277,6 +296,10 @@ ip route get 8.8.8.8
 ```
 
 **Explanation:** `ip route get` shows whether traffic goes direct (same subnet, `dev eth0`) or via a gateway (`via 10.0.1.1`). This is the kernel's subnet mask logic in action.
+
+**Expected result:**
+
+Same-subnet destinations show `dev eth0` without `via`; remote destinations show `via <gateway>`.
 
 ### Step 6 – Manual calculation practice
 
@@ -348,7 +371,27 @@ done
 
 **Explanation:** Validates a simple dual-AZ VPC design with non-overlapping /24 subnets inside a /16 VPC block.
 
-## Commands & Code
+**Expected result:**
+
+Each planned CIDR prints network/broadcast/host count with no overlapping ranges between tiers.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run `ipcalc`/`sipcalc` (or manual) checks for network, broadcast, and host counts.
+2. Explain why a `/24` and `/28` yield different usable host counts.
+3. Correct any overlapping CIDRs in your mini-VPC plan before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Addressing | You can state network, broadcast, and usable range for a given CIDR |
+| VLSM | Tier allocations fit required host counts without overlap |
+| Local vs remote | Same-subnet vs gateway logic matches your interface mask |
+| Mini VPC | Documented CIDRs validate with `ipcalc`/`python` and do not overlap |
+| Cleanup | Temporary calc files removed if created |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -392,6 +435,14 @@ PY
 ```
 
 Usage: `chmod +x subnet-plan.sh && ./subnet-plan.sh 10.0.0.0/24 10.0.1.0/24 10.0.2.0/24`
+
+## Security Considerations
+
+- Avoid overlapping CIDR ranges between on-premises and cloud VPCs; overlaps break VPN/peering and enable routing confusion attacks
+- Keep RFC1918 ranges private; never advertise lab private space to the public Internet via misconfigured NAT or BGP
+- Size subnets for least privilege segmentation (web/app/data tiers) rather than one flat `/16` shared by everything
+- Treat IP inventories and subnet plans as confidential — they help attackers map blast radius
+- Reserve and document network/broadcast addresses; mis-assigned hosts can disrupt neighbours or create asymmetric paths
 
 ## Common Mistakes
 
@@ -445,13 +496,25 @@ Usage: `chmod +x subnet-plan.sh && ./subnet-plan.sh 10.0.0.0/24 10.0.1.0/24 10.0
 ## Interview Questions
 
 1. How many usable host addresses are in a /26 subnet?
+
+*Hint: IPv4 is 32-bit; CIDR length defines the network portion.*
+
 2. What are the three RFC 1918 private address ranges?
 3. Given 10.0.5.130/25, what are the network address, broadcast, and usable range?
+
+*Hint: Usable hosts = 2^(32-prefix) − 2 for typical IPv4 subnets.*
+
 4. What is the difference between CIDR notation and a subnet mask?
 5. Explain VLSM and when you would use it.
+
+*Hint: VLSM assigns different prefix lengths to different tiers.*
+
 6. Why can't two hosts with private IP addresses communicate over the Internet directly?
 7. How many addresses does AWS reserve in each subnet?
 8. What happens if two VPCs with overlapping CIDRs are peered?
+
+*Hint: Overlaps break routing and VPN/peering.*
+
 9. Convert subnet mask 255.255.240.0 to CIDR notation.
 10. A subnet needs to support 100 hosts. What is the smallest prefix that works?
 
@@ -470,6 +533,9 @@ Usage: `chmod +x subnet-plan.sh && ./subnet-plan.sh 10.0.0.0/24 10.0.1.0/24 10.0
 - [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) *(next — Module 2)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -1,9 +1,10 @@
 ---
-title: Overview
-description: Quick-reference guides for commands and concepts.
+title: Cheat Sheets
+description: "Quick-reference cheat sheets for Linux, Networking, Git, Docker, Kubernetes, and Terraform."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: cheatsheets
 tags:
   - cheatsheets
@@ -12,22 +13,21 @@ comments: false
 
 # Cheat Sheets
 
-Quick-reference guides for commands and concepts.
+Quick-reference guides for the published REBASH Academy tracks.
 
-## Overview
+## Available now
 
-Welcome to the **Cheat Sheets** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+| Cheat sheet | Track |
+|-------------|--------|
+| [Linux](linux.md) | [Linux tutorials](../linux/index.md) |
+| [Networking](networking.md) | [Networking tutorials](../networking/index.md) |
+| [Git](git.md) | [Git tutorials](../git/index.md) |
+| [Docker](docker.md) | [Docker tutorials](../docker/index.md) |
+| [Kubernetes](kubernetes.md) | [Kubernetes tutorials](../kubernetes/index.md) |
+| [Terraform](terraform.md) | [Terraform tutorials](../terraform/index.md) |
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Related
 
-## Learning Objectives
-
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
-
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Interview Prep](../interview/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [Getting Started](../getting-started/index.md)

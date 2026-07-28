@@ -4,6 +4,7 @@ description: Manage Linux services with systemctl, write custom unit files, and 
 difficulty: intermediate
 estimated_time: "55 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -37,47 +38,15 @@ By the end of this tutorial, you will be able to:
 
 - [ ] Explain systemd unit types and the sections of a `.service` unit file
 - [ ] Control service lifecycle with `systemctl start/stop/restart/reload`
-- [ ] Enable, disable, and mask services for boot-time behavior
+- [ ] Enable, disable, and mask services for boot-time behaviour
 - [ ] Write and install a custom systemd service unit
 - [ ] Reload unit definitions with `daemon-reload` after configuration changes
 - [ ] Diagnose failed services using `systemctl status` and `journalctl`
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+![Architecture diagram for systemd service management](../assets/images/systemd-service-management.svg)
 
-Boot: Boot {
-        FW: "Firmware/Kernel"
-        S1: "systemd PID 1"
-    }
-    Units: Units {
-        SVC: ".service units"
-        SOCK: ".socket units"
-        TMR: ".timer units"
-        TGT: ".target units"
-    }
-    Paths: Paths {
-        PKG: "/usr/lib/systemd/system/"
-        ETC: "/etc/systemd/system/"
-        RUN: "/run/systemd/system/"
-    }
-    CLI: CLI {
-        CTL: systemctl
-        JRN: journalctl
-    }
-    Boot.FW -> Boot.S1
-    Boot.S1 -> Units.TGT
-    Units.TGT -> Units.SVC
-    Units.TGT -> Units.SOCK
-    Units.TGT -> Units.TMR
-    Paths.PKG -> Units.SVC
-    Paths.ETC -> Units.SVC
-    Paths.RUN -> Units.SVC
-    CLI.CTL -> Boot.S1
-    Units.SVC -> CLI.JRN
-    Units.SOCK -> CLI.JRN
-```
 
 ## Theory
 
@@ -184,7 +153,7 @@ systemctl list-unit-files --type=service --state=enabled | head -10
 
 **Expected output:**
 
-```
+```text
 UNIT                          LOAD   ACTIVE SUB     DESCRIPTION
 ssh.service                   loaded active running OpenBSD Secure Shell server
 systemd-journald.service      loaded active running Journal Service
@@ -207,7 +176,7 @@ systemctl is-enabled ssh 2>/dev/null || systemctl is-enabled sshd
 
 **Expected output:**
 
-```
+```text
 ● ssh.service - OpenBSD Secure Shell server
      Loaded: loaded (/usr/lib/systemd/system/ssh.service; enabled; preset: enabled)
      Active: active (running) since Mon 2026-07-27 09:00:01 UTC; 5h ago
@@ -242,7 +211,7 @@ systemctl is-active nginx 2>/dev/null
 
 **Expected output:**
 
-```
+```text
 Stopped
 Started
 Restarted
@@ -263,7 +232,7 @@ systemctl is-enabled nginx 2>/dev/null
 
 **Expected output:**
 
-```
+```text
 disabled
 enabled
 ```
@@ -310,7 +279,7 @@ systemctl status labdaemon.service --no-pager
 
 **Expected output:**
 
-```
+```text
 Created symlink .../multi-user.target.wants/labdaemon.service → ...
 ● labdaemon.service - REBASH Lab Daemon
      Loaded: loaded (/etc/systemd/system/labdaemon.service; enabled; ...)
@@ -327,7 +296,7 @@ tail -3 /var/log/labdaemon.log
 
 **Expected output:**
 
-```
+```text
 Jul 27 14:45:01 hostname labdaemon.sh[6010]: (no stdout — app logs to file)
 ```
 
@@ -359,7 +328,7 @@ sudo systemctl daemon-reload
 
 **Expected output:**
 
-```
+```text
 ○ labdaemon.service
      Loaded: masked (/dev/null; masked)
      Active: inactive (dead)
@@ -368,7 +337,22 @@ Failed to start labdaemon.service: Access denied
 
 Masking prevents accidental starts during maintenance.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Unit status | `systemctl status` shows active/inactive as expected per step |
+| Enable | Unit enabled/disabled state matches lab actions |
+| Logs | `journalctl -u` shows start/stop messages for the lab unit |
+| Cleanup | Lab units stopped, disabled, and unit files removed |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -459,6 +443,14 @@ if [[ "$STATE" != "active" ]]; then
 fi
 ```
 
+## Security Considerations
+
+- Run services as non-root users with `User=` / `Group=` and tighten with `NoNewPrivileges=`, `ProtectSystem=`, `PrivateTmp=`
+- Avoid `ExecStart` shell wrappers that expand untrusted environment variables
+- Restrict unit file permissions so unprivileged users cannot alter service definitions
+- Use `CapabilityBoundingSet` to drop unused Linux capabilities
+- Review `systemctl cat` after deploy — unexpected `ExecStartPre` scripts can hide malware
+
 ## Common Mistakes
 
 !!! warning "Forgetting daemon-reload after unit changes"
@@ -487,8 +479,8 @@ fi
 !!! tip "Pair status with journalctl during incidents"
     `systemctl status UNIT -l --no-pager` plus `journalctl -u UNIT -b -p err -n 100` is the standard triage pattern.
 
-!!! tip "Test with systemd-analyze"
-    `systemd-analyze verify /etc/systemd/system/myapp.service` catches unit syntax errors before deployment.
+!!! tip "Test with systemd-analyse"
+    `systemd-analyse verify /etc/systemd/system/myapp.service` catches unit syntax errors before deployment.
 
 ## Troubleshooting
 
@@ -552,6 +544,17 @@ fi
 
 *Sample answer:* The standard boot target for multi-user server mode (equivalent to runlevel 3). Services with `WantedBy=multi-user.target` start when the system reaches normal operation.
 
+1. How would you explain systemd service management to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore systemd service management?
+3. Which metrics or logs would you check first when systemd service management misbehaves?
+4. What is a secure default related to systemd service management?
+5. How would you validate a change involving systemd service management in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around systemd service management?
+7. Describe a common anti-pattern with systemd service management and how you fix it.
+8. How does systemd service management interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for systemd service management?
+10. When would you intentionally not follow the default approach taught here?
+
 ## Related Tutorials
 
 - [Linux – Category Overview](index.md)
@@ -561,6 +564,9 @@ fi
 - [Remote systemd Services](remote-systemd-services.md)
 - [Cron and Task Scheduling](cron-and-task-scheduling.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

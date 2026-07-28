@@ -4,6 +4,7 @@ description: Apply bottom-up and top-down troubleshooting, divide-and-conquer is
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -47,53 +48,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Execute a layered checklist from physical/link through application layers
 - [ ] Distinguish network problems from application and DNS failures quickly
 
-## Architecture Diagram
+## Architecture
 
 The OSI/TCP-IP layered model provides the framework for bottom-up troubleshooting. Each layer must work before the layer above can function.
 
-```d2
-direction: down
+![Architecture diagram for Network Troubleshooting Methodology](../assets/images/network-troubleshooting-methodology.svg)
 
-L7: "Layer 7 — Application" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        APP: "HTTP / API / TLS cert validity"
-    }
-    L4: "Layer 4 — Transport" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        TCP: "TCP handshake · ports · firewalls"
-    }
-    L3: "Layer 3 — Network" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        IP: "Routing · ICMP · IP reachability"
-    }
-    L2: "Layer 2 — Data Link" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        ARP: "ARP · MAC · VLAN · switch"
-    }
-    L1: "Layer 1 — Physical" {
-      style: {
-        fill: "#fce7f3"
-        stroke: "#db2777"
-      }
-        PHY: "Cable · NIC · link up/down"
-    }
-    L7.APP -> L4.TCP
-    L4.TCP -> L3.IP
-    L3.IP -> L2.ARP
-    L2.ARP -> L1.PHY
-```
 
 ## Theory
 
@@ -225,6 +185,10 @@ CHANGE:  Security group rule modified on app-tier SG
 
 **Explanation:** Vague "network is broken" leads to vague debugging. Scope determines which methodology fits.
 
+**Expected result:**
+
+Completed template with specific symptoms, scope, start time, and recent changes — not only “network is down”.
+
 ### Step 2 – Top-down: application layer check
 
 **Command:**
@@ -234,7 +198,7 @@ curl -sv --connect-timeout 5 https://example.com/ 2>&1 | head -30
 curl -sv --connect-timeout 5 http://example.com/ 2>&1 | head -20
 ```
 
-**Explanation:** Note HTTP status, TLS handshake, redirect behavior, and total time. Compare HTTP vs HTTPS failures.
+**Explanation:** Note HTTP status, TLS handshake, redirect behaviour, and total time. Compare HTTP vs HTTPS failures.
 
 **Expected output:**
 
@@ -296,6 +260,14 @@ timeout 3 bash -c 'cat < /dev/null > /dev/tcp/example.com/443' && echo "TCP 443 
 
 **Explanation:** Distinguishes "DNS works but port filtered" (timeout) from "port closed" (refused).
 
+**Expected result:**
+
+```text
+Connection to example.com 443 port [tcp/https] succeeded!
+```
+
+Or a clear timeout/refused that becomes your next isolation clue.
+
 ### Step 6 – Divide-and-conquer: simulate path bisection
 
 Draw your production path on paper. For this lab, simulate:
@@ -323,6 +295,10 @@ curl -sI --connect-timeout 5 "https://$RESOLVED/" -H "Host: example.com" | head 
 
 **Explanation:** Testing IP directly with Host header isolates DNS from HTTP — classic bisection technique.
 
+**Expected result:**
+
+Written bisect plan naming a midpoint (DNS vs path vs origin) before changing multiple variables.
+
 ### Step 7 – Document findings in incident format
 
 **Command:**
@@ -344,7 +320,23 @@ EOF
 cat /tmp/incident-notes.txt
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Complete the problem statement, layer checks, and incident notes file.
+2. Show where you would bisect the path for a real outage using your notes.
+3. Keep the incident template for future on-call use.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Problem statement | Who/what/when/scope filled without vague “network down” only |
+| Layers | DNS, route, and TCP checks executed and recorded |
+| Bisect | Midpoint hypothesis written before changing multiple things |
+| Incident notes | `/tmp/incident-notes.txt` (or equivalent) completed |
+| Cleanup | Temporary listeners/routes from testing removed |
+
+## Code Walkthrough
 
 | Command | Layer | Purpose |
 |---------|-------|---------|
@@ -380,6 +372,14 @@ aws elbv2 describe-target-health --target-group-arn $TG_ARN
 nc -zv BACKEND_IP PORT
 dig +short SERVICE.example.com @8.8.8.8
 ```
+
+## Security Considerations
+
+- Follow change-control during incidents; ad-hoc firewall openings must be time-boxed and ticketed
+- Avoid disabling security controls “just to test” without a rollback and observer
+- Limit who can run privileged diagnostics (`tcpdump`, `ss` with processes) on shared bastions
+- Document findings without pasting secrets, customer data, or full packet payloads into public channels
+- Preserve forensic evidence (timestamps, command history) before reboot or rule flushes
 
 ## Common Mistakes
 
@@ -447,6 +447,9 @@ dig +short SERVICE.example.com @8.8.8.8
 
     **Q8 — DNS vs firewall:** DNS failure: `dig` returns NXDOMAIN, SERVFAIL, or unexpected IP; `curl` fails with "Could not resolve host" before any TCP attempt. Firewall blocking: `dig` returns correct IP; `ping` may work or fail (ICMP often blocked); `nc` to port 443 **times out** (filtered) or **refused** (closed). Test IP directly with curl `-H Host:` header to remove DNS from the equation.
 
+9. How would you explain network troubleshooting methodology to a junior engineer in two minutes?
+10. What production failure mode appears when teams ignore network troubleshooting methodology?
+
 ## Related Tutorials
 
 - [Networking – Category Overview](index.md)
@@ -454,7 +457,14 @@ dig +short SERVICE.example.com @8.8.8.8
 - [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md) *(next in Module 5)*
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [DNS Records and Troubleshooting](dns-records-and-troubleshooting.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 - [AWS Troubleshooting VPC Connectivity](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-troubleshooting.html)
 - [REBASH Academy — Troubleshooting Linux Systems](../linux/troubleshooting-linux-systems.md)
+
+**Expected result:**
+
+`/tmp/incident-notes.txt` contains timeline, evidence commands, and next actions.

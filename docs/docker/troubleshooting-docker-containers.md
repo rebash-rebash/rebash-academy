@@ -4,6 +4,7 @@ description: Systematic Docker troubleshooting — logs, inspect, exec, networki
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -47,39 +48,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify image architecture mismatches and missing dependencies
 - [ ] Document findings in incident runbooks suitable for on-call engineers
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
-
-SYM: "Symptom\n502 / exit 137 / hang"
-    L1: "Container\nrunning?" {
-      shape: diamond
-    }
-    SYM -> L1
-    EXIT: "Check exit code\nlogs / inspect"
-    L1 -> EXIT: No
-    L2: "App healthy\ninside container?" {
-      shape: diamond
-    }
-    L1 -> L2: Yes
-    APP: "exec + app logs\nconfig / env"
-    L2 -> APP: No
-    L3: "Network path\nOK?" {
-      shape: diamond
-    }
-    L2 -> L3: Yes
-    NET: "port / DNS / firewall"
-    L3 -> NET: No
-    L4: "Storage / host\nOK?" {
-      shape: diamond
-    }
-    L3 -> L4: Yes
-    STORE: "volumes / disk / perms"
-    L4 -> STORE: No
-    EXT: "Upstream dependency"
-    L4 -> EXT: Yes
-```
+![Architecture diagram for Troubleshooting Docker Containers](../assets/images/troubleshooting-docker-containers.svg)
 
 Work top-down: container lifecycle → application → network → storage → external services.
 
@@ -251,6 +222,38 @@ docker restart mycontainer
 
 Useful for correlating restarts with deploy scripts or health check failures.
 
+
+### A calm diagnostic order
+
+Start with `docker ps -a`, `docker logs`, and `docker inspect` before deleting evidence. Exit codes, OOMKilled, and health status usually explain crash loops faster than rebuilding images. For networking, test DNS and connectivity from a throwaway client on the same user-defined network. Reproduce on a clean name/port before assuming the daemon is corrupt — most “Docker is broken” tickets are port conflicts, restart policies, or bad entrypoints.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
 ## Hands-on Lab
 
 ### Step 1 – Reproduce a crash loop
@@ -265,6 +268,9 @@ docker logs rebash-crash
 ```
 
 **Explanation:** Exit code 1 with restart policy creates a restart loop. `docker ps` shows Restarting status.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 2 – Diagnose exit code
 
@@ -290,6 +296,9 @@ docker rm -f rebash-web rebash-web2 2>/dev/null || true
 
 **Explanation:** Second container fails with port conflict — classic production error when old container still holds the port.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 4 – Network connectivity between containers
 
 **Command:**
@@ -305,6 +314,9 @@ docker network rm rebash-debug-net
 
 **Explanation:** Embedded DNS resolves container name on user-defined bridge network.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 5 – Volume permission simulation
 
 **Command:**
@@ -318,6 +330,9 @@ rm -rf /tmp/rebash-vol-lab
 
 **Explanation:** Read-only mount produces write error — match mount options to app requirements.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 6 – Simulate OOM (optional, use small limit)
 
 **Command:**
@@ -330,7 +345,24 @@ docker inspect rebash-oom 2>/dev/null | jq '.[0].State.OOMKilled' || echo "Conta
 
 **Explanation:** Low memory limit triggers OOM kill — exit code often 137.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Crash loop | You reproduced and diagnosed a restarting container via ps/inspect |
+| Exit code | Inspect shows the expected ExitCode / OOMKilled fields |
+| Port conflict | Second publish attempt fails as documented |
+| Cleanup | All `rebash-*` debug containers and networks removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -380,6 +412,16 @@ docker stats "$CONTAINER" --no-stream 2>/dev/null || echo "Not running"
 Make executable: `chmod +x ~/bin/docker-triage.sh`
 
 **Note:** The triage script uses `docker ps --format` with Go templates inside a bash file — safe for execution. Prefer `jq` in documentation examples to avoid Jinja macro conflicts with double-brace syntax.
+
+## Security Considerations
+
+- Prefer non-destructive diagnostics (`logs`, `inspect`, `events`) before `rm -f` on unknown workloads
+- Do not paste production secrets from `docker inspect` into tickets or chat
+- Avoid `--privileged` debug containers on shared hosts; use targeted `docker exec` instead
+- Capture exit codes and OOM flags carefully — misread signals lead to unsafe “fixes”
+- Isolate reproduction on a lab network; do not attach debug containers to production overlays
+- Clean up crash-loop and port-conflict lab containers so the next engineer is not debugging your leftovers
+
 
 ## Common Mistakes
 
@@ -458,6 +500,9 @@ Make executable: `chmod +x ~/bin/docker-triage.sh`
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md) — network layer deep dive
 - [Network Troubleshooting Methodology](../networking/network-troubleshooting-methodology.md) — general network debug framework
 - [Docker Capstone and Next Steps](docker-capstone-and-next-steps.md) *(next in Module 6)*
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

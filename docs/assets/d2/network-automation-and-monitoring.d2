@@ -1,0 +1,46 @@
+direction: right
+
+Git: "Git Repository" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        TF: "Terraform\nVPC · DNS · SG"
+        ANS: "Ansible Playbooks\nFirewall · DNS"
+    }
+    CI: "CI/CD Pipeline" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        Plan: "terraform plan"
+        Apply: "ansible-playbook / apply"
+    }
+    Targets: "Monitored Infrastructure" {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        NE: "node_exporter\nLinux hosts"
+        SP: "SmokePing\nLatency probes"
+        BB: "Blackbox Exporter\nHTTP/TCP/ICMP"
+    }
+    Observability: "Observability Stack" {
+      style: {
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
+      }
+        Prom: Prometheus
+        Graf: Grafana
+        Alert: Alertmanager
+    }
+    Git: Git
+    CI: CI
+    Git -> CI
+    Targets: Targets
+    CI -> Targets
+    Targets.NE -> Observability.Prom
+    Targets.SP -> Observability.Prom
+    Targets.BB -> Observability.Prom
+    Observability.Prom -> Observability.Graf
+    Observability.Prom -> Observability.Alert

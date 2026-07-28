@@ -4,6 +4,7 @@ description: Navigate commit history with git log, compare versions with git dif
 difficulty: beginner
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -42,27 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Visualize history graphs for merge-heavy repos
 - [ ] Export diffs for review and compliance archives
 
-## History Navigation Diagram
+## Architecture
 
-```d2
-direction: down
+History commands walk the commit graph and diffs compare trees so you can answer what changed, when, and by whom.
 
-HEAD: "HEAD / main"
-    C1: "commit N\nlatest fix"
-    C2: "commit N-1\nfeature add"
-    C3: "commit N-2\ninitial"
-    HEAD -> C1
-    C1 -> C2
-    C2 -> C3
-    LOG: "git log"
-    LOG -> HEAD
-    DIFF: "git diff C2 C1"
-    DIFF -> C1
-    BLAME: "git blame file"
-    BLAME -> C2
-    SHOW: "git show C1"
-    SHOW -> C1
-```
+![Architecture diagram for Viewing History and Diffs](../assets/images/viewing-history-and-diffs.svg)
 
 ## Theory
 
@@ -193,6 +178,8 @@ echo "memory: 512Mi" >> deploy.yaml && git add . && git commit -m "feat: add mem
 git log --oneline
 ```
 
+**Expected result:** `git log --oneline` lists the lab commits in order.
+
 ### Step 2 – Graph and decorated log
 
 **Command:**
@@ -201,6 +188,8 @@ git log --oneline
 git log --graph --decorate --oneline --all
 git log --stat -2
 ```
+
+**Expected result:** Graph or decorate options show branch tips as expected.
 
 ### Step 3 – Compare commits
 
@@ -213,6 +202,8 @@ git diff HEAD~1 HEAD -- deploy.yaml
 
 **Explanation:** `HEAD~2` means two commits before HEAD.
 
+**Expected result:** `git show` / `git diff` include the lab file hunk.
+
 ### Step 4 – git show and file at commit
 
 **Command:**
@@ -221,6 +212,8 @@ git diff HEAD~1 HEAD -- deploy.yaml
 git show HEAD~1 -- deploy.yaml
 git show HEAD~2:deploy.yaml
 ```
+
+**Expected result:** Path-limited log only shows commits touching that path.
 
 ### Step 5 – git blame
 
@@ -231,6 +224,8 @@ git blame deploy.yaml
 git blame -L 1,3 deploy.yaml
 ```
 
+**Expected result:** Blame or pickaxe search returns the commit that introduced the lab string.
+
 ### Step 6 – Pickaxe search
 
 **Command:**
@@ -240,6 +235,8 @@ git log -S "replicas: 3" --oneline
 git log --grep="scale" --oneline
 ```
 
+**Expected result:** Range comparisons (`main..feature` style) list only divergent commits.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -248,7 +245,25 @@ git log --grep="scale" --oneline
 cd /tmp && rm -rf git-history-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab repository removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| log | Oneline/graph output shows expected commits |
+| show/diff | Patch output includes the lab file change |
+| blame/pickaxe | At least one history search command returns the lab commit |
+| Cleanup | Lab repo removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -275,6 +290,14 @@ git log --since="$SINCE" \
   --date=iso-strict \
   --name-status
 ```
+
+## Security Considerations
+
+- Be careful pasting `git show` output into tickets — diffs may include secrets or PII
+- Limit who can clone repositories that contain historical credentials even after rotation
+- Prefer `git log -p` locally over exporting full patch series to untrusted channels
+- When reviewing binary diffs, confirm they are expected artefacts, not injected payloads
+- Use signed tags for release points you will audit later
 
 ## Common Mistakes
 
@@ -349,6 +372,9 @@ git log --since="$SINCE" \
 - [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

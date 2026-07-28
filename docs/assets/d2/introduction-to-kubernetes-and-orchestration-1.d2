@@ -1,0 +1,13 @@
+direction: right
+
+USER: "Engineer / CI"
+    YAML: "Desired State\nYAML manifest"
+    API: "API Server"
+    CTRL: Controllers
+    ACTUAL: "Actual State\nrunning Pods"
+    USER -> YAML
+    YAML -> API
+    API -> CTRL
+    CTRL -> ACTUAL
+    ACTUAL -> CTRL
+    CTRL -> API

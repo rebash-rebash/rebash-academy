@@ -1,0 +1,18 @@
+direction: down
+
+START: "Start bisect\nbad=HEAD good=v1.4.0"
+    MID: "Checkout middle commit"
+    TEST: "Test passes?" {
+      shape: diamond
+    }
+    GOOD: "Mark good\nsearch upper half"
+    BAD: "Mark bad\nsearch lower half"
+    FOUND: "First bad commit found"
+    START -> MID
+    MID -> TEST
+    TEST -> GOOD: yes
+    GOOD -> MID
+    TEST -> BAD: no
+    BAD -> MID
+    GOOD -> FOUND
+    BAD -> FOUND

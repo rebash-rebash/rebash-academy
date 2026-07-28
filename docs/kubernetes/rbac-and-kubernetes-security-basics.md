@@ -4,6 +4,7 @@ description: Control who can do what in your cluster with Roles, ClusterRoles, R
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -45,40 +46,15 @@ By the end of this tutorial, you will be able to:
 - [ ] Create Roles and ClusterRoles with granular rules on resources and verbs
 - [ ] Bind Roles to users, groups, and ServiceAccounts via RoleBindings and ClusterRoleBindings
 - [ ] Scope developer access to specific namespaces using RBAC
-- [ ] Configure Pod ServiceAccounts and understand default token behavior
+- [ ] Configure Pod ServiceAccounts and understand default token behaviour
 - [ ] Apply security contexts for non-root containers and read-only filesystems
 - [ ] Audit RBAC with `kubectl auth can-i` and avoid overly permissive bindings
 
-## Architecture Diagram
+## Architecture
 
 RBAC sits in the authorization path after authentication. Bindings connect subjects (users, groups, ServiceAccounts) to roles.
 
-```d2
-direction: down
-
-REQ: "API Request"
-    AUTHN: "Authentication\ncert / token / OIDC"
-    AUTHZ: "Authorization\nRBAC webhook"
-    ADM: "Admission Controllers"
-    ETCD: etcd
-    REQ -> AUTHN
-    AUTHN -> AUTHZ: identity
-    AUTHZ -> ADM: allowed
-    ADM -> ETCD
-    RBAC: "RBAC Objects" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        ROLE: "Role / ClusterRole\nrules: verbs + resources"
-        BIND: "RoleBinding / ClusterRoleBinding"
-        SA: ServiceAccount
-        ROLE -> BIND
-        SA -> BIND
-    }
-    RBAC: RBAC
-    AUTHZ -> RBAC
-```
+![Architecture diagram for RBAC and Kubernetes Security Basics](../assets/images/rbac-and-kubernetes-security-basics.svg)
 
 ## Theory
 
@@ -431,7 +407,24 @@ kubectl delete namespace rbac-lab --wait=false
 
 **Explanation:** Regular RBAC audits (`can-i`, reviewing bindings) catch permission creep after incidents or onboarding changes.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| SA + Role | ServiceAccount bound via Role/RoleBinding |
+| can-i | `kubectl auth can-i` matches the intended allow/deny |
+| Least privilege | Subject cannot perform a deliberately denied verb |
+| Cleanup | Lab RBAC objects and namespace cleaned up |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -471,6 +464,16 @@ roleRef:
   name: cicd-deployer
   apiGroup: rbac.authorization.k8s.io
 ```
+
+## Security Considerations
+
+- Prefer Roles/RoleBindings over ClusterRoles for namespace-scoped work
+- Avoid binding `cluster-admin` to human users or CI service accounts
+- Audit `escalate`, `bind`, and `impersonate` verbs — they are privilege multipliers
+- Short-lived tokens and OIDC groups beat long-lived service account secrets
+- Review aggregated ClusterRoles before granting “edit” — it often includes Secret access
+- Test RBAC with `kubectl auth can-i` as the subject, not only as an admin
+
 
 ## Common Mistakes
 
@@ -548,6 +551,9 @@ roleRef:
 - [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md) *(next in Module 5)*
 - [Namespaces and Resource Management](namespaces-and-resource-management.md)
 - [Networking – Reverse Proxy and Ingress](../networking/reverse-proxy-and-ingress-basics.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

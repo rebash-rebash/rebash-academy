@@ -4,6 +4,7 @@ description: Understand containers vs virtual machines, why Docker became the in
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -48,56 +49,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Map containerization to CI/CD, microservices, and cloud-native architecture patterns
 - [ ] Recognize when containers are the right tool — and when VMs or bare metal still apply
 
-## Architecture Diagram
+## Architecture
 
 The diagram below contrasts virtual machines and containers at the infrastructure layer. Understanding this distinction explains why containers start in seconds, use less memory, and share the host kernel — and why VMs still matter for strong isolation and multi-OS workloads.
 
-```d2
-direction: right
-
-*: {
-  style: {
-    border-radius: 16
-    font-size: 14
-    bold: true
-    shadow: true
-    stroke-width: 2
-  }
-}
-
-(** -> **)[*]: {
-  style.stroke-width: 2
-  style.font-size: 13
-  style.bold: true
-  style.font-color: "#0f172a"
-}
-
-VM: "Virtual Machine Stack" {
-  style.fill: "#dbeafe"
-  style.stroke: "#2563eb"
-  style.font-color: "#1e3a8a"
-  APP_VM: Application
-  OS_GUEST: "Guest OS — full kernel"
-  HYP: "Hypervisor\nKVM / VMware / Hyper-V"
-  HOST_OS_VM: "Host OS"
-  HW_VM: "Physical Hardware"
-  APP_VM -> OS_GUEST -> HYP -> HOST_OS_VM -> HW_VM
-}
-
-CONTAINER: "Container Stack" {
-  style.fill: "#dcfce7"
-  style.stroke: "#16a34a"
-  style.font-color: "#14532d"
-  APP_C1: "App Container A"
-  APP_C2: "App Container B"
-  ENGINE: "Container Engine\nDocker / containerd"
-  HOST_OS_C: "Host OS — shared kernel"
-  HW_C: "Physical Hardware"
-  APP_C1 -> ENGINE
-  APP_C2 -> ENGINE
-  ENGINE -> HOST_OS_C -> HW_C
-}
-```
+![Architecture diagram for Introduction to Containers and Docker](../assets/images/introduction-to-containers-and-docker.svg)
 
 ## Theory
 
@@ -182,25 +138,8 @@ Today, Docker Inc. maintains Docker Desktop and Docker Engine, while the **Open 
 
 ### The Container Ecosystem
 
-```d2
-direction: right
+![The Container Ecosystem diagram](../assets/images/introduction-to-containers-and-docker-1.svg)
 
-DEV: Developer
-    DF: Dockerfile
-    BUILD: "docker build"
-    IMG: Image
-    REG: "Registry\nDocker Hub / ECR / GCR"
-    RUN: "docker run"
-    CONT: Container
-    ORCH: "Orchestrator\nKubernetes / ECS"
-    DEV -> DF
-    DF -> BUILD
-    BUILD -> IMG
-    IMG -> REG
-    REG -> RUN
-    RUN -> CONT
-    CONT -> ORCH
-```
 
 | Component | Role | Examples |
 |-----------|------|----------|
@@ -370,7 +309,24 @@ echo "Docker: $(command -v docker >/dev/null && docker --version || echo 'not in
 
 **Explanation:** Capture a baseline before installation. Include this in runbooks when troubleshooting container runtime issues later.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Docker available | `docker version` shows client and server (or you documented a conceptual-only path) |
+| First container | `hello-world` or equivalent lab container runs successfully |
+| Mental model | You can explain image vs container vs engine in your own words |
+| Cleanup | Lab containers removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -430,6 +386,16 @@ echo "Recommend at least 10 GB free for images and layers"
 ```
 
 Make executable: `chmod +x ~/bin/container-preflight.sh && ~/bin/container-preflight.sh`
+
+## Security Considerations
+
+- Treat containers as processes with shared-kernel isolation — not VMs; never assume host compromise is impossible
+- Prefer official or signed base images; pin digests for reproducible labs and production
+- Do not run untrusted images; inspect Dockerfiles before building third-party sources
+- Keep Docker Engine patched; container escapes often target outdated runtimes
+- Avoid mounting the Docker socket into containers unless you fully understand the privilege escalation risk
+- Practise cleanup so abandoned privileged containers do not linger on shared lab hosts
+
 
 ## Common Mistakes
 
@@ -507,6 +473,9 @@ Make executable: `chmod +x ~/bin/container-preflight.sh && ~/bin/container-prefl
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md) — version Dockerfiles and configs
 - [Docker Installation and Setup](docker-installation-and-setup.md) *(next in Module 1)*
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

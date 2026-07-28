@@ -4,6 +4,7 @@ description: Master navigation, file operations, pipes, redirection, find, head/
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -45,6 +46,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Search the filesystem by name, type, size, and modification time using `find`
 - [ ] Extract portions of output with `head`, `tail`, and count lines/words/bytes with `wc`
 - [ ] Use tab completion and command history efficiently to reduce errors and save time
+
+## Architecture
+
+The shell is your control plane: locate context, inspect state, then change files and processes deliberately.
+
+![Architecture diagram for Essential Linux Commands](../assets/images/essential-linux-commands.svg)
 
 ## Theory
 
@@ -360,7 +367,22 @@ history | tail -5
 
 History numbers will differ on your system.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Navigation | `pwd`, `ls`, `cd` exercises match expected paths |
+| File ops | Create, copy, move, and remove lab files without touching system paths |
+| Pipes/redirects | Pipeline demos produce the documented output shape |
+| Cleanup | `/tmp` lab files removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -438,6 +460,14 @@ else
 fi
 ```
 
+## Security Considerations
+
+- Avoid piping untrusted input into shells (`curl | bash`); download, inspect, then run
+- Redirection (`>`, `>>`) can destroy files — prefer `tee` with review, and never redirect over system configs as root without a backup
+- Do not embed secrets in command history; use environment files with `0600` permissions or a secrets manager
+- Prefer absolute paths for privileged scripts so `PATH` hijacking cannot substitute binaries
+- Limit `find`/`xargs` mass deletes; dry-run first and scope paths tightly
+
 ## Common Mistakes
 
 !!! warning "Using rm -rf with unverified paths"
@@ -478,7 +508,7 @@ fi
 | Tab completion not working | bash-completion not installed | Install package; verify shell is bash (`echo $SHELL`) |
 | `tail -f` shows nothing | File not growing or wrong path | Verify with `ls -l file`; check app is logging there |
 | `wc` counts differ from editor | Binary vs text line endings | Use `wc -l` on same file; check for `\r` with `file` |
-| History shows wrong commands | Multiple terminal sessions | Each session appends independently — expected behavior |
+| History shows wrong commands | Multiple terminal sessions | Each session appends independently — expected behaviour |
 
 ## Summary
 
@@ -518,6 +548,9 @@ fi
 - [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md)
 - [Shell Scripting Fundamentals](shell-scripting-fundamentals.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -4,6 +4,7 @@ description: Harden Kubernetes clusters with Pod Security Standards, NetworkPoli
 difficulty: advanced
 estimated_time: "55 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -49,47 +50,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Secure secrets with External Secrets Operator or Sealed Secrets
 - [ ] Enforce image provenance and vulnerability thresholds in the deploy pipeline
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
-
-Perimeter: Perimeter {
-        ING: "Ingress + TLS"
-        WAF: "WAF / rate limit"
-    }
-    Admission: Admission {
-        API: "Kubernetes API"
-        KYV: "Kyverno / Gatekeeper"
-        API -> KYV
-    }
-    Namespace: "votestack namespace" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NETP: NetworkPolicy
-        PSS: "Pod Security: restricted"
-        WEB: web
-        APIP: api
-        WORK: worker
-        WEB -> NETP
-        APIP -> NETP
-        WORK -> NETP
-    }
-    Data: Data {
-        PG: postgres
-        RD: redis
-    }
-    Perimeter.ING -> Namespace.WEB
-    Perimeter.ING -> Namespace.APIP
-    Namespace.APIP -> Data.RD
-    Namespace.APIP -> Data.PG
-    Namespace.WORK -> Data.RD
-    Namespace.WORK -> Data.PG
-    Namespace: Namespace
-    Admission.KYV -> Namespace
-```
+![Architecture diagram for Kubernetes Security Hardening](../assets/images/kubernetes-security-hardening.svg)
 
 ## Theory
 
@@ -259,6 +222,9 @@ kubectl apply -f bad-pod.yaml -n votestack
 # Expected: forbidden by PodSecurity
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 2 — Default-deny NetworkPolicies
 
 ```yaml
@@ -334,6 +300,9 @@ kubectl run -it debug --rm --image=busybox -n votestack -- wget -qO- http://vote
 # Should succeed from allowed paths; fail from unauthorized pods
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 3 — Install Kyverno and enforce policies
 
 ```bash
@@ -365,6 +334,9 @@ spec:
               - image: "!*:latest"
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Test: deploy pod with `nginx:latest` — should be blocked.
 
 ### Lab 4 — Sealed Secrets for database credentials
@@ -390,6 +362,9 @@ envFrom:
   - secretRef:
       name: postgres-credentials
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 5 — RBAC for GitOps agent
 
@@ -421,20 +396,21 @@ subjects:
     namespace: argocd
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 6 — Image scanning in CI + admission
 
 CI gate (GitHub Actions):
 
-{% raw %}
 ```yaml
 - name: Trivy scan
   uses: aquasecurity/trivy-action@master
   with:
-    image-ref: ghcr.io/org/votestack-api:${{ github.sha }}
+    image-ref: ghcr.io/org/votestack-api:${{ '{{' }} github.sha {{ '}}' }}
     severity: CRITICAL,HIGH
     exit-code: 1
 ```
-{% endraw %}
 
 Kyverno verifyImages (with cosign signatures in mature setups):
 
@@ -464,7 +440,25 @@ spec:
                       -----END PUBLIC KEY-----
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| PSS/securityContext | Restricted settings applied to the lab workload |
+| NetworkPolicy | Policy denies unexpected traffic when tested |
+| Non-root | Pod refuses or runs non-root per lab |
+| Cleanup | Hardening lab namespace/objects deleted |
+
+## Code Walkthrough
 
 ```bash
 # Pod Security
@@ -492,6 +486,16 @@ helm install falco falcosecurity/falco -n falco --create-namespace
 | NetworkPolicy | Connect from unauthorized pod — expect timeout |
 | Kyverno | `kubectl get policyreport -A` |
 | Sealed Secret | `kubectl get sealedsecret -n votestack` |
+
+## Security Considerations
+
+- Enforce Pod Security Standards (restricted) on application namespaces
+- Drop capabilities, run as non-root, and use read-only root filesystems by default
+- Enable NetworkPolicies and default-deny where the CNI supports them
+- Turn on Secrets encryption at rest and API audit logging
+- Restrict admission of privileged Pods via admission controllers / policy engines
+- Keep nodes patched and minimise host access — most escapes still need a node foothold
+
 
 ## Common Mistakes
 
@@ -577,6 +581,9 @@ helm install falco falcosecurity/falco -n falco --create-namespace
 - [Docker Security Hardening](../docker/docker-security-hardening.md)
 - [Network Security Hardening](../networking/network-security-hardening.md)
 - [Kubernetes – Category Overview](index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

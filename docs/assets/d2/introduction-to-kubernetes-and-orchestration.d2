@@ -1,0 +1,42 @@
+direction: down
+
+DEV: "Developer Workflow" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        GIT: "Git Repository\nmanifests / Helm"
+        CI: "CI/CD Pipeline"
+        REG: "Container Registry\nDocker Hub / ECR / GCR"
+    }
+    CP: "Kubernetes Control Plane" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        API: "API Server"
+        ETCD: "etcd — cluster state"
+        SCHED: Scheduler
+        CM: "Controller Manager"
+        API -> ETCD
+        SCHED -> API
+        CM -> API
+    }
+    DATA: "Data Plane — Worker Nodes" {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        KUBELET: kubelet
+        RUNTIME: "container runtime\ncontainerd / CRI-O"
+        POD1: Pod
+        POD2: Pod
+        KUBELET -> RUNTIME
+        RUNTIME -> POD1
+        RUNTIME -> POD2
+    }
+    DEV.GIT -> DEV.CI
+    DEV.CI -> DEV.REG
+    DEV.CI -> CP.API
+    DEV.REG -> DATA.RUNTIME
+    CP.API -> DATA.KUBELET

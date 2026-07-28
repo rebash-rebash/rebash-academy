@@ -4,6 +4,7 @@ description: Create, extract, and verify archives with tar, gzip, bzip2, and xz 
 difficulty: beginner
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -42,6 +43,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain tar flags (`-c`, `-x`, `-t`, `-v`, `-f`, `-z`, `-j`, `-J`) confidently
 - [ ] Implement a safe backup workflow with verification before deletion
 - [ ] Avoid common pitfalls like absolute paths and tarbombs
+
+## Architecture
+
+Archiving bundles files; compression shrinks the bundle. Always list before extract when the source is untrusted.
+
+![Architecture diagram for File Archiving and Compression](../assets/images/file-archiving-and-compression.svg)
 
 ## Theory
 
@@ -192,7 +199,22 @@ tar -xzf ~/backups/lab-backup-*.tar.gz -C /tmp \
 
 **Expected output:** Contents of `app.conf` printed or extracted to `/tmp`.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Create | Archive lists (`tar -tzf` / zip listing) match included paths |
+| Extract | Extracted tree matches original lab content |
+| Compress | gzip/xz/zip sizes shrink versus uncompressed input |
+| Cleanup | Archives and extract dirs removed |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -261,6 +283,14 @@ tar -tzf "$ARCHIVE" >/dev/null || { echo "Archive corrupt"; exit 1; }
 tar -xzf "$ARCHIVE" -C "$DEST"
 echo "Restored to $DEST"
 ```
+
+## Security Considerations
+
+- Never extract untrusted archives as root; path traversal (`../../etc/cron.d`) is a classic attack
+- Prefer `tar` with `--restrict` / explicit destination directories and inspect `tar -tzf` before extract
+- Encrypt sensitive backups (`gpg` or age) before storing them on shared or cloud object storage
+- Set restrictive permissions on archive files containing configs or keys (`chmod 600`)
+- Verify checksums of downloaded archives before extraction
 
 ## Common Mistakes
 
@@ -359,6 +389,17 @@ echo "Restored to $DEST"
 
 *Sample answer:* `-p` ( `--preserve-permissions`) on GNU tar, often default for root. Important when backing up `/etc` or application directories with specific ownership.
 
+1. How would you explain file archiving and compression to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore file archiving and compression?
+3. Which metrics or logs would you check first when file archiving and compression misbehaves?
+4. What is a secure default related to file archiving and compression?
+5. How would you validate a change involving file archiving and compression in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around file archiving and compression?
+7. Describe a common anti-pattern with file archiving and compression and how you fix it.
+8. How does file archiving and compression interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for file archiving and compression?
+10. When would you intentionally not follow the default approach taught here?
+
 ## Related Tutorials
 
 - [Linux – Category Overview](index.md)
@@ -367,6 +408,9 @@ echo "Restored to $DEST"
 - [Cron and Task Scheduling](cron-and-task-scheduling.md)
 - [Disk and Filesystem Management](disk-and-filesystem-management.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

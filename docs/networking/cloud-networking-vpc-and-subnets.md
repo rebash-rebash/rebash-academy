@@ -4,6 +4,7 @@ description: Design virtual private clouds with public and private subnets, inte
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -50,65 +51,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Validate VPC connectivity using CLI tools and route table inspection
 - [ ] Apply multi-AZ design patterns for high availability
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows a standard **multi-AZ VPC** with two public subnets (for NAT gateways and load balancers) and two private subnets (for application and database tiers). Each AZ has its own subnet pair; route tables differ between public and private tiers.
 
-```d2
-direction: down
+![Architecture diagram for Cloud Networking: VPC and Subnets](../assets/images/cloud-networking-vpc-and-subnets.svg)
 
-Internet: Internet {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        Users: "Users / Clients"
-    }
-    VPC: "VPC 10.0.0.0/16" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        IGW: "Internet Gateway"
-        AZ1: "Availability Zone A" {
-          style: {
-            fill: "#ffedd5"
-            stroke: "#ea580c"
-          }
-            PubA: "Public Subnet\n10.0.1.0/24"
-            PrivA: "Private Subnet\n10.0.11.0/24"
-            ALB: "Application Load Balancer"
-            AppA: "App Servers"
-            DBA: "Database Primary"
-        }
-        AZ2: "Availability Zone B" {
-          style: {
-            fill: "#f3e8ff"
-            stroke: "#9333ea"
-          }
-            PubB: "Public Subnet\n10.0.2.0/24"
-            PrivB: "Private Subnet\n10.0.12.0/24"
-            NAT: "NAT Gateway"
-            AppB: "App Servers"
-            DBB: "Database Replica"
-        }
-        RTpub: "Public Route Table\n0.0.0.0/0 → IGW"
-        RTpriv: "Private Route Table\n0.0.0.0/0 → NAT"
-    }
-    Internet.Users -> VPC.IGW
-    VPC.IGW -> VPC.AZ1.ALB
-    VPC.AZ1.ALB -> VPC.AZ1.AppA
-    VPC.AZ1.ALB -> VPC.AZ2.AppB
-    VPC.AZ1.AppA -> VPC.AZ1.DBA
-    VPC.AZ2.AppB -> VPC.AZ2.DBB
-    VPC.AZ1.PrivA -> VPC.AZ2.NAT
-    VPC.AZ2.PrivB -> VPC.AZ2.NAT
-    VPC.AZ2.NAT -> VPC.IGW
-    VPC.AZ1.PubA -> VPC.RTpub
-    VPC.AZ2.PubB -> VPC.RTpub
-    VPC.AZ1.PrivA -> VPC.RTpriv
-    VPC.AZ2.PrivB -> VPC.RTpriv
-```
 
 ## Theory
 
@@ -262,6 +210,14 @@ echo "IGW: $IGW_ID"
 
 **Explanation:** DNS hostnames allow instances to receive public DNS names (`ec2-xx-xx-xx-xx.compute-1.amazonaws.com`). The IGW must be attached before public routing works.
 
+**Expected result:**
+
+```text
+"VpcId": "vpc-........"
+```
+
+VPC created (or planned) with your chosen CIDR.
+
 ### Step 3 – Create subnets in two availability zones
 
 **Command:**
@@ -286,6 +242,10 @@ echo "Public: $PUB_SUBNET | Private: $PRIV_SUBNET"
 ```
 
 **Explanation:** Public subnets auto-assign public IPs at launch. Private subnets do not — instances there are reachable only from within the VPC unless you add a load balancer or bastion.
+
+**Expected result:**
+
+Subnet IDs returned for public and private subnets across the chosen AZs.
 
 ### Step 4 – Configure route tables
 
@@ -330,6 +290,10 @@ ip route show
 
 **Explanation:** Public instances reach the internet directly. Private instances without a NAT route cannot resolve external endpoints — this is expected and desirable for database tiers.
 
+**Expected result:**
+
+Public instance reaches Internet via IGW path; private instance uses NAT or has no public route, matching design.
+
 ### Step 6 – Clean up lab resources
 
 **Command:**
@@ -344,7 +308,27 @@ aws ec2 delete-internet-gateway --internet-gateway-id "$IGW_ID"
 
 **Explanation:** AWS enforces dependency order on deletion. Always destroy in reverse creation order to avoid orphaned resources and billing surprises.
 
-## Commands
+**Expected result:**
+
+`aws ec2 describe-vpcs` no longer shows the lab VPC (or destroy plan applied).
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Confirm VPC, subnets, IGW/NAT roles, and route tables match the architecture diagram intent.
+2. Explain public vs private subnet routing in one paragraph.
+3. Delete lab VPC resources if you created them in a real account.
+
+| Check | Pass criteria |
+|-------|----------------|
+| VPC/CIDR | Custom VPC exists (or Terraform plan reviewed) with non-overlapping CIDR |
+| Subnets | Public and private subnets in ≥1 AZ with correct route targets |
+| Routing | Public uses IGW; private uses NAT or no Internet route as designed |
+| Instance test | Optional reachability test matches subnet role |
+| Cleanup | Lab VPC/IGW/NAT/subnets/instances terminated to avoid cost |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -415,6 +399,14 @@ resource "aws_route_table_association" "public" {
 }
 ```
 
+## Security Considerations
+
+- Keep databases and internal APIs on private subnets without public IPs; use bastions, SSM, or VPN for admin access
+- Restrict security groups to least privilege source CIDRs; avoid `0.0.0.0/0` on SSH/RDP and data stores
+- Enable VPC Flow Logs for reject/accept visibility and retain them per compliance needs
+- Prevent accidental IGW routes on private route tables; review route tables after every Terraform apply
+- Use separate VPCs or accounts for prod and non-prod to contain blast radius
+
 ## Common Mistakes
 
 !!! warning "Using the default VPC for production"
@@ -441,7 +433,7 @@ resource "aws_route_table_association" "public" {
     Flow logs capture accepted/rejected traffic metadata to CloudWatch or S3. They are essential for security audits and troubleshooting — enable them before an incident, not after.
 
 !!! tip "Tag everything with Environment, Owner, and CostCenter"
-    Untagged VPC resources are the #1 source of cloud billing surprises. Enforce tagging policies via AWS Organizations SCPs or GCP organization constraints.
+    Untagged VPC resources are the #1 source of cloud billing surprises. Enforce tagging policies via AWS Organizations SCPs or GCP organisation constraints.
 
 !!! tip "Plan hybrid connectivity CIDR before first VPC"
     If you will connect on-premises via VPN or Direct Connect, coordinate IP ranges with your network team before allocating `10.0.0.0/16`. Overlapping CIDR blocks cannot be peered without NAT tricks that break end-to-end connectivity.
@@ -486,7 +478,7 @@ resource "aws_route_table_association" "public" {
 
 ??? tip "Sample Answers (Questions 2, 4, and 6)"
 
-    **Q2 — Public vs private subnet:** A subnet is public when its route table contains a route sending `0.0.0.0/0` to an internet gateway, and instances can obtain public IP addresses. "Public" describes routing behavior, not security level. A private subnet lacks a direct IGW route — instances use private RFC 1918 addresses only. Private subnets may still reach the internet outbound via NAT, but the internet cannot initiate connections to them.
+    **Q2 — Public vs private subnet:** A subnet is public when its route table contains a route sending `0.0.0.0/0` to an internet gateway, and instances can obtain public IP addresses. "Public" describes routing behaviour, not security level. A private subnet lacks a direct IGW route — instances use private RFC 1918 addresses only. Private subnets may still reach the internet outbound via NAT, but the internet cannot initiate connections to them.
 
     **Q4 — NAT gateway purpose:** Private instances have no public IP, so return traffic from internet destinations would have nowhere to route back. A NAT gateway in a public subnet translates outbound connections from private IPs to its own public IP (SNAT). Responses return to NAT, which forwards to the original private instance. Inbound-initiated connections still cannot reach private instances — that is the security property.
 
@@ -500,6 +492,9 @@ resource "aws_route_table_association" "public" {
 - [Linux – Category Overview](../linux/index.md)
 - [Docker – Category Overview](../docker/index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

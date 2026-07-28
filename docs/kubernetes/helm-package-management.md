@@ -4,6 +4,7 @@ description: Package, version, and deploy Kubernetes applications with Helm char
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -50,24 +51,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Install charts from public repositories and inspect rendered manifests
 - [ ] Apply Helm best practices for secrets, labels, and chart versioning
 
-## Architecture Diagram
+## Architecture
 
 Helm client renders chart templates + values into manifests, then applies them to the cluster as a tracked release.
 
-```d2
-direction: right
-
-DEV: "Developer / CI"
-    CHART: "Helm Chart\ntemplates + values"
-    HELM: "Helm CLI"
-    API: "Kubernetes API"
-    REL: "Release\nrevision history"
-    DEV -> HELM: "helm upgrade --install"
-    CHART -> HELM
-    HELM -> API: "render + apply"
-    HELM -> REL: "store metadata"
-    REL -> HELM: "helm rollback"
-```
+![Architecture diagram for Helm Package Management](../assets/images/helm-package-management.svg)
 
 ## Theory
 
@@ -86,7 +74,7 @@ Release metadata lives in Secrets (default) or ConfigMaps in the release namespa
 
 ### Chart Structure
 
-```
+```text
 mychart/
 ├── Chart.yaml          # Chart metadata (name, version, appVersion)
 ├── values.yaml         # Default configuration values
@@ -121,27 +109,25 @@ Later files and `--set` take precedence. This layering supports dev/staging/prod
 
 Templates use Go `text/template` with Sprig functions:
 
-{% raw %}
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "mychart.fullname" . }}
+  name: {{ '{{' }} include "mychart.fullname" . {{ '}}' }}
   labels:
-    {{- include "mychart.labels" . | nindent 4 }}
+    {{ '{{' }}- include "mychart.labels" . | nindent 4 {{ '}}' }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ '{{' }} .Values.replicaCount {{ '}}' }}
   template:
     spec:
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          {{- if .Values.resources }}
+        - name: {{ '{{' }} .Chart.Name {{ '}}' }}
+          image: "{{ '{{' }} .Values.image.repository {{ '}}' }}:{{ '{{' }} .Values.image.tag | default .Chart.AppVersion {{ '}}' }}"
+          {{ '{{' }}- if .Values.resources {{ '}}' }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- end }}
+            {{ '{{' }}- toYaml .Values.resources | nindent 12 {{ '}}' }}
+          {{ '{{' }}- end {{ '}}' }}
 ```
-{% endraw %}
 
 Key concepts:
 
@@ -415,7 +401,24 @@ helm list -A | grep helm-lab || echo "All helm-lab releases removed"
 
 **Explanation:** `helm uninstall` removes release-tracked resources. Resources created outside Helm labels may orphan — use consistent labeling.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Install | Chart installs into the target namespace |
+| Values | Custom values change a visible resource field |
+| Upgrade/rollback | Upgrade and rollback succeed |
+| Cleanup | `helm uninstall` removes the release |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -482,10 +485,20 @@ autoscaling:
 
 Deploy: `helm upgrade -i web ./chart -f values.yaml -f values-staging.yaml -n staging`
 
+## Security Considerations
+
+- Pin chart versions and review `values.yaml` diffs before upgrade
+- Never put plaintext secrets in values committed to Git — use secret operators or sealed values
+- Prefer `helm template` + policy checks in CI before `helm upgrade --install`
+- Limit who can install cluster-wide charts (operators, CRDs)
+- Verify chart provenance/signatures when publishers provide them
+- Uninstall abandoned releases so leftover Services and Ingresses do not stay exposed
+
+
 ## Common Mistakes
 
 !!! warning "Pinning chart version but not image tag"
-    `helm upgrade bitnami/nginx` without `--version` pulls latest chart — behavior may change. Pin both chart version and `image.tag` in values.
+    `helm upgrade bitnami/nginx` without `--version` pulls latest chart — behaviour may change. Pin both chart version and `image.tag` in values.
 
 !!! warning "Storing secrets in values.yaml committed to Git"
     Plaintext passwords in charts leak via Git history. Use External Secrets, SOPS, or CI-injected overrides.
@@ -558,6 +571,9 @@ Deploy: `helm upgrade -i web ./chart -f values.yaml -f values-staging.yaml -n st
 - [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md) *(next — Module 6 Production)*
 - [Ingress and External Access](ingress-and-external-access.md)
 - [ConfigMaps and Secrets](configmaps-and-secrets.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

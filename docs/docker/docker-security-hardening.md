@@ -4,6 +4,7 @@ description: Harden containers with non-root users, read-only root filesystems, 
 difficulty: advanced
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -48,25 +49,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Combine `--security-opt`, `--cap-drop`, and `--read-only` for layered hardening
 - [ ] Explain limits of container security and when to add AppArmor/SELinux or Kubernetes policies
 
-## Architecture Diagram
+## Architecture
 
 Security layers stack from the host kernel upward. Each runtime flag removes attack surface without replacing host patching or network segmentation.
 
-```d2
-direction: down
-
-HOST: "Host kernel + patches"
-    SECCOMP: "seccomp profile\nsyscall filter"
-    CAPS: "Linux capabilities\nCAP_DROP / CAP_ADD"
-    USER: "Non-root UID / GID"
-    RO: "Read-only rootfs + tmpfs"
-    APP: "Application code"
-    HOST -> SECCOMP
-    SECCOMP -> CAPS
-    CAPS -> USER
-    USER -> RO
-    RO -> APP
-```
+![Architecture diagram for Docker Security Hardening](../assets/images/docker-security-hardening.svg)
 
 ## Theory
 
@@ -201,6 +188,11 @@ Hardening runtime without fixing images is incomplete:
 
 See [Container Registries and Distribution](container-registries-and-distribution.md) for digest pinning.
 
+
+### Defence in depth for containers
+
+Hardening combines image hygiene (minimal base, non-root user, no secrets in layers) with runtime controls (read-only rootfs, dropped capabilities, seccomp/AppArmor, resource limits). No single flag makes a container “secure”; attackers chain writable filesystems, privileged mode, and mounted sockets. Apply controls by default in Compose/Kubernetes templates so developers opt out consciously rather than forgetting to opt in.
+
 ## Hands-on Lab
 
 Harden a simple nginx container step by step.
@@ -269,6 +261,9 @@ docker rm -f sec-lab-ro
 
 **Explanation:** Writable paths nginx needs are tmpfs mounts. Writes to `/etc` fail.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 4 – Drop all capabilities
 
 **Command:**
@@ -288,6 +283,9 @@ docker rm -f sec-lab-caps
 ```
 
 **Explanation:** nginx does not need extra capabilities when not binding port 80 as root. If curl fails, add back specific caps with `--cap-add`.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 5 – Enable no-new-privileges
 
@@ -310,6 +308,9 @@ docker rm -f sec-lab-nnp
 
 **Explanation:** Blocks setuid escalation paths inside the container.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 6 – Inspect seccomp and security options
 
 **Command:**
@@ -327,6 +328,9 @@ docker rm -f sec-lab-inspect
 ```
 
 **Explanation:** Verify runtime flags persisted in container config — matches deploy manifests in Swarm/Kubernetes translations.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 7 – Build a hardened custom image
 
@@ -360,7 +364,24 @@ cd /tmp && rm -rf hardened-lab
 
 **Explanation:** Embedding `USER nginx` in the image prevents accidental root deploys when operators omit `--user`.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Non-root | Hardened container runs as non-root user |
+| Read-only | Write attempts to rootfs fail without required tmpfs |
+| Caps/limits | Capability drop and/or resource limits applied as documented |
+| Cleanup | All `sec-lab-*` containers removed |
+
+## Code Walkthrough
 
 | Flag / option | Description | Example |
 |---------------|-------------|---------|
@@ -413,6 +434,16 @@ services:
 ```
 
 Plain `docker compose` on a single node supports most keys; validate with `docker compose config`.
+
+## Security Considerations
+
+- Run containers as non-root with read-only root filesystems and explicit writable tmpfs where needed
+- Drop Linux capabilities (`--cap-drop=ALL` then add back only what is required)
+- Avoid `--privileged` and host namespace shares (`pid`, `network`, `ipc`) except in tightly controlled break-glass cases
+- Apply seccomp and AppArmor/SELinux profiles; do not disable them to silence errors
+- Limit CPU, memory, and PIDs to contain noisy-neighbour and fork-bomb risk
+- Continuously scan and rebuild images — hardening flags do not fix vulnerable packages
+
 
 ## Common Mistakes
 
@@ -489,6 +520,9 @@ Plain `docker compose` on a single node supports most keys; validate with `docke
 - [Troubleshooting Docker Containers](troubleshooting-docker-containers.md) *(next in Module 5)*
 - [Linux Security Hardening Basics](../linux/linux-security-hardening-basics.md)
 - [Environment Variables and Secrets](environment-variables-and-secrets.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -4,6 +4,7 @@ description: Manage systemd units on remote servers with systemctl --host, dedic
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -44,47 +45,10 @@ By the end of this tutorial, you will be able to:
 - [ ] Compare remote systemctl with configuration management and SSH ad-hoc patterns
 - [ ] Apply security boundaries so operators cannot reload arbitrary units
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+![Architecture diagram for remote systemd services](../assets/images/remote-systemd-services.svg)
 
-Admin: Workstation {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        A: "systemctl --host"
-        B: "journalctl --host"
-    }
-    SSH: Transport {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        C: "Encrypted SSH Session"
-    }
-    Remote: Server {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        D: "systemd-manager user"
-        E: "polkit / pkaction"
-        F: "systemd PID 1"
-        G: "Unit Files"
-        H: "Running Services"
-    }
-    Admin.A -> SSH.C
-    Admin.B -> SSH.C
-    SSH.C -> Remote.D
-    Remote.D -> Remote.E
-    Remote.E -> Remote.F: authorized
-    I: "Access Denied"
-    Remote.E -> I: denied
-    Remote.F -> Remote.G
-    Remote.F -> Remote.H
-```
 
 ## Theory
 
@@ -178,7 +142,7 @@ Unit file edits still happen **on the server** — remote systemctl does not syn
 - Restrict `systemd-manager` SSH access by source IP in `sshd_config` (`Match Address`)
 - Never share the management private key across people — use individual keys mapped to the same polkit-scoped user, or separate users per team
 - Audit polkit and SSH logs centrally
-- Deny `daemon-reload` and `enable` unless platform team requires it — those change boot behavior
+- Deny `daemon-reload` and `enable` unless platform team requires it — those change boot behaviour
 
 ## Hands-on Lab
 
@@ -321,7 +285,7 @@ timeout 3 journalctl --host ${MGMT_USER}@${REMOTE} -u nginx -f --no-pager || tru
 
 Add to `~/.ssh/config`:
 
-```
+```text
 Host web-fleet
     HostName YOUR_REMOTE_IP
     User systemd-manager
@@ -358,7 +322,22 @@ Run against configured host:
 
 **Expected output:** host name with `running` and failed unit count.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Remote status | Remote `systemctl status` (via SSH/host) returns for the target unit |
+| Restart | Controlled restart completes; service returns to active |
+| Auth | Commands fail clearly without credentials (no silent success) |
+| Cleanup | No persistent insecure remote access left enabled |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -421,6 +400,14 @@ for svc in "${SERVICES[@]}"; do
   systemctl --host "$HOST" is-active "$svc"
 done
 ```
+
+## Security Considerations
+
+- Restrict remote management to bastion hosts and SSH keys; never expose D-Bus or systemd remotely without auth
+- Prefer `systemctl --host` / SSH over opening additional management ports
+- Limit which units remote operators may restart via sudoers or polkit rules
+- Audit remote session logs when services are restarted outside change windows
+- Keep unit drop-ins under configuration management so drift is visible
 
 ## Common Mistakes
 
@@ -490,6 +477,9 @@ done
 - [Disk and Filesystem Management](disk-and-filesystem-management.md) *(next)*
 - [systemd Service Management](systemd-service-management.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

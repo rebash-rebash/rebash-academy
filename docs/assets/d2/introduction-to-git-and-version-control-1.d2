@@ -1,0 +1,14 @@
+direction: right
+
+DEV: "Developer / Engineer"
+    GIT: "Git Repository"
+    PR: "Pull Request / MR"
+    CI: "CI Pipeline\nGitHub Actions / GitLab CI"
+    CD: "CD / GitOps\nArgo CD / Flux"
+    PROD: Production
+    DEV -> GIT: "commit / push"
+    GIT -> PR
+    PR -> CI: trigger
+    CI -> GIT: "pass + merge"
+    GIT -> CD: sync
+    CD -> PROD

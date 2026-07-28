@@ -4,6 +4,7 @@ description: Understand Linux history, kernel vs distribution architecture, the 
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,60 +44,14 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify your distribution, kernel version, and hardware architecture using CLI tools
 - [ ] Articulate why Linux dominates cloud, containers, and DevOps tooling
 - [ ] Locate key system directories and understand their role at a high level
-- [ ] Analyze boot performance using `systemd-analyze` on systemd-based systems
+- [ ] Analyse boot performance using `systemd-analyse` on systemd-based systems
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows how hardware, firmware, the kernel, userspace, and your applications relate. Every layer has a distinct responsibility — confusing them is a common source of beginner mistakes.
 
-```d2
-direction: down
+![Architecture diagram for introduction to linux](../assets/images/introduction-to-linux.svg)
 
-*: {
-  style: {
-    border-radius: 18
-    font-size: 17
-    bold: true
-    shadow: true
-    stroke-width: 2
-  }
-}
-
-(** -> **)[*]: {
-  style.stroke-width: 2
-  style.font-size: 13
-  style.bold: true
-  style.font-color: "#0f172a"
-}
-
-HW: "Hardware Layer\nCPU · RAM · Disk · NIC" {
-  style.fill: "#dbeafe"
-  style.stroke: "#2563eb"
-  style.font-color: "#1e3a8a"
-}
-FW: "Firmware\nUEFI · BIOS" {
-  style.fill: "#dcfce7"
-  style.stroke: "#16a34a"
-  style.font-color: "#14532d"
-}
-BL: "Bootloader\nGRUB · systemd-boot" {
-  style.fill: "#ffedd5"
-  style.stroke: "#ea580c"
-  style.font-color: "#9a3412"
-}
-KS: "Kernel Space\nscheduling · memory · drivers · syscalls" {
-  style.fill: "#f3e8ff"
-  style.stroke: "#9333ea"
-  style.font-color: "#581c87"
-}
-US: "User Space\nsystemd · services · shell · apps" {
-  style.fill: "#fce7f3"
-  style.stroke: "#db2777"
-  style.font-color: "#9d174d"
-}
-
-HW -> FW -> BL -> KS -> US
-```
 
 ## Theory
 
@@ -151,7 +106,7 @@ Several factors make Linux the default for infrastructure:
 - **Stability and uptime** — Designed for long-running server workloads; kernel hot-patching exists on enterprise distros
 - **Automation-friendly** — Everything configurable via text files in `/etc`; perfect for Ansible, Terraform, and GitOps
 - **Container native** — Docker and Kubernetes run Linux containers using kernel features (namespaces, cgroups)
-- **Cloud default** — AWS Amazon Linux, GCP Container-Optimized OS, Azure Linux — all Linux-based
+- **Cloud default** — AWS Amazon Linux, GCP Container-Optimised OS, Azure Linux — all Linux-based
 - **Tooling ecosystem** — `systemd`, `journalctl`, `iptables`/`nftables`, `ss`, `strace` — the debugging toolkit assumes Linux
 
 If you learn Linux deeply, you learn the substrate that Docker, Kubernetes, Terraform providers, and CI runners all assume.
@@ -227,7 +182,7 @@ Operating System: Ubuntu 24.04.1 LTS
     Architecture: x86-64
 ```
 
-### Step 4 – Analyze boot time (systemd systems)
+### Step 4 – Analyse boot time (systemd systems)
 
 **Command:**
 
@@ -250,7 +205,7 @@ graphical.target reached after 8.401s in userspace.
     ...
 ```
 
-If `systemd-analyze` is not found, your system may use a different init (rare on modern distros) — note this for your environment documentation.
+If `systemd-analyse` is not found, your system may use a different init (rare on modern distros) — note this for your environment documentation.
 
 ### Step 5 – Explore the root filesystem layout
 
@@ -332,7 +287,22 @@ dmesg | tail -15
 ...
 ```
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Distro identity | `cat /etc/os-release` shows NAME/VERSION; you can name the distro family |
+| Kernel | `uname -r` returns a kernel release string |
+| Boot analysis | `systemd-analyse` (or documented equivalent) completes without error |
+| Lab cleanup | No leftover test files outside your home/lab directory |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -342,8 +312,8 @@ dmesg | tail -15
 | `cat /etc/os-release` | Distribution name, version, and ID | `cat /etc/os-release` |
 | `hostnamectl` | Hostname, OS, kernel, virtualization | `hostnamectl` |
 | `lsb_release -a` | LSB release info (Debian/Ubuntu) | `lsb_release -a` |
-| `systemd-analyze` | Boot time breakdown | `systemd-analyze` |
-| `systemd-analyze blame` | Slowest systemd units at boot | `systemd-analyze blame \| head` |
+| `systemd-analyse` | Boot time breakdown | `systemd-analyse` |
+| `systemd-analyse blame` | Slowest systemd units at boot | `systemd-analyse blame \| head` |
 | `systemd-detect-virt` | Detect VM/container/bare metal | `systemd-detect-virt` |
 | `ps -p 1` | Show PID 1 (init system) | `ps -p 1 -o comm=` |
 | `dmesg` | Kernel ring buffer messages | `dmesg \| tail -20` |
@@ -415,6 +385,14 @@ Use this in deployment scripts to assert the target environment before running A
   { echo "ERROR: Not a Linux host"; exit 1; }
 ```
 
+## Security Considerations
+
+- Prefer least privilege on lab VMs: use a normal user and escalate with `sudo` only when required
+- Do not expose lab instances on `0.0.0.0` unless the exercise needs inbound access; prefer SSH from a known IP
+- Keep kernel and distribution packages patched — unpatched kernels are a common cloud compromise path
+- Treat `/etc` and boot configuration as change-controlled; back up before editing boot or network files
+- Never paste production credentials into a learning VM that will later be snapshotted or shared
+
 ## Common Mistakes
 
 !!! warning "Confusing the kernel with the distribution"
@@ -447,13 +425,13 @@ Use this in deployment scripts to assert the target environment before running A
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| `systemd-analyze: command not found` | Non-systemd init or minimal container | Use `who -b` for boot time; check PID 1 with `ps -p 1` |
+| `systemd-analyse: command not found` | Non-systemd init or minimal container | Use `who -b` for boot time; check PID 1 with `ps -p 1` |
 | `/etc/os-release` missing | Very old or non-standard system | Try `lsb_release -a`, `cat /etc/redhat-release`, or `hostnamectl` |
 | `dmesg: read kernel buffer failed: Operation not permitted` | Insufficient privileges or container restriction | Run with `sudo dmesg` or check host logs from hypervisor/cloud console |
 | Boot hangs at "Loading initial ramdisk" | Corrupt initramfs or disk failure | Boot previous kernel from GRUB menu; regenerate initramfs with `update-initramfs` (Debian) or `dracut` (RHEL) |
 | Wrong kernel running after update | GRUB default entry not updated | Run `sudo update-grub` (Debian/Ubuntu) and verify `/boot` has free space |
 | `hostnamectl` shows wrong virtualization | Nested virt or custom hypervisor | Cross-check with `dmidecode -s system-product-name` (requires root) |
-| Cloud instance unreachable after reboot | Network service slow to start | Check `systemd-analyze blame` for `NetworkManager-wait-online`; consider timeout tuning |
+| Cloud instance unreachable after reboot | Network service slow to start | Check `systemd-analyse blame` for `NetworkManager-wait-online`; consider timeout tuning |
 
 ## Summary
 
@@ -462,7 +440,7 @@ Use this in deployment scripts to assert the target environment before running A
 - Use `cat /etc/os-release`, `uname -r`, and `hostnamectl` to identify any system quickly
 - Linux dominates cloud and DevOps because it is open, automatable, stable, and the foundation of containers
 - PID 1 determines your service management model — verify it before assuming systemd
-- Kernel messages in `dmesg` and boot analysis via `systemd-analyze` are essential troubleshooting tools
+- Kernel messages in `dmesg` and boot analysis via `systemd-analyse` are essential troubleshooting tools
 
 ## Interview Questions
 
@@ -483,7 +461,7 @@ Use this in deployment scripts to assert the target environment before running A
 
     **Q4 — PID 1 and init:** PID 1 is the first process started by the kernel after boot; it never exits because the kernel panics if PID 1 dies. It reaps zombie processes and starts all other services. Check with `ps -p 1 -o comm=`. On modern servers the answer is usually `systemd`, which reads unit files and manages dependencies, targets, and logging via journald.
 
-    **Q7 — Slow boot investigation:** Run `systemd-analyze` for the overall breakdown, then `systemd-analyze blame` to rank units by time. Common culprits: `NetworkManager-wait-online` waiting for DHCP, filesystem checks on large disks, and misconfigured services with long timeouts. Use `systemd-analyze critical-chain` to see dependency chains. Fix by adjusting unit timeouts, making services async, or fixing network config — never disable security updates to shave boot seconds.
+    **Q7 — Slow boot investigation:** Run `systemd-analyse` for the overall breakdown, then `systemd-analyse blame` to rank units by time. Common culprits: `NetworkManager-wait-online` waiting for DHCP, filesystem checks on large disks, and misconfigured services with long timeouts. Use `systemd-analyse critical-chain` to see dependency chains. Fix by adjusting unit timeouts, making services async, or fixing network config — never disable security updates to shave boot seconds.
 
 ## Related Tutorials
 
@@ -491,12 +469,15 @@ Use this in deployment scripts to assert the target environment before running A
 - [Linux Filesystem Hierarchy](linux-filesystem-hierarchy.md) *(next in Module 1)*
 - [Essential Linux Commands](essential-linux-commands.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
 - [The Linux Kernel Archives](https://www.kernel.org/) — official kernel source and documentation
-- [Linux man pages online](https://man7.org/linux/man-pages/) — `man uname`, `man systemd-analyze`, `man hostnamectl`
-- [systemd boot analysis](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [Linux man pages online](https://man7.org/linux/man-pages/) — `man uname`, `man systemd-analyse`, `man hostnamectl`
+- [systemd boot analysis](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyse.html)
 - [Filesystem Hierarchy Standard (FHS 3.0)](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
 - [UEFI Specification](https://uefi.org/specifications) — firmware boot interface
 - [REBASH Academy – Linux Overview](index.md)

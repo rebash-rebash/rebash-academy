@@ -4,6 +4,7 @@ description: Understand site-to-site and remote-access VPNs, IPsec and WireGuard
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -49,37 +50,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Troubleshoot VPN connectivity including MTU, routing, and phase 1/2 failures
 - [ ] Choose between VPN, VPC peering, and dedicated connectivity for hybrid cloud
 
-## Architecture Diagram
+## Architecture
 
 Site-to-site VPN connects on-premises networks to cloud VPCs over encrypted internet tunnels.
 
-```d2
-direction: right
+![Architecture diagram for VPN and Tunneling Basics](../assets/images/vpn-and-tunneling-basics.svg)
 
-OnPrem: "On-Premises 192.168.0.0/16" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        SRV: "App Servers"
-        VPNC: "VPN Customer Gateway"
-    }
-    Internet: Internet {
-        TUN: "Encrypted Tunnel\nIPsec / WireGuard"
-    }
-    Cloud: "AWS VPC 10.0.0.0/16" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        VPNGW: "VPN Gateway / TGW"
-        EC2: "EC2 Instances"
-    }
-    OnPrem.SRV -> OnPrem.VPNC
-    OnPrem.VPNC -> Internet.TUN
-    Internet.TUN -> Cloud.VPNGW
-    Cloud.VPNGW -> Cloud.EC2
-```
 
 ## Theory
 
@@ -235,6 +211,15 @@ echo "Client pub: $(cat client.pub)"
 
 **Explanation:** WireGuard uses Curve25519 key pairs. Private keys must be protected (`umask 077`).
 
+**Expected result:**
+
+```text
+-rw------- ... server.key
+-rw------- ... client.key
+```
+
+Public `.pub` files accompany private keys.
+
 ### Step 3 – Create server configuration
 
 **Command:**
@@ -256,6 +241,10 @@ sudo chmod 600 /etc/wireguard/wg0.conf
 ```
 
 **Explanation:** Server listens on UDP 51820. `AllowedIPs` for the peer defines which source IPs are accepted from that peer.
+
+**Expected result:**
+
+`wg0.conf` (server) contains `PrivateKey`, `ListenPort`, and a `[Peer]` AllowedIPs block without pasting keys into chat.
 
 ### Step 4 – Create client configuration
 
@@ -279,6 +268,10 @@ EOF
 ```
 
 **Explanation:** Client routes `10.200.0.0/24` through the tunnel. `PersistentKeepalive` maintains NAT mappings for clients behind home routers.
+
+**Expected result:**
+
+Client config contains matching peer public key and endpoint; permissions remain restrictive.
 
 ### Step 5 – Start WireGuard and verify
 
@@ -320,6 +313,10 @@ ping -c 2 192.168.99.2
 
 **Explanation:** Namespaces simulate separate hosts. In production, run client.conf on a remote machine and ping `10.200.0.1` through the tunnel.
 
+**Expected result:**
+
+Handshake counters increase (`wg show`) and tunnel ping succeeds across the lab netns or peers.
+
 ### Step 7 – Inspect routing and firewall
 
 **Command:**
@@ -330,6 +327,10 @@ sudo ufw status 2>/dev/null | grep 51820 || echo "Ensure UDP 51820 allowed if UF
 ```
 
 **Explanation:** VPN traffic must pass through firewalls on UDP port 51820 (WireGuard default). Missing firewall rule is a common tunnel failure cause.
+
+**Expected result:**
+
+`ip route` shows `wg0` routes for AllowedIPs; firewall does not drop UDP 51820 unexpectedly.
 
 ### Step 8 – Teardown
 
@@ -343,7 +344,23 @@ rm -rf ~/wg-lab
 sudo rm /etc/wireguard/wg0.conf
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Confirm key files exist with restricted permissions and configs render without secrets in Git.
+2. Bring the tunnel up (or complete the netns lab) and verify handshake/ping as documented.
+3. Tear down `wg0`/namespaces so no leftover tunnels remain.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Keys | `server.key`/`client.key` mode `0600` (or equivalent) |
+| Config | `wg-quick` config validates; interface can be brought up |
+| Connectivity | Tunnel ping or handshake counters increment |
+| Routing | `wg0` routes/AllowedIPs match the lab design |
+| Cleanup | `wg-quick down` and netns deleted; keys not committed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -356,6 +373,14 @@ sudo rm /etc/wireguard/wg0.conf
 
 !!! tip "IPsec MTU"
     Set tunnel interface MTU to 1400–1420 or enable TCP MSS clamping — encryption overhead causes fragmentation black holes on VPN paths.
+
+## Security Considerations
+
+- Protect private keys (`wg`, IPsec PSKs, TLS client certs) with `0600` permissions and a secrets manager — never commit them
+- Prefer modern tunnels (WireGuard, IKEv2) over obsolete PPTP/L2TP with weak crypto
+- Restrict AllowedIPs / traffic selectors so a compromised peer cannot route into every subnet
+- Disable unused peer configs promptly; stale clients are a common leftover access path
+- Combine VPN access with MFA on identity providers for human users where possible
 
 ## Common Mistakes
 
@@ -436,6 +461,9 @@ sudo rm /etc/wireguard/wg0.conf
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Linux – Category Overview](../linux/index.md)
 - [Docker – Category Overview](../docker/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
@@ -445,3 +473,7 @@ sudo rm /etc/wireguard/wg0.conf
 - [StrongSwan IPsec documentation](https://www.strongswan.org/docs.html)
 - [Tailscale — How WireGuard works](https://tailscale.com/blog/how-wireguard-works)
 - [NIST SP 800-77 — Guide to IPsec VPNs](https://csrc.nist.gov/publications/detail/sp/800-77/rev-1/final)
+
+**Expected result:**
+
+`wg show` empty / interface gone; lab netns removed.

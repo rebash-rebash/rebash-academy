@@ -4,6 +4,7 @@ description: Run, inspect, log into, and manage containers with docker run, ps, 
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -26,7 +27,7 @@ comments: false
 
 This tutorial takes you from zero to confident: run interactive and detached containers, publish ports, inspect state, stream logs, open shells inside running containers, and clean up resources without leaving orphaned processes or disk-consuming layers.
 
-This is **Tutorial 4** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. Complete [Module 1](../docker/index.md) first — especially [Docker Architecture and Components](docker-architecture-and-components.md). [Linux process management](../linux/index.md) and [Git](../git/index.md) skills help you interpret container behavior and version lab scripts.
+This is **Tutorial 4** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. Complete [Module 1](../docker/index.md) first — especially [Docker Architecture and Components](docker-architecture-and-components.md). [Linux process management](../linux/index.md) and [Git](../git/index.md) skills help you interpret container behaviour and version lab scripts.
 
 ## Prerequisites
 
@@ -49,21 +50,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Apply restart policies and name containers for operational clarity
 - [ ] Clean up lab containers and avoid common resource leaks
 
-## Architecture Diagram
+## Architecture
 
 A single `docker run` creates a container with an isolated process tree, optional port mapping, and captured stdout/stderr streams.
 
-```d2
-direction: right
-
-HOST: "Host :8080"
-    BRIDGE: "docker0 bridge"
-    CONT: "Container\nnginx :80"
-    LOGS: "json-file logs\n/var/lib/docker"
-    HOST -> BRIDGE: "NAT publish"
-    BRIDGE -> CONT
-    CONT -> LOGS: "stdout/stderr"
-```
+![Architecture diagram for Running Your First Container](../assets/images/running-your-first-container.svg)
 
 ## Theory
 
@@ -90,11 +81,11 @@ Key flags you will use daily:
 | `-v` | `--volume` | Mount host path or named volume |
 | `--network` | | Attach to custom network |
 
-**Image pull behavior:** If the image is not local, Docker pulls it from the configured registry (default: Docker Hub) before creating the container.
+**Image pull behaviour:** If the image is not local, Docker pulls it from the configured registry (default: Docker Hub) before creating the container.
 
 ### Foreground vs Detached Mode
 
-| Mode | Flags | Behavior | Use case |
+| Mode | Flags | Behaviour | Use case |
 |------|-------|----------|----------|
 | **Foreground** | (default) | Blocks terminal; logs to stdout | Quick tests, debugging |
 | **Detached** | `-d` | Returns container ID; runs in background | Servers, long-running services |
@@ -104,26 +95,8 @@ Combine `-dit` for a detached container that still has a TTY available for later
 
 ### Container Lifecycle States
 
-```d2
-direction: right
+![Container Lifecycle States diagram](../assets/images/running-your-first-container-1.svg)
 
-start: "" {
-  shape: circle
-}
-Created: Created
-start -> Created: "docker create"
-Running: Running
-Created -> Running: "docker start / docker run"
-Paused: Paused
-Running -> Paused: "docker pause"
-Paused -> Running: "docker unpause"
-Stopped: Stopped
-Running -> Stopped: "docker stop / exit"
-Stopped -> Running: "docker start"
-Removed: Removed
-Stopped -> Removed: "docker rm"
-Running -> Removed: "docker rm -f"
-```
 
 | State | Description |
 |-------|-------------|
@@ -160,7 +133,7 @@ Container processes write to stdout and stderr. Docker captures these streams vi
 
 ### docker exec vs docker attach
 
-| Command | Behavior |
+| Command | Behaviour |
 |---------|----------|
 | `docker exec` | Starts **new process** inside running container (e.g., shell, debug command) |
 | `docker attach` | Connects to **main process** stdin/stdout (can accidentally stop app with Ctrl+C) |
@@ -189,7 +162,7 @@ docker run -d --name web-prod-01 -l env=prod -l team=platform nginx:alpine
 
 Labels enable filtering: `docker ps --filter label=env=prod`. Names must be unique per host.
 
-| Policy | Flag | Behavior |
+| Policy | Flag | Behaviour |
 |--------|------|----------|
 | **no** | default | Never restart automatically |
 | **on-failure** | `--restart on-failure:3` | Restart on non-zero exit (max retries) |
@@ -199,6 +172,11 @@ Labels enable filtering: `docker ps --filter label=env=prod`. Names must be uniq
 ### Ephemeral Writable Layer
 
 Changes inside a running container (files written to `/tmp`, packages installed with apt) live in the container's **writable layer**. When the container is removed, those changes are lost unless you use volumes. Treat containers as disposable — redeploy from image, do not mutate in place.
+
+
+### Signals, restart policies, and cleanup
+
+Containers are processes: `docker stop` sends SIGTERM then SIGKILL after a grace period; applications should handle SIGTERM to flush work. Restart policies (`on-failure`, `unless-stopped`) are useful for long-running services but will hide crash loops if you never check `docker ps` and logs. Prefer named containers for labs you will revisit, `--rm` for one-shots, and explicit cleanup so port bindings and anonymous volumes do not accumulate.
 
 ## Hands-on Lab
 
@@ -364,7 +342,22 @@ first-web
 (no rows — containers removed)
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Detached run | Named nginx (or lab) container shows `Up` in `docker ps` |
+| Port publish | `curl` to the published port returns HTTP 200 |
+| Logs/exec | `docker logs` and `docker exec` succeed on the running container |
+| Lifecycle | Stop/start/rm behave as documented; final cleanup leaves no `first-web` container |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -425,6 +418,16 @@ echo "Done — container removed"
 
 Make executable: `chmod +x ~/bin/docker-lifecycle-demo.sh && ~/bin/docker-lifecycle-demo.sh`
 
+## Security Considerations
+
+- Prefer `--rm` for ephemeral labs so stopped containers do not accumulate privileged state
+- Bind published ports to `127.0.0.1` in labs unless you intentionally need LAN access
+- Avoid `-v /:/host` or other host-root binds; they defeat container isolation
+- Do not run interactive shells as root on shared lab hosts longer than needed
+- Pull only trusted images (`nginx:alpine`, `alpine`) and pin tags for demos you will reuse
+- Stop and remove named containers after each lab to avoid port and name conflicts that tempt `--privileged` workarounds
+
+
 ## Common Mistakes
 
 !!! warning "Using docker run without --rm for one-off tasks"
@@ -463,7 +466,7 @@ Make executable: `chmod +x ~/bin/docker-lifecycle-demo.sh && ~/bin/docker-lifecy
 
 ## Summary
 
-- **`docker run`** creates and starts containers; combine flags for detached (`-d`), interactive (`-it`), port publish (`-p`), and auto-remove (`--rm`) behavior
+- **`docker run`** creates and starts containers; combine flags for detached (`-d`), interactive (`-it`), port publish (`-p`), and auto-remove (`--rm`) behaviour
 - **`docker ps`** lists containers; `-a` includes stopped; filters narrow by name, status, and labels
 - **`docker logs`** reads stdout/stderr; **`docker exec`** runs new processes inside running containers
 - **`docker stop`** gracefully terminates with SIGTERM; **`docker rm`** removes stopped containers and their writable layers
@@ -498,6 +501,9 @@ Make executable: `chmod +x ~/bin/docker-lifecycle-demo.sh && ~/bin/docker-lifecy
 - [Working with Docker Images](working-with-docker-images.md) *(next in Module 2)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

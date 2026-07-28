@@ -1,0 +1,32 @@
+direction: down
+
+Boot: Boot {
+        FW: "Firmware/Kernel"
+        S1: "systemd PID 1"
+    }
+    Units: Units {
+        SVC: ".service units"
+        SOCK: ".socket units"
+        TMR: ".timer units"
+        TGT: ".target units"
+    }
+    Paths: Paths {
+        PKG: "/usr/lib/systemd/system/"
+        ETC: "/etc/systemd/system/"
+        RUN: "/run/systemd/system/"
+    }
+    CLI: CLI {
+        CTL: systemctl
+        JRN: journalctl
+    }
+    Boot.FW -> Boot.S1
+    Boot.S1 -> Units.TGT
+    Units.TGT -> Units.SVC
+    Units.TGT -> Units.SOCK
+    Units.TGT -> Units.TMR
+    Paths.PKG -> Units.SVC
+    Paths.ETC -> Units.SVC
+    Paths.RUN -> Units.SVC
+    CLI.CTL -> Boot.S1
+    Units.SVC -> CLI.JRN
+    Units.SOCK -> CLI.JRN

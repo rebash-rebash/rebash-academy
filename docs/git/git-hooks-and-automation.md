@@ -4,6 +4,7 @@ description: Implement client-side and server-side Git hooks for pre-commit lint
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -42,24 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Bypass hooks safely when necessary (`--no-verify`)
 - [ ] Integrate hooks with Terraform, YAML, and secret scanning
 
-## Hook Lifecycle Diagram
+## Architecture
 
-```d2
-direction: down
+Hooks run scripts around Git events so teams can enforce policy locally and on the server before history is accepted.
 
-COMMIT: "git commit"
-    PRE: "pre-commit hook"
-    MSG: "commit-msg hook"
-    POST: "post-commit hook"
-    PUSH: "git push"
-    PREPUSH: "pre-push hook"
-    SERVER: "server-side\npre-receive / update"
-    COMMIT -> PRE
-    PRE -> MSG
-    MSG -> POST
-    PUSH -> PREPUSH
-    PREPUSH -> SERVER
-```
+![Architecture diagram for Git Hooks and Automation](../assets/images/git-hooks-and-automation.svg)
 
 ## Theory
 
@@ -223,6 +211,8 @@ EOF
 chmod +x .git/hooks/pre-commit
 ```
 
+**Expected result:** Hook script is executable under `.git/hooks` (or managed hooks path).
+
 ### Step 2 – Test hook blocks bad commit
 
 **Command:**
@@ -232,6 +222,8 @@ echo 'key = "AKIAFAKEKEY123456789"' > bad.tf
 git add bad.tf
 git commit -m "test: should fail" && echo "UNEXPECTED PASS" || echo "Hook blocked commit"
 ```
+
+**Expected result:** Commit or push is blocked/messaged when the hook condition fails.
 
 ### Step 3 – Test hook allows good commit
 
@@ -243,6 +235,8 @@ git add good.tf
 git commit -m "feat: add good terraform"
 git log --oneline -1
 ```
+
+**Expected result:** Successful path allows the commit when inputs are valid.
 
 ### Step 4 – commit-msg hook
 
@@ -261,6 +255,8 @@ echo "bad message" > /tmp/msg.txt
 .git/hooks/commit-msg /tmp/msg.txt && echo pass || echo blocked
 ```
 
+**Expected result:** Sample secret or message lint hook matches the tutorial’s expectation.
+
 ### Step 5 – core.hooksPath approach
 
 **Command:**
@@ -272,6 +268,8 @@ git config core.hooksPath .githooks
 git config core.hooksPath
 ```
 
+**Expected result:** You can explain why `--no-verify` is dangerous in shared repos.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -280,7 +278,25 @@ git config core.hooksPath
 cd /tmp && rm -rf git-hooks-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab hooks removed or disabled.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Hook fires | Client hook blocks or messages as designed on commit/push |
+| Bypass awareness | You know `--no-verify` risks and did not leave risky hooks installed |
+| Sample script | Hook script is executable and path is correct |
+| Cleanup | Lab hooks removed or disabled |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -308,6 +324,14 @@ repos:
     hooks:
       - id: yamllint
 ```
+
+## Security Considerations
+
+- Never install hooks from untrusted repos without reading them — hooks run as your user
+- Prefer managed hook frameworks (pre-commit) with pinned versions over ad-hoc curl installs
+- Do not put secrets in hook scripts; read them from the environment or a vault at runtime
+- Server-side hooks must validate, not silently mutate, pushed content
+- Fail closed on secret detection — do not allow `--no-verify` in CI
 
 ## Common Mistakes
 
@@ -382,6 +406,9 @@ repos:
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
 - [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
 - [Signed Commits and Git Security](signed-commits-and-git-security.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

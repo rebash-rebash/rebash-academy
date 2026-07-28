@@ -4,6 +4,7 @@ description: Initialize local repos, clone from remotes, understand bare vs non-
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -47,52 +48,16 @@ By the end of this tutorial, you will be able to:
 - [ ] Differentiate bare and non-bare repositories and when each is used
 - [ ] Add, rename, and remove remotes; understand `origin` conventions
 - [ ] Create mirror clones for backup and migration scenarios
-- [ ] Use shallow and single-branch clones to optimize CI performance
+- [ ] Use shallow and single-branch clones to optimise CI performance
 - [ ] Bootstrap an infrastructure-as-code repository with sensible initial structure
 - [ ] Troubleshoot common clone and permission failures in enterprise environments
 
-## Architecture Diagram
+## Architecture
 
 DevOps workflows typically flow from a hosted remote to local clones and CI runners. Bare repositories on servers act as intermediaries in self-hosted Git deployments.
 
-```d2
-direction: down
+![Architecture diagram for creating and cloning repositories](../assets/images/creating-and-cloning-repositories.svg)
 
-HOSTING: "Git Hosting Platform" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        REMOTE: "origin\nGitHub / GitLab / Gitea"
-    }
-    DEV: "Developer Workstations" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        CLONE1: "non-bare clone\nworking directory + .git"
-        CLONE2: "non-bare clone"
-    }
-    CI: "CI/CD Infrastructure" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        RUNNER: "Pipeline runner\nshallow clone depth=1"
-    }
-    SELF: "Self-Hosted (optional)" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        BARE: "bare repo on server\n/srv/git/project.git"
-    }
-    HOSTING.REMOTE <-> DEV.CLONE1: "push / fetch"
-    HOSTING.REMOTE <-> DEV.CLONE2: "push / fetch"
-    HOSTING.REMOTE -> CI.RUNNER: "webhook trigger"
-    CI.RUNNER -> HOSTING.REMOTE: "clone / fetch"
-    SELF.BARE <-> HOSTING.REMOTE: "push mirror"
-```
 
 ## Theory
 
@@ -383,7 +348,25 @@ rm -rf ~/lab/git-shallow-clone ~/lab/hello-world ~/lab/hello-world.git ~/lab/inf
 
 **Explanation:** Remove practice repos. Never delete unpushed work — verify with `git log origin/main..main` before cleanup in real projects.
 
-## Commands & Code
+**Expected result:** Temporary lab repositories removed; no leftover remotes on disk.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| init/clone | Both init and clone paths produce a valid `.git` directory |
+| Remote | `git remote -v` shows the expected origin (if applicable) |
+| First commit | Log shows the lab commit message |
+| Cleanup | Temporary repos removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -409,6 +392,14 @@ git branch -M main
 git remote add origin git@github.com:ORG/my-project.git
 git push -u origin main
 ```
+
+## Security Considerations
+
+- Clone over SSH or HTTPS with verified hosts — confirm GitHub/GitLab host keys on first connect
+- Never initialise a repo inside another repo unless you intentionally use submodules
+- Scrub sample configs of real endpoints and credentials before the first commit
+- Set repository visibility correctly on the forge; default-private for company infrastructure code
+- Use sparse or partial clones carefully so you do not miss security-sensitive paths
 
 ## Common Mistakes
 
@@ -455,7 +446,7 @@ git push -u origin main
 
 - **`git init`** creates a new repo locally; **`git clone`** copies an existing remote repository with `origin` preconfigured
 - **Bare repositories** have no working directory — used for servers, mirrors, and push targets; **non-bare** repos are for daily development
-- **Shallow clones** (`--depth 1`) optimize CI; **mirror clones** preserve all refs for backup and migration
+- **Shallow clones** (`--depth 1`) optimise CI; **mirror clones** preserve all refs for backup and migration
 - Bootstrap IaC repos with `.gitignore`, README, and directory structure **before** the first commit
 - **Remotes** name collaboration endpoints; `git push -u origin main` establishes upstream tracking
 - Clone failures are often authentication or networking issues — verify SSH, PAT, and connectivity first
@@ -488,6 +479,9 @@ git push -u origin main
 - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md) *(next in Module 2)*
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 - [Introduction to Networking](../networking/introduction-to-networking.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

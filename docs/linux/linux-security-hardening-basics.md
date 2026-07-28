@@ -4,6 +4,7 @@ description: Apply baseline hardening with SSH, firewalls, patching, fail2ban, a
 difficulty: advanced
 estimated_time: "55 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,6 +44,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Apply security updates and enable unattended patching where appropriate
 - [ ] Explain fail2ban's role in blocking brute-force attacks
 - [ ] Map hardening actions to CIS Benchmark categories for audit readiness
+
+## Architecture
+
+Hardening stacks controls from the edge inward: reduce exposure, strengthen authentication, then lock down local privilege and patch state.
+
+![Architecture diagram for Linux Security Hardening Basics](../assets/images/linux-security-hardening-basics.svg)
 
 ## Theory
 
@@ -209,7 +216,7 @@ sudo ufw status numbered
 
 **Expected output:**
 
-```
+```text
 Status: active
 To                         Action      From
 --                         ------      ----
@@ -274,7 +281,22 @@ sudo lynis audit system --quick 2>/dev/null | tail -20
 
 **Expected output:** Hardening index score and suggestions aligned with CIS-style checks.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Baseline | Hardening checklist items you applied are verifiable (`sshd`, firewall, packages) |
+| Services | Unused services remain disabled after hardening |
+| Users | Password/SSH policy matches lab recommendations |
+| Cleanup | Document residual changes; do not leave experimental firewall locks on shared labs |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -346,6 +368,14 @@ for svc in avahi-daemon cups bluetooth; do
   fi
 done
 ```
+
+## Security Considerations
+
+- Apply CIS-style baselines incrementally and measure breakage in non-production first
+- Keep automatic security updates enabled for the kernel and critical libraries where policy allows
+- Enforce MFA on bastions and cloud consoles that gate Linux access
+- Disable unused services and remove packages that open attack surface
+- Centralise authz (sssd/LDAP) carefully — misconfigured bind credentials are high impact
 
 ## Common Mistakes
 
@@ -444,6 +474,17 @@ done
 
 *Sample answer:* Mandatory access control confines processes to allowed resources even if compromised. Policies limit damage from exploits beyond discretionary file permissions.
 
+1. How would you explain linux security hardening basics to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore linux security hardening basics?
+3. Which metrics or logs would you check first when linux security hardening basics misbehaves?
+4. What is a secure default related to linux security hardening basics?
+5. How would you validate a change involving linux security hardening basics in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around linux security hardening basics?
+7. Describe a common anti-pattern with linux security hardening basics and how you fix it.
+8. How does linux security hardening basics interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for linux security hardening basics?
+10. When would you intentionally not follow the default approach taught here?
+
 ## Related Tutorials
 
 - [Linux – Category Overview](index.md)
@@ -453,6 +494,9 @@ done
 - [Linux Networking Essentials](linux-networking-essentials.md)
 - [User and Group Management](user-and-group-management.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

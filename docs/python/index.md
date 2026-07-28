@@ -1,12 +1,14 @@
 ---
-title: Overview
-description: Automate DevOps tasks with Python scripts and libraries.
+title: Python Automation
+description: "Python automation track — planned. Stable URL reserved."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: python
 tags:
   - python
+  - automation
 comments: false
 ---
 
@@ -14,20 +16,21 @@ comments: false
 
 Automate DevOps tasks with Python scripts and libraries.
 
-## Overview
+## Status
 
-Welcome to the **Python Automation** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Linux](../linux/index.md) | Shell scripting and process basics |
+| [Git](../git/index.md) | Version automation scripts |
+| [Docker](../docker/index.md) | Package automation as images |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

@@ -4,6 +4,7 @@ description: Master the Filesystem Hierarchy Standard (FHS) — understand every
 difficulty: beginner
 estimated_time: "25 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -45,7 +46,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Predict where logs, packages, user data, and temporary files are stored on any FHS-compliant distro
 - [ ] Use CLI tools to explore and audit filesystem layout on an unfamiliar server
 
-## Architecture Diagram
+## Architecture
 
 The diagram below is the classic FHS **directory tree** under `/`. Branches show containment (a folder inside its parent) — not execution order.
 
@@ -439,7 +440,22 @@ drwxr-xr-x  2 root root 4096 ... .
 lrwxrwxrwx  1 root root   44 ... dbus-org.freedesktop.resolve1.service -> ...
 ```
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Hierarchy map | You can state the role of `/etc`, `/var`, `/home`, `/usr`, and `/tmp` |
+| Navigation | Lab `cd`/`ls` steps show the expected directories on your system |
+| Find usage | Locate at least one config under `/etc` and one log under `/var/log` |
+| Cleanup | Temporary lab files removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -509,6 +525,14 @@ mount -t proc,sysfs,tmpfs 2>/dev/null | awk '{print $1, $3}' || \
 find /var/log -type f -size +100M -exec ls -lh {} \; 2>/dev/null | \
   awk '{print $5, $9}' | sort -rh
 ```
+
+## Security Considerations
+
+- Restrict write access under `/etc`, `/boot`, and `/usr` — unexpected writes there often mean compromise or misconfiguration
+- Never run untrusted binaries from `/tmp` or world-writable directories; prefer `/opt` or home with execute disabled where possible
+- Mount removable or untrusted media with `noexec,nosuid,nodev` when policy allows
+- Protect `/home` and service data directories with correct ownership; avoid world-writable shared paths
+- Audit SUID/SGID binaries under `/usr` and `/sbin` periodically — unexpected setuid is a privilege-escalation risk
 
 ## Common Mistakes
 
@@ -588,6 +612,9 @@ find /var/log -type f -size +100M -exec ls -lh {} \; 2>/dev/null | \
 - [Essential Linux Commands](essential-linux-commands.md) *(next in Module 1)*
 - [File Permissions and Ownership](file-permissions-and-ownership.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

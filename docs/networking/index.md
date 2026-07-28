@@ -4,6 +4,7 @@ description: Networking learning track — 20 tutorials from TCP/IP fundamentals
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -151,3 +152,7 @@ After completing this track, you will be able to:
 - [Docker](../docker/index.md) — container networking overlays and bridge networks
 - [AWS](../aws/index.md) — VPC, ALB, and Route 53 in production
 - [Interview Prep](../interview/index.md) — networking interview questions
+
+- [Networking Cheat Sheet](../cheatsheets/networking.md)
+- [Networking Interview Prep](../interview/networking.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

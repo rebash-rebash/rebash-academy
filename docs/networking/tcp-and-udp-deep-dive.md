@@ -4,6 +4,7 @@ description: Master the TCP three-way handshake, port and socket mechanics, UDP 
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -46,27 +47,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify appropriate UDP use cases (DNS, NTP, QUIC, streaming)
 - [ ] Debug "connection refused" vs "timeout" vs "address already in use"
 
-## Architecture Diagram
+## Architecture
 
-```d2
-shape: sequence_diagram
+The diagram below summarises the core relationships for **TCP and UDP Deep Dive**.
 
-Client: Client
-Server: Server
-# Note over Client,Server: TCP Three-Way Handshake
-Client -> Server: "SYN (seq=x)"
-Server -> Client: "SYN-ACK (seq=y, ack=x+1)"
-Client -> Server: "ACK (ack=y+1)"
-# Note over Client,Server: ESTABLISHED — data transfer
-Client -> Server: "Data segments (ACKed)"
-Server -> Client: "Response data"
-# Note over Client,Server: Connection Teardown
-Client -> Server: FIN
-Server -> Client: ACK
-Server -> Client: FIN
-Client -> Server: ACK
-# Note over Client: TIME_WAIT (2×MSL)
-```
+![Architecture diagram for TCP and UDP Deep Dive](../assets/images/tcp-and-udp-deep-dive.svg)
+
 
 ## Theory
 
@@ -214,6 +200,15 @@ wait $LISTEN_PID 2>/dev/null || kill $LISTEN_PID 2>/dev/null
 
 **Explanation:** Demonstrates LISTEN → ESTABLISHED transition. `syn-recv` may flash too quickly to catch without `tcpdump`.
 
+**Expected result:**
+
+```text
+State      Recv-Q Send-Q Local Address:Port  Peer Address:Port
+ESTAB      0      0      127.0.0.1:9999      127.0.0.1:xxxxx
+```
+
+Listener accepts; client reaches ESTABLISHED.
+
 ### Step 4 – Inspect TIME_WAIT accumulation
 
 **Command:**
@@ -268,6 +263,10 @@ time netstat -tan >/dev/null 2>&1 || true
 
 **Explanation:** Line counts should be similar. `ss` typically completes faster on busy servers with thousands of sockets.
 
+**Expected result:**
+
+`ss` listen count is ≥ `netstat` listen count (or equal). Minor differences are normal; both tools should list SSH if enabled.
+
 ### Step 7 – Diagnose "connection refused" vs "timeout"
 
 **Command:**
@@ -306,7 +305,23 @@ ESTAB 0 0 10.0.0.42:22 203.0.113.50:52134
 	 cubic wscale:7,7 rto:204 rtt:12.5/6.2 cwnd:10
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run `ss`/`nc` steps and confirm TCP handshake and UDP behaviour match expected results.
+2. Explain when you would choose TCP vs UDP for a new service.
+3. Ensure no leftover `nc` listeners remain after cleanup.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Listeners | `ss -tuln` shows expected TCP/UDP sockets during the lab |
+| Handshake | Connection to lab listener reaches ESTABLISHED (or documented failure) |
+| UDP | UDP send/receive demo works or timeout behaviour is understood |
+| Comparison | `ss` vs `netstat` counts reconciled |
+| Cleanup | Lab listeners stopped; no open ports left on non-loopback |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -362,6 +377,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 ```
 
 Run: `python3 tcp_echo.py` then `echo test | nc localhost 9090`
+
+## Security Considerations
+
+- Prefer TLS-wrapped TCP (HTTPS, SMTPS) over cleartext; UDP services need application-layer crypto (QUIC, DTLS, WireGuard)
+- Bind listeners to specific addresses; avoid `0.0.0.0` for admin ports in labs unless the exercise requires it
+- Rate-limit or firewall high-risk UDP (DNS amplification, NTP, SNMP) and unused TCP listeners
+- Understand that half-open SYN floods and UDP floods are DoS vectors — know your host firewall and SYN cookie settings
+- Do not expose debug listeners (`nc -l`) beyond localhost; remove them after each lab step
 
 ## Common Mistakes
 
@@ -449,6 +472,9 @@ Run: `python3 tcp_echo.py` then `echo test | nc localhost 9090`
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -1,0 +1,14 @@
+direction: right
+
+BR: "Feature Branch"
+    PR: "Open Pull Request"
+    BR -> PR: push
+    CI: "CI Checks Run"
+    PR -> CI
+    REV: "Code Review"
+    CI -> REV
+    MERGE: "Merge to main"
+    REV -> MERGE: approve
+    REV -> BR: "changes requested"
+    DEPLOY: "CD / GitOps Deploy"
+    MERGE -> DEPLOY

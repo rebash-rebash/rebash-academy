@@ -4,6 +4,7 @@ description: Understand MAC addresses, Ethernet frames, switch operation, VLAN s
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -49,35 +50,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Create a VLAN sub-interface on Linux for hands-on practice
 - [ ] Relate Layer 2 concepts to Docker bridge networks and cloud virtual switches
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **Ethernet Switching and VLANs**.
 
-VLAN10: "VLAN 10 — Web (10.0.1.0/24)" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        S1: "Server A\nMAC aa:bb:cc:01"
-        S2: "Server B\nMAC aa:bb:cc:02"
-    }
-    VLAN20: "VLAN 20 — DB (10.0.20.0/24)" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        S3: "DB Server\nMAC ee:ff:00:01"
-    }
-    SW: "Managed Switch\n802.1Q trunk to router"
-    RTR: "L3 Switch / Router\nInter-VLAN routing"
-    VLAN10.S1 -> SW
-    VLAN10.S2 -> SW
-    VLAN20.S3 -> SW
-    SW -> RTR: "trunk: VLAN 10, 20"
-```
+![Architecture diagram for Ethernet Switching and VLANs](../assets/images/ethernet-switching-and-vlans.svg)
 
-Traffic within VLAN 10 stays on the same broadcast domain. Cross-VLAN communication requires Layer 3 routing through the router.
 
 ## Theory
 
@@ -101,7 +79,7 @@ The first three octets (**OUI — Organizationally Unique Identifier**) identify
 
 The dominant **Ethernet II (DIX)** frame layout:
 
-```
+```text
 | Preamble | Dest MAC (6) | Src MAC (6) | EtherType (2) | Payload (46–1500) | FCS (4) |
 ```
 
@@ -126,7 +104,7 @@ A **switch** maintains a **MAC address table** (CAM table) mapping MAC → port:
 
 This eliminates the collision problems of legacy **hubs**, which repeated every frame to every port.
 
-| Device | Layer | Behavior | Status |
+| Device | Layer | Behaviour | Status |
 |--------|-------|----------|--------|
 | **Hub** | 1 | Repeats to all ports — single collision domain | Obsolete |
 | **Switch** | 2 | Forwards by destination MAC — per-port collision domain | Standard |
@@ -162,7 +140,7 @@ Redundant switch links create **loops** — frames circulate forever, saturating
 
 Hosts on the same subnet deliver IP packets by encapsulating them in Ethernet frames destined for the target's **MAC address**. **ARP** resolves IP → MAC via broadcast:
 
-```
+```text
 Who has 10.0.1.1? Tell 10.0.1.42
 ```
 
@@ -240,6 +218,10 @@ done
 
 **Explanation:** All hosts in the same subnet share a broadcast domain — frames to broadcast MAC reach all members.
 
+**Expected result:**
+
+Broadcast address for your CIDR (for example `10.0.1.255` for `10.0.1.0/24`) printed or calculated correctly.
+
 ### Step 4 – Monitor ARP traffic
 
 **Command:**
@@ -288,7 +270,11 @@ bridge link 2>/dev/null | head -10 || ip link show type bridge 2>/dev/null
 docker network ls 2>/dev/null | head -5 || echo "(Docker not installed — skip)"
 ```
 
-**Explanation:** Bridges connect virtual interfaces at Layer 2 — same MAC learning behavior as physical switches.
+**Explanation:** Bridges connect virtual interfaces at Layer 2 — same MAC learning behaviour as physical switches.
+
+**Expected result:**
+
+Bridge ports/veth pairs listed, or a clear message that no bridge exists on this host (acceptable on a simple VM).
 
 ### Step 7 – Document three-tier VLAN design
 
@@ -303,7 +289,23 @@ Create a table for a sample application:
 
 Inter-VLAN traffic flows only through the firewall/router — no direct L2 path between web and db.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run MAC, broadcast, and bridge inspection commands and compare to expected results.
+2. Explain how a VLAN separates broadcast domains versus an IP subnet.
+3. Note any missing `bridge` tools and use the `ip link` fallback successfully.
+
+| Check | Pass criteria |
+|-------|----------------|
+| MAC / L2 | Interface MAC visible via `ip link` |
+| Broadcast | Broadcast address derived correctly for your CIDR |
+| Bridge | Bridge or veth links listed, or documented “not present” on bare VM |
+| Design | Three-tier VLAN plan names VLANs, purposes, and example subnets |
+| Cleanup | No lasting switch config required on cloud VMs |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -333,6 +335,14 @@ echo ""
 echo "=== Default Gateway ==="
 ip route show default
 ```
+
+## Security Considerations
+
+- Enforce VLAN separation for untrusted, user, and server traffic; do not put management interfaces on user VLANs
+- Disable unused switch ports and require 802.1X or MAC controls where physical access is shared
+- Protect trunk links: restrict allowed VLANs and disable DTP/auto-trunking to prevent VLAN hopping
+- Isolate container/bridge networks from host management networks unless explicitly required
+- Monitor for unexpected MAC flapping or unknown MAC addresses on critical VLANs
 
 ## Common Mistakes
 
@@ -420,6 +430,9 @@ ip route show default
 - [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
@@ -428,3 +441,7 @@ ip route show default
 - [Wireshark — Ethernet](https://wiki.wireshark.org/Ethernet)
 - [Linux VLAN documentation](https://www.kernel.org/doc/Documentation/networking/vlan.txt)
 - [REBASH Academy – Networking Overview](index.md)
+
+**Expected result:**
+
+Script or notes list three VLANs (for example users/app/data) with IDs and example subnets.

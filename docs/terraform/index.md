@@ -4,6 +4,7 @@ description: "Terraform learning track — 20 tutorials from Infrastructure as C
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: terraform
 tags:
   - terraform
@@ -155,3 +156,7 @@ After completing this track, you will be able to:
 - [Docker](../docker/index.md) — images and registries you may provision
 - [Kubernetes](../kubernetes/index.md) — clusters often managed with Terraform
 - [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+
+- [Terraform Cheat Sheet](../cheatsheets/terraform.md)
+- [Terraform Interview Prep](../interview/terraform.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

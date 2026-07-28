@@ -1,0 +1,24 @@
+direction: down
+
+External: External {
+        USER: Browser
+    }
+    Edge: Edge {
+        NGX: "nginx reverse proxy :80"
+    }
+    Application: Application {
+        WEB: "web frontend :3000"
+        API: "api service :8080"
+        WORK: worker
+    }
+    Data: Data {
+        REDIS: redis
+        PG: postgres
+    }
+    External.USER -> Edge.NGX
+    Edge.NGX -> Application.WEB
+    Edge.NGX -> Application.API
+    Application.API -> Data.REDIS
+    Application.API -> Data.PG
+    Application.WORK -> Data.REDIS
+    Application.WORK -> Data.PG

@@ -4,6 +4,7 @@ description: Push and pull images from Docker Hub, Amazon ECR, and Google Artifa
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -49,25 +50,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Apply immutability and retention policies for production image promotion
 - [ ] Describe how CI/CD pipelines integrate with private registries
 
-## Architecture Diagram
+## Architecture
 
 Registries sit between image builders and runtime consumers. The same image digest can be pulled by development laptops, CI agents, ECS tasks, GKE nodes, and Kubernetes clusters worldwide.
 
-```d2
-direction: right
-
-DEV: "Developer / CI Builder"
-    BUILD: "docker build"
-    REG: "Container Registry\nHub / ECR / Artifact Registry"
-    RUN1: "Docker Host"
-    RUN2: "Kubernetes Node"
-    RUN3: "Cloud Run / ECS"
-    DEV -> BUILD
-    BUILD -> REG: "docker push"
-    REG -> RUN1: "docker pull"
-    REG -> RUN2: "kubelet pull"
-    REG -> RUN3: "service pull"
-```
+![Architecture diagram for Container Registries and Distribution](../assets/images/container-registries-and-distribution.svg)
 
 ## Theory
 
@@ -83,7 +70,7 @@ Key concepts:
 | **Tag** | Human-readable label pointing to a manifest (e.g., `v1.4.2`, `main-abc1234`) |
 | **Digest** | Immutable SHA256 hash of the manifest (e.g., `sha256:abc123...`) |
 | **Manifest** | JSON describing layers, config blob, and platform |
-| **Namespace** | Organization or project scope (`library/nginx`, `123456789012.dkr.ecr...`) |
+| **Namespace** | Organisation or project scope (`library/nginx`, `123456789012.dkr.ecr...`) |
 
 **Tags are mutable** — pushing `myapp:latest` again overwrites what `latest` points to. **Digests are immutable** — production deployments should pin digests or tags that are never reused.
 
@@ -94,7 +81,7 @@ Key concepts:
 - Public repositories (unlimited pulls with rate limits for anonymous users)
 - Private repositories (limited on free accounts; paid plans for teams)
 - Automated builds (legacy; most teams use CI instead)
-- Organization namespaces for team ownership
+- Organisation namespaces for team ownership
 
 Authentication uses `docker login docker.io` with a username and personal access token (PAT). Passwords are deprecated for CLI login; use Hub access tokens with appropriate scopes.
 
@@ -212,6 +199,9 @@ docker images | grep registry-lab-web
 
 **Explanation:** One image ID can have many tags. Tags are aliases; they do not duplicate layer storage locally.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 3 – Authenticate and push to Docker Hub
 
 Create a Hub access token under Account Settings → Security → New Access Token.
@@ -246,6 +236,9 @@ docker manifest inspect "docker.io/${DOCKERHUB_USER}/registry-lab-web:lab-v1" 2>
 ```
 
 **Explanation:** Production deploys often reference digest instead of tag. `buildx imagetools` queries the remote registry without a local pull.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 5 – Pull on a clean host (simulate deployment)
 
@@ -288,6 +281,9 @@ docker push "${ECR_URI}:v1-lab"
 
 **Explanation:** ECR login tokens expire after 12 hours. CI pipelines refresh tokens on each job. `scanOnPush` enables vulnerability scanning.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Google Artifact Registry push workflow (GCP)
 
 Replace project, region, and repository names. Enable Artifact Registry API first.
@@ -310,6 +306,9 @@ docker push "${AR_URI}:v1-lab"
 
 **Explanation:** Artifact Registry is regional. GKE clusters in the same region pull with lower latency and no cross-region egress charges.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 8 – Clean up lab resources
 
 **Command:**
@@ -321,7 +320,24 @@ docker rmi registry-lab-web:local 2>/dev/null || true
 
 **Explanation:** Remove local tags after labs. Delete remote test repositories in Hub/ECR/AR consoles if no longer needed.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Login/tag | Image tagged for the target registry namespace |
+| Push/pull | Push succeeds (or dry-run path documented) and pull retrieves the image |
+| Digest | You can identify the image digest after push/pull |
+| Cleanup | Local tags removed if the lab requires; credentials not left in shell history notes |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -357,6 +373,16 @@ fi
 ```
 
 Make executable: `chmod +x scripts/tag-and-push.sh`
+
+## Security Considerations
+
+- Use private registries for internal images; require authentication for pull and push
+- Enable vulnerability scanning and block deploy of critical CVEs on release tags
+- Prefer immutable tags or digests; prevent tag overwrite on release channels
+- Scope registry credentials to least privilege (pull-only for runtime nodes)
+- Sign images (Notary/cosign) and verify signatures in deploy pipelines
+- Never embed registry passwords in Dockerfiles, CI YAML committed to Git, or world-readable scripts
+
 
 ## Common Mistakes
 
@@ -434,6 +460,9 @@ Make executable: `chmod +x scripts/tag-and-push.sh`
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md) *(previous in Module 4)*
 - [Environment Variables and Secrets](environment-variables-and-secrets.md) *(next in Module 4)*
 - [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

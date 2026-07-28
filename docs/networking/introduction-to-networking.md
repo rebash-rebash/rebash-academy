@@ -4,6 +4,7 @@ description: Understand why networking matters for DevOps, core terminology, net
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -47,57 +48,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Inspect your own system's network interfaces and basic connectivity using Linux tools
 - [ ] Relate physical and logical network concepts to cloud VPC and subnet terminology
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows a simplified enterprise-to-cloud topology. Every component you will encounter in DevOps maps to one of these roles — even when the physical switch is replaced by a virtual cloud switch or hypervisor vSwitch.
 
-```d2
-direction: down
+![Architecture diagram for Introduction to Networking](../assets/images/introduction-to-networking.svg)
 
-LAN: "Office LAN" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        PC1: Workstation
-        PC2: "Developer Laptop"
-        SW: "Layer 2 Switch"
-        PC1 -> SW
-        PC2 -> SW
-    }
-    EDGE: "Network Edge" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        FW: Firewall
-        RTR: "Router / Gateway"
-        SW -> FW
-        FW -> RTR
-    }
-    WAN: "WAN / Internet" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        ISP: "ISP Backbone"
-        RTR -> ISP
-    }
-    CLOUD: "Cloud VPC" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        IGW: "Internet Gateway"
-        ALB: "Load Balancer"
-        APP: "App Servers"
-        DB: Database
-        ISP -> IGW
-        IGW -> ALB
-        ALB -> APP
-        APP -> DB
-    }
-```
 
 ## Theory
 
@@ -110,7 +66,7 @@ DevOps engineers need networking literacy to:
 - **Design infrastructure** — choose subnet sizes, plan CIDR blocks, avoid overlapping IP ranges between on-premises and cloud
 - **Debug incidents** — trace whether failure is DNS, routing, firewall, or application-level
 - **Secure systems** — write security group rules, network policies, and WAF configurations with precise port and protocol knowledge
-- **Optimize performance** — distinguish latency problems from bandwidth bottlenecks; right-size load balancers and CDN configurations
+- **Optimise performance** — distinguish latency problems from bandwidth bottlenecks; right-size load balancers and CDN configurations
 - **Pass interviews and certifications** — AWS Solutions Architect, CKA, and LFCS all assume TCP/IP fluency
 
 You do not need to become a CCIE. You need a layered mental model and the ability to use tools like `ping`, `curl`, `dig`, `traceroute`, and `ss` — which we build across this entire track.
@@ -195,7 +151,7 @@ A **firewall** filters traffic based on rules — typically source/destination I
 - **Web Application Firewall (WAF)** — Layer 7 HTTP inspection (AWS WAF, Cloudflare)
 - **Host firewall** — software on each server (`ufw`, firewalld)
 
-Defense in depth means firewalls at the edge, between tiers, and on each host. We cover firewall configuration in depth in Module 4.
+Defence in depth means firewalls at the edge, between tiers, and on each host. We cover firewall configuration in depth in Module 4.
 
 ## Hands-on Lab
 
@@ -305,6 +261,15 @@ curl -o /dev/null -w "Speed: %{speed_download} bytes/sec\nTime: %{time_total}s\n
 
 **Explanation:** Downloads 10 MB and reports real-world **throughput**. Convert bytes/sec to Mbps: `(bytes × 8) / 1,000,000`.
 
+**Expected result:**
+
+```text
+Speed: 2500000 bytes/sec
+Time: 4.000s
+```
+
+Values vary by link; non-zero speed and finite time indicate successful throughput measurement.
+
 ### Step 7 – Trace the path to a remote server
 
 **Command:**
@@ -314,6 +279,16 @@ traceroute -n -m 10 google.com 2>/dev/null || tracepath google.com
 ```
 
 **Explanation:** Shows each **router hop** between your host and the destination. We cover interpretation in [Routing Fundamentals](routing-fundamentals.md).
+
+**Expected result:**
+
+```text
+traceroute to google.com (…), 10 hops max
+ 1  10.0.1.1  1.2 ms
+ 2  …
+```
+
+Or `tracepath` hop lines. Some hops may show `* * *` when ICMP is filtered.
 
 ### Step 8 – Document your network baseline
 
@@ -330,7 +305,34 @@ echo "Latency to 8.8.8.8: $(ping -c 3 -q 8.8.8.8 2>/dev/null | awk -F'/' '{print
 
 **Explanation:** Capture a baseline snapshot for your lab environment. During incidents, comparing current values to a known-good baseline accelerates triage.
 
-## Commands & Code
+**Expected result:**
+
+```text
+=== Network Baseline ===
+Hostname: lab-host
+Primary IP: 10.0.1.42
+Default GW: 10.0.1.1
+DNS: 10.0.1.2
+Latency to 8.8.8.8: 12.1 ms (avg RTT)
+```
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run `ip link`, `ip -br addr`, `ip route show default`, and `ping -c 4 8.8.8.8` and compare to each step’s expected output.
+2. Explain why bandwidth, latency, and throughput are different using your measured latency and download speed.
+3. Resolve any DOWN interfaces or missing default routes using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Interfaces | At least `lo` plus one UP data interface with an address |
+| Default route | `ip route show default` shows a gateway and device |
+| Connectivity | ICMP or HTTPS reachability to a known Internet target succeeds |
+| Baseline | Network baseline script/output lists hostname, IP, GW, and DNS |
+| Cleanup | No persistent config changes required for this lab |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -374,6 +376,14 @@ curl -s --max-time 5 -o /dev/null -w "HTTPS to cloudflare: HTTP %{http_code} in 
 ```
 
 Make executable: `chmod +x ~/bin/net-baseline.sh && ~/bin/net-baseline.sh`
+
+## Security Considerations
+
+- Treat every interface address and default gateway as sensitive inventory — do not paste production topologies into public tickets without redaction
+- Prefer private addressing and VPN or bastion access for management planes; avoid exposing SSH or RDP on `0.0.0.0/0`
+- Remember ICMP may be blocked by policy; never assume reachability from `ping` alone when validating security controls
+- Separate lab and production NICs or VPCs so exploratory tools cannot touch live workloads
+- Document who may change routes, DNS, and firewall rules; unexpected gateway changes are a common compromise signal
 
 ## Common Mistakes
 
@@ -426,13 +436,25 @@ Make executable: `chmod +x ~/bin/net-baseline.sh && ~/bin/net-baseline.sh`
 ## Interview Questions
 
 1. Why is networking knowledge important for a DevOps engineer?
+
+*Hint: Incidents, cloud design, and security groups all require path literacy.*
+
 2. What is the difference between bandwidth, latency, and throughput?
 3. Explain client-server architecture and give three production examples.
+
+*Hint: HTTP APIs, SSH, and databases are classic client-server.*
+
 4. What is the difference between a LAN, a WAN, and the Internet?
 5. What role does a default gateway play in IP networking?
+
+*Hint: Default gateway is the next hop for non-local destinations.*
+
 6. How does a switch differ from a router?
 7. Why might `ping` fail while HTTPS to the same host succeeds?
 8. What is a VPC in cloud networking, and how does it relate to LAN concepts?
+
+*Hint: A VPC is a logically isolated LAN in the cloud.*
+
 9. Name the four network devices covered in this tutorial and their primary function.
 10. How would you quickly document the network configuration of an unfamiliar Linux server?
 
@@ -451,6 +473,9 @@ Make executable: `chmod +x ~/bin/net-baseline.sh && ~/bin/net-baseline.sh`
 - [OSI and TCP/IP Models](osi-and-tcp-ip-models.md) *(next in Module 1)*
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

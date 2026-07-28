@@ -4,6 +4,7 @@ description: Rebase branches onto updated main, rewrite history with interactive
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -43,31 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `git pull --rebase` for cleaner local updates
 - [ ] Recover from rebase mistakes with reflog
 
-## Rebase vs Merge Diagram
+## Architecture
 
-```d2
-direction: down
+Rebase replays commits onto a new base to keep history linear; interactive rebase lets you edit the todo list before applying.
 
-Before: "Before rebase" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        M1: "main: A-B-C"
-        F1: "feature: A-B-D-E"
-    }
-    After: "After rebase feature onto main" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        M2: "main: A-B-C"
-        F2: "feature: A-B-C-D'-E"
-    }
-    Before: Before
-    After: After
-    Before -> After
-```
+![Architecture diagram for Rebasing and Interactive Rebase](../assets/images/rebasing-and-interactive-rebase.svg)
 
 ## Theory
 
@@ -194,6 +175,8 @@ echo "main-update" >> app.txt && git add . && git commit -m "fix: main update"
 git log --oneline --all --graph
 ```
 
+**Expected result:** After rebase, feature commits sit on top of the updated base in a linear graph.
+
 ### Step 2 – Rebase feature onto main
 
 **Command:**
@@ -206,6 +189,8 @@ git log --oneline --graph --all
 
 **Explanation:** Feature commits now sit on top of main's latest commit.
 
+**Expected result:** Conflict (if induced) pauses rebase; continue completes successfully.
+
 ### Step 3 – Interactive rebase to squash
 
 **Command:**
@@ -217,6 +202,8 @@ git log --oneline -3
 ```
 
 **Explanation:** In practice, use editor to squash WIP into feature commit. Lab uses reset as fallback for non-interactive environments.
+
+**Expected result:** Interactive todo changes (squash/reword) appear in the rewritten log messages.
 
 ### Step 4 – Practice abort
 
@@ -232,6 +219,8 @@ git rebase --abort
 git log --oneline -1
 ```
 
+**Expected result:** Abort returns the branch to the pre-rebase tip when practised.
+
 ### Step 5 – pull --rebase simulation
 
 **Command:**
@@ -246,6 +235,8 @@ git pull --rebase origin main
 git log --oneline -3
 ```
 
+**Expected result:** `--force-with-lease` awareness documented; lab does not wreck a shared remote.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -254,7 +245,25 @@ git log --oneline -3
 cd /tmp && rm -rf git-rebase-lab rebase-remote.git
 ```
 
-## Commands & Code
+**Expected result:** Lab repository removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Rebase | Feature commits replay onto updated base; graph is linear as expected |
+| Interactive | Todo edits (squash/reword) reflected in final log |
+| Conflict | Continue/abort paths practised successfully |
+| Cleanup | Lab repo removed; no shared remote force-pushed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -275,6 +284,14 @@ git rebase origin/main
 git rebase -i origin/main   # squash, reword, drop WIP
 git push --force-with-lease origin feature/my-branch
 ```
+
+## Security Considerations
+
+- Never rebase commits already pushed to shared branches unless the team explicitly agrees
+- Interactive rebase can drop security fixes — verify the todo list carefully
+- Avoid `exec` lines in rebase that run untrusted scripts from the branch being rewritten
+- After rebase, re-run tests and secret scanners before force-with-lease push
+- Keep backup branches (`backup/pre-rebase-…`) until the rewrite is verified
 
 ## Common Mistakes
 
@@ -350,6 +367,9 @@ git push --force-with-lease origin feature/my-branch
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Undoing Changes — Reset, Revert, and Stash](undoing-changes-reset-revert-stash.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

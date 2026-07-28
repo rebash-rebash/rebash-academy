@@ -4,6 +4,7 @@ description: Configure nginx and HAProxy as reverse proxies, terminate TLS at th
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -26,7 +27,7 @@ comments: false
 
 A **reverse proxy** sits in front of backend servers and handles client requests on their behalf. Unlike a forward proxy (which protects clients), a reverse proxy protects and scales **servers**. It terminates TLS, routes requests by hostname or path, caches static assets, rate-limits abusive clients, and hides internal topology from the internet. Every production web stack uses reverse proxies — nginx in front of Node.js, HAProxy in front of microservices, AWS ALB acting as a managed reverse proxy, or Kubernetes **Ingress** controllers distributing HTTP traffic to pods.
 
-Confusing reverse proxies with load balancers causes architectural mistakes. Load balancers distribute connections across **multiple identical backends**; reverse proxies add **application-aware** behavior — URL rewriting, header injection, WebSocket upgrades, and authentication at the edge. In practice, one component often does both: an ALB load-balances and terminates TLS; nginx reverse-proxies and load-balances upstream pools.
+Confusing reverse proxies with load balancers causes architectural mistakes. Load balancers distribute connections across **multiple identical backends**; reverse proxies add **application-aware** behaviour — URL rewriting, header injection, WebSocket upgrades, and authentication at the edge. In practice, one component often does both: an ALB load-balances and terminates TLS; nginx reverse-proxies and load-balances upstream pools.
 
 This is **Tutorial 13** in **Module 4: Application Layer** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
@@ -49,39 +50,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose between terminating TLS at the proxy vs passing through to backends
 - [ ] Debug common reverse proxy failures (502, 504, wrong backend routing)
 
-## Architecture Diagram
+## Architecture
 
 Clients connect to the reverse proxy; the proxy forwards requests to internal backends that are not directly exposed.
 
-```d2
-direction: right
+![Architecture diagram for Reverse Proxy and Ingress Basics](../assets/images/reverse-proxy-and-ingress-basics.svg)
 
-Internet: Internet {
-        C: Clients
-    }
-    Edge: "Reverse Proxy / Ingress" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        RP: "nginx / HAProxy / Ingress Controller"
-        TLS: "TLS Termination"
-    }
-    Internal: "Private Network" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        B1: "Backend 1\napp:8080"
-        B2: "Backend 2\napp:8080"
-        API: "API Service\napi:3000"
-    }
-    Internet.C -> Edge.RP: "HTTPS 443"
-    Edge.RP -> Edge.TLS
-    Edge.TLS -> Internal.B1: HTTP
-    Edge.TLS -> Internal.B2: HTTP
-    Edge.TLS -> Internal.API: "/api/*"
-```
 
 ## Theory
 
@@ -118,7 +92,7 @@ Production reverse proxies typically handle:
 
 | Approach | Cert management | Header inspection | Internal traffic |
 |----------|-----------------|-------------------|------------------|
-| Termination | Centralized at proxy | Full L7 routing | Often plain HTTP |
+| Termination | Centralised at proxy | Full L7 routing | Often plain HTTP |
 | Pass-through | Per backend | L4 only (SNI routing) | Encrypted end-to-end |
 
 !!! tip "Production pattern"
@@ -296,6 +270,10 @@ for i in $(seq 1 6); do curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.
 
 **Explanation:** Repeated requests should alternate between backends (200 responses). Check nginx access log to confirm different upstream response sizes or add custom backend headers in production.
 
+**Expected result:**
+
+Repeated curls return HTTP 200; upstream selection varies across backends if round-robin is configured.
+
 ### Step 4 – Add path-based routing
 
 **Command:**
@@ -327,7 +305,11 @@ sudo nginx -t && sudo systemctl reload nginx
 curl -sI http://127.0.0.1:8888/api/ | head -3
 ```
 
-**Explanation:** Path-based routing sends `/api/*` to a specific backend while `/` uses the pool. Note the trailing slash in `proxy_pass` — it affects URL rewriting behavior.
+**Explanation:** Path-based routing sends `/api/*` to a specific backend while `/` uses the pool. Note the trailing slash in `proxy_pass` — it affects URL rewriting behaviour.
+
+**Expected result:**
+
+`nginx -t` OK; `/api/` and `/` paths hit different upstreams as configured.
 
 ### Step 5 – Simulate backend failure (502 Bad Gateway)
 
@@ -348,6 +330,14 @@ sudo rm /etc/nginx/conf.d/proxy-lab.conf
 sudo systemctl reload nginx
 ```
 
+**Expected result:**
+
+```text
+502
+```
+
+(or 504) when the killed upstream is selected; restore backend afterwards for cleanup.
+
 ### Step 6 – Review Kubernetes Ingress (optional)
 
 If you have kubectl access:
@@ -359,7 +349,27 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
 
 **Explanation:** Inspect which Ingress controller is installed, assigned external IP, and backend service endpoints.
 
-## Commands & Code
+**Expected result:**
+
+Ingress list or “No resources found”; optional step may be skipped without cluster access.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Confirm nginx proxies to backends and path rules return expected status codes.
+2. Explain the 502 you induced when a backend was killed.
+3. Remove lab `conf.d` files and stop temporary HTTP servers.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Proxy | Frontend returns 200 from healthy backends |
+| Paths | Path-based routes hit the correct upstream |
+| Failure | Killing a backend yields 502/504 as expected |
+| Ingress | Optional `kubectl get ingress` reviewed or skipped with note |
+| Cleanup | nginx lab config removed; ports 808x free |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -369,6 +379,14 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
 | `curl -v` | Verbose HTTP including headers | `curl -v https://example.com` |
 | `kubectl get ingress` | List Ingress resources | `kubectl get ingress -A` |
 | `haproxy -c` | Validate HAProxy config | `sudo haproxy -c -f /etc/haproxy/haproxy.cfg` |
+
+## Security Considerations
+
+- Never forward `Host` or hop-by-hop headers blindly from untrusted clients without validation
+- Enforce TLS at the edge; use internal mTLS or network policy between proxy and backends when feasible
+- Lock down Ingress/annotations that enable snippets or arbitrary config injection
+- Hide backend version banners and detailed error pages on public listeners
+- Limit which namespaces/service accounts may create Ingress objects that bind privileged hosts
 
 ## Common Mistakes
 
@@ -439,6 +457,8 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
 
     **Q6 — Intermittent 502:** 502 means the proxy received an invalid response or could not connect to upstream. Check nginx error log for `connect() failed` vs `upstream prematurely closed`. Test backends directly bypassing the proxy. Verify upstream health — intermittent 502 often indicates one backend in a pool is failing while others succeed. Check `max_fails` and passive health marking. Review recent deployments and resource exhaustion on backends.
 
+10. How would you explain reverse proxy and ingress basics to a junior engineer in two minutes?
+
 ## Related Tutorials
 
 - [Networking – Category Overview](index.md)
@@ -447,6 +467,9 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

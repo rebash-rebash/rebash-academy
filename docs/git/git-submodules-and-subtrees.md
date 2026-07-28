@@ -4,6 +4,7 @@ description: Embed external repositories with submodules and subtrees; manage de
 difficulty: advanced
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -42,30 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose embedding strategy for shared Terraform modules
 - [ ] Remove submodules cleanly
 
-## Submodule vs Subtree Diagram
+## Architecture
 
-```d2
-direction: down
+Submodules pin an external repository at a commit; subtrees vendor history into a subdirectory of the parent project.
 
-SUBMOD: Submodule {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        PARENT: "Parent Repo\nrecords submodule SHA"
-        CHILD: "Child Repo\nseparate .git"
-        PARENT -> CHILD: gitlink
-    }
-    SUBTREE: Subtree {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        PARENT2: "Parent Repo"
-        MERGED: "External code\nmerged into subdir/"
-        PARENT2 -> MERGED
-    }
-```
+![Architecture diagram for Git Submodules and Subtrees](../assets/images/git-submodules-and-subtrees.svg)
 
 ## Theory
 
@@ -188,16 +170,14 @@ git subtree push --prefix=modules/vpc \
 
 ### CI/CD with Submodules
 
-{% raw %}
 ```yaml
 # GitHub Actions example
 steps:
   - uses: actions/checkout@v4
     with:
       submodules: recursive
-      token: ${{ secrets.PAT_WITH_SUBMODULE_ACCESS }}
+      token: ${{ '{{' }} secrets.PAT_WITH_SUBMODULE_ACCESS {{ '}}' }}
 ```
-{% endraw %}
 
 PAT or deploy key needs read access to all submodule URLs.
 
@@ -239,6 +219,8 @@ git init -b main
 echo "# Infra" > README.md && git add . && git commit -m "feat: parent repo"
 ```
 
+**Expected result:** Parent repo records a submodule gitlink (160000 mode) at a pinned commit.
+
 ### Step 2 – Add submodule
 
 **Command:**
@@ -249,6 +231,8 @@ cat .gitmodules
 git commit -m "chore: add vpc submodule"
 ls -la modules/vpc/
 ```
+
+**Expected result:** `git submodule update --init` populates the working tree files.
 
 ### Step 3 – Clone parent with submodules
 
@@ -261,6 +245,8 @@ ls sub-clone/modules/vpc/main.tf 2>/dev/null || echo "submodule not initialized"
 git clone --recurse-submodules /tmp/sub-parent.git sub-clone-full
 cat sub-clone-full/modules/vpc/main.tf
 ```
+
+**Expected result:** Updating the submodule and committing the parent advances the pin.
 
 ### Step 4 – Update submodule
 
@@ -275,6 +261,8 @@ git submodule update --remote modules/vpc
 git add modules/vpc && git commit -m "chore: bump vpc to v2"
 ```
 
+**Expected result:** Subtree (if used) copies history into the prefix path as shown.
+
 ### Step 5 – Subtree alternative (separate demo)
 
 **Command:**
@@ -288,6 +276,8 @@ ls vendor/vpc/
 git log --oneline -3
 ```
 
+**Expected result:** Fresh clone instructions you documented would include submodule init.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -297,7 +287,25 @@ rm -rf /tmp/sub-child /tmp/sub-child.git /tmp/sub-parent /tmp/sub-clone \
   /tmp/sub-clone-full /tmp/subtree-demo
 ```
 
-## Commands & Code
+**Expected result:** Lab repos removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Add/update | Submodule commit pin visible in parent tree |
+| Init/sync | Fresh clone with submodule init shows expected files |
+| Subtree | Subtree add/pull (if practised) updates the vendored path |
+| Cleanup | Lab parent and submodule repos removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -308,6 +316,14 @@ rm -rf /tmp/sub-child /tmp/sub-child.git /tmp/sub-parent /tmp/sub-clone \
 | `git subtree add --prefix=P URL branch` | Add subtree | Merge external repo |
 | `git subtree pull --prefix=P URL branch` | Update subtree | Pull upstream changes |
 | `git submodule status` | Show submodule SHAs | Verify pinned versions |
+
+## Security Considerations
+
+- Pin submodule commits; floating `main` tips invite supply-chain surprises
+- Verify remote URLs for submodules — typosquatting is a real risk
+- Update submodules deliberately and run their tests in your CI
+- Prefer subtree or vendoring when you need full control of third-party history
+- Audit submodule changes in PRs as carefully as first-party code
 
 ## Common Mistakes
 
@@ -382,6 +398,9 @@ rm -rf /tmp/sub-child /tmp/sub-child.git /tmp/sub-parent /tmp/sub-clone \
 - [Working with Remotes](working-with-remotes.md)
 - [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

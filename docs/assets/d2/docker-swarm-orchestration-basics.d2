@@ -1,0 +1,33 @@
+direction: down
+
+Managers: Managers {
+        M1: "Manager 1 - Leader"
+        M2: "Manager 2"
+    }
+    Workers: Workers {
+        W1: "Worker 1"
+        W2: "Worker 2"
+    }
+    Swarm: Objects {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        SVC: "Service api:3 replicas"
+        T1: Task
+        T2: Task
+        T3: Task
+        NET: "Overlay network"
+        SEC: "Secrets / Configs"
+    }
+    Managers.M1 -> Managers.M2
+    Managers.M1 -> Workers.W1
+    Managers.M1 -> Workers.W2
+    Swarm.SVC -> Swarm.T1
+    Swarm.SVC -> Swarm.T2
+    Swarm.SVC -> Swarm.T3
+    Swarm.T1 -> Workers.W1
+    Swarm.T2 -> Workers.W2
+    Swarm.T3 -> Workers.W1
+    Swarm.NET -> Swarm.T1
+    Swarm.SEC -> Swarm.SVC

@@ -1,9 +1,10 @@
 ---
 title: Namespaces and Resource Management
-description: Partition clusters with namespaces, enforce quotas and limits, organize multi-tenant workloads, and manage kubectl contexts for day-to-day operations.
+description: Partition clusters with namespaces, enforce quotas and limits, organise multi-tenant workloads, and manage kubectl contexts for day-to-day operations.
 difficulty: intermediate
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -25,7 +26,7 @@ comments: false
 
 A production Kubernetes cluster rarely runs a single application in isolation. Platform teams host dozens of teams — each with staging, production, and experimental workloads — on shared infrastructure. **Namespaces** are Kubernetes' primary mechanism for partitioning a cluster: they scope object names, enable RBAC boundaries, and anchor resource policies. Without namespaces, every Service name must be globally unique and a runaway batch job in one team can exhaust cluster memory for everyone.
 
-This tutorial covers namespace design, **ResourceQuota** and **LimitRange** enforcement, label-based organization, and kubectl context workflows. You will learn how SRE and platform engineers prevent noisy-neighbor problems while keeping developer self-service intact.
+This tutorial covers namespace design, **ResourceQuota** and **LimitRange** enforcement, label-based organisation, and kubectl context workflows. You will learn how SRE and platform engineers prevent noisy-neighbor problems while keeping developer self-service intact.
 
 This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Ingress and External Access](ingress-and-external-access.md) first — external routing and namespace-scoped Ingress rules go hand in hand.
 
@@ -49,61 +50,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose pod scheduling failures caused by quota exhaustion
 - [ ] Apply labels and annotations for cost allocation and governance
 
-## Architecture Diagram
+## Architecture
 
 Namespaces sit logically above workloads. The API server enforces quotas at admission time; the scheduler respects requests and limits on each node.
 
-```d2
-direction: down
-
-Cluster: "Kubernetes Cluster" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NS_DEV: "Namespace: dev" {
-          style: {
-            fill: "#dcfce7"
-            stroke: "#16a34a"
-          }
-            D1: "Deployment web"
-            S1: "Service web-svc"
-            Q1: "ResourceQuota dev-quota"
-        }
-        NS_PROD: "Namespace: production" {
-          style: {
-            fill: "#ffedd5"
-            stroke: "#ea580c"
-          }
-            D2: "Deployment web"
-            S2: "Service web-svc"
-            Q2: "ResourceQuota prod-quota"
-        }
-        NS_SYS: "Namespace: kube-system" {
-          style: {
-            fill: "#f3e8ff"
-            stroke: "#9333ea"
-          }
-            K: "kube-proxy / CoreDNS"
-        }
-    }
-    API: "API Server + Admission"
-    SCH: Scheduler
-    NS_DEV: NS_DEV
-    API -> NS_DEV
-    NS_PROD: NS_PROD
-    API -> NS_PROD
-    NS_SYS: NS_SYS
-    API -> NS_SYS
-    Cluster.NS_DEV.D1 -> SCH
-    Cluster.NS_PROD.D2 -> SCH
-    Cluster.NS_DEV.Q1 -> Cluster.NS_DEV.D1: enforces {
-      style.stroke-dash: 3
-    }
-    Cluster.NS_PROD.Q2 -> Cluster.NS_PROD.D2: enforces {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Namespaces and Resource Management](../assets/images/namespaces-and-resource-management.svg)
 
 ## Theory
 
@@ -412,7 +363,24 @@ kubectl get ns | grep payments || echo "Namespaces terminating"
 
 **Explanation:** Deleting a namespace cascades to all objects inside it. Termination can take minutes if finalizers exist — normal in production teardown workflows.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Namespace | Lab namespace exists and is used for subsequent commands |
+| Quota/limit | ResourceQuota and/or LimitRange applied and enforced as documented |
+| Isolation | Resources in one namespace do not appear in another without `-A` |
+| Cleanup | Lab namespace deleted |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -465,13 +433,23 @@ spec:
 
 Apply: `kubectl apply -f namespace-bootstrap.yaml`
 
+## Security Considerations
+
+- Use namespaces as security and quota boundaries, not only organisational labels
+- Apply ResourceQuotas and LimitRanges so tenants cannot exhaust the cluster
+- Prefer RoleBindings scoped to a namespace over ClusterRoleBindings for app teams
+- NetworkPolicy default-deny within sensitive namespaces
+- Label namespaces for Pod Security admission (enforce/restricted) early
+- Delete unused namespaces — leftover RBAC and Secrets accumulate risk
+
+
 ## Common Mistakes
 
 !!! warning "Running production workloads in default"
     The `default` namespace has no quota guardrails and confusing RBAC. Every production Deployment should live in a named namespace with quotas and LimitRange applied.
 
 !!! warning "Enabling ResourceQuota without LimitRange"
-    Quotas count **requests** and **limits**. Pods without resource fields may be rejected or count as zero — behavior depends on quota scope. Always pair quotas with LimitRange defaults.
+    Quotas count **requests** and **limits**. Pods without resource fields may be rejected or count as zero — behaviour depends on quota scope. Always pair quotas with LimitRange defaults.
 
 !!! warning "Identical Service names across namespaces without DNS awareness"
     `curl http://api` only resolves within the current namespace. Cross-namespace calls require the FQDN `api.other-ns.svc.cluster.local` or an Ingress rule.
@@ -530,7 +508,7 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 
     **Q2 — Requests vs limits:** Requests declare the minimum guaranteed resources a container needs. The scheduler sums requests across pods to find a node with enough allocatable capacity. Limits cap maximum usage at runtime — the kubelet enforces them via cgroups. A container can burst above its request up to its limit (for CPU, it may be throttled rather than killed).
 
-    **Q4 — LimitRange before quota:** ResourceQuota tracks aggregate requests and limits. If pods omit resource fields, admission behavior is inconsistent — some quotas reject them, others count zero usage allowing unbounded pods. LimitRange injects defaults so every pod has predictable resource declarations before quota enforcement is meaningful.
+    **Q4 — LimitRange before quota:** ResourceQuota tracks aggregate requests and limits. If pods omit resource fields, admission behaviour is inconsistent — some quotas reject them, others count zero usage allowing unbounded pods. LimitRange injects defaults so every pod has predictable resource declarations before quota enforcement is meaningful.
 
     **Q7 — Other quota resources:** Common hard limits include `pods`, `persistentvolumeclaims`, `services.loadbalancers`, `services.nodeports`, `count/deployments.apps`, and `requests.storage` for total PVC storage claims.
 
@@ -541,6 +519,9 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md) *(next in Module 4)*
 - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
 - [Docker – Introduction to Containers](../docker/introduction-to-containers-and-docker.md) — cgroups foundation
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

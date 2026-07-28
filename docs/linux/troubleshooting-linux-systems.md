@@ -4,6 +4,7 @@ description: Systematic debugging for boot, disk, network, and performance issue
 difficulty: advanced
 estimated_time: "60 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -42,6 +43,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose boot failures using journalctl, systemd targets, and rescue mode concepts
 - [ ] Resolve full-disk emergencies without data loss
 - [ ] Triage network and performance issues with a layered diagnostic model
+
+## Architecture
+
+Effective troubleshooting narrows the fault domain: symptoms to subsystem checks to a verified fix.
+
+![Architecture diagram for Troubleshooting Linux Systems](../assets/images/troubleshooting-linux-systems.svg)
 
 ## Theory
 
@@ -261,7 +268,22 @@ cat /tmp/incident-template.md
 
 **Expected output:** Template ready for post-incident documentation practice.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Triage order | You followed CPU → memory → disk → network → logs as appropriate |
+| Evidence | Commands captured process, disk, and journal clues for the injected fault |
+| Fix | Lab fault resolved and service/health check passes |
+| Cleanup | Fault injection artefacts removed |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -283,8 +305,8 @@ cat /tmp/incident-template.md
 | `ps aux --sort=-%mem` | Processes by memory |
 | `ss -s` | Socket summary statistics |
 | `strace -p PID` | Trace system calls (advanced) |
-| `systemd-analyze blame` | Boot time per unit |
-| `systemd-analyze critical-chain` | Boot dependency chain |
+| `systemd-analyse blame` | Boot time per unit |
+| `systemd-analyse critical-chain` | Boot dependency chain |
 
 ## Code Examples
 
@@ -342,6 +364,14 @@ systemd-analyze blame | head -15
 echo "=== Critical chain ==="
 systemd-analyze critical-chain default.target | head -20
 ```
+
+## Security Considerations
+
+- Collect evidence before reboot when safe — volatile data (process lists, network sockets) disappears on restart
+- Avoid posting full logs containing secrets into public tickets or chat
+- Use read-only forensic mounts when investigating suspected compromise
+- Limit live debugging tools that can alter state (`kill`, `iptables -F`) until you understand impact
+- Document every invasive action during an incident for the postmortem
 
 ## Common Mistakes
 
@@ -442,6 +472,17 @@ systemd-analyze critical-chain default.target | head -20
 
 *Sample answer:* "What changed?" — recent deployments, config changes, patches, traffic spikes, or certificate expirations usually explain sudden failures.
 
+1. How would you explain troubleshooting linux systems to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore troubleshooting linux systems?
+3. Which metrics or logs would you check first when troubleshooting linux systems misbehaves?
+4. What is a secure default related to troubleshooting linux systems?
+5. How would you validate a change involving troubleshooting linux systems in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around troubleshooting linux systems?
+7. Describe a common anti-pattern with troubleshooting linux systems and how you fix it.
+8. How does troubleshooting linux systems interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for troubleshooting linux systems?
+10. When would you intentionally not follow the default approach taught here?
+
 ## Related Tutorials
 
 - [Linux – Category Overview](index.md)
@@ -452,6 +493,9 @@ systemd-analyze critical-chain default.target | head -20
 - [systemd Service Management](systemd-service-management.md)
 - [Process Management](process-management.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

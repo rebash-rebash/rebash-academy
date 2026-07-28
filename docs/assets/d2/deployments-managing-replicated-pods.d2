@@ -1,0 +1,28 @@
+direction: down
+
+Control: "Control Plane" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        DEP: "Deployment\nreplicas: 3"
+        RS1: "ReplicaSet v1\ndesired: 0"
+        RS2: "ReplicaSet v2\ndesired: 3"
+    }
+    Data: "Worker Nodes" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        P1: "Pod v2"
+        P2: "Pod v2"
+        P3: "Pod v2"
+    }
+    Control.DEP -> Control.RS1
+    Control.DEP -> Control.RS2
+    Control.RS2 -> Data.P1
+    Control.RS2 -> Data.P2
+    Control.RS2 -> Data.P3
+    Control.RS1 -> Control.DEP: "scaled to 0\nafter rollout" {
+      style.stroke-dash: 3
+    }

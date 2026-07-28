@@ -4,6 +4,7 @@ description: Map Docker concepts to Kubernetes — containers to pods, docker ru
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -45,34 +46,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Plan an incremental migration path from Docker Compose to Kubernetes
 - [ ] Know when to continue with the [Kubernetes track](../kubernetes/index.md)
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: right
-
-Docker: Docker {
-        DR: "docker run"
-        IMG: Image
-        COMP: "Compose service"
-        NET: "bridge / overlay"
-        VOL: "volume / bind mount"
-    }
-    Kubernetes: Kubernetes {
-        POD: Pod
-        DEP: Deployment
-        SVC: Service
-        CNI: "Pod network / CNI"
-        PV: "PV / PVC"
-    }
-    Docker.DR -> Kubernetes.POD
-    Docker.IMG -> Kubernetes.POD
-    Docker.COMP -> Kubernetes.DEP
-    Docker.COMP -> Kubernetes.SVC
-    Docker.NET -> Kubernetes.CNI
-    Docker.VOL -> Kubernetes.PV
-    Kubernetes.DEP -> Kubernetes.POD
-    Kubernetes.SVC -> Kubernetes.POD
-```
+![Architecture diagram for From Docker to Kubernetes](../assets/images/from-docker-to-kubernetes.svg)
 
 ## Theory
 
@@ -254,6 +230,38 @@ Kubernetes improves on Docker's single HEALTHCHECK:
 
 See [Production Docker Patterns](production-docker-patterns.md) for probe design principles.
 
+
+### Translate intent, not flags
+
+A naïve Compose-to-Kubernetes conversion that copies `privileged`, host mounts, and published ports will recreate the same risks at larger blast radius. Map services to Deployments, ports to Services/Ingress, env files to ConfigMaps/Secrets, and healthchecks to probes — then apply Pod Security and NetworkPolicies. Keep image digests identical across the migration so you debug orchestration differences, not application drift.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
 ## Hands-on Lab
 
 ### Lab 1 — Compose to Kubernetes translation
@@ -341,6 +349,9 @@ kubectl port-forward svc/api 3000:3000
 curl localhost:3000/health
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 2 — Imperative vs declarative
 
 ```bash
@@ -353,13 +364,34 @@ kubectl expose deployment web --port=80 --type=NodePort
 kubectl get deployments,pods,services
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Commit YAML to Git for GitOps — avoid kubectl from laptops to production.
 
 ### Lab 3 — Migration checklist
 
 For each Compose service, document the target Deployment, Service type, storage, and secrets. Migrate **stateless services first** (api, web, worker); plan StatefulSet or managed DB for postgres and redis.
 
-## Commands & Code
+**Expected result:** You complete this step and can explain the outcome.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Mapping | You produced Deployment/Service YAML equivalent to the Compose services |
+| Probes | Healthcheck mapped to a probe (or documented deliberate difference) |
+| Config/secret | Env/volume concerns mapped to ConfigMap/Secret/Volume patterns |
+| Review | You listed at least two security differences Compose→Kubernetes |
+
+## Code Walkthrough
 
 ### kubectl ↔ docker cheat sheet
 
@@ -376,6 +408,16 @@ For each Compose service, document the target Deployment, Service type, storage,
 | Rollback | service rollback | `kubectl rollout undo deployment/D` |
 
 Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes track](../kubernetes/index.md).
+
+## Security Considerations
+
+- Do not translate Compose `privileged: true` or host mounts into Kubernetes without a security review
+- Map Compose secrets to Kubernetes Secrets or an external secret store — not plain ConfigMaps
+- Replace host port publishes with Services/Ingress and network policies
+- Keep image digests stable across the migration so you are not debugging two variables at once
+- Apply Pod Security standards early; “it worked in Compose” is not a security model
+- Limit kubeconfig privileges used during migration labs to a dedicated namespace
+
 
 ## Common Mistakes
 
@@ -458,6 +500,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - [Production Docker Patterns](production-docker-patterns.md)
 - [Kubernetes – Category Overview](../kubernetes/index.md)
 - [Docker – Category Overview](index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

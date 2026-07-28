@@ -4,6 +4,7 @@ description: Merge branches with fast-forward and three-way merges, resolve conf
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -43,43 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `git log --merges` to audit merge history
 - [ ] Prevent unnecessary conflicts with communication and small PRs
 
-## Merge Types Diagram
+## Architecture
 
-```d2
-direction: down
+Merging joins histories. Fast-forward advances a pointer; a true merge creates a commit with two parents when histories diverged.
 
-FF: "Fast-Forward Merge" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        M1: main
-        C1: C1
-        M1 -> C1
-        C2: C2
-        C1 -> C2
-        F1: feature
-        F1 -> C2
-    }
-    TW: "Three-Way Merge" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        M2: main
-        A: A
-        M2 -> A
-        B: B
-        A -> B
-        F2: feature
-        F2 -> A
-        C: C
-        A -> C
-        Merged: "Merge commit M"
-        B -> Merged
-        C -> Merged
-    }
-```
+![Architecture diagram for Merging and Merge Conflicts](../assets/images/merging-and-merge-conflicts.svg)
 
 ## Theory
 
@@ -166,7 +135,7 @@ Cleaner main history; loses individual commit granularity on main.
 
 ### Merge Strategies
 
-| Strategy | Behavior |
+| Strategy | Behaviour |
 |----------|----------|
 | `recursive` (default) | Three-way merge for two branches |
 | `ours` | Keep our version entirely |
@@ -205,6 +174,8 @@ echo "team: sre" > metadata.yaml
 git add metadata.yaml && git commit -m "chore: update team metadata"
 ```
 
+**Expected result:** Fast-forward or merge commit appears per the step’s strategy.
+
 ### Step 2 – Merge without conflict
 
 **Command:**
@@ -216,6 +187,8 @@ git log --oneline --graph
 ```
 
 **Explanation:** Different files changed — clean three-way merge.
+
+**Expected result:** Conflict markers are present when induced; status lists unmerged paths.
 
 ### Step 3 – Create intentional conflict
 
@@ -232,6 +205,8 @@ git merge feature/conflict || true
 git status
 ```
 
+**Expected result:** Resolved files are committed; merge completes cleanly.
+
 ### Step 4 – Resolve conflict
 
 **Command:**
@@ -244,6 +219,8 @@ git add deploy.yaml
 git commit -m "merge: resolve replica count — compromise at 3"
 git log --oneline --graph -5
 ```
+
+**Expected result:** Abort restores the pre-merge branch tip.
 
 ### Step 5 – Practice abort
 
@@ -259,6 +236,8 @@ git merge --abort
 git status
 ```
 
+**Expected result:** Graph shows the expected merge topology.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -267,7 +246,25 @@ git status
 cd /tmp && rm -rf git-merge-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab repository removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Merge | Fast-forward or merge commit appears as documented |
+| Conflict | Conflict markers resolved; `git status` clean after continue |
+| Abort | Abort path restores pre-merge state when practised |
+| Cleanup | Lab repo removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -289,6 +286,14 @@ git diff --name-only --diff-filter=U
 echo "---"
 git status -sb
 ```
+
+## Security Considerations
+
+- Resolve conflicts consciously; accepting either side blindly can reintroduce vulnerable code
+- Require CI to pass on the merge commit, not only the feature tip
+- Prefer merge strategies your team documents; surprise force-merges bypass review
+- When conflicts touch IAM, network, or auth files, get a second reviewer
+- Do not disable merge queues or required reviews to unblock a broken conflict resolution
 
 ## Common Mistakes
 
@@ -363,6 +368,9 @@ git status -sb
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

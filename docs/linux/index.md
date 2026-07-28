@@ -4,6 +4,7 @@ description: Linux learning track — 20 tutorials from fundamentals to producti
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -150,3 +151,7 @@ After completing this track, you will be able to:
 - [Networking](../networking/index.md) — next step in the DevOps path
 - [Docker](../docker/index.md) — containerize your applications
 - [Interview Prep](../interview/index.md) — Linux interview questions
+
+- [Linux Cheat Sheet](../cheatsheets/linux.md)
+- [Linux Interview Prep](../interview/linux.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

@@ -4,6 +4,7 @@ description: Systematically diagnose failing pods, scheduling issues, networking
 difficulty: advanced
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -50,38 +51,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Correlate Deployment rollout failures with ReplicaSet and revision history
 - [ ] Document incidents with evidence suitable for postmortems
 
-## Architecture Diagram
+## Architecture
 
 Troubleshooting flows from the user-visible symptom down through Kubernetes layers to the container process.
 
-```d2
-direction: down
-
-SYM: "Symptom\n502 / CrashLoop / Pending"
-    ING: "Ingress / LoadBalancer"
-    SVC: Service
-    EP: "Endpoints / EndpointSlice"
-    POD: "Pod Status"
-    CTR: "Container State"
-    APP: "Application Logs"
-    SYM -> ING
-    ING -> SVC: "route OK?"
-    SVC -> EP: "endpoints exist?"
-    EP -> POD: "targets ready?"
-    POD -> CTR: "scheduled? probes?"
-    CTR -> APP: "exit code / OOM"
-    EVT: Events
-    EVT -> POD: {
-      style.stroke-dash: 3
-    }
-    EVT -> ING: {
-      style.stroke-dash: 3
-    }
-    NODE: "Node Conditions"
-    NODE -> POD: {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Troubleshooting Kubernetes Workloads](../assets/images/troubleshooting-kubernetes-workloads.svg)
 
 ## Theory
 
@@ -453,7 +427,25 @@ kubectl config set-context --current --namespace=default
 echo "Incident template: Symptom → Scope → Pod → Container → Network → Root cause → Fix"
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Describe/events | You diagnosed a failing Pod from describe/events |
+| Logs | Application or previous container logs retrieved |
+| Fix | Workload returns to Ready after the documented fix |
+| Cleanup | Broken and fixed lab objects deleted |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -495,6 +487,16 @@ fi
 ```
 
 Usage: `chmod +x ~/bin/k8s-triage.sh && ~/bin/k8s-triage.sh troubleshoot-lab web`
+
+## Security Considerations
+
+- Prefer `describe`, events, and logs before deleting workloads that hide evidence
+- Do not `kubectl exec` into production Pods with broad secrets mounted unless necessary and audited
+- Capture namespace and resource names carefully — pasting wrong cluster context is a common outage cause
+- Avoid privileged debug Pods on shared nodes; use ephemeral debug containers with least privilege
+- Redact Secret and env dumps from incident tickets
+- Clean up debug Deployments/Jobs so they do not remain publicly reachable
+
 
 ## Common Mistakes
 
@@ -573,6 +575,9 @@ Usage: `chmod +x ~/bin/k8s-triage.sh && ~/bin/k8s-triage.sh troubleshoot-lab web
 - [Helm Package Management](helm-package-management.md) *(next in Module 5)*
 - [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md)
 - [Networking – Network Troubleshooting Methodology](../networking/network-troubleshooting-methodology.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

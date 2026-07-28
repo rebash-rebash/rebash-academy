@@ -4,6 +4,7 @@ description: Write Dockerfiles from scratch — FROM, COPY, RUN, CMD, ENTRYPOINT
 difficulty: beginner
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -24,7 +25,7 @@ comments: false
 
 Running `docker run nginx` pulls a pre-built image. Production workflows require **building your own images** — packaging application code, dependencies, and runtime configuration into an immutable artifact that runs identically on a laptop, CI runner, and production host. A **Dockerfile** is the declarative recipe: a text file of instructions that `docker build` executes layer by layer.
 
-This tutorial is **Tutorial 6** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. You will write Dockerfiles from scratch, understand how each instruction affects image layers, use build context and `.dockerignore` efficiently, and build a runnable web application image. For optimization patterns, see [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md).
+This tutorial is **Tutorial 6** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. You will write Dockerfiles from scratch, understand how each instruction affects image layers, use build context and `.dockerignore` efficiently, and build a runnable web application image. For optimisation patterns, see [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md).
 
 ## Prerequisites
 
@@ -45,29 +46,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Override container commands at runtime with `docker run`
 - [ ] Debug failed builds using build output and layer history
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: right
-
-Host: Host {
-        CTX: "Build Context\ndirectory on disk"
-        DF: Dockerfile
-        CLI: "docker build"
-    }
-    Engine: Engine {
-        DA: "Docker daemon"
-        CACHE: "Layer cache"
-    }
-    Output: Output {
-        IMG: "Local image\nrepo:tag"
-    }
-    Host.CTX -> Host.CLI
-    Host.DF -> Host.CLI
-    Host.CLI -> Engine.DA
-    Engine.DA -> Engine.CACHE
-    Engine.DA -> Output.IMG
-```
+![Architecture diagram for Building Images with Dockerfile](../assets/images/building-images-with-dockerfile.svg)
 
 Each instruction in the Dockerfile typically creates one **immutable layer**. Cached layers speed rebuilds when inputs unchanged.
 
@@ -128,7 +109,7 @@ The final `.` is the **build context** — the directory sent to the Docker daem
 
 Prefer **`COPY`** for straightforward file transfer. Use **`ADD`** only when you need automatic extraction of local tar archives or fetching remote URLs (discouraged — use multi-stage `curl` in `RUN` with checksum verification instead).
 
-### Layer Caching Behavior
+### Layer Caching Behaviour
 
 Docker caches each instruction's result. If instruction text **and** all files it depends on are unchanged, Docker reuses the cached layer.
 
@@ -151,6 +132,16 @@ registry.example.com/team/myapp:1.2.3
 ```
 
 Local builds commonly use `myapp:dev`, `myapp:1.0.0`, or `myapp:abc1234` (git SHA).
+
+
+### How the build context reaches the daemon
+
+`docker build` uploads the build context (your directory minus `.dockerignore`) to the Docker daemon, then executes Dockerfile instructions as layers. Understanding that boundary explains many “it works on my laptop” failures: files outside the context cannot be `COPY`ed, secrets accidentally left in context become recoverable layers, and a bloated context slows every CI build. Keep contexts minimal, put Dockerfiles near the files they need, and prefer BuildKit for cache mounts and build secrets instead of baking credentials into `ARG` values.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
 
 ## Hands-on Lab
 
@@ -362,7 +353,24 @@ rm -rf ~/lab/dockerfile-build
 
 **Explanation:** Remove containers, images, and lab directory.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Build | `docker build` completes with a tagged image |
+| Run | Container from your image serves the expected response |
+| Layering | You can point to which Dockerfile instruction created a key layer |
+| Cleanup | Build containers/images cleaned per lab |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -400,10 +408,20 @@ CMD ["default message"]
 
 Run: `docker run myecho` prints `default message`; `docker run myecho hello` prints `hello`.
 
+## Security Considerations
+
+- Never `COPY` `.env`, private keys, or kubeconfigs into an image — use build secrets or runtime mounts
+- Run as a non-root `USER` in the final stage whenever the workload allows
+- Prefer specific base tags or digests; avoid `FROM ubuntu:latest` in production Dockerfiles
+- Combine `apt-get update && install` and clean package caches in the same layer to avoid stale indexes
+- Do not disable SSL verification in `curl`/`wget` build steps “just to make the build pass”
+- Keep build contexts small with a tight `.dockerignore` so secrets and junk never enter the daemon
+
+
 ## Common Mistakes
 
 !!! warning "Using `ADD` when `COPY` suffices"
-    `ADD` has surprising tar-extraction behavior. Use `COPY` unless you explicitly need extraction.
+    `ADD` has surprising tar-extraction behaviour. Use `COPY` unless you explicitly need extraction.
 
 !!! warning "Running as root in production images"
     Default user is root. Add a non-root `USER` after installing dependencies — covered in depth in the best practices tutorial.
@@ -479,6 +497,9 @@ Run: `docker run myecho` prints `default message`; `docker run myecho hello` pri
 - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md) *(next in Module 3)*
 - [Running Your First Container](running-your-first-container.md)
 - [Linux – Package Management](../linux/package-management.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

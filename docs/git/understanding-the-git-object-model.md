@@ -4,6 +4,7 @@ description: Deep dive into Git blobs, trees, commits, and tags; SHA-1 hashing, 
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -44,21 +45,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Understand loose objects vs packfiles
 - [ ] Relate the object model to everyday porcelain commands
 
-## Object Model Diagram
+## Architecture
 
-```d2
-direction: down
+Git stores content-addressed objects—blobs, trees, and commits—linked into a directed acyclic graph that branches and tags merely name.
 
-COMMIT: "Commit Object\nauthor · message · tree · parent"
-    TREE: "Tree Object\ndirectory listing"
-    BLOB: "Blob Object\nfile content"
-    TAG: "Tag Object\nannotated release"
-    COMMIT -> TREE: "points to"
-    TREE -> BLOB: "name → blob"
-    TREE -> TREE: "name → tree"
-    TAG -> COMMIT: "points to"
-    COMMIT -> COMMIT: parent
-```
+![Architecture diagram for Understanding the Git Object Model](../assets/images/understanding-the-git-object-model.svg)
 
 ## Theory
 
@@ -158,6 +149,8 @@ mkdir config && echo "port=8080" > config/server.conf
 
 **Explanation:** We will manually trace how these files become Git objects.
 
+**Expected result:** `git cat-file -t` reports commit/tree/blob for the lab SHAs.
+
 ### Step 2 – Hash and store blobs manually
 
 **Command:**
@@ -170,6 +163,8 @@ ls .git/objects/*/*  | head -5
 ```
 
 **Explanation:** Each file becomes a blob. Note the object paths under `.git/objects/`.
+
+**Expected result:** Tree listing includes the lab filename mode and blob hash.
 
 ### Step 3 – Inspect object types with cat-file
 
@@ -206,6 +201,8 @@ git cat-file -p "$COMMIT"
 
 **Explanation:** The commit object lists tree SHA, parent (none for initial), author, and message.
 
+**Expected result:** Status/diff illustrate differences across the three trees.
+
 ### Step 5 – Walk from commit to files
 
 **Command:**
@@ -217,6 +214,8 @@ git ls-tree -r HEAD
 ```
 
 **Explanation:** `git ls-tree -r HEAD` recursively lists every blob in the commit — the same data `git archive` would export.
+
+**Expected result:** You can sketch commit → tree → blob on paper from the lab.
 
 ### Step 6 – Compare duplicate content deduplication
 
@@ -234,6 +233,8 @@ test "$BLOB1" = "$BLOB2" && echo "Same blob — deduplicated"
 
 **Explanation:** Identical content produces identical hashes — Git stores one blob for both files.
 
+**Expected result:** Hash-object demo (if present) produces a predictable blob SHA.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -242,7 +243,25 @@ test "$BLOB1" = "$BLOB2" && echo "Same blob — deduplicated"
 cd /tmp && rm -rf git-objects-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab repository removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Objects | `git cat-file -t` identifies blob/tree/commit as in the lab |
+| Trees | You can walk from commit → tree → blob for a lab file |
+| Three trees | Status/diff demonstrate working vs index vs HEAD differences |
+| Cleanup | Lab repo removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -270,6 +289,14 @@ echo ""
 echo "=== Files at HEAD ==="
 git ls-tree -r HEAD --name-only
 ```
+
+## Security Considerations
+
+- Remember deleted files can remain reachable via objects and reflog until GC — secrets need history rewrite plus key rotation
+- Do not share raw `.git` directories from production builds; they contain full history
+- Verify object integrity with `git fsck` after suspicious disk or transfer issues
+- Treat packfiles as sensitive when repos contain proprietary or personal data
+- Avoid experimenting with `git hash-object -w` on machines that sync to remotes
 
 ## Common Mistakes
 
@@ -343,6 +370,9 @@ git ls-tree -r HEAD --name-only
 - [Git – Category Overview](index.md)
 - [Viewing History and Diffs](viewing-history-and-diffs.md)
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

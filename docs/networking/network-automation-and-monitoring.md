@@ -4,6 +4,7 @@ description: Automate network operations with Ansible, manage DNS and firewall a
 difficulty: advanced
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -25,7 +26,7 @@ comments: false
 
 ## Overview
 
-Manual network configuration does not scale. When you manage hundreds of firewall rules, dozens of DNS zones, and a fleet of load balancers, **infrastructure as code (IaC)** and **network automation** become mandatory. Ansible playbooks configure devices consistently, Terraform modules provision cloud networking, and GitOps workflows enforce review before any change hits production. Equally critical is **observability**: you cannot fix what you cannot measure. **Prometheus** with **node_exporter** exposes host and network metrics, **SmokePing** tracks latency and packet loss over time, and centralized dashboards turn raw data into actionable alerts.
+Manual network configuration does not scale. When you manage hundreds of firewall rules, dozens of DNS zones, and a fleet of load balancers, **infrastructure as code (IaC)** and **network automation** become mandatory. Ansible playbooks configure devices consistently, Terraform modules provision cloud networking, and GitOps workflows enforce review before any change hits production. Equally critical is **observability**: you cannot fix what you cannot measure. **Prometheus** with **node_exporter** exposes host and network metrics, **SmokePing** tracks latency and packet loss over time, and centralised dashboards turn raw data into actionable alerts.
 
 This tutorial — the **final installment** of the REBASH Academy Networking series — teaches you to automate DNS and firewall management, use Ansible network modules, deploy Prometheus monitoring for network health, and integrate monitoring into your CI/CD pipeline. When you finish here, you will have the complete picture from TCP/IP fundamentals through production cloud networking, security, and operations.
 
@@ -52,58 +53,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Design alerting rules for network connectivity failures
 - [ ] Articulate next steps in the REBASH Academy learning path (Docker, Kubernetes, cloud)
 
-## Architecture Diagram
+## Architecture
 
 The diagram shows a typical network observability and automation stack: Prometheus scrapes exporters, Grafana visualizes, Alertmanager notifies, and Ansible/Terraform push configuration from Git.
 
-```d2
-direction: right
+![Architecture diagram for Network Automation and Monitoring](../assets/images/network-automation-and-monitoring.svg)
 
-Git: "Git Repository" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        TF: "Terraform\nVPC · DNS · SG"
-        ANS: "Ansible Playbooks\nFirewall · DNS"
-    }
-    CI: "CI/CD Pipeline" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        Plan: "terraform plan"
-        Apply: "ansible-playbook / apply"
-    }
-    Targets: "Monitored Infrastructure" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        NE: "node_exporter\nLinux hosts"
-        SP: "SmokePing\nLatency probes"
-        BB: "Blackbox Exporter\nHTTP/TCP/ICMP"
-    }
-    Observability: "Observability Stack" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        Prom: Prometheus
-        Graf: Grafana
-        Alert: Alertmanager
-    }
-    Git: Git
-    CI: CI
-    Git -> CI
-    Targets: Targets
-    CI -> Targets
-    Targets.NE -> Observability.Prom
-    Targets.SP -> Observability.Prom
-    Targets.BB -> Observability.Prom
-    Observability.Prom -> Observability.Graf
-    Observability.Prom -> Observability.Alert
-```
 
 ## Theory
 
@@ -245,7 +200,7 @@ cat > ~/net-automation/playbooks/firewall.yml <<'EOF'
     - name: Allow HTTP and HTTPS
       community.general.ufw:
         rule: allow
-        port: "{{ item }}"
+        port: "{{ '{{' }} item {{ '}}' }}"
         proto: tcp
       loop: ["80", "443"]
 
@@ -258,6 +213,10 @@ ansible-playbook -i ~/net-automation/inventory/hosts ~/net-automation/playbooks/
 ```
 
 **Explanation:** Idempotent firewall configuration — re-running produces no changes unless drift occurs.
+
+**Expected result:**
+
+Ansible reports `ok`/`changed` for UFW tasks (or check-mode diff) without embedding secrets in the playbook.
 
 ### Step 3 – Deploy node_exporter
 
@@ -287,6 +246,14 @@ curl -s localhost:9100/metrics | grep node_network_receive_bytes_total | head -3
 
 **Explanation:** Restrict port 9100 to Prometheus server IP via firewall — metrics expose system information.
 
+**Expected result:**
+
+```text
+# HELP node_network_receive_bytes_total ...
+```
+
+Metrics on `:9100/metrics` (or your chosen port).
+
 ### Step 4 – Configure Prometheus to scrape node_exporter
 
 **Command:**
@@ -314,6 +281,10 @@ curl -s 'http://localhost:9090/api/v1/targets' | python3 -m json.tool | head -20
 
 **Explanation:** Open http://localhost:9090/targets — UP status means metrics are flowing.
 
+**Expected result:**
+
+Prometheus UI/API shows `node` target state UP.
+
 ### Step 5 – Query network metrics with PromQL
 
 **Command:**
@@ -327,6 +298,10 @@ curl -sG 'http://localhost:9090/api/v1/query' \
 ```
 
 **Explanation:** Sustained retransmit rates correlate with congestion, packet loss, or MTU mismatches.
+
+**Expected result:**
+
+PromQL JSON `"status":"success"` with at least one result sample for a network metric.
 
 ### Step 6 – Install SmokePing (Docker)
 
@@ -366,6 +341,10 @@ docker run -d --name smokeping -p 8080:80 \
 
 **Explanation:** Open http://localhost:8080 after 5–10 minutes to see latency smoke graphs populate.
 
+**Expected result:**
+
+SmokePing container running and UI/latency graphs reachable, or alternative `ping` RRD note if skipped.
+
 ### Step 7 – Cleanup lab resources
 
 **Command:**
@@ -375,7 +354,23 @@ docker rm -f prometheus smokeping 2>/dev/null || true
 sudo systemctl stop node_exporter 2>/dev/null || true
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Confirm Ansible playbook dry-run/apply, exporter listen, and Prometheus scrape succeed.
+2. Explain one PromQL network metric you queried.
+3. Remove lab containers and stop exporters you do not intend to keep.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Automation | Firewall playbook runs (check mode acceptable) without secrets in Git |
+| Exporter | `node_exporter` metrics endpoint returns text exposition |
+| Prometheus | Target UP; PromQL query returns a vector/matrix |
+| SmokePing | Container healthy or alternative latency check documented |
+| Cleanup | Docker lab stack removed; ports freed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -393,6 +388,14 @@ sudo systemctl stop node_exporter 2>/dev/null || true
   labels:
     severity: warning
 ```
+
+## Security Considerations
+
+- Store Ansible vault secrets and Prometheus credentials outside Git; rotate scrape tokens regularly
+- Bind exporters to localhost or private interfaces and scrape via authenticated reverse proxy where exposed
+- Alert on missing metrics as well as threshold breaches — silence can mean a compromised agent
+- Least-privilege the automation identity that pushes firewall or DNS changes
+- Separate monitoring networks from user workloads when architecture allows
 
 ## Common Mistakes
 
@@ -452,12 +455,19 @@ sudo systemctl stop node_exporter 2>/dev/null || true
 
     **Q3 — node_exporter metrics:** Throughput (`node_network_receive_bytes_total`), interface errors, TCP retransmissions, and connection counts.
 
+8. How would you explain network automation and monitoring to a junior engineer in two minutes?
+9. What production failure mode appears when teams ignore network automation and monitoring?
+10. Which metrics or logs would you check first when network automation and monitoring misbehaves?
+
 ## Related Tutorials
 
 - [Networking – Category Overview](index.md)
 - [Network Security Hardening](network-security-hardening.md) *(previous in Module 6)*
 - [Linux – Category Overview](../linux/index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
@@ -465,3 +475,7 @@ sudo systemctl stop node_exporter 2>/dev/null || true
 - [node_exporter GitHub](https://github.com/prometheus/node_exporter)
 - [SmokePing Documentation](https://oss.oetiker.ch/smokeping/doc/index.html)
 - [Ansible Documentation](https://docs.ansible.com/)
+
+**Expected result:**
+
+Lab containers removed; node_exporter process stopped if you started it only for this lab.

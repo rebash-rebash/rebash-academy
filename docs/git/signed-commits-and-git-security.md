@@ -4,6 +4,7 @@ description: Configure GPG and SSH commit signing, verify signatures, protect br
 difficulty: advanced
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -43,21 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Understand Sigstore/gitsign as cloud-native alternative
 - [ ] Respond to leaked credential incidents in Git history
 
-## Signing Flow Diagram
+## Architecture
 
-```d2
-direction: right
+Signed commits and tags bind identity cryptography to history so reviewers can verify authorship on protected branches.
 
-DEV: Developer
-    KEY: "Signing Key\nGPG or SSH"
-    COMMIT: "Signed Commit"
-    REMOTE: "GitHub / GitLab"
-    VERIFY: "Signature Verification"
-    DEV -> KEY: "git commit -S"
-    KEY -> COMMIT
-    COMMIT -> REMOTE: push
-    REMOTE -> VERIFY
-```
+![Architecture diagram for Signed Commits and Git Security](../assets/images/signed-commits-and-git-security.svg)
 
 ## Theory
 
@@ -205,6 +196,8 @@ git config commit.gpgsign true
 git config tag.gpgsign true
 ```
 
+**Expected result:** Signing key/SSH key is configured for the lab identity.
+
 ### Step 2 – Create signed commit
 
 **Command:**
@@ -218,6 +211,8 @@ git log --show-signature -1 2>&1 | head -15
 
 **Explanation:** Without key on GitHub, shows "Good signature" locally but unverified on platform.
 
+**Expected result:** `git log --show-signature` reports a good signature on the signed commit.
+
 ### Step 3 – Verify signature status
 
 **Command:**
@@ -229,6 +224,8 @@ git log --format="%H %G? %aN" -1
 
 **Explanation:** `%G?` shows signature status: G=good, N=none, B=bad.
 
+**Expected result:** Unsigned comparison commit is clearly unmarked or unverified.
+
 ### Step 4 – Signed tag
 
 **Command:**
@@ -237,6 +234,8 @@ git log --format="%H %G? %aN" -1
 git tag -s v0.1.0 -m "Signed release 0.1.0"
 git tag -v v0.1.0 2>&1 | head -10
 ```
+
+**Expected result:** Tag signing (if practised) verifies with `git tag -v`.
 
 ### Step 5 – Simulate unsigned commit rejection policy
 
@@ -250,6 +249,8 @@ git log --format="%H %G?" -2
 git config commit.gpgsign true
 ```
 
+**Expected result:** Forge UI or local verify step matches “verified” expectations.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -258,7 +259,25 @@ git config commit.gpgsign true
 cd /tmp && rm -rf git-sign-lab sign_key sign_key.pub
 ```
 
-## Commands & Code
+**Expected result:** Test key material not committed; lab repo cleaned.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Sign | `git log --show-signature` reports a good signature on lab commits |
+| Config | `commit.gpgsign` or SSH signing config matches the lab |
+| Verify | Forged/unsigned comparison behaves as documented |
+| Cleanup | Test keys handled safely; no private keys committed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -285,6 +304,14 @@ while read -r sha status; do
 done < <(git log --format='%H %G?' $RANGE)
 echo "All commits in range are signed."
 ```
+
+## Security Considerations
+
+- Protect signing keys with passphrases or hardware tokens; never commit private keys
+- Enforce verified signatures on protected branches in GitHub/GitLab settings
+- Rotate compromised signing keys and re-sign tags that matter for releases
+- Prefer SSH or GPG signing consistently across the team to avoid unverified noise
+- Treat unsigned commits on release tags as suspicious until explained
 
 ## Common Mistakes
 
@@ -360,6 +387,9 @@ echo "All commits in range are signed."
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 - [Git Hooks and Automation](git-hooks-and-automation.md)
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

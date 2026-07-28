@@ -1,9 +1,10 @@
 ---
-title: Overview
-description: System design patterns, diagrams, and reference architectures.
+title: Architecture
+description: "Architecture reference guides — planned. Track indexes and tutorial diagrams already cover many patterns."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: architecture
 tags:
   - architecture
@@ -14,20 +15,22 @@ comments: false
 
 System design patterns, diagrams, and reference architectures.
 
-## Overview
+## Status
 
-Welcome to the **Architecture** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Networking](../networking/index.md) | Cloud networking and load balancing |
+| [Kubernetes](../kubernetes/index.md) | Production patterns and capstone |
+| [Terraform](../terraform/index.md) | Modules and production patterns |
+| [Learning Paths](../learning-paths/index.md) | Career-shaped architecture of study |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

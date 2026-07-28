@@ -4,6 +4,7 @@ description: Git learning track — 20 tutorials from version control basics to 
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -151,3 +152,7 @@ After completing this track, you will be able to:
 - [GitLab CI/CD](../gitlab/index.md) — pipelines triggered by Git events
 - [Terraform](../terraform/index.md) — IaC stored and versioned in Git
 - [Interview Prep](../interview/index.md) — Git interview questions
+
+- [Git Cheat Sheet](../cheatsheets/git.md)
+- [Git Interview Prep](../interview/git.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)

@@ -4,6 +4,7 @@ description: Master ICMP ping and traceroute, ARP neighbor resolution, the DHCP 
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -26,7 +27,7 @@ comments: false
 
 Before TCP connections and HTTP requests succeed, hosts must discover neighbors on the local segment, obtain IP configuration, and verify reachability. **ICMP** provides diagnostic messaging, **ARP** maps IP addresses to MAC addresses on Layer 2, **DHCP** automates address assignment, and **NTP** keeps clocks synchronized — failures in any of these services produce symptoms that look like application bugs but are actually infrastructure problems.
 
-This tutorial is **Tutorial 6** in **Module 2: Data Link & Routing** of the REBASH Academy Networking series. You will understand how these protocols work at the packet level, practice inspection with Linux tools, and build troubleshooting workflows used daily by DevOps and SRE teams. For OS-level command overlap, see [Linux Networking Essentials](../linux/linux-networking-essentials.md); here we go deeper on protocol behavior and production implications.
+This tutorial is **Tutorial 6** in **Module 2: Data Link & Routing** of the REBASH Academy Networking series. You will understand how these protocols work at the packet level, practice inspection with Linux tools, and build troubleshooting workflows used daily by DevOps and SRE teams. For OS-level command overlap, see [Linux Networking Essentials](../linux/linux-networking-essentials.md); here we go deeper on protocol behaviour and production implications.
 
 ## Prerequisites
 
@@ -47,30 +48,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose "works by IP but not hostname" and "cannot reach gateway" scenarios
 - [ ] Distinguish protocol-level failures from firewall blocks in production
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows how a new host joins a network: DHCP assigns L3 config, ARP resolves the gateway MAC, ICMP verifies reachability, and NTP aligns time with authoritative servers.
 
-```d2
-shape: sequence_diagram
+![Architecture diagram for ICMP, ARP, DHCP and Network Services](../assets/images/icmp-arp-dhcp-and-network-services.svg)
 
-Host: Host
-Switch: Switch
-DHCP: "DHCP Server"
-GW: "Default Gateway"
-NTP: "NTP Server"
-Host -> Switch: "DHCP Discover (broadcast)"
-Switch -> DHCP: "Forward broadcast"
-DHCP -> Host: "DHCP Offer (IP, mask, GW, DNS)"
-Host -> DHCP: "DHCP Request (accept offer)"
-DHCP -> Host: "DHCP ACK (lease time)"
-Host -> Switch: "ARP Who-has GW IP?"
-GW -> Host: "ARP Reply (MAC address)"
-Host -> GW: "ICMP Echo Request (ping)"
-GW -> Host: "ICMP Echo Reply"
-Host -> NTP: "NTP client query (UDP 123)"
-NTP -> Host: "Time sync response"
-```
 
 ## Theory
 
@@ -257,6 +240,10 @@ ip addr show eth0
 
 **Explanation:** Forces lease renewal on systems using dhclient or systemd-networkd. Use during maintenance windows only.
 
+**Expected result:**
+
+Verbose dhclient output shows DHCPREQUEST/ACK **or** the fallback prints current lease/DNS info without dropping your session. Prefer the non-disruptive fallback on remote VMs.
+
 ### Step 7 – Verify NTP synchronization
 
 **Command:**
@@ -300,7 +287,23 @@ EOF
 
 **Expected output:** All layers OK on a healthy host. Isolate failures: no ARP → L2; ARP but no ping → firewall or wrong GW; external fail → routing/NAT.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run ping, ARP/neighbour, and DHCP lease inspection commands.
+2. Explain why ARP is L2 and ICMP is L3 using your outputs.
+3. Do not leave `dhclient` mid-renewal on a production NIC without restoring connectivity.
+
+| Check | Pass criteria |
+|-------|----------------|
+| ICMP | Echo to a permitted target shows RTT or a clear admin-prohibited error |
+| ARP/ND | Neighbour entry for gateway exists after traffic |
+| DHCP | Lease/DNS/gateway sources identified from leases or `resolvectl` |
+| Services | You can name which service provides address, name resolution, and L2 mapping |
+| Cleanup | No stuck dhclient processes; interface still has a usable address |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -365,6 +368,14 @@ sudo tcpdump -i eth0 -n port 67 or port 68
 # Terminal 2 — capture ARP
 sudo tcpdump -i eth0 -n arp
 ```
+
+## Security Considerations
+
+- Treat rogue DHCP servers as a high-severity incident; use DHCP snooping / authorised servers on switches where available
+- Static ARP entries for critical gateways reduce ARP spoofing risk on small segments (with operational trade-offs)
+- Rate-limit or filter ICMP types you do not need; allow echo carefully rather than blanket permit-all
+- Do not run `dhclient` against production interfaces during labs without a recovery plan — lease loss can lock you out
+- Monitor for duplicate IPs and unexpected gateway MAC changes after DHCP renewals
 
 ## Common Mistakes
 
@@ -452,6 +463,9 @@ sudo tcpdump -i eth0 -n arp
 - [Linux Networking Essentials](../linux/linux-networking-essentials.md)
 - [IP Addressing and Subnetting](ip-addressing-and-subnetting.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

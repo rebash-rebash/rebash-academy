@@ -4,6 +4,7 @@ description: Master the OSI seven-layer and TCP/IP four-layer models, encapsulat
 difficulty: beginner
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -21,7 +22,7 @@ comments: false
 
 ## Overview
 
-When a user clicks "Checkout" in your web application, data traverses multiple layers of processing — from HTTP headers down to electrical signals on a wire — and back up again on the server. The **OSI model** (Open Systems Interconnection) and the **TCP/IP model** provide standardized frameworks for understanding this journey. They are not protocols themselves; they are **reference models** that describe how network communication is organized.
+When a user clicks "Checkout" in your web application, data traverses multiple layers of processing — from HTTP headers down to electrical signals on a wire — and back up again on the server. The **OSI model** (Open Systems Interconnection) and the **TCP/IP model** provide standardized frameworks for understanding this journey. They are not protocols themselves; they are **reference models** that describe how network communication is organised.
 
 For DevOps engineers, layered models are the single most useful troubleshooting framework. "Is this a Layer 7 problem or a Layer 3 problem?" determines whether you reach for `curl`, `dig`, `tcpdump`, or `ip route`. This tutorial explains both models, walks through **encapsulation** and **decapsulation**, and maps everyday tools to the layers they inspect.
 
@@ -45,65 +46,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain Protocol Data Units (PDUs) at each layer — segment, packet, frame
 - [ ] Predict where in the stack a given failure symptom originates
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows how the OSI and TCP/IP models align, and how data is encapsulated as it descends the stack.
 
-```d2
-direction: down
+![Architecture diagram for OSI and TCP/IP Models](../assets/images/osi-and-tcp-ip-models.svg)
 
-APP: "Application Layer" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        DATA: "Application Data\nHTTP JSON DNS"
-    }
-    L47: "OSI Layers 5-7 / TCP/IP Application" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        L7: "L7 Application — HTTP TLS DNS"
-        L6: "L6 Presentation — Encoding TLS"
-        L5: "L5 Session — Connection mgmt"
-    }
-    L4: "Layer 4 — Transport" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        L4N: "TCP / UDP\nSegment + Port"
-    }
-    L3: "Layer 3 — Network" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        L3N: "IP — Packet + IP addr"
-    }
-    L2: "Layer 2 — Data Link" {
-      style: {
-        fill: "#fce7f3"
-        stroke: "#db2777"
-      }
-        L2N: "Ethernet — Frame + MAC"
-    }
-    L1: "Layer 1 — Physical" {
-      style: {
-        fill: "#e0f2f1"
-        stroke: "#00796b"
-      }
-        L1N: "Bits on wire / fiber / radio"
-    }
-    APP.DATA -> L47.L7
-    L47.L7 -> L47.L6
-    L47.L6 -> L47.L5
-    L47.L5 -> L4.L4N
-    L4.L4N -> L3.L3N
-    L3.L3N -> L2.L2N
-    L2.L2N -> L1.L1N
-```
 
 ## Theory
 
@@ -218,6 +166,15 @@ ss -tlnp | head -15
 
 **Explanation:** `ss` shows TCP sockets in LISTEN state with port numbers — pure Layer 4 visibility.
 
+**Expected result:**
+
+```text
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
+LISTEN 0      128          0.0.0.0:22         0.0.0.0:*
+```
+
+At least one LISTEN line (SSH or other services) confirms the transport layer view.
+
 ### Step 3 – Network layer: routing decision
 
 **Command:**
@@ -245,6 +202,14 @@ ip neigh show
 
 **Explanation:** Layer 2 uses MAC addresses. The **neighbor table** maps IP addresses to MAC addresses on the local segment.
 
+**Expected result:**
+
+```text
+link/ether aa:bb:cc:dd:ee:ff brd ff:ff:ff:ff:ff:ff
+```
+
+ARP/neighbour output should list your gateway MAC after recent traffic.
+
 ### Step 5 – Capture encapsulation with tcpdump
 
 **Command:**
@@ -257,6 +222,14 @@ wait
 ```
 
 **Explanation:** Captures packets showing IP addresses (L3), port numbers (L4), and TCP flags (L4) in one capture.
+
+**Expected result:**
+
+```text
+IP 10.0.1.42.54321 > 93.184.216.34.80: Flags [S], ...
+```
+
+A few packets with IP and TCP/UDP headers prove encapsulation across layers.
 
 ### Step 6 – Layer-by-layer connectivity test
 
@@ -284,7 +257,27 @@ ip route get "$TARGET_IP"
 
 **Explanation:** Systematically tests each layer to the same destination. When a step fails, you have isolated the problem layer.
 
-## Commands & Code
+**Expected result:**
+
+Script prints OK/FAIL per layer (DNS, route, TCP 443). Pass when you can name the first failing layer or all succeed.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the layer checks (`ss`, `ip addr`, `ip link`/ARP, and optional `tcpdump`) and match expected shapes.
+2. Explain which OSI/TCP-IP layer each command exercises.
+3. Fix capture permission or interface name issues before leaving the lab.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Transport | `ss -tlnp` lists listening sockets without error |
+| Network | Host has a global IPv4/IPv6 address on an UP interface |
+| Data link | MAC address visible; ARP/neighbour table readable |
+| Encapsulation | Optional capture shows IP/TCP (or ICMP) headers for the test host |
+| Layer test | Layer-by-layer script reaches DNS and TCP 443 or documents the failing layer |
+
+## Code Walkthrough
 
 | Command | OSI Layer | Description |
 |---------|-----------|-------------|
@@ -319,6 +312,14 @@ nc -zv -w 3 "$HOST" "$PORT" &>/dev/null && echo "OK   L4/TCP: $HOST:$PORT open" 
 HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://${HOST}/" 2>/dev/null || echo "000")
 [[ "$HTTP_CODE" =~ ^[23] ]] && echo "OK   L7/HTTP: $HTTP_CODE" || echo "WARN L7/HTTP: $HTTP_CODE"
 ```
+
+## Security Considerations
+
+- Map security controls to layers: physical access, MAC filtering, IP filtering, TLS, and application auth each cover different attacks
+- Do not rely on obscurity at one layer (for example “security through non-standard ports”) without controls at others
+- Capture only traffic you are authorised to inspect; packet headers can still reveal internal addressing and service maps
+- Prefer encrypted transports (TLS, SSH, WireGuard) so compromised intermediate hops cannot read application payloads
+- When debugging, avoid leaving `tcpdump` running on production hosts longer than needed — captures may contain credentials in cleartext protocols
 
 ## Common Mistakes
 
@@ -372,13 +373,25 @@ HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://${HOST
 ## Interview Questions
 
 1. Name the seven OSI layers from top to bottom.
+
+*Hint: OSI has seven layers; TCP/IP collapses to four (or five) in practice.*
+
 2. How does the TCP/IP four-layer model map to the OSI model?
 3. Explain encapsulation and decapsulation with an HTTP request example.
+
+*Hint: Encapsulation adds headers as data moves down the stack.*
+
 4. What is a PDU, and what are the PDUs at Layers 2, 3, and 4?
 5. At which layer does a router operate? A switch? A firewall?
+
+*Hint: IP is network; TCP/UDP are transport.*
+
 6. What layer does `curl` operate at? What about `ping`? What about `tcpdump`?
 7. Why do MAC addresses change at each router hop but IP addresses do not?
 8. Describe a top-down troubleshooting approach for "website not loading."
+
+*Hint: ARP maps IP to MAC on the local link.*
+
 9. What is the difference between the Presentation layer and the Application layer?
 10. Why might all layers pass individually but the application still fail?
 
@@ -397,6 +410,9 @@ HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://${HOST
 - [IP Addressing and Subnetting](ip-addressing-and-subnetting.md) *(next in Module 1)*
 - [Introduction to Linux](../linux/introduction-to-linux.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

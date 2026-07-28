@@ -1,0 +1,13 @@
+direction: right
+
+USER: "Engineer / CI"
+    KUBECTL: kubectl
+    KCFG: "kubeconfig\ncontext + credentials"
+    API: kube-apiserver
+    OBJ: "API Objects\nPod / Deployment / Service"
+    ETCD: etcd
+    USER -> KUBECTL
+    KUBECTL -> KCFG
+    KCFG -> API
+    API -> OBJ
+    OBJ -> ETCD

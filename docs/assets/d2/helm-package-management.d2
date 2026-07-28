@@ -1,0 +1,12 @@
+direction: right
+
+DEV: "Developer / CI"
+    CHART: "Helm Chart\ntemplates + values"
+    HELM: "Helm CLI"
+    API: "Kubernetes API"
+    REL: "Release\nrevision history"
+    DEV -> HELM: "helm upgrade --install"
+    CHART -> HELM
+    HELM -> API: "render + apply"
+    HELM -> REL: "store metadata"
+    REL -> HELM: "helm rollback"

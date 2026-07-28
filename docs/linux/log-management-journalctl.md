@@ -4,6 +4,7 @@ description: Read, filter, persist, and forward logs using the systemd journal a
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,33 +44,10 @@ By the end of this tutorial, you will be able to:
 - [ ] Configure persistent journal storage and retention limits
 - [ ] Troubleshoot missing logs, permission issues, and disk pressure from journal growth
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+![Architecture diagram for log management journalctl](../assets/images/log-management-journalctl.svg)
 
-Sources: Sources {
-        K: Kernel
-        S: "systemd Units"
-        A: "Applications via stdout/stderr"
-    }
-    journald: journald {
-        J: systemd-journald
-        R: "Journal Files\n/run/log/journal\n/var/log/journal"
-    }
-    Consumers: Consumers {
-        C: "journalctl CLI"
-        F: "Forward to SIEM/syslog"
-        M: "Monitoring alerts"
-    }
-    Sources.K -> journald.J
-    Sources.S -> journald.J
-    Sources.A -> journald.J
-    journald.J -> journald.R
-    journald.R -> Consumers.C
-    journald.R -> Consumers.F
-    journald.R -> Consumers.M
-```
 
 ## Theory
 
@@ -138,7 +116,7 @@ journalctl -n 20 --no-pager
 
 **Expected output (sample):**
 
-```
+```text
 Jul 27 14:02:11 lab-server systemd[1]: Started Daily apt download activities.
 Jul 27 14:02:12 lab-server sshd[1240]: Accepted publickey for ubuntu from 10.0.1.5
 Jul 27 14:02:15 lab-server kernel: eth0: link up
@@ -196,7 +174,7 @@ journalctl -b -1 -n 15 --no-pager
 
 **Expected output:**
 
-```
+```text
 IDX BOOT ID                          FIRST ENTRY                 LAST ENTRY
  -1 abc123...                         Mon 2026-07-26 09:00:01     Mon 2026-07-27 08:59:58
   0 def456...                         Mon 2026-07-27 09:00:02     Mon 2026-07-27 14:30:00
@@ -224,7 +202,7 @@ sudo ls -lh /var/log/journal/ 2>/dev/null || echo "Persistent journal not enable
 
 **Expected output:**
 
-```
+```text
 Archived and active journals take up 48.0M in the file system.
 ```
 
@@ -240,7 +218,22 @@ journalctl --disk-usage
 
 **Expected output:** `Storage=persistent` in config; disk usage may increase after restart as logs are flushed to `/var/log/journal/`.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Filters | Priority/unit/time filters return non-empty, relevant lines |
+| Follow | `-f` shows new lines when you generate a test message |
+| Persist | Persistent journal path exists if you enabled it |
+| Cleanup | Lab-only overrides reverted; disk usage sane |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -315,10 +308,18 @@ echo "Exported to $OUT"
 0 3 * * 0 /usr/bin/journalctl --vacuum-size=500M
 ```
 
+## Security Considerations
+
+- Restrict journal access — unprivileged users should not read other users' or privileged service logs by default
+- Persist journals on dedicated storage with retention limits to avoid disk-fill denial of service
+- Redact secrets before forwarding journals to SIEM; applications should not log tokens or passwords
+- Protect `/var/log/journal` permissions and backup encryption for compliance-sensitive environments
+- Prefer structured fields over free-text when filtering so operators do not over-collect
+
 ## Common Mistakes
 
 !!! warning "Assuming logs survive reboot without persistent storage"
-    Default volatile journals in `/run/log/journal/` are lost on reboot. Enable `Storage=persistent` on servers you need to forensically analyze after incidents.
+    Default volatile journals in `/run/log/journal/` are lost on reboot. Enable `Storage=persistent` on servers you need to forensically analyse after incidents.
 
 !!! warning "Using grep on binary journal files directly"
     Never `grep` files under `/var/log/journal/` — they are binary. Always use `journalctl` for queries.
@@ -408,6 +409,17 @@ echo "Exported to $OUT"
 
 *Sample answer:* `-p warning..err` shows warnings through errors inclusive. You can also use numeric forms like `-p 3` for a single level.
 
+1. How would you explain log management journalctl to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore log management journalctl?
+3. Which metrics or logs would you check first when log management journalctl misbehaves?
+4. What is a secure default related to log management journalctl?
+5. How would you validate a change involving log management journalctl in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around log management journalctl?
+7. Describe a common anti-pattern with log management journalctl and how you fix it.
+8. How does log management journalctl interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for log management journalctl?
+10. When would you intentionally not follow the default approach taught here?
+
 ## Related Tutorials
 
 - [Linux – Category Overview](index.md)
@@ -416,6 +428,9 @@ echo "Exported to $OUT"
 - [Cron and Task Scheduling](cron-and-task-scheduling.md) *(next)*
 - [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

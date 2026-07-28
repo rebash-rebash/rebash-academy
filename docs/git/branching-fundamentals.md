@@ -4,6 +4,7 @@ description: Create, switch, list, and delete branches; understand branch pointe
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -41,25 +42,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Name branches following team conventions
 - [ ] Relate branches to CI/CD environment promotion
 
-## Branch Pointer Model
+## Architecture
 
-```d2
-direction: right
+Branches are movable pointers to commits. Multiple branch names can reference the same commit until histories diverge.
 
-MAIN: "main → commit C3"
-    FEAT: "feature/waf → commit C2"
-    HOT: "hotfix/ssl → commit C3"
-    C1: "commit C1"
-    C2: C2
-    C1 -> C2
-    C3: C3
-    C2 -> C3
-    FEAT -> C2: {
-      style.stroke-dash: 3
-    }
-    MAIN -> C3
-    HOT -> C3
-```
+![Architecture diagram for Branching Fundamentals](../assets/images/branching-fundamentals.svg)
 
 ## Theory
 
@@ -189,6 +176,8 @@ echo "v2" >> app.txt && git add . && git commit -m "feat: v2 update"
 git log --oneline
 ```
 
+**Expected result:** New branch appears in `git branch`; `git status` shows it as current after switch.
+
 ### Step 2 – Create and switch to feature branch
 
 **Command:**
@@ -198,6 +187,8 @@ git switch -c feature/logging
 echo "log=enabled" >> app.txt && git add . && git commit -m "feat: enable logging"
 git log --oneline --all --graph
 ```
+
+**Expected result:** Commits on the feature branch do not move `main` until merged.
 
 ### Step 3 – Switch back to main
 
@@ -211,6 +202,8 @@ git log --oneline -1
 
 **Explanation:** Main does not include logging commit — branches diverged.
 
+**Expected result:** Branch listing includes local (and remote, if practised) names with tracking info.
+
 ### Step 4 – List branches with tracking
 
 **Command:**
@@ -219,6 +212,8 @@ git log --oneline -1
 git branch -vv
 git branch -a
 ```
+
+**Expected result:** Merged branch deletes cleanly; unmerged delete requires `-D` as documented.
 
 ### Step 5 – Detached HEAD experiment
 
@@ -233,6 +228,8 @@ git switch -c recover-detached
 git log --oneline -3
 ```
 
+**Expected result:** Detached HEAD warning appears when checking out a raw commit; recovery branch created.
+
 ### Step 6 – Merge feature (preview for next tutorial)
 
 **Command:**
@@ -245,6 +242,8 @@ git branch -d recover-detached
 git log --oneline --graph
 ```
 
+**Expected result:** Naming convention examples match team style practised in the lab.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -253,7 +252,25 @@ git log --oneline --graph
 cd /tmp && rm -rf git-branch-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab repository cleaned up.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Create/switch | New branch appears in `git branch` and HEAD points to it when switched |
+| Delete | Merged branch delete succeeds; unmerged delete behaves as documented |
+| Detached HEAD | You enter and recover from detached HEAD per lab |
+| Cleanup | Lab repo removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -279,6 +296,14 @@ git branch --merged main | grep -v '^\* main$' | while read -r b; do
 done
 echo "Merged branches cleaned."
 ```
+
+## Security Considerations
+
+- Name branches without embedding secrets or customer identifiers
+- Delete stale remote branches so abandoned work cannot be mistaken for approved code
+- Protect long-lived environment branches with required checks
+- Avoid pushing experimental branches that contain production data dumps
+- Recover detached HEAD carefully — do not force-push recovery commits onto protected branches
 
 ## Common Mistakes
 
@@ -353,6 +378,9 @@ echo "Merged branches cleaned."
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Working with Remotes](working-with-remotes.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

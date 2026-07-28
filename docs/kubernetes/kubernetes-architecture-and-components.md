@@ -4,6 +4,7 @@ description: Deep dive into the control plane, worker nodes, etcd, kubelet, cont
 difficulty: beginner
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -48,65 +49,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify high-availability control plane patterns in production
 - [ ] Use `kubectl get componentstatuses` and node conditions for basic health checks
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
-
-USERS: Clients {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        KUBECTL: "kubectl / CI / GitOps"
-        DASH: "Dashboard / UI"
-    }
-    CP: "Control Plane" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        API: kube-apiserver
-        ETCD: etcd
-        SCHED: kube-scheduler
-        CM: kube-controller-manager
-        CCM: cloud-controller-manager
-        API <-> ETCD
-        SCHED -> API
-        CM -> API
-        CCM -> API
-    }
-    NODE1: "Worker Node" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        KL1: kubelet
-        KP1: kube-proxy
-        CR1: "container runtime\ncontainerd + runc"
-        POD1: Pods
-        KL1 -> CR1
-        CR1 -> POD1
-        KP1 -> POD1
-    }
-    NODE2: "Worker Node" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        KL2: kubelet
-        KP2: kube-proxy
-        CR2: "container runtime"
-        POD2: Pods
-        KL2 -> CR2
-        CR2 -> POD2
-        KP2 -> POD2
-    }
-    USERS.KUBECTL -> CP.API
-    USERS.DASH -> CP.API
-    CP.API -> NODE1.KL1
-    CP.API -> NODE2.KL2
-```
+![Architecture diagram for Kubernetes Architecture and Components](../assets/images/kubernetes-architecture-and-components.svg)
 
 ## Theory
 
@@ -131,23 +76,8 @@ Responsibilities:
 - **Validation** — schema checks on object specs
 - **Persistence** — read/write objects in etcd
 
-```d2
-direction: right
+![kube-apiserver — The Front Door diagram](../assets/images/kubernetes-architecture-and-components-1.svg)
 
-REQ: "kubectl apply"
-    AUTH: Authentication
-    AUTHZ: Authorization
-    ADM: Admission
-    VAL: Validation
-    ETCD: "etcd persist"
-    RESP: "201 Created"
-    REQ -> AUTH
-    AUTH -> AUTHZ
-    AUTHZ -> ADM
-    ADM -> VAL
-    VAL -> ETCD
-    ETCD -> RESP
-```
 
 Compare to Docker: `docker` CLI → dockerd API. Kubernetes separates concerns across more components but uses the same client/server pattern from [Docker Architecture and Components](../docker/docker-architecture-and-components.md).
 
@@ -244,25 +174,8 @@ Pod-to-Pod traffic crosses the CNI overlay; Service abstraction is kube-proxy's 
 
 Tracing one `kubectl apply -f pod.yaml`:
 
-```d2
-shape: sequence_diagram
+![Pod Creation Flow diagram](../assets/images/kubernetes-architecture-and-components-2.svg)
 
-U: kubectl
-A: "API Server"
-E: etcd
-S: Scheduler
-K: kubelet
-R: "container runtime"
-U -> A: "POST Pod object"
-A -> E: "persist Pod"
-A -> U: "201 Created"
-S -> A: "watch unscheduled Pods"
-S -> A: "PATCH nodeName onto Pod"
-K -> A: "watch Pods for this node"
-K -> R: CreateContainer(s)
-R -> K: "container started"
-K -> A: "update Pod status Running"
-```
 
 ### Kubernetes vs Docker Architecture
 
@@ -330,7 +243,7 @@ kubectl describe node $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}
 kubectl get cs 2>/dev/null || kubectl get --raw='/readyz?verbose' 2>/dev/null | head -20
 ```
 
-**Explanation:** Node **Conditions** report Ready, MemoryPressure, DiskPressure, PIDPressure. Component status checks (deprecated in favor of `/readyz`) verify scheduler and controller-manager health on some clusters.
+**Explanation:** Node **Conditions** report Ready, MemoryPressure, DiskPressure, PIDPressure. Component status checks (deprecated in favour of `/readyz`) verify scheduler and controller-manager health on some clusters.
 
 **Expected output:**
 
@@ -414,6 +327,9 @@ minikube ssh -- docker ps 2>/dev/null | head -5 \
 
 **Explanation:** On minikube, you can SSH into the node and see containers managed by containerd (via crictl) or docker depending on driver. The node status reports runtime version.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Clean up lab Pod
 
 **Command:**
@@ -422,7 +338,25 @@ minikube ssh -- docker ps 2>/dev/null | head -5 \
 kubectl delete pod schedule-demo --ignore-not-found
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Control plane | You can name API server, scheduler, controller manager, etcd roles |
+| Data plane | You can explain kubelet, runtime, and kube-proxy responsibilities |
+| Objects | `kubectl get` shows cluster-scoped and namespaced resources as labbed |
+| Cleanup | Any inspection Pods deleted |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -450,6 +384,16 @@ for n in data['items']:
     print(f\"  Memory capacity: {cap.get('memory')}  allocatable: {alloc.get('memory')}\")
 "
 ```
+
+## Security Considerations
+
+- Protect etcd with encryption at rest and TLS; it holds Secrets and cluster state
+- Restrict who can schedule privileged Pods — kubelet and container runtime are the last line
+- Segment control-plane nodes; do not run general workloads alongside etcd when avoidable
+- Enable audit logging on the API server and practise reading those events
+- Keep CNI and CSI plugins updated; they run with elevated node privileges
+- Treat cloud instance metadata access from Pods as a credential theft risk
+
 
 ## Common Mistakes
 
@@ -528,6 +472,9 @@ for n in data['items']:
 - [Docker Architecture and Components](../docker/docker-architecture-and-components.md)
 - [Kubernetes – Category Overview](index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

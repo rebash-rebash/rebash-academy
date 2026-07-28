@@ -4,6 +4,7 @@ description: Configure login and interactive shells with PATH, export, and start
 difficulty: beginner
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,36 +44,10 @@ By the end of this tutorial, you will be able to:
 - [ ] Know which startup file to edit: `.bashrc`, `.profile`, or `.bash_profile`
 - [ ] Debug missing variables in scripts, SSH sessions, and cron jobs
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+![Architecture diagram for environment variables shell config](../assets/images/environment-variables-shell-config.svg)
 
-Login: Login {
-        L1: "SSH / Console login"
-        LP: "/etc/profile"
-        L1 -> LP
-        LBP: "~/.bash_profile or ~/.profile"
-        LP -> LBP
-    }
-    Interactive: Interactive {
-        T1: "New terminal tab"
-        BR: "~/.bashrc"
-        T1 -> BR
-        LBP -> BR
-    }
-    NonInteractive: NonInteractive {
-        S1: "Script / cron / CI"
-        ENV: "Inherited environment only"
-        S1 -> ENV
-    }
-    EV: "Environment Variables"
-    Interactive.BR -> EV
-    Login.LBP -> EV
-    Login.LP -> EV
-    P: "Child Processes"
-    EV -> P
-```
 
 ## Theory
 
@@ -204,7 +179,7 @@ bash -c 'echo "LOCAL_VAR=${LOCAL_VAR:-empty}"; echo "GLOBAL_VAR=$GLOBAL_VAR"'
 
 **Expected output:**
 
-```
+```text
 LOCAL_VAR=empty
 GLOBAL_VAR=exported
 ```
@@ -226,7 +201,7 @@ hello-rebash
 
 **Expected output:**
 
-```
+```text
 /home/you/bin/hello-rebash
 Hello from custom bin
 ```
@@ -277,7 +252,7 @@ bash --login -c 'echo $REBASH_ACADEMY'
 
 **Expected output:**
 
-```
+```text
 linux-module-6
 ```
 
@@ -291,7 +266,22 @@ env -i HOME="$HOME" USER="$USER" PATH="/usr/bin:/bin" /bin/bash -c \
 
 **Expected output:** First command fails or shows empty/minimal PATH; second succeeds when full path or PATH is set explicitly — demonstrating why cron needs absolute paths.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Export/scope | Child process sees exported vars; unexported stay parent-only |
+| Config files | Shell rc/profile changes take effect in a new shell |
+| Persistence | Lab env file permissions are restrictive (`600`/`640`) |
+| Cleanup | Experimental exports and rc snippets reverted |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -377,6 +367,14 @@ source /etc/app/environment
 set +a
 exec /usr/bin/myapp
 ```
+
+## Security Considerations
+
+- Never export API keys or passwords in world-readable shell rc files; use `0600` secret files or a secrets manager
+- Avoid putting secrets in process environments that child processes inherit unnecessarily
+- Review `~/.bashrc` / `/etc/profile.d` changes — malicious PATH prepends are a common persistence technique
+- Prefer systemd `EnvironmentFile=` with locked permissions over ad-hoc `export` in shared shells
+- Clear sensitive variables after use in interactive sessions when working on shared bastions
 
 ## Common Mistakes
 
@@ -474,6 +472,17 @@ exec /usr/bin/myapp
 
 *Sample answer:* `env -i HOME="$HOME" PATH="/usr/bin:/bin" command` starts with an empty environment except specified variables.
 
+1. How would you explain environment variables shell config to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore environment variables shell config?
+3. Which metrics or logs would you check first when environment variables shell config misbehaves?
+4. What is a secure default related to environment variables shell config?
+5. How would you validate a change involving environment variables shell config in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around environment variables shell config?
+7. Describe a common anti-pattern with environment variables shell config and how you fix it.
+8. How does environment variables shell config interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for environment variables shell config?
+10. When would you intentionally not follow the default approach taught here?
+
 ## Related Tutorials
 
 - [Linux – Category Overview](index.md)
@@ -482,6 +491,9 @@ exec /usr/bin/myapp
 - [Shell Scripting Fundamentals](shell-scripting-fundamentals.md)
 - [Essential Linux Commands](essential-linux-commands.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

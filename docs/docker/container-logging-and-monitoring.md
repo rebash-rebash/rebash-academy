@@ -4,6 +4,7 @@ description: Capture container logs with logging drivers, inspect resource usage
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -31,7 +32,7 @@ This is **Tutorial 13** in **Module 5: Operations** of the REBASH Academy Docker
 
 ## Prerequisites
 
-- Docker Engine on Linux (logging driver behavior differs slightly on Docker Desktop)
+- Docker Engine on Linux (logging driver behaviour differs slightly on Docker Desktop)
 - Completion of [Running Your First Container](running-your-first-container.md)
 - Familiarity with [Log Management with journalctl](../linux/log-management-journalctl.md) concepts
 - Optional: second terminal window to generate load while observing stats
@@ -47,27 +48,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Run cAdvisor and interpret basic container resource dashboards
 - [ ] Describe production logging patterns (centralized aggregation, structured JSON logs)
 
-## Architecture Diagram
+## Architecture
 
 Application processes write to stdout/stderr. The container runtime captures streams and forwards them through the configured logging driver.
 
-```d2
-direction: right
-
-APP: "Application\nstdout / stderr"
-    ENGINE: "Docker Engine\nlogging driver"
-    LOCAL: "json-file on disk"
-    SYSLOG: syslog
-    FLUENT: "Fluentd / Fluent Bit"
-    CLOUD: "CloudWatch / Stackdriver"
-    ELK: "Elasticsearch / Loki"
-    APP -> ENGINE
-    ENGINE -> LOCAL
-    ENGINE -> SYSLOG
-    ENGINE -> FLUENT
-    FLUENT -> ELK
-    FLUENT -> CLOUD
-```
+![Architecture diagram for Container Logging and Monitoring](../assets/images/container-logging-and-monitoring.svg)
 
 ## Theory
 
@@ -90,7 +75,7 @@ Docker supports multiple drivers via `/etc/docker/daemon.json` (default) or per-
 | Driver | Default? | Typical use |
 |--------|----------|-------------|
 | **json-file** | Yes (Linux) | Local files under `/var/lib/docker/containers/` |
-| **local** | Alternative local | Optimized binary format, faster rotation |
+| **local** | Alternative local | Optimised binary format, faster rotation |
 | **syslog** | No | Forward to syslog daemon |
 | **journald** | No | Integrate with systemd journal on host |
 | **fluentd** / **gelf** | No | Forward to centralized collectors |
@@ -198,6 +183,16 @@ cAdvisor complements `docker stats` with graphs and exportable metrics — it do
 
 **RED method** for services: Rate (requests/sec), Errors, Duration — derived from logs and metrics together.
 
+
+### Logging drivers and production shipping
+
+The default `json-file` driver is convenient for labs because `docker logs` reads local files under the Docker root. In production you usually ship stdout/stderr to a collector (Fluent Bit, Vector, cloud agents) via `json-file` + sidecar, the `local` driver with size caps, or a journald/syslog driver. Design applications to log structured lines to stdout, set max-size/max-file options so a chatty container cannot fill the disk, and never rely on interactive `docker logs` as your only production evidence path.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
 ## Hands-on Lab
 
 ### Step 1 – Create a verbose logging container
@@ -233,6 +228,9 @@ timeout 8 docker logs -f --timestamps log-lab
 
 **Explanation:** `-f` follows new output; `-t` prefixes ISO8601 timestamps from Docker (not necessarily from the app).
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 3 – Filter logs by time
 
 **Command:**
@@ -242,6 +240,9 @@ docker logs log-lab --since 5s --tail 10
 ```
 
 **Explanation:** `--since` accepts durations (`5s`, `2m`) or RFC3339 timestamps — useful during incident triage.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 4 – Inspect logging driver configuration
 
@@ -253,6 +254,9 @@ docker info | grep 'Logging Driver'
 ```
 
 **Explanation:** Per-container `LogConfig` shows driver and options. Compare with daemon-wide defaults from `docker info`.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 5 – Run a container with log rotation options
 
@@ -270,6 +274,9 @@ docker rm -f log-lab-rot
 ```
 
 **Explanation:** High-volume output triggers rotation at 1 MB with two file retention. Prevents one chatty container from filling the disk.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 6 – Monitor with docker stats
 
@@ -333,6 +340,9 @@ curl -s http://127.0.0.1:8080/metrics | head -20
 
 **Explanation:** Prometheus scrapes this endpoint. Metric names include `container_cpu_usage_seconds_total`, `container_memory_usage_bytes`, and labels for container name/id.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 9 – Clean up
 
 **Command:**
@@ -341,7 +351,25 @@ curl -s http://127.0.0.1:8080/metrics | head -20
 docker rm -f log-lab cadvisor 2>/dev/null || true
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Logs | `docker logs` shows application stdout from the lab container |
+| Follow/since | Follow and time-filter options behave as documented |
+| Driver | You identified the active logging driver |
+| Cleanup | Logging lab containers removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -387,6 +415,16 @@ Production hosts often ship json-file logs via Fluent Bit. Illustrative `/fluent
 ```
 
 Exact paths depend on your log driver and distribution.
+
+## Security Considerations
+
+- Avoid logging secrets (tokens, passwords, PII); redact at the application layer
+- Cap log size and retention on the json-file driver so disks cannot be filled as an availability attack
+- Restrict who can `docker logs` / exec into containers on shared hosts
+- Prefer central log shipping over interactive `docker logs` for production evidence
+- Protect metrics endpoints; unauthenticated `/metrics` can leak infrastructure detail
+- Treat log pipelines as sensitive data paths — encrypt in transit to collectors
+
 
 ## Common Mistakes
 
@@ -464,6 +502,9 @@ Exact paths depend on your log driver and distribution.
 - [Docker Security Hardening](docker-security-hardening.md) *(next in Module 5)*
 - [Log Management with journalctl](../linux/log-management-journalctl.md)
 - [Monitoring – Category Overview](../monitoring/index.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

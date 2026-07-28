@@ -5,6 +5,7 @@ template: learning-paths.html
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: learning-paths
 tags:
   - learning-paths
@@ -12,4 +13,8 @@ tags:
 comments: false
 ---
 
-<!-- Visual layout rendered by overrides/learning-paths.html -->
+# Learning Paths
+
+Visual learning-path cards are rendered by the site theme.
+
+**Start here in Markdown:** [DevOps Engineer Learning Path](devops-engineer.md) — six ready tracks in recommended order, plus cheat sheets and interview guides.

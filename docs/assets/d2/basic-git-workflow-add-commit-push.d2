@@ -1,0 +1,13 @@
+direction: right
+
+WD: "Working Directory\nedited files"
+    SA: "Staging Area\nindex"
+    REPO: "Local Repository\n.git/objects"
+    REMOTE: "Remote\norigin/main"
+    CI: "CI Pipeline"
+    WD -> SA: "git add"
+    SA -> REPO: "git commit"
+    REPO -> REMOTE: "git push"
+    REMOTE -> CI: webhook
+    REMOTE -> REPO: "git pull / fetch"
+    REPO -> WD: checkout

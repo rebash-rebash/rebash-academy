@@ -4,6 +4,7 @@ description: Secure remote access with SSH keys, client config, hardening, scp/s
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -44,35 +45,10 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose connection failures with `ssh -v` and log files
 - [ ] Explain the security trade-offs of SSH agent forwarding
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: right
+![Architecture diagram for ssh remote administration](../assets/images/ssh-remote-administration.svg)
 
-Client: Client {
-        A: "ssh client"
-        B: "~/.ssh/config"
-        C: "Private Key"
-        D: ssh-agent
-    }
-    Network: Network {
-        E: "Port 22 / TCP"
-    }
-    Server: Server {
-        F: sshd
-        G: authorized_keys
-        H: "Shell / sftp-server"
-    }
-    Client.A -> Client.B
-    Client.A -> Client.C
-    Client.C -> Client.D: {
-      style.stroke-dash: 3
-    }
-    Client.A -> Network.E: "encrypted session"
-    Network.E -> Server.F
-    Server.F -> Server.G
-    Server.F -> Server.H
-```
 
 ## Theory
 
@@ -114,7 +90,7 @@ SSH refuses keys with loose permissions:
 
 Host blocks simplify daily workflows:
 
-```
+```text
 Host prod-web
     HostName 10.0.1.50
     User deploy
@@ -128,7 +104,7 @@ Supports **ProxyJump** for bastion access: `ProxyJump bastion.example.com`.
 
 Both run over SSH:
 
-- **scp** — fast one-off copies; syntax mirrors `cp`. Being deprecated in favor of `sftp` in some OpenSSH versions; use `scp -O` for legacy protocol if needed.
+- **scp** — fast one-off copies; syntax mirrors `cp`. Being deprecated in favour of `sftp` in some OpenSSH versions; use `scp -O` for legacy protocol if needed.
 - **sftp** — interactive session, resumable transfers, scripting with `sftp -b batchfile`.
 
 For automation, consider `rsync -avz -e ssh` for incremental sync.
@@ -137,7 +113,7 @@ For automation, consider `rsync -avz -e ssh` for incremental sync.
 
 Production `sshd_config` baseline:
 
-```
+```text
 PermitRootLogin no
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -314,13 +290,28 @@ ssh -A lab-local 'echo AGENT=$SSH_AUTH_SOCK; ssh-add -l 2>&1 | head -1'
 
 Disable forwarding in config for untrusted hosts:
 
-```
+```text
 Host untrusted-*
     ForwardAgent no
     IdentityFile ~/.ssh/rebash_ed25519
 ```
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Key auth | SSH login with key succeeds to the lab host |
+| Config | `sshd_config` hardening settings match the lab (password off if required) |
+| Agent | Agent/`ssh-add` behaviour matches steps |
+| Cleanup | Lab-only keys and config snippets removed or documented |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -344,7 +335,7 @@ Host untrusted-*
 
 ### SSH config template for multi-environment ops
 
-```
+```bash
 # ~/.ssh/config
 
 Host *
@@ -384,6 +375,14 @@ put $LOCAL $REMOTE
 ls -l $REMOTE
 EOF
 ```
+
+## Security Considerations
+
+- Disable password authentication and root login once key-based access works (`PasswordAuthentication no`, `PermitRootLogin no`)
+- Use ed25519 keys with passphrases; store private keys outside shared filesystems
+- Restrict `AllowUsers` / `AllowGroups` and use `Match` blocks for jump hosts
+- Prefer short-lived certificates or hardware-backed keys for production bastions
+- Log and alert on failed SSH attempts; fail2ban or equivalent rate-limits reduce brute force noise
 
 ## Common Mistakes
 
@@ -454,6 +453,9 @@ EOF
 - [Remote systemd Service Control](remote-systemd-services.md) *(next)*
 - [Linux Security Hardening Basics](linux-security-hardening-basics.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

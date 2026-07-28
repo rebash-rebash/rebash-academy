@@ -4,6 +4,7 @@ description: Write production Bash scripts with strict mode, control flow, funct
 difficulty: intermediate
 estimated_time: "60 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,6 +44,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Define reusable functions with local variables and return codes
 - [ ] Build a timestamped backup script with logging, validation, and retention
 - [ ] Debug scripts with `bash -x` and meaningful exit codes
+
+## Architecture
+
+A script is a reproducible command sequence: shebang, strict mode, arguments, then control flow and exit status.
+
+![Architecture diagram for Shell Scripting Fundamentals](../assets/images/shell-scripting-fundamentals.svg)
 
 ## Theory
 
@@ -158,7 +165,7 @@ chmod +x ~/lab/scripts/hello.sh
 
 **Expected output:**
 
-```
+```text
 Hello, REBASH!
 Running as: youruser on yourhost
 Shell: 5.2.15(1)-release
@@ -375,7 +382,22 @@ tar -tzf ~/lab/backup-dest/backup_*.tar.gz | head -5
 
 **Expected output:** paths like `backup-src/app.conf`, `backup-src/data.txt`.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Script runs | Lab scripts exit 0 with `set -euo pipefail` enabled |
+| Conditionals | if/loop exercises print expected branches |
+| Args | Positional parameters behave as documented |
+| Cleanup | Lab scripts removed from `/tmp` or home lab dir |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -426,6 +448,14 @@ while getopts ':s:d:r:h' opt; do
   esac
 done
 ```
+
+## Security Considerations
+
+- Always use `set -euo pipefail` (or equivalent) in production scripts; quote variables to avoid word-splitting attacks
+- Never interpolate untrusted input into `eval`, `bash -c`, or SQL/shell constructed strings
+- Store scripts under version control; avoid world-writable script paths that an attacker could replace
+- Run privileged scripts with explicit interpreter paths and minimal environment (`env -i` patterns where appropriate)
+- Log script actions without echoing secrets; redact tokens in debug output
 
 ## Common Mistakes
 
@@ -485,7 +515,7 @@ done
 6. How would you iterate over all `.log` files in a directory, including paths with spaces?
 7. What exit code should a script return on success? What range is available?
 8. Why is `local` important inside functions?
-9. How does `pipefail` change the behavior of `cmd1 | cmd2` when `cmd1` fails?
+9. How does `pipefail` change the behaviour of `cmd1 | cmd2` when `cmd1` fails?
 10. Walk through how you would add a `--dry-run` flag to the backup script without executing `tar`.
 
 ## Related Tutorials
@@ -495,6 +525,9 @@ done
 - [SSH and Remote Administration](ssh-remote-administration.md) *(next)*
 - [Cron and Task Scheduling](cron-and-task-scheduling.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

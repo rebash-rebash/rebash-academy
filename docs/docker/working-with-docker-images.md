@@ -4,6 +4,7 @@ description: Pull, tag, inspect, and remove Docker images; understand layers, di
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -22,7 +23,7 @@ comments: false
 
 ## Overview
 
-A **Docker image** is the immutable artifact that CI pipelines build, security scanners analyze, and production orchestrators deploy. Unlike containers — which are ephemeral running instances — images are **versioned, shareable, and cached**. When a deployment fails, rolling back means pulling a previous image tag. When a CVE is announced, identifying affected services starts with `docker images` and registry digests.
+A **Docker image** is the immutable artifact that CI pipelines build, security scanners analyse, and production orchestrators deploy. Unlike containers — which are ephemeral running instances — images are **versioned, shareable, and cached**. When a deployment fails, rolling back means pulling a previous image tag. When a CVE is announced, identifying affected services starts with `docker images` and registry digests.
 
 This tutorial covers the complete image workflow: **pull** from registries, **tag** for environment promotion, **inspect** metadata and layers, **remove** unused images safely, and understand how **layers** and **digests** enable reproducible DevOps pipelines.
 
@@ -49,26 +50,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `docker history` and `docker image inspect` for troubleshooting and supply-chain audits
 - [ ] Apply disk hygiene practices without breaking running containers
 
-## Architecture Diagram
+## Architecture
 
 Images flow from registries to local storage, where layers are deduplicated across tags. Containers add a writable layer on top without modifying the image.
 
-```d2
-direction: right
-
-REG: "Registry\nDocker Hub / ECR"
-    PULL: "docker pull"
-    LOCAL: "Local Image Store\n/var/lib/docker/image"
-    TAG: "docker tag"
-    RUN: "docker run"
-    CONT: "Container\nwritable layer"
-    REG -> PULL
-    PULL -> LOCAL
-    LOCAL -> TAG
-    TAG -> LOCAL
-    LOCAL -> RUN
-    RUN -> CONT
-```
+![Architecture diagram for Working with Docker Images](../assets/images/working-with-docker-images.svg)
 
 ## Theory
 
@@ -169,6 +155,16 @@ Align Docker tags with [Git](../git/index.md) tags and CI pipeline variables. Gi
 
 **Dangling images** appear when rebuilds produce new layer sets but old untagged layers remain — common in CI without prune policies.
 
+
+### Tags, digests, and trust
+
+A tag like `nginx:latest` is a mutable pointer; a digest (`@sha256:…`) is immutable content. Pull by digest when you need reproducibility, and retag locally for labs without assuming Hub tags stay still. Inspect and `docker history` help you see what you are about to run — large surprise layers and mystery base images deserve scrutiny before production promotion.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
 ## Hands-on Lab
 
 Work through these steps on your Docker host. Requires network access to pull images.
@@ -267,7 +263,7 @@ docker history nginx:1.25-alpine
 docker history nginx:1.25-alpine --human=true | head -8
 ```
 
-**Explanation:** History maps layers to build steps. Large layers indicate optimization opportunities (covered in Dockerfile tutorials).
+**Explanation:** History maps layers to build steps. Large layers indicate optimisation opportunities (covered in Dockerfile tutorials).
 
 **Expected output:**
 
@@ -336,7 +332,22 @@ Total reclaimed space: ...
 nginx    1.25-alpine   ...
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Pull/list | Target image appears in `docker images` |
+| Inspect/history | You can show layers/config for the lab image |
+| Tag | Retagged image exists locally with the expected name |
+| Cleanup | Unused lab tags/images removed if the lab requires it |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -382,6 +393,16 @@ fi
 Make executable: `chmod +x ~/bin/docker-image-audit.sh`
 
 In GitLab CI, tag images with `$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA`. For GitHub Actions, inject registry credentials via the platform's secrets mechanism — never hard-code tokens in workflow YAML committed to docs.
+
+## Security Considerations
+
+- Prefer digest pins (`image@sha256:…`) over floating tags like `latest` for anything beyond throwaway demos
+- Scan images for CVEs before promoting them; treat Hub pulls as untrusted until verified
+- Never bake secrets into image layers — they remain recoverable even after `docker history` cleanup attempts
+- Limit who can push to your registries; image supply chain is a primary attack vector
+- Remove unused images regularly to reduce the window of outdated vulnerable layers on disk
+- Prefer multi-arch official images and verify signatures when your registry supports them
+
 
 ## Common Mistakes
 
@@ -460,6 +481,9 @@ In GitLab CI, tag images with `$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA`. For GitHub Ac
 - [Building Images with Dockerfile](building-images-with-dockerfile.md) *(next in Module 2)*
 - [Container Registries and Distribution](container-registries-and-distribution.md) *(Module 4)*
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

@@ -4,6 +4,7 @@ description: Filter, transform, and report on text data from the command line us
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -44,6 +45,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Chain grep → sed → awk into pipelines for ad-hoc incident analysis
 - [ ] Avoid common regex pitfalls (greedy matching, unescaped dots, locale issues)
 
+## Architecture
+
+Text tools compose as filters: select lines, transform streams, then extract fields for reports and automation.
+
+![Architecture diagram for Text Processing with grep, sed, and awk](../assets/images/text-processing-grep-sed-awk.svg)
+
 ## Theory
 
 ### Regular expressions — the shared language
@@ -55,7 +62,7 @@ All three tools rely on **regular expressions (regex)** to describe patterns:
 | `.` | Any single character | `a.c` matches `abc`, `a1c` |
 | `^` | Start of line | `^ERROR` — lines beginning with ERROR |
 | `$` | End of line | `failed$` — lines ending with failed |
-| `*` | Zero or more of preceding | `colou*r` matches `color`, `colour` |
+| `*` | Zero or more of preceding | `colou*r` matches `colour`, `colour` |
 | `+` | One or more (ERE with `-E`) | `[0-9]+` — one or more digits |
 | `?` | Zero or one (ERE) | `https?` — `http` or `https` |
 | `[]` | Character class | `[A-F0-9]{2}` — two hex digits |
@@ -244,14 +251,29 @@ grep -E '" [45][0-9]{2} ' ~/lab/logs/access.log \
 
 **Expected output:**
 
-```
+```text
 HTTP 401: 2 occurrences
 HTTP 403: 1 occurrences
 HTTP 404: 1 occurrences
 HTTP 500: 2 occurrences
 ```
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| grep | Filters match the documented line sets |
+| sed | Substitutions rewrite files/streams as shown |
+| awk | Field extractions print the expected columns |
+| Cleanup | Sample data files removed |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -322,6 +344,14 @@ awk -F, 'NR>1 { dept[$2]++; sal[$2]+=$3; n[$2]++ }
   employees.csv
 ```
 
+## Security Considerations
+
+- Do not run `sed -i` or in-place edits on production configs without a backup and change ticket
+- Be careful with regex on untrusted log data — catastrophic backtracking can DoS analysis hosts
+- Avoid piping secrets through shell history; prefer files with restricted permissions
+- When processing multi-tenant logs, ensure filters cannot leak other customers' data into shared outputs
+- Validate encoding and null bytes before feeding files into scripts that assume clean text
+
 ## Common Mistakes
 
 !!! warning "Forgetting to escape dots in IP addresses"
@@ -389,6 +419,9 @@ awk -F, 'NR>1 { dept[$2]++; sal[$2]+=$3; n[$2]++ }
 - [Shell Scripting Fundamentals](shell-scripting-fundamentals.md) *(next)*
 - [Log Management with journalctl](log-management-journalctl.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

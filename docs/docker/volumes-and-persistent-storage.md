@@ -4,6 +4,7 @@ description: Master Docker storage — bind mounts, named volumes, tmpfs, volume
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -44,25 +45,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Apply permission and SELinux considerations for bind mounts
 - [ ] Back up and restore volume data using sidecar containers
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
-
-Container: Container {
-        APP: "Application process"
-        RW: "Container writable layer\nephemeral"
-    }
-    Mounts: Mounts {
-        VOL: "Named volume\n/var/lib/docker/volumes"
-        BIND: "Bind mount\nhost path"
-        TMP: "tmpfs\nmemory only"
-    }
-    Container.APP -> Container.RW
-    Container.APP -> Mounts.VOL
-    Container.APP -> Mounts.BIND
-    Container.APP -> Mounts.TMP
-```
+![Architecture diagram for Volumes and Persistent Storage](../assets/images/volumes-and-persistent-storage.svg)
 
 Named volumes are managed by Docker. Bind mounts reference explicit host paths. tmpfs exists only in memory.
 
@@ -166,6 +151,25 @@ docker volume rm dbdata            # data deleted (if unused)
 | **Database native** | `pg_dump`, `mysqldump` from exec or sidecar |
 | **Volume clone** | Copy volume to new volume via intermediate container |
 | **Filesystem snapshot** | LVM/ZFS/btrfs snapshot on host (infrastructure level) |
+
+
+### Ephemeral layers vs durable volumes
+
+The container writable layer disappears with `docker rm`. Named volumes and bind mounts are how databases, uploads, and queues survive recreation. Prefer named volumes for portable lab data; use bind mounts when you intentionally edit host files. Remember permissions: UIDs inside the container must match volume ownership, and mounting sensitive host paths (`docker.sock`, `$HOME/.ssh`) defeats isolation.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
 ## Hands-on Lab
 
@@ -352,7 +356,24 @@ rm -rf ~/lab/volume-lab
 
 **Explanation:** Remove lab volumes and host directories.
 
-## Commands & Code
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Named volume | Volume appears in `docker volume ls` and data survives container recreate |
+| Bind mount | Host file/directory visible inside the container as documented |
+| Permissions | Ownership/mode behaviour matches the lab explanation |
+| Cleanup | Lab containers removed; volumes deleted only when the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -398,6 +419,16 @@ docker run -d \
 ```
 
 Combines read-only container security with persistent logs and temp scratch space.
+
+## Security Considerations
+
+- Prefer named volumes over host binds for application data; binds easily expose host paths
+- Never mount sensitive host paths (`/etc`, `/var/run/docker.sock`, `$HOME/.ssh`) into untrusted containers
+- Set correct ownership and mode on volume data; world-writable volumes invite lateral movement
+- Encrypt sensitive volume backends at rest when the platform supports it
+- Separate lab volume names from production; accidental `docker volume rm` on the wrong host is irreversible
+- Back up volume data before destructive experiments; practise restore, not only backup
+
 
 ## Common Mistakes
 
@@ -481,6 +512,9 @@ Combines read-only container security with persistent logs and temp scratch spac
 - [Docker Compose Fundamentals](docker-compose-fundamentals.md) *(next)*
 - [Linux – Disk and Filesystem Management](../linux/disk-and-filesystem-management.md)
 - [Production Docker Patterns](production-docker-patterns.md)
+- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
+- Interview prep: [Docker Interview Prep](../interview/docker.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

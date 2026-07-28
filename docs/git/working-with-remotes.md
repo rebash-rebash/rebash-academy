@@ -4,6 +4,7 @@ description: Configure remotes, fetch and pull, push branches and tags, track up
 difficulty: beginner
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -42,20 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Understand remote-tracking branches (`origin/main`)
 - [ ] Diagnose push rejection and authentication failures
 
-## Remote Sync Diagram
+## Architecture
 
-```d2
-direction: right
+Remotes synchronise object databases: fetch updates remote-tracking refs, pull integrates them, and push publishes local commits.
 
-LOCAL: "Local Repo\nrefs/heads/main"
-    RTB: "Remote-tracking\norigin/main"
-    REMOTE: "Remote Server\nGitHub/GitLab"
-    CI: "CI Pipeline"
-    LOCAL -> REMOTE: "git push"
-    REMOTE -> RTB: "git fetch"
-    RTB -> LOCAL: "git merge / rebase"
-    REMOTE -> CI: webhook
-```
+![Architecture diagram for Working with Remotes](../assets/images/working-with-remotes.svg)
 
 ## Theory
 
@@ -179,6 +171,8 @@ git push -u origin main
 git remote -v
 ```
 
+**Expected result:** `git remote -v` shows origin pointing at the bare repo; `main` is pushed and tracking is set.
+
 ### Step 2 – Clone and make divergent changes
 
 **Command:**
@@ -191,6 +185,8 @@ echo "clone change" >> app.txt && git commit -am "feat: clone side"
 git push origin main
 ```
 
+**Expected result:** Clone succeeds; clone-side commit is pushed to the shared bare remote.
+
 ### Step 3 – Fetch and compare on original
 
 **Command:**
@@ -202,6 +198,8 @@ git log main..origin/main --oneline
 git status -sb
 ```
 
+**Expected result:** `git fetch` updates `origin/main`; `main..origin/main` lists the clone commit; status shows behind.
+
 ### Step 4 – Pull with rebase
 
 **Command:**
@@ -211,6 +209,8 @@ echo "local change" >> app.txt && git commit -am "feat: local side"
 git pull --rebase origin main
 git log --oneline --graph -5
 ```
+
+**Expected result:** Rebase pull completes; graph shows local and remote commits in order without a merge commit.
 
 ### Step 5 – Push feature branch
 
@@ -222,6 +222,8 @@ echo "feature" >> feature.txt && git add . && git commit -m "feat: demo feature"
 git push -u origin feature/demo
 git branch -vv
 ```
+
+**Expected result:** `feature/demo` tracks `origin/feature/demo` in `git branch -vv`.
 
 ### Step 6 – Add second remote (upstream simulation)
 
@@ -235,6 +237,8 @@ git push upstream main
 git remote show upstream
 ```
 
+**Expected result:** Prune or status commands reflect remote reality after the lab’s fetch/push steps.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -243,7 +247,25 @@ git remote show upstream
 rm -rf /tmp/git-remote-lab /tmp/remote-origin.git /tmp/remote-clone /tmp/upstream.git
 ```
 
-## Commands & Code
+**Expected result:** Temporary lab directories under `/tmp` are removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Remote add | `git remote -v` lists origin with correct URLs |
+| fetch/pull | Tracking refs update; divergence resolved as lab shows |
+| push | Feature branch appears on the bare/remote lab |
+| Cleanup | `/tmp/git-remote-lab` and bare remote removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -267,6 +289,14 @@ git merge --ff-only upstream/main
 git push origin main
 echo "Fork synced with upstream main."
 ```
+
+## Security Considerations
+
+- Verify `git remote -v` before push — wrong remotes leak code to unexpected hosts
+- Prefer `git push --force-with-lease` over `--force` when rewriting is unavoidable
+- Use deploy keys scoped to a single repository for automation
+- Fetch before push on shared branches to avoid non-fast-forward surprises
+- Remove stale remotes and credentials from laptops leaving the organisation
 
 ## Common Mistakes
 
@@ -341,6 +371,9 @@ echo "Fork synced with upstream main."
 - [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
 - [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

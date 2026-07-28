@@ -4,6 +4,7 @@ description: Exclude build artifacts and secrets with .gitignore, control line e
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -36,28 +37,16 @@ By the end of this tutorial, you will be able to:
 - [ ] Write `.gitignore` patterns for common DevOps stacks
 - [ ] Understand gitignore precedence and negation rules
 - [ ] Remove accidentally tracked files from Git history scope
-- [ ] Configure `.gitattributes` for line endings and diff behavior
+- [ ] Configure `.gitattributes` for line endings and diff behaviour
 - [ ] Mark binary files and generated files appropriately
 - [ ] Use global gitignore for personal editor files
 - [ ] Apply linguist and export-ignore attributes for GitHub
 
-## Ignore Flow Diagram
+## Architecture
 
-```d2
-direction: down
+Ignore rules keep artefacts out of commits; attributes control how Git treats line endings, binaries, and filters for specific paths.
 
-FILES: "Working Directory Files"
-    GI: ".gitignore patterns"
-    GA: ".gitattributes rules"
-    STAGE: "git add / staging"
-    REPO: Repository
-    FILES -> GI
-    SKIP: "Not tracked"
-    GI -> SKIP: excluded
-    GI -> STAGE: allowed
-    GA -> STAGE
-    STAGE -> REPO
-```
+![Architecture diagram for gitignore and gitattributes](../assets/images/gitignore-and-gitattributes.svg)
 
 ## Theory
 
@@ -218,6 +207,8 @@ git status
 
 **Explanation:** `.env` and `.log` ignored; `example.env` tracked via negation.
 
+**Expected result:** Ignored patterns no longer show as untracked in `git status`.
+
 ### Step 2 – Commit allowed files
 
 **Command:**
@@ -228,6 +219,8 @@ git status
 git commit -m "chore: add gitignore and example env"
 git check-ignore -v app.log .env example.env
 ```
+
+**Expected result:** `git rm --cached` untracks a previously committed ignored file without deleting the working copy.
 
 ### Step 3 – Add gitattributes
 
@@ -245,6 +238,8 @@ echo 'echo deploy' >> deploy.sh
 git add .gitattributes deploy.sh && git commit -m "chore: add gitattributes"
 ```
 
+**Expected result:** Negation patterns re-include the documented exception file.
+
 ### Step 4 – Remove accidentally tracked file
 
 **Command:**
@@ -258,6 +253,8 @@ git status
 test ! -f .env && echo "file missing" || echo ".env still on disk"
 ```
 
+**Expected result:** `git check-attr` reports the lab attributes on sample paths.
+
 ### Step 5 – Verify attributes
 
 **Command:**
@@ -267,6 +264,8 @@ git check-attr -a deploy.sh
 git check-attr binary -- *.png 2>/dev/null || echo "no png files"
 ```
 
+**Expected result:** Line-ending or binary attributes behave as configured for the sample file.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -275,7 +274,25 @@ git check-attr binary -- *.png 2>/dev/null || echo "no png files"
 cd /tmp && rm -rf gitignore-lab
 ```
 
-## Commands & Code
+**Expected result:** Lab repository removed.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Ignore | Ignored files do not appear as untracked after rule add |
+| Cached remove | Previously tracked ignored file leaves the index |
+| Attributes | `git check-attr` shows expected attributes on lab files |
+| Cleanup | Lab repo removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -308,6 +325,14 @@ terraform.rc
 crash.log
 crash.*.log
 ```
+
+## Security Considerations
+
+- Put `.env`, key material, and `*.tfstate` in `.gitignore` before the first commit
+- Remember ignore rules do not remove already-tracked files — use `git rm --cached`
+- Review `gitattributes` filters so smudge/clean scripts cannot exfiltrate data
+- Do not force-add ignored secret files with `-f` unless you fully understand the risk
+- Keep ignore templates under review so new artefact types (SBOM caches, coverage) stay out
 
 ## Common Mistakes
 
@@ -353,7 +378,7 @@ crash.*.log
 - **.gitignore** excludes files from tracking — essential for secrets, build output, and local state
 - **Negation patterns** (`!`) re-include specific files under broad rules
 - **git rm --cached** stops tracking without deleting local files
-- **.gitattributes** controls line endings, binary handling, and diff/merge behavior
+- **.gitattributes** controls line endings, binary handling, and diff/merge behaviour
 - DevOps repos need stack-specific patterns for Terraform, Python, Node, and secrets
 
 ## Interview Questions
@@ -382,6 +407,9 @@ crash.*.log
 - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 - [Git – Category Overview](index.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

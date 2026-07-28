@@ -4,6 +4,7 @@ description: Master Layer 4 vs Layer 7 load balancing, scheduling algorithms, he
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -47,49 +48,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose between AWS Application Load Balancer (ALB) and Network Load Balancer (NLB) for common scenarios
 - [ ] Troubleshoot uneven traffic distribution and flapping health checks
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **Load Balancing Fundamentals**.
 
-Clients: Clients {
-        C1: "Client A"
-        C2: "Client B"
-        C3: "Client C"
-    }
-    LB: "Load Balancer Tier" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        VIP: "Virtual IP / DNS Name"
-        HC: "Health Check Engine"
-        ALGO: "Scheduler\nround-robin · least conn · ip hash"
-    }
-    Backends: Backends {
-        W1: "Web Server 1\nhealthy"
-        W2: "Web Server 2\nhealthy"
-        W3: "Web Server 3\nunhealthy"
-    }
-    Clients.C1 -> LB.VIP
-    Clients.C2 -> LB.VIP
-    Clients.C3 -> LB.VIP
-    LB.VIP -> LB.ALGO
-    LB.HC -> Backends.W1: probe {
-      style.stroke-dash: 3
-    }
-    LB.HC -> Backends.W2: probe {
-      style.stroke-dash: 3
-    }
-    LB.HC -> Backends.W3: fail {
-      style.stroke-dash: 3
-    }
-    LB.ALGO -> Backends.W1
-    LB.ALGO -> Backends.W2
-    LB.ALGO -> Backends.W3: removed {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Load Balancing Fundamentals](../assets/images/load-balancing-fundamentals.svg)
+
 
 ## Theory
 
@@ -124,7 +88,7 @@ Characteristics:
 | Use case | Gaming, DB proxies, extreme throughput | Web apps, microservices, API gateways |
 | WebSocket | TCP pass-through works | Requires L7-aware config |
 
-**Rule of thumb:** Use L7 when you need path-based routing, host-based multi-tenancy, or centralized TLS. Use L4 when you need maximum throughput, non-HTTP protocols, or static IP with TLS pass-through.
+**Rule of thumb:** Use L7 when you need path-based routing, host-based multi-tenancy, or centralised TLS. Use L4 when you need maximum throughput, non-HTTP protocols, or static IP with TLS pass-through.
 
 ### Scheduling Algorithms
 
@@ -229,6 +193,14 @@ grep -v '^\s*#' /etc/haproxy/haproxy.cfg | grep -v '^$' | head -20
 
 **Explanation:** HAProxy is a production-grade L4/L7 load balancer used by GitHub, Reddit, and Stack Overflow. Review the default config before modifying.
 
+**Expected result:**
+
+```text
+haproxy.service active (running)
+```
+
+Default config path `/etc/haproxy/haproxy.cfg` exists.
+
 ### Step 2 – Start two backend web servers
 
 **Command:**
@@ -284,6 +256,10 @@ sudo systemctl restart haproxy
 
 **Explanation:** Frontend listens on 8888; backend pool uses round-robin with HTTP health checks against `/`.
 
+**Expected result:**
+
+`haproxy -c -f /etc/haproxy/haproxy.cfg` reports configuration is valid; reload succeeds.
+
 ### Step 4 – Verify round-robin distribution
 
 **Command:**
@@ -335,7 +311,11 @@ sudo systemctl restart haproxy
 grep balance /etc/haproxy/haproxy.cfg
 ```
 
-**Explanation:** `leastconn` minimizes active connections per backend — observe behavior under concurrent long requests in advanced labs.
+**Explanation:** `leastconn` minimizes active connections per backend — observe behaviour under concurrent long requests in advanced labs.
+
+**Expected result:**
+
+Config shows `balance leastconn`; traffic still returns HTTP 200 from backends after reload.
 
 ### Step 7 – Explore AWS ALB concepts (CLI or console)
 
@@ -350,6 +330,10 @@ aws elbv2 describe-load-balancers \
 
 **Explanation:** Note `Type` column: `application` vs `network`. Map DNS names to Route 53 records in production.
 
+**Expected result:**
+
+`aws elbv2 describe-load-balancers` lists ALBs or returns empty/permissions error you can explain.
+
 ### Step 8 – Cleanup
 
 **Command:**
@@ -360,7 +344,23 @@ sudo systemctl stop haproxy
 rm -rf /tmp/lb-lab
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Hit the HAProxy frontend repeatedly and observe backend distribution / health checks.
+2. Explain round-robin vs leastconn using your observed behaviour.
+3. Stop lab backends and restore or remove the HAProxy lab config.
+
+| Check | Pass criteria |
+|-------|----------------|
+| HAProxy | Service active; frontend port accepts connections |
+| Distribution | Multiple backend hits observed across servers |
+| Algorithm | leastconn change reloads cleanly |
+| Cloud ALB | ALB concepts listed via CLI or console (or documented N/A) |
+| Cleanup | Lab Python servers stopped; HAProxy returned to prior config |
+
+## Code Walkthrough
 
 | Command / Tool | Description | Example |
 |----------------|-------------|---------|
@@ -396,6 +396,14 @@ server {
 }
 ```
 
+## Security Considerations
+
+- Terminate TLS on the load balancer with managed certificates; restrict backend plaintext to private networks only
+- Health-check endpoints should not leak sensitive data; authenticate admin/stats pages (HAProxy stats, cloud consoles)
+- Prefer security groups that allow LB → backend only from the LB subnets, not from the Internet
+- Rate-limit and WAF public listeners; LBs amplify exposure of every backend behind them
+- Remove lab backends and listeners after exercises so orphan targets are not accidentally published
+
 ## Common Mistakes
 
 !!! warning "Using round-robin for long-lived connections"
@@ -413,7 +421,7 @@ server {
 ## Best Practices
 
 !!! tip "Terminate TLS at the load balancer for most web apps"
-    Centralized certificate management, HTTP/2, and WAF integration justify L7 termination. Use TLS pass-through only when compliance requires end-to-end encryption without intermediary inspection.
+    Centralised certificate management, HTTP/2, and WAF integration justify L7 termination. Use TLS pass-through only when compliance requires end-to-end encryption without intermediary inspection.
 
 !!! tip "Set deregistration delay to match longest request"
     ALB default deregistration delay is 300 seconds. Tune based on your P99 request duration to avoid 502 errors during rolling deploys.
@@ -430,7 +438,7 @@ server {
 |-------|-------|----------|
 | 502 Bad Gateway | No healthy backends | Check target health, SG rules, health check path/port |
 | Uneven traffic distribution | Sticky sessions, IP hash, or long connections | Expected for leastconn/IP hash; verify algorithm choice |
-| Health check flapping | Timeout too short, slow app, threshold too low | Increase timeout/threshold; optimize health endpoint |
+| Health check flapping | Timeout too short, slow app, threshold too low | Increase timeout/threshold; optimise health endpoint |
 | Clients see wrong backend content | Session state on server without stickiness | Externalize sessions (Redis) or enable cookie stickiness |
 | NLB targets unreachable | Wrong target type (instance vs IP), SG mismatch | Verify target registration and SG allows LB subnets |
 | SSL errors at ALB | Certificate mismatch, wrong listener | Check ACM cert covers Host header; verify listener protocol |
@@ -473,6 +481,9 @@ server {
 - [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md) *(next in Module 4)*
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
+- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
+- Interview prep: [Networking Interview Prep](../interview/networking.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
@@ -481,3 +492,7 @@ server {
 - [AWS ALB vs NLB decision guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/introduction.html)
 - [nginx load balancing documentation](https://nginx.org/en/docs/http/load_balancing.html)
 - [Google SRE Book — Load Balancing at the Frontend](https://sre.google/sre-book/load-balancing-frontend/)
+
+**Expected result:**
+
+Lab backend PIDs gone; HAProxy no longer references lab ports 8082+.

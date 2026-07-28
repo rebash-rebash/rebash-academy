@@ -1,0 +1,17 @@
+direction: down
+
+HEAD: "HEAD / main"
+    C1: "commit N\nlatest fix"
+    C2: "commit N-1\nfeature add"
+    C3: "commit N-2\ninitial"
+    HEAD -> C1
+    C1 -> C2
+    C2 -> C3
+    LOG: "git log"
+    LOG -> HEAD
+    DIFF: "git diff C2 C1"
+    DIFF -> C1
+    BLAME: "git blame file"
+    BLAME -> C2
+    SHOW: "git show C1"
+    SHOW -> C1

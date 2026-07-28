@@ -1,12 +1,14 @@
 ---
-title: Overview
-description: Observability, metrics, logging, and alerting stacks.
+title: Monitoring
+description: "Monitoring and observability track — planned. Related coverage already exists in Docker and Kubernetes."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: monitoring
 tags:
   - monitoring
+  - observability
 comments: false
 ---
 
@@ -14,20 +16,22 @@ comments: false
 
 Observability, metrics, logging, and alerting stacks.
 
-## Overview
+## Status
 
-Welcome to the **Monitoring** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Linux](../linux/index.md) | journalctl and process diagnostics |
+| [Docker](../docker/index.md) | Container logging and monitoring |
+| [Kubernetes](../kubernetes/index.md) | Monitoring and logging in Kubernetes |
+| [Networking](../networking/index.md) | Network troubleshooting methodology |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

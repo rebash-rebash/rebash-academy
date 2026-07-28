@@ -1,0 +1,25 @@
+direction: right
+
+OnPrem: "On-Premises 192.168.0.0/16" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        SRV: "App Servers"
+        VPNC: "VPN Customer Gateway"
+    }
+    Internet: Internet {
+        TUN: "Encrypted Tunnel\nIPsec / WireGuard"
+    }
+    Cloud: "AWS VPC 10.0.0.0/16" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        VPNGW: "VPN Gateway / TGW"
+        EC2: "EC2 Instances"
+    }
+    OnPrem.SRV -> OnPrem.VPNC
+    OnPrem.VPNC -> Internet.TUN
+    Internet.TUN -> Cloud.VPNGW
+    Cloud.VPNGW -> Cloud.EC2

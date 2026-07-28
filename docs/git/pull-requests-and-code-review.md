@@ -4,6 +4,7 @@ description: Open pull requests, request reviews, address feedback, merge strate
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -41,24 +42,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Review IaC changes with security and blast-radius mindset
 - [ ] Link PRs to tickets and deployment traceability
 
-## PR Lifecycle Diagram
+## Architecture
 
-```d2
-direction: right
+Pull requests turn branch differences into a reviewable change set with discussion, checks, and an explicit merge decision.
 
-BR: "Feature Branch"
-    PR: "Open Pull Request"
-    BR -> PR: push
-    CI: "CI Checks Run"
-    PR -> CI
-    REV: "Code Review"
-    CI -> REV
-    MERGE: "Merge to main"
-    REV -> MERGE: approve
-    REV -> BR: "changes requested"
-    DEPLOY: "CD / GitOps Deploy"
-    MERGE -> DEPLOY
-```
+![Architecture diagram for Pull Requests and Code Review](../assets/images/pull-requests-and-code-review.svg)
 
 ## Theory
 
@@ -181,7 +169,7 @@ Mark WIP PRs as **Draft** — signals reviewers to wait. Convert to ready when C
 | **Bitbucket** | Pull Request | Jira smart commits, default reviewers |
 | **Azure DevOps** | Pull Request | Work item linking, branch policies |
 
-Regardless of platform, the Git operations underneath — push branch, diff against base, merge — are identical. Skills from this tutorial transfer when your organization changes hosting providers.
+Regardless of platform, the Git operations underneath — push branch, diff against base, merge — are identical. Skills from this tutorial transfer when your organisation changes hosting providers.
 
 ### Required Status Checks
 
@@ -216,6 +204,8 @@ chmod +x healthcheck.sh
 git add healthcheck.sh && git commit -m "feat: add healthcheck script"
 ```
 
+**Expected result:** Feature branch pushed to the forge (or local simulation completed).
+
 ### Step 2 – Push feature branch
 
 **Command:**
@@ -227,6 +217,8 @@ git diff main...feature/add-healthcheck --stat
 ```
 
 **Explanation:** Three-dot diff shows PR diff scope — what reviewers see.
+
+**Expected result:** PR description includes intent, test plan, and risk notes.
 
 ### Step 3 – Simulate review feedback
 
@@ -241,6 +233,8 @@ git add healthcheck.sh && git commit --amend --no-edit
 git push --force-with-lease origin feature/add-healthcheck
 ```
 
+**Expected result:** Review checklist items are addressed or marked.
+
 ### Step 4 – Merge (simulating platform merge)
 
 **Command:**
@@ -253,6 +247,8 @@ git push origin main
 git log --oneline --graph -5
 ```
 
+**Expected result:** Merge completes with the chosen strategy (merge/squash/rebase).
+
 ### Step 5 – Clean up
 
 **Command:**
@@ -261,7 +257,25 @@ git log --oneline --graph -5
 rm -rf /tmp/git-pr-lab /tmp/pr-remote.git
 ```
 
-## Commands & Code
+**Expected result:** Branch deletion / protection settings match the lab wrap-up.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Branch/PR | Feature branch pushed; PR (or simulated checklist) opened |
+| Review | Review comments/checklist items addressed |
+| Merge | Merge method matches team policy practised in the lab |
+| Cleanup | Feature branch deleted after merge if required |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -283,6 +297,14 @@ git log "$BASE"..HEAD --oneline
 echo ""
 git diff "$BASE"...HEAD --stat
 ```
+
+## Security Considerations
+
+- Require reviews from CODEOWNERS for security-sensitive paths
+- Do not approve PRs that disable CI, secret scanning, or branch protection
+- Scrutinise dependency and IaC diffs for overly broad IAM or public exposure
+- Prefer stacked small PRs over huge dumps that hide risky changes
+- Keep discussion of vulnerabilities in private channels until fixes ship
 
 ## Common Mistakes
 
@@ -357,6 +379,9 @@ git diff "$BASE"...HEAD --stat
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
 - [Signed Commits and Git Security](signed-commits-and-git-security.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

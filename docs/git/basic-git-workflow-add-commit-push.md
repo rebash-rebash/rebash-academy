@@ -4,6 +4,7 @@ description: Master the daily Git cycle — status, add, commit, push, and pull 
 difficulty: beginner
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -50,25 +51,12 @@ By the end of this tutorial, you will be able to:
 - [ ] Inspect staged and unstaged diffs before committing
 - [ ] Relate local commits to CI/CD pipeline triggers and deployment traceability
 
-## Architecture Diagram
+## Architecture
 
 The workflow moves changes through three trees before reaching the remote server where CI/CD watches for events.
 
-```d2
-direction: right
+![Architecture diagram for basic git workflow add commit push](../assets/images/basic-git-workflow-add-commit-push.svg)
 
-WD: "Working Directory\nedited files"
-    SA: "Staging Area\nindex"
-    REPO: "Local Repository\n.git/objects"
-    REMOTE: "Remote\norigin/main"
-    CI: "CI Pipeline"
-    WD -> SA: "git add"
-    SA -> REPO: "git commit"
-    REPO -> REMOTE: "git push"
-    REMOTE -> CI: webhook
-    REMOTE -> REPO: "git pull / fetch"
-    REPO -> WD: checkout
-```
 
 ## Theory
 
@@ -359,7 +347,25 @@ rm -rf ~/lab/git-workflow ~/lab/workflow-remote.git
 
 **Explanation:** Remove lab artifacts.
 
-## Commands & Code
+**Expected result:** Working tree clean; temporary lab artefacts removed if the tutorial created any.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Stage/commit | `git log -1` shows your lab commit |
+| Push/pull | Remote tracking branch updated (or documented dry-run equivalent) |
+| Diff hygiene | You inspected staged diff before commit |
+| Cleanup | Lab repo/remote leftovers removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -388,6 +394,14 @@ echo "OK: no tfstate in staged files"
 ```
 
 Install as pre-commit hook: `cp verify-no-tfstate.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
+
+## Security Considerations
+
+- Review `git diff --cached` before every commit so secrets do not slip through
+- Prefer small, intentional commits over `git add -A` on dirty trees with credential files
+- Protect `main`/`master` on the remote; require PR reviews for production infrastructure
+- Use pre-commit secret scanners where available
+- Never amend or force-push commits that already reached shared remotes
 
 ## Common Mistakes
 
@@ -470,6 +484,9 @@ Install as pre-commit hook: `cp verify-no-tfstate.sh .git/hooks/pre-commit && ch
 - [Viewing History and Diffs](viewing-history-and-diffs.md) *(next in Module 2)*
 - [Understanding the Git Object Model](understanding-the-git-object-model.md)
 - [Introduction to Networking](../networking/introduction-to-networking.md)
+- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
+- Interview prep: [Git Interview Prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

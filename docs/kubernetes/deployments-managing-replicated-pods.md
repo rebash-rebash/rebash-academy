@@ -4,6 +4,7 @@ description: Use Deployments and ReplicaSets to scale stateless workloads, perfo
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -49,40 +50,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Apply production patterns: resource requests/limits, probes, and label selectors
 - [ ] Know when to use Deployments vs StatefulSets, DaemonSets, or bare Pods
 
-## Architecture Diagram
+## Architecture
 
 Deployments own ReplicaSets; ReplicaSets own Pods. Each rollout creates a new ReplicaSet while phasing out the old one.
 
-```d2
-direction: down
-
-Control: "Control Plane" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        DEP: "Deployment\nreplicas: 3"
-        RS1: "ReplicaSet v1\ndesired: 0"
-        RS2: "ReplicaSet v2\ndesired: 3"
-    }
-    Data: "Worker Nodes" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        P1: "Pod v2"
-        P2: "Pod v2"
-        P3: "Pod v2"
-    }
-    Control.DEP -> Control.RS1
-    Control.DEP -> Control.RS2
-    Control.RS2 -> Data.P1
-    Control.RS2 -> Data.P2
-    Control.RS2 -> Data.P3
-    Control.RS1 -> Control.DEP: "scaled to 0\nafter rollout" {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Deployments — Managing Replicated Pods](../assets/images/deployments-managing-replicated-pods.svg)
 
 ## Theory
 
@@ -210,6 +182,16 @@ labels:
 
 The Deployment `selector` must be a subset of template labels. Avoid putting unique values (like Pod name) in the selector.
 
+
+### Desired replicas and rollouts
+
+A Deployment owns ReplicaSets and implements rolling updates. Readiness probes gate traffic during rollouts; without them, Kubernetes may send traffic to containers that are still starting. Keep `maxUnavailable`/`maxSurge` aligned with your capacity, pin image digests for production, and practise `kubectl rollout undo` so rollback is muscle memory rather than an incident invention.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
 ## Hands-on Lab
 
 These labs use a local cluster. Adjust namespace flags if your environment differs.
@@ -286,6 +268,9 @@ kubectl describe deployment web -n lab-deployments | tail -20
 
 **Explanation:** Declarative manifests are the production standard — version-controlled, reviewable, and GitOps-ready.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 3 – Perform a rolling update
 
 **Command:**
@@ -324,6 +309,9 @@ kubectl rollout status deployment/web -n lab-deployments
 
 **Explanation:** Failed rollouts leave Pods in `ImagePullBackOff` or `CrashLoopBackOff`. `rollout undo` reverts to the previous ReplicaSet.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 5 – Scale and inspect history
 
 **Command:**
@@ -335,6 +323,9 @@ kubectl rollout history deployment/web -n lab-deployments --revision=2
 ```
 
 **Explanation:** History records each template change. Use `--revision` to inspect the manifest diff before undoing to a specific version.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 6 – Pause and resume rollouts
 
@@ -350,6 +341,9 @@ kubectl rollout status deployment/web -n lab-deployments
 
 **Explanation:** Pausing lets you apply multiple template changes before a single coordinated rollout — useful for complex updates.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -358,7 +352,25 @@ kubectl rollout status deployment/web -n lab-deployments
 kubectl delete namespace lab-deployments
 ```
 
-## Commands & Code
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Replicas | Deployment shows desired replicas Available |
+| Rollout | Rolling update completes; `kubectl rollout status` succeeds |
+| Rollback | Rollback restores the previous revision when exercised |
+| Cleanup | Lab Deployment removed |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -420,6 +432,16 @@ spec:
             periodSeconds: 20
 ```
 
+## Security Considerations
+
+- Use rolling updates with readiness probes so bad revisions do not take all traffic
+- Pin image digests in Deployment specs for production; avoid `:latest`
+- Limit `kubectl set image` improvisation without change control on shared clusters
+- Keep replica counts and PodDisruptionBudgets aligned so voluntary drains stay safe
+- Separate Deployments by trust boundary — do not co-locate privileged and unprivileged apps casually
+- Roll back quickly on failed releases; leaving a half-migrated ReplicaSet invites configuration drift
+
+
 ## Common Mistakes
 
 !!! warning "Deploying bare Pods in production"
@@ -454,7 +476,7 @@ spec:
 |-------|-------|----------|
 | Rollout stuck | Image pull failure, crash loop, failed probe | `kubectl describe rs`, `kubectl logs`; fix image or probes |
 | `ImagePullBackOff` | Wrong tag, missing registry credentials | Verify image name; add `imagePullSecrets` |
-| Old ReplicaSets accumulate | Normal behavior | Old RS scale to 0; tune `revisionHistoryLimit` |
+| Old ReplicaSets accumulate | Normal behaviour | Old RS scale to 0; tune `revisionHistoryLimit` |
 | Selector mismatch error | Template labels don't match selector | Align `spec.selector.matchLabels` with template metadata labels |
 | Rollout undo fails | Revision pruned | Check `rollout history`; redeploy known-good manifest from Git |
 | Pods pending after scale-up | Insufficient cluster resources | `kubectl describe pod`; add nodes or reduce requests |
@@ -497,6 +519,9 @@ spec:
 - [Services and Cluster Networking](services-and-cluster-networking.md) *(next in series)*
 - [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
+- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 

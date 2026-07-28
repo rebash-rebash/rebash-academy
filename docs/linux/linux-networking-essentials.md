@@ -4,6 +4,7 @@ description: Configure interfaces, routes, DNS, and troubleshoot connectivity wi
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,35 +44,10 @@ By the end of this tutorial, you will be able to:
 - [ ] List listening and established connections with `ss`
 - [ ] Diagnose connectivity issues using ping, traceroute, and a layered troubleshooting model
 
-## Architecture Diagram
+## Architecture
 
-```d2
-direction: down
+![Architecture diagram for linux networking essentials](../assets/images/linux-networking-essentials.svg)
 
-Host: Host {
-        APP: Application
-        SS: "ss / netstat"
-        IP: "ip command"
-    }
-    Stack: Stack {
-        NIC: "Network Interface eth0"
-        RT: "Routing Table"
-        DNS: "Resolver / systemd-resolved"
-    }
-    External: External {
-        GW: "Default Gateway"
-        DNSS: "DNS Server 8.8.8.8"
-        DEST: "Remote Host"
-    }
-    Host.APP -> Host.SS
-    Host.APP -> Stack.NIC
-    Host.IP -> Stack.NIC
-    Host.IP -> Stack.RT
-    Host.APP -> Stack.DNS
-    Stack.RT -> External.GW
-    Stack.DNS -> External.DNSS
-    External.GW -> External.DEST
-```
 
 ## Theory
 
@@ -167,7 +143,7 @@ hostname -I
 
 **Expected output:**
 
-```
+```text
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> ...
     inet 10.0.0.42/24 brd 10.0.0.255 scope global eth0
 ```
@@ -183,7 +159,7 @@ ip route get 8.8.8.8
 
 **Expected output:**
 
-```
+```text
 default via 10.0.0.1 dev eth0
 10.0.0.0/24 dev eth0 proto kernel scope link src 10.0.0.42
 8.8.8.8 via 10.0.0.1 dev eth0 src 10.0.0.42
@@ -232,7 +208,7 @@ sudo ss -tulpn | head -15
 
 **Expected output:**
 
-```
+```text
 Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
 tcp   LISTEN 0      128    0.0.0.0:22           0.0.0.0:*
 tcp   LISTEN 0      511    127.0.0.1:6379       0.0.0.0:*
@@ -274,7 +250,22 @@ EOF
 
 **Expected output:** Summary block confirming each layer — all OK on a healthy system.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Interfaces | `ip addr` / `ip link` show expected interfaces and addresses |
+| Routes | Default route present; lab route changes reverted |
+| Sockets | `ss` shows listeners you expect for the lab |
+| Cleanup | Temporary firewall/rules or addresses removed |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -347,6 +338,14 @@ timeout 3 bash -c "echo >/dev/tcp/$HOST/$PORT" 2>/dev/null \
   && echo "Port $PORT open on $HOST" \
   || echo "Port $PORT closed or filtered on $HOST"
 ```
+
+## Security Considerations
+
+- Default-deny inbound firewall rules; open only required ports from known sources
+- Prefer SSH over public management protocols; disable unused listeners with `ss -tulpn` audits
+- Do not bind lab services to all interfaces unless required; use localhost or private subnets
+- Protect against DNS and routing surprises — pin critical resolvers and document routes
+- Separate management and workload networks where the platform allows
 
 ## Common Mistakes
 
@@ -445,6 +444,17 @@ timeout 3 bash -c "echo >/dev/tcp/$HOST/$PORT" 2>/dev/null \
 
 *Sample answer:* Check interface UP and IP assigned → verify default route → ping gateway → ping external IP → test DNS → check firewall/NAT/security groups → verify proxy settings if applicable.
 
+1. How would you explain linux networking essentials to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore linux networking essentials?
+3. Which metrics or logs would you check first when linux networking essentials misbehaves?
+4. What is a secure default related to linux networking essentials?
+5. How would you validate a change involving linux networking essentials in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around linux networking essentials?
+7. Describe a common anti-pattern with linux networking essentials and how you fix it.
+8. How does linux networking essentials interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for linux networking essentials?
+10. When would you intentionally not follow the default approach taught here?
+
 ## Related Tutorials
 
 - [Linux – Category Overview](index.md)
@@ -454,6 +464,9 @@ timeout 3 bash -c "echo >/dev/tcp/$HOST/$PORT" 2>/dev/null \
 - [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
 - [SSH and Remote Administration](ssh-remote-administration.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
+- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
+- Interview prep: [Linux Interview Prep](../interview/linux.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
