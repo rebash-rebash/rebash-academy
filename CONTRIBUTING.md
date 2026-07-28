@@ -110,6 +110,23 @@ bash scripts/validate.sh   # Check metadata and links
 
 Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
+## Git hooks (required for contributors)
+
+This repo blocks `Co-authored-by: Cursor` trailers. After cloning, run:
+
+```bash
+bash scripts/install-git-hooks.sh
+```
+
+Also disable **Cursor → Settings → Agents → Attribution** so the IDE stops injecting co-authors.
+
+To clean existing history:
+
+```bash
+bash scripts/strip-cursor-coauthor.sh
+git push --force-with-lease origin main
+```
+
 ## Questions?
 
 Open a [GitHub Issue](https://github.com/rebash-rebash/rebash-academy/issues) or start a discussion.
