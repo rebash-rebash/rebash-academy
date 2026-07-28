@@ -601,6 +601,88 @@
   color: var(--md-default-fg-color--light);
 }
 
+/* Founder / owner card */
+.rebash-owner-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-default-bg-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+@media screen and (min-width: 640px) {
+  .rebash-owner-card {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 1.75rem;
+  }
+}
+
+.rebash-owner-card__avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--rebash-blue) 0%, var(--rebash-blue-dark) 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.rebash-owner-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rebash-owner-card__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rebash-blue-dark);
+}
+
+.rebash-owner-card__name {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.rebash-owner-card__bio {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--md-default-fg-color--light);
+}
+
+.rebash-owner-card__link {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--rebash-blue);
+  text-decoration: none;
+}
+
+.rebash-owner-card__link:hover {
+  color: var(--rebash-blue-dark);
+}
+
+.rebash-owner-card__link::after {
+  content: " →";
+}
+
 /* Documentation standards grid */
 .rebash-standards-grid {
   display: grid;
