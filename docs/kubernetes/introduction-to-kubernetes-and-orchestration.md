@@ -4,6 +4,7 @@ description: Understand why container orchestration exists, what Kubernetes solv
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -50,7 +51,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify when Kubernetes is the right tool — and when simpler alternatives suffice
 - [ ] Outline the learning path for the REBASH Academy Kubernetes track
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows where Kubernetes sits between your container images and production infrastructure. Images still come from the same registries you used with Docker; Kubernetes adds a control plane that continuously reconciles cluster state with your declared manifests.
 
@@ -327,7 +328,21 @@ echo "Next tutorial: kubernetes-architecture-and-components.md"
 
 **Explanation:** Capture your starting point. Include this in personal notes when tracking progress through the Kubernetes track.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -378,6 +393,15 @@ echo "Recommend: 4+ GB RAM free for local cluster"
 ```
 
 Make executable: `chmod +x ~/bin/k8s-preflight.sh && ~/bin/k8s-preflight.sh`
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

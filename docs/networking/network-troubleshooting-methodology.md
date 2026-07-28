@@ -4,6 +4,7 @@ description: Apply bottom-up and top-down troubleshooting, divide-and-conquer is
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -47,7 +48,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Execute a layered checklist from physical/link through application layers
 - [ ] Distinguish network problems from application and DNS failures quickly
 
-## Architecture Diagram
+## Architecture
 
 The OSI/TCP-IP layered model provides the framework for bottom-up troubleshooting. Each layer must work before the layer above can function.
 
@@ -344,7 +345,21 @@ EOF
 cat /tmp/incident-notes.txt
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Layer | Purpose |
 |---------|-------|---------|
@@ -380,6 +395,15 @@ aws elbv2 describe-target-health --target-group-arn $TG_ARN
 nc -zv BACKEND_IP PORT
 dig +short SERVICE.example.com @8.8.8.8
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 
@@ -446,6 +470,9 @@ dig +short SERVICE.example.com @8.8.8.8
     **Q3 — Connection timed out:** Timeout implies packets are dropped or not routed back, not actively refused. Steps: (1) confirm scope — all users or subset; (2) `dig` the API hostname — does DNS resolve? (3) `nc -zv host 443` — timeout vs refused; (4) if timeout, check security groups, NACLs, host firewall, and routing; (5) `traceroute` / `mtr` to find last responding hop; (6) test from bastion inside VPC vs external; (7) if internal works, problem is edge SG or WAF; (8) capture packets with tcpdump if still unclear.
 
     **Q8 — DNS vs firewall:** DNS failure: `dig` returns NXDOMAIN, SERVFAIL, or unexpected IP; `curl` fails with "Could not resolve host" before any TCP attempt. Firewall blocking: `dig` returns correct IP; `ping` may work or fail (ICMP often blocked); `nc` to port 443 **times out** (filtered) or **refused** (closed). Test IP directly with curl `-H Host:` header to remove DNS from the equation.
+
+9. How would you explain network troubleshooting methodology to a junior engineer in two minutes?
+10. What production failure mode appears when teams ignore network troubleshooting methodology?
 
 ## Related Tutorials
 

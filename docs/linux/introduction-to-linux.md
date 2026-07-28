@@ -4,6 +4,7 @@ description: Understand Linux history, kernel vs distribution architecture, the 
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -45,7 +46,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Locate key system directories and understand their role at a high level
 - [ ] Analyze boot performance using `systemd-analyze` on systemd-based systems
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows how hardware, firmware, the kernel, userspace, and your applications relate. Every layer has a distinct responsibility — confusing them is a common source of beginner mistakes.
 
@@ -332,7 +333,21 @@ dmesg | tail -15
 ...
 ```
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -414,6 +429,15 @@ Use this in deployment scripts to assert the target environment before running A
   echo "Deploying to ${PRETTY_NAME} / kernel $(uname -r)" || \
   { echo "ERROR: Not a Linux host"; exit 1; }
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

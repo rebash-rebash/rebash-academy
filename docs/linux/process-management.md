@@ -4,6 +4,7 @@ description: Monitor and control Linux processes with ps, top, signals, kill, ni
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -41,6 +42,10 @@ By the end of this tutorial, you will be able to:
 - [ ] Adjust CPU scheduling priority using `nice` and `renice`
 - [ ] Manage foreground/background jobs with `&`, `jobs`, `fg`, and `bg`
 - [ ] Identify and resolve zombie and orphan process conditions
+
+## Architecture
+
+This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
 
 ## Theory
 
@@ -298,7 +303,21 @@ systemd(1)───sshd(456)───sshd(890)───bash(5700)
 
 Shows parent-child relationships with PIDs in parentheses.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -374,6 +393,15 @@ if [[ "$ZOMBIES" -gt 0 ]]; then
 fi
 echo "OK: no zombies"
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 
@@ -468,6 +496,17 @@ echo "OK: no zombies"
 **10. How do you verify a PID exists without killing it?**
 
 *Sample answer:* `kill -0 PID` sends signal 0, which performs error checking without sending a signal. Also: `ps -p PID` or `test -d /proc/PID`.
+
+1. How would you explain process management to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore process management?
+3. Which metrics or logs would you check first when process management misbehaves?
+4. What is a secure default related to process management?
+5. How would you validate a change involving process management in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around process management?
+7. Describe a common anti-pattern with process management and how you fix it.
+8. How does process management interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for process management?
+10. When would you intentionally not follow the default approach taught here?
 
 ## Related Tutorials
 

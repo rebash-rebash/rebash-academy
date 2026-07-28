@@ -4,6 +4,7 @@ description: Systematic debugging for boot, disk, network, and performance issue
 difficulty: advanced
 estimated_time: "60 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -42,6 +43,10 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose boot failures using journalctl, systemd targets, and rescue mode concepts
 - [ ] Resolve full-disk emergencies without data loss
 - [ ] Triage network and performance issues with a layered diagnostic model
+
+## Architecture
+
+This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
 
 ## Theory
 
@@ -261,7 +266,21 @@ cat /tmp/incident-template.md
 
 **Expected output:** Template ready for post-incident documentation practice.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -342,6 +361,15 @@ systemd-analyze blame | head -15
 echo "=== Critical chain ==="
 systemd-analyze critical-chain default.target | head -20
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 
@@ -441,6 +469,17 @@ systemd-analyze critical-chain default.target | head -20
 **10. What is the first question you ask during any incident?**
 
 *Sample answer:* "What changed?" — recent deployments, config changes, patches, traffic spikes, or certificate expirations usually explain sudden failures.
+
+1. How would you explain troubleshooting linux systems to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore troubleshooting linux systems?
+3. Which metrics or logs would you check first when troubleshooting linux systems misbehaves?
+4. What is a secure default related to troubleshooting linux systems?
+5. How would you validate a change involving troubleshooting linux systems in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around troubleshooting linux systems?
+7. Describe a common anti-pattern with troubleshooting linux systems and how you fix it.
+8. How does troubleshooting linux systems interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for troubleshooting linux systems?
+10. When would you intentionally not follow the default approach taught here?
 
 ## Related Tutorials
 

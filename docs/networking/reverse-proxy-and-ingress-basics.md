@@ -4,6 +4,7 @@ description: Configure nginx and HAProxy as reverse proxies, terminate TLS at th
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -49,7 +50,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose between terminating TLS at the proxy vs passing through to backends
 - [ ] Debug common reverse proxy failures (502, 504, wrong backend routing)
 
-## Architecture Diagram
+## Architecture
 
 Clients connect to the reverse proxy; the proxy forwards requests to internal backends that are not directly exposed.
 
@@ -359,7 +360,21 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
 
 **Explanation:** Inspect which Ingress controller is installed, assigned external IP, and backend service endpoints.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -369,6 +384,15 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
 | `curl -v` | Verbose HTTP including headers | `curl -v https://example.com` |
 | `kubectl get ingress` | List Ingress resources | `kubectl get ingress -A` |
 | `haproxy -c` | Validate HAProxy config | `sudo haproxy -c -f /etc/haproxy/haproxy.cfg` |
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 
@@ -438,6 +462,8 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
     **Q4 — Ingress vs LoadBalancer Service:** A LoadBalancer Service provisions one cloud load balancer per service — costly and IP-heavy at scale. Ingress defines HTTP routing rules (host, path) consumed by an Ingress controller that configures a shared reverse proxy fronting many services through one entry point. Ingress is L7 HTTP routing; LoadBalancer is typically L4 with one external IP per service.
 
     **Q6 — Intermittent 502:** 502 means the proxy received an invalid response or could not connect to upstream. Check nginx error log for `connect() failed` vs `upstream prematurely closed`. Test backends directly bypassing the proxy. Verify upstream health — intermittent 502 often indicates one backend in a pool is failing while others succeed. Check `max_fails` and passive health marking. Review recent deployments and resource exhaustion on backends.
+
+10. How would you explain reverse proxy and ingress basics to a junior engineer in two minutes?
 
 ## Related Tutorials
 

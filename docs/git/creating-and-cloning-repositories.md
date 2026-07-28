@@ -4,6 +4,7 @@ description: Initialize local repos, clone from remotes, understand bare vs non-
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -51,7 +52,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Bootstrap an infrastructure-as-code repository with sensible initial structure
 - [ ] Troubleshoot common clone and permission failures in enterprise environments
 
-## Architecture Diagram
+## Architecture
 
 DevOps workflows typically flow from a hosted remote to local clones and CI runners. Bare repositories on servers act as intermediaries in self-hosted Git deployments.
 
@@ -383,7 +384,21 @@ rm -rf ~/lab/git-shallow-clone ~/lab/hello-world ~/lab/hello-world.git ~/lab/inf
 
 **Explanation:** Remove practice repos. Never delete unpushed work — verify with `git log origin/main..main` before cleanup in real projects.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -409,6 +424,15 @@ git branch -M main
 git remote add origin git@github.com:ORG/my-project.git
 git push -u origin main
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

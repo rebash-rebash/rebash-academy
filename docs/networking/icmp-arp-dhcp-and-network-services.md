@@ -4,6 +4,7 @@ description: Master ICMP ping and traceroute, ARP neighbor resolution, the DHCP 
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -47,7 +48,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose "works by IP but not hostname" and "cannot reach gateway" scenarios
 - [ ] Distinguish protocol-level failures from firewall blocks in production
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows how a new host joins a network: DHCP assigns L3 config, ARP resolves the gateway MAC, ICMP verifies reachability, and NTP aligns time with authoritative servers.
 
@@ -300,7 +301,21 @@ EOF
 
 **Expected output:** All layers OK on a healthy host. Isolate failures: no ARP → L2; ARP but no ping → firewall or wrong GW; external fail → routing/NAT.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -365,6 +380,15 @@ sudo tcpdump -i eth0 -n port 67 or port 68
 # Terminal 2 — capture ARP
 sudo tcpdump -i eth0 -n arp
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

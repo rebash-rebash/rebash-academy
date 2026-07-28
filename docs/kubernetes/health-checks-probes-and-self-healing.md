@@ -4,6 +4,7 @@ description: Configure liveness, readiness, and startup probes so Kubernetes det
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes
@@ -50,7 +51,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Design probe endpoints that reflect application health, not just process existence
 - [ ] Relate probe behavior to Deployment rolling update success criteria
 
-## Architecture Diagram
+## Architecture
 
 The kubelet runs probes locally on each node. Readiness state flows to the endpoints controller; liveness failures trigger container restarts.
 
@@ -443,7 +444,21 @@ exec-probe-demo   1/1   Running   1 (5s ago)   45s
 kubectl delete namespace probe-lab --wait=false
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -482,6 +497,15 @@ containers:
       failureThreshold: 2
       timeoutSeconds: 3
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

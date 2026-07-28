@@ -4,6 +4,7 @@ description: Open pull requests, request reviews, address feedback, merge strate
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git
@@ -59,6 +60,10 @@ BR: "Feature Branch"
     DEPLOY: "CD / GitOps Deploy"
     MERGE -> DEPLOY
 ```
+
+## Architecture
+
+This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
 
 ## Theory
 
@@ -261,7 +266,21 @@ git log --oneline --graph -5
 rm -rf /tmp/git-pr-lab /tmp/pr-remote.git
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -283,6 +302,15 @@ git log "$BASE"..HEAD --oneline
 echo ""
 git diff "$BASE"...HEAD --stat
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

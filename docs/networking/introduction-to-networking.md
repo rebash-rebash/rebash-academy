@@ -4,6 +4,7 @@ description: Understand why networking matters for DevOps, core terminology, net
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -47,7 +48,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Inspect your own system's network interfaces and basic connectivity using Linux tools
 - [ ] Relate physical and logical network concepts to cloud VPC and subnet terminology
 
-## Architecture Diagram
+## Architecture
 
 The diagram below shows a simplified enterprise-to-cloud topology. Every component you will encounter in DevOps maps to one of these roles — even when the physical switch is replaced by a virtual cloud switch or hypervisor vSwitch.
 
@@ -330,7 +331,21 @@ echo "Latency to 8.8.8.8: $(ping -c 3 -q 8.8.8.8 2>/dev/null | awk -F'/' '{print
 
 **Explanation:** Capture a baseline snapshot for your lab environment. During incidents, comparing current values to a known-good baseline accelerates triage.
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -374,6 +389,15 @@ curl -s --max-time 5 -o /dev/null -w "HTTPS to cloudflare: HTTP %{http_code} in 
 ```
 
 Make executable: `chmod +x ~/bin/net-baseline.sh && ~/bin/net-baseline.sh`
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

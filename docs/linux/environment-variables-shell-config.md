@@ -4,6 +4,7 @@ description: Configure login and interactive shells with PATH, export, and start
 difficulty: beginner
 estimated_time: "35 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,7 +44,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Know which startup file to edit: `.bashrc`, `.profile`, or `.bash_profile`
 - [ ] Debug missing variables in scripts, SSH sessions, and cron jobs
 
-## Architecture Diagram
+## Architecture
 
 ```d2
 direction: down
@@ -291,7 +292,21 @@ env -i HOME="$HOME" USER="$USER" PATH="/usr/bin:/bin" /bin/bash -c \
 
 **Expected output:** First command fails or shows empty/minimal PATH; second succeeds when full path or PATH is set explicitly — demonstrating why cron needs absolute paths.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -377,6 +392,15 @@ source /etc/app/environment
 set +a
 exec /usr/bin/myapp
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 
@@ -473,6 +497,17 @@ exec /usr/bin/myapp
 **10. How do you run a command with a clean environment for testing?**
 
 *Sample answer:* `env -i HOME="$HOME" PATH="/usr/bin:/bin" command` starts with an empty environment except specified variables.
+
+1. How would you explain environment variables shell config to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore environment variables shell config?
+3. Which metrics or logs would you check first when environment variables shell config misbehaves?
+4. What is a secure default related to environment variables shell config?
+5. How would you validate a change involving environment variables shell config in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around environment variables shell config?
+7. Describe a common anti-pattern with environment variables shell config and how you fix it.
+8. How does environment variables shell config interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for environment variables shell config?
+10. When would you intentionally not follow the default approach taught here?
 
 ## Related Tutorials
 

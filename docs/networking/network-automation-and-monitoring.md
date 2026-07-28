@@ -4,6 +4,7 @@ description: Automate network operations with Ansible, manage DNS and firewall a
 difficulty: advanced
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: networking
 tags:
   - networking
@@ -52,7 +53,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Design alerting rules for network connectivity failures
 - [ ] Articulate next steps in the REBASH Academy learning path (Docker, Kubernetes, cloud)
 
-## Architecture Diagram
+## Architecture
 
 The diagram shows a typical network observability and automation stack: Prometheus scrapes exporters, Grafana visualizes, Alertmanager notifies, and Ansible/Terraform push configuration from Git.
 
@@ -375,7 +376,21 @@ docker rm -f prometheus smokeping 2>/dev/null || true
 sudo systemctl stop node_exporter 2>/dev/null || true
 ```
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -393,6 +408,15 @@ sudo systemctl stop node_exporter 2>/dev/null || true
   labels:
     severity: warning
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 
@@ -451,6 +475,10 @@ sudo systemctl stop node_exporter 2>/dev/null || true
     **Q1 — IaC for networking:** Manual config causes drift and slow recovery. IaC provides version control, peer review, and audit trails.
 
     **Q3 — node_exporter metrics:** Throughput (`node_network_receive_bytes_total`), interface errors, TCP retransmissions, and connection counts.
+
+8. How would you explain network automation and monitoring to a junior engineer in two minutes?
+9. What production failure mode appears when teams ignore network automation and monitoring?
+10. Which metrics or logs would you check first when network automation and monitoring misbehaves?
 
 ## Related Tutorials
 

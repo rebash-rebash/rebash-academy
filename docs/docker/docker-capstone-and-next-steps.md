@@ -4,6 +4,7 @@ description: Capstone project — deploy a multi-service voting app with Docker 
 difficulty: advanced
 estimated_time: "50 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: docker
 tags:
   - docker
@@ -48,7 +49,7 @@ By the end of this capstone, you will be able to:
 - [ ] Document operational runbooks for backup, rollback, and scaling
 - [ ] Outline a Kubernetes migration plan using the concept map from Tutorial 19
 
-## Architecture Diagram
+## Architecture
 
 ```d2
 direction: down
@@ -117,6 +118,10 @@ votestack/
 │   └── smoke-test.sh
 └── .github/workflows/ci.yml
 ```
+
+## Theory
+
+Core ideas for this tutorial appear inline in the lab steps and Code Walkthrough. Read each step explanation before running commands.
 
 ## Hands-on Lab
 
@@ -298,7 +303,21 @@ docker compose -f compose.yml -f compose.prod.yml up -d --no-deps api web worker
 
 Map each VoteStack service to Kubernetes resources using [From Docker to Kubernetes](from-docker-to-kubernetes.md): **web/api/worker** → Deployments; **nginx** → Ingress; **postgres/redis** → StatefulSet or managed services with PVCs. Continue on the [Kubernetes track](../kubernetes/index.md).
 
-## Commands & Code
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 ```bash
 # Smoke test (scripts/smoke-test.sh)
@@ -310,6 +329,15 @@ docker inspect votestack-api-1 | jq -r '.[0].State.Health.Status'
 ```
 
 See [Container Logging and Monitoring](container-logging-and-monitoring.md) for metrics exporters.
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 

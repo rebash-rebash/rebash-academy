@@ -4,6 +4,7 @@ description: Read, filter, persist, and forward logs using the systemd journal a
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux
@@ -43,7 +44,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Configure persistent journal storage and retention limits
 - [ ] Troubleshoot missing logs, permission issues, and disk pressure from journal growth
 
-## Architecture Diagram
+## Architecture
 
 ```d2
 direction: down
@@ -240,7 +241,21 @@ journalctl --disk-usage
 
 **Expected output:** `Storage=persistent` in config; disk usage may increase after restart as logs are flushed to `/var/log/journal/`.
 
-## Commands
+## Validation
+
+Confirm the lab before moving on:
+
+1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
+2. Check that you can explain *why* each successful result matters (not only that it printed).
+3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+
+| Check | Pass criteria |
+|-------|----------------|
+| Lab steps | All required steps completed on your machine |
+| Expected output | Matches the tutorial (or a documented equivalent) |
+| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+
+## Code Walkthrough
 
 | Command | Description |
 |---------|-------------|
@@ -314,6 +329,15 @@ echo "Exported to $OUT"
 # Run weekly via root crontab to prevent journal bloat
 0 3 * * 0 /usr/bin/journalctl --vacuum-size=500M
 ```
+
+## Security Considerations
+
+- Prefer least privilege for every account, role, and service identity you create in labs
+- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
+- Prefer official packages and signed images; verify checksums for air-gapped installs
+- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
+- Enable audit logging where the platform supports it, and practise reading those logs
+- Treat production as hostile: assume misconfiguration will be probed
 
 ## Common Mistakes
 
@@ -407,6 +431,17 @@ echo "Exported to $OUT"
 **10. How do priority ranges work in journalctl?**
 
 *Sample answer:* `-p warning..err` shows warnings through errors inclusive. You can also use numeric forms like `-p 3` for a single level.
+
+1. How would you explain log management journalctl to a junior engineer in two minutes?
+2. What production failure mode appears when teams ignore log management journalctl?
+3. Which metrics or logs would you check first when log management journalctl misbehaves?
+4. What is a secure default related to log management journalctl?
+5. How would you validate a change involving log management journalctl in CI or a staging environment?
+6. What trade-off would you accept to simplify operations around log management journalctl?
+7. Describe a common anti-pattern with log management journalctl and how you fix it.
+8. How does log management journalctl interact with networking, identity, or storage in a real system?
+9. What would you put on a runbook checklist for log management journalctl?
+10. When would you intentionally not follow the default approach taught here?
 
 ## Related Tutorials
 
