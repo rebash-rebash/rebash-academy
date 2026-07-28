@@ -19,22 +19,24 @@
     "titleColor": "#1565c0",
     "edgeLabelBackground": "#ffffff",
     "fontFamily": "Roboto, system-ui, sans-serif",
-    "fontSize": "14px"
+    "fontSize": "18px"
   },
   "flowchart": {
     "curve": "basis",
-    "padding": 20,
-    "nodeSpacing": 45,
-    "rankSpacing": 55,
-    "diagramPadding": 12,
-    "htmlLabels": true
+    "padding": 28,
+    "nodeSpacing": 60,
+    "rankSpacing": 70,
+    "diagramPadding": 20,
+    "htmlLabels": true,
+    "useMaxWidth": false
   },
   "sequence": {
-    "diagramMarginX": 24,
-    "diagramMarginY": 16,
-    "actorMargin": 64,
-    "boxMargin": 12,
-    "messageMargin": 40
+    "diagramMarginX": 32,
+    "diagramMarginY": 24,
+    "actorMargin": 80,
+    "boxMargin": 16,
+    "messageMargin": 48,
+    "useMaxWidth": false
   },
   "securityLevel": "loose"
 }

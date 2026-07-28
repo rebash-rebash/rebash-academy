@@ -16,11 +16,14 @@ CACHE_DIR = ROOT / ".cache" / "mermaid"
 MERMAID_CLI = "@mermaid-js/mermaid-cli@11.4.0"
 MERMAID_CONFIG = ROOT / "config" / "mermaid-build.json"
 PUPPETEER_CONFIG = ROOT / "config" / "mermaid-puppeteer.json"
+# Bump when render settings change so stale cache is ignored.
+CACHE_VERSION = "v2-readable"
 MERMAID_FENCE = re.compile(r"```mermaid\s*\n(.*?)```", re.DOTALL)
+SVG_MAX_WIDTH = re.compile(r"(?i)max-width\s*:\s*[^;\"']+;?\s*")
 
 
 def _cache_path(source: str) -> Path:
-    digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(f"{CACHE_VERSION}\n{source}".encode("utf-8")).hexdigest()
     return CACHE_DIR / f"{digest}.svg"
 
 
@@ -30,6 +33,19 @@ def _unique_svg_ids(svg: str, prefix: str) -> str:
     svg = svg.replace("#my-svg", f"#{prefix}")
     svg = svg.replace("my-svg_", f"{prefix}_")
     svg = svg.replace("my-svg-", f"{prefix}-")
+    return svg
+
+
+def _normalize_svg(svg: str) -> str:
+    """Make diagrams fill the content column so labels stay readable."""
+    # Mermaid CLI embeds a small max-width (often 200–400px) that keeps SVGs tiny.
+    svg = SVG_MAX_WIDTH.sub("", svg)
+    svg = re.sub(r'\sstyle=""', "", svg)
+    svg = re.sub(r'\sstyle="\s*"', "", svg)
+    if re.search(r'<svg\b[^>]*\bwidth=', svg) is None:
+        svg = svg.replace("<svg ", '<svg width="100%" ', 1)
+    else:
+        svg = re.sub(r'(<svg\b[^>]*?)\bwidth="[^"]*"', r'\1width="100%"', svg, count=1)
     return svg
 
 
@@ -55,6 +71,10 @@ def _render_svg(source: str) -> str | None:
             str(output_path),
             "-b",
             "transparent",
+            "-s",
+            "2",
+            "-w",
+            "1200",
         ]
         if MERMAID_CONFIG.exists():
             command.extend(["-c", str(MERMAID_CONFIG)])
@@ -102,7 +122,7 @@ def on_page_markdown(markdown: str, page, config, files) -> str:
 
         counter["n"] += 1
         prefix = f"mmd-{hashlib.sha1(source.encode()).hexdigest()[:10]}"
-        svg = _unique_svg_ids(svg, prefix)
+        svg = _normalize_svg(_unique_svg_ids(svg, prefix))
         if 'role="img"' not in svg:
             svg = svg.replace("<svg ", '<svg role="img" aria-label="Diagram" ', 1)
 
