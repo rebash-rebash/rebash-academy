@@ -59,7 +59,8 @@ These sections keep stable URLs under `/aws/`, `/azure/`, `/gcp/`, `/gitlab/`, a
 
 - [x] Interview guides for ready tracks (plus interview questions inside each tutorial)
 - [x] Cheat sheets for ready tracks
-- [ ] Hands-on lab catalog (labs already live inside each tutorial)
+- [x] Hands-on lab catalog (Linux incident triage + Terraform plan review; more coming)
+- [x] Labs section promoted in primary navigation
 - [x] DevOps Engineer learning path page
 - [ ] Open source project walkthroughs
 - [ ] Blog articles and video embeds

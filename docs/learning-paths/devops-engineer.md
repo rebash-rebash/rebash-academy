@@ -34,6 +34,15 @@ This path matches how production platforms are built: operating system fluency, 
 | Cheat sheet | [open](../cheatsheets/linux.md) | [open](../cheatsheets/networking.md) | [open](../cheatsheets/git.md) | [open](../cheatsheets/docker.md) | [open](../cheatsheets/kubernetes.md) | [open](../cheatsheets/terraform.md) |
 | Interview prep | [open](../interview/linux.md) | [open](../interview/networking.md) | [open](../interview/git.md) | [open](../interview/docker.md) | [open](../interview/kubernetes.md) | [open](../interview/terraform.md) |
 
+## Standalone labs
+
+| When you finish… | Practise with |
+|------------------|---------------|
+| Linux modules on systemd and logs | [Linux Production Incident Triage](../labs/linux-production-incident-triage.md) |
+| Terraform CLI + CI concepts | [Terraform Plan Review Workflow](../labs/terraform-plan-review-workflow.md) |
+
+Browse all labs: [Labs](../labs/index.md)
+
 ## Coming next on this path
 
 Cloud platforms (AWS / Azure / GCP), GitLab CI/CD, monitoring, and DevSecOps are reserved on the [roadmap](../roadmap.md). Finish the six ready tracks first.

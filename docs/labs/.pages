@@ -1,2 +1,6 @@
 title: Labs
 icon: material/flask
+nav:
+  - index.md
+  - linux-production-incident-triage.md
+  - terraform-plan-review-workflow.md

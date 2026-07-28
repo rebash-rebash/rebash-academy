@@ -1,0 +1,55 @@
+direction: right
+
+Repo: "Git PR\nreviewer" {
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+}
+
+Root: "Root module" {
+  style.fill: "#f8fafc"
+  style.stroke: "#334155"
+
+  Versions: "versions.tf\nproviders" {
+    style.fill: "#e0e7ff"
+    style.stroke: "#4338ca"
+  }
+  Vars: "variables.tf\n+ tfvars" {
+    style.fill: "#fce7f3"
+    style.stroke: "#be185d"
+  }
+  Main: "main.tf\nlocal_file + tags" {
+    style.fill: "#ffedd5"
+    style.stroke: "#c2410c"
+  }
+  Out: "outputs.tf" {
+    style.fill: "#dcfce7"
+    style.stroke: "#15803d"
+  }
+}
+
+CLI: "CLI workflow" {
+  style.fill: "#f1f5f9"
+  style.stroke: "#475569"
+
+  Fmt: "fmt + validate" {
+    style.fill: "#e0f2fe"
+    style.stroke: "#0284c7"
+  }
+  Plan: "plan -out=tfplan" {
+    style.fill: "#fef3c7"
+    style.stroke: "#b45309"
+  }
+  Apply: "apply tfplan" {
+    style.fill: "#d1fae5"
+    style.stroke: "#047857"
+  }
+}
+
+State: "Local state\n+ lockfile" {
+  style.fill: "#ede9fe"
+  style.stroke: "#6d28d9"
+}
+
+Repo -> Root.Versions
+Root.Versions -> Root.Vars -> Root.Main -> Root.Out
+Root.Out -> CLI.Fmt -> CLI.Plan -> CLI.Apply -> State
