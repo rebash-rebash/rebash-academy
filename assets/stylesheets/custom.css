@@ -399,6 +399,7 @@
 .rebash-path-tile__icon svg {
   width: 1.35rem;
   height: 1.35rem;
+  fill: currentColor;
 }
 
 .rebash-path-tile__badge {
@@ -855,6 +856,7 @@
 .rebash-path-card__icon svg {
   width: 1.75rem;
   height: 1.75rem;
+  fill: currentColor;
 }
 
 .rebash-path-card__badge {
