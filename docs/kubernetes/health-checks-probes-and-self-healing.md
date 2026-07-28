@@ -49,7 +49,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain how readiness failures affect Service endpoints and Ingress routing
 - [ ] Diagnose crash loops and probe-induced restart storms
 - [ ] Design probe endpoints that reflect application health, not just process existence
-- [ ] Relate probe behavior to Deployment rolling update success criteria
+- [ ] Relate probe behaviour to Deployment rolling update success criteria
 
 ## Architecture
 
@@ -541,7 +541,7 @@ containers:
 |-------|-------|----------|
 | CrashLoopBackOff | Liveness fails immediately on start | Add startup probe; increase `initialDelaySeconds` |
 | Pod Running but no traffic | Readiness failing | Check `/ready` endpoint; verify dependencies |
-| Frequent restarts under load | Liveness timeout too short | Increase `timeoutSeconds`; optimize health handler |
+| Frequent restarts under load | Liveness timeout too short | Increase `timeoutSeconds`; optimise health handler |
 | Rollout stuck | New pods never Ready | `kubectl describe pod`; fix readiness probe path/port |
 | 502 from Ingress during deploy | Old pods terminated before new Ready | Tune `maxUnavailable`; fix readiness timing |
 | Probe works locally, fails in cluster | Wrong port or network policy | Verify `containerPort`; check NetworkPolicy |

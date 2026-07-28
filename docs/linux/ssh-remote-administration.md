@@ -115,7 +115,7 @@ SSH refuses keys with loose permissions:
 
 Host blocks simplify daily workflows:
 
-```
+```text
 Host prod-web
     HostName 10.0.1.50
     User deploy
@@ -129,7 +129,7 @@ Supports **ProxyJump** for bastion access: `ProxyJump bastion.example.com`.
 
 Both run over SSH:
 
-- **scp** — fast one-off copies; syntax mirrors `cp`. Being deprecated in favor of `sftp` in some OpenSSH versions; use `scp -O` for legacy protocol if needed.
+- **scp** — fast one-off copies; syntax mirrors `cp`. Being deprecated in favour of `sftp` in some OpenSSH versions; use `scp -O` for legacy protocol if needed.
 - **sftp** — interactive session, resumable transfers, scripting with `sftp -b batchfile`.
 
 For automation, consider `rsync -avz -e ssh` for incremental sync.
@@ -138,7 +138,7 @@ For automation, consider `rsync -avz -e ssh` for incremental sync.
 
 Production `sshd_config` baseline:
 
-```
+```text
 PermitRootLogin no
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -315,7 +315,7 @@ ssh -A lab-local 'echo AGENT=$SSH_AUTH_SOCK; ssh-add -l 2>&1 | head -1'
 
 Disable forwarding in config for untrusted hosts:
 
-```
+```text
 Host untrusted-*
     ForwardAgent no
     IdentityFile ~/.ssh/rebash_ed25519
@@ -359,7 +359,7 @@ Confirm the lab before moving on:
 
 ### SSH config template for multi-environment ops
 
-```
+```bash
 # ~/.ssh/config
 
 Host *

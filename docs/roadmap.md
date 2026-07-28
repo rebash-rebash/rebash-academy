@@ -16,7 +16,7 @@ comments: false
 
 This page tracks what is published on REBASH Academy and what comes next.
 
-## Phase 1 – Platform Setup :material-check-circle:{ .lg .middle style="color: green" }
+## Phase 1 – Platform Setup :material-check-circle:{ .lg .middle style="colour: green" }
 
 - [x] MkDocs + Material for MkDocs configuration
 - [x] Documentation structure and category landing pages
@@ -25,7 +25,7 @@ This page tracks what is published on REBASH Academy and what comes next.
 - [x] Validation and tutorial scaffolding scripts
 - [x] Contributor documentation
 
-## Phase 2 – Core Content :material-check-circle:{ .lg .middle style="color: green" }
+## Phase 2 – Core Content :material-check-circle:{ .lg .middle style="colour: green" }
 
 - [x] Getting Started onboarding page
 - [x] Linux fundamentals path (20 tutorials)

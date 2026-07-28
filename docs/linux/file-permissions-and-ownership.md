@@ -23,7 +23,7 @@ comments: false
 
 Every file and directory on a Linux system carries three pieces of access metadata: an **owner** (user), a **group**, and a **permission mode** that defines who may read, write, or execute it. Misconfigured permissions are one of the most common causes of "Permission denied" errors in production — and one of the fastest paths to privilege escalation when set too loosely.
 
-This tutorial is part of **Module 2: Users, Groups & Permissions** in the REBASH Academy Linux series. You will learn to inspect permissions with `ls` and `stat`, modify them with `chmod` and `chown`, control defaults with `umask`, and understand special bits (`setuid`, `setgid`, sticky) that underpin core system behavior like `sudo` and shared directories.
+This tutorial is part of **Module 2: Users, Groups & Permissions** in the REBASH Academy Linux series. You will learn to inspect permissions with `ls` and `stat`, modify them with `chmod` and `chown`, control defaults with `umask`, and understand special bits (`setuid`, `setgid`, sticky) that underpin core system behaviour like `sudo` and shared directories.
 
 ## Prerequisites
 
@@ -159,7 +159,7 @@ stat -c '%a %n' /etc/passwd /etc/shadow /tmp
 
 **Expected output:**
 
-```
+```text
 -rw-r--r-- 1 root root  1234 Jul 27 09:00 /etc/passwd
 -rw-r----- 1 root shadow 678 Jul 27 09:00 /etc/shadow
 drwxrwxrwt  8 root root 4096 Jul 27 10:00 /tmp
@@ -183,7 +183,7 @@ ls -ld newdir
 
 **Expected output (umask 0022):**
 
-```
+```text
 0022
 -rw-r--r-- 1 user user 0 Jul 27 10:05 newfile.txt
 drwxr-xr-x 2 user user 4096 Jul 27 10:05 newdir
@@ -201,7 +201,7 @@ ls -l deploy.sh
 
 **Expected output:**
 
-```
+```text
 -rwxr-xr-x 1 user user 14 Jul 27 10:06 deploy.sh
 -rw-r--r-- 1 user user 14 Jul 27 10:06 deploy.sh
 ```
@@ -219,7 +219,7 @@ ls -l deploy.sh
 
 **Expected output:**
 
-```
+```text
 -rwxrwx--- 1 user user 14 Jul 27 10:07 deploy.sh
 -r--r--r-- 1 user user 14 Jul 27 10:07 deploy.sh
 ```
@@ -237,7 +237,7 @@ sudo chown $USER:$USER deploy.sh   # restore for cleanup
 
 **Expected output:**
 
-```
+```text
 -r--r--r-- 1 labsvc labsvc 14 Jul 27 10:08 deploy.sh
 -r--r--r-- 1 labsvc users  14 Jul 27 10:08 deploy.sh
 ```
@@ -258,14 +258,14 @@ ls -l /srv/devteam/test.txt
 
 **Expected output:**
 
-```
+```text
 drwxrwsr-x 2 root devteam 4096 Jul 27 10:09 /srv/devteam
 -rw-r--r-- 1 user devteam 0 Jul 27 10:09 /srv/devteam/test.txt
 ```
 
 The `s` in group execute indicates setgid; new files inherit the `devteam` group.
 
-### Step 7 – Demonstrate sticky bit behavior
+### Step 7 – Demonstrate sticky bit behaviour
 
 ```bash
 mkdir sticky-demo && chmod 1777 sticky-demo
@@ -275,7 +275,7 @@ ls -ld sticky-demo
 
 **Expected output:**
 
-```
+```text
 drwxrwxrwt 2 user user 4096 Jul 27 10:10 sticky-demo
 ```
 

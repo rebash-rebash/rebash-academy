@@ -478,7 +478,7 @@ spec:
 |-------|-------|----------|
 | Rollout stuck | Image pull failure, crash loop, failed probe | `kubectl describe rs`, `kubectl logs`; fix image or probes |
 | `ImagePullBackOff` | Wrong tag, missing registry credentials | Verify image name; add `imagePullSecrets` |
-| Old ReplicaSets accumulate | Normal behavior | Old RS scale to 0; tune `revisionHistoryLimit` |
+| Old ReplicaSets accumulate | Normal behaviour | Old RS scale to 0; tune `revisionHistoryLimit` |
 | Selector mismatch error | Template labels don't match selector | Align `spec.selector.matchLabels` with template metadata labels |
 | Rollout undo fails | Revision pruned | Check `rollout history`; redeploy known-good manifest from Git |
 | Pods pending after scale-up | Insufficient cluster resources | `kubectl describe pod`; add nodes or reduce requests |

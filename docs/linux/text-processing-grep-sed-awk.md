@@ -60,7 +60,7 @@ All three tools rely on **regular expressions (regex)** to describe patterns:
 | `.` | Any single character | `a.c` matches `abc`, `a1c` |
 | `^` | Start of line | `^ERROR` — lines beginning with ERROR |
 | `$` | End of line | `failed$` — lines ending with failed |
-| `*` | Zero or more of preceding | `colou*r` matches `color`, `colour` |
+| `*` | Zero or more of preceding | `colou*r` matches `colour`, `colour` |
 | `+` | One or more (ERE with `-E`) | `[0-9]+` — one or more digits |
 | `?` | Zero or one (ERE) | `https?` — `http` or `https` |
 | `[]` | Character class | `[A-F0-9]{2}` — two hex digits |
@@ -249,7 +249,7 @@ grep -E '" [45][0-9]{2} ' ~/lab/logs/access.log \
 
 **Expected output:**
 
-```
+```text
 HTTP 401: 2 occurrences
 HTTP 403: 1 occurrences
 HTTP 404: 1 occurrences

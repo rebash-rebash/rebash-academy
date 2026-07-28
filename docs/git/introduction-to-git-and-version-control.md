@@ -146,7 +146,7 @@ Today Git is bundled with Xcode, pre-installed on most Linux distros, and embedd
 
 #### Repository (Repo)
 
-A **repository** is a directory (project folder) plus Git's hidden metadata in `.git/`. It contains every commit, branch, and tag. In production, repos are organized by team or service: `infra/terraform-modules`, `platform/k8s-manifests`, `app/payment-service`.
+A **repository** is a directory (project folder) plus Git's hidden metadata in `.git/`. It contains every commit, branch, and tag. In production, repos are organised by team or service: `infra/terraform-modules`, `platform/k8s-manifests`, `app/payment-service`.
 
 #### Working Directory, Staging Area, and Repository
 

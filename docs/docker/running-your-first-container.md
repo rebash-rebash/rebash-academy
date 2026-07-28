@@ -27,7 +27,7 @@ comments: false
 
 This tutorial takes you from zero to confident: run interactive and detached containers, publish ports, inspect state, stream logs, open shells inside running containers, and clean up resources without leaving orphaned processes or disk-consuming layers.
 
-This is **Tutorial 4** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. Complete [Module 1](../docker/index.md) first — especially [Docker Architecture and Components](docker-architecture-and-components.md). [Linux process management](../linux/index.md) and [Git](../git/index.md) skills help you interpret container behavior and version lab scripts.
+This is **Tutorial 4** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. Complete [Module 1](../docker/index.md) first — especially [Docker Architecture and Components](docker-architecture-and-components.md). [Linux process management](../linux/index.md) and [Git](../git/index.md) skills help you interpret container behaviour and version lab scripts.
 
 ## Prerequisites
 
@@ -91,11 +91,11 @@ Key flags you will use daily:
 | `-v` | `--volume` | Mount host path or named volume |
 | `--network` | | Attach to custom network |
 
-**Image pull behavior:** If the image is not local, Docker pulls it from the configured registry (default: Docker Hub) before creating the container.
+**Image pull behaviour:** If the image is not local, Docker pulls it from the configured registry (default: Docker Hub) before creating the container.
 
 ### Foreground vs Detached Mode
 
-| Mode | Flags | Behavior | Use case |
+| Mode | Flags | Behaviour | Use case |
 |------|-------|----------|----------|
 | **Foreground** | (default) | Blocks terminal; logs to stdout | Quick tests, debugging |
 | **Detached** | `-d` | Returns container ID; runs in background | Servers, long-running services |
@@ -161,7 +161,7 @@ Container processes write to stdout and stderr. Docker captures these streams vi
 
 ### docker exec vs docker attach
 
-| Command | Behavior |
+| Command | Behaviour |
 |---------|----------|
 | `docker exec` | Starts **new process** inside running container (e.g., shell, debug command) |
 | `docker attach` | Connects to **main process** stdin/stdout (can accidentally stop app with Ctrl+C) |
@@ -190,7 +190,7 @@ docker run -d --name web-prod-01 -l env=prod -l team=platform nginx:alpine
 
 Labels enable filtering: `docker ps --filter label=env=prod`. Names must be unique per host.
 
-| Policy | Flag | Behavior |
+| Policy | Flag | Behaviour |
 |--------|------|----------|
 | **no** | default | Never restart automatically |
 | **on-failure** | `--restart on-failure:3` | Restart on non-zero exit (max retries) |
@@ -487,7 +487,7 @@ Make executable: `chmod +x ~/bin/docker-lifecycle-demo.sh && ~/bin/docker-lifecy
 
 ## Summary
 
-- **`docker run`** creates and starts containers; combine flags for detached (`-d`), interactive (`-it`), port publish (`-p`), and auto-remove (`--rm`) behavior
+- **`docker run`** creates and starts containers; combine flags for detached (`-d`), interactive (`-it`), port publish (`-p`), and auto-remove (`--rm`) behaviour
 - **`docker ps`** lists containers; `-a` includes stopped; filters narrow by name, status, and labels
 - **`docker logs`** reads stdout/stderr; **`docker exec`** runs new processes inside running containers
 - **`docker stop`** gracefully terminates with SIGTERM; **`docker rm`** removes stopped containers and their writable layers

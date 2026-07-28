@@ -444,7 +444,7 @@ kubectl cluster-info
     `kubectl top pods` becomes invaluable when debugging resource issues in later modules.
 
 !!! tip "Document versions in your lab notes"
-    When reporting issues or comparing behavior, include kubectl, cluster, and Docker versions.
+    When reporting issues or comparing behaviour, include kubectl, cluster, and Docker versions.
 
 !!! tip "Use --dry-run=client -o yaml while learning"
     Generate manifest YAML from imperative commands before applying — builds declarative habits for Tutorial 4.

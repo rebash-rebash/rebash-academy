@@ -525,7 +525,7 @@ The [GitLab track](../gitlab/index.md) complements GitHub Actions patterns from 
 - GitLab Agent for Kubernetes (agent-based deploy alternative)
 - Compliance frameworks and audit trails
 
-If your organization standardizes on GitLab, port the VoteStack CI workflow — build, scan, update GitOps manifest — to `.gitlab-ci.yml`.
+If your organisation standardizes on GitLab, port the VoteStack CI workflow — build, scan, update GitOps manifest — to `.gitlab-ci.yml`.
 
 ### Recommended learning path
 

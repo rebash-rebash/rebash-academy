@@ -32,7 +32,7 @@ This is **Tutorial 13** in **Module 5: Operations** of the REBASH Academy Docker
 
 ## Prerequisites
 
-- Docker Engine on Linux (logging driver behavior differs slightly on Docker Desktop)
+- Docker Engine on Linux (logging driver behaviour differs slightly on Docker Desktop)
 - Completion of [Running Your First Container](running-your-first-container.md)
 - Familiarity with [Log Management with journalctl](../linux/log-management-journalctl.md) concepts
 - Optional: second terminal window to generate load while observing stats
@@ -91,7 +91,7 @@ Docker supports multiple drivers via `/etc/docker/daemon.json` (default) or per-
 | Driver | Default? | Typical use |
 |--------|----------|-------------|
 | **json-file** | Yes (Linux) | Local files under `/var/lib/docker/containers/` |
-| **local** | Alternative local | Optimized binary format, faster rotation |
+| **local** | Alternative local | Optimised binary format, faster rotation |
 | **syslog** | No | Forward to syslog daemon |
 | **journald** | No | Integrate with systemd journal on host |
 | **fluentd** / **gelf** | No | Forward to centralized collectors |

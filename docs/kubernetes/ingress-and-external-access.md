@@ -140,11 +140,11 @@ spec:
 | `rules.host` | Virtual host matching (HTTP Host header) |
 | `paths.pathType` | `Prefix`, `Exact`, or `ImplementationSpecific` |
 | `tls.secretName` | Reference to TLS Secret for HTTPS |
-| `annotations` | Controller-specific behavior (rewrites, timeouts, certs) |
+| `annotations` | Controller-specific behaviour (rewrites, timeouts, certs) |
 
 ### Path Types
 
-| pathType | Matching behavior |
+| pathType | Matching behaviour |
 |----------|-------------------|
 | **Prefix** | Matches URL path prefix (`/api` matches `/api/users`) |
 | **Exact** | Exact path match only |

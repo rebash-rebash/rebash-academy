@@ -4,6 +4,7 @@ description: Linux learning track — 20 tutorials from fundamentals to producti
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: linux
 tags:
   - linux

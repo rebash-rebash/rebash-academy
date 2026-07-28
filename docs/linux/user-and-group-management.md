@@ -64,13 +64,13 @@ Each user has a numeric **UID** (User ID). UID 0 is root. System accounts typica
 
 Colon-separated fields (7 total):
 
-```
+```text
 username:x:UID:GID:comment:home_directory:login_shell
 ```
 
 Example:
 
-```
+```text
 alice:x:1001:1001:Alice DevOps:/home/alice:/bin/bash
 www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 ```
@@ -81,7 +81,7 @@ The `x` in the password field means the hash lives in `/etc/shadow` (shadow pass
 
 Stores password hashes and aging policy (readable by root only):
 
-```
+```text
 username:$6$salt$hash:18000:0:99999:7:::
 ```
 
@@ -99,7 +99,7 @@ Lock an account instantly: `sudo passwd -l username` or replace the hash with `!
 
 ### /etc/group
 
-```
+```text
 groupname:password:GID:user_list
 ```
 
@@ -121,7 +121,7 @@ Changes to group membership require the user to **log out and back in** (or run 
 
 Prefer granular rules:
 
-```
+```bash
 # Bad: full passwordless root
 alice ALL=(ALL) NOPASSWD: ALL
 
@@ -154,7 +154,7 @@ getent group $(id -gn)
 
 **Expected output:**
 
-```
+```text
 uid=1000(ubuntu) gid=1000(ubuntu) groups=1000(ubuntu),4(adm),27(sudo),...
 ubuntu
 ubuntu:x:1000:1000:Ubuntu:/home/ubuntu:/bin/bash
@@ -172,7 +172,7 @@ ls -ld /home/labuser1
 
 **Expected output:**
 
-```
+```text
 labuser1:x:1001:1001:Lab User One:/home/labuser1:/bin/bash
 drwxr-x--- 2 labuser1 labuser1 4096 Jul 27 11:00 /home/labuser1
 ```
@@ -189,7 +189,7 @@ id labapp
 
 **Expected output:**
 
-```
+```text
 labapp:x:999:987::/var/lib/labapp:/usr/sbin/nologin
 uid=999(labapp) gid=987(labapp) groups=987(labapp)
 ```
@@ -208,7 +208,7 @@ id labuser1
 
 **Expected output:**
 
-```
+```text
 labdev:x:1002:labuser1
 labuser1 : labuser1 labdev
 uid=1001(labuser1) gid=1001(labuser1) groups=1001(labuser1),1002(labdev)
@@ -228,7 +228,7 @@ sudo usermod -U labuser1          # unlock
 
 **Expected output:**
 
-```
+```text
 Renamed Lab User:/bin/sh
 labuser1 L 07/27/2026 0 99999 7 -1   # L = locked
 labuser1 P 07/27/2026 0 99999 7 -1   # P = password set, unlocked
@@ -247,7 +247,7 @@ sudo visudo -c
 
 **Expected output:**
 
-```
+```text
 labuser1 ALL=(root) NOPASSWD: /bin/systemctl status *
 /etc/sudoers.d/labuser1: parsed OK
 ```
@@ -268,7 +268,7 @@ sudo chage -l labuser1
 
 **Expected output:**
 
-```
+```text
 labuser1:$6$...:20300:0:99999:7:::
 Last password change                    : Jul 27, 2026
 Password expires                        : never
@@ -290,7 +290,7 @@ getent passwd labuser1 || echo "labuser1 removed"
 
 **Expected output:**
 
-```
+```text
 labuser1 removed
 ```
 

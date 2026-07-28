@@ -217,7 +217,7 @@ terraform destroy -input=false -auto-approve
 ## Common Mistakes
 
 !!! warning "Omitting `required_providers`"
-    Old implicit behavior is gone. **Fix:** Always declare source + version.
+    Old implicit behaviour is gone. **Fix:** Always declare source + version.
 
 !!! warning "Floating on latest with no constraint"
     Surprise breaking upgrades. **Fix:** Use `~>` in root modules.

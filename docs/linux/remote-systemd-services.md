@@ -179,7 +179,7 @@ Unit file edits still happen **on the server** — remote systemctl does not syn
 - Restrict `systemd-manager` SSH access by source IP in `sshd_config` (`Match Address`)
 - Never share the management private key across people — use individual keys mapped to the same polkit-scoped user, or separate users per team
 - Audit polkit and SSH logs centrally
-- Deny `daemon-reload` and `enable` unless platform team requires it — those change boot behavior
+- Deny `daemon-reload` and `enable` unless platform team requires it — those change boot behaviour
 
 ## Hands-on Lab
 
@@ -322,7 +322,7 @@ timeout 3 journalctl --host ${MGMT_USER}@${REMOTE} -u nginx -f --no-pager || tru
 
 Add to `~/.ssh/config`:
 
-```
+```text
 Host web-fleet
     HostName YOUR_REMOTE_IP
     User systemd-manager

@@ -111,7 +111,7 @@ DevOps engineers need networking literacy to:
 - **Design infrastructure** — choose subnet sizes, plan CIDR blocks, avoid overlapping IP ranges between on-premises and cloud
 - **Debug incidents** — trace whether failure is DNS, routing, firewall, or application-level
 - **Secure systems** — write security group rules, network policies, and WAF configurations with precise port and protocol knowledge
-- **Optimize performance** — distinguish latency problems from bandwidth bottlenecks; right-size load balancers and CDN configurations
+- **Optimise performance** — distinguish latency problems from bandwidth bottlenecks; right-size load balancers and CDN configurations
 - **Pass interviews and certifications** — AWS Solutions Architect, CKA, and LFCS all assume TCP/IP fluency
 
 You do not need to become a CCIE. You need a layered mental model and the ability to use tools like `ping`, `curl`, `dig`, `traceroute`, and `ss` — which we build across this entire track.

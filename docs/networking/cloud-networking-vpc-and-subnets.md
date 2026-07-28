@@ -465,7 +465,7 @@ resource "aws_route_table_association" "public" {
     Flow logs capture accepted/rejected traffic metadata to CloudWatch or S3. They are essential for security audits and troubleshooting — enable them before an incident, not after.
 
 !!! tip "Tag everything with Environment, Owner, and CostCenter"
-    Untagged VPC resources are the #1 source of cloud billing surprises. Enforce tagging policies via AWS Organizations SCPs or GCP organization constraints.
+    Untagged VPC resources are the #1 source of cloud billing surprises. Enforce tagging policies via AWS Organizations SCPs or GCP organisation constraints.
 
 !!! tip "Plan hybrid connectivity CIDR before first VPC"
     If you will connect on-premises via VPN or Direct Connect, coordinate IP ranges with your network team before allocating `10.0.0.0/16`. Overlapping CIDR blocks cannot be peered without NAT tricks that break end-to-end connectivity.
@@ -510,7 +510,7 @@ resource "aws_route_table_association" "public" {
 
 ??? tip "Sample Answers (Questions 2, 4, and 6)"
 
-    **Q2 — Public vs private subnet:** A subnet is public when its route table contains a route sending `0.0.0.0/0` to an internet gateway, and instances can obtain public IP addresses. "Public" describes routing behavior, not security level. A private subnet lacks a direct IGW route — instances use private RFC 1918 addresses only. Private subnets may still reach the internet outbound via NAT, but the internet cannot initiate connections to them.
+    **Q2 — Public vs private subnet:** A subnet is public when its route table contains a route sending `0.0.0.0/0` to an internet gateway, and instances can obtain public IP addresses. "Public" describes routing behaviour, not security level. A private subnet lacks a direct IGW route — instances use private RFC 1918 addresses only. Private subnets may still reach the internet outbound via NAT, but the internet cannot initiate connections to them.
 
     **Q4 — NAT gateway purpose:** Private instances have no public IP, so return traffic from internet destinations would have nowhere to route back. A NAT gateway in a public subnet translates outbound connections from private IPs to its own public IP (SNAT). Responses return to NAT, which forwards to the original private instance. Inbound-initiated connections still cannot reach private instances — that is the security property.
 

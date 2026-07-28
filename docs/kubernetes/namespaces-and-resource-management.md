@@ -1,6 +1,6 @@
 ---
 title: Namespaces and Resource Management
-description: Partition clusters with namespaces, enforce quotas and limits, organize multi-tenant workloads, and manage kubectl contexts for day-to-day operations.
+description: Partition clusters with namespaces, enforce quotas and limits, organise multi-tenant workloads, and manage kubectl contexts for day-to-day operations.
 difficulty: intermediate
 estimated_time: "35 min"
 author: Shaik Basha
@@ -26,7 +26,7 @@ comments: false
 
 A production Kubernetes cluster rarely runs a single application in isolation. Platform teams host dozens of teams — each with staging, production, and experimental workloads — on shared infrastructure. **Namespaces** are Kubernetes' primary mechanism for partitioning a cluster: they scope object names, enable RBAC boundaries, and anchor resource policies. Without namespaces, every Service name must be globally unique and a runaway batch job in one team can exhaust cluster memory for everyone.
 
-This tutorial covers namespace design, **ResourceQuota** and **LimitRange** enforcement, label-based organization, and kubectl context workflows. You will learn how SRE and platform engineers prevent noisy-neighbor problems while keeping developer self-service intact.
+This tutorial covers namespace design, **ResourceQuota** and **LimitRange** enforcement, label-based organisation, and kubectl context workflows. You will learn how SRE and platform engineers prevent noisy-neighbor problems while keeping developer self-service intact.
 
 This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Ingress and External Access](ingress-and-external-access.md) first — external routing and namespace-scoped Ingress rules go hand in hand.
 
@@ -495,7 +495,7 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
     The `default` namespace has no quota guardrails and confusing RBAC. Every production Deployment should live in a named namespace with quotas and LimitRange applied.
 
 !!! warning "Enabling ResourceQuota without LimitRange"
-    Quotas count **requests** and **limits**. Pods without resource fields may be rejected or count as zero — behavior depends on quota scope. Always pair quotas with LimitRange defaults.
+    Quotas count **requests** and **limits**. Pods without resource fields may be rejected or count as zero — behaviour depends on quota scope. Always pair quotas with LimitRange defaults.
 
 !!! warning "Identical Service names across namespaces without DNS awareness"
     `curl http://api` only resolves within the current namespace. Cross-namespace calls require the FQDN `api.other-ns.svc.cluster.local` or an Ingress rule.
@@ -554,7 +554,7 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 
     **Q2 — Requests vs limits:** Requests declare the minimum guaranteed resources a container needs. The scheduler sums requests across pods to find a node with enough allocatable capacity. Limits cap maximum usage at runtime — the kubelet enforces them via cgroups. A container can burst above its request up to its limit (for CPU, it may be throttled rather than killed).
 
-    **Q4 — LimitRange before quota:** ResourceQuota tracks aggregate requests and limits. If pods omit resource fields, admission behavior is inconsistent — some quotas reject them, others count zero usage allowing unbounded pods. LimitRange injects defaults so every pod has predictable resource declarations before quota enforcement is meaningful.
+    **Q4 — LimitRange before quota:** ResourceQuota tracks aggregate requests and limits. If pods omit resource fields, admission behaviour is inconsistent — some quotas reject them, others count zero usage allowing unbounded pods. LimitRange injects defaults so every pod has predictable resource declarations before quota enforcement is meaningful.
 
     **Q7 — Other quota resources:** Common hard limits include `pods`, `persistentvolumeclaims`, `services.loadbalancers`, `services.nodeports`, `count/deployments.apps`, and `requests.storage` for total PVC storage claims.
 

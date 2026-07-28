@@ -331,7 +331,7 @@ kubectl describe node $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}
 kubectl get cs 2>/dev/null || kubectl get --raw='/readyz?verbose' 2>/dev/null | head -20
 ```
 
-**Explanation:** Node **Conditions** report Ready, MemoryPressure, DiskPressure, PIDPressure. Component status checks (deprecated in favor of `/readyz`) verify scheduler and controller-manager health on some clusters.
+**Explanation:** Node **Conditions** report Ready, MemoryPressure, DiskPressure, PIDPressure. Component status checks (deprecated in favour of `/readyz`) verify scheduler and controller-manager health on some clusters.
 
 **Expected output:**
 

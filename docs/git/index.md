@@ -4,6 +4,7 @@ description: Git learning track — 20 tutorials from version control basics to 
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: git
 tags:
   - git

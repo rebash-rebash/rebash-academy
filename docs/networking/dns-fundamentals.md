@@ -100,14 +100,14 @@ www.api.example.com.
 |-------|---------|----------|
 | Root | `.` | Root server operators (13 logical clusters) |
 | TLD | `.com`, `.org`, `.io` | Registries (Verisign, etc.) |
-| Domain | `example.com` | Registrant / organization |
+| Domain | `example.com` | Registrant / organisation |
 | Subdomain | `api.example.com` | Domain owner via NS delegation |
 
 **Delegation** happens through **NS records** at each level. Parent zone says "ask these nameservers for child zone."
 
 ### Query Types: Recursive vs Iterative
 
-| Type | Who performs | Behavior |
+| Type | Who performs | Behaviour |
 |------|--------------|----------|
 | **Recursive** | Resolver on client's behalf | Client asks resolver; resolver chases referrals until final answer or NXDOMAIN |
 | **Iterative** | Each server in chain | Server returns best answer or referral to next level; querier continues |
@@ -271,7 +271,7 @@ curl -s -o /dev/null -w "%{http_code}\n" --connect-timeout 2 http://example.com 
 sudo sed -i '/127.0.0.99 example.com/d' /etc/hosts
 ```
 
-**Explanation:** `getent` uses nsswitch (sees hosts file); `dig` queries DNS directly. Demonstrates split behavior.
+**Explanation:** `getent` uses nsswitch (sees hosts file); `dig` queries DNS directly. Demonstrates split behaviour.
 
 **Expected output:**
 
@@ -406,7 +406,7 @@ done < "${1:?hostfile}"
 !!! warning "Assuming NXDOMAIN means typo only"
     NXDOMAIN can mean DNS hijacking, split-horizon misconfiguration, or wrong search domain appended.
 
-!!! warning "Ignoring search domain behavior"
+!!! warning "Ignoring search domain behaviour"
     With `search example.com`, querying `api` may resolve `api.example.com`. Unexpected suffixes cause "works on my laptop" bugs.
 
 !!! warning "Using nslookup in scripts"

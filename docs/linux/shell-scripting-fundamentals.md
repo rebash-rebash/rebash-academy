@@ -163,7 +163,7 @@ chmod +x ~/lab/scripts/hello.sh
 
 **Expected output:**
 
-```
+```text
 Hello, REBASH!
 Running as: youruser on yourhost
 Shell: 5.2.15(1)-release
@@ -513,7 +513,7 @@ done
 6. How would you iterate over all `.log` files in a directory, including paths with spaces?
 7. What exit code should a script return on success? What range is available?
 8. Why is `local` important inside functions?
-9. How does `pipefail` change the behavior of `cmd1 | cmd2` when `cmd1` fails?
+9. How does `pipefail` change the behaviour of `cmd1 | cmd2` when `cmd1` fails?
 10. Walk through how you would add a `--dry-run` flag to the backup script without executing `tar`.
 
 ## Related Tutorials

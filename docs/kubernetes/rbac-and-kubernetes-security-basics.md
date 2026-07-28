@@ -46,7 +46,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Create Roles and ClusterRoles with granular rules on resources and verbs
 - [ ] Bind Roles to users, groups, and ServiceAccounts via RoleBindings and ClusterRoleBindings
 - [ ] Scope developer access to specific namespaces using RBAC
-- [ ] Configure Pod ServiceAccounts and understand default token behavior
+- [ ] Configure Pod ServiceAccounts and understand default token behaviour
 - [ ] Apply security contexts for non-root containers and read-only filesystems
 - [ ] Audit RBAC with `kubectl auth can-i` and avoid overly permissive bindings
 

@@ -302,8 +302,8 @@ Confirm the lab before moving on:
 | `ps aux --sort=-%mem` | Processes by memory |
 | `ss -s` | Socket summary statistics |
 | `strace -p PID` | Trace system calls (advanced) |
-| `systemd-analyze blame` | Boot time per unit |
-| `systemd-analyze critical-chain` | Boot dependency chain |
+| `systemd-analyse blame` | Boot time per unit |
+| `systemd-analyse critical-chain` | Boot dependency chain |
 
 ## Code Examples
 

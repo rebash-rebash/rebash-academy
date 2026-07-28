@@ -124,7 +124,7 @@ Internet: Internet {
 
 **Zero trust** assumes no user, device, or network segment is inherently trustworthy — regardless of whether traffic originates inside or outside the corporate network. Core principles (NIST SP 800-207):
 
-1. **Verify explicitly** — authenticate and authorize every access request using all available data points (identity, device health, location, behavior)
+1. **Verify explicitly** — authenticate and authorize every access request using all available data points (identity, device health, location, behaviour)
 2. **Use least privilege access** — grant minimum permissions required; just-in-time (JIT) access for admin tasks
 3. **Assume breach** — design for lateral movement containment; segment networks; monitor continuously
 

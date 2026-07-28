@@ -19,7 +19,7 @@ comments: false
 
 ## Overview
 
-Meta-arguments change how resources are instantiated and updated. Prefer `for_each` over `count` for most cases, and use `lifecycle` to control create/destroy behavior safely.
+Meta-arguments change how resources are instantiated and updated. Prefer `for_each` over `count` for most cases, and use `lifecycle` to control create/destroy behaviour safely.
 
 This is **Tutorial 13** in **Module 4: Language Power Tools** of the REBASH Academy Terraform track.
 

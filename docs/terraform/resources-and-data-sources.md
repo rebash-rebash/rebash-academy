@@ -30,7 +30,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain manage vs read-only objects
 - [ ] Use resource addresses in expressions
 - [ ] Read files/metadata with data sources
-- [ ] Predict create/update/replace/destroy behaviors
+- [ ] Predict create/update/replace/destroy behaviours
 - [ ] Avoid using data sources for objects you should manage
 
 ## Prerequisites
@@ -63,7 +63,7 @@ Data sources run during plan/refresh and export attributes. They do **not** crea
 
 ### Replace vs update
 
-Some argument changes force **replacement** (destroy+create). Read provider docs for ForceNew behaviors. Prefer `for_each` friendly designs and `moved` blocks when renaming.
+Some argument changes force **replacement** (destroy+create). Read provider docs for ForceNew behaviours. Prefer `for_each` friendly designs and `moved` blocks when renaming.
 
 ### Why this topic matters in production
 

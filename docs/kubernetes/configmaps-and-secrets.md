@@ -165,7 +165,7 @@ spec:
             name: app-config
 ```
 
-| Method | Behavior |
+| Method | Behaviour |
 |--------|----------|
 | `env.valueFrom.configMapKeyRef` | Single key as env var |
 | `envFrom.configMapRef` | All keys as env vars |
@@ -386,7 +386,7 @@ kubectl run curl-test --image=curlimages/curl:8.5.0 -n lab-config --restart=Neve
 <html><body><h1>ConfigMap Volume Lab</h1></body></html>
 ```
 
-### Step 5 – Update ConfigMap and observe behavior
+### Step 5 – Update ConfigMap and observe behaviour
 
 **Command:**
 

@@ -120,7 +120,7 @@ Most cloud block storage (EBS, GCE PD) supports **RWO** only. Shared filesystems
 
 When a PVC is deleted, the bound PV's fate depends on reclaim policy:
 
-| Policy | Behavior |
+| Policy | Behaviour |
 |--------|----------|
 | **Delete** | PV and underlying storage asset deleted (default for dynamic provisioning) |
 | **Retain** | PV released but data preserved — manual cleanup required |
@@ -166,7 +166,7 @@ spec:
 
 ### Deployments vs StatefulSets with Storage
 
-| Pattern | Storage behavior |
+| Pattern | Storage behaviour |
 |---------|------------------|
 | **Deployment + single PVC** | Only one Pod can mount RWO volume — other replicas fail or stay pending |
 | **Deployment + RWX PVC** | Multiple Pods share one volume — requires shared filesystem |

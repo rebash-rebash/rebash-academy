@@ -506,7 +506,7 @@ fi
 | Tab completion not working | bash-completion not installed | Install package; verify shell is bash (`echo $SHELL`) |
 | `tail -f` shows nothing | File not growing or wrong path | Verify with `ls -l file`; check app is logging there |
 | `wc` counts differ from editor | Binary vs text line endings | Use `wc -l` on same file; check for `\r` with `file` |
-| History shows wrong commands | Multiple terminal sessions | Each session appends independently — expected behavior |
+| History shows wrong commands | Multiple terminal sessions | Each session appends independently — expected behaviour |
 
 ## Summary
 

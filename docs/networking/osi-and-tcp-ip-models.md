@@ -22,7 +22,7 @@ comments: false
 
 ## Overview
 
-When a user clicks "Checkout" in your web application, data traverses multiple layers of processing — from HTTP headers down to electrical signals on a wire — and back up again on the server. The **OSI model** (Open Systems Interconnection) and the **TCP/IP model** provide standardized frameworks for understanding this journey. They are not protocols themselves; they are **reference models** that describe how network communication is organized.
+When a user clicks "Checkout" in your web application, data traverses multiple layers of processing — from HTTP headers down to electrical signals on a wire — and back up again on the server. The **OSI model** (Open Systems Interconnection) and the **TCP/IP model** provide standardized frameworks for understanding this journey. They are not protocols themselves; they are **reference models** that describe how network communication is organised.
 
 For DevOps engineers, layered models are the single most useful troubleshooting framework. "Is this a Layer 7 problem or a Layer 3 problem?" determines whether you reach for `curl`, `dig`, `tcpdump`, or `ip route`. This tutorial explains both models, walks through **encapsulation** and **decapsulation**, and maps everyday tools to the layers they inspect.
 

@@ -54,7 +54,7 @@ This topic is primarily procedural. The mental model is a straight line from inp
 
 Each cron line has five time fields followed by the command:
 
-```
+```text
 ┌───────────── minute (0–59)
 │ ┌───────────── hour (0–23)
 │ │ ┌───────────── day of month (1–31)
@@ -138,7 +138,7 @@ crontab -l
 
 **Expected output:**
 
-```
+```text
 */2 * * * * date >> /tmp/cron-test.log
 ```
 
@@ -404,7 +404,7 @@ WantedBy=timers.target
 - Cron uses five-field syntax (minute, hour, day, month, weekday) for recurring schedules.
 - User crontabs (`crontab -e`) differ from system files in `/etc/crontab`, `/etc/cron.d`, and `/etc/cron.daily`.
 - Production cron jobs need absolute paths, logging, error handling, and optional locking to prevent overlap.
-- Systemd timers offer better observability and catch-up behavior — prefer them for system-level automation.
+- Systemd timers offer better observability and catch-up behaviour — prefer them for system-level automation.
 - Debug missed jobs by checking cron logs, verifying the daemon is running, and testing scripts manually as the target user.
 
 ## Interview Questions

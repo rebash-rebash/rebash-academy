@@ -141,7 +141,7 @@ Each line: `device UUID=... fs_type options dump pass`
 
 Example:
 
-```
+```text
 UUID=a1b2c3d4-...  /data  xfs  defaults,nofail  0  2
 ```
 
@@ -294,7 +294,7 @@ sudo umount ~/lab/mnt
 
 Example fstab line you would add for persistence (do not apply blindly):
 
-```
+```text
 /home/YOURUSER/lab/disk.img  /home/YOURUSER/lab/mnt  ext4  loop,defaults,nofail  0  2
 ```
 
@@ -503,7 +503,7 @@ sudo mount -a   # validates entries — fails loudly on error
 6. What does the `nofail` mount option do?
 7. A log file was deleted but disk space was not freed. Why, and how do you fix it?
 8. Can you shrink an XFS filesystem online? What about ext4?
-9. What does `du -x` do, and why is it useful when analyzing `/`?
+9. What does `du -x` do, and why is it useful when analysing `/`?
 10. What is the purpose of `pass` field values 0, 1, and 2 in fstab?
 
 ## Related Tutorials

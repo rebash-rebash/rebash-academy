@@ -27,7 +27,7 @@ comments: false
 
 A **reverse proxy** sits in front of backend servers and handles client requests on their behalf. Unlike a forward proxy (which protects clients), a reverse proxy protects and scales **servers**. It terminates TLS, routes requests by hostname or path, caches static assets, rate-limits abusive clients, and hides internal topology from the internet. Every production web stack uses reverse proxies — nginx in front of Node.js, HAProxy in front of microservices, AWS ALB acting as a managed reverse proxy, or Kubernetes **Ingress** controllers distributing HTTP traffic to pods.
 
-Confusing reverse proxies with load balancers causes architectural mistakes. Load balancers distribute connections across **multiple identical backends**; reverse proxies add **application-aware** behavior — URL rewriting, header injection, WebSocket upgrades, and authentication at the edge. In practice, one component often does both: an ALB load-balances and terminates TLS; nginx reverse-proxies and load-balances upstream pools.
+Confusing reverse proxies with load balancers causes architectural mistakes. Load balancers distribute connections across **multiple identical backends**; reverse proxies add **application-aware** behaviour — URL rewriting, header injection, WebSocket upgrades, and authentication at the edge. In practice, one component often does both: an ALB load-balances and terminates TLS; nginx reverse-proxies and load-balances upstream pools.
 
 This is **Tutorial 13** in **Module 4: Application Layer** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
@@ -328,7 +328,7 @@ sudo nginx -t && sudo systemctl reload nginx
 curl -sI http://127.0.0.1:8888/api/ | head -3
 ```
 
-**Explanation:** Path-based routing sends `/api/*` to a specific backend while `/` uses the pool. Note the trailing slash in `proxy_pass` — it affects URL rewriting behavior.
+**Explanation:** Path-based routing sends `/api/*` to a specific backend while `/` uses the pool. Note the trailing slash in `proxy_pass` — it affects URL rewriting behaviour.
 
 ### Step 5 – Simulate backend failure (502 Bad Gateway)
 

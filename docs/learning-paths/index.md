@@ -5,6 +5,7 @@ template: learning-paths.html
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: learning-paths
 tags:
   - learning-paths

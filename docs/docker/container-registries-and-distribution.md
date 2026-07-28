@@ -84,7 +84,7 @@ Key concepts:
 | **Tag** | Human-readable label pointing to a manifest (e.g., `v1.4.2`, `main-abc1234`) |
 | **Digest** | Immutable SHA256 hash of the manifest (e.g., `sha256:abc123...`) |
 | **Manifest** | JSON describing layers, config blob, and platform |
-| **Namespace** | Organization or project scope (`library/nginx`, `123456789012.dkr.ecr...`) |
+| **Namespace** | Organisation or project scope (`library/nginx`, `123456789012.dkr.ecr...`) |
 
 **Tags are mutable** — pushing `myapp:latest` again overwrites what `latest` points to. **Digests are immutable** — production deployments should pin digests or tags that are never reused.
 
@@ -95,7 +95,7 @@ Key concepts:
 - Public repositories (unlimited pulls with rate limits for anonymous users)
 - Private repositories (limited on free accounts; paid plans for teams)
 - Automated builds (legacy; most teams use CI instead)
-- Organization namespaces for team ownership
+- Organisation namespaces for team ownership
 
 Authentication uses `docker login docker.io` with a username and personal access token (PAT). Passwords are deprecated for CLI login; use Hub access tokens with appropriate scopes.
 

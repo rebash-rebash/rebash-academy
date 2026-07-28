@@ -48,7 +48,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Differentiate bare and non-bare repositories and when each is used
 - [ ] Add, rename, and remove remotes; understand `origin` conventions
 - [ ] Create mirror clones for backup and migration scenarios
-- [ ] Use shallow and single-branch clones to optimize CI performance
+- [ ] Use shallow and single-branch clones to optimise CI performance
 - [ ] Bootstrap an infrastructure-as-code repository with sensible initial structure
 - [ ] Troubleshoot common clone and permission failures in enterprise environments
 
@@ -479,7 +479,7 @@ git push -u origin main
 
 - **`git init`** creates a new repo locally; **`git clone`** copies an existing remote repository with `origin` preconfigured
 - **Bare repositories** have no working directory — used for servers, mirrors, and push targets; **non-bare** repos are for daily development
-- **Shallow clones** (`--depth 1`) optimize CI; **mirror clones** preserve all refs for backup and migration
+- **Shallow clones** (`--depth 1`) optimise CI; **mirror clones** preserve all refs for backup and migration
 - Bootstrap IaC repos with `.gitignore`, README, and directory structure **before** the first commit
 - **Remotes** name collaboration endpoints; `git push -u origin main` establishes upstream tracking
 - Clone failures are often authentication or networking issues — verify SSH, PAT, and connectivity first

@@ -44,7 +44,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Install Git on Debian/Ubuntu, RHEL-family, and macOS using official or PPA sources
 - [ ] Verify installation and locate the Git binary and system configuration files
 - [ ] Configure global and repository-local identity (`user.name`, `user.email`)
-- [ ] Set productive defaults: default branch, editor, pull behavior, and whitespace handling
+- [ ] Set productive defaults: default branch, editor, pull behaviour, and whitespace handling
 - [ ] Generate SSH key pairs and register them with GitHub or GitLab
 - [ ] Configure HTTPS credential helpers securely for automation and interactive use
 - [ ] Understand configuration precedence: system, global, local, and environment variables
@@ -121,7 +121,7 @@ Repository-local config overrides global — useful when a contractor uses a per
 | `fetch.prune` | `true` | Removes stale remote-tracking branches after fetch |
 | `core.autocrlf` | `input` (Linux/macOS) | Prevents CRLF corruption in shell scripts and Terraform |
 | `core.editor` | `vim`, `nano`, or `code --wait` | Required for interactive rebase and commit amend |
-| `color.ui` | `auto` | Readable diffs in terminal |
+| `colour.ui` | `auto` | Readable diffs in terminal |
 | `push.default` | `simple` | Push current branch to matching remote branch only |
 | `rebase.autoStash` | `true` | Stash local changes before rebase automatically |
 
@@ -244,7 +244,7 @@ git config --global push.default simple
 git config --global rebase.autoStash true
 ```
 
-**Explanation:** These defaults match common team policies. Align `pull.rebase` with your organization's documented workflow.
+**Explanation:** These defaults match common team policies. Align `pull.rebase` with your organisation's documented workflow.
 
 **Expected output:**
 
@@ -453,7 +453,7 @@ Register it: `git config --global core.excludesfile ~/.gitignore_global`
 ## Best Practices
 
 !!! tip "Pin Git version in CI Dockerfiles"
-    Document `git --version` in build logs. Unexpected upgrades have changed default behaviors (e.g., `safe.directory`).
+    Document `git --version` in build logs. Unexpected upgrades have changed default behaviours (e.g., `safe.directory`).
 
 !!! tip "Use separate SSH keys per purpose"
     One key for personal GitHub, one deploy key per repo (read-only for CI), one for production bastion — limits blast radius if a key leaks.

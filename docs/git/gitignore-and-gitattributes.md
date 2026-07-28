@@ -37,7 +37,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Write `.gitignore` patterns for common DevOps stacks
 - [ ] Understand gitignore precedence and negation rules
 - [ ] Remove accidentally tracked files from Git history scope
-- [ ] Configure `.gitattributes` for line endings and diff behavior
+- [ ] Configure `.gitattributes` for line endings and diff behaviour
 - [ ] Mark binary files and generated files appropriately
 - [ ] Use global gitignore for personal editor files
 - [ ] Apply linguist and export-ignore attributes for GitHub
@@ -381,7 +381,7 @@ crash.*.log
 - **.gitignore** excludes files from tracking — essential for secrets, build output, and local state
 - **Negation patterns** (`!`) re-include specific files under broad rules
 - **git rm --cached** stops tracking without deleting local files
-- **.gitattributes** controls line endings, binary handling, and diff/merge behavior
+- **.gitattributes** controls line endings, binary handling, and diff/merge behaviour
 - DevOps repos need stack-specific patterns for Terraform, Python, Node, and secrets
 
 ## Interview Questions

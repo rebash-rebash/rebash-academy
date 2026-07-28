@@ -23,7 +23,7 @@ comments: false
 
 ## Overview
 
-A **Docker image** is the immutable artifact that CI pipelines build, security scanners analyze, and production orchestrators deploy. Unlike containers — which are ephemeral running instances — images are **versioned, shareable, and cached**. When a deployment fails, rolling back means pulling a previous image tag. When a CVE is announced, identifying affected services starts with `docker images` and registry digests.
+A **Docker image** is the immutable artifact that CI pipelines build, security scanners analyse, and production orchestrators deploy. Unlike containers — which are ephemeral running instances — images are **versioned, shareable, and cached**. When a deployment fails, rolling back means pulling a previous image tag. When a CVE is announced, identifying affected services starts with `docker images` and registry digests.
 
 This tutorial covers the complete image workflow: **pull** from registries, **tag** for environment promotion, **inspect** metadata and layers, **remove** unused images safely, and understand how **layers** and **digests** enable reproducible DevOps pipelines.
 
@@ -268,7 +268,7 @@ docker history nginx:1.25-alpine
 docker history nginx:1.25-alpine --human=true | head -8
 ```
 
-**Explanation:** History maps layers to build steps. Large layers indicate optimization opportunities (covered in Dockerfile tutorials).
+**Explanation:** History maps layers to build steps. Large layers indicate optimisation opportunities (covered in Dockerfile tutorials).
 
 **Expected output:**
 

@@ -168,7 +168,7 @@ hostname -I
 
 **Expected output:**
 
-```
+```text
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> ...
     inet 10.0.0.42/24 brd 10.0.0.255 scope global eth0
 ```
@@ -184,7 +184,7 @@ ip route get 8.8.8.8
 
 **Expected output:**
 
-```
+```text
 default via 10.0.0.1 dev eth0
 10.0.0.0/24 dev eth0 proto kernel scope link src 10.0.0.42
 8.8.8.8 via 10.0.0.1 dev eth0 src 10.0.0.42
@@ -233,7 +233,7 @@ sudo ss -tulpn | head -15
 
 **Expected output:**
 
-```
+```text
 Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
 tcp   LISTEN 0      128    0.0.0.0:22           0.0.0.0:*
 tcp   LISTEN 0      511    127.0.0.1:6379       0.0.0.0:*

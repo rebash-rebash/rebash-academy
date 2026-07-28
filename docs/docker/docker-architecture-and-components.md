@@ -47,7 +47,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify how runc creates the actual container process using OCI specs
 - [ ] Explain image layers, overlay2 storage, and copy-on-write semantics
 - [ ] Relate Docker components to Kubernetes CRI and alternative runtimes (CRI-O, Podman)
-- [ ] Use inspection commands to trace component behavior on a live host
+- [ ] Use inspection commands to trace component behaviour on a live host
 
 ## Architecture
 
@@ -235,7 +235,7 @@ Modern Docker builds use **BuildKit** (default since Docker 23): parallel stages
 
 ## Hands-on Lab
 
-Explore live component behavior on your Docker host. All commands assume Docker is installed from the previous tutorial.
+Explore live component behaviour on your Docker host. All commands assume Docker is installed from the previous tutorial.
 
 ### Step 1 – Inspect client and server versions
 

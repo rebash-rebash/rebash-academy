@@ -43,7 +43,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe Docker's default bridge network and its limitations
 - [ ] Create and attach containers to user-defined bridge networks
 - [ ] Explain the difference between bridge, host, and none network drivers
-- [ ] Publish container ports with `-p` and understand NAT behavior
+- [ ] Publish container ports with `-p` and understand NAT behaviour
 - [ ] Use container names and aliases for DNS-based discovery
 - [ ] Inspect networks with `docker network` commands and diagnose connectivity issues
 
@@ -107,7 +107,7 @@ This tutorial focuses on **bridge** and **host** — the drivers you use daily b
 
 - Created automatically at Docker daemon start
 - Containers get IP on `172.17.0.0/16` typically
-- **No automatic DNS** between containers by name (legacy behavior)
+- **No automatic DNS** between containers by name (legacy behaviour)
 - All default-bridge containers share one L2 domain
 
 **User-defined bridge:**

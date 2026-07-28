@@ -44,7 +44,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify your distribution, kernel version, and hardware architecture using CLI tools
 - [ ] Articulate why Linux dominates cloud, containers, and DevOps tooling
 - [ ] Locate key system directories and understand their role at a high level
-- [ ] Analyze boot performance using `systemd-analyze` on systemd-based systems
+- [ ] Analyse boot performance using `systemd-analyse` on systemd-based systems
 
 ## Architecture
 
@@ -152,7 +152,7 @@ Several factors make Linux the default for infrastructure:
 - **Stability and uptime** — Designed for long-running server workloads; kernel hot-patching exists on enterprise distros
 - **Automation-friendly** — Everything configurable via text files in `/etc`; perfect for Ansible, Terraform, and GitOps
 - **Container native** — Docker and Kubernetes run Linux containers using kernel features (namespaces, cgroups)
-- **Cloud default** — AWS Amazon Linux, GCP Container-Optimized OS, Azure Linux — all Linux-based
+- **Cloud default** — AWS Amazon Linux, GCP Container-Optimised OS, Azure Linux — all Linux-based
 - **Tooling ecosystem** — `systemd`, `journalctl`, `iptables`/`nftables`, `ss`, `strace` — the debugging toolkit assumes Linux
 
 If you learn Linux deeply, you learn the substrate that Docker, Kubernetes, Terraform providers, and CI runners all assume.
@@ -228,7 +228,7 @@ Operating System: Ubuntu 24.04.1 LTS
     Architecture: x86-64
 ```
 
-### Step 4 – Analyze boot time (systemd systems)
+### Step 4 – Analyse boot time (systemd systems)
 
 **Command:**
 
@@ -251,7 +251,7 @@ graphical.target reached after 8.401s in userspace.
     ...
 ```
 
-If `systemd-analyze` is not found, your system may use a different init (rare on modern distros) — note this for your environment documentation.
+If `systemd-analyse` is not found, your system may use a different init (rare on modern distros) — note this for your environment documentation.
 
 ### Step 5 – Explore the root filesystem layout
 
@@ -357,8 +357,8 @@ Confirm the lab before moving on:
 | `cat /etc/os-release` | Distribution name, version, and ID | `cat /etc/os-release` |
 | `hostnamectl` | Hostname, OS, kernel, virtualization | `hostnamectl` |
 | `lsb_release -a` | LSB release info (Debian/Ubuntu) | `lsb_release -a` |
-| `systemd-analyze` | Boot time breakdown | `systemd-analyze` |
-| `systemd-analyze blame` | Slowest systemd units at boot | `systemd-analyze blame \| head` |
+| `systemd-analyse` | Boot time breakdown | `systemd-analyse` |
+| `systemd-analyse blame` | Slowest systemd units at boot | `systemd-analyse blame \| head` |
 | `systemd-detect-virt` | Detect VM/container/bare metal | `systemd-detect-virt` |
 | `ps -p 1` | Show PID 1 (init system) | `ps -p 1 -o comm=` |
 | `dmesg` | Kernel ring buffer messages | `dmesg \| tail -20` |
@@ -471,13 +471,13 @@ Use this in deployment scripts to assert the target environment before running A
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| `systemd-analyze: command not found` | Non-systemd init or minimal container | Use `who -b` for boot time; check PID 1 with `ps -p 1` |
+| `systemd-analyse: command not found` | Non-systemd init or minimal container | Use `who -b` for boot time; check PID 1 with `ps -p 1` |
 | `/etc/os-release` missing | Very old or non-standard system | Try `lsb_release -a`, `cat /etc/redhat-release`, or `hostnamectl` |
 | `dmesg: read kernel buffer failed: Operation not permitted` | Insufficient privileges or container restriction | Run with `sudo dmesg` or check host logs from hypervisor/cloud console |
 | Boot hangs at "Loading initial ramdisk" | Corrupt initramfs or disk failure | Boot previous kernel from GRUB menu; regenerate initramfs with `update-initramfs` (Debian) or `dracut` (RHEL) |
 | Wrong kernel running after update | GRUB default entry not updated | Run `sudo update-grub` (Debian/Ubuntu) and verify `/boot` has free space |
 | `hostnamectl` shows wrong virtualization | Nested virt or custom hypervisor | Cross-check with `dmidecode -s system-product-name` (requires root) |
-| Cloud instance unreachable after reboot | Network service slow to start | Check `systemd-analyze blame` for `NetworkManager-wait-online`; consider timeout tuning |
+| Cloud instance unreachable after reboot | Network service slow to start | Check `systemd-analyse blame` for `NetworkManager-wait-online`; consider timeout tuning |
 
 ## Summary
 
@@ -486,7 +486,7 @@ Use this in deployment scripts to assert the target environment before running A
 - Use `cat /etc/os-release`, `uname -r`, and `hostnamectl` to identify any system quickly
 - Linux dominates cloud and DevOps because it is open, automatable, stable, and the foundation of containers
 - PID 1 determines your service management model — verify it before assuming systemd
-- Kernel messages in `dmesg` and boot analysis via `systemd-analyze` are essential troubleshooting tools
+- Kernel messages in `dmesg` and boot analysis via `systemd-analyse` are essential troubleshooting tools
 
 ## Interview Questions
 
@@ -507,7 +507,7 @@ Use this in deployment scripts to assert the target environment before running A
 
     **Q4 — PID 1 and init:** PID 1 is the first process started by the kernel after boot; it never exits because the kernel panics if PID 1 dies. It reaps zombie processes and starts all other services. Check with `ps -p 1 -o comm=`. On modern servers the answer is usually `systemd`, which reads unit files and manages dependencies, targets, and logging via journald.
 
-    **Q7 — Slow boot investigation:** Run `systemd-analyze` for the overall breakdown, then `systemd-analyze blame` to rank units by time. Common culprits: `NetworkManager-wait-online` waiting for DHCP, filesystem checks on large disks, and misconfigured services with long timeouts. Use `systemd-analyze critical-chain` to see dependency chains. Fix by adjusting unit timeouts, making services async, or fixing network config — never disable security updates to shave boot seconds.
+    **Q7 — Slow boot investigation:** Run `systemd-analyse` for the overall breakdown, then `systemd-analyse blame` to rank units by time. Common culprits: `NetworkManager-wait-online` waiting for DHCP, filesystem checks on large disks, and misconfigured services with long timeouts. Use `systemd-analyse critical-chain` to see dependency chains. Fix by adjusting unit timeouts, making services async, or fixing network config — never disable security updates to shave boot seconds.
 
 ## Related Tutorials
 
@@ -519,8 +519,8 @@ Use this in deployment scripts to assert the target environment before running A
 ## References
 
 - [The Linux Kernel Archives](https://www.kernel.org/) — official kernel source and documentation
-- [Linux man pages online](https://man7.org/linux/man-pages/) — `man uname`, `man systemd-analyze`, `man hostnamectl`
-- [systemd boot analysis](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [Linux man pages online](https://man7.org/linux/man-pages/) — `man uname`, `man systemd-analyse`, `man hostnamectl`
+- [systemd boot analysis](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyse.html)
 - [Filesystem Hierarchy Standard (FHS 3.0)](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
 - [UEFI Specification](https://uefi.org/specifications) — firmware boot interface
 - [REBASH Academy – Linux Overview](index.md)

@@ -189,7 +189,7 @@ PEND: Pending
 
 ### Restart Policies
 
-| Policy | Behavior | Typical use |
+| Policy | Behaviour | Typical use |
 |--------|----------|-------------|
 | **Always** | Restart on any exit | Long-running apps (default for Deployments) |
 | **OnFailure** | Restart only on non-zero exit | Batch, init-heavy Pods |

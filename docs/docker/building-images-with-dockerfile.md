@@ -25,7 +25,7 @@ comments: false
 
 Running `docker run nginx` pulls a pre-built image. Production workflows require **building your own images** — packaging application code, dependencies, and runtime configuration into an immutable artifact that runs identically on a laptop, CI runner, and production host. A **Dockerfile** is the declarative recipe: a text file of instructions that `docker build` executes layer by layer.
 
-This tutorial is **Tutorial 6** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. You will write Dockerfiles from scratch, understand how each instruction affects image layers, use build context and `.dockerignore` efficiently, and build a runnable web application image. For optimization patterns, see [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md).
+This tutorial is **Tutorial 6** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. You will write Dockerfiles from scratch, understand how each instruction affects image layers, use build context and `.dockerignore` efficiently, and build a runnable web application image. For optimisation patterns, see [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md).
 
 ## Prerequisites
 
@@ -129,7 +129,7 @@ The final `.` is the **build context** — the directory sent to the Docker daem
 
 Prefer **`COPY`** for straightforward file transfer. Use **`ADD`** only when you need automatic extraction of local tar archives or fetching remote URLs (discouraged — use multi-stage `curl` in `RUN` with checksum verification instead).
 
-### Layer Caching Behavior
+### Layer Caching Behaviour
 
 Docker caches each instruction's result. If instruction text **and** all files it depends on are unchanged, Docker reuses the cached layer.
 
@@ -427,7 +427,7 @@ Run: `docker run myecho` prints `default message`; `docker run myecho hello` pri
 ## Common Mistakes
 
 !!! warning "Using `ADD` when `COPY` suffices"
-    `ADD` has surprising tar-extraction behavior. Use `COPY` unless you explicitly need extraction.
+    `ADD` has surprising tar-extraction behaviour. Use `COPY` unless you explicitly need extraction.
 
 !!! warning "Running as root in production images"
     Default user is root. Add a non-root `USER` after installing dependencies — covered in depth in the best practices tutorial.

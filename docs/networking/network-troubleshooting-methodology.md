@@ -235,7 +235,7 @@ curl -sv --connect-timeout 5 https://example.com/ 2>&1 | head -30
 curl -sv --connect-timeout 5 http://example.com/ 2>&1 | head -20
 ```
 
-**Explanation:** Note HTTP status, TLS handshake, redirect behavior, and total time. Compare HTTP vs HTTPS failures.
+**Explanation:** Note HTTP status, TLS handshake, redirect behaviour, and total time. Compare HTTP vs HTTPS failures.
 
 **Expected output:**
 

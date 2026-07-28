@@ -78,7 +78,7 @@ This topic is primarily procedural. The mental model is a straight line from inp
 
 **Debian/Ubuntu** — files in `/etc/apt/sources.list` and `/etc/apt/sources.list.d/`:
 
-```
+```text
 deb http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse
 deb http://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse
 ```
@@ -449,7 +449,7 @@ Confirm the lab before moving on:
 
 ### apt pin file for version lock
 
-```
+```bash
 # /etc/apt/preferences.d/nginx-pin
 Package: nginx
 Pin: version 1.24.0-2ubuntu7.3

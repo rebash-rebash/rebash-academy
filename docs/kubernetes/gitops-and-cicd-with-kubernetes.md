@@ -157,7 +157,7 @@ Both are production-grade. This tutorial uses **Argo CD** for labs; Flux pattern
 
 ### Sync policies and health
 
-Argo CD Application spec controls behavior:
+Argo CD Application spec controls behaviour:
 
 | Policy | Effect |
 |--------|--------|

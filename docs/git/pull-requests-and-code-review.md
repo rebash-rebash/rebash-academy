@@ -186,7 +186,7 @@ Mark WIP PRs as **Draft** — signals reviewers to wait. Convert to ready when C
 | **Bitbucket** | Pull Request | Jira smart commits, default reviewers |
 | **Azure DevOps** | Pull Request | Work item linking, branch policies |
 
-Regardless of platform, the Git operations underneath — push branch, diff against base, merge — are identical. Skills from this tutorial transfer when your organization changes hosting providers.
+Regardless of platform, the Git operations underneath — push branch, diff against base, merge — are identical. Skills from this tutorial transfer when your organisation changes hosting providers.
 
 ### Required Status Checks
 

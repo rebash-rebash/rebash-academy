@@ -246,7 +246,7 @@ scan-image:
 
 GitLab shared runners enable DinD when the runner executor supports it. Self-hosted runners need `privileged = true` in `config.toml` for the Docker executor.
 
-### Lab 3 — Multi-stage Dockerfile optimized for CI
+### Lab 3 — Multi-stage Dockerfile optimised for CI
 
 Ensure your Dockerfile leverages layer caching:
 

@@ -333,7 +333,7 @@ Confirm the lab before moving on:
 
 ## Best Practices
 
-!!! tip "Optimize for merge frequency, not branch count"
+!!! tip "Optimise for merge frequency, not branch count"
     Integrate to main daily; reduce merge conflict cost.
 
 !!! tip "Separate environment config from branch strategy"

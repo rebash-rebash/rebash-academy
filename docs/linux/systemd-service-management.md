@@ -38,7 +38,7 @@ By the end of this tutorial, you will be able to:
 
 - [ ] Explain systemd unit types and the sections of a `.service` unit file
 - [ ] Control service lifecycle with `systemctl start/stop/restart/reload`
-- [ ] Enable, disable, and mask services for boot-time behavior
+- [ ] Enable, disable, and mask services for boot-time behaviour
 - [ ] Write and install a custom systemd service unit
 - [ ] Reload unit definitions with `daemon-reload` after configuration changes
 - [ ] Diagnose failed services using `systemctl status` and `journalctl`
@@ -185,7 +185,7 @@ systemctl list-unit-files --type=service --state=enabled | head -10
 
 **Expected output:**
 
-```
+```text
 UNIT                          LOAD   ACTIVE SUB     DESCRIPTION
 ssh.service                   loaded active running OpenBSD Secure Shell server
 systemd-journald.service      loaded active running Journal Service
@@ -208,7 +208,7 @@ systemctl is-enabled ssh 2>/dev/null || systemctl is-enabled sshd
 
 **Expected output:**
 
-```
+```text
 ● ssh.service - OpenBSD Secure Shell server
      Loaded: loaded (/usr/lib/systemd/system/ssh.service; enabled; preset: enabled)
      Active: active (running) since Mon 2026-07-27 09:00:01 UTC; 5h ago
@@ -243,7 +243,7 @@ systemctl is-active nginx 2>/dev/null
 
 **Expected output:**
 
-```
+```text
 Stopped
 Started
 Restarted
@@ -264,7 +264,7 @@ systemctl is-enabled nginx 2>/dev/null
 
 **Expected output:**
 
-```
+```text
 disabled
 enabled
 ```
@@ -311,7 +311,7 @@ systemctl status labdaemon.service --no-pager
 
 **Expected output:**
 
-```
+```text
 Created symlink .../multi-user.target.wants/labdaemon.service → ...
 ● labdaemon.service - REBASH Lab Daemon
      Loaded: loaded (/etc/systemd/system/labdaemon.service; enabled; ...)
@@ -328,7 +328,7 @@ tail -3 /var/log/labdaemon.log
 
 **Expected output:**
 
-```
+```text
 Jul 27 14:45:01 hostname labdaemon.sh[6010]: (no stdout — app logs to file)
 ```
 
@@ -360,7 +360,7 @@ sudo systemctl daemon-reload
 
 **Expected output:**
 
-```
+```text
 ○ labdaemon.service
      Loaded: masked (/dev/null; masked)
      Active: inactive (dead)
@@ -511,8 +511,8 @@ fi
 !!! tip "Pair status with journalctl during incidents"
     `systemctl status UNIT -l --no-pager` plus `journalctl -u UNIT -b -p err -n 100` is the standard triage pattern.
 
-!!! tip "Test with systemd-analyze"
-    `systemd-analyze verify /etc/systemd/system/myapp.service` catches unit syntax errors before deployment.
+!!! tip "Test with systemd-analyse"
+    `systemd-analyse verify /etc/systemd/system/myapp.service` catches unit syntax errors before deployment.
 
 ## Troubleshooting
 

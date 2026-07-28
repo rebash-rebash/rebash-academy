@@ -21,7 +21,7 @@ comments: false
 ## Overview
 
 HashiCorp Configuration Language (HCL) is how you declare infrastructure. Unlike general-purpose
-languages, HCL is optimized for **blocks of configuration** with arguments, nested blocks, and
+languages, HCL is optimised for **blocks of configuration** with arguments, nested blocks, and
 expressions that reference other objects.
 
 This tutorial builds fluency: block types, labels, types, strings, collections, references, and
@@ -37,7 +37,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Differentiate arguments (you set) from attributes (provider exports)
 - [ ] Write typed expressions for strings, numbers, bools, lists, maps, and objects
 - [ ] Reference resources with address syntax like local_file.demo.content
-- [ ] Organize a root module across versions.tf, variables.tf, main.tf, outputs.tf
+- [ ] Organise a root module across versions.tf, variables.tf, main.tf, outputs.tf
 
 ## Prerequisites
 

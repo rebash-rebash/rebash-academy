@@ -26,7 +26,7 @@ comments: false
 
 ## Overview
 
-Knowing how DNS resolution works is half the battle — the other half is understanding **record types**, **TTL behavior**, and **zone configuration**. A misconfigured **CNAME at the zone apex**, an expired **MX record**, or a stale **TXT** entry for domain verification can take production offline or block email delivery for hours. DevOps engineers create and debug DNS records constantly: load balancer aliases, ACM certificate validation, SPF/DKIM, Kubernetes Ingress hostnames, and CDN cutovers.
+Knowing how DNS resolution works is half the battle — the other half is understanding **record types**, **TTL behaviour**, and **zone configuration**. A misconfigured **CNAME at the zone apex**, an expired **MX record**, or a stale **TXT** entry for domain verification can take production offline or block email delivery for hours. DevOps engineers create and debug DNS records constantly: load balancer aliases, ACM certificate validation, SPF/DKIM, Kubernetes Ingress hostnames, and CDN cutovers.
 
 This tutorial is **Tutorial 9** in **Module 3: Transport & DNS** of the REBASH Academy Networking series. You will learn every common record type, query them with **`dig`**, build systematic troubleshooting workflows, and avoid pitfalls that cause propagation delays and split-horizon confusion. Complete [DNS Fundamentals](dns-fundamentals.md) first.
 
@@ -86,7 +86,7 @@ Client: Client {
 
 A **DNS zone** is the administrative boundary for a domain (e.g., `example.com`). **Authoritative nameservers** host the zone and answer queries from resolvers. Each record is a tuple:
 
-```
+```text
 name  TTL  class  type  rdata
 ```
 
@@ -133,7 +133,7 @@ Critical constraints:
 
 **MX** records direct email to mail servers with a **priority** (lower = preferred):
 
-```
+```text
 example.com.  3600  IN  MX  10  mail1.example.com.
 example.com.  3600  IN  MX  20  mail2.example.com.
 ```
@@ -266,7 +266,7 @@ dig @$AUTH_NS example.com SOA +noall +answer
 dig @$AUTH_NS example.com A +norecurse +noall +answer
 ```
 
-**Explanation:** Querying authoritative NS bypasses resolver cache — shows current zone data. `+norecurse` ensures iterative behavior.
+**Explanation:** Querying authoritative NS bypasses resolver cache — shows current zone data. `+norecurse` ensures iterative behaviour.
 
 ### Step 6 – Reverse DNS lookup
 
@@ -411,7 +411,7 @@ IP=$(dig +short "$DOMAIN" A | head -1)
 | Internal works, external fails | Split-horizon misconfiguration | Align internal and external zones; test both resolvers |
 | Intermittent resolution | Unstable NS or lame delegation | Verify all NS in glue records respond; fix delegation |
 | Slow DNS lookups | Long CNAME chain | Flatten to A/AAAA; reduce hops |
-| `dig` differs from app behavior | `/etc/hosts` or nsswitch override | Compare `getent hosts` vs `dig`; inspect nsswitch.conf |
+| `dig` differs from app behaviour | `/etc/hosts` or nsswitch override | Compare `getent hosts` vs `dig`; inspect nsswitch.conf |
 
 ## Summary
 

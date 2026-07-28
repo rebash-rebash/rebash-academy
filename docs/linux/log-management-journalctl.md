@@ -139,7 +139,7 @@ journalctl -n 20 --no-pager
 
 **Expected output (sample):**
 
-```
+```text
 Jul 27 14:02:11 lab-server systemd[1]: Started Daily apt download activities.
 Jul 27 14:02:12 lab-server sshd[1240]: Accepted publickey for ubuntu from 10.0.1.5
 Jul 27 14:02:15 lab-server kernel: eth0: link up
@@ -197,7 +197,7 @@ journalctl -b -1 -n 15 --no-pager
 
 **Expected output:**
 
-```
+```text
 IDX BOOT ID                          FIRST ENTRY                 LAST ENTRY
  -1 abc123...                         Mon 2026-07-26 09:00:01     Mon 2026-07-27 08:59:58
   0 def456...                         Mon 2026-07-27 09:00:02     Mon 2026-07-27 14:30:00
@@ -225,7 +225,7 @@ sudo ls -lh /var/log/journal/ 2>/dev/null || echo "Persistent journal not enable
 
 **Expected output:**
 
-```
+```text
 Archived and active journals take up 48.0M in the file system.
 ```
 
@@ -342,7 +342,7 @@ echo "Exported to $OUT"
 ## Common Mistakes
 
 !!! warning "Assuming logs survive reboot without persistent storage"
-    Default volatile journals in `/run/log/journal/` are lost on reboot. Enable `Storage=persistent` on servers you need to forensically analyze after incidents.
+    Default volatile journals in `/run/log/journal/` are lost on reboot. Enable `Storage=persistent` on servers you need to forensically analyse after incidents.
 
 !!! warning "Using grep on binary journal files directly"
     Never `grep` files under `/var/log/journal/` — they are binary. Always use `journalctl` for queries.

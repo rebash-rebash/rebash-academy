@@ -205,7 +205,7 @@ bash -c 'echo "LOCAL_VAR=${LOCAL_VAR:-empty}"; echo "GLOBAL_VAR=$GLOBAL_VAR"'
 
 **Expected output:**
 
-```
+```text
 LOCAL_VAR=empty
 GLOBAL_VAR=exported
 ```
@@ -227,7 +227,7 @@ hello-rebash
 
 **Expected output:**
 
-```
+```text
 /home/you/bin/hello-rebash
 Hello from custom bin
 ```
@@ -278,7 +278,7 @@ bash --login -c 'echo $REBASH_ACADEMY'
 
 **Expected output:**
 
-```
+```text
 linux-module-6
 ```
 

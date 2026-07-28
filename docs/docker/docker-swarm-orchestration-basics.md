@@ -109,7 +109,7 @@ Managers: Managers {
 
 ### Service modes
 
-| Mode | Behavior | Example |
+| Mode | Behaviour | Example |
 |------|----------|---------|
 | **replicated** | N identical tasks across cluster | Web API with 3 replicas |
 | **global** | One task per node | Log agent, monitoring exporter |

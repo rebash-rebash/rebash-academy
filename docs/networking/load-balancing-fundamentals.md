@@ -336,7 +336,7 @@ sudo systemctl restart haproxy
 grep balance /etc/haproxy/haproxy.cfg
 ```
 
-**Explanation:** `leastconn` minimizes active connections per backend — observe behavior under concurrent long requests in advanced labs.
+**Explanation:** `leastconn` minimizes active connections per backend — observe behaviour under concurrent long requests in advanced labs.
 
 ### Step 7 – Explore AWS ALB concepts (CLI or console)
 
@@ -454,7 +454,7 @@ server {
 |-------|-------|----------|
 | 502 Bad Gateway | No healthy backends | Check target health, SG rules, health check path/port |
 | Uneven traffic distribution | Sticky sessions, IP hash, or long connections | Expected for leastconn/IP hash; verify algorithm choice |
-| Health check flapping | Timeout too short, slow app, threshold too low | Increase timeout/threshold; optimize health endpoint |
+| Health check flapping | Timeout too short, slow app, threshold too low | Increase timeout/threshold; optimise health endpoint |
 | Clients see wrong backend content | Session state on server without stickiness | Externalize sessions (Redis) or enable cookie stickiness |
 | NLB targets unreachable | Wrong target type (instance vs IP), SG mismatch | Verify target registration and SG allows LB subnets |
 | SSL errors at ALB | Certificate mismatch, wrong listener | Check ACM cert covers Host header; verify listener protocol |

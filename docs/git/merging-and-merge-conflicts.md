@@ -171,7 +171,7 @@ Cleaner main history; loses individual commit granularity on main.
 
 ### Merge Strategies
 
-| Strategy | Behavior |
+| Strategy | Behaviour |
 |----------|----------|
 | `recursive` (default) | Three-way merge for two branches |
 | `ours` | Keep our version entirely |

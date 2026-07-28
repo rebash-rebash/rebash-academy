@@ -27,7 +27,7 @@ comments: false
 
 Before TCP connections and HTTP requests succeed, hosts must discover neighbors on the local segment, obtain IP configuration, and verify reachability. **ICMP** provides diagnostic messaging, **ARP** maps IP addresses to MAC addresses on Layer 2, **DHCP** automates address assignment, and **NTP** keeps clocks synchronized — failures in any of these services produce symptoms that look like application bugs but are actually infrastructure problems.
 
-This tutorial is **Tutorial 6** in **Module 2: Data Link & Routing** of the REBASH Academy Networking series. You will understand how these protocols work at the packet level, practice inspection with Linux tools, and build troubleshooting workflows used daily by DevOps and SRE teams. For OS-level command overlap, see [Linux Networking Essentials](../linux/linux-networking-essentials.md); here we go deeper on protocol behavior and production implications.
+This tutorial is **Tutorial 6** in **Module 2: Data Link & Routing** of the REBASH Academy Networking series. You will understand how these protocols work at the packet level, practice inspection with Linux tools, and build troubleshooting workflows used daily by DevOps and SRE teams. For OS-level command overlap, see [Linux Networking Essentials](../linux/linux-networking-essentials.md); here we go deeper on protocol behaviour and production implications.
 
 ## Prerequisites
 

@@ -1,6 +1,6 @@
 ---
 title: Dockerfile Best Practices and Multi-Stage Builds
-description: Optimize Dockerfiles with layer caching, slim bases, non-root users, health checks, and multi-stage builds for production-ready images.
+description: Optimise Dockerfiles with layer caching, slim bases, non-root users, health checks, and multi-stage builds for production-ready images.
 difficulty: intermediate
 estimated_time: "50 min"
 author: Shaik Basha
@@ -10,7 +10,7 @@ tags:
   - docker
   - dockerfile
   - multi-stage
-  - optimization
+  - optimisation
   - security
   - devops
 prerequisites:
@@ -43,7 +43,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Write multi-stage Dockerfiles separating build and runtime
 - [ ] Run containers as non-root users with correct file permissions
 - [ ] Add `HEALTHCHECK` instructions for orchestrator integration
-- [ ] Compare image sizes and explain trade-offs of each optimization
+- [ ] Compare image sizes and explain trade-offs of each optimisation
 
 ## Architecture
 
@@ -259,7 +259,7 @@ docker images rebash-go:single
 
 **Expected output:** Image size approximately 800 MB–1 GB.
 
-### Step 3 – Build multi-stage optimized image
+### Step 3 – Build multi-stage optimised image
 
 **Command:**
 
@@ -500,5 +500,5 @@ CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:application"]
 - [Multi-stage builds](https://docs.docker.com/build/building/multi-stage/)
 - [Best practices for writing Dockerfiles](https://docs.docker.com/build/building/best-practices/)
 - [Google distroless images](https://github.com/GoogleContainerTools/distroless)
-- [BuildKit cache mounts](https://docs.docker.com/build/cache/optimize/)
+- [BuildKit cache mounts](https://docs.docker.com/build/cache/optimise/)
 - [OCI image annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md)

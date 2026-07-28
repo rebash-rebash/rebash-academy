@@ -214,7 +214,7 @@ sudo ufw status numbered
 
 **Expected output:**
 
-```
+```text
 Status: active
 To                         Action      From
 --                         ------      ----

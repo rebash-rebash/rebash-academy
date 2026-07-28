@@ -21,7 +21,7 @@ comments: false
 
 ## Overview
 
-A **process** is a running instance of a program — identified by a Process ID (PID), owned by a user, consuming CPU and memory, and existing in a parent-child tree rooted at PID 1 (systemd on modern distributions). Administrators monitor processes to diagnose performance issues, terminate runaway jobs, adjust scheduling priority, and understand system behavior during incidents.
+A **process** is a running instance of a program — identified by a Process ID (PID), owned by a user, consuming CPU and memory, and existing in a parent-child tree rooted at PID 1 (systemd on modern distributions). Administrators monitor processes to diagnose performance issues, terminate runaway jobs, adjust scheduling priority, and understand system behaviour during incidents.
 
 This tutorial is part of **Module 3: Processes, Services & Packages** in the REBASH Academy Linux series. You will list and filter processes, interpret CPU/memory columns, send signals for graceful and forced termination, manage background jobs, and understand zombie and orphan process states.
 
@@ -38,7 +38,7 @@ By the end of this tutorial, you will be able to:
 
 - [ ] List and filter processes using `ps`, `pgrep`, and `pidof`
 - [ ] Monitor real-time resource usage with `top` and `htop`
-- [ ] Send signals with `kill` and interpret SIGTERM vs SIGKILL behavior
+- [ ] Send signals with `kill` and interpret SIGTERM vs SIGKILL behaviour
 - [ ] Adjust CPU scheduling priority using `nice` and `renice`
 - [ ] Manage foreground/background jobs with `&`, `jobs`, `fg`, and `bg`
 - [ ] Identify and resolve zombie and orphan process conditions
@@ -127,7 +127,7 @@ ps -eo pid,ppid,user,stat,pcpu,pmem,cmd --sort=-pcpu | head -10
 
 **Expected output:**
 
-```
+```text
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.0  0.1 169000 12000 ?        Ss   09:00   0:02 /sbin/init
 root       456  0.0  0.2  50000  8000 ?        Ss   09:00   0:00 sshd: /usr/sbin/sshd
@@ -148,7 +148,7 @@ ps aux | grep "[s]shd"
 
 **Expected output:**
 
-```
+```text
 1234 bash
 1
 root  456  0.0  0.2  ... sshd: /usr/sbin/sshd
@@ -164,7 +164,7 @@ top -b -n 1 | head -20
 
 **Expected output:**
 
-```
+```text
 top - 14:30:01 up 5:30,  1 user,  load average: 0.08, 0.04, 0.01
 Tasks: 120 total,   1 running, 119 sleeping,   0 stopped,   0 zombie
 %Cpu(s):  2.3 us,  1.1 sy,  0.0 ni, 96.4 id,  0.2 wa,  0.0 hi,  0.0 si
@@ -185,7 +185,7 @@ jobs -l
 
 **Expected output:**
 
-```
+```json
 [1] 5678
 [2] 5679
 [1]  5678 Running                 sleep 300 &
@@ -204,7 +204,7 @@ jobs
 
 **Expected output after Ctrl+Z:**
 
-```
+```json
 [1]+  Stopped                 sleep 300
 [1]+ Running                 sleep 300 &
 ```
@@ -221,7 +221,7 @@ wait $SLEEP_PID 2>/dev/null; echo "Exit code: $?"
 
 **Expected output:**
 
-```
+```json
 [1] 5680
 Process 5680 exists
 Exit code: 143
@@ -251,7 +251,7 @@ kill $NPID
 
 **Expected output:**
 
-```
+```text
   PID  NI CMD
  5681  10 sleep 300
 5681 (process ID) old priority 10, new priority -5
@@ -278,7 +278,7 @@ ps aux | awk '$8 ~ /Z/ {print}' || echo "No zombies"
 
 **Expected output:**
 
-```
+```text
   PID  PPID STAT CMD
  5690  1234 S    sleep 30
  5689  5690 Z    [sleep] <defunct>
@@ -296,7 +296,7 @@ pstree -p -s $(pgrep -n sshd 2>/dev/null || pgrep -n systemd)
 
 **Expected output:**
 
-```
+```text
 bash(5700)───pstree(5705)
 systemd(1)───sshd(456)───sshd(890)───bash(5700)
 ```
@@ -451,7 +451,7 @@ echo "OK: no zombies"
 - Processes form a tree under PID 1; each has a state, owner, and resource consumption profile.
 - Use `ps`, `pgrep`, and `top`/`htop` to monitor; sort by CPU and memory to find bottlenecks.
 - Send **SIGTERM** for graceful shutdown; reserve **SIGKILL** for unresponsive processes.
-- **Nice** values adjust CPU priority; root can favor critical workloads with negative nice.
+- **Nice** values adjust CPU priority; root can favour critical workloads with negative nice.
 - Shell **job control** manages background tasks in interactive sessions; use systemd for persistent services.
 - **Zombies** indicate parent bugs — fix the parent. **Orphans** are adopted by systemd automatically.
 

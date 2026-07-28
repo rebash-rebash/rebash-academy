@@ -1,6 +1,6 @@
 ---
 title: Packet Analysis with tcpdump and Wireshark
-description: Capture packets on interfaces, write tcpdump filters, analyze flows in Wireshark, follow TCP streams, and apply common display filters for production debugging.
+description: Capture packets on interfaces, write tcpdump filters, analyse flows in Wireshark, follow TCP streams, and apply common display filters for production debugging.
 difficulty: intermediate
 estimated_time: "55 min"
 author: Shaik Basha
@@ -43,7 +43,7 @@ By the end of this tutorial, you will be able to:
 
 - [ ] Capture packets on specific interfaces with tcpdump and write to pcap files
 - [ ] Construct tcpdump filter expressions for host, port, and protocol filtering
-- [ ] Transfer and analyze captures in Wireshark with proper dissection
+- [ ] Transfer and analyse captures in Wireshark with proper dissection
 - [ ] Follow TCP streams to reconstruct HTTP conversations
 - [ ] Identify common failure patterns: SYN retransmits, RST, TLS failures, DNS issues
 - [ ] Apply a library of production-ready tcpdump and Wireshark display filters
@@ -133,7 +133,7 @@ tcpdump [options] [filter expression]
 | `-n` | No DNS resolution (faster, clearer IPs) |
 | `-nn` | No DNS or port name resolution |
 | `-c 100` | Stop after 100 packets |
-| `-w file.pcap` | Write to file (analyze later in Wireshark) |
+| `-w file.pcap` | Write to file (analyse later in Wireshark) |
 | `-r file.pcap` | Read from file |
 | `-v`, `-vv`, `-vvv` | Verbose detail |
 | `-A` | ASCII payload (careful with secrets) |
@@ -203,13 +203,13 @@ sudo tcpdump -i any -nn 'host 10.0.1.5 and host 10.0.2.10'
 1. **Open pcap** — File → Open, or drag-and-drop
 2. **Apply display filter** — narrows view without re-capturing (non-destructive)
 3. **Follow TCP stream** — right-click packet → Follow → TCP Stream
-4. **Expert Information** — Analyze → Expert Information (warnings, retransmits)
+4. **Expert Information** — Analyse → Expert Information (warnings, retransmits)
 5. **IO Graphs / Flow Graph** — Statistics menu for timing visualization
 6. **Export** — Save filtered packets or export objects (HTTP files)
 
 **Display filters** (Wireshark syntax — different from tcpdump):
 
-```
+```text
 ip.addr == 10.0.1.5
 tcp.port == 443
 http.request.method == "GET"
@@ -250,7 +250,7 @@ Production HTTPS appears encrypted in Wireshark unless you provide keys:
 - **PREMASTER-SECRET log** — set `SSLKEYLOGFILE` env var on client or server
 - **Mitigation** — capture on loopback before TLS (`curl http://localhost:8080`) or use staging with key access
 
-For most ops work, analyze TLS **handshake** metadata (cipher, SNI, cert CN) without decrypting application data.
+For most ops work, analyse TLS **handshake** metadata (cipher, SNI, cert CN) without decrypting application data.
 
 ## Hands-on Lab
 
@@ -421,7 +421,7 @@ Confirm the lab before moving on:
 | `tcpdump: eth0: No such device` | Wrong interface name | Use `ip link`; cloud uses `ens5`, containers use `eth0` |
 | `Permission denied` | Non-root without CAP_NET_RAW | Run with `sudo` or grant capability |
 | Empty pcap file | Filter too restrictive or no traffic | Test with `-c 5` unfiltered; verify interface with `-i any` |
-| Wireshark shows `[Encrypted Application Data]` only | HTTPS without keys | Analyze TLS handshake; capture cleartext on loopback in staging |
+| Wireshark shows `[Encrypted Application Data]` only | HTTPS without keys | Analyse TLS handshake; capture cleartext on loopback in staging |
 | Cannot see VLAN tags | Capture on wrong interface | Mirror port or capture on trunk; filter `vlan` |
 | Huge pcap won't open | File exceeds RAM | Use `editcap -c 10000 big.pcap chunk.pcap` to split |
 | tcpdump syntax error on complex filter | Unescaped shell characters | Quote filter: `'port 443 and host 10.0.1.5'` |
@@ -429,7 +429,7 @@ Confirm the lab before moving on:
 
 ## Summary
 
-- **tcpdump** captures on Linux servers; write to **pcap** and analyze in **Wireshark**
+- **tcpdump** captures on Linux servers; write to **pcap** and analyse in **Wireshark**
 - **BPF filters** (`host`, `port`, `tcp`, combinators) limit capture to relevant traffic
 - Capture **point** determines whether you see client IP, NAT'd IP, or LB IP
 - **Follow TCP Stream** in Wireshark reconstructs application conversations
@@ -454,7 +454,7 @@ Confirm the lab before moving on:
 
     **Q3 — Repeated SYN without SYN-ACK:** The client sends SYN and retransmits because it never received SYN-ACK. Causes: (1) firewall or ACL silently dropping inbound SYN or outbound SYN-ACK; (2) wrong destination IP (stale DNS); (3) server down or not listening; (4) asymmetric routing where return path fails. This is a timeout symptom, not connection refused (which would show RST).
 
-    **Q9 — Retransmission filter:** In Wireshark display filter: `tcp.analysis.retransmission` shows retransmitted segments. Broader: `tcp.analysis.flags` for all expert analysis flags including duplicate ACKs, out-of-order, and window issues. In tcpdump, look for duplicate sequence numbers in verbose output or analyze in Wireshark after capture.
+    **Q9 — Retransmission filter:** In Wireshark display filter: `tcp.analysis.retransmission` shows retransmitted segments. Broader: `tcp.analysis.flags` for all expert analysis flags including duplicate ACKs, out-of-order, and window issues. In tcpdump, look for duplicate sequence numbers in verbose output or analyse in Wireshark after capture.
 
 9. How would you explain packet analysis tcpdump wireshark to a junior engineer in two minutes?
 10. What production failure mode appears when teams ignore packet analysis tcpdump wireshark?

@@ -168,7 +168,7 @@ On systems running UFW, nftables rules are managed indirectly — UFW generates 
 
 **UFW** (Uncomplicated Firewall) is Ubuntu's user-friendly front end to iptables/nftables. It is ideal for single-server hardening and learning firewall concepts without memorizing netfilter syntax.
 
-Default UFW behavior:
+Default UFW behaviour:
 
 - Denies all incoming, allows all outgoing
 - Rules are numbered and processed in order

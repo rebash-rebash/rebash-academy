@@ -4,6 +4,7 @@ description: "Terraform learning track — 20 tutorials from Infrastructure as C
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: terraform
 tags:
   - terraform

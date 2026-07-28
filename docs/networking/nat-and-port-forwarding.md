@@ -411,7 +411,7 @@ echo "conntrack: ${COUNT}/${MAX} (${PCT}%)"
     Alert on conntrack table usage above 80% and NAT Gateway `ErrorPortAllocation` metrics.
 
 !!! tip "Prefer managed NAT over NAT instances"
-    Unless cost optimization at massive scale justifies operational burden, managed NAT gateways reduce incident surface.
+    Unless cost optimisation at massive scale justifies operational burden, managed NAT gateways reduce incident surface.
 
 !!! tip "Avoid port forwarding for admin access"
     Use SSM Session Manager, VPN, or bastion hosts instead of exposing SSH via DNAT to the internet.
@@ -423,7 +423,7 @@ echo "conntrack: ${COUNT}/${MAX} (${PCT}%)"
 | Private instance no outbound internet | Wrong route table | Point `0.0.0.0/0` to NAT GW, not IGW |
 | Outbound works, inbound fails | NAT is outbound-only by design | Use ALB, NLB, or explicit DNAT for inbound |
 | Intermittent connection failures | conntrack table full | Increase `nf_conntrack_max`; investigate connection leaks |
-| DNAT works but wrong source IP in logs | Expected SNAT behavior | Use `X-Forwarded-For` at application/proxy layer |
+| DNAT works but wrong source IP in logs | Expected SNAT behaviour | Use `X-Forwarded-For` at application/proxy layer |
 | FTP/SIP fails through NAT | ALG not loaded or broken | Enable conntrack helper or use passive mode / STUN |
 | High NAT GW costs | Cross-AZ traffic | Keep NAT GW and instances in same AZ; use VPC endpoints for AWS services |
 

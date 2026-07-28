@@ -102,7 +102,7 @@ The first three octets (**OUI — Organizationally Unique Identifier**) identify
 
 The dominant **Ethernet II (DIX)** frame layout:
 
-```
+```text
 | Preamble | Dest MAC (6) | Src MAC (6) | EtherType (2) | Payload (46–1500) | FCS (4) |
 ```
 
@@ -127,7 +127,7 @@ A **switch** maintains a **MAC address table** (CAM table) mapping MAC → port:
 
 This eliminates the collision problems of legacy **hubs**, which repeated every frame to every port.
 
-| Device | Layer | Behavior | Status |
+| Device | Layer | Behaviour | Status |
 |--------|-------|----------|--------|
 | **Hub** | 1 | Repeats to all ports — single collision domain | Obsolete |
 | **Switch** | 2 | Forwards by destination MAC — per-port collision domain | Standard |
@@ -163,7 +163,7 @@ Redundant switch links create **loops** — frames circulate forever, saturating
 
 Hosts on the same subnet deliver IP packets by encapsulating them in Ethernet frames destined for the target's **MAC address**. **ARP** resolves IP → MAC via broadcast:
 
-```
+```text
 Who has 10.0.1.1? Tell 10.0.1.42
 ```
 
@@ -289,7 +289,7 @@ bridge link 2>/dev/null | head -10 || ip link show type bridge 2>/dev/null
 docker network ls 2>/dev/null | head -5 || echo "(Docker not installed — skip)"
 ```
 
-**Explanation:** Bridges connect virtual interfaces at Layer 2 — same MAC learning behavior as physical switches.
+**Explanation:** Bridges connect virtual interfaces at Layer 2 — same MAC learning behaviour as physical switches.
 
 ### Step 7 – Document three-tier VLAN design
 

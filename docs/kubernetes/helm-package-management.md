@@ -87,7 +87,7 @@ Release metadata lives in Secrets (default) or ConfigMaps in the release namespa
 
 ### Chart Structure
 
-```
+```text
 mychart/
 ├── Chart.yaml          # Chart metadata (name, version, appVersion)
 ├── values.yaml         # Default configuration values
@@ -509,7 +509,7 @@ Deploy: `helm upgrade -i web ./chart -f values.yaml -f values-staging.yaml -n st
 ## Common Mistakes
 
 !!! warning "Pinning chart version but not image tag"
-    `helm upgrade bitnami/nginx` without `--version` pulls latest chart — behavior may change. Pin both chart version and `image.tag` in values.
+    `helm upgrade bitnami/nginx` without `--version` pulls latest chart — behaviour may change. Pin both chart version and `image.tag` in values.
 
 !!! warning "Storing secrets in values.yaml committed to Git"
     Plaintext passwords in charts leak via Git history. Use External Secrets, SOPS, or CI-injected overrides.

@@ -4,6 +4,7 @@ description: Kubernetes learning track — 20 tutorials from orchestration funda
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: kubernetes
 tags:
   - kubernetes

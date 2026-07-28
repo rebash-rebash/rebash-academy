@@ -19,7 +19,7 @@ comments: false
 
 ## Overview
 
-Quality gates keep infrastructure changes safe: canonical formatting, static validation, and `terraform test` for module behavior. Wire them into CI before any apply job.
+Quality gates keep infrastructure changes safe: canonical formatting, static validation, and `terraform test` for module behaviour. Wire them into CI before any apply job.
 
 This is **Tutorial 16** in **Module 5: Quality and Security** of the REBASH Academy Terraform track.
 

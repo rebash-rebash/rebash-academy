@@ -368,7 +368,7 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
     Push to GitHub with README architecture diagram for interviews.
 
 !!! tip "Practice failure injection"
-    `docker compose stop redis` — observe api `/ready` and recovery behavior.
+    `docker compose stop redis` — observe api `/ready` and recovery behaviour.
 
 !!! tip "Continue the learning path"
     Docker completes the container foundation — [Kubernetes](../kubernetes/index.md) is the natural next track.

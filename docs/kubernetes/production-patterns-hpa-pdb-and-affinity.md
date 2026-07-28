@@ -47,7 +47,7 @@ By the end of this tutorial, you will be able to:
 - [ ] Apply node affinity, pod affinity, and anti-affinity rules
 - [ ] Use topology spread constraints for zone and host distribution
 - [ ] Combine resource requests with autoscaling for stable scheduling
-- [ ] Validate scaling and disruption behavior before production cutover
+- [ ] Validate scaling and disruption behaviour before production cutover
 
 ## Architecture
 
@@ -108,7 +108,7 @@ Requirements for stable HPA:
 2. **metrics-server** running — provides CPU/memory via Metrics API
 3. **Readiness probes** — only ready pods receive traffic after scale-up
 
-Default behavior: scale-up is aggressive (add pods quickly); scale-down has stabilization windows to prevent flapping.
+Default behaviour: scale-up is aggressive (add pods quickly); scale-down has stabilization windows to prevent flapping.
 
 ### Pod Disruption Budget
 
@@ -442,7 +442,7 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
     These controls interact — test node drain during peak load in staging.
 
 !!! tip "Use HPA v2 only"
-    `autoscaling/v2` supports multiple metrics and behavior policies — avoid deprecated v1.
+    `autoscaling/v2` supports multiple metrics and behaviour policies — avoid deprecated v1.
 
 !!! tip "Document min/max replica rationale"
     `maxReplicas` prevents runaway scaling costs; `minReplicas` ensures HA baseline — record both in runbooks.
@@ -454,7 +454,7 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 | HPA shows `<unknown>` | metrics-server down or no requests | Fix metrics-server; set resource requests |
 | Pods Pending after spread rules | Insufficient nodes/zones | Relax `whenUnsatisfiable` or add capacity |
 | Drain blocked | PDB too strict | Temporarily adjust PDB or add replicas |
-| HPA never scales down | stabilization window / high min | Review behavior policy and actual load |
+| HPA never scales down | stabilization window / high min | Review behaviour policy and actual load |
 | Flapping replicas | Target too aggressive | Raise target CPU%; add scale-down delay |
 | Custom metric missing | Prometheus Adapter misconfigured | Check adapter logs and metric discovery |
 
@@ -464,7 +464,7 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - **PDB** protects availability during voluntary disruptions like node drains and upgrades
 - **Affinity and topology spread** control pod placement across nodes and availability zones
 - Production workloads combine all three: scale under load, survive maintenance, distribute across failure domains
-- Tune scale-down behavior to prevent flapping; validate with load tests and drain simulations
+- Tune scale-down behaviour to prevent flapping; validate with load tests and drain simulations
 - Next: [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md)
 
 ## Interview Questions

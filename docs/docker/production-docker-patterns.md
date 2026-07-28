@@ -123,7 +123,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
 
 Control what Docker does when a container exits:
 
-| Policy | Behavior | Typical use |
+| Policy | Behaviour | Typical use |
 |--------|----------|-------------|
 | `no` | Never restart (default) | Batch jobs, one-shot tasks |
 | `on-failure[:max-retries]` | Restart on non-zero exit | Apps that may crash transiently |
@@ -318,7 +318,7 @@ docker compose -f compose.yml -f compose.prod.yml up -d
 docker compose ps
 ```
 
-### Lab 3 — OOM and init process behavior
+### Lab 3 — OOM and init process behaviour
 
 ```bash
 # OOM: tight memory limit triggers restart with on-failure policy
@@ -441,7 +441,7 @@ For zero-downtime on one host, use a reverse proxy and blue/green containers on 
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | Stuck in `starting` | `start-period` too short | Increase `--health-start-period` |
-| Flapping unhealthy | Timeout too aggressive | Increase timeout; optimize probe |
+| Flapping unhealthy | Timeout too aggressive | Increase timeout; optimise probe |
 | Container restart loop | App crashes on boot | Check logs; fix config; use `on-failure` max |
 | OOMKilled | Memory limit too low | Raise limit or reduce app heap |
 | Slow stop | App ignores SIGTERM | Fix signal handler; use `--init`; increase stop timeout |
@@ -461,7 +461,7 @@ For zero-downtime on one host, use a reverse proxy and blue/green containers on 
 1. What is the difference between liveness and readiness health checks?
 2. When would you use `restart: on-failure` vs `unless-stopped`?
 3. What happens when a container exceeds its memory limit?
-4. How does Docker stop a container, and how do you customize that behavior?
+4. How does Docker stop a container, and how do you customize that behaviour?
 5. Why run containers with `--init` or tini?
 6. How do Compose health checks interact with `depends_on`?
 7. What resource limits would you set for a Node.js API using 512MB RAM?
