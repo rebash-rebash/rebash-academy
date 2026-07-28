@@ -39,9 +39,15 @@ This path matches how production platforms are built: operating system fluency, 
 | When you finish… | Practise with |
 |------------------|---------------|
 | Linux modules on systemd and logs | [Linux Production Incident Triage](../labs/linux-production-incident-triage.md) |
+| Docker Compose and networking | [Docker Compose Stack Recovery](../labs/docker-compose-stack-recovery.md) |
+| Deployments and probes | [Kubernetes Deployment Triage](../labs/kubernetes-deployment-triage.md) |
 | Terraform CLI + CI concepts | [Terraform Plan Review Workflow](../labs/terraform-plan-review-workflow.md) |
 
 Browse all labs: [Labs](../labs/index.md)
+
+## Portfolio project
+
+After the labs above: [Status API Portfolio Build](../projects/status-api-portfolio.md) — Git → Docker → Kubernetes → Terraform metadata.
 
 ## Coming next on this path
 

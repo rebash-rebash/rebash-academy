@@ -86,7 +86,8 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 | Available now | Coming next |
 |---------------|-------------|
 | Linux, Networking, Git, Docker, Kubernetes, Terraform | AWS, Azure, GCP |
-| [Standalone Labs](../labs/index.md) (Linux + Terraform scenarios) | More labs for Docker / Kubernetes |
+| [Standalone Labs](../labs/index.md) (Linux, Docker, Kubernetes, Terraform) | Networking / Git labs |
+| [Status API project](../projects/status-api-portfolio.md) | More portfolio projects |
 | Learning path, cheat sheets, interview guides | GitLab CI/CD, Monitoring, Security, DevSecOps |
 
 See the full plan on the **[Roadmap](../roadmap.md)**.

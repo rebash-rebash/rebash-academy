@@ -20,7 +20,13 @@ Standalone labs apply what you learned in the tutorials. Each lab is a scenario 
 | Lab | Track | Level | Time |
 |-----|--------|-------|------|
 | [Linux Production Incident Triage](linux-production-incident-triage.md) | Linux | Intermediate | 60 min |
+| [Docker Compose Stack Recovery](docker-compose-stack-recovery.md) | Docker | Intermediate | 55 min |
+| [Kubernetes Deployment Triage](kubernetes-deployment-triage.md) | Kubernetes | Intermediate | 70 min |
 | [Terraform Plan Review Workflow](terraform-plan-review-workflow.md) | Terraform | Intermediate | 50 min |
+
+## Portfolio project
+
+Connect the tracks end-to-end: [Status API Portfolio Build](../projects/status-api-portfolio.md).
 
 ## How to use labs
 
@@ -36,6 +42,7 @@ Standalone labs apply what you learned in the tutorials. Each lab is a scenario 
 
 - [Getting Started](../getting-started/index.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [Projects](../projects/index.md)
 - [Cheat Sheets](../cheatsheets/index.md)
 - [Interview Prep](../interview/index.md)
 - [Roadmap](../roadmap.md)
