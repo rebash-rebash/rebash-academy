@@ -28,3 +28,9 @@ nav:
     - file-archiving-and-compression.md
     - linux-security-hardening-basics.md
     - troubleshooting-linux-systems.md
+  - Advanced Linux Servers:
+    - linux-server-baseline-and-lifecycle.md
+    - nginx-web-server-and-reverse-proxy.md
+    - tls-certificates-on-linux-servers.md
+    - server-storage-lvm-and-fstab.md
+    - backup-restore-and-recovery-drills.md

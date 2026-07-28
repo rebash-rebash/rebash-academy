@@ -20,7 +20,7 @@ This path matches how production platforms are built: operating system fluency, 
 
 | # | Track | Start here | Status |
 |---|--------|------------|--------|
-| 1 | [Linux](../linux/index.md) | [Introduction to Linux](../linux/introduction-to-linux.md) | Ready — 20 tutorials |
+| 1 | [Linux](../linux/index.md) | [Introduction to Linux](../linux/introduction-to-linux.md) | Ready — 25 tutorials |
 | 2 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready — 20 tutorials |
 | 3 | [Git](../git/index.md) | [Introduction to Git](../git/introduction-to-git-and-version-control.md) | Ready — 20 tutorials |
 | 4 | [Docker](../docker/index.md) | [Introduction to Containers](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
@@ -33,13 +33,14 @@ This path matches how production platforms are built: operating system fluency, 
 |-------|-------|------------|-----|--------|------------|-----------|
 | Cheat sheet | [open](../cheatsheets/linux.md) | [open](../cheatsheets/networking.md) | [open](../cheatsheets/git.md) | [open](../cheatsheets/docker.md) | [open](../cheatsheets/kubernetes.md) | [open](../cheatsheets/terraform.md) |
 | Interview prep | [open](../interview/linux.md) | [open](../interview/networking.md) | [open](../interview/git.md) | [open](../interview/docker.md) | [open](../interview/kubernetes.md) | [open](../interview/terraform.md) |
-| Quiz | [open](../quizzes/linux-fundamentals.md) | — | — | [open](../quizzes/docker-fundamentals.md) | [open](../quizzes/kubernetes-fundamentals.md) | — |
+| Quiz | [fundamentals](../quizzes/linux-fundamentals.md) · [servers](../quizzes/linux-servers.md) | — | — | [open](../quizzes/docker-fundamentals.md) | [open](../quizzes/kubernetes-fundamentals.md) | — |
 
 ## Standalone labs
 
 | When you finish… | Practise with |
 |------------------|---------------|
 | Linux modules on systemd and logs | [Linux Production Incident Triage](../labs/linux-production-incident-triage.md) |
+| Linux Module 7 (nginx/TLS/backup) | [Linux App Server from Zero](../labs/linux-app-server-from-zero.md) |
 | DNS, firewalls, troubleshooting | [DNS and Firewall Site-Down Triage](../labs/networking-dns-firewall-triage.md) |
 | Rebase, conflicts, safe force-push | [Git History and PR Recovery](../labs/git-history-pr-recovery.md) |
 | Docker Compose and networking | [Docker Compose Stack Recovery](../labs/docker-compose-stack-recovery.md) |
@@ -50,7 +51,7 @@ Browse all labs: [Labs](../labs/index.md)
 
 ## Quizzes
 
-Self-mark after finishing a track (or early modules): [Quizzes](../quizzes/index.md) — Linux, Docker, and Kubernetes fundamentals (40 questions, 70% pass).
+Self-mark after finishing a track (or early modules): [Quizzes](../quizzes/index.md) — Linux fundamentals + Linux servers, Docker, and Kubernetes.
 
 ## Portfolio project
 

@@ -109,6 +109,32 @@ Key files:
 
 Example: `ss -tuln` shows all TCP/UDP listening ports.
 
+### Listening services and bind addresses (server view)
+
+On an app server, the critical question is not only “is the port open?” but **where** the process listens:
+
+| Listen address | Meaning | Typical use |
+|----------------|---------|-------------|
+| `127.0.0.1:8080` | Localhost only | App behind nginx on the same host |
+| `0.0.0.0:8080` / `*:8080` | All IPv4 interfaces | Direct exposure (usually avoid for app ports) |
+| `[::]:8080` | All IPv6 interfaces | Dual-stack listeners |
+| Specific NIC IP | One interface only | Multi-homed / management plane |
+
+**Server exposure pattern:**
+
+1. Application binds to `127.0.0.1` (or a private socket)
+2. Reverse proxy (nginx) listens on `0.0.0.0:80` / `:443`
+3. Host firewall allows only 22/80/443 from intended sources
+
+```bash
+# Who owns listeners? (needs root for -p)
+sudo ss -tulpn
+# Filter one port
+sudo ss -tulpn | grep ':80 '
+```
+
+If `curl http://127.0.0.1:8080` works but remote clients fail, check bind address **and** firewall/security groups before blaming the application.
+
 ### ping and traceroute
 
 - **ping** tests ICMP reachability (may be blocked by firewalls)
@@ -167,7 +193,20 @@ default via 10.0.0.1 dev eth0
 
 The second command shows which interface and gateway would carry traffic to Google DNS.
 
-### Step 3 – DNS configuration and resolution
+### Step 3 – Inventory listening services (server exposure)
+
+```bash
+sudo ss -tulpn
+echo "---"
+# Classify bind addresses for common app/web ports
+sudo ss -tuln | awk 'NR==1 || /:22 |:80 |:443 |:8080 /'
+```
+
+**Expected output:** A table of listeners. Note whether SSH is on `0.0.0.0:22` (typical) and whether any app ports bind to `127.0.0.1` vs `*:`.
+
+**Interpretation:** On a hardened app server you often want app backends on localhost and only 22/80/443 on all interfaces.
+
+### Step 4 – DNS configuration and resolution
 
 ```bash
 cat /etc/resolv.conf
@@ -178,7 +217,7 @@ getent hosts google.com
 
 **Expected output:** Nameserver entries (e.g., `nameserver 127.0.0.53` or cloud DNS); `dig` returns one or more A records like `142.250.80.78`.
 
-### Step 4 – Test layered connectivity
+### Step 5 – Test layered connectivity
 
 ```bash
 GW=$(ip route | awk '/default/ {print $3}')
@@ -188,9 +227,9 @@ ping -c 3 8.8.8.8
 ping -c 3 google.com
 ```
 
-**Expected output:** All three pings succeed with 0% packet loss. If step 3 fails but step 2 works, suspect DNS.
+**Expected output:** All three pings succeed with 0% packet loss. If step 4 fails but step 5’s IP ping works, suspect DNS.
 
-### Step 5 – Trace the network path
+### Step 6 – Trace the network path
 
 ```bash
 traceroute -n 8.8.8.8 2>/dev/null | head -10 \
@@ -198,23 +237,6 @@ traceroute -n 8.8.8.8 2>/dev/null | head -10 \
 ```
 
 **Expected output:** Hop-by-hop list showing gateway first, then ISP/cloud hops toward destination.
-
-### Step 6 – Inspect listening ports
-
-```bash
-ss -tuln
-sudo ss -tulpn | head -15
-```
-
-**Expected output:**
-
-```text
-Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
-tcp   LISTEN 0      128    0.0.0.0:22           0.0.0.0:*
-tcp   LISTEN 0      511    127.0.0.1:6379       0.0.0.0:*
-```
-
-Port 22 (SSH) listening on `0.0.0.0` is typical for servers.
 
 ### Step 7 – Simulate and fix a DNS failure
 
@@ -241,6 +263,8 @@ echo "=== Link ==="
 ip link show up
 echo "=== Route ==="
 ip route | head -3
+echo "=== Listeners (server) ==="
+sudo ss -tuln | awk 'NR==1 || /:22 |:80 |:443 /'
 echo "=== DNS ==="
 dig +short example.com || echo "DNS failed"
 echo "=== External ==="

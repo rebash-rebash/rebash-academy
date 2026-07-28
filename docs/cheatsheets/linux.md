@@ -30,6 +30,10 @@ Scannable commands and patterns for the [Linux track](../linux/index.md). Prefer
 | Disk | `df -h`; `du -sh *`; `lsblk`; `mount` |
 | Network | `ip a`; `ss -tulpn`; `curl -v`; `dig` |
 | Archive | `tar -czf a.tgz dir`; `tar -xzf a.tgz`; `gzip -d` |
+| nginx | `nginx -t`; `systemctl reload nginx`; sites-available/enabled |
+| TLS lab | `openssl x509 -noout -dates -in cert`; `curl -k https://127.0.0.1/` |
+| LVM | `pvs`; `vgs`; `lvs`; `lvextend`; `resize2fs` |
+| Backup | `tar -czf`; `sha256sum -c`; `rsync -a` |
 
 ## Common mistakes
 

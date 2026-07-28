@@ -136,6 +136,27 @@ High load is not always CPU — check **I/O wait** (`top`, `wa` column), swap th
 | OOM kills | Memory exhaustion | `dmesg \| grep -i oom`, `journalctl -k` |
 | Service timeouts | Network, DB, thread pool | `ss -s`, app logs, connection counts |
 
+### Web-tier failures on a Linux app server
+
+When users report “the site is down”, separate **edge**, **proxy**, **app**, and **firewall**:
+
+| Symptom | Likely layer | First checks |
+|---------|--------------|--------------|
+| Connection timeout | Firewall / SG / wrong IP | `curl -v`, `ufw status`, cloud SG, `ss -tuln` |
+| Connection refused | Nothing listening / wrong bind | `ss -tuln`, `systemctl status` |
+| HTTP 502 / 504 from nginx | Upstream app down or wrong proxy_pass | `nginx -t`, `journalctl -u nginx`, curl upstream on `127.0.0.1` |
+| HTTP 200 on localhost, fail remotely | Bind address or firewall | Compare `curl 127.0.0.1` vs public IP |
+| Sudden TLS errors | Certificate expiry / clock skew | `openssl x509 -enddate`, `timedatectl`, browser error |
+| Disk-related 5xx | Full `/var` or inode exhaustion | `df -h`, `df -i`, nginx/app error logs |
+
+Decision tree:
+
+1. Does `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1/` work on the host?
+2. Does the upstream app answer on its private port?
+3. Is nginx `active` and config valid (`nginx -t`)?
+4. Do listeners match the intended bind matrix?
+5. Did certificates or disk fill recently?
+
 ### What not to do
 
 - Restart services randomly without collecting logs
@@ -267,6 +288,32 @@ cat /tmp/incident-template.md
 ```
 
 **Expected output:** Template ready for post-incident documentation practice.
+
+### Step 10 – Web-tier triage drill (no nginx required)
+
+Simulate the decision tree with a localhost listener:
+
+```bash
+# Start a tiny listener on 127.0.0.1:18080
+python3 - <<'PY' >/tmp/rebash-triage-web.log 2>&1 &
+from http.server import BaseHTTPRequestHandler, HTTPServer
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200); self.end_headers(); self.wfile.write(b'ok\n')
+    def log_message(self, *a): pass
+HTTPServer(('127.0.0.1', 18080), H).serve_forever()
+PY
+echo $! > /tmp/rebash-triage-web.pid
+sleep 1
+curl -sS -o /dev/null -w "local:%{http_code}\n" http://127.0.0.1:18080/
+# Remote-style check against a non-listening public bind (expect fail/refuse)
+curl -sS -o /dev/null -w "all_ifaces:%{http_code}\n" --connect-timeout 2 http://0.0.0.0:18080/ || echo "all_ifaces:unreachable_or_refused_as_expected"
+ss -tln | grep 18080
+kill "$(cat /tmp/rebash-triage-web.pid)" 2>/dev/null || true
+rm -f /tmp/rebash-triage-web.pid /tmp/rebash-triage-web.log
+```
+
+**Expected output:** Local curl returns `200`; the process shows `127.0.0.1:18080` in `ss`. This is the same pattern as “app healthy locally, not exposed publicly” behind a reverse proxy.
 
 ## Validation
 
@@ -496,6 +543,8 @@ systemd-analyze critical-chain default.target | head -20
 - Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
 - Interview prep: [Linux Interview Prep](../interview/linux.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+
+- Module 7: [nginx Web Server and Reverse Proxy](nginx-web-server-and-reverse-proxy.md)
 
 ## References
 

@@ -31,6 +31,10 @@ Use this page as a revision map. Every tutorial in the [Linux track](../linux/in
 - Process signals and jobs
 - journalctl and troubleshooting
 - SSH hardening basics
+- App server exposure (localhost upstream vs public nginx)
+- TLS expiry and 502 upstream failures
+- LVM growth and UUID fstab
+- Backup vs snapshot; restore drills
 
 ## Hands-on prompts interviewers love
 
@@ -42,4 +46,6 @@ Use this page as a revision map. Every tutorial in the [Linux track](../linux/in
 
 - Track: [Linux](../linux/index.md)
 - Cheat sheet: [Linux cheat sheet](../cheatsheets/linux.md)
+- Quiz: [Linux Fundamentals](../quizzes/linux-fundamentals.md) · [Linux Servers](../quizzes/linux-servers.md)
+- Lab: [App Server from Zero](../labs/linux-app-server-from-zero.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
