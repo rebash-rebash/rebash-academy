@@ -10,12 +10,12 @@ nav:
     - kubernetes
     - terraform
   - Labs: labs
+  - Quizzes: quizzes
   - Projects: projects
   - Blog: blog
   - About:
     - about.md
     - roadmap.md
     - cheatsheets
-    - quizzes
     - interview
     - architecture
