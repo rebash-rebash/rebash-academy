@@ -6,6 +6,7 @@ nav:
   - networking.md
   - aws.md
   - git.md
+  - cicd.md
   - docker.md
   - kubernetes.md
   - terraform.md

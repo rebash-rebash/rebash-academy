@@ -1,0 +1,6 @@
+direction: right
+Test: "Test job" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Rep: "JUnit / coverage" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Gate: "Quality gate" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+MR: "MR / PR check" { style.fill: "#e0e7ff"; style.stroke: "#4338ca" }
+Test -> Rep -> Gate -> MR

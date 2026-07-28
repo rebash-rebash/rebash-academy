@@ -1,0 +1,8 @@
+direction: right
+Stage1: "Stage build" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Stage2: "Stage test" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Stage3: "Stage deploy" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Art: "Artifacts" { style.fill: "#e0e7ff"; style.stroke: "#4338ca" }
+Stage1 -> Stage2 -> Stage3
+Stage1 -> Art
+Stage2 -> Art

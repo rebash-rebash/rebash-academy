@@ -34,21 +34,22 @@ This page tracks what is published on REBASH Academy and what comes next.
 - [x] Networking Production Network Operations module (tutorials 21–25: segmentation, DNS ops, LB health checks, firewall change control, IR)
 - [x] AWS fundamentals path (20 tutorials — Free Tier + LocalStack-friendly labs)
 - [x] Git version control path (20 tutorials)
+- [x] CI/CD path (20 tutorials — GitLab CI under `/gitlab/`; Jenkins and GitHub Actions later)
 - [x] Docker containerization path (20 tutorials)
 - [x] Kubernetes orchestration path (20 tutorials)
 - [x] Terraform Infrastructure as Code path (20 tutorials)
 
-**Ready today:** [Linux](linux/index.md) → [Networking](networking/index.md) → [AWS](aws/index.md) → [Git](git/index.md) → [Docker](docker/index.md) → [Kubernetes](kubernetes/index.md) → [Terraform](terraform/index.md)
+**Ready today:** [Linux](linux/index.md) → [Networking](networking/index.md) → [AWS](aws/index.md) → [Git](git/index.md) → [CI/CD](gitlab/index.md) → [Docker](docker/index.md) → [Kubernetes](kubernetes/index.md) → [Terraform](terraform/index.md)
 
 ## Phase 3 – Cloud & CI/CD (Next)
 
 - [x] AWS core services tutorials (20-tutorial track published)
+- [x] CI/CD tutorials (GitLab CI published under `/gitlab/`; Jenkins and GitHub Actions planned later)
 - [ ] Azure fundamentals
 - [ ] Google Cloud Platform guides
-- [ ] GitLab CI/CD pipeline patterns
 - [ ] Monitoring and observability stack
 
-These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`. AWS is live under `/aws/`. Follow the [DevOps Engineer path](learning-paths/devops-engineer.md) for order.
+These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`. AWS is live under `/aws/`. CI/CD is live under `/gitlab/`. Follow the [DevOps Engineer path](learning-paths/devops-engineer.md) for order.
 
 ## Phase 4 – Security & Advanced Topics
 
@@ -66,12 +67,13 @@ These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/moni
 - [x] Labs section promoted in primary navigation
 - [x] DevOps Engineer learning path page
 - [x] First portfolio project (Status API — Git/Docker/Kubernetes/Terraform)
-- [x] Assessment quizzes (Linux fundamentals + Linux servers, Networking production, AWS fundamentals, Docker, Kubernetes)
+- [x] Assessment quizzes (Linux fundamentals + Linux servers, Networking production, AWS fundamentals, CI/CD fundamentals, Docker, Kubernetes)
 - [x] Quizzes section promoted in primary navigation (peer to Labs)
 - [x] Advanced Linux app-server lab (from zero)
 - [x] Advanced Networking edge failover lab
 - [x] AWS labs (IAM/VPC triage + SSM/S3) and AWS cheat sheet / interview prep
-- [ ] Additional project walkthroughs (CI/CD, cloud stacks)
+- [x] CI/CD labs (pipeline triage + Docker secure gate) and CI/CD cheat sheet / interview prep
+- [ ] Additional project walkthroughs (cloud stacks)
 - [ ] Blog articles and video embeds
 - [ ] Quizzes for Networking fundamentals, Git, and Terraform
 
