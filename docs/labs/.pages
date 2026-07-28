@@ -3,6 +3,8 @@ icon: material/flask
 nav:
   - index.md
   - linux-production-incident-triage.md
+  - networking-dns-firewall-triage.md
+  - git-history-pr-recovery.md
   - docker-compose-stack-recovery.md
   - kubernetes-deployment-triage.md
   - terraform-plan-review-workflow.md

@@ -17,9 +17,12 @@ Standalone labs apply what you learned in the tutorials. Each lab is a scenario 
 
 ## Available labs
 
+Every ready track now has at least one standalone lab.
 | Lab | Track | Level | Time |
 |-----|--------|-------|------|
 | [Linux Production Incident Triage](linux-production-incident-triage.md) | Linux | Intermediate | 60 min |
+| [DNS and Firewall Site-Down Triage](networking-dns-firewall-triage.md) | Networking | Intermediate | 55 min |
+| [Git History and PR Recovery](git-history-pr-recovery.md) | Git | Intermediate | 45 min |
 | [Docker Compose Stack Recovery](docker-compose-stack-recovery.md) | Docker | Intermediate | 55 min |
 | [Kubernetes Deployment Triage](kubernetes-deployment-triage.md) | Kubernetes | Intermediate | 70 min |
 | [Terraform Plan Review Workflow](terraform-plan-review-workflow.md) | Terraform | Intermediate | 50 min |
