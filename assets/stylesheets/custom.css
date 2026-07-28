@@ -558,6 +558,107 @@
   color: var(--md-default-fg-color--light);
 }
 
+.rebash-path-card--static {
+  cursor: default;
+}
+
+.rebash-path-card--static:hover {
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-color: var(--md-default-fg-color--lightest);
+}
+
+.rebash-path-card--static .rebash-path-card__link {
+  color: var(--md-default-fg-color--lighter);
+}
+
+.rebash-path-card--static .rebash-path-card__link::after {
+  content: none;
+}
+
+/* Mission quote panel */
+.rebash-quote-panel {
+  padding: 2rem 2rem 1.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: linear-gradient(145deg, rgba(25, 118, 210, 0.08) 0%, var(--md-default-bg-color) 60%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.rebash-quote-panel__text {
+  margin: 0 0 0.85rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--rebash-blue-dark);
+}
+
+.rebash-quote-panel__lead {
+  margin: 0;
+  max-width: 44rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--md-default-fg-color--light);
+}
+
+/* Documentation standards grid */
+.rebash-standards-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 640px) {
+  .rebash-standards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 960px) {
+  .rebash-standards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.rebash-standards-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-default-bg-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.rebash-standards-item__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgba(25, 118, 210, 0.12);
+  color: var(--rebash-blue-dark);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.rebash-standards-item__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--md-default-fg-color);
+}
+
+.rebash-standards-item__desc {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--md-default-fg-color--light);
+}
+
 .rebash-path-card {
   display: flex;
   flex-direction: column;
