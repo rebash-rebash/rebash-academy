@@ -142,4 +142,5 @@ Continue to [Terraform](../terraform/index.md) for infrastructure as code, [GitL
 
 - [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
 - [Kubernetes Interview Prep](../interview/kubernetes.md)
+- [Kubernetes Fundamentals Quiz](../quizzes/kubernetes-fundamentals.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer.md)

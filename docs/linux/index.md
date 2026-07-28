@@ -154,4 +154,5 @@ After completing this track, you will be able to:
 
 - [Linux Cheat Sheet](../cheatsheets/linux.md)
 - [Linux Interview Prep](../interview/linux.md)
+- [Linux Fundamentals Quiz](../quizzes/linux-fundamentals.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer.md)

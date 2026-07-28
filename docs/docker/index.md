@@ -156,4 +156,5 @@ After completing this track, you will be able to:
 
 - [Docker Cheat Sheet](../cheatsheets/docker.md)
 - [Docker Interview Prep](../interview/docker.md)
+- [Docker Fundamentals Quiz](../quizzes/docker-fundamentals.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer.md)
