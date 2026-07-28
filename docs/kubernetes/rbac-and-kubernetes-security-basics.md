@@ -54,32 +54,7 @@ By the end of this tutorial, you will be able to:
 
 RBAC sits in the authorization path after authentication. Bindings connect subjects (users, groups, ServiceAccounts) to roles.
 
-```d2
-direction: down
-
-REQ: "API Request"
-    AUTHN: "Authentication\ncert / token / OIDC"
-    AUTHZ: "Authorization\nRBAC webhook"
-    ADM: "Admission Controllers"
-    ETCD: etcd
-    REQ -> AUTHN
-    AUTHN -> AUTHZ: identity
-    AUTHZ -> ADM: allowed
-    ADM -> ETCD
-    RBAC: "RBAC Objects" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        ROLE: "Role / ClusterRole\nrules: verbs + resources"
-        BIND: "RoleBinding / ClusterRoleBinding"
-        SA: ServiceAccount
-        ROLE -> BIND
-        SA -> BIND
-    }
-    RBAC: RBAC
-    AUTHZ -> RBAC
-```
+![Architecture diagram for RBAC and Kubernetes Security Basics](../assets/images/rbac-and-kubernetes-security-basics.svg)
 
 ## Theory
 
@@ -432,6 +407,8 @@ kubectl delete namespace rbac-lab --wait=false
 
 **Explanation:** Regular RBAC audits (`can-i`, reviewing bindings) catch permission creep after incidents or onboarding changes.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -442,9 +419,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| SA + Role | ServiceAccount bound via Role/RoleBinding |
+| can-i | `kubectl auth can-i` matches the intended allow/deny |
+| Least privilege | Subject cannot perform a deliberately denied verb |
+| Cleanup | Lab RBAC objects and namespace cleaned up |
 
 ## Code Walkthrough
 
@@ -489,12 +467,13 @@ roleRef:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer Roles/RoleBindings over ClusterRoles for namespace-scoped work
+- Avoid binding `cluster-admin` to human users or CI service accounts
+- Audit `escalate`, `bind`, and `impersonate` verbs — they are privilege multipliers
+- Short-lived tokens and OIDC groups beat long-lived service account secrets
+- Review aggregated ClusterRoles before granting “edit” — it often includes Secret access
+- Test RBAC with `kubectl auth can-i` as the subject, not only as an admin
+
 
 ## Common Mistakes
 

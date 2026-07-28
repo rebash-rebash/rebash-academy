@@ -51,21 +51,7 @@ By the end of this tutorial, you will be able to:
 
 kubectl is a client — it never runs containers directly. Every command becomes an HTTPS request to the API server.
 
-```d2
-direction: right
-
-USER: "Engineer / CI"
-    KUBECTL: kubectl
-    KCFG: "kubeconfig\ncontext + credentials"
-    API: kube-apiserver
-    OBJ: "API Objects\nPod / Deployment / Service"
-    ETCD: etcd
-    USER -> KUBECTL
-    KUBECTL -> KCFG
-    KCFG -> API
-    API -> OBJ
-    OBJ -> ETCD
-```
+![Architecture diagram for kubectl Essentials and Workflows](../assets/images/kubectl-essentials-and-workflows.svg)
 
 ## Theory
 
@@ -163,19 +149,8 @@ See the full cheat sheet in [From Docker to Kubernetes](../docker/from-docker-to
 
 ### Production Workflow Pattern
 
-```d2
-direction: right
+![Production Workflow Pattern diagram](../assets/images/kubectl-essentials-and-workflows-1.svg)
 
-EDIT: "Edit YAML locally"
-    DIFF: "kubectl diff -f ."
-    APPLY: "kubectl apply -f ."
-    VERIFY: "kubectl rollout status"
-    GIT: "git commit + push"
-    EDIT -> DIFF
-    DIFF -> APPLY
-    APPLY -> VERIFY
-    VERIFY -> GIT
-```
 
 Never `kubectl edit` in production without capturing changes back to Git.
 
@@ -187,6 +162,25 @@ Never `kubectl edit` in production without capturing changes back to Git.
 | Completion | `source <(kubectl completion bash)` |
 | Default namespace | `kubectl config set-context --current --namespace=dev` |
 | Watch | `kubectl get pods -w` |
+
+
+### Declarative apply as the habit
+
+Imperative `kubectl run` is fine for learning; declarative YAML plus `kubectl apply` is how teams collaborate. Use `--dry-run=server` and `diff` before risky changes, always set `-n` or a default namespace consciously, and prefer `get`/`describe`/`logs` over immediate delete when something fails. Treat kubecontexts like production credentials — the wrong context is an outage waiting to happen.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
 ## Hands-on Lab
 
@@ -324,6 +318,9 @@ kubectl delete pod temp-shell --wait=false
 
 **Explanation:** `--dry-run=client -o yaml` prints manifest without sending to API — use to bootstrap YAML files. `kubectl run` creates a bare Pod (Tutorial 5 covers Pods in depth).
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 6 – Scale, update image, and rollout
 
 **Command:**
@@ -376,9 +373,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Context/ns | You can switch context/namespace safely |
+| Apply/get | Manifest apply and get/describe succeed |
+| Dry-run | Client or server dry-run used before a risky change |
+| Cleanup | Lab objects deleted from the namespace |
 
 ## Code Walkthrough
 
@@ -411,12 +409,13 @@ Reload: `source ~/.bashrc`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer least-privilege kubecontexts; avoid using cluster-admin for daily apply/get workflows
+- Never paste Secret manifests or `kubectl get secret -o yaml` into tickets
+- Use namespaces and `--dry-run=client` / server-side dry-run before destructive applies
+- Favour declarative apply over imperative `run`/`edit` on shared clusters
+- Enable shell history hygiene — kubectl commands often include sensitive names and namespaces
+- Delete lab objects and contexts you no longer need to shrink the blast radius of stolen configs
+
 
 ## Common Mistakes
 

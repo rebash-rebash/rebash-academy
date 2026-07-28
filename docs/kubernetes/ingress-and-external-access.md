@@ -55,37 +55,7 @@ By the end of this tutorial, you will be able to:
 
 External clients hit the Ingress controller LoadBalancer. The controller reads Ingress rules and proxies to internal ClusterIP Services.
 
-```d2
-direction: down
-
-Internet: Internet {
-        USER: "Client\nhttps://shop.example.com"
-    }
-    Edge: "Ingress Controller — nginx / Traefik" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        IC: "LoadBalancer IP\nTLS termination"
-        RULES: "Ingress rules\nhost + path routing"
-    }
-    Cluster: "Cluster Internal" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        SVC1: "Service web\nClusterIP :80"
-        SVC2: "Service api\nClusterIP :8080"
-        P1: "Pods web"
-        P2: "Pods api"
-    }
-    Internet.USER -> Edge.IC
-    Edge.IC -> Edge.RULES
-    Edge.RULES -> Cluster.SVC1: "/"
-    Edge.RULES -> Cluster.SVC2: "/api"
-    Cluster.SVC1 -> Cluster.P1
-    Cluster.SVC2 -> Cluster.P2
-```
+![Architecture diagram for Ingress and External Access](../assets/images/ingress-and-external-access.svg)
 
 ## Theory
 
@@ -194,6 +164,25 @@ Annotations are controller-specific — nginx annotations do not work on Traefik
 
 Ingress can define a `defaultBackend` for requests matching no rules — typically a custom 404 page Service.
 
+
+### Edge routing and TLS
+
+Ingress (or Gateway API) moves L7 routing into the cluster: host/path rules, TLS termination, and sometimes auth. The Ingress controller itself is a privileged edge component — keep it patched, limit who can create Ingress objects that attach to public classes, and separate internal vs public Ingress classes so admin UIs are not accidentally published.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
 ## Hands-on Lab
 
 ### Step 1 – Enable Ingress controller (minikube)
@@ -217,6 +206,9 @@ For kind, install via official manifest:
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 ```
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 2 – Deploy two backend Services
 
 **Command:**
@@ -231,6 +223,9 @@ kubectl expose deployment api --port=8080 --target-port=8080 -n lab-ingress
 ```
 
 **Explanation:** Two Deployments with ClusterIP Services simulate a frontend and API backend.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 3 – Create a basic Ingress
 
@@ -340,6 +335,9 @@ rm -f tls.key tls.crt
 
 **Explanation:** The Ingress controller presents the TLS certificate for HTTPS connections.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 6 – Debug a misconfigured backend
 
 **Command:**
@@ -355,6 +353,9 @@ kubectl patch ingress demo-ingress -n lab-ingress --type=json \
 
 **Explanation:** Wrong Service names produce 502/503 errors. Controller logs reveal upstream resolution failures.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -362,6 +363,9 @@ kubectl patch ingress demo-ingress -n lab-ingress --type=json \
 ```bash
 kubectl delete namespace lab-ingress
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ## Validation
 
@@ -373,9 +377,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Controller | Ingress controller pods are Ready (or platform Ingress is available) |
+| Ingress object | Ingress routes host/path to the backend Service |
+| HTTP/TLS | External request succeeds per lab (HTTP or TLS) |
+| Cleanup | Lab Ingress and demo apps removed |
 
 ## Code Walkthrough
 
@@ -429,12 +434,13 @@ spec:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Terminate TLS at Ingress with valid certificates; redirect HTTP to HTTPS
+- Restrict Ingress controllers’ privileges; they sit on the trust boundary
+- Use authentication, WAF, or IP allow lists for admin UIs exposed via Ingress
+- Validate rewrite and backend-protocol annotations — misrouting can bypass auth services
+- Keep default backends from leaking stack traces or cluster details
+- Separate public and internal Ingress classes so private apps are not accidentally published
+
 
 ## Common Mistakes
 

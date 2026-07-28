@@ -49,29 +49,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
-
-Compose: Project {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        WEB: "web service\nnginx:alpine"
-        API: "api service\ncustom build"
-        DB: "db service\npostgres:16"
-        VOL: "named volume\npgdata"
-        NET: "user-defined network\napp-net"
-    }
-    USER: "Browser / curl"
-    USER -> Compose.WEB: "port 8080"
-    Compose.WEB -> Compose.API: "proxy /api"
-    Compose.API -> Compose.DB: "postgres:5432"
-    Compose.DB -> Compose.VOL
-    Compose.WEB -> Compose.NET
-    Compose.API -> Compose.NET
-    Compose.DB -> Compose.NET
-```
+![Architecture diagram for Docker Compose Fundamentals](../assets/images/docker-compose-fundamentals.svg)
 
 Compose creates a project-scoped network. Services resolve each other by **service name**.
 
@@ -182,6 +160,25 @@ docker compose -f compose.yaml -f compose.prod.yaml up -d
 ```
 
 Later files override earlier ones for conflicting keys.
+
+
+### Compose as a local contract, not a cluster
+
+Compose files encode service topology: networks, volumes, dependency order, and environment. That contract is ideal for local development and small single-host demos, but it is not a replacement for Kubernetes scheduling, self-healing across nodes, or multi-tenant RBAC. Keep Compose files declarative and environment-agnostic (`.env` for local overrides), pin image tags, and design services so the same images can later run under an orchestrator without rewriting application code.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
 ## Hands-on Lab
 
@@ -398,6 +395,8 @@ rm -rf ~/lab/compose-lab
 
 **Explanation:** `-v` removes named volumes; `--rmi local` removes built images.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -408,9 +407,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Up | `docker compose up -d` brings services to healthy/running state |
+| Connectivity | App tier reaches dependency service by service name |
+| Logs/ps | `docker compose ps` and logs show expected services |
+| Down | `docker compose down` (and volumes if required) cleans the stack |
 
 ## Code Walkthrough
 
@@ -427,12 +427,13 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Keep secrets out of committed `compose.yml`; use `.env` (gitignored) or secret stores
+- Pin image tags/digests in Compose services the same way you would in production manifests
+- Avoid `network_mode: host` and privileged services in learning stacks
+- Restrict published ports and prefer internal networks for database tiers
+- Do not mount the Docker socket into Compose services for convenience tooling
+- Tear down stacks (`docker compose down -v` when appropriate) so orphan networks and volumes do not linger
+
 
 ## Common Mistakes
 

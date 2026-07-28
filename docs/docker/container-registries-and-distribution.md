@@ -54,21 +54,7 @@ By the end of this tutorial, you will be able to:
 
 Registries sit between image builders and runtime consumers. The same image digest can be pulled by development laptops, CI agents, ECS tasks, GKE nodes, and Kubernetes clusters worldwide.
 
-```d2
-direction: right
-
-DEV: "Developer / CI Builder"
-    BUILD: "docker build"
-    REG: "Container Registry\nHub / ECR / Artifact Registry"
-    RUN1: "Docker Host"
-    RUN2: "Kubernetes Node"
-    RUN3: "Cloud Run / ECS"
-    DEV -> BUILD
-    BUILD -> REG: "docker push"
-    REG -> RUN1: "docker pull"
-    REG -> RUN2: "kubelet pull"
-    REG -> RUN3: "service pull"
-```
+![Architecture diagram for Container Registries and Distribution](../assets/images/container-registries-and-distribution.svg)
 
 ## Theory
 
@@ -213,6 +199,9 @@ docker images | grep registry-lab-web
 
 **Explanation:** One image ID can have many tags. Tags are aliases; they do not duplicate layer storage locally.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 3 – Authenticate and push to Docker Hub
 
 Create a Hub access token under Account Settings → Security → New Access Token.
@@ -247,6 +236,9 @@ docker manifest inspect "docker.io/${DOCKERHUB_USER}/registry-lab-web:lab-v1" 2>
 ```
 
 **Explanation:** Production deploys often reference digest instead of tag. `buildx imagetools` queries the remote registry without a local pull.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 5 – Pull on a clean host (simulate deployment)
 
@@ -289,6 +281,9 @@ docker push "${ECR_URI}:v1-lab"
 
 **Explanation:** ECR login tokens expire after 12 hours. CI pipelines refresh tokens on each job. `scanOnPush` enables vulnerability scanning.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Google Artifact Registry push workflow (GCP)
 
 Replace project, region, and repository names. Enable Artifact Registry API first.
@@ -311,6 +306,9 @@ docker push "${AR_URI}:v1-lab"
 
 **Explanation:** Artifact Registry is regional. GKE clusters in the same region pull with lower latency and no cross-region egress charges.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 8 – Clean up lab resources
 
 **Command:**
@@ -322,6 +320,8 @@ docker rmi registry-lab-web:local 2>/dev/null || true
 
 **Explanation:** Remove local tags after labs. Delete remote test repositories in Hub/ECR/AR consoles if no longer needed.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -332,9 +332,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Login/tag | Image tagged for the target registry namespace |
+| Push/pull | Push succeeds (or dry-run path documented) and pull retrieves the image |
+| Digest | You can identify the image digest after push/pull |
+| Cleanup | Local tags removed if the lab requires; credentials not left in shell history notes |
 
 ## Code Walkthrough
 
@@ -375,12 +376,13 @@ Make executable: `chmod +x scripts/tag-and-push.sh`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Use private registries for internal images; require authentication for pull and push
+- Enable vulnerability scanning and block deploy of critical CVEs on release tags
+- Prefer immutable tags or digests; prevent tag overwrite on release channels
+- Scope registry credentials to least privilege (pull-only for runtime nodes)
+- Sign images (Notary/cosign) and verify signatures in deploy pipelines
+- Never embed registry passwords in Dockerfiles, CI YAML committed to Git, or world-readable scripts
+
 
 ## Common Mistakes
 

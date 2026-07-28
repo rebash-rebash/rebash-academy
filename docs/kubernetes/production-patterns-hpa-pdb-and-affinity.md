@@ -51,37 +51,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
-
-Traffic: Traffic {
-        USERS: "Users / Ingress"
-    }
-    Control: Control {
-        HPA: "HPA controller"
-        METRICS: "metrics-server / Prometheus"
-        PDB: "PDB policy"
-    }
-    Workload: Workload {
-        DEP: "Deployment — api"
-        P1: Pod
-        P2: Pod
-        P3: Pod
-    }
-    Nodes: Nodes {
-        N1: "Node AZ-a"
-        N2: "Node AZ-b"
-        N3: "Node AZ-c"
-    }
-    Traffic.USERS -> Workload.DEP
-    Control.METRICS -> Control.HPA
-    Control.HPA -> Workload.DEP: "scale replicas"
-    Control.PDB -> Workload.DEP: "limits evictions"
-    Workload.DEP -> Workload.P1
-    Workload.P1 -> Nodes.N1
-    Workload.P2 -> Nodes.N2
-    Workload.P3 -> Nodes.N3
-```
+![Architecture diagram for Production Patterns — HPA, PDB, and Affinity](../assets/images/production-patterns-hpa-pdb-and-affinity.svg)
 
 ## Theory
 
@@ -151,6 +121,25 @@ topologySpreadConstraints:
 
 `maxSkew: 1` means no zone can have more than one pod extra compared to another zone.
 
+
+### Scale and safety together
+
+HPA scales replicas under load; PDBs limit voluntary disruption during drains; affinity/anti-affinity influence placement for resilience. Miscombined, they fight each other (a PDB that cannot be satisfied blocks node upgrades; an uncapped HPA overwhelms databases). Set max replicas thoughtfully, keep replica counts high enough for your PDB, and verify drain behaviour in staging.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
 ## Hands-on Lab
 
 Labs extend the **VoteStack api** Deployment from [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md).
@@ -169,6 +158,9 @@ If missing on kind/minikube:
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 # kind may need --kubelet-insecure-tls flag in metrics-server args
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 2 — Baseline Deployment with resource requests
 
@@ -211,6 +203,9 @@ spec:
               port: 8080
             periodSeconds: 10
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 Apply and confirm: `kubectl get deploy votestack-api -n votestack`
 
@@ -266,6 +261,9 @@ kubectl run -it loadgen --rm --image=busybox --restart=Never -- \
 kubectl get hpa,pods -n votestack -w
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 4 — Pod Disruption Budget
 
 ```yaml
@@ -293,6 +291,9 @@ NODE=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
 kubectl drain "$NODE" --ignore-daemonsets --delete-emptydir-data --dry-run=client
 # Real drain respects PDB — may block if minAvailable would be violated
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 5 — Topology spread across zones
 
@@ -331,6 +332,9 @@ Verify distribution:
 kubectl get pods -n votestack -o wide -l app=votestack-api
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 6 — Worker queue-depth HPA (custom metrics)
 
 For the VoteStack **worker**, scale on Redis queue length via Prometheus Adapter:
@@ -362,6 +366,9 @@ metrics:
         averageValue: "30"
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Document in GitOps values; validate in staging before prod.
 
 ## Validation
@@ -374,9 +381,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| HPA | HorizontalPodAutoscaler exists and reacts to load or metrics as labbed |
+| PDB | PodDisruptionBudget admitted and visible via kubectl |
+| Affinity | Scheduling rules affect Pod placement as documented |
+| Cleanup | HPA/PDB/demo workloads removed |
 
 ## Code Walkthrough
 
@@ -406,12 +414,13 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Cap HPA max replicas to protect downstream dependencies and your cloud bill
+- Pair PodDisruptionBudgets with enough replicas — a PDB of minAvailable=1 on a single replica blocks drains forever or forces unsafe bypasses
+- Use affinity/anti-affinity to improve resilience, not to pin everything to one tainted node
+- Prevent autoscaling on insecure images by gating deploys with admission policy
+- Watch that scale-up does not bypass Pod Security or quota unexpectedly
+- Test drain/eviction behaviour in staging before relying on PDBs in production
+
 
 ## Common Mistakes
 

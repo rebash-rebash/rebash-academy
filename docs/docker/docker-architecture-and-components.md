@@ -53,55 +53,7 @@ By the end of this tutorial, you will be able to:
 
 The full stack from user command to running process. Kubernetes often bypasses dockerd and talks directly to containerd via CRI — but the lower layers remain the same.
 
-```d2
-direction: down
-
-USER_LAYER: "User Layer" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        CLI: "Docker CLI"
-        COMPOSE: "Docker Compose"
-        SDK: "Docker SDK / API clients"
-    }
-    ENGINE: "Docker Engine" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        DOCKERD: "dockerd\nAPI · images · networks · volumes"
-    }
-    RUNTIME: "Container Runtime" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        CONTAINERD: "containerd\nimage pull · snapshot · task"
-        SHIM: containerd-shim
-        RUNC: "runc\nOCI runtime"
-    }
-    KERNEL: "Linux Kernel" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        NS: Namespaces
-        CG: cgroups
-        OFS: OverlayFS
-    }
-    CONT: "Running Container"
-    USER_LAYER.CLI -> ENGINE.DOCKERD
-    USER_LAYER.COMPOSE -> ENGINE.DOCKERD
-    USER_LAYER.SDK -> ENGINE.DOCKERD
-    ENGINE.DOCKERD -> RUNTIME.CONTAINERD
-    RUNTIME.CONTAINERD -> RUNTIME.SHIM
-    RUNTIME.SHIM -> RUNTIME.RUNC
-    RUNTIME.RUNC -> KERNEL.NS
-    RUNTIME.RUNC -> KERNEL.CG
-    RUNTIME.RUNC -> KERNEL.OFS
-    RUNTIME.RUNC -> CONT
-```
+![Architecture diagram for Docker Architecture and Components](../assets/images/docker-architecture-and-components.svg)
 
 ## Theory
 
@@ -177,17 +129,8 @@ Other OCI runtimes:
 
 Docker images are **stacked read-only layers** plus a **writable container layer**:
 
-```d2
-direction: up
+![Image Layers and Storage diagram](../assets/images/docker-architecture-and-components-1.svg)
 
-RW: "Container Layer\nread-write · ephemeral"
-    L3: "Layer 3 — app code"
-    L2: "Layer 2 — dependencies"
-    L1: "Layer 1 — base OS"
-    RW -> L3
-    L3 -> L2
-    L2 -> L1
-```
 
 | Concept | Description |
 |---------|-------------|
@@ -232,6 +175,11 @@ Understanding this explains why "Docker was removed from Kubernetes" — Kuberne
 ### BuildKit
 
 Modern Docker builds use **BuildKit** (default since Docker 23): parallel stages, cache export/import, multi-platform builds, and secret mounts. `docker buildx` is the CLI interface — covered in later Dockerfile tutorials.
+
+
+### Why the daemon boundary matters operationally
+
+Every `docker` CLI call is an API request to `dockerd`. That design enables remote engines and Compose, but it also means socket access is root-equivalent and a hung daemon affects every container on the host. When troubleshooting, separate client problems (`docker` binary, context, TLS) from daemon problems (storage driver, containerd, disk pressure). Knowing which component owns images, containers, networks, and volumes lets you choose the right inspect command instead of rebooting the host.
 
 ## Hands-on Lab
 
@@ -383,6 +331,8 @@ docker stop arch-lab && docker rm arch-lab
 
 **Explanation:** Remove lab resources. The nginx image remains cached for future tutorials.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -393,9 +343,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Inspect daemon | You identified storage driver, runtime, and logging driver from `docker info` |
+| Object model | You can map CLI actions to image, container, network, and volume objects |
+| Socket awareness | You can state why access to the Docker socket is sensitive |
+| Cleanup | Inspection containers removed |
 
 ## Code Walkthrough
 
@@ -447,12 +398,13 @@ Make executable: `chmod +x ~/bin/docker-arch-inspect.sh`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Restrict who can talk to the Docker daemon socket — it is a root-equivalent control plane
+- Prefer rootless Docker for untrusted workloads when your distribution supports it
+- Understand that container namespaces do not replace host hardening (SELinux/AppArmor, kernel updates)
+- Do not expose `dockerd` over unauthenticated TCP; require mutual TLS if remote access is mandatory
+- Audit installed plugins and custom runtimes — they expand the attack surface
+- Keep storage drivers and graph paths on volumes that your organisation can back up and wipe safely
+
 
 ## Common Mistakes
 

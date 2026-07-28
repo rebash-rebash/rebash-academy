@@ -54,23 +54,7 @@ By the end of this tutorial, you will be able to:
 
 After installation, your host runs the Docker daemon as a systemd service. The CLI communicates over a Unix socket — understanding this path explains permission errors and remote Docker contexts.
 
-```d2
-direction: right
-
-USER: "User — docker group"
-    CLI: "Docker CLI\n/usr/bin/docker"
-    SOCK: "/var/run/docker.sock"
-    DAEMON: "dockerd\nsystemd service"
-    CONTAINERD: containerd
-    RUNC: runc
-    CONT: Containers
-    USER -> CLI
-    CLI -> SOCK
-    SOCK -> DAEMON
-    DAEMON -> CONTAINERD
-    CONTAINERD -> RUNC
-    RUNC -> CONT
-```
+![Architecture diagram for Docker Installation and Setup](../assets/images/docker-installation-and-setup.svg)
 
 ## Theory
 
@@ -134,6 +118,25 @@ Docker Engine integrates with systemd:
 - **Reload config:** edit `daemon.json`, then `systemctl reload docker` or restart
 
 On Kubernetes nodes, containerd may run independently; Docker is increasingly replaced by containerd + CRI. Understanding Docker installation still matters because build pipelines and developer workflows rely on it heavily.
+
+
+### Engine, CLI, and context
+
+A working install is more than a binary: the engine must be running, your user must be authorised to the socket (or use rootless), and `docker context` must point at the intended daemon. After install, verify with `docker version`, `docker info`, and a trivial `hello-world` run. On Linux, prefer distro packages from Docker’s official repositories; on macOS/Windows, Docker Desktop provides a VM-backed engine — remember resource limits and file-sharing settings affect bind mounts and performance.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
 ## Hands-on Lab
 
@@ -316,9 +319,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Engine running | `docker info` succeeds without permission errors (or documented sudo path) |
+| Hello-world | `docker run hello-world` completes |
+| Group/socket | Your user can talk to the daemon as intended for the lab |
+| Cleanup | Test containers removed |
 
 ## Code Walkthrough
 
@@ -378,12 +382,13 @@ Make executable: `chmod +x ~/bin/docker-verify.sh && ~/bin/docker-verify.sh`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer the official Docker package repositories over random third-party install scripts
+- Adding a user to the `docker` group is equivalent to root on that host — restrict membership
+- Disable or firewall the Docker TCP API (`2375`/`2376`); prefer SSH or authenticated TLS if remote management is required
+- Verify package checksums or repository signing keys on air-gapped installs
+- Separate lab hosts from production; never point a learning Docker daemon at production registries with write credentials
+- Enable and review Docker daemon logs after installation to confirm expected configuration
+
 
 ## Common Mistakes
 

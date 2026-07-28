@@ -51,32 +51,7 @@ By the end of this capstone, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
-
-External: External {
-        USER: Browser
-    }
-    Edge: Edge {
-        NGX: "nginx reverse proxy :80"
-    }
-    Application: Application {
-        WEB: "web frontend :3000"
-        API: "api service :8080"
-        WORK: worker
-    }
-    Data: Data {
-        REDIS: redis
-        PG: postgres
-    }
-    External.USER -> Edge.NGX
-    Edge.NGX -> Application.WEB
-    Edge.NGX -> Application.API
-    Application.API -> Data.REDIS
-    Application.API -> Data.PG
-    Application.WORK -> Data.REDIS
-    Application.WORK -> Data.PG
-```
+![Architecture diagram for Docker Capstone and Next Steps](../assets/images/docker-capstone-and-next-steps.svg)
 
 ## Project Overview — VoteStack
 
@@ -123,6 +98,44 @@ votestack/
 
 Core ideas for this tutorial appear inline in the lab steps and Code Walkthrough. Read each step explanation before running commands.
 
+
+### Capstone quality bar
+
+Before you call the VoteStack (or your variant) complete, verify it behaves like a miniature production system: images build reproducibly, Compose (or Kubernetes) brings dependencies up in order, healthchecks gate traffic, resource limits contain faults, and secrets never live in Git. Add a short README that documents ports, required env vars, and teardown commands — future-you and interviewers both care that you can operate what you built.
+
+Use the capstone as a portfolio artefact: push images to a personal registry, attach a CI workflow that builds and scans, and write a one-page architecture note covering failure domains (what happens if Redis dies, if Postgres is slow, if the worker crashes mid-vote).
+
+### Field notes for docker capstone and next steps
+
+Re-read the Architecture diagram alongside the Hands-on Lab: each lab step should map to a box or arrow in that picture. If you cannot point to where a command fits, pause and revisit Theory before continuing — that habit prevents cargo-cult YAML and Compose snippets in production reviews.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
 ## Hands-on Lab
 
 ### Lab 1 — Scaffold services
@@ -151,6 +164,9 @@ docker build -t votestack-api:local ./api
 docker build -t votestack-web:local ./web
 docker build -t votestack-worker:local ./worker
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 2 — Compose stack with production patterns
 
@@ -257,6 +273,9 @@ docker compose ps
 ./scripts/smoke-test.sh http://localhost:8080
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 3 — CI pipeline
 
 Parallel jobs build each service with `$GITHUB_SHA` tags; push only on non-PR events. Pattern (repeat per `./api`, `./web`, `./worker`):
@@ -273,6 +292,9 @@ Parallel jobs build each service with `$GITHUB_SHA` tags; push only on non-PR ev
           fi
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Add Trivy scan on `main` — see [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md).
 
 ### Lab 4 — Production override
@@ -283,6 +305,9 @@ Use `compose.prod.yml` to swap local tags for registry images (`APP_VERSION` = c
 export APP_VERSION=abc1234
 docker compose -f compose.yml -f compose.prod.yml up -d
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 5 — Operations runbook
 
@@ -299,9 +324,15 @@ docker compose -f compose.yml -f compose.prod.yml up -d --no-deps api web worker
 # Rollback — set APP_VERSION to previous SHA and re-run up -d
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 6 — Kubernetes migration
 
 Map each VoteStack service to Kubernetes resources using [From Docker to Kubernetes](from-docker-to-kubernetes.md): **web/api/worker** → Deployments; **nginx** → Ingress; **postgres/redis** → StatefulSet or managed services with PVCs. Continue on the [Kubernetes track](../kubernetes/index.md).
+
+**Expected result:** You complete this step and can explain the outcome.
+
 
 ## Validation
 
@@ -313,9 +344,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Images | api/web/worker images build successfully |
+| Stack | Compose stack is healthy including dependencies |
+| Patterns | Healthchecks, restarts, and non-root settings present |
+| Cleanup | Stack stopped; secrets not committed |
 
 ## Code Walkthrough
 
@@ -332,12 +364,13 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Treat the capstone stack like production: non-root, healthchecks, limits, and no committed secrets
+- Use distinct credentials per environment; never reuse lab Postgres passwords in real deployments
+- Scan and sign the images you build before any registry push outside your laptop
+- Segment database networks from public-facing web services in Compose
+- Document break-glass procedures — do not leave `--privileged` “temporary” services in the final compose file
+- Tear down or snapshot lab data so the next learner does not inherit your secrets
+
 
 ## Common Mistakes
 

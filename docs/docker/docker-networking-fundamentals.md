@@ -49,40 +49,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
-
-Host: Host {
-        ETH: "Host NIC eth0"
-        IPT: "iptables NAT"
-    }
-    Bridge: docker0 {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        C1: "Container A\n172.17.0.2"
-        C2: "Container B\n172.17.0.3"
-    }
-    UserBridge: app-net {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        C3: "Container C\n172.18.0.2"
-        C4: "Container D\n172.18.0.3"
-    }
-    EXT: "External client"
-    EXT -> Host.IPT: "host:8080"
-    Host.IPT -> Bridge.C1: DNAT
-    UserBridge.C3 <-> UserBridge.C4: "DNS: api"
-    Bridge: Bridge
-    Bridge.C1 -> Bridge
-    Bridge.C2 -> Bridge
-    Bridge -> Host.ETH
-    UserBridge: UserBridge
-    UserBridge -> Host.ETH
-```
+![Architecture diagram for Docker Networking Fundamentals](../assets/images/docker-networking-fundamentals.svg)
 
 User-defined networks add automatic DNS between connected containers.
 
@@ -212,6 +179,25 @@ docker exec container wget -qO- http://other-service:8080/
 | Container A | Container B (default bridge) | Use IP address or link (legacy) |
 | Container | Internet | NAT via host (unless `internal` network) |
 | External | Container | Host firewall allows published port |
+
+
+### Publish, DNS, and isolation
+
+Containers on a user-defined bridge resolve each other by name via embedded DNS; the default `bridge` network does not provide that DNS behaviour reliably for custom names. Publishing a port installs NAT rules on the host — bind to `127.0.0.1` in labs unless you need LAN access. Treat container networks like VLANs: put frontends and databases on appropriate networks, avoid `--network host` unless you accept shared network namespaces, and review `docker ps` published ports before leaving a session.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
 ## Hands-on Lab
 
@@ -366,6 +352,8 @@ docker network rm rebash-app-net 2>/dev/null || true
 
 **Explanation:** Remove lab containers and custom networks.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -376,9 +364,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| User network | Custom bridge network exists and containers attach to it |
+| DNS | Containers resolve each other by Compose/Docker DNS name |
+| Publish | Host port mapping reaches the target container |
+| Cleanup | Lab containers and networks removed |
 
 ## Code Walkthrough
 
@@ -431,12 +420,13 @@ Only localhost can connect — useful for dev security.
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer user-defined bridge networks over the default bridge for service discovery and isolation
+- Publish only required ports; bind to localhost in labs (`-p 127.0.0.1:8080:80`)
+- Avoid `--network host` unless you understand you are sharing the host network namespace
+- Do not disable iptables integration casually — it underpins Docker’s publish and isolation model
+- Segment untrusted workloads onto separate networks; treat flat container networks like flat VLANs
+- Log and review unexpected published ports with `docker ps` before leaving a lab session
+
 
 ## Common Mistakes
 

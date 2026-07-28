@@ -54,41 +54,7 @@ By the end of this tutorial, you will be able to:
 
 A Service fronts a set of Pods selected by labels. kube-proxy programs rules on each node to route traffic to Pod endpoints.
 
-```d2
-direction: down
-
-Client: "Calling Pod" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        C: "curl http://web.default.svc.cluster.local"
-    }
-    Control: "Control Plane" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        SVC: "Service web\nClusterIP 10.96.100.50:80"
-        EP: "Endpoints\n10.244.1.5:8080\n10.244.2.3:8080\n10.244.3.7:8080"
-    }
-    Nodes: "Worker Nodes" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        KP: "kube-proxy\niptables / IPVS"
-        P1: "Pod web-aaa\n10.244.1.5:8080"
-        P2: "Pod web-bbb\n10.244.2.3:8080"
-        P3: "Pod web-ccc\n10.244.3.7:8080"
-    }
-    Client.C -> Control.SVC: "DNS lookup"
-    Control.SVC -> Control.EP
-    Client.C -> Nodes.KP
-    Nodes.KP -> Nodes.P1
-    Nodes.KP -> Nodes.P2
-    Nodes.KP -> Nodes.P3
-```
+![Architecture diagram for Services and Cluster Networking](../assets/images/services-and-cluster-networking.svg)
 
 ## Theory
 
@@ -199,6 +165,25 @@ spec:
 
 For HTTP routing by hostname and path, use **Ingress** — covered in [Ingress and External Access](ingress-and-external-access.md).
 
+
+### Stable virtual IPs and endpoints
+
+Services provide a stable virtual IP and DNS name in front of changing Pod IPs. Endpoints populate only for Ready Pods, which is why readiness probes matter for traffic. Prefer ClusterIP internally; use NodePort/LoadBalancer/Ingress deliberately for external exposure, and add NetworkPolicies so “everything can talk to everything” is not your security model.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
 ## Hands-on Lab
 
 ### Step 1 – Deploy an application with a ClusterIP Service
@@ -259,6 +244,9 @@ kubectl get endpoints api -n lab-services
 
 **Explanation:** During rollout, endpoints update as old Pods terminate and new Pods become Ready. Service ClusterIP stays constant.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 4 – Create a NodePort Service
 
 **Command:**
@@ -288,6 +276,9 @@ kubectl get svc api-nodeport -n lab-services
 ```
 
 **Explanation:** NodePort exposes the Service on every node at port 30088. Useful for local development without Ingress.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 5 – Declarative Service manifest
 
@@ -322,6 +313,9 @@ kubectl describe svc api -n lab-services
 
 **Explanation:** Production Services belong in Git with explicit port names — required for some Ingress controllers and service mesh protocols.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 6 – Debug a broken selector
 
 **Command:**
@@ -335,6 +329,9 @@ kubectl patch svc api -n lab-services -p '{"spec":{"selector":{"app":"api"}}}'
 
 **Explanation:** Mismatched selectors produce empty endpoints — the most common Service debugging scenario.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -342,6 +339,9 @@ kubectl patch svc api -n lab-services -p '{"spec":{"selector":{"app":"api"}}}'
 ```bash
 kubectl delete namespace lab-services
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ## Validation
 
@@ -353,9 +353,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Service | ClusterIP/NodePort Service exists and selects Pods |
+| Endpoints | Endpoints/EndpointSlice populate when Pods are Ready |
+| Connectivity | In-cluster or port-forward test reaches the app |
+| Cleanup | Lab Services and workloads removed |
 
 ## Code Walkthrough
 
@@ -388,12 +389,13 @@ spec:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer ClusterIP for internal services; expose externally only via controlled Ingress/LoadBalancer
+- Do not use NodePort on untrusted networks without firewalling node IPs
+- Pair Services with NetworkPolicies to restrict who may reach Pods
+- Avoid headless Services that unexpectedly broaden discovery of sensitive backends
+- Protect kube-proxy / CNI configuration — misrouting equals data exposure
+- Review `externalIPs` and load balancer annotations carefully; cloud metadata typos create public exposure
+
 
 ## Common Mistakes
 

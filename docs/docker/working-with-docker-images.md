@@ -54,22 +54,7 @@ By the end of this tutorial, you will be able to:
 
 Images flow from registries to local storage, where layers are deduplicated across tags. Containers add a writable layer on top without modifying the image.
 
-```d2
-direction: right
-
-REG: "Registry\nDocker Hub / ECR"
-    PULL: "docker pull"
-    LOCAL: "Local Image Store\n/var/lib/docker/image"
-    TAG: "docker tag"
-    RUN: "docker run"
-    CONT: "Container\nwritable layer"
-    REG -> PULL
-    PULL -> LOCAL
-    LOCAL -> TAG
-    TAG -> LOCAL
-    LOCAL -> RUN
-    RUN -> CONT
-```
+![Architecture diagram for Working with Docker Images](../assets/images/working-with-docker-images.svg)
 
 ## Theory
 
@@ -169,6 +154,16 @@ Align Docker tags with [Git](../git/index.md) tags and CI pipeline variables. Gi
 | `docker system prune -a` | Remove unused images, containers, networks (careful!) |
 
 **Dangling images** appear when rebuilds produce new layer sets but old untagged layers remain — common in CI without prune policies.
+
+
+### Tags, digests, and trust
+
+A tag like `nginx:latest` is a mutable pointer; a digest (`@sha256:…`) is immutable content. Pull by digest when you need reproducibility, and retag locally for labs without assuming Hub tags stay still. Inspect and `docker history` help you see what you are about to run — large surprise layers and mystery base images deserve scrutiny before production promotion.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
 
 ## Hands-on Lab
 
@@ -347,9 +342,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Pull/list | Target image appears in `docker images` |
+| Inspect/history | You can show layers/config for the lab image |
+| Tag | Retagged image exists locally with the expected name |
+| Cleanup | Unused lab tags/images removed if the lab requires it |
 
 ## Code Walkthrough
 
@@ -400,12 +396,13 @@ In GitLab CI, tag images with `$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA`. For GitHub Ac
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer digest pins (`image@sha256:…`) over floating tags like `latest` for anything beyond throwaway demos
+- Scan images for CVEs before promoting them; treat Hub pulls as untrusted until verified
+- Never bake secrets into image layers — they remain recoverable even after `docker history` cleanup attempts
+- Limit who can push to your registries; image supply chain is a primary attack vector
+- Remove unused images regularly to reduce the window of outdated vulnerable layers on disk
+- Prefer multi-arch official images and verify signatures when your registry supports them
+
 
 ## Common Mistakes
 

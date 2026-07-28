@@ -51,41 +51,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
-
-Apps: "Application namespace" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        API: votestack-api
-        WEB: votestack-web
-        PROM: PROM
-        API -> PROM: "/metrics"
-    }
-    Observability: "monitoring namespace" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        AM: Alertmanager
-        GRAF: Grafana
-        LOKI: Loki
-        PROM -> AM
-        PROM -> GRAF
-        LOKI -> GRAF
-    }
-    Collection: Collection {
-        SM: ServiceMonitor
-        FB: "Fluent Bit / Promtail"
-    }
-    Collection.SM -> Apps.PROM
-    Apps.API -> Collection.FB
-    Collection.FB -> Observability.LOKI
-    ONCALL: "On-call engineer"
-    Observability.AM -> ONCALL: "PagerDuty / Slack"
-```
+![Architecture diagram for Monitoring and Logging in Kubernetes](../assets/images/monitoring-and-logging-in-kubernetes.svg)
 
 ## Theory
 
@@ -150,6 +116,38 @@ Structured JSON logs (`{"level":"error","msg":"..."}`) enable label-based filter
 
 Use Alertmanager for routing, inhibition, and silencing during maintenance.
 
+
+### Metrics, logs, and who can see them
+
+Prometheus-style metrics and centralised logs make clusters operable — and they also reveal topology, label cardinality, and sometimes secrets if applications mis-log. Protect Grafana and similar UIs with SSO and network policy, change default chart passwords immediately, and scope service accounts for exporters. Retention is a security control: indefinite log storage increases breach impact.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
 ## Hands-on Lab
 
 ### Lab 1 — Install kube-prometheus-stack
@@ -170,6 +168,9 @@ kubectl get pods -n monitoring
 kubectl port-forward svc/kube-prometheus-grafana -n monitoring 3000:80
 # Browser: http://localhost:3000 — admin / changeme
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 Explore built-in dashboards: **Kubernetes / Compute Resources / Namespace**, **Node Exporter**.
 
@@ -202,6 +203,9 @@ kubectl port-forward svc/votestack-api -n votestack 8080:8080
 curl -s localhost:8080/metrics | head -20
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 3 — ServiceMonitor for api
 
 ```yaml
@@ -231,6 +235,9 @@ ports:
     targetPort: 8080
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Apply and confirm target in Prometheus UI → Status → Targets.
 
 ### Lab 4 — Grafana dashboard panel
@@ -256,6 +263,9 @@ data:
     { "... dashboard JSON ..." }
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 5 — Deploy Loki for log aggregation
 
 ```bash
@@ -272,6 +282,9 @@ Query logs in Grafana → Explore → Loki:
 {namespace="votestack", app="votestack-api"} |= "error"
 {namespace="votestack"} | json | level="error"
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 Correlate with metrics: click timestamp → view pod logs for same interval.
 
@@ -331,6 +344,9 @@ alertmanager:
           receiver: slack
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Test: `kubectl exec -n monitoring alertmanager-kube-prometheus-alertmanager-0 -- amtool alert add`
 
 ## Validation
@@ -343,9 +359,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Stack | Monitoring pods in the monitoring namespace are Ready |
+| Metrics | Prometheus (or platform metrics) scrapes a target |
+| Logs/dashboards | You opened a dashboard or retrieved Pod logs as documented |
+| Cleanup | Lab passwords rotated/changed; optional uninstall if required |
 
 ## Code Walkthrough
 
@@ -380,12 +397,13 @@ kubectl logs -n votestack <pod> --previous   # crashed container
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Protect Grafana/Prometheus UIs with SSO and network controls — they reveal cluster topology
+- Scrub logs of secrets and tokens at the source; collectors amplify leaks
+- Scope service account permissions for exporters; node-exporters and agents are powerful
+- Retain metrics/logs per policy; indefinite retention increases breach impact
+- Separate monitoring namespaces and apply NetworkPolicies around scrapers
+- Change default chart passwords immediately (never leave `changeme` in shared labs)
+
 
 ## Common Mistakes
 

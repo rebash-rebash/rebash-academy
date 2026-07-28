@@ -55,50 +55,7 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows where Kubernetes sits between your container images and production infrastructure. Images still come from the same registries you used with Docker; Kubernetes adds a control plane that continuously reconciles cluster state with your declared manifests.
 
-```d2
-direction: down
-
-DEV: "Developer Workflow" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        GIT: "Git Repository\nmanifests / Helm"
-        CI: "CI/CD Pipeline"
-        REG: "Container Registry\nDocker Hub / ECR / GCR"
-    }
-    CP: "Kubernetes Control Plane" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        API: "API Server"
-        ETCD: "etcd — cluster state"
-        SCHED: Scheduler
-        CM: "Controller Manager"
-        API -> ETCD
-        SCHED -> API
-        CM -> API
-    }
-    DATA: "Data Plane — Worker Nodes" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        KUBELET: kubelet
-        RUNTIME: "container runtime\ncontainerd / CRI-O"
-        POD1: Pod
-        POD2: Pod
-        KUBELET -> RUNTIME
-        RUNTIME -> POD1
-        RUNTIME -> POD2
-    }
-    DEV.GIT -> DEV.CI
-    DEV.CI -> DEV.REG
-    DEV.CI -> CP.API
-    DEV.REG -> DATA.RUNTIME
-    CP.API -> DATA.KUBELET
-```
+![Architecture diagram for Introduction to Kubernetes and Orchestration](../assets/images/introduction-to-kubernetes-and-orchestration.svg)
 
 ## Theory
 
@@ -142,21 +99,8 @@ Kubernetes follows a **control loop** pattern:
 
 If a Pod crashes, the ReplicaSet controller notices the mismatch (desired: 3, actual: 2) and creates a replacement. This is **self-healing** without custom scripts.
 
-```d2
-direction: right
+![The Declarative Reconciliation Model diagram](../assets/images/introduction-to-kubernetes-and-orchestration-1.svg)
 
-USER: "Engineer / CI"
-    YAML: "Desired State\nYAML manifest"
-    API: "API Server"
-    CTRL: Controllers
-    ACTUAL: "Actual State\nrunning Pods"
-    USER -> YAML
-    YAML -> API
-    API -> CTRL
-    CTRL -> ACTUAL
-    ACTUAL -> CTRL
-    CTRL -> API
-```
 
 ### Kubernetes vs Other Orchestrators
 
@@ -254,6 +198,9 @@ cat /tmp/k8s-vocab.txt
 
 **Explanation:** Internalize these terms before reading architecture docs. They appear in every Kubernetes conversation and interview.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 3 – Read the Docker-to-K8s mapping
 
 **Command:**
@@ -264,6 +211,9 @@ echo "Key mappings: container→Pod, docker compose→Deployment+Service, volume
 ```
 
 **Explanation:** The mapping table in [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md) is your Rosetta Stone. Re-read it whenever a Kubernetes object feels unfamiliar.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 4 – Survey the CNCF landscape
 
@@ -276,6 +226,9 @@ curl -sfL https://landscape.cncf.io/data/full.json 2>/dev/null | head -c 200 \
 
 **Explanation:** Kubernetes sits at the center of hundreds of complementary projects. You do not need to learn them all at once — focus on kubectl, Deployments, Services, and Ingress first.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 5 – Check if kubectl is available
 
 **Command:**
@@ -287,6 +240,9 @@ command -v kind && kind version 2>/dev/null || true
 ```
 
 **Explanation:** Local cluster tools come in Tutorial 3. Knowing what is missing now helps you plan lab time.
+
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ### Step 6 – Draft your first declarative manifest (do not apply yet)
 
@@ -314,6 +270,9 @@ cat ~/k8s-lab/manifests/hello-pod.yaml
 
 **Explanation:** This Pod manifest declares desired state. After installing a cluster, you will apply it with `kubectl apply -f`. Notice there is no host specified — the scheduler decides.
 
+
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ### Step 7 – Document your learning baseline
 
 **Command:**
@@ -328,6 +287,8 @@ echo "Next tutorial: kubernetes-architecture-and-components.md"
 
 **Explanation:** Capture your starting point. Include this in personal notes when tracking progress through the Kubernetes track.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -338,9 +299,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Vocabulary | Orchestration terms file or notes completed |
+| Why K8s | You can explain scheduling, healing, and declarative intent |
+| Optional cluster | If kubectl is configured, `kubectl get nodes` works |
+| Cleanup | Temporary files under `/tmp` removed |
 
 ## Code Walkthrough
 
@@ -396,12 +358,13 @@ Make executable: `chmod +x ~/bin/k8s-preflight.sh && ~/bin/k8s-preflight.sh`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Treat cluster credentials (kubeconfig) like root passwords — never commit them to Git
+- Prefer managed learning clusters or local Kind/minikube over shared production clusters for labs
+- Understand that Pods share a kernel with the node; isolation is not absolute
+- Limit early experiments to a dedicated namespace with ResourceQuotas
+- Do not expose the Kubernetes API publicly without authentication and network controls
+- Rotate lab service account tokens and delete leftover namespaces after exercises
+
 
 ## Common Mistakes
 

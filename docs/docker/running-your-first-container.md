@@ -54,17 +54,7 @@ By the end of this tutorial, you will be able to:
 
 A single `docker run` creates a container with an isolated process tree, optional port mapping, and captured stdout/stderr streams.
 
-```d2
-direction: right
-
-HOST: "Host :8080"
-    BRIDGE: "docker0 bridge"
-    CONT: "Container\nnginx :80"
-    LOGS: "json-file logs\n/var/lib/docker"
-    HOST -> BRIDGE: "NAT publish"
-    BRIDGE -> CONT
-    CONT -> LOGS: "stdout/stderr"
-```
+![Architecture diagram for Running Your First Container](../assets/images/running-your-first-container.svg)
 
 ## Theory
 
@@ -105,26 +95,8 @@ Combine `-dit` for a detached container that still has a TTY available for later
 
 ### Container Lifecycle States
 
-```d2
-direction: right
+![Container Lifecycle States diagram](../assets/images/running-your-first-container-1.svg)
 
-start: "" {
-  shape: circle
-}
-Created: Created
-start -> Created: "docker create"
-Running: Running
-Created -> Running: "docker start / docker run"
-Paused: Paused
-Running -> Paused: "docker pause"
-Paused -> Running: "docker unpause"
-Stopped: Stopped
-Running -> Stopped: "docker stop / exit"
-Stopped -> Running: "docker start"
-Removed: Removed
-Stopped -> Removed: "docker rm"
-Running -> Removed: "docker rm -f"
-```
 
 | State | Description |
 |-------|-------------|
@@ -200,6 +172,11 @@ Labels enable filtering: `docker ps --filter label=env=prod`. Names must be uniq
 ### Ephemeral Writable Layer
 
 Changes inside a running container (files written to `/tmp`, packages installed with apt) live in the container's **writable layer**. When the container is removed, those changes are lost unless you use volumes. Treat containers as disposable — redeploy from image, do not mutate in place.
+
+
+### Signals, restart policies, and cleanup
+
+Containers are processes: `docker stop` sends SIGTERM then SIGKILL after a grace period; applications should handle SIGTERM to flush work. Restart policies (`on-failure`, `unless-stopped`) are useful for long-running services but will hide crash loops if you never check `docker ps` and logs. Prefer named containers for labs you will revisit, `--rm` for one-shots, and explicit cleanup so port bindings and anonymous volumes do not accumulate.
 
 ## Hands-on Lab
 
@@ -375,9 +352,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Detached run | Named nginx (or lab) container shows `Up` in `docker ps` |
+| Port publish | `curl` to the published port returns HTTP 200 |
+| Logs/exec | `docker logs` and `docker exec` succeed on the running container |
+| Lifecycle | Stop/start/rm behave as documented; final cleanup leaves no `first-web` container |
 
 ## Code Walkthrough
 
@@ -442,12 +420,13 @@ Make executable: `chmod +x ~/bin/docker-lifecycle-demo.sh && ~/bin/docker-lifecy
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer `--rm` for ephemeral labs so stopped containers do not accumulate privileged state
+- Bind published ports to `127.0.0.1` in labs unless you intentionally need LAN access
+- Avoid `-v /:/host` or other host-root binds; they defeat container isolation
+- Do not run interactive shells as root on shared lab hosts longer than needed
+- Pull only trusted images (`nginx:alpine`, `alpine`) and pin tags for demos you will reuse
+- Stop and remove named containers after each lab to avoid port and name conflicts that tempt `--privileged` workarounds
+
 
 ## Common Mistakes
 

@@ -48,27 +48,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: right
-
-Host: Host {
-        CTX: "Build Context\ndirectory on disk"
-        DF: Dockerfile
-        CLI: "docker build"
-    }
-    Engine: Engine {
-        DA: "Docker daemon"
-        CACHE: "Layer cache"
-    }
-    Output: Output {
-        IMG: "Local image\nrepo:tag"
-    }
-    Host.CTX -> Host.CLI
-    Host.DF -> Host.CLI
-    Host.CLI -> Engine.DA
-    Engine.DA -> Engine.CACHE
-    Engine.DA -> Output.IMG
-```
+![Architecture diagram for Building Images with Dockerfile](../assets/images/building-images-with-dockerfile.svg)
 
 Each instruction in the Dockerfile typically creates one **immutable layer**. Cached layers speed rebuilds when inputs unchanged.
 
@@ -152,6 +132,16 @@ registry.example.com/team/myapp:1.2.3
 ```
 
 Local builds commonly use `myapp:dev`, `myapp:1.0.0`, or `myapp:abc1234` (git SHA).
+
+
+### How the build context reaches the daemon
+
+`docker build` uploads the build context (your directory minus `.dockerignore`) to the Docker daemon, then executes Dockerfile instructions as layers. Understanding that boundary explains many “it works on my laptop” failures: files outside the context cannot be `COPY`ed, secrets accidentally left in context become recoverable layers, and a bloated context slows every CI build. Keep contexts minimal, put Dockerfiles near the files they need, and prefer BuildKit for cache mounts and build secrets instead of baking credentials into `ARG` values.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
 
 ## Hands-on Lab
 
@@ -363,6 +353,8 @@ rm -rf ~/lab/dockerfile-build
 
 **Explanation:** Remove containers, images, and lab directory.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -373,9 +365,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Build | `docker build` completes with a tagged image |
+| Run | Container from your image serves the expected response |
+| Layering | You can point to which Dockerfile instruction created a key layer |
+| Cleanup | Build containers/images cleaned per lab |
 
 ## Code Walkthrough
 
@@ -417,12 +410,13 @@ Run: `docker run myecho` prints `default message`; `docker run myecho hello` pri
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Never `COPY` `.env`, private keys, or kubeconfigs into an image — use build secrets or runtime mounts
+- Run as a non-root `USER` in the final stage whenever the workload allows
+- Prefer specific base tags or digests; avoid `FROM ubuntu:latest` in production Dockerfiles
+- Combine `apt-get update && install` and clean package caches in the same layer to avoid stale indexes
+- Do not disable SSL verification in `curl`/`wget` build steps “just to make the build pass”
+- Keep build contexts small with a tight `.dockerignore` so secrets and junk never enter the daemon
+
 
 ## Common Mistakes
 

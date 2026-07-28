@@ -54,57 +54,7 @@ By the end of this tutorial, you will be able to:
 
 Namespaces sit logically above workloads. The API server enforces quotas at admission time; the scheduler respects requests and limits on each node.
 
-```d2
-direction: down
-
-Cluster: "Kubernetes Cluster" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NS_DEV: "Namespace: dev" {
-          style: {
-            fill: "#dcfce7"
-            stroke: "#16a34a"
-          }
-            D1: "Deployment web"
-            S1: "Service web-svc"
-            Q1: "ResourceQuota dev-quota"
-        }
-        NS_PROD: "Namespace: production" {
-          style: {
-            fill: "#ffedd5"
-            stroke: "#ea580c"
-          }
-            D2: "Deployment web"
-            S2: "Service web-svc"
-            Q2: "ResourceQuota prod-quota"
-        }
-        NS_SYS: "Namespace: kube-system" {
-          style: {
-            fill: "#f3e8ff"
-            stroke: "#9333ea"
-          }
-            K: "kube-proxy / CoreDNS"
-        }
-    }
-    API: "API Server + Admission"
-    SCH: Scheduler
-    NS_DEV: NS_DEV
-    API -> NS_DEV
-    NS_PROD: NS_PROD
-    API -> NS_PROD
-    NS_SYS: NS_SYS
-    API -> NS_SYS
-    Cluster.NS_DEV.D1 -> SCH
-    Cluster.NS_PROD.D2 -> SCH
-    Cluster.NS_DEV.Q1 -> Cluster.NS_DEV.D1: enforces {
-      style.stroke-dash: 3
-    }
-    Cluster.NS_PROD.Q2 -> Cluster.NS_PROD.D2: enforces {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Namespaces and Resource Management](../assets/images/namespaces-and-resource-management.svg)
 
 ## Theory
 
@@ -413,6 +363,8 @@ kubectl get ns | grep payments || echo "Namespaces terminating"
 
 **Explanation:** Deleting a namespace cascades to all objects inside it. Termination can take minutes if finalizers exist — normal in production teardown workflows.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -423,9 +375,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Namespace | Lab namespace exists and is used for subsequent commands |
+| Quota/limit | ResourceQuota and/or LimitRange applied and enforced as documented |
+| Isolation | Resources in one namespace do not appear in another without `-A` |
+| Cleanup | Lab namespace deleted |
 
 ## Code Walkthrough
 
@@ -482,12 +435,13 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Use namespaces as security and quota boundaries, not only organisational labels
+- Apply ResourceQuotas and LimitRanges so tenants cannot exhaust the cluster
+- Prefer RoleBindings scoped to a namespace over ClusterRoleBindings for app teams
+- NetworkPolicy default-deny within sensitive namespaces
+- Label namespaces for Pod Security admission (enforce/restricted) early
+- Delete unused namespaces — leftover RBAC and Secrets accumulate risk
+
 
 ## Common Mistakes
 

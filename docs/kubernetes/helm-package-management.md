@@ -55,20 +55,7 @@ By the end of this tutorial, you will be able to:
 
 Helm client renders chart templates + values into manifests, then applies them to the cluster as a tracked release.
 
-```d2
-direction: right
-
-DEV: "Developer / CI"
-    CHART: "Helm Chart\ntemplates + values"
-    HELM: "Helm CLI"
-    API: "Kubernetes API"
-    REL: "Release\nrevision history"
-    DEV -> HELM: "helm upgrade --install"
-    CHART -> HELM
-    HELM -> API: "render + apply"
-    HELM -> REL: "store metadata"
-    REL -> HELM: "helm rollback"
-```
+![Architecture diagram for Helm Package Management](../assets/images/helm-package-management.svg)
 
 ## Theory
 
@@ -416,6 +403,8 @@ helm list -A | grep helm-lab || echo "All helm-lab releases removed"
 
 **Explanation:** `helm uninstall` removes release-tracked resources. Resources created outside Helm labels may orphan — use consistent labeling.
 
+**Expected result:** Commands complete successfully and match the lab intent described above.
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -426,9 +415,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Install | Chart installs into the target namespace |
+| Values | Custom values change a visible resource field |
+| Upgrade/rollback | Upgrade and rollback succeed |
+| Cleanup | `helm uninstall` removes the release |
 
 ## Code Walkthrough
 
@@ -499,12 +489,13 @@ Deploy: `helm upgrade -i web ./chart -f values.yaml -f values-staging.yaml -n st
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Pin chart versions and review `values.yaml` diffs before upgrade
+- Never put plaintext secrets in values committed to Git — use secret operators or sealed values
+- Prefer `helm template` + policy checks in CI before `helm upgrade --install`
+- Limit who can install cluster-wide charts (operators, CRDs)
+- Verify chart provenance/signatures when publishers provide them
+- Uninstall abandoned releases so leftover Services and Ingresses do not stay exposed
+
 
 ## Common Mistakes
 

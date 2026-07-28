@@ -48,39 +48,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: right
-
-Git: Git {
-        PUSH: "Push / PR / Tag"
-        SHA: "Commit SHA"
-    }
-    CI: Runner {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        CLONE: "Clone repo"
-        BUILD: "docker build"
-        SCAN: "Image scan"
-        PUSHIMG: "docker push"
-    }
-    Registry: Registry {
-        REG: "ghcr.io / registry.gitlab.com"
-    }
-    Deploy: Deploy {
-        STG: Staging
-        PROD: Production
-    }
-    Git.PUSH -> CI.CLONE
-    CI.CLONE -> CI.BUILD
-    Git.SHA -> CI.BUILD
-    CI.BUILD -> CI.SCAN
-    CI.SCAN -> CI.PUSHIMG
-    CI.PUSHIMG -> Registry.REG
-    Registry.REG -> Deploy.STG
-    Registry.REG -> Deploy.PROD
-```
+![Architecture diagram for Docker in CI/CD Pipelines](../assets/images/docker-in-ci-cd-pipelines.svg)
 
 ## Theory
 
@@ -151,6 +119,38 @@ Login pattern:
 echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USER" --password-stdin
 ```
 
+
+### Build once, promote the digest
+
+Production-safe pipelines build an image once, scan it, then promote the same digest through test and production registries or repositories. Retagging without rebuilding avoids “it changed between environments” drift. Prefer OIDC or short-lived registry tokens over long-lived PATs stored as CI secrets, fail the pipeline on critical CVE policy, and keep Docker-in-Docker / privileged builders isolated from deploy credentials.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
 ## Hands-on Lab
 
 ### Lab 1 — Minimal GitHub Actions build and push
@@ -193,6 +193,9 @@ jobs:
             docker push "$IMAGE:$GITHUB_REF_NAME"
           fi
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 !!! note "GitHub Actions secrets"
     `GITHUB_TOKEN` is injected automatically by GitHub Actions runners — no manual secret reference required for ghcr.io pushes with default permissions.
@@ -244,6 +247,9 @@ scan-image:
     - if: $CI_COMMIT_BRANCH == "main"
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 GitLab shared runners enable DinD when the runner executor supports it. Self-hosted runners need `privileged = true` in `config.toml` for the Docker executor.
 
 ### Lab 3 — Multi-stage Dockerfile optimised for CI
@@ -275,6 +281,9 @@ HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/heal
 CMD ["node", "dist/server.js"]
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Dependency layers rebuild only when `package-lock.json` changes — critical for CI speed.
 
 ### Lab 4 — PR validation without push
@@ -292,6 +301,9 @@ Add a job that builds but does not push on pull requests:
           docker stop app
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 This catches Dockerfile breakage before merge.
 
 ## Validation
@@ -304,9 +316,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Pipeline build | CI job (or local analogue) builds the image |
+| Test/scan gate | Failing test or scan would block promotion as designed |
+| Push conditional | Image pushes only on the documented branch/tag condition |
+| Secrets | No long-lived registry password committed in workflow files |
 
 ## Code Walkthrough
 
@@ -358,12 +371,13 @@ build-kaniko:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Use short-lived registry credentials (OIDC/workload identity) instead of long-lived PATs in CI
+- Build with BuildKit and never echo secrets in pipeline logs
+- Scan images in CI and fail the pipeline on policy violations before push
+- Isolate DinD / privileged builders; prefer rootless or Kaniko/buildah where feasible
+- Pin base images and actions by digest to reduce supply-chain drift
+- Separate build and deploy roles — the builder should not need cluster-admin
+
 
 ## Common Mistakes
 

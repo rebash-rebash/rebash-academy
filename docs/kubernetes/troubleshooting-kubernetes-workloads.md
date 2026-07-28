@@ -55,34 +55,7 @@ By the end of this tutorial, you will be able to:
 
 Troubleshooting flows from the user-visible symptom down through Kubernetes layers to the container process.
 
-```d2
-direction: down
-
-SYM: "Symptom\n502 / CrashLoop / Pending"
-    ING: "Ingress / LoadBalancer"
-    SVC: Service
-    EP: "Endpoints / EndpointSlice"
-    POD: "Pod Status"
-    CTR: "Container State"
-    APP: "Application Logs"
-    SYM -> ING
-    ING -> SVC: "route OK?"
-    SVC -> EP: "endpoints exist?"
-    EP -> POD: "targets ready?"
-    POD -> CTR: "scheduled? probes?"
-    CTR -> APP: "exit code / OOM"
-    EVT: Events
-    EVT -> POD: {
-      style.stroke-dash: 3
-    }
-    EVT -> ING: {
-      style.stroke-dash: 3
-    }
-    NODE: "Node Conditions"
-    NODE -> POD: {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Troubleshooting Kubernetes Workloads](../assets/images/troubleshooting-kubernetes-workloads.svg)
 
 ## Theory
 
@@ -454,6 +427,9 @@ kubectl config set-context --current --namespace=default
 echo "Incident template: Symptom → Scope → Pod → Container → Network → Root cause → Fix"
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -464,9 +440,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Describe/events | You diagnosed a failing Pod from describe/events |
+| Logs | Application or previous container logs retrieved |
+| Fix | Workload returns to Ready after the documented fix |
+| Cleanup | Broken and fixed lab objects deleted |
 
 ## Code Walkthrough
 
@@ -513,12 +490,13 @@ Usage: `chmod +x ~/bin/k8s-triage.sh && ~/bin/k8s-triage.sh troubleshoot-lab web
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer `describe`, events, and logs before deleting workloads that hide evidence
+- Do not `kubectl exec` into production Pods with broad secrets mounted unless necessary and audited
+- Capture namespace and resource names carefully — pasting wrong cluster context is a common outage cause
+- Avoid privileged debug Pods on shared nodes; use ephemeral debug containers with least privilege
+- Redact Secret and env dumps from incident tickets
+- Clean up debug Deployments/Jobs so they do not remain publicly reachable
+
 
 ## Common Mistakes
 

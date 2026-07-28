@@ -52,45 +52,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
-
-Perimeter: Perimeter {
-        ING: "Ingress + TLS"
-        WAF: "WAF / rate limit"
-    }
-    Admission: Admission {
-        API: "Kubernetes API"
-        KYV: "Kyverno / Gatekeeper"
-        API -> KYV
-    }
-    Namespace: "votestack namespace" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NETP: NetworkPolicy
-        PSS: "Pod Security: restricted"
-        WEB: web
-        APIP: api
-        WORK: worker
-        WEB -> NETP
-        APIP -> NETP
-        WORK -> NETP
-    }
-    Data: Data {
-        PG: postgres
-        RD: redis
-    }
-    Perimeter.ING -> Namespace.WEB
-    Perimeter.ING -> Namespace.APIP
-    Namespace.APIP -> Data.RD
-    Namespace.APIP -> Data.PG
-    Namespace.WORK -> Data.RD
-    Namespace.WORK -> Data.PG
-    Namespace: Namespace
-    Admission.KYV -> Namespace
-```
+![Architecture diagram for Kubernetes Security Hardening](../assets/images/kubernetes-security-hardening.svg)
 
 ## Theory
 
@@ -260,6 +222,9 @@ kubectl apply -f bad-pod.yaml -n votestack
 # Expected: forbidden by PodSecurity
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 2 — Default-deny NetworkPolicies
 
 ```yaml
@@ -335,6 +300,9 @@ kubectl run -it debug --rm --image=busybox -n votestack -- wget -qO- http://vote
 # Should succeed from allowed paths; fail from unauthorized pods
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 3 — Install Kyverno and enforce policies
 
 ```bash
@@ -366,6 +334,9 @@ spec:
               - image: "!*:latest"
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Test: deploy pod with `nginx:latest` — should be blocked.
 
 ### Lab 4 — Sealed Secrets for database credentials
@@ -391,6 +362,9 @@ envFrom:
   - secretRef:
       name: postgres-credentials
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 5 — RBAC for GitOps agent
 
@@ -421,6 +395,9 @@ subjects:
     name: argocd-application-controller
     namespace: argocd
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 ### Lab 6 — Image scanning in CI + admission
 
@@ -465,6 +442,9 @@ spec:
                       -----END PUBLIC KEY-----
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -475,9 +455,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| PSS/securityContext | Restricted settings applied to the lab workload |
+| NetworkPolicy | Policy denies unexpected traffic when tested |
+| Non-root | Pod refuses or runs non-root per lab |
+| Cleanup | Hardening lab namespace/objects deleted |
 
 ## Code Walkthrough
 
@@ -510,12 +491,13 @@ helm install falco falcosecurity/falco -n falco --create-namespace
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Enforce Pod Security Standards (restricted) on application namespaces
+- Drop capabilities, run as non-root, and use read-only root filesystems by default
+- Enable NetworkPolicies and default-deny where the CNI supports them
+- Turn on Secrets encryption at rest and API audit logging
+- Restrict admission of privileged Pods via admission controllers / policy engines
+- Keep nodes patched and minimise host access — most escapes still need a node foothold
+
 
 ## Common Mistakes
 

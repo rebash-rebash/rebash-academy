@@ -48,33 +48,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
-
-Host: Host {
-        ORCH: "Docker Engine / Compose"
-        Container: Container {
-            INIT: "init / tini"
-            APP: Application
-            HC: "HEALTHCHECK probe"
-        }
-        CG: "cgroups limits"
-        LOG: "Log driver"
-    }
-    External: External {
-        LB: "Load balancer / proxy"
-        MON: Monitoring
-    }
-    Host.ORCH -> Host.CG
-    Container: Container
-    Host.ORCH -> Container
-    Host.Container.INIT -> Host.Container.APP
-    Host.Container.HC -> Host.Container.APP
-    Host.Container.APP -> Host.LOG
-    External.LB -> Host.Container.APP
-    External.MON -> Host.Container.HC
-    External.MON -> Host.LOG
-```
+![Architecture diagram for Production Docker Patterns](../assets/images/production-docker-patterns.svg)
 
 ## Theory
 
@@ -207,6 +181,47 @@ Use the `json-file` driver with rotation or ship to centralized logging:
 
 Set in `/etc/docker/daemon.json` or per container with `--log-opt`.
 
+
+### Production means operable under failure
+
+Production container patterns assume failure: healthchecks detect it, restart policies recover it, resource limits contain it, and graceful shutdown drains traffic before exit. Structured logs and metrics make the failure visible without `docker exec`. If your Compose stack cannot answer “what happens when the dependency is slow?” it is not yet a production pattern — only a happy-path demo.
+
+
+### Practice mindset
+
+As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+
+
+### Connecting the lab to production reviews
+
+When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
+
+### Observability while you learn
+
+Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+
+
+### Checklist before you leave the lab
+
+1. Resources created in this tutorial are deleted or clearly labelled for retention.
+2. No secrets, kubeconfigs, or registry passwords were written into Git.
+3. You can explain the Architecture diagram without reading the caption.
+4. Validation pass criteria in this page are satisfied on your machine.
+5. You noted one question to revisit in the next tutorial of the series.
+
+### Common production failure modes this topic prevents
+
+Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+
+
+### Further reading posture
+
+After finishing **production docker patterns**, skim the Related Links once with a production lens: which linked tutorial closes the biggest gap in your current environment (security, networking, storage, or CI/CD)? Schedule that next — series order is a suggestion, risk order is a better personal syllabus.
+
+### Lab evidence to keep
+
+Keep a short note of the exact commands that proved the happy path and the failure path. Interviewers and future incident responders both benefit when you can show *how you knew* the system was healthy — not only that you followed a script.
+
 ## Hands-on Lab
 
 ### Lab 1 — Health-checked web API
@@ -239,6 +254,9 @@ docker run -d --name prod-api \
 # Watch health transition
 watch -n1 'docker inspect prod-api | jq -r ".[0].State.Health.Status"'
 ```
+
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
 
 Observe: `starting` → `healthy` after start period.
 
@@ -318,6 +336,9 @@ docker compose -f compose.yml -f compose.prod.yml up -d
 docker compose ps
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 ### Lab 3 — OOM and init process behaviour
 
 ```bash
@@ -331,6 +352,9 @@ docker run -d --name noinit prod-api:v1 && docker stop noinit
 docker run -d --init --name withinit prod-api:v1 && docker stop withinit
 ```
 
+**Expected result:** The commands succeed and produce the outcomes described in this step.
+
+
 Use `--init` when your app is not PID 1-aware or spawns child processes.
 
 ## Validation
@@ -343,9 +367,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Healthcheck | Container health transitions to `healthy` |
+| Limits | Memory/CPU/pids limits visible in inspect |
+| Compose stack | Production-pattern compose services become healthy |
+| Cleanup | `prod-api` / compose stack removed |
 
 ## Code Walkthrough
 
@@ -395,12 +420,13 @@ For zero-downtime on one host, use a reverse proxy and blue/green containers on 
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Enforce healthchecks, resource limits, and restart policies before calling a stack “production”
+- Run as non-root with read-only rootfs and explicit writable paths
+- Separate build and runtime images; never ship toolchains to production registries
+- Handle SIGTERM and drain connections; abrupt kills hide data-loss bugs
+- Keep configuration and secrets out of images — inject at runtime
+- Observe health, logs, and metrics before widening blast radius with more replicas
+
 
 ## Common Mistakes
 
