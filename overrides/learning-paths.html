@@ -1,4 +1,5 @@
 {% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
 
 {% block tabs %}
   {{ super() }}
@@ -19,7 +20,7 @@
       "badge": "Recommended",
       "meta": "8 ready tracks · more planned",
       "summary": "Full-stack platform skills from Linux through AWS, CI/CD, and Terraform. Azure, GCP, monitoring, and security tracks are next.",
-      "icon": '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.26A7.002 7.002 0 0 1 5.26 19H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7 15a5 5 0 0 0 10 0H7Z"/></svg>',
+      "icon": "robot",
       "steps": [
         {"title": "Linux", "url": "linux/", "desc": "Command line, system admin, shell scripting"},
         {"title": "Networking", "url": "networking/", "desc": "TCP/IP, DNS, load balancing, troubleshooting"},
@@ -41,7 +42,7 @@
       "badge": "Ready",
       "meta": "20 tutorials · Free Tier labs",
       "summary": "Build and secure cloud-native infrastructure on Amazon Web Services after Networking.",
-      "icon": '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96Z"/></svg>',
+      "icon": "aws",
       "steps": [
         {"title": "Linux", "url": "linux/", "desc": "Linux fundamentals"},
         {"title": "Networking", "url": "networking/", "desc": "Networking basics"},
@@ -58,7 +59,7 @@
       "badge": "Cloud",
       "meta": "6 modules · Intermediate",
       "summary": "Build and operate workloads on Microsoft Azure with IaC and pipelines.",
-      "icon": '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M5 3 1 7l11 14L23 7l-4-4H5Zm2 2h10l2 2H5l2-2Z"/></svg>',
+      "icon": "microsoft-azure",
       "steps": [
         {"title": "Linux", "url": "linux/", "desc": "Linux fundamentals"},
         {"title": "Networking", "url": "networking/", "desc": "Networking basics"},
@@ -75,7 +76,7 @@
       "badge": "Cloud",
       "meta": "6 modules · Intermediate",
       "summary": "GCP services, networking, Terraform, and secure cloud-native delivery.",
-      "icon": '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2 4 6v12l8 4 8-4V6l-8-4Zm0 2.5 5.5 3L12 11l-5.5-3.5L12 4.5ZM6 8.5 11 11v5.5l-5-2.5V8.5Zm12 0v5.5l-5 2.5V11l5-2.5Z"/></svg>',
+      "icon": "google-cloud",
       "steps": [
         {"title": "Linux", "url": "linux/", "desc": "Linux fundamentals"},
         {"title": "Networking", "url": "networking/", "desc": "Networking basics"},
@@ -92,7 +93,7 @@
       "badge": "Security",
       "meta": "6 modules · Advanced",
       "summary": "Shift-left security across containers, Kubernetes, CI/CD, and cloud workloads.",
-      "icon": '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8Z"/></svg>',
+      "icon": "shield-lock",
       "steps": [
         {"title": "Linux", "url": "linux/", "desc": "Linux and networking"},
         {"title": "Docker", "url": "docker/", "desc": "Container security"},
@@ -109,7 +110,7 @@
       "badge": "Platform",
       "meta": "6 modules · Advanced",
       "summary": "Deep Kubernetes, GitOps, observability, and internal developer platform patterns.",
-      "icon": '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2.5 4 6.8v10.4L12 21.5l8-4.3V6.8L12 2.5Zm0 2.2 5.5 3-5.5 3-5.5-3 5.5-3ZM6.5 9.8 11 12v4.4l-4.5-2.4V9.8Zm11 0v4.2L13 16.4v-4.4l4.5-2.2Z"/></svg>',
+      "icon": "kubernetes",
       "steps": [
         {"title": "Linux", "url": "linux/", "desc": "Linux and networking"},
         {"title": "Docker", "url": "docker/", "desc": "Containers"},
@@ -126,7 +127,7 @@
       "badge": "Architecture",
       "meta": "7 modules · Expert",
       "summary": "Multi-cloud design, IaC at scale, security architecture, and production projects.",
-      "icon": '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M3 3h8v8H3V3Zm10 0h8v5h-8V3ZM3 13h5v8H3v-8Zm7 3h11v5H10v-5Z"/></svg>',
+      "icon": "sitemap",
       "steps": [
         {"title": "AWS", "url": "aws/", "desc": "Amazon Web Services"},
         {"title": "Azure", "url": "azure/", "desc": "Microsoft Azure"},
@@ -169,7 +170,7 @@
         data-path-id="{{ path.id }}"
       >
         <div class="rebash-path-tile__banner">
-          <div class="rebash-path-tile__icon" aria-hidden="true">{{ path.icon | safe }}</div>
+          <div class="rebash-path-tile__icon" aria-hidden="true">{{ mdi(path.icon) }}</div>
           <span class="rebash-path-tile__badge">{{ path.badge }}</span>
         </div>
         <div class="rebash-path-tile__body">
