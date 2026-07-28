@@ -1,9 +1,10 @@
 ---
-title: Overview
-description: Technical interview questions and preparation guides.
+title: Interview Prep
+description: "Dedicated interview banks — planned. Each published tutorial already ends with interview questions."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: interview
 tags:
   - interview
@@ -14,20 +15,22 @@ comments: false
 
 Technical interview questions and preparation guides.
 
-## Overview
+## Status
 
-Welcome to the **Interview Prep** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Linux](../linux/index.md) | Interview questions in every tutorial |
+| [Docker](../docker/index.md) | Container interview checkpoints |
+| [Kubernetes](../kubernetes/index.md) | Orchestration interview practice |
+| [Terraform](../terraform/index.md) | IaC interview questions |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

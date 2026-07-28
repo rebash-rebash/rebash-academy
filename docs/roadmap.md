@@ -1,9 +1,10 @@
 ---
 title: Roadmap
-description: REBASH Academy development roadmap and upcoming content plans.
+description: REBASH Academy development roadmap — what is published, what is in progress, and what is planned next.
 difficulty: beginner
 estimated_time: "5 min"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: about
 tags:
   - roadmap
@@ -13,7 +14,7 @@ comments: false
 
 # Roadmap
 
-This page tracks the development progress of REBASH Academy.
+This page tracks what is published on REBASH Academy and what comes next.
 
 ## Phase 1 – Platform Setup :material-check-circle:{ .lg .middle style="color: green" }
 
@@ -24,15 +25,19 @@ This page tracks the development progress of REBASH Academy.
 - [x] Validation and tutorial scaffolding scripts
 - [x] Contributor documentation
 
-## Phase 2 – Core Content (In Progress)
+## Phase 2 – Core Content :material-check-circle:{ .lg .middle style="color: green" }
 
-- [ ] Getting Started tutorial series (3–5 guides)
-- [x] Linux fundamentals path
-- [x] Docker containerization path
+- [x] Getting Started onboarding page
+- [x] Linux fundamentals path (20 tutorials)
+- [x] Networking fundamentals path (20 tutorials)
+- [x] Git version control path (20 tutorials)
+- [x] Docker containerization path (20 tutorials)
 - [x] Kubernetes orchestration path (20 tutorials)
-- [ ] Terraform IaC path
+- [x] Terraform Infrastructure as Code path (20 tutorials)
 
-## Phase 3 – Cloud & CI/CD
+**Ready today:** [Linux](linux/index.md) → [Networking](networking/index.md) → [Git](git/index.md) → [Docker](docker/index.md) → [Kubernetes](kubernetes/index.md) → [Terraform](terraform/index.md)
+
+## Phase 3 – Cloud & CI/CD (Next)
 
 - [ ] AWS core services tutorials
 - [ ] Azure fundamentals
@@ -40,18 +45,21 @@ This page tracks the development progress of REBASH Academy.
 - [ ] GitLab CI/CD pipeline patterns
 - [ ] Monitoring and observability stack
 
+These sections keep stable URLs under `/aws/`, `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`, but tutorials are not published yet. Follow Phase 2 tracks until they ship.
+
 ## Phase 4 – Security & Advanced Topics
 
 - [ ] DevSecOps pipeline integration
 - [ ] Cloud security best practices
 - [ ] Python automation scripts library
 - [ ] AI for DevOps use cases
+- [ ] Architecture reference guides
 
 ## Phase 5 – Community & Extras
 
-- [ ] Interview question banks per category
+- [ ] Interview question banks per category (interview questions already live inside each tutorial)
 - [ ] Cheat sheet collection
-- [ ] Hands-on lab catalog
+- [ ] Hands-on lab catalog (labs already live inside each tutorial)
 - [ ] Open source project walkthroughs
 - [ ] Blog articles and video embeds
 
@@ -71,4 +79,4 @@ The platform architecture supports future enhancements without structural change
 - AI-powered semantic search
 
 !!! tip "Suggest Content"
-    Have a topic you'd like to see covered? Reach out on [LinkedIn](https://www.linkedin.com/in/shaikkhadarbasha/) with your content request.
+    Have a topic you would like to see covered? Reach out on [LinkedIn](https://www.linkedin.com/in/shaikkhadarbasha/) with your content request.

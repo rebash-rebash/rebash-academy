@@ -1,12 +1,14 @@
 ---
-title: Overview
-description: AI-assisted operations, automation, and intelligent tooling.
+title: AI for DevOps
+description: "AI for DevOps track — planned. Stable URL reserved."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: ai
 tags:
   - ai
+  - automation
 comments: false
 ---
 
@@ -14,20 +16,21 @@ comments: false
 
 AI-assisted operations, automation, and intelligent tooling.
 
-## Overview
+## Status
 
-Welcome to the **AI for DevOps** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Linux](../linux/index.md) | Systems literacy for ops tooling |
+| [Python](../python/index.md) | Automation foundation (also planned) |
+| [Kubernetes](../kubernetes/index.md) | Platform where AI ops often runs |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

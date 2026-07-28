@@ -1,9 +1,10 @@
 ---
-title: Overview
-description: Hands-on lab exercises with step-by-step instructions.
+title: Labs
+description: "Dedicated lab catalog — planned. Every published tutorial already includes a Hands-on Lab section."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: labs
 tags:
   - labs
@@ -12,22 +13,24 @@ comments: false
 
 # Labs
 
-Hands-on lab exercises with step-by-step instructions.
+Standalone lab catalog with scenarios, validation, and cleanup.
 
-## Overview
+## Status
 
-Welcome to the **Labs** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Getting Started](../getting-started/index.md) | Pick a ready track and open its first lab |
+| [Linux](../linux/index.md) | 20 labs from fundamentals to troubleshooting |
+| [Kubernetes](../kubernetes/index.md) | Cluster labs with kubectl workflows |
+| [Terraform](../terraform/index.md) | Local and CI-oriented IaC labs |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

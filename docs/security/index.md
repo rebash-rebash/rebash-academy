@@ -1,9 +1,10 @@
 ---
-title: Overview
-description: Cloud security, hardening, compliance, and threat modeling.
+title: Security
+description: "Dedicated security track — planned. Hardening topics already appear inside Linux, Docker, Kubernetes, and Terraform."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: security
 tags:
   - security
@@ -12,22 +13,24 @@ comments: false
 
 # Security
 
-Cloud security, hardening, compliance, and threat modeling.
+Cloud security, hardening, compliance, and threat modelling.
 
-## Overview
+## Status
 
-Welcome to the **Security** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Linux](../linux/index.md) | Linux security hardening basics |
+| [Docker](../docker/index.md) | Docker security hardening |
+| [Kubernetes](../kubernetes/index.md) | RBAC and security hardening |
+| [Terraform](../terraform/index.md) | Secrets and policy as code |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

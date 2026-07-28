@@ -1,12 +1,14 @@
 ---
-title: Overview
-description: Shift-left security, SAST/DAST, secrets, and supply chain.
+title: DevSecOps
+description: "DevSecOps track — planned. Pipeline and supply-chain topics will extend Git, Docker, and Terraform."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
+last_updated: "2026-07-28"
 category: devsecops
 tags:
   - devsecops
+  - security
 comments: false
 ---
 
@@ -14,20 +16,22 @@ comments: false
 
 Shift-left security, SAST/DAST, secrets, and supply chain.
 
-## Overview
+## Status
 
-Welcome to the **DevSecOps** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
+!!! info "Tutorials not published yet"
+    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+## Study these ready tracks instead
 
-## Learning Objectives
+| Track | Why it helps now |
+|-------|------------------|
+| [Git](../git/index.md) | Signed commits and Git security |
+| [Docker](../docker/index.md) | Image scanning and secrets |
+| [Kubernetes](../kubernetes/index.md) | Workload security hardening |
+| [Terraform](../terraform/index.md) | Policy as code overview |
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## Related
 
-## Related Sections
-
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+- [Getting Started](../getting-started/index.md) — recommended order for ready content
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Roadmap](../roadmap.md) — publication plan

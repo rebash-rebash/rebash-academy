@@ -26,33 +26,38 @@ with hands-on labs, architecture diagrams, and real-world projects.
 
 ## What We Cover
 
-| Category | Topics |
-|----------|--------|
-| **Foundations** | Linux, Networking, Git |
-| **Containers & Orchestration** | Docker, Kubernetes |
-| **Infrastructure** | Terraform, AWS, Azure, GCP |
-| **Delivery & Operations** | GitLab CI/CD, Monitoring |
-| **Security** | DevSecOps, Cloud Security |
-| **Automation** | Python, AI for DevOps |
+| Category | Status | Topics |
+|----------|--------|--------|
+| **Foundations** | Ready | Linux, Networking, Git |
+| **Containers & Orchestration** | Ready | Docker, Kubernetes |
+| **Infrastructure as Code** | Ready | Terraform |
+| **Cloud platforms** | Planned | AWS, Azure, GCP |
+| **Delivery & Operations** | Planned | GitLab CI/CD, Monitoring |
+| **Security** | Planned | DevSecOps, Cloud Security |
+| **Automation** | Planned | Python, AI for DevOps |
+
+See the [Roadmap](roadmap.md) for sequencing.
 
 ## Documentation Standards
 
-Every tutorial on REBASH Academy follows a consistent structure:
+Every tutorial on REBASH Academy targets this structure:
 
-1. **Overview** – What you'll learn and why it matters
-2. **Prerequisites** – Required knowledge and tools
-3. **Learning Objectives** – Measurable outcomes
-4. **Architecture Diagram** *(optional)* – D2 diagram when a visual helps explain multi-layer systems, data flow, or boot/network/storage architecture; skip for command-focused or procedural topics
-5. **Theory** – Core concepts explained clearly
-6. **Hands-on Lab** – Step-by-step practical exercises
-7. **Commands & Code** – Copy-paste ready examples
-8. **Common Mistakes** – Pitfalls to avoid
-9. **Best Practices** – Production-ready recommendations
-10. **Troubleshooting** – Debug guide for common issues
-11. **Summary** – Key takeaways
-12. **Interview Questions** – Practice for technical interviews
-13. **Related Tutorials** – Continue your learning path
-14. **References** – Official docs and further reading
+1. **Overview** – what you will learn and why it matters
+2. **Learning Objectives** – measurable outcomes
+3. **Prerequisites** – required knowledge and tools
+4. **Architecture** – D2 diagram when a visual helps
+5. **Theory** – core concepts explained clearly
+6. **Hands-on Lab** – step-by-step practical exercises
+7. **Code Walkthrough** – explain important blocks
+8. **Validation** – how to confirm the lab worked
+9. **Best Practices** – production-ready recommendations
+10. **Security Considerations** – least privilege and safe defaults
+11. **Common Mistakes** – pitfalls to avoid
+12. **Troubleshooting** – debug guide for common issues
+13. **Interview Questions** – practice for technical interviews
+14. **Summary** – key takeaways
+15. **Related Tutorials** – continue your learning path
+16. **References** – official documentation only
 
 ### Page Metadata
 
@@ -61,6 +66,7 @@ Each page includes:
 - Difficulty level (beginner / intermediate / advanced)
 - Estimated completion time
 - Author
+- `last_updated` date
 - Prerequisites, category, and tags
 
 ## Technology
