@@ -51,13 +51,13 @@ What is the primary role of the Linux kernel?
 
 **Options:**
 
-- **A.** Provide a graphical desktop environment
-- **B.** Manage hardware, processes, memory, and system calls for user space
+- **A.** Manage hardware, processes, memory, and system calls for user space
+- **B.** Provide a graphical desktop environment
 - **C.** Replace Bash as the default shell
 - **D.** Store user documents in /home only
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     The kernel is the core of the OS: hardware abstraction, scheduling, memory, and the system-call interface. Desktops and shells are user-space components.
 
@@ -76,12 +76,12 @@ Which path is the conventional location for third-party or locally installed sof
 **Options:**
 
 - **A.** /var/log
-- **B.** /opt
-- **C.** /proc
+- **B.** /proc
+- **C.** /opt
 - **D.** /dev
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     `/opt` is commonly used for optional/add-on application packages. `/var/log` is logs, `/proc` is process/kernel info, `/dev` is device nodes.
 
@@ -100,12 +100,12 @@ What does the execute bit on a directory allow a user to do?
 **Options:**
 
 - **A.** List all filenames without reading them
-- **B.** Traverse into the directory (access files by known name if other permissions allow)
-- **C.** Delete the directory itself without write on the parent
-- **D.** Change ownership of every file inside
+- **B.** Delete the directory itself without write on the parent
+- **C.** Change ownership of every file inside
+- **D.** Traverse into the directory (access files by known name if other permissions allow)
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     On directories, execute means search/traverse. Listing needs read; creating/deleting entries needs write on the directory.
 
@@ -145,13 +145,13 @@ What is the difference between a hard link and a symbolic link?
 
 **Options:**
 
-- **A.** Hard links can cross filesystems; symlinks cannot
-- **B.** A hard link is another directory entry to the same inode; a symlink is a special file pointing to a path
+- **A.** A hard link is another directory entry to the same inode; a symlink is a special file pointing to a path
+- **B.** Hard links can cross filesystems; symlinks cannot
 - **C.** Symlinks only work for directories; hard links only for devices
 - **D.** They are identical on ext4
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Hard links share an inode (same filesystem). Symlinks store a path and can cross filesystems.
 
@@ -170,12 +170,12 @@ Which signal is the default sent by `kill <pid>` when no signal is specified?
 **Options:**
 
 - **A.** SIGKILL (9)
-- **B.** SIGTERM (15)
-- **C.** SIGSTOP
+- **B.** SIGSTOP
+- **C.** SIGTERM (15)
 - **D.** SIGHUP
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     Default is SIGTERM, allowing graceful shutdown. SIGKILL cannot be caught and should be a last resort.
 
@@ -193,12 +193,12 @@ What does systemd use as the primary unit type for long-running daemons?
 **Options:**
 
 - **A.** .timer units only
-- **B.** .service units
-- **C.** .mount units exclusively
-- **D.** .socket units replace all services
+- **B.** .mount units exclusively
+- **C.** .socket units replace all services
+- **D.** .service units
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Daemons are typically managed as `.service` units. Timers, mounts, and sockets are other unit types.
 
@@ -238,13 +238,13 @@ In a classic Unix permission string `-rwxr-xr--`, what can “others” do?
 
 **Options:**
 
-- **A.** Read, write, and execute
-- **B.** Read only
+- **A.** Read only
+- **B.** Read, write, and execute
 - **C.** Read and execute
 - **D.** Nothing
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     The last triad is `r--` → others may read only.
 
@@ -262,12 +262,12 @@ What is the purpose of `/etc/sudoers` (or files under `/etc/sudoers.d`)?
 **Options:**
 
 - **A.** Store user passwords in plaintext
-- **B.** Define which users/groups may run commands as root or others via sudo
-- **C.** Configure SSH host keys
+- **B.** Configure SSH host keys
+- **C.** Define which users/groups may run commands as root or others via sudo
 - **D.** Set the default shell for root only
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     sudoers controls privilege elevation policy. Edit with `visudo` to avoid syntax lockouts.
 
@@ -288,12 +288,12 @@ You need to find all world-writable files under `/var/www` for a hardening revie
 **Options:**
 
 - **A.** ls -la /var/www
-- **B.** find /var/www -type f -perm -0002
-- **C.** chmod -R 777 /var/www
-- **D.** cat /etc/passwd
+- **B.** chmod -R 777 /var/www
+- **C.** cat /etc/passwd
+- **D.** find /var/www -type f -perm -0002
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     `find … -perm -0002` locates files with the others-write bit.
 
@@ -334,13 +334,13 @@ Which `chmod` symbolic mode adds execute for user and group on `deploy.sh`?
 
 **Options:**
 
-- **A.** chmod a+s deploy.sh
-- **B.** chmod ug+x deploy.sh
+- **A.** chmod ug+x deploy.sh
+- **B.** chmod a+s deploy.sh
 - **C.** chmod o+w deploy.sh
 - **D.** chmod 000 deploy.sh
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     `ug+x` adds execute for user and group without forcing a full octal mode.
 
@@ -356,13 +356,13 @@ Which command helps identify large directories under `/var`?
 
 **Options:**
 
-- **A.** du -h --max-depth=1 /var | sort -h
-- **B.** ps aux
-- **C.** ip addr
+- **A.** ps aux
+- **B.** ip addr
+- **C.** du -h --max-depth=1 /var | sort -h
 - **D.** systemctl list-timers
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     `du` summarises disk usage by directory.
 
@@ -380,12 +380,12 @@ What does `systemctl enable nginx` do?
 **Options:**
 
 - **A.** Starts nginx once and disables it on reboot
-- **B.** Creates the wants/ symlinks so nginx starts on boot (per unit install section)
-- **C.** Upgrades the nginx package
-- **D.** Opens port 80 in the firewall
+- **B.** Upgrades the nginx package
+- **C.** Opens port 80 in the firewall
+- **D.** Creates the wants/ symlinks so nginx starts on boot (per unit install section)
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     enable configures boot-time start via unit WantedBy relationships.
 
@@ -401,13 +401,13 @@ Which crontab field set runs a job at 02:30 every day?
 
 **Options:**
 
-- **A.** 30 2 * * *
-- **B.** 2 30 * * *
+- **A.** 2 30 * * *
+- **B.** 30 2 * * *
 - **C.** * * 2 30 *
 - **D.** 30 * 2 * *
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Order is minute hour day-of-month month day-of-week → `30 2 * * *`.
 
@@ -446,13 +446,13 @@ What is a reliable way to see which process holds TCP port 8080?
 
 **Options:**
 
-- **A.** ss -ltnp | grep 8080 (or lsof -iTCP:8080)
-- **B.** cat /etc/services only
-- **C.** echo 8080
+- **A.** cat /etc/services only
+- **B.** echo 8080
+- **C.** ss -ltnp | grep 8080 (or lsof -iTCP:8080)
 - **D.** uname -r
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     `ss`/`lsof` show listeners and owning processes.
 
@@ -469,13 +469,13 @@ A script must fail fast if any command fails. Which Bash option helps?
 
 **Options:**
 
-- **A.** set -e (and often set -u -o pipefail)
-- **B.** set +x only
-- **C.** alias rm=rm
-- **D.** ulimit -n 1
+- **A.** set +x only
+- **B.** alias rm=rm
+- **C.** ulimit -n 1
+- **D.** set -e (and often set -u -o pipefail)
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     `set -e` exits on failure; combining with `-u` and `pipefail` is common.
 
@@ -493,12 +493,12 @@ Which permission bit on a directory makes files deletable only by their owner (o
 **Options:**
 
 - **A.** setuid
-- **B.** setgid
-- **C.** sticky bit (t)
+- **B.** sticky bit (t)
+- **C.** setgid
 - **D.** immutable attribute only
 
 ??? success "Reveal answer"
-    **Correct answer: C**
+    **Correct answer: B**
 
     The sticky bit on directories restricts unlinking to file owner/root.
 
@@ -517,13 +517,13 @@ PagerDuty: `rebash-api` failed. journalctl reports `Permission denied` opening t
 
 **Options:**
 
-- **A.** Open all firewall ports
-- **B.** Check ownership/mode of the script and the user the unit runs as (User=)
+- **A.** Check ownership/mode of the script and the user the unit runs as (User=)
+- **B.** Open all firewall ports
 - **C.** Delete the unit file
 - **D.** Disable SELinux permanently without investigation
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Permission denied on the executable path implicates ownership/mode vs the service user.
 
@@ -541,12 +541,12 @@ Disk is 100% on `/`. `du` shows `/var/log` huge. Safest immediate mitigation whi
 **Options:**
 
 - **A.** rm -rf /
-- **B.** Rotate/compress old logs, truncate only after copying critical evidence, fix retention
-- **C.** dd if=/dev/zero of=/var/log/big
+- **B.** dd if=/dev/zero of=/var/log/big
+- **C.** Rotate/compress old logs, truncate only after copying critical evidence, fix retention
 - **D.** chmod -R 777 /var/log
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     Free space via log rotation/cleanup with care for forensics.
 
@@ -563,13 +563,13 @@ A timer-based job did not run. `systemctl list-timers` shows the timer inactive.
 
 **Options:**
 
-- **A.** Whether the `.timer` unit is enabled/started and OnCalendar= is valid
-- **B.** Whether Docker is installed
-- **C.** Whether /etc/hosts contains google.com
-- **D.** Whether the GPU driver exists
+- **A.** Whether Docker is installed
+- **B.** Whether /etc/hosts contains google.com
+- **C.** Whether the GPU driver exists
+- **D.** Whether the `.timer` unit is enabled/started and OnCalendar= is valid
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Timers must be enabled/started; calendar expressions and related service units matter.
 
@@ -608,13 +608,13 @@ SSH works from your laptop but CI fails with `Permission denied (publickey)`. Mo
 
 **Options:**
 
-- **A.** kill -9 -1
-- **B.** Identify PID, inspect command line/logs, thread state; consider SIGTERM after evidence
+- **A.** Identify PID, inspect command line/logs, thread state; consider SIGTERM after evidence
+- **B.** kill -9 -1
 - **C.** Disable the NIC
 - **D.** Format /home
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Diagnose before killing broadly.
 
@@ -632,12 +632,12 @@ A junior proposes `chmod -R 777 /var/www` to fix the site. What do you recommend
 **Options:**
 
 - **A.** Agree — 777 is fine in production
-- **B.** Set owner/group correctly and use the least mode that works (often 755 dirs / 644 files)
-- **C.** World-writable is required for nginx
+- **B.** World-writable is required for nginx
+- **C.** Set owner/group correctly and use the least mode that works (often 755 dirs / 644 files)
 - **D.** Put the site in /proc
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     777 is a common anti-pattern. Fix ownership and minimal modes.
 
@@ -653,13 +653,13 @@ You need elevation but policy forbids sharing the root password. Appropriate too
 
 **Options:**
 
-- **A.** sudo -i (if authorised) or sudo for specific commands
-- **B.** Write the root password to Slack
-- **C.** Disable PAM
-- **D.** chmod 777 /etc/shadow
+- **A.** Write the root password to Slack
+- **B.** Disable PAM
+- **C.** chmod 777 /etc/shadow
+- **D.** sudo -i (if authorised) or sudo for specific commands
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     sudo provides audited, policy-controlled elevation.
 
@@ -699,13 +699,13 @@ SSH latency is fine but authentication takes ~10s. A common cause?
 
 **Options:**
 
-- **A.** MTU 9000 only
-- **B.** Reverse DNS / GSSAPI / UseDNS delays in sshd
+- **A.** Reverse DNS / GSSAPI / UseDNS delays in sshd
+- **B.** MTU 9000 only
 - **C.** Missing /etc/hostname always blocks forever
 - **D.** Too much free RAM
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     SSH can stall on reverse DNS or auth method negotiation.
 
@@ -722,13 +722,13 @@ Prove a package is installed and which version on Debian/Ubuntu. Best pair?
 
 **Options:**
 
-- **A.** dpkg -l | grep pkg ; apt-cache policy pkg
-- **B.** brew list
-- **C.** systemctl reboot
+- **A.** brew list
+- **B.** systemctl reboot
+- **C.** dpkg -l | grep pkg ; apt-cache policy pkg
 - **D.** tar -tzf
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     dpkg/apt query package state on Debian family systems.
 
@@ -747,13 +747,13 @@ Unit is `active (running)` but curl fails; `ss` shows nothing listening. Likely 
 
 **Options:**
 
-- **A.** Process is up but bound to a different address/port or crashed child listener
-- **B.** The moon phase
-- **C.** ext4 fragmentation only
-- **D.** Missing swap always
+- **A.** The moon phase
+- **B.** ext4 fragmentation only
+- **C.** Missing swap always
+- **D.** Process is up but bound to a different address/port or crashed child listener
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     A parent can be running while the listener failed or binds elsewhere.
 
@@ -770,13 +770,13 @@ Unit is `active (running)` but curl fails; `ss` shows nothing listening. Likely 
 
 **Options:**
 
-- **A.** Correct the path in the unit, daemon-reload, restart
-- **B.** chmod 777 /
+- **A.** chmod 777 /
+- **B.** Correct the path in the unit, daemon-reload, restart
 - **C.** Delete journald
 - **D.** Disable the unit forever without fixing
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Broken ExecStart paths are fixed in the unit file followed by reload/restart.
 
@@ -816,13 +816,13 @@ After `apt upgrade`, a service will not start due to a missing shared library. W
 
 **Options:**
 
-- **A.** Inode exhaustion (`df -i`)
-- **B.** DNS failure
-- **C.** Wrong timezone
+- **A.** DNS failure
+- **B.** Wrong timezone
+- **C.** Inode exhaustion (`df -i`)
 - **D.** Caps Lock
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Exhausted inodes can block new files while byte space remains.
 
@@ -839,13 +839,13 @@ A privileged port bind fails for a non-root service. Modern approach besides run
 
 **Options:**
 
-- **A.** Use capabilities (e.g. CAP_NET_BIND_SERVICE), authbind, or reverse proxy on 80/443
-- **B.** Always chmod 777 the binary
-- **C.** Disable the firewall globally
-- **D.** Bind to port 22
+- **A.** Always chmod 777 the binary
+- **B.** Disable the firewall globally
+- **C.** Bind to port 22
+- **D.** Use capabilities (e.g. CAP_NET_BIND_SERVICE), authbind, or reverse proxy on 80/443
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Prefer capabilities or a front proxy over running full root.
 
@@ -887,13 +887,13 @@ Why separate `/var` (or a dedicated log volume) on production servers?
 
 **Options:**
 
-- **A.** Aesthetic reasons only
-- **B.** Contain log growth so a runaway log cannot fill the root filesystem as easily
+- **A.** Contain log growth so a runaway log cannot fill the root filesystem as easily
+- **B.** Aesthetic reasons only
 - **C.** Makes kernel upgrades impossible
 - **D.** Required by PCI to use XFS only
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Filesystem separation limits blast radius of growth and simplifies backups.
 
@@ -911,12 +911,12 @@ Which backup statement is most accurate for Linux system state?
 **Options:**
 
 - **A.** RAID is a backup
-- **B.** Backups need retention, restore tests, and off-box copies — RAID is availability not backup
-- **C.** Snapshots without restore tests are enough forever
+- **B.** Snapshots without restore tests are enough forever
+- **C.** Backups need retention, restore tests, and off-box copies — RAID is availability not backup
 - **D.** Only back up /tmp
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     RAID/redundancy is not a backup. Test restores.
 
@@ -934,12 +934,12 @@ For SSH administration at scale, which design is preferable?
 **Options:**
 
 - **A.** Shared root password on a wiki
-- **B.** Per-user keys or SSO/cert auth, sudo for elevation, bastion/session recording as needed
-- **C.** Telnet with OTP sticky notes
-- **D.** FTP to edit /etc
+- **B.** Telnet with OTP sticky notes
+- **C.** FTP to edit /etc
+- **D.** Per-user keys or SSO/cert auth, sudo for elevation, bastion/session recording as needed
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Key/cert auth, individual accounts, and audited sudo are baseline.
 

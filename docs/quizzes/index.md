@@ -1,6 +1,6 @@
 ---
 title: Quizzes
-description: "Self-assessment quizzes for Linux, Networking, AWS, Docker, and Kubernetes — with explanations and a 70% pass mark."
+description: "Self-assessment quizzes for Linux, Networking, AWS, CI/CD, Docker, and Kubernetes — with explanations and a 70% pass mark."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -27,6 +27,7 @@ Self-marking practice quizzes reinforce tutorials and labs. Fundamentals quizzes
 | [Linux Servers](linux-servers.md) | Linux (Module 7) | 25 | 30–40 min |
 | [Networking Production](networking-production.md) | Networking (Module 7) | 25 | 30–40 min |
 | [AWS Fundamentals](aws-fundamentals.md) | AWS | 40 | 45–60 min |
+| [CI/CD Fundamentals](cicd-fundamentals.md) | CI/CD | 40 | 45–60 min |
 | [Docker Fundamentals](docker-fundamentals.md) | Docker | 40 | 45–60 min |
 | [Kubernetes Fundamentals](kubernetes-fundamentals.md) | Kubernetes | 40 | 45–60 min |
 

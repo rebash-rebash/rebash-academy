@@ -1,6 +1,6 @@
 ---
 title: DevOps Engineer Learning Path
-description: "Recommended order through Linux, Networking, AWS, Git, Docker, Kubernetes, and Terraform on REBASH Academy."
+description: "Recommended order through Linux, Networking, AWS, Git, CI/CD, Docker, Kubernetes, and Terraform on REBASH Academy."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -14,7 +14,7 @@ comments: false
 
 # DevOps Engineer Learning Path
 
-This path matches how production platforms are built: operating system fluency, networks, cloud platform skills, version control, containers, orchestration, then Infrastructure as Code.
+This path matches how production platforms are built: operating systems, networks, cloud, version control, pipelines, containers, orchestration, then Infrastructure as Code.
 
 ## Ready modules (complete in order)
 
@@ -24,20 +24,21 @@ This path matches how production platforms are built: operating system fluency, 
 | 2 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready — 25 tutorials |
 | 3 | [AWS](../aws/index.md) | [Introduction to AWS and Global Infrastructure](../aws/introduction-to-aws-and-global-infrastructure.md) | Ready — 20 tutorials |
 | 4 | [Git](../git/index.md) | [Introduction to Git](../git/introduction-to-git-and-version-control.md) | Ready — 20 tutorials |
-| 5 | [Docker](../docker/index.md) | [Introduction to Containers](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
-| 6 | [Kubernetes](../kubernetes/index.md) | [Introduction to Kubernetes](../kubernetes/introduction-to-kubernetes-and-orchestration.md) | Ready — 20 tutorials |
-| 7 | [Terraform](../terraform/index.md) | [Introduction to Terraform](../terraform/introduction-to-terraform-and-iac.md) | Ready — 20 tutorials |
+| 5 | [GitLab CI/CD](../gitlab/index.md) | [Introduction to CI/CD and Delivery Models](../gitlab/introduction-to-cicd-and-delivery-models.md) | Ready — 20 tutorials (GitLab CI) |
+| 6 | [Docker](../docker/index.md) | [Introduction to Containers](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
+| 7 | [Kubernetes](../kubernetes/index.md) | [Introduction to Kubernetes](../kubernetes/introduction-to-kubernetes-and-orchestration.md) | Ready — 20 tutorials |
+| 8 | [Terraform](../terraform/index.md) | [Introduction to Terraform](../terraform/introduction-to-terraform-and-iac.md) | Ready — 20 tutorials |
 
-!!! tip "Why AWS before Git/Docker?"
-    After Networking you can practise real VPC, security groups, and Free Tier labs. Git and containers still matter — they come next so you version and package workloads you will deploy on AWS. Automate AWS with [Terraform](../terraform/index.md) at the end of this path.
+!!! tip "Why CI/CD after Git?"
+    Pipelines are triggered by Git events. Learn branching and reviews first, then automate build/test/deploy with **GitLab CI** before deep Docker/Kubernetes deploy labs. Jenkins and GitHub Actions follow in later tracks.
 
 ## Supporting assets
 
-| Asset | Linux | Networking | AWS | Git | Docker | Kubernetes | Terraform |
-|-------|-------|------------|-----|-----|--------|------------|-----------|
-| Cheat sheet | [open](../cheatsheets/linux.md) | [open](../cheatsheets/networking.md) | [open](../cheatsheets/aws.md) | [open](../cheatsheets/git.md) | [open](../cheatsheets/docker.md) | [open](../cheatsheets/kubernetes.md) | [open](../cheatsheets/terraform.md) |
-| Interview prep | [open](../interview/linux.md) | [open](../interview/networking.md) | [open](../interview/aws.md) | [open](../interview/git.md) | [open](../interview/docker.md) | [open](../interview/kubernetes.md) | [open](../interview/terraform.md) |
-| Quiz | [fundamentals](../quizzes/linux-fundamentals.md) · [servers](../quizzes/linux-servers.md) | [production](../quizzes/networking-production.md) | [fundamentals](../quizzes/aws-fundamentals.md) | — | [open](../quizzes/docker-fundamentals.md) | [open](../quizzes/kubernetes-fundamentals.md) | — |
+| Asset | Linux | Networking | AWS | Git | CI/CD | Docker | Kubernetes | Terraform |
+|-------|-------|------------|-----|-----|-------|--------|------------|-----------|
+| Cheat sheet | [open](../cheatsheets/linux.md) | [open](../cheatsheets/networking.md) | [open](../cheatsheets/aws.md) | [open](../cheatsheets/git.md) | [open](../cheatsheets/cicd.md) | [open](../cheatsheets/docker.md) | [open](../cheatsheets/kubernetes.md) | [open](../cheatsheets/terraform.md) |
+| Interview prep | [open](../interview/linux.md) | [open](../interview/networking.md) | [open](../interview/aws.md) | [open](../interview/git.md) | [open](../interview/cicd.md) | [open](../interview/docker.md) | [open](../interview/kubernetes.md) | [open](../interview/terraform.md) |
+| Quiz | [fundamentals](../quizzes/linux-fundamentals.md) · [servers](../quizzes/linux-servers.md) | [production](../quizzes/networking-production.md) | [fundamentals](../quizzes/aws-fundamentals.md) | — | [fundamentals](../quizzes/cicd-fundamentals.md) | [open](../quizzes/docker-fundamentals.md) | [open](../quizzes/kubernetes-fundamentals.md) | — |
 
 ## Standalone labs
 
@@ -50,6 +51,8 @@ This path matches how production platforms are built: operating system fluency, 
 | AWS IAM + VPC | [AWS IAM and VPC Reachability Triage](../labs/aws-iam-vpc-triage.md) |
 | AWS SSM + S3 | [Secure EC2 via SSM and S3](../labs/aws-ssm-s3.md) |
 | Rebase, conflicts, safe force-push | [Git History and PR Recovery](../labs/git-history-pr-recovery.md) |
+| CI/CD pipeline failures | [CI/CD Pipeline Failure Triage](../labs/cicd-pipeline-triage.md) |
+| CI/CD Docker + deploy gate | [Docker Build, Scan, and Deploy Gate](../labs/cicd-docker-secure-gate.md) |
 | Docker Compose and networking | [Docker Compose Stack Recovery](../labs/docker-compose-stack-recovery.md) |
 | Deployments and probes | [Kubernetes Deployment Triage](../labs/kubernetes-deployment-triage.md) |
 | Terraform CLI + CI concepts | [Terraform Plan Review Workflow](../labs/terraform-plan-review-workflow.md) |
@@ -58,7 +61,7 @@ Browse all labs: [Labs](../labs/index.md)
 
 ## Quizzes
 
-Self-mark after finishing a track (or early modules): [Quizzes](../quizzes/index.md) — Linux, Networking production, AWS fundamentals, Docker, and Kubernetes.
+Self-mark after finishing a track: [Quizzes](../quizzes/index.md) — Linux, Networking production, AWS, CI/CD, Docker, and Kubernetes.
 
 ## Portfolio project
 
@@ -66,14 +69,14 @@ After the labs above: [Status API Portfolio Build](../projects/status-api-portfo
 
 ## Coming next on this path
 
-Azure, GCP, GitLab CI/CD, monitoring, and DevSecOps remain on the [roadmap](../roadmap.md). Finish the ready tracks above first.
+Azure, GCP, monitoring, and DevSecOps remain on the [roadmap](../roadmap.md).
 
 ## Study rules
 
 - Finish each tutorial lab before skipping ahead
 - Keep a short incident notebook (symptom → cause → fix)
 - Use interview questions as a gate between modules
-- On AWS labs: billing alarm first, destroy resources every session
+- Never print secrets in pipeline logs; prefer OIDC/short-lived tokens
 
 ## Related
 

@@ -9,6 +9,8 @@ nav:
   - aws-iam-vpc-triage.md
   - aws-ssm-s3.md
   - git-history-pr-recovery.md
+  - cicd-pipeline-triage.md
+  - cicd-docker-secure-gate.md
   - docker-compose-stack-recovery.md
   - kubernetes-deployment-triage.md
   - terraform-plan-review-workflow.md

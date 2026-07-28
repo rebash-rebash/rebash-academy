@@ -1,6 +1,6 @@
 ---
 title: Interview Prep
-description: "Interview preparation guides for Linux, Networking, AWS, Git, Docker, Kubernetes, and Terraform."
+description: "Interview preparation guides for Linux, Networking, AWS, Git, CI/CD, Docker, Kubernetes, and Terraform."
 difficulty: intermediate
 estimated_time: "Varies"
 author: Shaik Basha
@@ -23,6 +23,7 @@ Revision maps for the published tracks. Each tutorial also includes its own inte
 | [Networking](networking.md) | [Networking tutorials](../networking/index.md) |
 | [AWS](aws.md) | [AWS tutorials](../aws/index.md) |
 | [Git](git.md) | [Git tutorials](../git/index.md) |
+| [CI/CD](cicd.md) | [CI/CD tutorials](../gitlab/index.md) |
 | [Docker](docker.md) | [Docker tutorials](../docker/index.md) |
 | [Kubernetes](kubernetes.md) | [Kubernetes tutorials](../kubernetes/index.md) |
 | [Terraform](terraform.md) | [Terraform tutorials](../terraform/index.md) |

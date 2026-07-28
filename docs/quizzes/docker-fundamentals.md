@@ -51,13 +51,13 @@ What is the main difference between a container and a traditional virtual machin
 
 **Options:**
 
-- **A.** Containers virtualise hardware; VMs share the host kernel only
-- **B.** Containers share the host kernel and isolate processes; VMs typically include a guest OS on a hypervisor
+- **A.** Containers share the host kernel and isolate processes; VMs typically include a guest OS on a hypervisor
+- **B.** Containers virtualise hardware; VMs share the host kernel only
 - **C.** VMs cannot run Linux
 - **D.** Containers always include a full hypervisor
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Containers are process-level isolation on a shared kernel. VMs virtualise hardware with a guest OS.
 
@@ -75,13 +75,13 @@ Which component is the long-running Docker daemon on Linux?
 
 **Options:**
 
-- **A.** dockerd
-- **B.** containerd-shim only without dockerd
-- **C.** kubectl
+- **A.** containerd-shim only without dockerd
+- **B.** kubectl
+- **C.** dockerd
 - **D.** systemd-resolved
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     `dockerd` is the Docker daemon. containerd is often used underneath; kubectl is Kubernetes.
 
@@ -99,12 +99,12 @@ What does a Docker image contain conceptually?
 **Options:**
 
 - **A.** A running process table only
-- **B.** A layered, immutable filesystem snapshot plus metadata/config to start containers
-- **C.** Only the host kernel modules
-- **D.** A Kubernetes PodSpec
+- **B.** Only the host kernel modules
+- **C.** A Kubernetes PodSpec
+- **D.** A layered, immutable filesystem snapshot plus metadata/config to start containers
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Images are layered artefacts used as templates for containers.
 
@@ -122,13 +122,13 @@ Which command starts an interactive shell in a new Ubuntu container and removes 
 
 **Options:**
 
-- **A.** docker run --rm -it ubuntu:24.04 bash
-- **B.** docker build -t ubuntu
+- **A.** docker build -t ubuntu
+- **B.** docker run --rm -it ubuntu:24.04 bash
 - **C.** docker compose down
 - **D.** docker system prune -a
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     `run --rm -it` creates an interactive container and cleans up on exit.
 
@@ -144,13 +144,13 @@ What is the default bridge network behaviour for published ports?
 
 **Options:**
 
-- **A.** All container ports are exposed to the world automatically
-- **B.** You publish specific ports with -p/--publish; otherwise they stay on the container network namespace
+- **A.** You publish specific ports with -p/--publish; otherwise they stay on the container network namespace
+- **B.** All container ports are exposed to the world automatically
 - **C.** Docker disables networking by default
 - **D.** Bridge mode requires Kubernetes
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Publishing maps host ports to container ports intentionally.
 
@@ -168,12 +168,12 @@ Which Dockerfile instruction creates a new image layer from filesystem changes o
 **Options:**
 
 - **A.** LABEL
-- **B.** RUN
-- **C.** EXPOSE
+- **B.** EXPOSE
+- **C.** RUN
 - **D.** MAINTAINER (legacy)
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     `RUN` executes build steps and commits a layer. `EXPOSE` is documentation metadata.
 
@@ -191,12 +191,12 @@ What is a Docker volume best used for?
 **Options:**
 
 - **A.** Storing ephemeral container CPU shares
-- **B.** Persisting data beyond container lifecycle
-- **C.** Compiling the kernel
-- **D.** Replacing TLS certificates on the host CA store automatically
+- **B.** Compiling the kernel
+- **C.** Replacing TLS certificates on the host CA store automatically
+- **D.** Persisting data beyond container lifecycle
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Volumes persist data independent of container recreate.
 
@@ -235,13 +235,13 @@ What does `HEALTHCHECK` in a Dockerfile define?
 
 **Options:**
 
-- **A.** Kubernetes probes
-- **B.** A command Docker runs to mark the container healthy/unhealthy
+- **A.** A command Docker runs to mark the container healthy/unhealthy
+- **B.** Kubernetes probes
 - **C.** Host antivirus policy
 - **D.** Image signing identity
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Docker healthchecks update container health status used by Compose and operators.
 
@@ -258,12 +258,12 @@ Why pin image tags like `1.2.3` or digests instead of `:latest` in production?
 **Options:**
 
 - **A.** latest is always immutable
-- **B.** Pinned references make builds and rollbacks reproducible
-- **C.** Digests prevent networking
+- **B.** Digests prevent networking
+- **C.** Pinned references make builds and rollbacks reproducible
 - **D.** Tags are illegal in OCI
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     `:latest` moves; digests/tags pin what you run.
 
@@ -283,12 +283,12 @@ Which practice reduces final image size most effectively?
 **Options:**
 
 - **A.** Using fat base images and copying build toolchains into runtime
-- **B.** Multi-stage builds: compile in a builder stage, copy artefacts into a slim runtime stage
-- **C.** Adding more ADD instructions
-- **D.** Running apt-get upgrade in every layer without cleanup
+- **B.** Adding more ADD instructions
+- **C.** Running apt-get upgrade in every layer without cleanup
+- **D.** Multi-stage builds: compile in a builder stage, copy artefacts into a slim runtime stage
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Multi-stage builds leave compilers out of the runtime image.
 
@@ -304,13 +304,13 @@ You need a container’s logs for service `api` in Compose. Best command?
 
 **Options:**
 
-- **A.** docker compose logs api
-- **B.** kubectl logs api
+- **A.** kubectl logs api
+- **B.** docker compose logs api
 - **C.** journalctl -u docker-compose
 - **D.** cat /var/lib/docker randomly
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Compose aggregates container logs per service.
 
@@ -349,13 +349,13 @@ Which flag runs a container with a read-only root filesystem (where supported)?
 
 **Options:**
 
-- **A.** --read-only
-- **B.** --privileged
-- **C.** --net=host
+- **A.** --privileged
+- **B.** --net=host
+- **C.** --read-only
 - **D.** --pid=host
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     `--read-only` hardens the container filesystem; privileged/host namespaces widen attack surface.
 
@@ -372,12 +372,12 @@ An app inside Compose must call service `db` on port 5432. Correct URL hostname 
 **Options:**
 
 - **A.** localhost
-- **B.** db (the service name)
-- **C.** 127.0.0.1 on the laptop only
-- **D.** host.docker.internal is always required
+- **B.** 127.0.0.1 on the laptop only
+- **C.** host.docker.internal is always required
+- **D.** db (the service name)
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Inside the Compose network, use the service name. `localhost` is the container itself.
 
@@ -415,13 +415,13 @@ Which statement about secrets in images is true?
 
 **Options:**
 
-- **A.** Baking API keys into ENV in the image is safe if the image is private forever
-- **B.** Prefer runtime secrets (env at deploy, secret mounts); never commit secrets into layers
+- **A.** Prefer runtime secrets (env at deploy, secret mounts); never commit secrets into layers
+- **B.** Baking API keys into ENV in the image is safe if the image is private forever
 - **C.** Secrets in layers cannot be extracted
 - **D.** LABEL is the standard secret store
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Image layers and history leak secrets. Use runtime injection.
 
@@ -439,12 +439,12 @@ Which statement about secrets in images is true?
 **Options:**
 
 - **A.** Only running containers
-- **B.** Unused data (stopped containers, dangling images/networks — depending on flags)
-- **C.** The host operating system
+- **B.** The host operating system
+- **C.** Unused data (stopped containers, dangling images/networks — depending on flags)
 - **D.** Kubernetes etcd
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     Prune reclaims unused Docker objects; be careful with `-a` and volumes flags.
 
@@ -461,12 +461,12 @@ EXPOSE 8080 in a Dockerfile means:
 **Options:**
 
 - **A.** The port is published to the host automatically
-- **B.** Metadata documenting the intended listen port; publishing still needs -p or Compose ports
-- **C.** Firewall rules are opened on the host
-- **D.** TLS is enabled
+- **B.** Firewall rules are opened on the host
+- **C.** TLS is enabled
+- **D.** Metadata documenting the intended listen port; publishing still needs -p or Compose ports
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     EXPOSE does not publish ports by itself.
 
@@ -482,13 +482,13 @@ Which Compose pattern waits until a dependency is healthy before starting a serv
 
 **Options:**
 
-- **A.** depends_on with condition: service_healthy
-- **B.** links: (legacy) alone guarantees health
+- **A.** links: (legacy) alone guarantees health
+- **B.** depends_on with condition: service_healthy
 - **C.** restart: always
 - **D.** stdin_open: true
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Modern Compose can wait on health conditions via depends_on.
 
@@ -530,13 +530,13 @@ Container exits immediately with code 0. What do you check first?
 
 **Options:**
 
-- **A.** Whether the main process exited (CMD/ENTRYPOINT finished) — inspect logs and command
-- **B.** Buy a new SSD
-- **C.** Disable IPv6 globally
+- **A.** Buy a new SSD
+- **B.** Disable IPv6 globally
+- **C.** Whether the main process exited (CMD/ENTRYPOINT finished) — inspect logs and command
 - **D.** Remove HEALTHCHECK only
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Exit 0 means the PID 1 process ended successfully — often a mis-set command.
 
@@ -553,13 +553,13 @@ Image build is slow every CI run. Highest-impact improvement?
 
 **Options:**
 
-- **A.** Put rarely changing dependency installs before frequently changing COPY of app code; use cache mounts where appropriate
-- **B.** Disable BuildKit permanently
-- **C.** Copy the entire repo before any RUN apt
-- **D.** Use --no-cache always
+- **A.** Disable BuildKit permanently
+- **B.** Copy the entire repo before any RUN apt
+- **C.** Use --no-cache always
+- **D.** Put rarely changing dependency installs before frequently changing COPY of app code; use cache mounts where appropriate
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Layer ordering maximises cache hits.
 
@@ -576,13 +576,13 @@ You must run a one-off migration using the same image/env as `api` in Compose.
 
 **Options:**
 
-- **A.** docker compose run --rm api <migration command>
-- **B.** Edit production DB from a browser extension
+- **A.** Edit production DB from a browser extension
+- **B.** docker compose run --rm api <migration command>
 - **C.** docker kill -9 $(docker ps -q)
 - **D.** Rebuild without network forever
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     `compose run` starts a one-off container with service config.
 
@@ -621,13 +621,13 @@ Container TLS errors with skewed clocks. Least bad approach?
 
 **Options:**
 
-- **A.** Ensure host clock/NTP is correct; avoid privileged time hacks unless required
-- **B.** Disable TLS verification permanently
-- **C.** Set date inside every container manually each hour
+- **A.** Disable TLS verification permanently
+- **B.** Set date inside every container manually each hour
+- **C.** Ensure host clock/NTP is correct; avoid privileged time hacks unless required
 - **D.** Use HTTP only in production
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Fix host time; do not disable TLS verification.
 
@@ -645,12 +645,12 @@ Security review: container runs as root and mounts docker.sock. Risk?
 **Options:**
 
 - **A.** Low — docker.sock is read-only by nature
-- **B.** High — docker.sock access can equate to host root control
-- **C.** None if the image is alpine
-- **D.** Only a problem on Windows
+- **B.** None if the image is alpine
+- **C.** Only a problem on Windows
+- **D.** High — docker.sock access can equate to host root control
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Mounting docker.sock is near-equivalent to root on the host.
 
@@ -667,13 +667,13 @@ You changed compose.yaml env vars but behaviour is unchanged. Likely?
 
 **Options:**
 
-- **A.** Need recreate: docker compose up -d --force-recreate (or up after change)
-- **B.** Env vars never apply in Compose
+- **A.** Env vars never apply in Compose
+- **B.** Need recreate: docker compose up -d --force-recreate (or up after change)
 - **C.** Must reboot BIOS
 - **D.** Only kubectl apply works
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Existing containers keep old config until recreated.
 
@@ -712,13 +712,13 @@ Team wants identical images from laptop and CI. What helps most?
 
 **Options:**
 
-- **A.** Pin bases by digest, lock dependency versions, use consistent BuildKit behaviour
-- **B.** Always build from :latest on Fridays
-- **C.** Disable checksums
+- **A.** Always build from :latest on Fridays
+- **B.** Disable checksums
+- **C.** Pin bases by digest, lock dependency versions, use consistent BuildKit behaviour
 - **D.** Commit node_modules into the image randomly
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Reproducibility comes from pinning and consistent build tooling.
 
@@ -736,13 +736,13 @@ Team wants identical images from laptop and CI. What helps most?
 
 **Options:**
 
-- **A.** Add healthcheck on DB and depends_on condition service_healthy; fix race
-- **B.** Remove DB entirely
-- **C.** Use host networking for everything always
-- **D.** Ignore health and hope
+- **A.** Remove DB entirely
+- **B.** Use host networking for everything always
+- **C.** Ignore health and hope
+- **D.** Add healthcheck on DB and depends_on condition service_healthy; fix race
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Startup races are fixed with health-gated dependencies.
 
@@ -759,13 +759,13 @@ Team wants identical images from laptop and CI. What helps most?
 
 **Options:**
 
-- **A.** ss/lsof on the host port; change mapping or stop the conflicting process
-- **B.** kubectl drain
+- **A.** kubectl drain
+- **B.** ss/lsof on the host port; change mapping or stop the conflicting process
 - **C.** terraform destroy blindly
 - **D.** rm -rf /
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Host port conflicts are diagnosed with socket tools.
 
@@ -804,13 +804,13 @@ Container cannot resolve external DNS. Host browsing works. Likely Docker area?
 
 **Options:**
 
-- **A.** Daemon DNS config / embedded DNS / network mode issues
-- **B.** Missing CPU shares
-- **C.** Wrong Dockerfile LABEL
+- **A.** Missing CPU shares
+- **B.** Wrong Dockerfile LABEL
+- **C.** Daemon DNS config / embedded DNS / network mode issues
 - **D.** Absent HEALTHCHECK only
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Container DNS is controlled by Docker networking configuration.
 
@@ -826,13 +826,13 @@ Container cannot resolve external DNS. Host browsing works. Likely Docker area?
 
 **Options:**
 
-- **A.** UID/GID inside container differs from host directory ownership
-- **B.** Image name too short
-- **C.** JSON logs disabled
-- **D.** Compose version key aesthetic
+- **A.** Image name too short
+- **B.** JSON logs disabled
+- **C.** Compose version key aesthetic
+- **D.** UID/GID inside container differs from host directory ownership
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Align user IDs or ownership on bind mounts.
 
@@ -896,12 +896,12 @@ CI builds images. Where should promotion to production registry happen?
 **Options:**
 
 - **A.** From unverified developer laptops only
-- **B.** Through CI with scans/signing policies, promoting immutable digests
-- **C.** By emailing tar files of images
+- **B.** By emailing tar files of images
+- **C.** Through CI with scans/signing policies, promoting immutable digests
 - **D.** By rewriting history on main with force
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     Controlled CI promotion with scanning is the norm.
 
@@ -919,12 +919,12 @@ Logging strategy for containers?
 **Options:**
 
 - **A.** Write only inside ephemeral container layers and never collect
-- **B.** Log to stdout/stderr; collect via Docker logging drivers / platform agents
-- **C.** SSH and tail files only, forever
-- **D.** Disable all logs in production
+- **B.** SSH and tail files only, forever
+- **C.** Disable all logs in production
+- **D.** Log to stdout/stderr; collect via Docker logging drivers / platform agents
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Twelve-factor style logging to stdout enables central collection.
 

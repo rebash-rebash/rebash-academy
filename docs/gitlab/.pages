@@ -1,2 +1,30 @@
 title: GitLab CI/CD
 icon: material/gitlab
+
+nav:
+  - Overview: index.md
+  - "Module 1 · Foundations":
+    - Introduction to CI/CD and Delivery Models: introduction-to-cicd-and-delivery-models.md
+    - Pipeline Anatomy — Stages, Jobs, and Artifacts: pipeline-anatomy-stages-jobs-and-artifacts.md
+    - GitLab CI Fundamentals: gitlab-ci-fundamentals.md
+    - GitLab Merge Requests and Pipeline Triggers: gitlab-merge-requests-and-pipeline-triggers.md
+  - "Module 2 · Runners and Configuration":
+    - GitLab Runners and Executors: gitlab-runners-and-executors.md
+    - GitLab Runner Tags and Scaling: gitlab-runner-tags-and-scaling.md
+    - Variables, Secrets, and Credentials: variables-secrets-and-credentials.md
+    - Triggers, Rules, and Branch Protection: triggers-rules-and-branch-protection.md
+  - "Module 3 · Build and Quality":
+    - Building Docker Images in CI: building-docker-images-in-ci.md
+    - Testing, Reports, and Quality Gates: testing-reports-and-quality-gates.md
+    - Artifacts, Caches, and Dependencies: artifacts-caches-and-dependencies.md
+    - Parallelism, Matrix, and Pipeline DAGs: parallelism-matrix-and-pipeline-dags.md
+  - "Module 4 · Secure Pipelines":
+    - Least-Privilege CI Identities: least-privilege-ci-identities.md
+    - Security Scanning in Pipelines: security-scanning-in-pipelines.md
+    - Secret Detection and Supply Chain Basics: secret-detection-and-supply-chain-basics.md
+    - Protected Environments and Approvals: protected-environments-and-approvals.md
+  - "Module 5 · Deploy and Capstone":
+    - GitLab Deployment Patterns: gitlab-deployment-patterns.md
+    - Kubernetes Deploys from CI: kubernetes-deploys-from-ci.md
+    - GitLab CI Production Patterns: gitlab-ci-production-patterns.md
+    - CI/CD Capstone and Terraform Handoff: cicd-capstone-and-terraform-handoff.md

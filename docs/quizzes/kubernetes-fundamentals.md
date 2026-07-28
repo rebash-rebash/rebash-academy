@@ -51,13 +51,13 @@ What is a Pod in Kubernetes?
 
 **Options:**
 
-- **A.** A physical rack
-- **B.** The smallest deployable unit: one or more containers sharing network namespace and volumes
+- **A.** The smallest deployable unit: one or more containers sharing network namespace and volumes
+- **B.** A physical rack
 - **C.** A cloud region
 - **D.** A Helm repository only
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Pods group containers with shared networking/storage abstractions.
 
@@ -73,13 +73,13 @@ Which control plane component schedules Pods onto nodes?
 
 **Options:**
 
-- **A.** kube-scheduler
-- **B.** CoreDNS only
-- **C.** etcd alone
+- **A.** CoreDNS only
+- **B.** etcd alone
+- **C.** kube-scheduler
 - **D.** Ingress controller
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     kube-scheduler assigns Pods to nodes.
 
@@ -97,12 +97,12 @@ What does a Deployment manage?
 **Options:**
 
 - **A.** PersistentVolumes directly
-- **B.** ReplicaSets/Pods for declarative, rolling updates of stateless workloads
-- **C.** Only Nodes
-- **D.** etcd snapshots
+- **B.** Only Nodes
+- **C.** etcd snapshots
+- **D.** ReplicaSets/Pods for declarative, rolling updates of stateless workloads
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Deployments own ReplicaSets and provide rollout strategies.
 
@@ -142,13 +142,13 @@ What happens when a liveness probe fails repeatedly?
 
 **Options:**
 
-- **A.** Pod is removed from Service endpoints only
-- **B.** kubelet restarts the container
+- **A.** kubelet restarts the container
+- **B.** Pod is removed from Service endpoints only
 - **C.** The node is cordoned automatically
 - **D.** etcd is compacted
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Failed liveness → container restart. Failed readiness → remove from endpoints.
 
@@ -165,12 +165,12 @@ What happens when a readiness probe fails?
 **Options:**
 
 - **A.** Container is always killed immediately
-- **B.** Pod is taken out of Service endpoints until ready again
-- **C.** Namespace is deleted
+- **B.** Namespace is deleted
+- **C.** Pod is taken out of Service endpoints until ready again
 - **D.** API server restarts
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     Readiness controls whether the Pod receives traffic via Services.
 
@@ -187,13 +187,13 @@ ConfigMaps are primarily for:
 
 **Options:**
 
-- **A.** Storing non-sensitive configuration data
-- **B.** Storing private keys as best practice
-- **C.** Replacing etcd
-- **D.** Billing data only
+- **A.** Storing private keys as best practice
+- **B.** Replacing etcd
+- **C.** Billing data only
+- **D.** Storing non-sensitive configuration data
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Non-sensitive config belongs in ConfigMaps; use Secrets for sensitive material.
 
@@ -254,12 +254,12 @@ Which object requests durable storage for a Pod?
 **Options:**
 
 - **A.** Ingress
-- **B.** PersistentVolumeClaim (bound to a PersistentVolume)
-- **C.** ServiceAccount token only
+- **B.** ServiceAccount token only
+- **C.** PersistentVolumeClaim (bound to a PersistentVolume)
 - **D.** HorizontalPodAutoscaler
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     PVCs request storage; PVs are the provisioned volumes.
 
@@ -278,13 +278,13 @@ Which command tails logs from a Pod named `api-x` in namespace `prod`?
 
 **Options:**
 
-- **A.** kubectl logs -n prod api-x -f
-- **B.** docker compose logs
-- **C.** journalctl -u api-x
-- **D.** helm uninstall api-x
+- **A.** docker compose logs
+- **B.** journalctl -u api-x
+- **C.** helm uninstall api-x
+- **D.** kubectl logs -n prod api-x -f
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     kubectl logs with -n and -f follows Pod logs.
 
@@ -300,13 +300,13 @@ You need to open a shell in a running container:
 
 **Options:**
 
-- **A.** kubectl exec -it -n <ns> <pod> -- sh
-- **B.** kubectl delete pod
+- **A.** kubectl delete pod
+- **B.** kubectl exec -it -n <ns> <pod> -- sh
 - **C.** kubectl cordon
 - **D.** kubectl proxy only
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     exec attaches a command/shell into the container.
 
@@ -322,13 +322,13 @@ ImagePullBackOff most often means:
 
 **Options:**
 
-- **A.** The scheduler is missing
-- **B.** kubelet cannot pull the image (name/tag/auth/registry/network)
+- **A.** kubelet cannot pull the image (name/tag/auth/registry/network)
+- **B.** The scheduler is missing
 - **C.** The Service CIDR is wrong
 - **D.** HPA is disabled
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Check image reference and pull secrets/registry connectivity.
 
@@ -344,13 +344,13 @@ CrashLoopBackOff indicates:
 
 **Options:**
 
-- **A.** Pod starts then the container exits repeatedly
-- **B.** Node memory is always healthy
-- **C.** DNS is perfect
+- **A.** Node memory is always healthy
+- **B.** DNS is perfect
+- **C.** Pod starts then the container exits repeatedly
 - **D.** RBAC is unused
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Investigate logs, probes, and command failures.
 
@@ -366,13 +366,13 @@ Which field sets CPU/memory requests and limits on a container?
 
 **Options:**
 
-- **A.** resources.requests / resources.limits
-- **B.** replicas only
-- **C.** hostNetwork: true
-- **D.** strategy.type
+- **A.** replicas only
+- **B.** hostNetwork: true
+- **C.** strategy.type
+- **D.** resources.requests / resources.limits
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     requests affect scheduling; limits cap usage.
 
@@ -389,13 +389,13 @@ A Deployment rolling update should keep capacity. Which helps?
 
 **Options:**
 
-- **A.** maxUnavailable / maxSurge settings appropriate to SLO
-- **B.** delete the namespace mid-rollout
+- **A.** delete the namespace mid-rollout
+- **B.** maxUnavailable / maxSurge settings appropriate to SLO
 - **C.** set replicas to 0 first always
 - **D.** disable readiness probes permanently
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     RollingUpdate parameters control surge and unavailability.
 
@@ -435,13 +435,13 @@ Helm primarily helps you:
 
 **Options:**
 
-- **A.** Package, templatise, and release Kubernetes manifests as charts
-- **B.** Replace container runtimes
-- **C.** Compile the Linux kernel
+- **A.** Replace container runtimes
+- **B.** Compile the Linux kernel
+- **C.** Package, templatise, and release Kubernetes manifests as charts
 - **D.** Provision bare metal only
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Helm is the common package manager for Kubernetes apps.
 
@@ -457,13 +457,13 @@ HPA scales Pods based on:
 
 **Options:**
 
-- **A.** Metrics such as CPU/memory/custom metrics (when metrics pipeline exists)
-- **B.** Git commit messages
-- **C.** Docker Hub stars
-- **D.** Manual /etc/hosts edits
+- **A.** Git commit messages
+- **B.** Docker Hub stars
+- **C.** Manual /etc/hosts edits
+- **D.** Metrics such as CPU/memory/custom metrics (when metrics pipeline exists)
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Horizontal Pod Autoscaler uses resource/custom metrics.
 
@@ -479,13 +479,13 @@ PodDisruptionBudget (PDB) is meant to:
 
 **Options:**
 
-- **A.** Limit voluntary disruptions so a minimum number/percentage of Pods stay available
-- **B.** Encrypt etcd automatically
+- **A.** Encrypt etcd automatically
+- **B.** Limit voluntary disruptions so a minimum number/percentage of Pods stay available
 - **C.** Replace NetworkPolicies
 - **D.** Disable node upgrades forever
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     PDBs protect availability during drains/upgrades.
 
@@ -526,13 +526,13 @@ Deployment stuck. describe shows FailedScheduling / Insufficient cpu. Fix direct
 
 **Options:**
 
-- **A.** Reduce requests, add nodes, or free capacity — scheduling cannot place the Pod
-- **B.** Delete kube-apiserver
-- **C.** Change the app language
+- **A.** Delete kube-apiserver
+- **B.** Change the app language
+- **C.** Reduce requests, add nodes, or free capacity — scheduling cannot place the Pod
 - **D.** Disable all Services
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Scheduler needs fitting node resources.
 
@@ -549,13 +549,13 @@ Secret mounted as env still shows old value after you apply a new Secret.
 
 **Options:**
 
-- **A.** Pods do not automatically reload env from updated Secrets — rollout restart / redesign for dynamic reload
-- **B.** Kubernetes never mounts Secrets
-- **C.** Only Helm can update Secrets
-- **D.** Need to reboot every node
+- **A.** Kubernetes never mounts Secrets
+- **B.** Only Helm can update Secrets
+- **C.** Need to reboot every node
+- **D.** Pods do not automatically reload env from updated Secrets — rollout restart / redesign for dynamic reload
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Env-injected secrets are fixed at process start for typical apps.
 
@@ -571,13 +571,13 @@ GitOps reports drift: live Deployment differs from Git. Correct response?
 
 **Options:**
 
-- **A.** Change Git (or allowlisted sync) — avoid long-lived kubectl edit that fights the reconciler
-- **B.** Always kubectl edit and ignore Git
+- **A.** Always kubectl edit and ignore Git
+- **B.** Change Git (or allowlisted sync) — avoid long-lived kubectl edit that fights the reconciler
 - **C.** Turn off the cluster
 - **D.** Delete Git history
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Git is the source of truth; reconcile toward desired state.
 
@@ -616,13 +616,13 @@ You need zero-downtime drain of a node. Useful sequence?
 
 **Options:**
 
-- **A.** cordon + drain (respecting PDBs), ensure replicas elsewhere, then maintain
-- **B.** power off the node immediately
-- **C.** delete the Deployment
+- **A.** power off the node immediately
+- **B.** delete the Deployment
+- **C.** cordon + drain (respecting PDBs), ensure replicas elsewhere, then maintain
 - **D.** remove CoreDNS first
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     cordon/drain is the supported maintenance workflow.
 
@@ -639,13 +639,13 @@ NetworkPolicy default-deny in a namespace means new Pods:
 
 **Options:**
 
-- **A.** May be isolated until explicit allow policies select them
-- **B.** Automatically get Internet without rules
-- **C.** Bypass Services
-- **D.** Ignore DNS
+- **A.** Automatically get Internet without rules
+- **B.** Bypass Services
+- **C.** Ignore DNS
+- **D.** May be isolated until explicit allow policies select them
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Default-deny requires careful allowlists for expected traffic.
 
@@ -661,13 +661,13 @@ Init container fails; app container never starts. Why?
 
 **Options:**
 
-- **A.** Init containers must succeed before app containers start
-- **B.** Init containers run after the app
+- **A.** Init containers run after the app
+- **B.** Init containers must succeed before app containers start
 - **C.** Init containers replace the scheduler
 - **D.** Init containers only run on Windows
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Init sequence gates startup.
 
@@ -706,13 +706,13 @@ Liveness probe too aggressive on a slow-starting JVM. Symptom?
 
 **Options:**
 
-- **A.** Container killed/restarted before it becomes healthy — use startupProbe or retune thresholds
-- **B.** Faster cold starts magically
-- **C.** More endpoints join early
+- **A.** Faster cold starts magically
+- **B.** More endpoints join early
+- **C.** Container killed/restarted before it becomes healthy — use startupProbe or retune thresholds
 - **D.** etcd grows slower
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     startupProbe or longer delays prevent premature liveness kills.
 
@@ -730,13 +730,13 @@ Pod Pending; events: failed to pull image `myapp:latst` (typo). Root cause?
 
 **Options:**
 
-- **A.** Wrong image reference/tag
-- **B.** CoreDNS crash only
-- **C.** Missing Deployment name
-- **D.** PDB conflict
+- **A.** CoreDNS crash only
+- **B.** Missing Deployment name
+- **C.** PDB conflict
+- **D.** Wrong image reference/tag
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Typos in image names cause pull failures.
 
@@ -752,13 +752,13 @@ Service selects app=api but Pods are labelled app=backend. Effect?
 
 **Options:**
 
-- **A.** Endpoints empty — no traffic to Pods
-- **B.** Automatic label rewrite
+- **A.** Automatic label rewrite
+- **B.** Endpoints empty — no traffic to Pods
 - **C.** Nodes cordon
 - **D.** HPA scales to zero always
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Selector/label mismatch yields empty Endpoints.
 
@@ -797,13 +797,13 @@ OOMKilled in container status. Meaning?
 
 **Options:**
 
-- **A.** Check RoleBindings/ClusterRoleBindings for your identity; request least privilege access
-- **B.** Disable RBAC cluster-wide
-- **C.** Use --force on API server flags casually
+- **A.** Disable RBAC cluster-wide
+- **B.** Use --force on API server flags casually
+- **C.** Check RoleBindings/ClusterRoleBindings for your identity; request least privilege access
 - **D.** Store kubeconfig in a public gist
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Fix RBAC bindings appropriately; do not disable RBAC.
 
@@ -819,13 +819,13 @@ PVC Pending forever in a cluster without default StorageClass. Likely?
 
 **Options:**
 
-- **A.** No provisioner/StorageClass to satisfy the claim
-- **B.** Ingress misconfigured
-- **C.** HPA missing
-- **D.** Too many ConfigMaps
+- **A.** Ingress misconfigured
+- **B.** HPA missing
+- **C.** Too many ConfigMaps
+- **D.** No provisioner/StorageClass to satisfy the claim
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Dynamic provisioning needs a StorageClass; otherwise bind a matching PV.
 
@@ -844,13 +844,13 @@ For a stateless HTTP API, which pairing is most typical?
 
 **Options:**
 
-- **A.** Deployment + ClusterIP/Ingress + HPA + PDB
-- **B.** one naked Pod on a specific node name forever without probes
+- **A.** one naked Pod on a specific node name forever without probes
+- **B.** Deployment + ClusterIP/Ingress + HPA + PDB
 - **C.** hostNetwork for every Pod
 - **D.** Privileged DaemonSet as the web tier
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Stateless HTTP commonly uses Deployment, Service/Ingress, and availability controls.
 
@@ -888,13 +888,13 @@ Multi-tenant cluster security baseline includes:
 
 **Options:**
 
-- **A.** Namespaces, RBAC least privilege, NetworkPolicies, admission controls, non-root images
-- **B.** A single cluster-admin kubeconfig for everyone
-- **C.** Privileged pods by default
+- **A.** A single cluster-admin kubeconfig for everyone
+- **B.** Privileged pods by default
+- **C.** Namespaces, RBAC least privilege, NetworkPolicies, admission controls, non-root images
 - **D.** No audit logs
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     Defence in depth across identity, network, and workload controls.
 
@@ -911,13 +911,13 @@ Blue/green vs rolling update — trade-off summary?
 
 **Options:**
 
-- **A.** Blue/green shifts traffic between versions with more capacity cost; rolling gradually replaces replicas in one Deployment
-- **B.** They are identical
-- **C.** Rolling always needs two clusters
-- **D.** Blue/green forbids Services
+- **A.** They are identical
+- **B.** Rolling always needs two clusters
+- **C.** Blue/green forbids Services
+- **D.** Blue/green shifts traffic between versions with more capacity cost; rolling gradually replaces replicas in one Deployment
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Choose based on risk, capacity, and traffic switching needs.
 
@@ -933,13 +933,13 @@ Where should cluster state backups focus first?
 
 **Options:**
 
-- **A.** etcd (or control plane backup strategy) plus application data volumes
-- **B.** Only worker node /tmp
+- **A.** Only worker node /tmp
+- **B.** etcd (or control plane backup strategy) plus application data volumes
 - **C.** Only container stdout
 - **D.** Only CNI IPAM files on one node
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: B**
 
     Control plane state and persistent app data are critical.
 

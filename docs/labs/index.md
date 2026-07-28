@@ -28,6 +28,8 @@ Every ready track now has at least one standalone lab.
 | [AWS IAM and VPC Reachability Triage](aws-iam-vpc-triage.md) | AWS | Advanced | 70 min |
 | [Secure EC2 via SSM and S3](aws-ssm-s3.md) | AWS | Advanced | 75 min |
 | [Git History and PR Recovery](git-history-pr-recovery.md) | Git | Intermediate | 45 min |
+| [CI/CD Pipeline Failure Triage](cicd-pipeline-triage.md) | CI/CD | Intermediate | 60 min |
+| [Docker Build, Scan, and Deploy Gate](cicd-docker-secure-gate.md) | CI/CD | Advanced | 75 min |
 | [Docker Compose Stack Recovery](docker-compose-stack-recovery.md) | Docker | Intermediate | 55 min |
 | [Kubernetes Deployment Triage](kubernetes-deployment-triage.md) | Kubernetes | Intermediate | 70 min |
 | [Terraform Plan Review Workflow](terraform-plan-review-workflow.md) | Terraform | Intermediate | 50 min |

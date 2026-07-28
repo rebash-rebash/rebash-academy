@@ -1,0 +1,6 @@
+direction: right
+Build: "Build job" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Stage: "Staging env" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Prod: "Production env" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Deploy: "Deploy strategy" { style.fill: "#e0e7ff"; style.stroke: "#4338ca" }
+Build -> Stage -> Deploy -> Prod
