@@ -5,6 +5,7 @@ nav:
     - getting-started
     - linux
     - networking
+    - aws
     - git
     - docker
     - kubernetes
