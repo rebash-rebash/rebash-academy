@@ -1,0 +1,7 @@
+direction: right
+Base: "Minimal OS\nimage" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Time: "chrony / NTP" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Patch: "Unattended\nupgrades" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Ops: "Ops user\n+ sudo" { style.fill: "#e0e7ff"; style.stroke: "#4338ca" }
+Boot: "systemd-analyze\n+ reboot cadence" { style.fill: "#fce7f3"; style.stroke: "#db2777" }
+Base -> Time -> Patch -> Ops -> Boot

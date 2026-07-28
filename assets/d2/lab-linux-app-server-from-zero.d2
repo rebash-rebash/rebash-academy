@@ -1,0 +1,23 @@
+direction: right
+
+Alert: "Build app\nserver" {
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+}
+
+Base: "Baseline\n+ harden" {
+  style.fill: "#ffedd5"
+  style.stroke: "#c2410c"
+}
+
+Stack: "systemd app\n+ nginx + TLS" {
+  style.fill: "#dcfce7"
+  style.stroke: "#15803d"
+}
+
+Proof: "Backup\nrestore drill" {
+  style.fill: "#e0e7ff"
+  style.stroke: "#4338ca"
+}
+
+Alert -> Base -> Stack -> Proof
