@@ -1,0 +1,44 @@
+direction: right
+
+Alert: "Site down\nstatus.rebash.lab" {
+  style.fill: "#fee2e2"
+  style.stroke: "#b91c1c"
+}
+
+Triage: "curl / dig\ngetent / ss" {
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+}
+
+Path: "Request path" {
+  style.fill: "#f8fafc"
+  style.stroke: "#334155"
+
+  Dns: "DNS / hosts\n(wrong A)" {
+    style.fill: "#fecaca"
+    style.stroke: "#b91c1c"
+  }
+  Fw: "Firewall / ACL\n(port deny)" {
+    style.fill: "#ffedd5"
+    style.stroke: "#c2410c"
+  }
+  App: "HTTP demo\n:18080" {
+    style.fill: "#e0e7ff"
+    style.stroke: "#4338ca"
+  }
+}
+
+Fix: "Fix hosts\n+ open port" {
+  style.fill: "#dcfce7"
+  style.stroke: "#15803d"
+}
+
+Verify: "curl 200\nss listening" {
+  style.fill: "#d1fae5"
+  style.stroke: "#047857"
+}
+
+Alert -> Triage -> Path.Dns
+Path.Dns -> Path.Fw
+Path.Fw -> Path.App
+Path.App -> Fix -> Verify
