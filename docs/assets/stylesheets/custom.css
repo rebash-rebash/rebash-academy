@@ -1196,15 +1196,15 @@
 /* Architecture diagrams (build-time Mermaid SVG) */
 .md-typeset .mermaid,
 .md-typeset figure.rebash-diagram {
-  margin: 2rem auto;
-  padding: 1.5rem 1.25rem;
+  margin: 1.5rem auto;
+  padding: 1rem 0.875rem;
   width: 100%;
-  max-width: 100%;
+  max-width: min(100%, 38rem);
   overflow-x: auto;
   background: #fafbfd;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05);
   text-align: center;
 }
 
@@ -1212,7 +1212,7 @@
 [data-md-color-scheme="slate"] .md-typeset figure.rebash-diagram {
   background: #1e293b;
   border-color: #334155;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
 }
 
 .md-typeset .mermaid svg,
@@ -1220,15 +1220,8 @@
   display: block;
   width: 100% !important;
   max-width: 100% !important;
-  min-width: min(100%, 36rem);
   height: auto !important;
   margin-inline: auto;
-}
-
-@media screen and (min-width: 60em) {
-  .md-typeset figure.rebash-diagram svg {
-    min-width: min(100%, 42rem);
-  }
 }
 
 /* Responsive */
