@@ -1,427 +1,427 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/</loc>
+         <loc>https://academy.rebash.in/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/about/</loc>
+         <loc>https://academy.rebash.in/about/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/roadmap/</loc>
+         <loc>https://academy.rebash.in/roadmap/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/ai/</loc>
+         <loc>https://academy.rebash.in/ai/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/architecture/</loc>
+         <loc>https://academy.rebash.in/architecture/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/aws/</loc>
+         <loc>https://academy.rebash.in/aws/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/azure/</loc>
+         <loc>https://academy.rebash.in/azure/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/blog/</loc>
+         <loc>https://academy.rebash.in/blog/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/cheatsheets/</loc>
+         <loc>https://academy.rebash.in/cheatsheets/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/devsecops/</loc>
+         <loc>https://academy.rebash.in/devsecops/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/</loc>
+         <loc>https://academy.rebash.in/docker/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/building-images-with-dockerfile/</loc>
+         <loc>https://academy.rebash.in/docker/building-images-with-dockerfile/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/container-logging-and-monitoring/</loc>
+         <loc>https://academy.rebash.in/docker/container-logging-and-monitoring/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/container-registries-and-distribution/</loc>
+         <loc>https://academy.rebash.in/docker/container-registries-and-distribution/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-architecture-and-components/</loc>
+         <loc>https://academy.rebash.in/docker/docker-architecture-and-components/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-capstone-and-next-steps/</loc>
+         <loc>https://academy.rebash.in/docker/docker-capstone-and-next-steps/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-compose-fundamentals/</loc>
+         <loc>https://academy.rebash.in/docker/docker-compose-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-in-ci-cd-pipelines/</loc>
+         <loc>https://academy.rebash.in/docker/docker-in-ci-cd-pipelines/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-installation-and-setup/</loc>
+         <loc>https://academy.rebash.in/docker/docker-installation-and-setup/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-networking-fundamentals/</loc>
+         <loc>https://academy.rebash.in/docker/docker-networking-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-security-hardening/</loc>
+         <loc>https://academy.rebash.in/docker/docker-security-hardening/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/docker-swarm-orchestration-basics/</loc>
+         <loc>https://academy.rebash.in/docker/docker-swarm-orchestration-basics/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/dockerfile-best-practices-and-multi-stage-builds/</loc>
+         <loc>https://academy.rebash.in/docker/dockerfile-best-practices-and-multi-stage-builds/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/environment-variables-and-secrets/</loc>
+         <loc>https://academy.rebash.in/docker/environment-variables-and-secrets/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/from-docker-to-kubernetes/</loc>
+         <loc>https://academy.rebash.in/docker/from-docker-to-kubernetes/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/introduction-to-containers-and-docker/</loc>
+         <loc>https://academy.rebash.in/docker/introduction-to-containers-and-docker/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/production-docker-patterns/</loc>
+         <loc>https://academy.rebash.in/docker/production-docker-patterns/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/running-your-first-container/</loc>
+         <loc>https://academy.rebash.in/docker/running-your-first-container/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/troubleshooting-docker-containers/</loc>
+         <loc>https://academy.rebash.in/docker/troubleshooting-docker-containers/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/volumes-and-persistent-storage/</loc>
+         <loc>https://academy.rebash.in/docker/volumes-and-persistent-storage/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/docker/working-with-docker-images/</loc>
+         <loc>https://academy.rebash.in/docker/working-with-docker-images/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/gcp/</loc>
+         <loc>https://academy.rebash.in/gcp/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/getting-started/</loc>
+         <loc>https://academy.rebash.in/getting-started/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/</loc>
+         <loc>https://academy.rebash.in/git/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/advanced-git-workflows/</loc>
+         <loc>https://academy.rebash.in/git/advanced-git-workflows/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/basic-git-workflow-add-commit-push/</loc>
+         <loc>https://academy.rebash.in/git/basic-git-workflow-add-commit-push/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/branching-fundamentals/</loc>
+         <loc>https://academy.rebash.in/git/branching-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/cherry-pick-and-reflog/</loc>
+         <loc>https://academy.rebash.in/git/cherry-pick-and-reflog/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/creating-and-cloning-repositories/</loc>
+         <loc>https://academy.rebash.in/git/creating-and-cloning-repositories/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/git-bisect-and-debugging-history/</loc>
+         <loc>https://academy.rebash.in/git/git-bisect-and-debugging-history/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/git-hooks-and-automation/</loc>
+         <loc>https://academy.rebash.in/git/git-hooks-and-automation/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/git-in-ci-cd-and-devops/</loc>
+         <loc>https://academy.rebash.in/git/git-in-ci-cd-and-devops/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/git-installation-and-configuration/</loc>
+         <loc>https://academy.rebash.in/git/git-installation-and-configuration/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/git-submodules-and-subtrees/</loc>
+         <loc>https://academy.rebash.in/git/git-submodules-and-subtrees/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/gitignore-and-gitattributes/</loc>
+         <loc>https://academy.rebash.in/git/gitignore-and-gitattributes/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/introduction-to-git-and-version-control/</loc>
+         <loc>https://academy.rebash.in/git/introduction-to-git-and-version-control/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/merging-and-merge-conflicts/</loc>
+         <loc>https://academy.rebash.in/git/merging-and-merge-conflicts/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/pull-requests-and-code-review/</loc>
+         <loc>https://academy.rebash.in/git/pull-requests-and-code-review/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/rebasing-and-interactive-rebase/</loc>
+         <loc>https://academy.rebash.in/git/rebasing-and-interactive-rebase/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/signed-commits-and-git-security/</loc>
+         <loc>https://academy.rebash.in/git/signed-commits-and-git-security/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/understanding-the-git-object-model/</loc>
+         <loc>https://academy.rebash.in/git/understanding-the-git-object-model/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/undoing-changes-reset-revert-stash/</loc>
+         <loc>https://academy.rebash.in/git/undoing-changes-reset-revert-stash/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/viewing-history-and-diffs/</loc>
+         <loc>https://academy.rebash.in/git/viewing-history-and-diffs/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/git/working-with-remotes/</loc>
+         <loc>https://academy.rebash.in/git/working-with-remotes/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/gitlab/</loc>
+         <loc>https://academy.rebash.in/gitlab/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/interview/</loc>
+         <loc>https://academy.rebash.in/interview/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/kubernetes/</loc>
+         <loc>https://academy.rebash.in/kubernetes/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/labs/</loc>
+         <loc>https://academy.rebash.in/labs/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/learning-paths/</loc>
+         <loc>https://academy.rebash.in/learning-paths/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/</loc>
+         <loc>https://academy.rebash.in/linux/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/cron-and-task-scheduling/</loc>
+         <loc>https://academy.rebash.in/linux/cron-and-task-scheduling/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/disk-and-filesystem-management/</loc>
+         <loc>https://academy.rebash.in/linux/disk-and-filesystem-management/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/environment-variables-shell-config/</loc>
+         <loc>https://academy.rebash.in/linux/environment-variables-shell-config/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/essential-linux-commands/</loc>
+         <loc>https://academy.rebash.in/linux/essential-linux-commands/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/file-archiving-and-compression/</loc>
+         <loc>https://academy.rebash.in/linux/file-archiving-and-compression/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/file-permissions-and-ownership/</loc>
+         <loc>https://academy.rebash.in/linux/file-permissions-and-ownership/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/introduction-to-linux/</loc>
+         <loc>https://academy.rebash.in/linux/introduction-to-linux/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/linux-filesystem-hierarchy/</loc>
+         <loc>https://academy.rebash.in/linux/linux-filesystem-hierarchy/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/linux-networking-essentials/</loc>
+         <loc>https://academy.rebash.in/linux/linux-networking-essentials/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/linux-security-hardening-basics/</loc>
+         <loc>https://academy.rebash.in/linux/linux-security-hardening-basics/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/log-management-journalctl/</loc>
+         <loc>https://academy.rebash.in/linux/log-management-journalctl/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/package-management/</loc>
+         <loc>https://academy.rebash.in/linux/package-management/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/process-management/</loc>
+         <loc>https://academy.rebash.in/linux/process-management/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/remote-systemd-services/</loc>
+         <loc>https://academy.rebash.in/linux/remote-systemd-services/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/shell-scripting-fundamentals/</loc>
+         <loc>https://academy.rebash.in/linux/shell-scripting-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/ssh-remote-administration/</loc>
+         <loc>https://academy.rebash.in/linux/ssh-remote-administration/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/systemd-service-management/</loc>
+         <loc>https://academy.rebash.in/linux/systemd-service-management/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/text-processing-grep-sed-awk/</loc>
+         <loc>https://academy.rebash.in/linux/text-processing-grep-sed-awk/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/troubleshooting-linux-systems/</loc>
+         <loc>https://academy.rebash.in/linux/troubleshooting-linux-systems/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/linux/user-and-group-management/</loc>
+         <loc>https://academy.rebash.in/linux/user-and-group-management/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/monitoring/</loc>
+         <loc>https://academy.rebash.in/monitoring/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/</loc>
+         <loc>https://academy.rebash.in/networking/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/cloud-networking-vpc-and-subnets/</loc>
+         <loc>https://academy.rebash.in/networking/cloud-networking-vpc-and-subnets/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/dns-fundamentals/</loc>
+         <loc>https://academy.rebash.in/networking/dns-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/dns-records-and-troubleshooting/</loc>
+         <loc>https://academy.rebash.in/networking/dns-records-and-troubleshooting/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/ethernet-switching-and-vlans/</loc>
+         <loc>https://academy.rebash.in/networking/ethernet-switching-and-vlans/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/firewalls-and-access-control/</loc>
+         <loc>https://academy.rebash.in/networking/firewalls-and-access-control/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/http-https-and-application-layer/</loc>
+         <loc>https://academy.rebash.in/networking/http-https-and-application-layer/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/icmp-arp-dhcp-and-network-services/</loc>
+         <loc>https://academy.rebash.in/networking/icmp-arp-dhcp-and-network-services/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/introduction-to-networking/</loc>
+         <loc>https://academy.rebash.in/networking/introduction-to-networking/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/ip-addressing-and-subnetting/</loc>
+         <loc>https://academy.rebash.in/networking/ip-addressing-and-subnetting/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/load-balancing-fundamentals/</loc>
+         <loc>https://academy.rebash.in/networking/load-balancing-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/nat-and-port-forwarding/</loc>
+         <loc>https://academy.rebash.in/networking/nat-and-port-forwarding/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/network-automation-and-monitoring/</loc>
+         <loc>https://academy.rebash.in/networking/network-automation-and-monitoring/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/network-security-hardening/</loc>
+         <loc>https://academy.rebash.in/networking/network-security-hardening/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/network-troubleshooting-methodology/</loc>
+         <loc>https://academy.rebash.in/networking/network-troubleshooting-methodology/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/osi-and-tcp-ip-models/</loc>
+         <loc>https://academy.rebash.in/networking/osi-and-tcp-ip-models/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/packet-analysis-tcpdump-wireshark/</loc>
+         <loc>https://academy.rebash.in/networking/packet-analysis-tcpdump-wireshark/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/reverse-proxy-and-ingress-basics/</loc>
+         <loc>https://academy.rebash.in/networking/reverse-proxy-and-ingress-basics/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/routing-fundamentals/</loc>
+         <loc>https://academy.rebash.in/networking/routing-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/tcp-and-udp-deep-dive/</loc>
+         <loc>https://academy.rebash.in/networking/tcp-and-udp-deep-dive/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/networking/vpn-and-tunneling-basics/</loc>
+         <loc>https://academy.rebash.in/networking/vpn-and-tunneling-basics/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/projects/</loc>
+         <loc>https://academy.rebash.in/projects/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/python/</loc>
+         <loc>https://academy.rebash.in/python/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/security/</loc>
+         <loc>https://academy.rebash.in/security/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://rebash-rebash.github.io/rebash-academy/terraform/</loc>
+         <loc>https://academy.rebash.in/terraform/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
 </urlset>
