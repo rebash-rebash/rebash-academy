@@ -151,6 +151,39 @@ Use **CIS-CAT** or **Lynis** for automated assessment. Level 1 = essential; Leve
 - Enable SELinux (RHEL) or AppArmor (Ubuntu) — do not disable without reason
 - Restrict file permissions on sensitive files (`/etc/shadow`, SSH keys)
 
+### Service exposure matrix (production VM)
+
+Before opening the firewall, decide what the host is allowed to offer:
+
+| Service | Listen | Firewall | Notes |
+|---------|--------|----------|-------|
+| SSH | `0.0.0.0:22` (or management IP) | Allow from admin CIDRs when possible | Keys only; fail2ban optional |
+| HTTP | `0.0.0.0:80` | Allow public or LB only | Redirect to HTTPS in production |
+| HTTPS | `0.0.0.0:443` | Allow public or LB only | Terminate TLS at nginx |
+| App / DB | `127.0.0.1` only | No public rule | Proxied locally |
+
+Anything else listening on `0.0.0.0` is a finding until justified.
+
+### Deploy user and sudoers (least privilege)
+
+Prefer a named deploy/ops user over shared root:
+
+```bash
+# Example pattern (review before production use)
+# /etc/sudoers.d/99-deploy — edit with visudo -f
+deploy ALL=(root) NOPASSWD: /bin/systemctl reload nginx, /bin/systemctl restart myapp
+```
+
+Never grant `ALL=(ALL) NOPASSWD: ALL` for convenience on internet-facing hosts. Log sudo (`Defaults logfile=` or journal) and keep a break-glass account with console access.
+
+### Avoid locking yourself out
+
+1. Keep a console/VNC/serial session open while changing SSH/firewall
+2. Test a second SSH session with key auth **before** `reload`/`enable`
+3. Allow SSH before enabling UFW (`ufw allow OpenSSH`)
+4. Prefer drop-in files under `sshd_config.d/` so you can delete one file to recover
+5. Know how to boot rescue / use cloud serial console for your provider
+
 ## Hands-on Lab
 
 ### Step 1 – Baseline security audit
@@ -260,6 +293,42 @@ sudo fail2ban-client status sshd 2>/dev/null || sudo fail2ban-client status
 ```
 
 **Expected output:** fail2ban running with sshd jail enabled.
+
+### Step 6b – Prove fail2ban sees the jail and review bans
+
+```bash
+sudo fail2ban-client status sshd
+sudo fail2ban-client get sshd bantime
+# Optional: list currently banned IPs (usually empty in a lab)
+sudo fail2ban-client status sshd | sed -n '/Banned IP/,+2p'
+```
+
+**Expected output:** Jail `sshd` enabled; `bantime` matches your `jail.local` (e.g. 3600). Do **not** brute-force your own host from a machine you need — use a disposable IP or skip live ban tests.
+
+### Step 6c – Deploy-user sudo sketch (safe dry-run)
+
+```bash
+# Show how you would grant limited restart rights (do not enable blindly)
+cat << 'EOF'
+# visudo -f /etc/sudoers.d/99-rebash-deploy
+# Cmnd_Alias REBASH_SVC = /bin/systemctl reload nginx, /bin/systemctl restart rebash-api
+# deploy ALL=(root) NOPASSWD: REBASH_SVC
+EOF
+echo "Keep console access before any sudoers change; always use visudo."
+```
+
+**Expected output:** Reminder text only — treat live sudoers edits as a controlled change with rollback.
+
+### Step 6d – Exposure matrix check
+
+```bash
+echo "=== Public-ish listeners ==="
+sudo ss -tuln | awk 'NR==1 || /0\.0\.0\.0:|\[::\]:/'
+echo "=== Localhost-only listeners ==="
+sudo ss -tuln | awk 'NR==1 || /127\.0\.0\.1:|\[::1\]:/'
+```
+
+**Expected output:** You can classify each listener as intentional public edge (22/80/443) vs localhost backend.
 
 ### Step 7 – Disable unnecessary services
 
@@ -497,6 +566,8 @@ done
 - Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
 - Interview prep: [Linux Interview Prep](../interview/linux.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+
+- Next: [Linux Server Baseline and Lifecycle](linux-server-baseline-and-lifecycle.md) (Module 7)
 
 ## References
 

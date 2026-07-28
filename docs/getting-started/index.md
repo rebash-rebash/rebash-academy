@@ -63,7 +63,7 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 
 | Step | Track | First tutorial | Status |
 |------|--------|----------------|--------|
-| 1 | [Linux](../linux/index.md) | [Introduction to Linux](../linux/introduction-to-linux.md) | Ready — 20 tutorials |
+| 1 | [Linux](../linux/index.md) | [Introduction to Linux](../linux/introduction-to-linux.md) | Ready — 25 tutorials (incl. Advanced Servers) |
 | 2 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready — 20 tutorials |
 | 3 | [Git](../git/index.md) | [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md) | Ready — 20 tutorials |
 | 4 | [Docker](../docker/index.md) | [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
@@ -71,7 +71,7 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 | 6 | [Terraform](../terraform/index.md) | [Introduction to Terraform and Infrastructure as Code](../terraform/introduction-to-terraform-and-iac.md) | Ready — 20 tutorials |
 
 !!! tip "New to DevOps?"
-    Begin with **[Introduction to Linux](../linux/introduction-to-linux.md)**. Do not skip the labs — reading alone will not stick.
+    Begin with **[Introduction to Linux](../linux/introduction-to-linux.md)** — Linux is the golden foundation on REBASH Academy. Finish through Module 7 servers when you can; do not skip the labs.
 
 ## Study tips
 
@@ -87,7 +87,7 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 |---------------|-------------|
 | Linux, Networking, Git, Docker, Kubernetes, Terraform | AWS, Azure, GCP |
 | [Standalone Labs](../labs/index.md) (all six ready tracks) | More scenario labs |
-| [Quizzes](../quizzes/index.md) (Linux, Docker, Kubernetes) | Networking / Git / Terraform quizzes |
+| [Quizzes](../quizzes/index.md) (Linux fundamentals + servers, Docker, Kubernetes) | Networking / Git / Terraform quizzes |
 | [Status API project](../projects/status-api-portfolio.md) | More portfolio projects |
 | Learning path, cheat sheets, interview guides | GitLab CI/CD, Monitoring, Security, DevSecOps |
 

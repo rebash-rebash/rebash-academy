@@ -3,6 +3,7 @@ icon: material/flask
 nav:
   - index.md
   - linux-production-incident-triage.md
+  - linux-app-server-from-zero.md
   - networking-dns-firewall-triage.md
   - git-history-pr-recovery.md
   - docker-compose-stack-recovery.md

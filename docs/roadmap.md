@@ -29,6 +29,7 @@ This page tracks what is published on REBASH Academy and what comes next.
 
 - [x] Getting Started onboarding page
 - [x] Linux fundamentals path (20 tutorials)
+- [x] Linux Advanced Servers module (tutorials 21–25: baseline, nginx, TLS, LVM, backups)
 - [x] Networking fundamentals path (20 tutorials)
 - [x] Git version control path (20 tutorials)
 - [x] Docker containerization path (20 tutorials)
@@ -63,8 +64,9 @@ These sections keep stable URLs under `/aws/`, `/azure/`, `/gcp/`, `/gitlab/`, a
 - [x] Labs section promoted in primary navigation
 - [x] DevOps Engineer learning path page
 - [x] First portfolio project (Status API — Git/Docker/Kubernetes/Terraform)
-- [x] Assessment quizzes (Linux, Docker, Kubernetes fundamentals)
+- [x] Assessment quizzes (Linux fundamentals + Linux servers, Docker, Kubernetes)
 - [x] Quizzes section promoted in primary navigation (peer to Labs)
+- [x] Advanced Linux app-server lab (from zero)
 - [ ] Additional project walkthroughs (CI/CD, cloud stacks)
 - [ ] Blog articles and video embeds
 - [ ] Quizzes for Networking, Git, and Terraform

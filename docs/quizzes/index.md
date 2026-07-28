@@ -24,6 +24,7 @@ Self-marking practice quizzes reinforce tutorials and labs. Each quiz has **40**
 | Quiz | Track | Questions | Time |
 |------|--------|-----------|------|
 | [Linux Fundamentals](linux-fundamentals.md) | Linux | 40 | 45–60 min |
+| [Linux Servers](linux-servers.md) | Linux (Module 7) | 25 | 30–40 min |
 | [Docker Fundamentals](docker-fundamentals.md) | Docker | 40 | 45–60 min |
 | [Kubernetes Fundamentals](kubernetes-fundamentals.md) | Kubernetes | 40 | 45–60 min |
 

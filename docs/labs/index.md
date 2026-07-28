@@ -22,6 +22,7 @@ Every ready track now has at least one standalone lab.
 | Lab | Track | Level | Time |
 |-----|--------|-------|------|
 | [Linux Production Incident Triage](linux-production-incident-triage.md) | Linux | Intermediate | 60 min |
+| [Linux App Server from Zero](linux-app-server-from-zero.md) | Linux | Advanced | 90 min |
 | [DNS and Firewall Site-Down Triage](networking-dns-firewall-triage.md) | Networking | Intermediate | 55 min |
 | [Git History and PR Recovery](git-history-pr-recovery.md) | Git | Intermediate | 45 min |
 | [Docker Compose Stack Recovery](docker-compose-stack-recovery.md) | Docker | Intermediate | 55 min |
