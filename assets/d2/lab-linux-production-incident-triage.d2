@@ -1,0 +1,38 @@
+direction: right
+
+Incident: "On-call alert\nrebash-api down" {
+  style.fill: "#fee2e2"
+  style.stroke: "#b91c1c"
+}
+
+SSH: "Engineer\nSSH to host" {
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+}
+
+Host: "Ubuntu VM" {
+  style.fill: "#f8fafc"
+  style.stroke: "#334155"
+
+  Journal: "journalctl\nsystemd logs" {
+    style.fill: "#ffedd5"
+    style.stroke: "#c2410c"
+  }
+  Unit: "rebash-api.service\n(failed)" {
+    style.fill: "#fecaca"
+    style.stroke: "#b91c1c"
+  }
+  Fix: "unit + perms\n+ restart" {
+    style.fill: "#dcfce7"
+    style.stroke: "#15803d"
+  }
+  Verify: "systemctl status\ncurl health" {
+    style.fill: "#d1fae5"
+    style.stroke: "#047857"
+  }
+}
+
+Incident -> SSH -> Host.Journal
+Host.Journal -> Host.Unit
+Host.Unit -> Host.Fix
+Host.Fix -> Host.Verify
