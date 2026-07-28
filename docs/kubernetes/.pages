@@ -1,2 +1,30 @@
 title: Kubernetes
 icon: material/kubernetes
+nav:
+  - index.md
+  - Foundations:
+    - introduction-to-kubernetes-and-orchestration.md
+    - kubernetes-architecture-and-components.md
+    - installing-kubernetes-and-kubectl.md
+  - Workloads:
+    - kubectl-essentials-and-workflows.md
+    - pods-the-atomic-unit.md
+    - deployments-managing-replicated-pods.md
+  - Configuration & Storage:
+    - services-and-cluster-networking.md
+    - configmaps-and-secrets.md
+    - persistent-volumes-and-storage.md
+  - Networking & Operations:
+    - ingress-and-external-access.md
+    - namespaces-and-resource-management.md
+    - health-checks-probes-and-self-healing.md
+  - Security & Tooling:
+    - rbac-and-kubernetes-security-basics.md
+    - troubleshooting-kubernetes-workloads.md
+    - helm-package-management.md
+  - Production:
+    - gitops-and-cicd-with-kubernetes.md
+    - production-patterns-hpa-pdb-and-affinity.md
+    - monitoring-and-logging-in-kubernetes.md
+    - kubernetes-security-hardening.md
+    - kubernetes-capstone-and-next-steps.md

@@ -27,9 +27,9 @@ This page tracks the development progress of REBASH Academy.
 ## Phase 2 – Core Content (In Progress)
 
 - [ ] Getting Started tutorial series (3–5 guides)
-- [ ] Linux fundamentals path
-- [ ] Docker containerization path
-- [ ] Kubernetes orchestration path
+- [x] Linux fundamentals path
+- [x] Docker containerization path
+- [x] Kubernetes orchestration path (20 tutorials)
 - [ ] Terraform IaC path
 
 ## Phase 3 – Cloud & CI/CD
