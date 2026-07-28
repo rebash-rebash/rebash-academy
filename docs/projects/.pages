@@ -1,2 +1,5 @@
 title: Projects
-icon: material/hammer-wrench
+icon: material/rocket-launch
+nav:
+  - index.md
+  - status-api-portfolio.md

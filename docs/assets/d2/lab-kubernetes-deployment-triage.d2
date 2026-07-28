@@ -1,0 +1,43 @@
+direction: right
+
+Alert: "Deployment\nCrashLoopBackOff" {
+  style.fill: "#fee2e2"
+  style.stroke: "#b91c1c"
+}
+
+Kubectl: "kubectl\ndescribe / logs" {
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+}
+
+Cluster: "kind / minikube" {
+  style.fill: "#f8fafc"
+  style.stroke: "#334155"
+
+  Ns: "namespace\nrebash-lab" {
+    style.fill: "#e0e7ff"
+    style.stroke: "#4338ca"
+  }
+  Deploy: "Deployment web\n(bad probe/image)" {
+    style.fill: "#fecaca"
+    style.stroke: "#b91c1c"
+  }
+  Svc: "Service ClusterIP" {
+    style.fill: "#ffedd5"
+    style.stroke: "#c2410c"
+  }
+}
+
+Fix: "manifest patch\nrollout status" {
+  style.fill: "#dcfce7"
+  style.stroke: "#15803d"
+}
+
+Verify: "pods Ready\ncurl via port-forward" {
+  style.fill: "#d1fae5"
+  style.stroke: "#047857"
+}
+
+Alert -> Kubectl -> Cluster.Ns
+Cluster.Ns -> Cluster.Deploy -> Cluster.Svc
+Cluster.Svc -> Fix -> Verify
