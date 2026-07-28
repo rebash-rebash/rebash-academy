@@ -1,0 +1,227 @@
+{% extends "main.html" %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Career roadmaps</p>
+      <h1 class="rebash-page-hero__title">Learning Paths</h1>
+      <p class="rebash-page-hero__lead">
+        Structured paths from Linux fundamentals to production-ready cloud engineering.
+        Pick a track, follow the steps, and build portfolio projects along the way.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--paths md-grid">
+    <div class="rebash-section__header">
+      <h2 class="rebash-section__title">Primary Path</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        The recommended full-stack DevOps roadmap — start here if you're building platform skills from the ground up.
+      </p>
+    </div>
+    <div class="rebash-path-grid rebash-path-grid--featured">
+      <article class="rebash-path-card rebash-path-card--devops rebash-path-card--featured">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.26A7.002 7.002 0 0 1 5.26 19H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7 15a5 5 0 0 0 10 0H7Z"/></svg>
+          </div>
+          <span class="rebash-path-card__badge">Recommended</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">DevOps Engineer</h3>
+          <p class="rebash-path-card__summary">
+            Eleven progressive modules from command line to production deployments — each with hands-on tutorials and labs.
+          </p>
+          <div class="rebash-path-card__track rebash-path-card__track--linked" aria-label="Path steps">
+            <a href="{{ 'linux/' | url }}">Linux</a>
+            <a href="{{ 'networking/' | url }}">Networking</a>
+            <a href="{{ 'git/' | url }}">Git</a>
+            <a href="{{ 'docker/' | url }}">Docker</a>
+            <a href="{{ 'kubernetes/' | url }}">Kubernetes</a>
+            <a href="{{ 'terraform/' | url }}">Terraform</a>
+            <a href="{{ 'aws/' | url }}">Cloud</a>
+            <a href="{{ 'gitlab/' | url }}">CI/CD</a>
+            <a href="{{ 'monitoring/' | url }}">Monitoring</a>
+            <a href="{{ 'security/' | url }}">Security</a>
+            <a href="{{ 'projects/' | url }}">Projects</a>
+          </div>
+          <span class="rebash-path-card__meta">11 modules · Beginner friendly · Production projects included</span>
+          <a href="{{ 'linux/' | url }}" class="rebash-path-card__link">Start with Linux</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header">
+      <h2 class="rebash-section__title">Specialized Career Paths</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Focus on cloud, security, platform, or architecture roles with curated module sequences.
+      </p>
+    </div>
+    <div class="rebash-path-grid">
+      <a href="{{ 'aws/' | url }}" class="rebash-path-card rebash-path-card--aws">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96Z"/></svg>
+          </div>
+          <span class="rebash-path-card__badge">Cloud</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">AWS Engineer</h3>
+          <p class="rebash-path-card__summary">Linux, Terraform, AWS core services, CI/CD, and cloud security fundamentals.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">Linux</span>
+            <span class="rebash-path-card__topic">Terraform</span>
+            <span class="rebash-path-card__topic">AWS Core</span>
+            <span class="rebash-path-card__topic">Security</span>
+          </div>
+          <span class="rebash-path-card__meta">6 focus areas · Intermediate</span>
+          <span class="rebash-path-card__link">Start AWS track</span>
+        </div>
+      </a>
+      <a href="{{ 'azure/' | url }}" class="rebash-path-card rebash-path-card--azure">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M5 3 1 7l11 14L23 7l-4-4H5Zm2 2h10l2 2H5l2-2Z"/></svg>
+          </div>
+          <span class="rebash-path-card__badge">Cloud</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Azure Engineer</h3>
+          <p class="rebash-path-card__summary">Build and operate workloads on Microsoft Azure with IaC and pipeline automation.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">Linux</span>
+            <span class="rebash-path-card__topic">Terraform</span>
+            <span class="rebash-path-card__topic">Azure</span>
+            <span class="rebash-path-card__topic">Security</span>
+          </div>
+          <span class="rebash-path-card__meta">6 focus areas · Intermediate</span>
+          <span class="rebash-path-card__link">Start Azure track</span>
+        </div>
+      </a>
+      <a href="{{ 'gcp/' | url }}" class="rebash-path-card rebash-path-card--gcp">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2 4 6v12l8 4 8-4V6l-8-4Zm0 2.5 5.5 3L12 11l-5.5-3.5L12 4.5ZM6 8.5 11 11v5.5l-5-2.5V8.5Zm12 0v5.5l-5 2.5V11l5-2.5Z"/></svg>
+          </div>
+          <span class="rebash-path-card__badge">Cloud</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Google Cloud Engineer</h3>
+          <p class="rebash-path-card__summary">GCP services, networking, Terraform, and secure cloud-native delivery.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">Linux</span>
+            <span class="rebash-path-card__topic">Terraform</span>
+            <span class="rebash-path-card__topic">GCP</span>
+            <span class="rebash-path-card__topic">Security</span>
+          </div>
+          <span class="rebash-path-card__meta">6 focus areas · Intermediate</span>
+          <span class="rebash-path-card__link">Start GCP track</span>
+        </div>
+      </a>
+      <a href="{{ 'devsecops/' | url }}" class="rebash-path-card rebash-path-card--secops">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8Z"/></svg>
+          </div>
+          <span class="rebash-path-card__badge">Security</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">DevSecOps Engineer</h3>
+          <p class="rebash-path-card__summary">Shift-left security across containers, Kubernetes, CI/CD, and cloud workloads.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">Containers</span>
+            <span class="rebash-path-card__topic">Kubernetes</span>
+            <span class="rebash-path-card__topic">CI/CD</span>
+            <span class="rebash-path-card__topic">Compliance</span>
+          </div>
+          <span class="rebash-path-card__meta">Pipeline-first · Advanced</span>
+          <span class="rebash-path-card__link">Start security track</span>
+        </div>
+      </a>
+      <a href="{{ 'kubernetes/' | url }}" class="rebash-path-card rebash-path-card--platform">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2.5 4 6.8v10.4L12 21.5l8-4.3V6.8L12 2.5Zm0 2.2 5.5 3-5.5 3-5.5-3 5.5-3ZM6.5 9.8 11 12v4.4l-4.5-2.4V9.8Zm11 0v4.2L13 16.4v-4.4l4.5-2.2Z"/></svg>
+          </div>
+          <span class="rebash-path-card__badge">Platform</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Platform Engineer</h3>
+          <p class="rebash-path-card__summary">Deep Kubernetes, GitOps, observability, and internal developer platform patterns.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">Docker</span>
+            <span class="rebash-path-card__topic">Kubernetes</span>
+            <span class="rebash-path-card__topic">Terraform</span>
+            <span class="rebash-path-card__topic">Monitoring</span>
+          </div>
+          <span class="rebash-path-card__meta">6 focus areas · Advanced</span>
+          <span class="rebash-path-card__link">Start platform track</span>
+        </div>
+      </a>
+      <a href="{{ 'architecture/' | url }}" class="rebash-path-card rebash-path-card--architect">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M3 3h8v8H3V3Zm10 0h8v5h-8V3ZM3 13h5v8H3v-8Zm7 3h11v5H10v-5Z"/></svg>
+          </div>
+          <span class="rebash-path-card__badge">Architecture</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Cloud Architect</h3>
+          <p class="rebash-path-card__summary">Multi-cloud design, IaC at scale, security architecture, and production projects.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">AWS · Azure · GCP</span>
+            <span class="rebash-path-card__topic">Architecture</span>
+            <span class="rebash-path-card__topic">Terraform</span>
+            <span class="rebash-path-card__topic">Security</span>
+          </div>
+          <span class="rebash-path-card__meta">5 focus areas · Expert</span>
+          <span class="rebash-path-card__link">Start architect track</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">New to DevOps?</span>
+        <h2 class="rebash-panel__title">Not sure where to start</h2>
+        <p class="rebash-panel__lead">
+          Begin with Getting Started for a guided overview, or jump straight into the module that matches your current role.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'getting-started/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">
+            Getting Started
+          </a>
+          <a href="{{ 'linux/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">
+            Start with Linux
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Track progress</span>
+        <h2 class="rebash-panel__title">See what's coming next</h2>
+        <p class="rebash-panel__lead">
+          New tutorials and paths are added regularly. Follow the roadmap for upcoming modules and releases.
+        </p>
+        <a href="{{ 'roadmap/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">
+          View roadmap
+        </a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

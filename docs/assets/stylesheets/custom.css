@@ -57,6 +57,42 @@
   margin: 0 0 2.25rem;
 }
 
+/* Inner page hero (Learning Paths, etc.) */
+.rebash-page-hero {
+  background: linear-gradient(135deg, var(--rebash-blue) 0%, var(--rebash-blue-dark) 100%);
+  color: #fff;
+  padding: 2.75rem 0 3.25rem;
+}
+
+.rebash-page-hero__inner {
+  max-width: 61rem;
+}
+
+.rebash-page-hero__eyebrow {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.88;
+}
+
+.rebash-page-hero__title {
+  margin: 0 0 0.85rem;
+  font-size: 2.35rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+}
+
+.rebash-page-hero__lead {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  opacity: 0.92;
+}
+
 .rebash-hero__actions {
   display: flex;
   gap: 1rem;
@@ -323,6 +359,65 @@
 
 .rebash-path-card--secops .rebash-path-card__banner {
   background: linear-gradient(135deg, #5e35b1 0%, #311b92 100%);
+}
+
+.rebash-path-card--azure .rebash-path-card__banner {
+  background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+}
+
+.rebash-path-card--gcp .rebash-path-card__banner {
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+}
+
+.rebash-path-card--platform .rebash-path-card__banner {
+  background: linear-gradient(135deg, #00838f 0%, #006064 100%);
+}
+
+.rebash-path-card--architect .rebash-path-card__banner {
+  background: linear-gradient(135deg, #5e35b1 0%, #283593 100%);
+}
+
+.rebash-path-card--featured {
+  pointer-events: auto;
+}
+
+.rebash-path-card--featured .rebash-path-card__body {
+  padding: 1.5rem 1.5rem 1.65rem;
+}
+
+.rebash-path-grid--featured {
+  grid-template-columns: 1fr;
+}
+
+.rebash-path-card__track--linked a {
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.rebash-path-card__track--linked a:hover {
+  background: rgba(25, 118, 210, 0.22);
+  transform: translateY(-1px);
+}
+
+.rebash-path-card--azure .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(0, 120, 212, 0.12);
+  color: #005a9e;
+}
+
+.rebash-path-card--gcp .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(66, 133, 244, 0.12);
+  color: #1a73e8;
+}
+
+.rebash-path-card--platform .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(0, 131, 143, 0.12);
+  color: #006064;
+}
+
+.rebash-path-card--architect .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(40, 53, 147, 0.12);
+  color: #283593;
 }
 
 .rebash-path-card__icon {
