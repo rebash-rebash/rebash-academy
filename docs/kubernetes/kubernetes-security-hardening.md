@@ -403,16 +403,14 @@ subjects:
 
 CI gate (GitHub Actions):
 
-{% raw %}
 ```yaml
 - name: Trivy scan
   uses: aquasecurity/trivy-action@master
   with:
-    image-ref: ghcr.io/org/votestack-api:${{ github.sha }}
+    image-ref: ghcr.io/org/votestack-api:${{ '{{' }} github.sha {{ '}}' }}
     severity: CRITICAL,HIGH
     exit-code: 1
 ```
-{% endraw %}
 
 Kyverno verifyImages (with cosign signatures in mature setups):
 

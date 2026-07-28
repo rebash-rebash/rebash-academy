@@ -218,7 +218,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: terraform-infra-${{ github.ref }}
+  group: terraform-infra-${{ '{{' }} github.ref {{ '}}' }}
   cancel-in-progress: false
 
 jobs:

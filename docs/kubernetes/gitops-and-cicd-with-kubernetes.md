@@ -273,7 +273,6 @@ Verify pods: `kubectl get pods -n votestack`
 
 GitHub Actions workflow in the **application** repo (`.github/workflows/ci.yml`):
 
-{% raw %}
 ```yaml
 name: CI
 on:
@@ -286,27 +285,26 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build and push
         env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/votestack-api
+          IMAGE: ghcr.io/${{ '{{' }} github.repository_owner {{ '}}' }}/votestack-api
         run: |
-          docker build -t "$IMAGE:${{ github.sha }}" ./api
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          docker push "$IMAGE:${{ github.sha }}"
+          docker build -t "$IMAGE:${{ '{{' }} github.sha {{ '}}' }}" ./api
+          echo "${{ '{{' }} secrets.GITHUB_TOKEN {{ '}}' }}" | docker login ghcr.io -u "${{ '{{' }} github.actor {{ '}}' }}" --password-stdin
+          docker push "$IMAGE:${{ '{{' }} github.sha {{ '}}' }}"
       - name: Update GitOps manifest
         env:
-          GITOPS_TOKEN: ${{ secrets.GITOPS_PAT }}
+          GITOPS_TOKEN: ${{ '{{' }} secrets.GITOPS_PAT {{ '}}' }}
         run: |
           git clone https://x-access-token:${GITOPS_TOKEN}@github.com/org/votestack-gitops.git
           cd votestack-gitops
-          yq -i '.api.image.tag = "${{ github.sha }}"' charts/votestack/values-dev.yaml
+          yq -i '.api.image.tag = "${{ '{{' }} github.sha {{ '}}' }}"' charts/votestack/values-dev.yaml
           git config user.email "ci@org.com"
           git config user.name "CI Bot"
-          git commit -am "deploy(api): ${{ github.sha }}"
+          git commit -am "deploy(api): ${{ '{{' }} github.sha {{ '}}' }}"
           git push
 ```
 
 **Expected result:** The commands succeed and produce the outcomes described in this step.
 
-{% endraw %}
 
 Argo CD detects the commit within ~3 minutes and syncs automatically.
 

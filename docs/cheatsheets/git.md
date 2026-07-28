@@ -1,26 +1,26 @@
-    ---
-    title: "Git Cheat Sheet"
-    description: "Quick-reference commands and patterns for the REBASH Academy Git track."
-    difficulty: beginner
-    estimated_time: "10 min"
-    author: Shaik Basha
-    last_updated: "2026-07-28"
-    category: cheatsheets
-    tags:
-      - cheatsheets
-      - git
-    comments: false
-    ---
+---
+title: "Git Cheat Sheet"
+description: "Quick-reference commands and patterns for the REBASH Academy Git track."
+difficulty: beginner
+estimated_time: "10 min"
+author: Shaik Basha
+last_updated: "2026-07-28"
+category: cheatsheets
+tags:
+  - cheatsheets
+  - git
+comments: false
+---
 
-    # Git Cheat Sheet
+# Git Cheat Sheet
 
-    Scannable commands and patterns for the [Git track](../git/index.md). Prefer the full tutorials when you need *why*, not only *how*.
+Scannable commands and patterns for the [Git track](../git/index.md). Prefer the full tutorials when you need *why*, not only *how*.
 
-    ## Quick reference
+## Quick reference
 
-    | Area | Commands / notes |
-    |------|------------------|
-    | Daily | `git status -sb`; `git add -p`; `git commit`; `git push` |
+| Area | Commands / notes |
+|------|------------------|
+| Daily | `git status -sb`; `git add -p`; `git commit`; `git push` |
 | History | `git log --oneline --graph`; `git show`; `git diff` |
 | Branch | `git switch -c`; `git switch`; `git branch -vv` |
 | Sync | `git fetch`; `git pull --rebase`; `git push -u` |
@@ -31,15 +31,15 @@
 | Hooks | `.git/hooks` / `core.hooksPath`; pre-commit pattern |
 | Security | Signed commits; protect main; CODEOWNERS |
 
-    ## Common mistakes
+## Common mistakes
 
-    - Copy-pasting without reading expected output
-    - Skipping cleanup (leftover containers, state, or temp files)
-    - Mixing production credentials into lab shells
+- Copy-pasting without reading expected output
+- Skipping cleanup (leftover containers, state, or temp files)
+- Mixing production credentials into lab shells
 
-    ## Related
+## Related
 
-    - Track: [Git](../git/index.md)
-    - Start: [Git introduction](../git/introduction-to-git-and-version-control.md)
-    - Interview bank: [Git interview prep](../interview/git.md)
-    - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Track: [Git](../git/index.md)
+- Start: [Git introduction](../git/introduction-to-git-and-version-control.md)
+- Interview bank: [Git interview prep](../interview/git.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

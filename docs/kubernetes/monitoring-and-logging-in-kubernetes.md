@@ -245,7 +245,7 @@ Apply and confirm target in Prometheus UI → Status → Targets.
 In Grafana, add panel:
 
 - Query: `rate(http_requests_total{namespace="votestack"}[5m])`
-- Legend: `{{method}} {{route}}`
+- Legend: `method` / `route` label placeholders
 - Add second panel: `histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))`
 
 Save dashboard to ConfigMap for GitOps:

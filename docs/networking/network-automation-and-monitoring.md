@@ -200,7 +200,7 @@ cat > ~/net-automation/playbooks/firewall.yml <<'EOF'
     - name: Allow HTTP and HTTPS
       community.general.ufw:
         rule: allow
-        port: "{{ item }}"
+        port: "{{ '{{' }} item {{ '}}' }}"
         proto: tcp
       loop: ["80", "443"]
 

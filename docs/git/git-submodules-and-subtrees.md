@@ -170,16 +170,14 @@ git subtree push --prefix=modules/vpc \
 
 ### CI/CD with Submodules
 
-{% raw %}
 ```yaml
 # GitHub Actions example
 steps:
   - uses: actions/checkout@v4
     with:
       submodules: recursive
-      token: ${{ secrets.PAT_WITH_SUBMODULE_ACCESS }}
+      token: ${{ '{{' }} secrets.PAT_WITH_SUBMODULE_ACCESS {{ '}}' }}
 ```
-{% endraw %}
 
 PAT or deploy key needs read access to all submodule URLs.
 

@@ -109,27 +109,25 @@ Later files and `--set` take precedence. This layering supports dev/staging/prod
 
 Templates use Go `text/template` with Sprig functions:
 
-{% raw %}
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "mychart.fullname" . }}
+  name: {{ '{{' }} include "mychart.fullname" . {{ '}}' }}
   labels:
-    {{- include "mychart.labels" . | nindent 4 }}
+    {{ '{{' }}- include "mychart.labels" . | nindent 4 {{ '}}' }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ '{{' }} .Values.replicaCount {{ '}}' }}
   template:
     spec:
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          {{- if .Values.resources }}
+        - name: {{ '{{' }} .Chart.Name {{ '}}' }}
+          image: "{{ '{{' }} .Values.image.repository {{ '}}' }}:{{ '{{' }} .Values.image.tag | default .Chart.AppVersion {{ '}}' }}"
+          {{ '{{' }}- if .Values.resources {{ '}}' }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- end }}
+            {{ '{{' }}- toYaml .Values.resources | nindent 12 {{ '}}' }}
+          {{ '{{' }}- end {{ '}}' }}
 ```
-{% endraw %}
 
 Key concepts:
 
