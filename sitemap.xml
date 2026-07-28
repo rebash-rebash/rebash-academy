@@ -25,6 +25,86 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/aws/accounts-free-tier-billing-and-cost-hygiene/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/auto-scaling-groups-and-launch-templates/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/aws-cli-credentials-and-profiles/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/cloudtrail-config-and-account-guardrails/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/cloudwatch-metrics-logs-and-alarms/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/ebs-volumes-snapshots-and-encryption/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/ec2-fundamentals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/elastic-load-balancing-alb-and-nlb/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/iam-fundamentals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/internet-gateways-routes-and-egress/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/introduction-to-aws-and-global-infrastructure/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/lambda-and-three-tier-capstone/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/rds-fundamentals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/route-53-dns-and-health-checks/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/s3-fundamentals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/s3-security-and-static-hosting/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/security-groups-and-nacls/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/user-data-imds-and-ssm-session-manager/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/vpc-endpoints-and-private-aws-access/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/aws/vpc-subnets-and-multi-az-design/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/azure/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -34,6 +114,10 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/cheatsheets/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/cheatsheets/aws/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
@@ -249,6 +333,10 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/interview/aws/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/interview/docker/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -361,6 +449,14 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/labs/aws-iam-vpc-triage/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/labs/aws-ssm-s3/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/labs/docker-compose-stack-recovery/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -382,6 +478,10 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/labs/networking-dns-firewall-triage/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/labs/networking-edge-failover/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
@@ -525,6 +625,10 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/networking/firewall-change-control-and-production-acls/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/networking/firewalls-and-access-control/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -545,6 +649,10 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/networking/load-balancer-operations-and-health-checks/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/networking/load-balancing-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -557,7 +665,15 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/networking/network-incident-response-and-observability/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/networking/network-security-hardening/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/networking/network-segmentation-and-trust-boundaries/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
@@ -570,6 +686,10 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/networking/packet-analysis-tcpdump-wireshark/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/networking/production-dns-operations/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
@@ -605,6 +725,10 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/quizzes/aws-fundamentals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/quizzes/docker-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -618,6 +742,10 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/quizzes/linux-servers/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/quizzes/networking-production/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>

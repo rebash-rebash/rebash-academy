@@ -1,0 +1,7 @@
+direction: right
+User: "Browser" { style.fill: "#fee2e2"; style.stroke: "#b91c1c" }
+CF: "CloudFront optional" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+BPA: "Block Public Access" { style.fill: "#e0e7ff"; style.stroke: "#4338ca" }
+Bucket: "S3 static site" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+User -> CF -> Bucket
+BPA -> Bucket

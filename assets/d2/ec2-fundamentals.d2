@@ -1,0 +1,8 @@
+direction: right
+AMI: "AMI" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+EC2: "EC2 instance" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+EBS: "Root EBS" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+SG: "Security Group" { style.fill: "#e0e7ff"; style.stroke: "#4338ca" }
+AMI -> EC2
+EC2 -> EBS
+EC2 -> SG
