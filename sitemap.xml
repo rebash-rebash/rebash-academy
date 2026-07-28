@@ -121,6 +121,10 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/cheatsheets/cicd/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/cheatsheets/docker/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -329,11 +333,95 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/gitlab/artifacts-caches-and-dependencies/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/building-docker-images-in-ci/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/cicd-capstone-and-terraform-handoff/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/gitlab-ci-fundamentals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/gitlab-ci-production-patterns/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/gitlab-deployment-patterns/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/gitlab-merge-requests-and-pipeline-triggers/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/gitlab-runner-tags-and-scaling/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/gitlab-runners-and-executors/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/introduction-to-cicd-and-delivery-models/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/kubernetes-deploys-from-ci/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/least-privilege-ci-identities/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/parallelism-matrix-and-pipeline-dags/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/pipeline-anatomy-stages-jobs-and-artifacts/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/protected-environments-and-approvals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/secret-detection-and-supply-chain-basics/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/security-scanning-in-pipelines/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/testing-reports-and-quality-gates/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/triggers-rules-and-branch-protection/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/gitlab/variables-secrets-and-credentials/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/interview/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
          <loc>https://academy.rebash.in/interview/aws/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/interview/cicd/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
@@ -454,6 +542,14 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/labs/aws-ssm-s3/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/labs/cicd-docker-secure-gate/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/labs/cicd-pipeline-triage/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
@@ -726,6 +822,10 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/quizzes/aws-fundamentals/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/quizzes/cicd-fundamentals/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
