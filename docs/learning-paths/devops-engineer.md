@@ -39,6 +39,8 @@ This path matches how production platforms are built: operating system fluency, 
 | When you finish… | Practise with |
 |------------------|---------------|
 | Linux modules on systemd and logs | [Linux Production Incident Triage](../labs/linux-production-incident-triage.md) |
+| DNS, firewalls, troubleshooting | [DNS and Firewall Site-Down Triage](../labs/networking-dns-firewall-triage.md) |
+| Rebase, conflicts, safe force-push | [Git History and PR Recovery](../labs/git-history-pr-recovery.md) |
 | Docker Compose and networking | [Docker Compose Stack Recovery](../labs/docker-compose-stack-recovery.md) |
 | Deployments and probes | [Kubernetes Deployment Triage](../labs/kubernetes-deployment-triage.md) |
 | Terraform CLI + CI concepts | [Terraform Plan Review Workflow](../labs/terraform-plan-review-workflow.md) |
