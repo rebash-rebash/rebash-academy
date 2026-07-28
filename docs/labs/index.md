@@ -18,6 +18,7 @@ Standalone labs apply what you learned in the tutorials. Each lab is a scenario 
 ## Available labs
 
 Every ready track now has at least one standalone lab.
+
 | Lab | Track | Level | Time |
 |-----|--------|-------|------|
 | [Linux Production Incident Triage](linux-production-incident-triage.md) | Linux | Intermediate | 60 min |
