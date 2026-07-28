@@ -29,5 +29,6 @@ Revision maps for the published tracks. Each tutorial also includes its own inte
 ## Related
 
 - [Cheat Sheets](../cheatsheets/index.md)
+- [Quizzes](../quizzes/index.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer.md)
 - [Getting Started](../getting-started/index.md)

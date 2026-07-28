@@ -1,0 +1,7 @@
+title: Quizzes
+icon: material/help-circle
+nav:
+  - index.md
+  - linux-fundamentals.md
+  - docker-fundamentals.md
+  - kubernetes-fundamentals.md

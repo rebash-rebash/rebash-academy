@@ -29,5 +29,6 @@ Quick-reference guides for the published REBASH Academy tracks.
 ## Related
 
 - [Interview Prep](../interview/index.md)
+- [Quizzes](../quizzes/index.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer.md)
 - [Getting Started](../getting-started/index.md)

@@ -63,8 +63,10 @@ These sections keep stable URLs under `/aws/`, `/azure/`, `/gcp/`, `/gitlab/`, a
 - [x] Labs section promoted in primary navigation
 - [x] DevOps Engineer learning path page
 - [x] First portfolio project (Status API — Git/Docker/Kubernetes/Terraform)
+- [x] Assessment quizzes (Linux, Docker, Kubernetes fundamentals)
 - [ ] Additional project walkthroughs (CI/CD, cloud stacks)
 - [ ] Blog articles and video embeds
+- [ ] Quizzes for Networking, Git, and Terraform
 
 ## Future Considerations
 
@@ -75,7 +77,7 @@ The platform architecture supports future enhancements without structural change
 - PDF export
 - RSS feed
 - Course progress tracking
-- Interactive quizzes
+- Interactive (scored) quiz engine
 - Playground labs
 - Certifications
 - Newsletter integration

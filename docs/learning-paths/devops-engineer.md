@@ -33,6 +33,7 @@ This path matches how production platforms are built: operating system fluency, 
 |-------|-------|------------|-----|--------|------------|-----------|
 | Cheat sheet | [open](../cheatsheets/linux.md) | [open](../cheatsheets/networking.md) | [open](../cheatsheets/git.md) | [open](../cheatsheets/docker.md) | [open](../cheatsheets/kubernetes.md) | [open](../cheatsheets/terraform.md) |
 | Interview prep | [open](../interview/linux.md) | [open](../interview/networking.md) | [open](../interview/git.md) | [open](../interview/docker.md) | [open](../interview/kubernetes.md) | [open](../interview/terraform.md) |
+| Quiz | [open](../quizzes/linux-fundamentals.md) | — | — | [open](../quizzes/docker-fundamentals.md) | [open](../quizzes/kubernetes-fundamentals.md) | — |
 
 ## Standalone labs
 
@@ -46,6 +47,10 @@ This path matches how production platforms are built: operating system fluency, 
 | Terraform CLI + CI concepts | [Terraform Plan Review Workflow](../labs/terraform-plan-review-workflow.md) |
 
 Browse all labs: [Labs](../labs/index.md)
+
+## Quizzes
+
+Self-mark after finishing a track (or early modules): [Quizzes](../quizzes/index.md) — Linux, Docker, and Kubernetes fundamentals (40 questions, 70% pass).
 
 ## Portfolio project
 
