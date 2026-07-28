@@ -3,7 +3,7 @@
 site_name: REBASH Academy
 site_description: Learn by Building. Production-grade DevOps, Cloud, and Security knowledge base.
 site_author: Shaik Basha
-site_url: https://rebash-rebash.github.io/rebash-academy/
+site_url: https://academy.rebash.in/
 repo_url: https://github.com/rebash-rebash/rebash-academy
 repo_name: rebash-academy
 edit_uri: edit/main/docs/
@@ -49,7 +49,7 @@ extra:
   robots: |
     User-agent: *
     Allow: /
-    Sitemap: https://rebash-rebash.github.io/rebash-academy/sitemap.xml
+    Sitemap: https://academy.rebash.in/sitemap.xml
 
 extra_css:
   - assets/stylesheets/custom.css

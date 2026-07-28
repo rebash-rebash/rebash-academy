@@ -80,6 +80,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
 
 Documentation deploys automatically to GitHub Pages when changes are merged to `main`.
 
+**Live site:** [https://academy.rebash.in](https://academy.rebash.in)
+
+### Custom domain (academy.rebash.in)
+
+DNS at your registrar:
+
+| Type | Name | Value |
+|------|------|-------|
+| CNAME | `academy` | `rebash-rebash.github.io` |
+
+After DNS propagates, GitHub Pages issues an HTTPS certificate automatically (can take up to 24 hours). Enable **Enforce HTTPS** under **Settings → Pages** once available.
+
 Manual deployment:
 
 ```bash
@@ -93,7 +105,7 @@ Set environment variables to enable analytics:
 ```bash
 export GOOGLE_ANALYTICS_KEY="G-XXXXXXXXXX"
 # or
-export PLAUSIBLE_DOMAIN="rebash-rebash.github.io"
+export PLAUSIBLE_DOMAIN="academy.rebash.in"
 ```
 
 ## Documentation Categories
