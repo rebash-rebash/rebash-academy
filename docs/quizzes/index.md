@@ -1,6 +1,6 @@
 ---
 title: Quizzes
-description: "Self-assessment quizzes for Linux, Docker, and Kubernetes — 40 questions each with explanations and a 70% pass mark."
+description: "Self-assessment quizzes for Linux, Networking, AWS, Docker, and Kubernetes — with explanations and a 70% pass mark."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -14,7 +14,7 @@ comments: false
 
 # Quizzes
 
-Self-marking practice quizzes reinforce tutorials and labs. Each quiz has **40** multiple-choice questions across fundamentals, practical skills, scenarios, troubleshooting, and architecture. Passing score is **70% (28/40)**.
+Self-marking practice quizzes reinforce tutorials and labs. Fundamentals quizzes are **40** questions (pass **70% / 28**). Module quizzes such as Linux Servers and Networking Production are **25** questions (pass **70% / 18**).
 
 !!! tip "How to take a quiz"
     Answer before revealing. Score yourself honestly, then use **Recommended Study Areas** and the linked lab to close gaps.
@@ -25,6 +25,8 @@ Self-marking practice quizzes reinforce tutorials and labs. Each quiz has **40**
 |------|--------|-----------|------|
 | [Linux Fundamentals](linux-fundamentals.md) | Linux | 40 | 45–60 min |
 | [Linux Servers](linux-servers.md) | Linux (Module 7) | 25 | 30–40 min |
+| [Networking Production](networking-production.md) | Networking (Module 7) | 25 | 30–40 min |
+| [AWS Fundamentals](aws-fundamentals.md) | AWS | 40 | 45–60 min |
 | [Docker Fundamentals](docker-fundamentals.md) | Docker | 40 | 45–60 min |
 | [Kubernetes Fundamentals](kubernetes-fundamentals.md) | Kubernetes | 40 | 45–60 min |
 
@@ -34,7 +36,7 @@ Self-marking practice quizzes reinforce tutorials and labs. Each quiz has **40**
 2. Attempt the quiz
 3. Revise weak sections via cheat sheet + tutorials
 4. Run the matching standalone lab
-5. Retake the quiz if you scored below 28
+5. Retake the quiz if you scored below the pass mark
 
 ## Related
 

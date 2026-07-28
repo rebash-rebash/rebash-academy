@@ -4,6 +4,7 @@ nav:
   - index.md
   - linux.md
   - networking.md
+  - aws.md
   - git.md
   - docker.md
   - kubernetes.md

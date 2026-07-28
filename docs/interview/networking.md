@@ -31,6 +31,10 @@ Use this page as a revision map. Every tutorial in the [Networking track](../net
 - Load balancing choices
 - Zero-trust vs perimeter firewalls
 - Packet capture ethics and filters
+- Trust-zone / blast-radius design
+- Load-balancer health-check failures vs app bugs
+- Firewall change control and rollback
+- First-hour network incident evidence
 
 ## Hands-on prompts interviewers love
 
@@ -42,4 +46,6 @@ Use this page as a revision map. Every tutorial in the [Networking track](../net
 
 - Track: [Networking](../networking/index.md)
 - Cheat sheet: [Networking cheat sheet](../cheatsheets/networking.md)
+- Quiz: [Networking Production](../quizzes/networking-production.md)
+- Lab: [Edge Failover](../labs/networking-edge-failover.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

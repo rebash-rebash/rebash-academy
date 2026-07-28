@@ -30,6 +30,11 @@ Scannable commands and patterns for the [Networking track](../networking/index.m
 | LB / proxy | L4 vs L7; reverse proxy vs ingress |
 | Capture | `tcpdump -ni eth0 port 443`; Wireshark follow stream |
 | VPN | Tunnel vs transport; common split-tunnel pitfalls |
+| Segmentation | Internet → edge → app → data; mgmt separate |
+| DNS ops | TTL before cutover; dig vs getent; split-horizon |
+| LB ops | Health check path; drain before stop; sticky trade-offs |
+| ACL change | Console access first; canary; documented rollback |
+| IR first hour | Scope → curl/dig/ss → mtr → tcpdump if needed |
 
 ## Common mistakes
 
@@ -41,5 +46,7 @@ Scannable commands and patterns for the [Networking track](../networking/index.m
 
 - Track: [Networking](../networking/index.md)
 - Start: [Networking introduction](../networking/introduction-to-networking.md)
+- Lab: [Edge Failover](../labs/networking-edge-failover.md)
+- Quiz: [Networking Production](../quizzes/networking-production.md)
 - Interview bank: [Networking interview prep](../interview/networking.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

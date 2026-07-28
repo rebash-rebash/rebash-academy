@@ -28,7 +28,7 @@ comments: false
 
 Manual network configuration does not scale. When you manage hundreds of firewall rules, dozens of DNS zones, and a fleet of load balancers, **infrastructure as code (IaC)** and **network automation** become mandatory. Ansible playbooks configure devices consistently, Terraform modules provision cloud networking, and GitOps workflows enforce review before any change hits production. Equally critical is **observability**: you cannot fix what you cannot measure. **Prometheus** with **node_exporter** exposes host and network metrics, **SmokePing** tracks latency and packet loss over time, and centralised dashboards turn raw data into actionable alerts.
 
-This tutorial — the **final installment** of the REBASH Academy Networking series — teaches you to automate DNS and firewall management, use Ansible network modules, deploy Prometheus monitoring for network health, and integrate monitoring into your CI/CD pipeline. When you finish here, you will have the complete picture from TCP/IP fundamentals through production cloud networking, security, and operations.
+This tutorial closes **Module 6** of the Networking track: automate DNS and firewall management, use Ansible network modules, deploy Prometheus monitoring for network health, and integrate monitoring into your CI/CD pipeline. **Module 7: Production Network Operations** continues with segmentation, DNS ops, load-balancer health checks, firewall change control, and incident response.
 
 This is **Tutorial 20** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
@@ -148,6 +148,17 @@ Use SmokePing for ISP path quality, VPN tunnel latency, DNS resolution time tren
 | Config | CloudTrail, Terraform drift | Unauthorized rule changes |
 
 **Golden signals** for networking: **latency**, **packet loss**, **throughput**, and **availability**.
+
+### Alert runbooks and Module 7 handoff
+
+An alert without a runbook burns on-call time. For every network alert, store a short card:
+
+1. **Symptom** — what users or probes see
+2. **First three commands** — e.g. `curl -v`, `dig`, `ss -tulpn` (or `mtr`)
+3. **Blast radius** — which tiers/customers
+4. **Safe rollback** — DNS TTL revert, LB drain undo, ACL previous revision
+
+Module 7 turns that card into practised ops: segmentation matrices, DNS change control, LB health-check failover, firewall canaries, and incident timelines with packet capture discipline.
 
 ## Hands-on Lab
 
@@ -437,7 +448,7 @@ Confirm the lab before moving on:
 - **Terraform** provisions cloud DNS records and security groups with plan/review/apply workflows
 - **Prometheus + node_exporter** collect host and network metrics for alerting and dashboards
 - **SmokePing** visualizes latency and packet loss trends — essential for path quality monitoring
-- This completes the **Networking track** — continue to [Docker](../docker/index.md) for container networking
+- Module 6 ends here — continue to **Module 7** for production network operations, then [Docker](../docker/index.md) for container networking
 
 ## Interview Questions
 
@@ -463,6 +474,7 @@ Confirm the lab before moving on:
 
 - [Networking – Category Overview](index.md)
 - [Network Security Hardening](network-security-hardening.md) *(previous in Module 6)*
+- [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md) *(Module 7 — next)*
 - [Linux – Category Overview](../linux/index.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)

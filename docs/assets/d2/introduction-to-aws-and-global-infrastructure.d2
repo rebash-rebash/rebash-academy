@@ -1,0 +1,10 @@
+direction: right
+Account: "AWS Account" { style.fill: "#fee2e2"; style.stroke: "#b91c1c" }
+Region: "Region" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+AZ1: "AZ a" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+AZ2: "AZ b" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Edge: "Edge / CloudFront" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Account -> Region
+Region -> AZ1
+Region -> AZ2
+Account -> Edge

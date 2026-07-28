@@ -28,3 +28,9 @@ nav:
     - vpn-and-tunneling-basics.md
     - network-security-hardening.md
     - network-automation-and-monitoring.md
+  - Production Network Operations:
+    - network-segmentation-and-trust-boundaries.md
+    - production-dns-operations.md
+    - load-balancer-operations-and-health-checks.md
+    - firewall-change-control-and-production-acls.md
+    - network-incident-response-and-observability.md

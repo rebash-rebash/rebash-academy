@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: Networking learning track — 20 tutorials from TCP/IP fundamentals to cloud VPCs and troubleshooting.
+description: Networking learning track — 25 tutorials from TCP/IP fundamentals through production network operations (segmentation, DNS ops, LB health checks, firewall change control, IR).
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -13,14 +13,14 @@ comments: false
 
 # Networking
 
-Understand how data moves across the internet and inside your infrastructure — from IP addressing and DNS to load balancers, firewalls, and cloud VPCs.
+Understand how data moves across the internet and inside your infrastructure — from IP addressing and DNS to load balancers, firewalls, cloud VPCs, and production network operations.
 
 ## Overview
 
-The REBASH Academy **Networking** track is a structured, 20-tutorial curriculum for DevOps engineers, SREs, and cloud administrators. Each tutorial includes theory, step-by-step labs, commands, best practices, and interview questions.
+The REBASH Academy **Networking** track is a structured, 25-tutorial curriculum for DevOps engineers, SREs, and cloud administrators. Modules 1–6 build fundamentals through cloud networking; **Module 7: Production Network Operations** adds segmentation, DNS change control, load-balancer health checks, firewall canaries, and incident response. Each tutorial includes theory, step-by-step labs, commands, best practices, and interview questions.
 
 !!! tip "Learning Path"
-    Complete the [Linux](../linux/index.md) track first, then continue here as step 2 in the [DevOps Engineer learning path](../learning-paths/index.md).
+    Complete the [Linux](../linux/index.md) track first (including Module 7 servers when you can), then continue here as step 2 in the [DevOps Engineer learning path](../learning-paths/index.md).
 
 ## Curriculum Plan
 
@@ -68,6 +68,14 @@ Modules and tutorials in order. Use the tables below for links, level, and time 
   <li>VPN and Tunneling Basics</li>
   <li>Network Security Hardening</li>
   <li>Network Automation and Monitoring</li>
+</ul></li>
+  <li>7 · Production Network Operations
+<ul>
+  <li>Network Segmentation and Trust Boundaries</li>
+  <li>Production DNS Operations</li>
+  <li>Load Balancer Operations and Health Checks</li>
+  <li>Firewall Change Control and Production ACLs</li>
+  <li>Network Incident Response and Observability</li>
 </ul></li>
 </ul>
 </figure>
@@ -124,7 +132,17 @@ Modules and tutorials in order. Use the tables below for links, level, and time 
 | 19 | [Network Security Hardening](network-security-hardening.md) | Advanced | 50 min |
 | 20 | [Network Automation and Monitoring](network-automation-and-monitoring.md) | Advanced | 50 min |
 
-**Total estimated time:** ~14 hours of hands-on learning
+### Module 7 – Production Network Operations
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 21 | [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md) | Advanced | 55 min |
+| 22 | [Production DNS Operations](production-dns-operations.md) | Advanced | 60 min |
+| 23 | [Load Balancer Operations and Health Checks](load-balancer-operations-and-health-checks.md) | Advanced | 65 min |
+| 24 | [Firewall Change Control and Production ACLs](firewall-change-control-and-production-acls.md) | Advanced | 55 min |
+| 25 | [Network Incident Response and Observability](network-incident-response-and-observability.md) | Advanced | 60 min |
+
+**Total estimated time:** ~19 hours of hands-on learning
 
 ## Learning Objectives
 
@@ -136,6 +154,7 @@ After completing this track, you will be able to:
 - [ ] Understand load balancers, reverse proxies, and ingress patterns
 - [ ] Diagnose connectivity issues using layered troubleshooting and packet capture
 - [ ] Design VPC architectures with NAT, security groups, and VPN connectivity
+- [ ] Operate production networks: segmentation, DNS change control, LB health checks, ACL rollbacks, and incident response
 
 ## Who Is This For?
 
@@ -148,10 +167,12 @@ After completing this track, you will be able to:
 
 ## Related Sections
 
-- [Linux](../linux/index.md) — OS-level networking with `ip`, `ss`, and `dig`
+- [Linux](../linux/index.md) — OS-level networking, nginx, TLS on hosts
 - [Docker](../docker/index.md) — container networking overlays and bridge networks
 - [AWS](../aws/index.md) — VPC, ALB, and Route 53 in production
 - [Interview Prep](../interview/index.md) — networking interview questions
+- [Networking Production Quiz](../quizzes/networking-production.md)
+- [Lab — Edge Failover](../labs/networking-edge-failover.md)
 
 - [Networking Cheat Sheet](../cheatsheets/networking.md)
 - [Networking Interview Prep](../interview/networking.md)

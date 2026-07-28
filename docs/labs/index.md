@@ -24,6 +24,9 @@ Every ready track now has at least one standalone lab.
 | [Linux Production Incident Triage](linux-production-incident-triage.md) | Linux | Intermediate | 60 min |
 | [Linux App Server from Zero](linux-app-server-from-zero.md) | Linux | Advanced | 90 min |
 | [DNS and Firewall Site-Down Triage](networking-dns-firewall-triage.md) | Networking | Intermediate | 55 min |
+| [Networking Edge Failover](networking-edge-failover.md) | Networking | Advanced | 75 min |
+| [AWS IAM and VPC Reachability Triage](aws-iam-vpc-triage.md) | AWS | Advanced | 70 min |
+| [Secure EC2 via SSM and S3](aws-ssm-s3.md) | AWS | Advanced | 75 min |
 | [Git History and PR Recovery](git-history-pr-recovery.md) | Git | Intermediate | 45 min |
 | [Docker Compose Stack Recovery](docker-compose-stack-recovery.md) | Docker | Intermediate | 55 min |
 | [Kubernetes Deployment Triage](kubernetes-deployment-triage.md) | Kubernetes | Intermediate | 70 min |
