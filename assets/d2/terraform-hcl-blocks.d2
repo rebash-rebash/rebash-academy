@@ -1,0 +1,10 @@
+direction: right
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+T: "terraform\nrequired_*" { style.fill: "#dbeafe"; style.stroke: "#2563eb"; style.font-color: "#1e3a8a" }
+V: "variable\ninput" { style.fill: "#dcfce7"; style.stroke: "#16a34a"; style.font-color: "#14532d" }
+R: "resource\nmanaged" { style.fill: "#ffedd5"; style.stroke: "#ea580c"; style.font-color: "#9a3412" }
+D: "data\nread-only" { style.fill: "#f3e8ff"; style.stroke: "#9333ea"; style.font-color: "#581c87" }
+O: "output\nexport" { style.fill: "#fce7f3"; style.stroke: "#db2777"; style.font-color: "#9d174d" }
+T -> V -> R -> O
+D -> R: "lookup"
+

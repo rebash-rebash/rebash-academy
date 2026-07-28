@@ -1,0 +1,10 @@
+direction: down
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+ROOT: "Root module\nenvs + CI" { style.fill: "#dbeafe"; style.stroke: "#2563eb"; style.font-color: "#1e3a8a" }
+MOD: "Internal modules" { style.fill: "#dcfce7"; style.stroke: "#16a34a"; style.font-color: "#14532d" }
+STATE: "Remote state\n+ lock" { style.fill: "#ffedd5"; style.stroke: "#ea580c"; style.font-color: "#9a3412" }
+SEC: "Secrets + policy" { style.fill: "#f3e8ff"; style.stroke: "#9333ea"; style.font-color: "#581c87" }
+ROOT -> MOD
+ROOT -> STATE
+ROOT -> SEC
+
