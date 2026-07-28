@@ -1,0 +1,31 @@
+direction: right
+
+Dev: "Developer\nGit repo" {
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+}
+
+Image: "Docker image\nrebash-status-api" {
+  style.fill: "#ffedd5"
+  style.stroke: "#c2410c"
+}
+
+K8s: "Kubernetes\nDeployment + Service" {
+  style.fill: "#e0e7ff"
+  style.stroke: "#4338ca"
+}
+
+TF: "Terraform\nlocal artefacts" {
+  style.fill: "#fce7f3"
+  style.stroke: "#be185d"
+}
+
+Out: "Portfolio demo\nvalidated + cleaned" {
+  style.fill: "#dcfce7"
+  style.stroke: "#15803d"
+}
+
+Dev -> Image -> K8s
+Dev -> TF
+K8s -> Out
+TF -> Out

@@ -361,6 +361,14 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/labs/docker-compose-stack-recovery/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/labs/kubernetes-deployment-triage/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/labs/linux-production-incident-triage/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -550,6 +558,10 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/projects/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/projects/status-api-portfolio/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>

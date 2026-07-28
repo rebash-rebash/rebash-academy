@@ -1,0 +1,44 @@
+direction: right
+
+Alert: "Compose stack\nunhealthy" {
+  style.fill: "#fee2e2"
+  style.stroke: "#b91c1c"
+}
+
+Engineer: "docker compose\nps / logs" {
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+}
+
+Stack: "Compose project" {
+  style.fill: "#f8fafc"
+  style.stroke: "#334155"
+
+  Web: "web\n(wrong image/port)" {
+    style.fill: "#fecaca"
+    style.stroke: "#b91c1c"
+  }
+  Api: "api\n(env / health)" {
+    style.fill: "#ffedd5"
+    style.stroke: "#c2410c"
+  }
+  Net: "bridge network\nrebash-net" {
+    style.fill: "#e0e7ff"
+    style.stroke: "#4338ca"
+  }
+}
+
+Fix: "compose.yaml\n+ rebuild" {
+  style.fill: "#dcfce7"
+  style.stroke: "#15803d"
+}
+
+Verify: "curl health\ncompose ps" {
+  style.fill: "#d1fae5"
+  style.stroke: "#047857"
+}
+
+Alert -> Engineer -> Stack.Web
+Stack.Web -> Stack.Api
+Stack.Api -> Stack.Net
+Stack.Net -> Fix -> Verify
