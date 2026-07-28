@@ -1,8 +1,8 @@
 #!/bin/sh
-# Final pass: strip any Cursor co-author trailer before the commit is recorded.
+# Final pass: strip any Co-authored-by trailer before the commit is recorded.
 # Installed via: bash scripts/install-git-hooks.sh
 
 MSG_FILE=$1
 
-grep -viE 'co-authored-by:.*cursor|cursoragent@cursor\.com' "$MSG_FILE" > "${MSG_FILE}.tmp"
+grep -vi '^co-authored-by:' "$MSG_FILE" > "${MSG_FILE}.tmp"
 mv "${MSG_FILE}.tmp" "$MSG_FILE"

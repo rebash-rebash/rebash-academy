@@ -1,0 +1,11 @@
+---
+description: Never add Co-authored-by trailers to git commits
+alwaysApply: true
+---
+
+# No Co-authored-by in commits
+
+- Never add `Co-authored-by:` lines to commit messages — including Cursor, agents, or any co-author.
+- Do not append attribution trailers when committing on behalf of the user.
+- This repo strips all `Co-authored-by` trailers via `scripts/git-hooks/`; keep commit messages author-only.
+- If rewriting history to remove trailers, use `bash scripts/strip-coauthor-trailers.sh` then `git push --force-with-lease`.

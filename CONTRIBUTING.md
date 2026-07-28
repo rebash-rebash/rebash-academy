@@ -112,7 +112,7 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
 ## Git hooks (required for contributors)
 
-This repo blocks `Co-authored-by: Cursor` trailers. After cloning, run:
+This repo blocks all `Co-authored-by:` trailers. After cloning, run:
 
 ```bash
 bash scripts/install-git-hooks.sh
@@ -123,7 +123,7 @@ Also disable **Cursor → Settings → Agents → Attribution** so the IDE stops
 To clean existing history:
 
 ```bash
-bash scripts/strip-cursor-coauthor.sh
+bash scripts/strip-coauthor-trailers.sh
 git push --force-with-lease origin main
 ```
 
