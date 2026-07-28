@@ -60,7 +60,7 @@ Each page includes:
 
 - Difficulty level (beginner / intermediate / advanced)
 - Estimated completion time
-- Author and last updated date
+- Author
 - Prerequisites, category, and tags
 
 ## Technology
@@ -70,21 +70,13 @@ REBASH Academy is built with:
 - [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
 - Python 3.12+
 - Static site generation (no backend required)
-- GitHub Actions for CI/CD
-- GitHub Pages for hosting
-
-## Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](https://github.com/rebash-rebash/rebash-academy/blob/main/CONTRIBUTING.md)
-for guidelines on adding tutorials, fixing issues, and improving documentation.
 
 ## Contact
 
-- **GitHub:** [rebash-rebash/rebash-academy](https://github.com/rebash-rebash/rebash-academy)
 - **LinkedIn:** [Shaik Khadar Basha](https://www.linkedin.com/in/shaikkhadarbasha/)
 - **YouTube:** Coming soon
 - **X (Twitter):** Coming soon
 
 ## License
 
-Content is licensed under [MIT License](https://github.com/rebash-rebash/rebash-academy/blob/main/LICENSE).
+Content is © 2026 Shaik Basha. All rights reserved unless otherwise noted.

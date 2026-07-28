@@ -71,5 +71,4 @@ The platform architecture supports future enhancements without structural change
 - AI-powered semantic search
 
 !!! tip "Suggest Content"
-    Have a topic you'd like to see covered? [Open an issue](https://github.com/rebash-rebash/rebash-academy/issues/new)
-    on GitHub with the `content-request` label.
+    Have a topic you'd like to see covered? Reach out on [LinkedIn](https://www.linkedin.com/in/shaikkhadarbasha/) with your content request.

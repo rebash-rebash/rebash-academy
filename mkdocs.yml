@@ -4,9 +4,6 @@ site_name: REBASH Academy
 site_description: Learn by Building. Production-grade DevOps, Cloud, and Security knowledge base.
 site_author: Shaik Basha
 site_url: https://academy.rebash.in/
-repo_url: https://github.com/rebash-rebash/rebash-academy
-repo_name: rebash-academy
-edit_uri: edit/main/docs/
 
 exclude_docs: |
   includes/*
@@ -18,8 +15,6 @@ extra:
     tagline: Learn by Building.
     description: Hands-on tutorials for Linux, Cloud, Kubernetes, Terraform, DevSecOps, and more.
   social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/rebash-rebash/rebash-academy
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/shaikkhadarbasha/
     - icon: fontawesome/brands/youtube
@@ -42,7 +37,7 @@ extra:
       - manage
   generator: false
   giscus:
-    repo: rebash-rebash/rebash-academy
+    repo: ""
     repo_id: ""
     category: General
     category_id: ""
@@ -63,8 +58,6 @@ theme:
   language: en
   logo: assets/images/logo.svg
   favicon: assets/images/favicon.png
-  icon:
-    repo: fontawesome/brands/github
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -107,12 +100,6 @@ plugins:
       separator: '[\s\-,:!=\[\]()/`]+'
       lang: en
   - awesome-pages
-  - git-revision-date-localized:
-      enable_creation_date: true
-      enable_git_follow: false
-      type: date
-      fallback_to_build_date: true
-      strict: false
   - minify:
       minify_html: true
   - glightbox:
