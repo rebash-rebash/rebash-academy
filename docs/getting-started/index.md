@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: Start learning on REBASH Academy — how tutorials work, what to study first, and the six ready tracks.
+description: Start learning on REBASH Academy — how tutorials work, what to study first, and the ready tracks including AWS.
 difficulty: beginner
 estimated_time: "10 min"
 author: Shaik Basha
@@ -39,7 +39,7 @@ Prefer a career-shaped roadmap? Open **[Learning Paths](../learning-paths/index.
 | Terminal comfort | Basic shell use is enough to begin |
 | Curiosity | Break things in labs — that is the point |
 
-Optional later: Docker Engine or Docker Desktop, `kubectl` / minikube or kind, Terraform CLI 1.9+, and a cloud account when you reach cloud tracks.
+Optional later: Docker Engine or Docker Desktop, `kubectl` / minikube or kind, Terraform CLI 1.9+, and an AWS Free Tier account (with billing alarm) when you reach the AWS track. LocalStack is an optional CLI sandbox for many AWS labs.
 
 ## Recommended first path
 
@@ -52,10 +52,11 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 <ul class="rebash-tree">
   <li>1 · Linux</li>
   <li>2 · Networking</li>
-  <li>3 · Git</li>
-  <li>4 · Docker</li>
-  <li>5 · Kubernetes</li>
-  <li>6 · Terraform</li>
+  <li>3 · AWS</li>
+  <li>4 · Git</li>
+  <li>5 · Docker</li>
+  <li>6 · Kubernetes</li>
+  <li>7 · Terraform</li>
 </ul>
 </figure>
 
@@ -64,11 +65,12 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 | Step | Track | First tutorial | Status |
 |------|--------|----------------|--------|
 | 1 | [Linux](../linux/index.md) | [Introduction to Linux](../linux/introduction-to-linux.md) | Ready — 25 tutorials (incl. Advanced Servers) |
-| 2 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready — 20 tutorials |
-| 3 | [Git](../git/index.md) | [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md) | Ready — 20 tutorials |
-| 4 | [Docker](../docker/index.md) | [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
-| 5 | [Kubernetes](../kubernetes/index.md) | [Introduction to Kubernetes and Orchestration](../kubernetes/introduction-to-kubernetes-and-orchestration.md) | Ready — 20 tutorials |
-| 6 | [Terraform](../terraform/index.md) | [Introduction to Terraform and Infrastructure as Code](../terraform/introduction-to-terraform-and-iac.md) | Ready — 20 tutorials |
+| 2 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready — 25 tutorials (incl. Production Network Ops) |
+| 3 | [AWS](../aws/index.md) | [Introduction to AWS and Global Infrastructure](../aws/introduction-to-aws-and-global-infrastructure.md) | Ready — 20 tutorials |
+| 4 | [Git](../git/index.md) | [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md) | Ready — 20 tutorials |
+| 5 | [Docker](../docker/index.md) | [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
+| 6 | [Kubernetes](../kubernetes/index.md) | [Introduction to Kubernetes and Orchestration](../kubernetes/introduction-to-kubernetes-and-orchestration.md) | Ready — 20 tutorials |
+| 7 | [Terraform](../terraform/index.md) | [Introduction to Terraform and Infrastructure as Code](../terraform/introduction-to-terraform-and-iac.md) | Ready — 20 tutorials |
 
 !!! tip "New to DevOps?"
     Begin with **[Introduction to Linux](../linux/introduction-to-linux.md)** — Linux is the golden foundation on REBASH Academy. Finish through Module 7 servers when you can; do not skip the labs.
@@ -85,9 +87,9 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 
 | Available now | Coming next |
 |---------------|-------------|
-| Linux, Networking, Git, Docker, Kubernetes, Terraform | AWS, Azure, GCP |
-| [Standalone Labs](../labs/index.md) (all six ready tracks) | More scenario labs |
-| [Quizzes](../quizzes/index.md) (Linux fundamentals + servers, Docker, Kubernetes) | Networking / Git / Terraform quizzes |
+| Linux, Networking, AWS, Git, Docker, Kubernetes, Terraform | Azure, GCP |
+| [Standalone Labs](../labs/index.md) (incl. AWS IAM/VPC and SSM/S3) | More scenario labs |
+| [Quizzes](../quizzes/index.md) (Linux, Networking production, AWS, Docker, Kubernetes) | Networking fundamentals / Git / Terraform quizzes |
 | [Status API project](../projects/status-api-portfolio.md) | More portfolio projects |
 | Learning path, cheat sheets, interview guides | GitLab CI/CD, Monitoring, Security, DevSecOps |
 

@@ -31,22 +31,24 @@ This page tracks what is published on REBASH Academy and what comes next.
 - [x] Linux fundamentals path (20 tutorials)
 - [x] Linux Advanced Servers module (tutorials 21–25: baseline, nginx, TLS, LVM, backups)
 - [x] Networking fundamentals path (20 tutorials)
+- [x] Networking Production Network Operations module (tutorials 21–25: segmentation, DNS ops, LB health checks, firewall change control, IR)
+- [x] AWS fundamentals path (20 tutorials — Free Tier + LocalStack-friendly labs)
 - [x] Git version control path (20 tutorials)
 - [x] Docker containerization path (20 tutorials)
 - [x] Kubernetes orchestration path (20 tutorials)
 - [x] Terraform Infrastructure as Code path (20 tutorials)
 
-**Ready today:** [Linux](linux/index.md) → [Networking](networking/index.md) → [Git](git/index.md) → [Docker](docker/index.md) → [Kubernetes](kubernetes/index.md) → [Terraform](terraform/index.md)
+**Ready today:** [Linux](linux/index.md) → [Networking](networking/index.md) → [AWS](aws/index.md) → [Git](git/index.md) → [Docker](docker/index.md) → [Kubernetes](kubernetes/index.md) → [Terraform](terraform/index.md)
 
 ## Phase 3 – Cloud & CI/CD (Next)
 
-- [ ] AWS core services tutorials
+- [x] AWS core services tutorials (20-tutorial track published)
 - [ ] Azure fundamentals
 - [ ] Google Cloud Platform guides
 - [ ] GitLab CI/CD pipeline patterns
 - [ ] Monitoring and observability stack
 
-These sections keep stable URLs under `/aws/`, `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`, but tutorials are not published yet. Follow Phase 2 tracks until they ship.
+These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`. AWS is live under `/aws/`. Follow the [DevOps Engineer path](learning-paths/devops-engineer.md) for order.
 
 ## Phase 4 – Security & Advanced Topics
 
@@ -60,16 +62,18 @@ These sections keep stable URLs under `/aws/`, `/azure/`, `/gcp/`, `/gitlab/`, a
 
 - [x] Interview guides for ready tracks (plus interview questions inside each tutorial)
 - [x] Cheat sheets for ready tracks
-- [x] Hands-on lab catalog (Linux, Networking, Git, Docker, Kubernetes, Terraform — one lab per ready track)
+- [x] Hands-on lab catalog (Linux, Networking, Git, Docker, Kubernetes, Terraform — including advanced Linux and Networking labs)
 - [x] Labs section promoted in primary navigation
 - [x] DevOps Engineer learning path page
 - [x] First portfolio project (Status API — Git/Docker/Kubernetes/Terraform)
-- [x] Assessment quizzes (Linux fundamentals + Linux servers, Docker, Kubernetes)
+- [x] Assessment quizzes (Linux fundamentals + Linux servers, Networking production, AWS fundamentals, Docker, Kubernetes)
 - [x] Quizzes section promoted in primary navigation (peer to Labs)
 - [x] Advanced Linux app-server lab (from zero)
+- [x] Advanced Networking edge failover lab
+- [x] AWS labs (IAM/VPC triage + SSM/S3) and AWS cheat sheet / interview prep
 - [ ] Additional project walkthroughs (CI/CD, cloud stacks)
 - [ ] Blog articles and video embeds
-- [ ] Quizzes for Networking, Git, and Terraform
+- [ ] Quizzes for Networking fundamentals, Git, and Terraform
 
 ## Future Considerations
 

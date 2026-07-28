@@ -1,6 +1,6 @@
 ---
 title: Cheat Sheets
-description: "Quick-reference cheat sheets for Linux, Networking, Git, Docker, Kubernetes, and Terraform."
+description: "Quick-reference cheat sheets for Linux, Networking, AWS, Git, Docker, Kubernetes, and Terraform."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -21,6 +21,7 @@ Quick-reference guides for the published REBASH Academy tracks.
 |-------------|--------|
 | [Linux](linux.md) | [Linux tutorials](../linux/index.md) |
 | [Networking](networking.md) | [Networking tutorials](../networking/index.md) |
+| [AWS](aws.md) | [AWS tutorials](../aws/index.md) |
 | [Git](git.md) | [Git tutorials](../git/index.md) |
 | [Docker](docker.md) | [Docker tutorials](../docker/index.md) |
 | [Kubernetes](kubernetes.md) | [Kubernetes tutorials](../kubernetes/index.md) |

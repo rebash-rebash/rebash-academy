@@ -179,6 +179,20 @@ Audit logs provide **non-repudiation** — proof of who accessed what, when, and
 - **Retain** — match compliance requirements (PCI: 1 year online, 3 months immediately available)
 - **Alert** — security group `0.0.0.0/0` on port 22, WAF spike in blocks, VPN auth failures
 
+### Production hardening bridge (before Module 7)
+
+Hardening checklists fail in production when teams cannot **change safely**. Before you design trust zones and load-balancer health checks in Module 7, lock these operational habits:
+
+| Habit | Why it matters | First check |
+|-------|----------------|-------------|
+| Console / out-of-band access | Firewall mistakes lock SSH | Have serial/cloud console before ACL changes |
+| Document every allow | Undocumented `0.0.0.0/0` becomes permanent | Ticket ID in rule comment |
+| Prefer deny-by-default | Accidental broad allows are the common breach path | `ss -tulpn` then close unexpected listeners |
+| Separate edge from data | Compromised web tier must not own DB ports | Tier matrix (Module 7 Tutorial 21) |
+| Prove TLS and expiry | Expired certs are outages and security events | `openssl s_client` + calendar alert |
+
+Map host firewalls (`nft`/`ufw`) to cloud security groups with the same mental model: **who may speak to which port**. Module 7 deepens segmentation, DNS change control, LB health checks, ACL rollbacks, and incident evidence.
+
 ## Hands-on Lab
 
 Complete these steps on a Linux system. Run TLS tests against domains you own or public reference sites.
@@ -457,6 +471,7 @@ Confirm the lab before moving on:
 - [Networking – Category Overview](index.md)
 - [VPN and Tunneling Basics](vpn-and-tunneling-basics.md) *(previous in Module 6)*
 - [Network Automation and Monitoring](network-automation-and-monitoring.md) *(next in Module 6)*
+- [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md) *(Module 7 — next)*
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Linux – Category Overview](../linux/index.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)

@@ -4,5 +4,7 @@ nav:
   - index.md
   - linux-fundamentals.md
   - linux-servers.md
+  - networking-production.md
+  - aws-fundamentals.md
   - docker-fundamentals.md
   - kubernetes-fundamentals.md

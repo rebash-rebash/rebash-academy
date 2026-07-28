@@ -1,0 +1,7 @@
+direction: right
+Res: "AWS resource" { style.fill: "#fee2e2"; style.stroke: "#b91c1c" }
+Metric: "CloudWatch metric" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Alarm: "Alarm" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Logs: "Log group" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Res -> Metric -> Alarm
+Res -> Logs
