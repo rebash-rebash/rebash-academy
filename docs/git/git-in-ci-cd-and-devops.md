@@ -50,7 +50,7 @@ By the end of this tutorial, you will be able to:
 ```mermaid
 flowchart TB
     DEV["Developer Push / PR"]
-    GIT["(Git Repository")]
+    GIT["Git Repository"]
     WH["Webhook / Event"]
     CI["CI Pipeline<br/>build · test · scan"]
     ART["Artifact Registry<br/>image · plan"]

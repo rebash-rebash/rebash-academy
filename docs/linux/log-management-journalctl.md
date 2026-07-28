@@ -55,7 +55,7 @@ flowchart TB
 
     subgraph journald
         J[systemd-journald]
-        R["(Journal Files<br/>/run/log/journal<br/>/var/log/journal")]
+        R["Journal Files<br/>/run/log/journal<br/>/var/log/journal"]
     end
 
     subgraph Consumers

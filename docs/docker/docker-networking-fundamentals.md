@@ -71,7 +71,10 @@ flowchart TB
     C1 --- Bridge
     C2 --- Bridge
     Bridge --- ETH
-    UserBridge --- ETH```
+    UserBridge --- ETH
+    style Bridge fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style UserBridge fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+```
 
 User-defined networks add automatic DNS between connected containers.
 

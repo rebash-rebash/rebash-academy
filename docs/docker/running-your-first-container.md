@@ -58,7 +58,7 @@ flowchart LR
     HOST["Host :8080"]
     BRIDGE[docker0 bridge]
     CONT["Container<br/>nginx :80"]
-    LOGS["(json-file logs<br/>/var/lib/docker")]
+    LOGS["json-file logs<br/>/var/lib/docker"]
 
     HOST -->|NAT publish| BRIDGE
     BRIDGE --> CONT

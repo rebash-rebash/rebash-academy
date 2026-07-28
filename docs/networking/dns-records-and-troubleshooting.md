@@ -73,7 +73,9 @@ flowchart TB
     NS --> A
     NS --> CNAME
     NS --> MX
-    NS --> TXT```
+    NS --> TXT
+    style Auth fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```
 
 ## Theory
 

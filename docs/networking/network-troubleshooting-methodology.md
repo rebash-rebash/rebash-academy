@@ -82,7 +82,13 @@ flowchart TB
     style TCP fill:#b3e5fc
     style IP fill:#81d4fa
     style ARP fill:#4fc3f7
-    style PHY fill:#29b6f6```
+    style PHY fill:#29b6f6
+    style L7 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style L4 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style L3 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style L2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    style L1 fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+```
 
 ## Theory
 

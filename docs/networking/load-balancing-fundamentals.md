@@ -78,7 +78,9 @@ flowchart TB
     HC -.->|fail| W3
     ALGO --> W1
     ALGO --> W2
-    ALGO -.-x|removed| W3```
+    ALGO -.-x|removed| W3
+    style LB fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```
 
 ## Theory
 

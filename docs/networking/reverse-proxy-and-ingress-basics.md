@@ -74,7 +74,10 @@ flowchart LR
     RP --> TLS
     TLS -->|HTTP| B1
     TLS -->|HTTP| B2
-    TLS -->|/api/*| API```
+    TLS -->|/api/*| API
+    style Edge fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style Internal fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+```
 
 ## Theory
 

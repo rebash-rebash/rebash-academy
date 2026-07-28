@@ -62,6 +62,9 @@ def fix_block(block: str) -> str:
     for line in lines:
         out.append(fix_subgraph(line))
     text = NODE.sub(quote_node, "\n".join(out))
+    # Mermaid 11 treats ["(label")] / ["(label)"] as cylinder syntax — strip parens
+    text = re.sub(r'\["\(([^"]*)"\)\]', r'["\1"]', text)
+    text = re.sub(r'\["\(([^"]*)\)"\]', r'["\1"]', text)
     if trailing_newline and not text.endswith("\n"):
         text += "\n"
     return text

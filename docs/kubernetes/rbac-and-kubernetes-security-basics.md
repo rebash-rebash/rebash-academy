@@ -59,7 +59,7 @@ flowchart TB
     AUTHN["Authentication<br/>cert / token / OIDC"]
     AUTHZ["Authorization<br/>RBAC webhook"]
     ADM[Admission Controllers]
-    ETCD["(etcd")]
+    ETCD["etcd"]
 
     REQ --> AUTHN
     AUTHN -->|identity| AUTHZ
@@ -75,6 +75,7 @@ flowchart TB
     end
 
     AUTHZ --> RBAC
+    style RBAC fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
 ```
 
 ## Theory

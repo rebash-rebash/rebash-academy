@@ -79,9 +79,13 @@ flowchart LR
         ARGO -->|reconcile| K8S
     end
 
-    REG["(Container registry")]
+    REG["Container registry"]
     PUSH --> REG
     K8S -->|pull| REG
+    style Dev fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style CI fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style GitOps fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style Cluster fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 ```
 
 ## Theory

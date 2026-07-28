@@ -54,7 +54,7 @@ The diagram below contrasts centralized and distributed version control. Underst
 ```mermaid
 flowchart TB
     subgraph CVCS["Centralized VCS (e.g., SVN)"]
-        SVN_SRV["(Central Server<br/>single source of truth")]
+        SVN_SRV["Central Server<br/>single source of truth"]
         DEV_A["Developer A<br/>working copy only"]
         DEV_B["Developer B<br/>working copy only"]
         DEV_A -->|commit / update| SVN_SRV
@@ -62,7 +62,7 @@ flowchart TB
     end
 
     subgraph DVCS["Distributed VCS (Git)"]
-        REMOTE["(Remote — GitHub / GitLab / Bitbucket")]
+        REMOTE["Remote — GitHub / GitLab / Bitbucket"]
         DEV_C["Developer C<br/>full local repo"]
         DEV_D["Developer D<br/>full local repo"]
         CI["CI Runner<br/>full clone"]
@@ -70,7 +70,10 @@ flowchart TB
         DEV_D <-->|push / pull| REMOTE
         CI <-->|fetch / clone| REMOTE
         DEV_C -.->|local commits<br/>no network| DEV_C
-    end```
+    end
+    style CVCS fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style DVCS fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+```
 
 ## Theory
 
@@ -173,7 +176,7 @@ A **tag** marks a specific commit — usually a release: `v1.4.2`, `prod-2026-07
 ```mermaid
 flowchart LR
     DEV["Developer / Engineer"]
-    GIT["(Git Repository")]
+    GIT["Git Repository"]
     PR["Pull Request / MR"]
     CI["CI Pipeline<br/>GitHub Actions / GitLab CI"]
     CD["CD / GitOps<br/>Argo CD / Flux"]

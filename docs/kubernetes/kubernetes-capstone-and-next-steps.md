@@ -86,6 +86,8 @@ flowchart TB
     ARGO -.->|sync| Votestack
     PROM -.->|scrape| API
     KYV -.->|enforce| Votestack
+    style IngressLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style Votestack fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
 ```
 
 ## Project Overview — VoteStack on Kubernetes

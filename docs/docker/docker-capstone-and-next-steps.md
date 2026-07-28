@@ -67,8 +67,8 @@ flowchart TB
     end
 
     subgraph Data
-        REDIS["(redis")]
-        PG["(postgres")]
+        REDIS["redis"]
+        PG["postgres"]
     end
 
     USER --> NGX

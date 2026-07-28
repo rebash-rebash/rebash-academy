@@ -72,7 +72,10 @@ flowchart TB
     RS2 --> P1
     RS2 --> P2
     RS2 --> P3
-    RS1 -.->|"scaled to 0<br/>after rollout"| DEP```
+    RS1 -.->|"scaled to 0<br/>after rollout"| DEP
+    style Control fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style Data fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+```
 
 ## Theory
 

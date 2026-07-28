@@ -69,7 +69,11 @@ flowchart TB
         FEAT --> DEV --> REL --> MAIN3
         HOT --> MAIN3
         HOT --> DEV
-    end```
+    end
+    style TBD fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style GHF fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style GF fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+```
 
 ## Theory
 

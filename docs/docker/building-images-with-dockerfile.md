@@ -57,7 +57,7 @@ flowchart LR
 
     subgraph Engine
         DA[Docker daemon]
-        CACHE["(Layer cache")]
+        CACHE["Layer cache"]
     end
 
     subgraph Output

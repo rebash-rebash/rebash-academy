@@ -50,7 +50,7 @@ flowchart LR
     MAIN -->|git cherry-pick FIX| REL
 
     HEAD[HEAD moves]
-    REFLOG["(reflog<br/>90 day journal")]
+    REFLOG["reflog<br/>90 day journal"]
     HEAD --> REFLOG
     REFLOG -->|git reset --hard SHA| RECOVER[Recovered state]
 ```

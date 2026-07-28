@@ -126,10 +126,6 @@ plugins:
       height: auto
       zoomable: true
       draggable: true
-  - mermaid2:
-      version: 11.16.0
-      arguments:
-        securityLevel: loose
   - open-in-new-tab:
       add_icon: true
   - macros:
@@ -169,11 +165,7 @@ markdown_extensions:
   - pymdownx.snippets:
       auto_append:
         - includes/abbreviations.md
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tasklist:
@@ -182,6 +174,7 @@ markdown_extensions:
 
 hooks:
   - hooks/on_env.py
+  - hooks/render_mermaid_svg.py
 
 watch:
   - overrides

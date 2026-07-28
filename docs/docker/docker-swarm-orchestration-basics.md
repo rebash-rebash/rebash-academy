@@ -77,7 +77,9 @@ flowchart TB
     T2 --> W2
     T3 --> W1
     NET --- T1
-    SEC --- SVC```
+    SEC --- SVC
+    style Swarm fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```
 
 ## Theory
 

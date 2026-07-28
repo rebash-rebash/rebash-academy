@@ -71,7 +71,11 @@ flowchart LR
     R1 --> R2
     R2 --> DB
     R2 --> IGW
-    H2 --> R1```
+    H2 --> R1
+    style LAN1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style LAN2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style LAN3 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+```
 
 Each router maintains a routing table. Traffic from `10.0.1.10` to `10.0.3.5` crosses two routers because the destination is not on the local subnet.
 

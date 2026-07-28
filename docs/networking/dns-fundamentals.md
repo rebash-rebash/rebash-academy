@@ -56,7 +56,7 @@ flowchart TB
 
     subgraph Resolver
         REC["Recursive Resolver<br/>8.8.8.8 / corporate DNS"]
-        CACHE["(Local Cache")]
+        CACHE["Local Cache"]
     end
 
     subgraph Authoritative

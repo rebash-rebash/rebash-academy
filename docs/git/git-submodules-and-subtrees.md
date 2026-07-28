@@ -56,7 +56,10 @@ flowchart TB
         PARENT2[Parent Repo]
         MERGED["External code<br/>merged into subdir/"]
         PARENT2 --> MERGED
-    end```
+    end
+    style SUBMOD fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style SUBTREE fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+```
 
 ## Theory
 

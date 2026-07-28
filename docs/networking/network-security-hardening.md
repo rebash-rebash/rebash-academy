@@ -76,7 +76,7 @@ flowchart TB
             App["App Servers<br/>SG: 443 from DMZ only"]
         end
         subgraph DataTier["Data Tier — Private"]
-            DB["(Database<br/>SG: 5432 from App only")]
+            DB["Database<br/>SG: 5432 from App only"]
         end
     end
 
@@ -91,7 +91,14 @@ flowchart TB
     Proxy --> App
     App --> DB
     Flow --> SIEM
-    LB --> SIEM```
+    LB --> SIEM
+    style Edge fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style VPC fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style DMZ fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style AppTier fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    style DataTier fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style Observability fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#004d40
+```
 
 ## Theory
 

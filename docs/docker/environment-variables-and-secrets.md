@@ -75,7 +75,11 @@ flowchart TB
     RUN -->|environment vars| PROC
     RUN --> SWARM_SEC
     SWARM_SEC --> MNT
-    MNT --> PROC```
+    MNT --> PROC
+    style sources fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style docker fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style container fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+```
 
 ## Theory
 

@@ -68,7 +68,10 @@ flowchart TB
     S1 --> SW
     S2 --> SW
     S3 --> SW
-    SW -->|trunk: VLAN 10, 20| RTR```
+    SW -->|trunk: VLAN 10, 20| RTR
+    style VLAN10 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style VLAN20 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+```
 
 Traffic within VLAN 10 stays on the same broadcast domain. Cross-VLAN communication requires Layer 3 routing through the router.
 

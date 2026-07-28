@@ -77,7 +77,14 @@ flowchart TB
         L1N["Bits on wire / fiber / radio"]
     end
 
-    DATA --> L7 --> L6 --> L5 --> L4N --> L3N --> L2N --> L1N```
+    DATA --> L7 --> L6 --> L5 --> L4N --> L3N --> L2N --> L1N
+    style APP fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style L47 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style L4 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style L3 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    style L2 fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style L1 fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#004d40
+```
 
 ## Theory
 

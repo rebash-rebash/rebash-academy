@@ -57,7 +57,7 @@ Registries sit between image builders and runtime consumers. The same image dige
 flowchart LR
     DEV["Developer / CI Builder"]
     BUILD[docker build]
-    REG["(Container Registry<br/>Hub / ECR / Artifact Registry")]
+    REG["Container Registry<br/>Hub / ECR / Artifact Registry"]
     RUN1[Docker Host]
     RUN2[Kubernetes Node]
     RUN3["Cloud Run / ECS"]

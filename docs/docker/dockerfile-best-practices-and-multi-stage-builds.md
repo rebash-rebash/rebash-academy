@@ -64,6 +64,8 @@ flowchart TB
     B3 -->|artifact only| R2
     R1 --> R2 --> R3
     R3 --> IMG[Final image ~10MB]
+    style Stage1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style Stage2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
 ```
 
 Only the runtime stage becomes the final image. Build tools never ship to production.

@@ -76,7 +76,10 @@ flowchart TB
         APP_C2 --> ENGINE
         ENGINE --> HOST_OS_C
         HOST_OS_C --> HW_C
-    end```
+    end
+    style VM fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style CONTAINER fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+```
 
 ## Theory
 
@@ -166,8 +169,8 @@ flowchart LR
     DEV[Developer]
     DF[Dockerfile]
     BUILD[docker build]
-    IMG["(Image")]
-    REG["(Registry<br/>Docker Hub / ECR / GCR")]
+    IMG["Image"]
+    REG["Registry<br/>Docker Hub / ECR / GCR"]
     RUN[docker run]
     CONT[Container]
     ORCH["Orchestrator<br/>Kubernetes / ECS"]

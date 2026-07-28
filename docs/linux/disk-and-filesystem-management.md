@@ -75,7 +75,9 @@ flowchart TB
     E --> G
     F --> H
     G --> I
-    H --> J```
+    H --> J
+    style Mount fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```
 
 ## Theory
 

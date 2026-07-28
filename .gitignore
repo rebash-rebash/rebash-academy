@@ -9,6 +9,7 @@ build/
 
 # MkDocs
 site/
+.cache/
 
 # Environment
 .env

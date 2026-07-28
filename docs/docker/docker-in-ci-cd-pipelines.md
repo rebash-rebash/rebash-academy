@@ -62,7 +62,7 @@ flowchart LR
     end
 
     subgraph Registry
-        REG["(ghcr.io / registry.gitlab.com")]
+        REG["ghcr.io / registry.gitlab.com"]
     end
 
     subgraph Deploy
@@ -77,7 +77,9 @@ flowchart LR
     SCAN --> PUSHIMG
     PUSHIMG --> REG
     REG --> STG
-    REG --> PROD```
+    REG --> PROD
+    style CI fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```
 
 ## Theory
 

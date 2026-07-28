@@ -54,7 +54,7 @@ flowchart LR
     subgraph Capture["Capture Point"]
         NIC["eth0 / any interface"]
         TD["tcpdump / dumpcap"]
-        PCAP["(capture.pcap")]
+        PCAP["capture.pcap"]
     end
 
     subgraph Analysis
@@ -78,7 +78,9 @@ flowchart LR
     STREAM --> HTTP
     FILT --> SYN
     FILT --> RST
-    FILT --> TLS```
+    FILT --> TLS
+    style Capture fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```
 
 ## Theory
 

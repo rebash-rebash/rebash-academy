@@ -54,7 +54,7 @@ flowchart TB
     end
 
     subgraph Mounts
-        VOL["(Named volume<br/>/var/lib/docker/volumes")]
+        VOL["Named volume<br/>/var/lib/docker/volumes"]
         BIND["Bind mount<br/>host path"]
         TMP["tmpfs<br/>memory only"]
     end

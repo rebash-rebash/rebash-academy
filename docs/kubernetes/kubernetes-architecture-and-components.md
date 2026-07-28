@@ -93,6 +93,10 @@ flowchart TB
     DASH --> API
     API --> KL1
     API --> KL2
+    style USERS fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    style CP fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    style NODE1 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style NODE2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 ```
 
 ## Theory

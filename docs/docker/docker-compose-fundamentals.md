@@ -53,8 +53,8 @@ flowchart TB
     subgraph Compose["Project"]
         WEB["web service<br/>nginx:alpine"]
         API["api service<br/>custom build"]
-        DB["(db service<br/>postgres:16")]
-        VOL["(named volume<br/>pgdata")]
+        DB["db service<br/>postgres:16"]
+        VOL["named volume<br/>pgdata"]
         NET["user-defined network<br/>app-net"]
     end
 
@@ -64,7 +64,9 @@ flowchart TB
     DB --> VOL
     WEB --- NET
     API --- NET
-    DB --- NET```
+    DB --- NET
+    style Compose fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```
 
 Compose creates a project-scoped network. Services resolve each other by **service name**.
 

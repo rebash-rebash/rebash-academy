@@ -76,8 +76,8 @@ flowchart TB
     end
 
     subgraph Data
-        PG["(postgres")]
-        RD["(redis")]
+        PG["postgres"]
+        RD["redis"]
     end
 
     ING --> WEB
@@ -87,6 +87,7 @@ flowchart TB
     WORK --> RD
     WORK --> PG
     KYV --> Namespace
+    style Namespace fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
 ```
 
 ## Theory
