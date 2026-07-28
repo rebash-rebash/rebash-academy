@@ -64,9 +64,9 @@
   <section class="rebash-section rebash-section--alt md-grid">
     {{ rebash.section_header(
       "Build with structure",
-      "Use labs and learning paths alongside portfolio projects."
+      "Use labs, quizzes, and learning paths alongside portfolio projects."
     ) }}
-    <div class="rebash-feature-grid rebash-feature-grid--2">
+    <div class="rebash-feature-grid rebash-feature-grid--3">
       {{ rebash.path_card(
         "labs/",
         "labs",
@@ -74,8 +74,18 @@
         '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M6 2h12a2 2 0 0 1 2 2v3H4V4a2 2 0 0 1 2-2Zm14 7v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9h16ZM8 12h2v6H8v-6Zm4-2h2v8h-2v-8Zm4 4h2v4h-2v-4Z"/></svg>',
         "Hands-on Labs",
         "Scenario labs for every ready track — with validation and cleanup.",
-        ["Linux", "Networking", "Git", "Docker", "Kubernetes", "Terraform"],
+        ["Linux", "Docker", "Kubernetes"],
         "Browse labs"
+      ) }}
+      {{ rebash.path_card(
+        "quizzes/",
+        "quizzes",
+        "Ready",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 15h-2v-2h2v2Zm0-4h-2V7h2v6Z"/></svg>',
+        "Quizzes",
+        "Self-mark fundamentals quizzes with explanations and a 70% pass mark.",
+        ["Linux", "Docker", "Kubernetes"],
+        "Take a quiz"
       ) }}
       {{ rebash.path_card(
         "learning-paths/",

@@ -1044,6 +1044,10 @@
   background: linear-gradient(135deg, #00897b 0%, #004d40 100%);
 }
 
+.rebash-path-card--quizzes .rebash-path-card__banner {
+  background: linear-gradient(135deg, #5c6bc0 0%, #283593 100%);
+}
+
 .rebash-path-card--blog .rebash-path-card__banner {
   background: linear-gradient(135deg, #546e7a 0%, #37474f 100%);
 }
@@ -1064,6 +1068,11 @@
 .rebash-path-card--labs .rebash-path-card__topics .rebash-path-card__topic {
   background: rgba(0, 137, 123, 0.12);
   color: #00695c;
+}
+
+.rebash-path-card--quizzes .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(92, 107, 192, 0.12);
+  color: #3949ab;
 }
 
 /* Bottom panels: community + updates */
