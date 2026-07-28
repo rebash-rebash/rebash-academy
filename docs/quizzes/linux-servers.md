@@ -48,13 +48,13 @@ On a hardened app server, where should the application process typically listen?
 
 **Options:**
 
-- **A.** 0.0.0.0:8080 publicly
-- **B.** 127.0.0.1 on a private port behind nginx
+- **A.** 127.0.0.1 on a private port behind nginx
+- **B.** 0.0.0.0:8080 publicly
 - **C.** Only on IPv6 link-local
 - **D.** UDP 53
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Localhost bind keeps the app off the public exposure path; nginx owns 80/443.
 
@@ -72,12 +72,12 @@ Which command best lists TCP listening sockets with processes?
 **Options:**
 
 - **A.** ping -a
-- **B.** sudo ss -tulpn
-- **C.** chmod 777
+- **B.** chmod 777
+- **C.** sudo ss -tulpn
 - **D.** tar -tzf
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     ss replaces netstat for socket inspection.
 
@@ -94,12 +94,12 @@ What does `nginx -t` do?
 **Options:**
 
 - **A.** Terminates TLS
-- **B.** Tests configuration syntax before reload
-- **C.** Truncates access logs
-- **D.** Opens port 443
+- **B.** Truncates access logs
+- **C.** Opens port 443
+- **D.** Tests configuration syntax before reload
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Always test before reload.
 
@@ -138,13 +138,13 @@ Self-signed certificates in labs primarily lack what?
 
 **Options:**
 
-- **A.** Encryption capability
-- **B.** Public CA trust in browsers
+- **A.** Public CA trust in browsers
+- **B.** Encryption capability
 - **C.** Private keys
 - **D.** Ports
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Self-signed encrypts but is not publicly trusted.
 
@@ -161,12 +161,12 @@ Preferred fstab device identifier?
 **Options:**
 
 - **A.** /dev/sdb1 always
-- **B.** UUID=...
-- **C.** IDE bus number
+- **B.** IDE bus number
+- **C.** UUID=...
 - **D.** Random major:minor
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     UUIDs survive device rename.
 
@@ -184,12 +184,12 @@ After `lvextend`, ext4 still shows old size until you?
 **Options:**
 
 - **A.** Reboot BIOS
-- **B.** Run resize2fs (online grow)
-- **C.** Delete fstab
-- **D.** Disable nginx
+- **B.** Delete fstab
+- **C.** Disable nginx
+- **D.** Run resize2fs (online grow)
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Grow the filesystem after the LV.
 
@@ -229,13 +229,13 @@ UFW enable without allowing SSH often causes?
 
 **Options:**
 
-- **A.** Faster TLS
-- **B.** Admin lockout from remote SSH
+- **A.** Admin lockout from remote SSH
+- **B.** Faster TLS
 - **C.** Automatic LVM extend
 - **D.** Chrony sync
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Allow OpenSSH first; keep console.
 
@@ -253,12 +253,12 @@ chrony/time sync matters for TLS because?
 **Options:**
 
 - **A.** Certificates are timezone files
-- **B.** Validity windows depend on correct clock
-- **C.** nginx ignores time
+- **B.** nginx ignores time
+- **C.** Validity windows depend on correct clock
 - **D.** SSH disables NTP
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     Skew breaks cert validation.
 
@@ -279,12 +279,12 @@ sites-enabled on Debian/Ubuntu usually contains?
 **Options:**
 
 - **A.** Binary modules only
-- **B.** Symlinks to sites-available configs
-- **C.** Private keys only
-- **D.** LVM metadata
+- **B.** Private keys only
+- **C.** LVM metadata
+- **D.** Symlinks to sites-available configs
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Enable via symlink pattern.
 
@@ -322,13 +322,13 @@ PV → VG → LV describes?
 
 **Options:**
 
-- **A.** nginx stages
-- **B.** LVM layering
+- **A.** LVM layering
+- **B.** nginx stages
 - **C.** TLS handshake
 - **D.** systemd targets only
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Physical → group → logical.
 
@@ -344,13 +344,13 @@ Which ports are typical public edge for this design?
 
 **Options:**
 
-- **A.** 22, 80, 443
-- **B.** 18080, 5432, 6379
-- **C.** Only 8080
+- **A.** 18080, 5432, 6379
+- **B.** Only 8080
+- **C.** 22, 80, 443
 - **D.** 137–139
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: C**
 
     SSH + HTTP/HTTPS; app private.
 
@@ -367,12 +367,12 @@ openssl x509 -enddate helps you?
 **Options:**
 
 - **A.** Extend LVM
-- **B.** See certificate expiry
-- **C.** Ban SSH IPs
-- **D.** Compile nginx
+- **B.** Ban SSH IPs
+- **C.** Compile nginx
+- **D.** See certificate expiry
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Monitor notAfter.
 
@@ -410,13 +410,13 @@ proxy_pass to http://127.0.0.1:18080/ from location /api/ is for?
 
 **Options:**
 
-- **A.** Static files only
-- **B.** Reverse proxy to local upstream
+- **A.** Reverse proxy to local upstream
+- **B.** Static files only
 - **C.** Firewall bypass on WAN
 - **D.** LVM snapshots
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Core reverse proxy pattern.
 
@@ -437,12 +437,12 @@ fail2ban primarily mitigates?
 **Options:**
 
 - **A.** Disk full
-- **B.** Brute-force auth attempts (e.g. sshd)
-- **C.** Certificate expiry
+- **B.** Certificate expiry
+- **C.** Brute-force auth attempts (e.g. sshd)
 - **D.** Slow DNS
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     Ban repeat offenders.
 
@@ -459,12 +459,12 @@ Loop-backed LVM labs are used to?
 **Options:**
 
 - **A.** Replace cloud disks always
-- **B.** Practise safely without risking system disks
-- **C.** Speed up TLS
-- **D.** Disable fstab
+- **B.** Speed up TLS
+- **C.** Disable fstab
+- **D.** Practise safely without risking system disks
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: D**
 
     Safe pedagogy.
 
@@ -502,13 +502,13 @@ server_tokens off reduces?
 
 **Options:**
 
-- **A.** CPU
-- **B.** Version disclosure in nginx headers
+- **A.** Version disclosure in nginx headers
+- **B.** CPU
 - **C.** Disk inodes
 - **D.** SSH banner colour
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Slight hardening.
 
@@ -525,12 +525,12 @@ When certbot HTTP-01 fails on pure localhost?
 **Options:**
 
 - **A.** openssl is broken
-- **B.** No public DNS/HTTP challenge path — use self-signed/internal CA for lab
-- **C.** UFW must disable lo
+- **B.** UFW must disable lo
+- **C.** No public DNS/HTTP challenge path — use self-signed/internal CA for lab
 - **D.** LVM full
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: C**
 
     ACME needs reachability.
 
@@ -546,13 +546,13 @@ systemd-analyze blame helps baseline by?
 
 **Options:**
 
-- **A.** Listing slow boot units
-- **B.** Rotating nginx logs
-- **C.** Issuing certificates
-- **D.** Creating VGs
+- **A.** Rotating nginx logs
+- **B.** Issuing certificates
+- **C.** Creating VGs
+- **D.** Listing slow boot units
 
 ??? success "Reveal answer"
-    **Correct answer: A**
+    **Correct answer: D**
 
     Boot cost visibility.
 
@@ -590,13 +590,13 @@ Least privilege sudo for deploy user means?
 
 **Options:**
 
-- **A.** NOPASSWD ALL
-- **B.** Allow-list specific commands (e.g. systemctl reload nginx)
+- **A.** Allow-list specific commands (e.g. systemctl reload nginx)
+- **B.** NOPASSWD ALL
 - **C.** Share root password
 - **D.** Disable sudo logging
 
 ??? success "Reveal answer"
-    **Correct answer: B**
+    **Correct answer: A**
 
     Command allow-lists.
 
