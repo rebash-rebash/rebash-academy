@@ -1,6 +1,6 @@
 ---
 title: Labs
-description: "Dedicated lab catalog — planned. Every published tutorial already includes a Hands-on Lab section."
+description: "Standalone hands-on labs with realistic scenarios, validation, troubleshooting, and cleanup."
 difficulty: beginner
 estimated_time: "Varies"
 author: Shaik Basha
@@ -13,24 +13,29 @@ comments: false
 
 # Labs
 
-Standalone lab catalog with scenarios, validation, and cleanup.
+Standalone labs apply what you learned in the tutorials. Each lab is a scenario with tasks, validation, troubleshooting, and cleanup — closer to on-call and pull-request work than a walkthrough.
 
-## Status
+## Available labs
 
-!!! info "Tutorials not published yet"
-    This section is reserved so links and learning paths stay stable. Check the [roadmap](../roadmap.md) for sequencing. No tutorial pages are available here yet.
+| Lab | Track | Level | Time |
+|-----|--------|-------|------|
+| [Linux Production Incident Triage](linux-production-incident-triage.md) | Linux | Intermediate | 60 min |
+| [Terraform Plan Review Workflow](terraform-plan-review-workflow.md) | Terraform | Intermediate | 50 min |
 
-## Study these ready tracks instead
+## How to use labs
 
-| Track | Why it helps now |
-|-------|------------------|
-| [Getting Started](../getting-started/index.md) | Pick a ready track and open its first lab |
-| [Linux](../linux/index.md) | 20 labs from fundamentals to troubleshooting |
-| [Kubernetes](../kubernetes/index.md) | Cluster labs with kubectl workflows |
-| [Terraform](../terraform/index.md) | Local and CI-oriented IaC labs |
+1. Complete the listed prerequisite tutorials first
+2. Work task-by-task — read **Expected output** before moving on
+3. Use **Troubleshooting** before peeking at fixes
+4. Always run **Cleanup** so the next exercise starts clean
+
+!!! tip "Tutorials still include Hands-on Labs"
+    Every tutorial in a ready track has its own guided lab. Use this catalog for longer, scenario-driven practice.
 
 ## Related
 
-- [Getting Started](../getting-started/index.md) — recommended order for ready content
-- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
-- [Roadmap](../roadmap.md) — publication plan
+- [Getting Started](../getting-started/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [Cheat Sheets](../cheatsheets/index.md)
+- [Interview Prep](../interview/index.md)
+- [Roadmap](../roadmap.md)

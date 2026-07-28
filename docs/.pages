@@ -9,6 +9,7 @@ nav:
     - docker
     - kubernetes
     - terraform
+  - Labs: labs
   - Projects: projects
   - Blog: blog
   - About:
@@ -17,4 +18,3 @@ nav:
     - cheatsheets
     - interview
     - architecture
-    - labs

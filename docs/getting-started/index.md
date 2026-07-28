@@ -86,8 +86,8 @@ Start with foundations, then containers, orchestration, and Infrastructure as Co
 | Available now | Coming next |
 |---------------|-------------|
 | Linux, Networking, Git, Docker, Kubernetes, Terraform | AWS, Azure, GCP |
-| Learning Paths overview | GitLab CI/CD, Monitoring, Security, DevSecOps |
-| Interview questions inside each tutorial | Dedicated interview banks and cheat sheets |
+| [Standalone Labs](../labs/index.md) (Linux + Terraform scenarios) | More labs for Docker / Kubernetes |
+| Learning path, cheat sheets, interview guides | GitLab CI/CD, Monitoring, Security, DevSecOps |
 
 See the full plan on the **[Roadmap](../roadmap.md)**.
 
