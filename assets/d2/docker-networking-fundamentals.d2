@@ -1,0 +1,42 @@
+direction: right
+
+EXT: "External client" {
+  style.fill: "#fce7f3"
+  style.stroke: "#db2777"
+}
+IPT: "iptables NAT\nhost:8080" {
+  style.fill: "#ffedd5"
+  style.stroke: "#ea580c"
+}
+Bridge: "docker0 bridge" {
+  style.fill: "#dbeafe"
+  style.stroke: "#2563eb"
+}
+C1: "Container A\n172.17.0.2" {
+  style.fill: "#dcfce7"
+  style.stroke: "#16a34a"
+}
+C2: "Container B\n172.17.0.3" {
+  style.fill: "#dcfce7"
+  style.stroke: "#16a34a"
+}
+AppNet: "app-net (user bridge)" {
+  style.fill: "#f3e8ff"
+  style.stroke: "#9333ea"
+}
+C3: "Container C\n172.18.0.2" {
+  style.fill: "#e0e7ff"
+  style.stroke: "#4f46e5"
+}
+C4: "Container D\n172.18.0.3" {
+  style.fill: "#e0e7ff"
+  style.stroke: "#4f46e5"
+}
+
+EXT -> IPT: "publish"
+IPT -> C1: "DNAT"
+Bridge -> C1
+Bridge -> C2
+AppNet -> C3
+AppNet -> C4
+C3 <-> C4: "DNS name"

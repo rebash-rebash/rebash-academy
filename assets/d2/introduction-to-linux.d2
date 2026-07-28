@@ -1,0 +1,46 @@
+direction: down
+
+*: {
+  style: {
+    border-radius: 18
+    font-size: 17
+    bold: true
+    shadow: true
+    stroke-width: 2
+  }
+}
+
+(** -> **)[*]: {
+  style.stroke-width: 2
+  style.font-size: 13
+  style.bold: true
+  style.font-color: "#0f172a"
+}
+
+HW: "Hardware Layer\nCPU · RAM · Disk · NIC" {
+  style.fill: "#dbeafe"
+  style.stroke: "#2563eb"
+  style.font-color: "#1e3a8a"
+}
+FW: "Firmware\nUEFI · BIOS" {
+  style.fill: "#dcfce7"
+  style.stroke: "#16a34a"
+  style.font-color: "#14532d"
+}
+BL: "Bootloader\nGRUB · systemd-boot" {
+  style.fill: "#ffedd5"
+  style.stroke: "#ea580c"
+  style.font-color: "#9a3412"
+}
+KS: "Kernel Space\nscheduling · memory · drivers · syscalls" {
+  style.fill: "#f3e8ff"
+  style.stroke: "#9333ea"
+  style.font-color: "#581c87"
+}
+US: "User Space\nsystemd · services · shell · apps" {
+  style.fill: "#fce7f3"
+  style.stroke: "#db2777"
+  style.font-color: "#9d174d"
+}
+
+HW -> FW -> BL -> KS -> US

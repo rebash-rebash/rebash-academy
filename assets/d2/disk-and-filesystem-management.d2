@@ -1,0 +1,35 @@
+direction: down
+
+Hardware: Hardware {
+        A: "Physical Disk /dev/sda"
+    }
+    Partitions: Partitions {
+        B: "/dev/sda1 boot"
+        C: "/dev/sda2 LVM PV"
+    }
+    LVM: LVM {
+        D: "Volume Group vg0"
+        E: "LV root /dev/vg0/root"
+        F: "LV data /dev/vg0/data"
+    }
+    Filesystems: Filesystems {
+        G: "ext4 on /"
+        H: "xfs on /var"
+    }
+    Mount: Points {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        I: "/"
+        J: "/var"
+    }
+    Hardware.A -> Partitions.B
+    Hardware.A -> Partitions.C
+    Partitions.C -> LVM.D
+    LVM.D -> LVM.E
+    LVM.D -> LVM.F
+    LVM.E -> Filesystems.G
+    LVM.F -> Filesystems.H
+    Filesystems.G -> Mount.I
+    Filesystems.H -> Mount.J

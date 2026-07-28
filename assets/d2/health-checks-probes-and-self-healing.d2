@@ -1,0 +1,36 @@
+direction: down
+
+Node: "Worker Node" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        KL: kubelet
+        Pod: "Pod: web" {
+          style: {
+            fill: "#dcfce7"
+            stroke: "#16a34a"
+          }
+            C: "Container nginx"
+            LP: "Liveness Probe"
+            RP: "Readiness Probe"
+            SP: "Startup Probe"
+        }
+        KL -> LP
+        KL -> RP
+        KL -> SP
+        LP -> C: "HTTP GET /healthz"
+        RP -> C: "HTTP GET /ready"
+        SP -> C: "TCP :8080"
+    }
+    API: "API Server"
+    EP: "Endpoints Controller"
+    SVC: "Service web-svc"
+    ING: Ingress
+    Node.Pod.RP -> API: "Ready=true/false"
+    API -> EP
+    EP -> SVC
+    SVC -> ING
+    RESTART: "Container Restart"
+    Node.Pod.LP -> RESTART: "Fail threshold"
+    RESTART -> Node.Pod.C

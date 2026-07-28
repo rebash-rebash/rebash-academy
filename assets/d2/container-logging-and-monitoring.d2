@@ -1,0 +1,15 @@
+direction: right
+
+APP: "Application\nstdout / stderr"
+    ENGINE: "Docker Engine\nlogging driver"
+    LOCAL: "json-file on disk"
+    SYSLOG: syslog
+    FLUENT: "Fluentd / Fluent Bit"
+    CLOUD: "CloudWatch / Stackdriver"
+    ELK: "Elasticsearch / Loki"
+    APP -> ENGINE
+    ENGINE -> LOCAL
+    ENGINE -> SYSLOG
+    ENGINE -> FLUENT
+    FLUENT -> ELK
+    FLUENT -> CLOUD

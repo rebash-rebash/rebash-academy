@@ -1,0 +1,38 @@
+direction: down
+
+TBD: Trunk-Based {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        MAIN1: "main — always deployable"
+        FB1: "short feature branches\nhours to days"
+        FB1 -> MAIN1
+    }
+    GHF: "GitHub Flow" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        MAIN2: main
+        FB2: "feature branch + PR"
+        FB2 -> MAIN2
+        DEPLOY: "deploy from main"
+        MAIN2 -> DEPLOY
+    }
+    GF: GitFlow {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        MAIN3: main
+        DEV: develop
+        FEAT: "feature/*"
+        REL: "release/*"
+        HOT: "hotfix/*"
+        FEAT -> DEV
+        DEV -> REL
+        REL -> MAIN3
+        HOT -> MAIN3
+        HOT -> DEV
+    }

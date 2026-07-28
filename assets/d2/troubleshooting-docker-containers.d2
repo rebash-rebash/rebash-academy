@@ -1,0 +1,29 @@
+direction: down
+
+SYM: "Symptom\n502 / exit 137 / hang"
+    L1: "Container\nrunning?" {
+      shape: diamond
+    }
+    SYM -> L1
+    EXIT: "Check exit code\nlogs / inspect"
+    L1 -> EXIT: No
+    L2: "App healthy\ninside container?" {
+      shape: diamond
+    }
+    L1 -> L2: Yes
+    APP: "exec + app logs\nconfig / env"
+    L2 -> APP: No
+    L3: "Network path\nOK?" {
+      shape: diamond
+    }
+    L2 -> L3: Yes
+    NET: "port / DNS / firewall"
+    L3 -> NET: No
+    L4: "Storage / host\nOK?" {
+      shape: diamond
+    }
+    L3 -> L4: Yes
+    STORE: "volumes / disk / perms"
+    L4 -> STORE: No
+    EXT: "Upstream dependency"
+    L4 -> EXT: Yes

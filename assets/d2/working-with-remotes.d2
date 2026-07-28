@@ -1,0 +1,10 @@
+direction: right
+
+LOCAL: "Local Repo\nrefs/heads/main"
+    RTB: "Remote-tracking\norigin/main"
+    REMOTE: "Remote Server\nGitHub/GitLab"
+    CI: "CI Pipeline"
+    LOCAL -> REMOTE: "git push"
+    REMOTE -> RTB: "git fetch"
+    RTB -> LOCAL: "git merge / rebase"
+    REMOTE -> CI: webhook

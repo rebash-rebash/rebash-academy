@@ -1,0 +1,11 @@
+direction: right
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+Repo: "Package repository\n(signed metadata)" { style.fill: "#dbeafe"; style.stroke: "#2563eb"; style.font-color: "#1e3a8a" }
+Idx: "Local index\napt/dnf cache" { style.fill: "#dcfce7"; style.stroke: "#16a34a"; style.font-color: "#14532d" }
+Resolve: "Dependency\nresolver" { style.fill: "#ffedd5"; style.stroke: "#ea580c"; style.font-color: "#9a3412" }
+Pkg: "Package files\n+ scripts" { style.fill: "#f3e8ff"; style.stroke: "#9333ea"; style.font-color: "#581c87" }
+Sys: "Filesystem\n/usr /etc /var" { style.fill: "#fce7f3"; style.stroke: "#db2777"; style.font-color: "#9d174d" }
+Repo -> Idx: update
+Idx -> Resolve: install/upgrade
+Resolve -> Pkg: download
+Pkg -> Sys: unpack + configure

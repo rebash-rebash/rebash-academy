@@ -1,0 +1,15 @@
+direction: right
+
+REQ: "kubectl apply"
+    AUTH: Authentication
+    AUTHZ: Authorization
+    ADM: Admission
+    VAL: Validation
+    ETCD: "etcd persist"
+    RESP: "201 Created"
+    REQ -> AUTH
+    AUTH -> AUTHZ
+    AUTHZ -> ADM
+    ADM -> VAL
+    VAL -> ETCD
+    ETCD -> RESP

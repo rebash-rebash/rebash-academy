@@ -1,0 +1,15 @@
+direction: right
+
+RS: ReplicaSet
+    POD: Pods
+    RS -> POD: "desired replicas"
+    KL: kubelet
+    RESTART: "Restart container"
+    KL -> RESTART: "liveness fail"
+    NC: "Node Controller"
+    RESCH: "Reschedule pods"
+    NC -> RESCH: "node NotReady"
+    DC: "Deployment Controller"
+    DC -> RS: rollout
+    PDB: PodDisruptionBudget
+    PDB -> RS: "min available"

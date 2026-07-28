@@ -1,0 +1,23 @@
+direction: down
+
+Sources: Sources {
+        K: Kernel
+        S: "systemd Units"
+        A: "Applications via stdout/stderr"
+    }
+    journald: journald {
+        J: systemd-journald
+        R: "Journal Files\n/run/log/journal\n/var/log/journal"
+    }
+    Consumers: Consumers {
+        C: "journalctl CLI"
+        F: "Forward to SIEM/syslog"
+        M: "Monitoring alerts"
+    }
+    Sources.K -> journald.J
+    Sources.S -> journald.J
+    Sources.A -> journald.J
+    journald.J -> journald.R
+    journald.R -> Consumers.C
+    journald.R -> Consumers.F
+    journald.R -> Consumers.M

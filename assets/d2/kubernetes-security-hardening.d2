@@ -1,0 +1,37 @@
+direction: down
+
+Perimeter: Perimeter {
+        ING: "Ingress + TLS"
+        WAF: "WAF / rate limit"
+    }
+    Admission: Admission {
+        API: "Kubernetes API"
+        KYV: "Kyverno / Gatekeeper"
+        API -> KYV
+    }
+    Namespace: "votestack namespace" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        NETP: NetworkPolicy
+        PSS: "Pod Security: restricted"
+        WEB: web
+        APIP: api
+        WORK: worker
+        WEB -> NETP
+        APIP -> NETP
+        WORK -> NETP
+    }
+    Data: Data {
+        PG: postgres
+        RD: redis
+    }
+    Perimeter.ING -> Namespace.WEB
+    Perimeter.ING -> Namespace.APIP
+    Namespace.APIP -> Data.RD
+    Namespace.APIP -> Data.PG
+    Namespace.WORK -> Data.RD
+    Namespace.WORK -> Data.PG
+    Namespace: Namespace
+    Admission.KYV -> Namespace

@@ -1,0 +1,27 @@
+direction: down
+
+Stage1: "Stage 1: builder" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        B1: "FROM golang:1.22 AS builder"
+        B2: "COPY source"
+        B3: "RUN go build"
+    }
+    Stage2: "Stage 2: runtime" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        R1: "FROM gcr.io/distroless/static"
+        R2: "COPY --from=builder /app/binary"
+        R3: "USER nonroot"
+    }
+    Stage1.B1 -> Stage1.B2
+    Stage1.B2 -> Stage1.B3
+    Stage1.B3 -> Stage2.R2: "artifact only"
+    Stage2.R1 -> Stage2.R2
+    Stage2.R2 -> Stage2.R3
+    IMG: "Final image ~10MB"
+    Stage2.R3 -> IMG

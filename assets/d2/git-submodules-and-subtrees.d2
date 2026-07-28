@@ -1,0 +1,20 @@
+direction: down
+
+SUBMOD: Submodule {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        PARENT: "Parent Repo\nrecords submodule SHA"
+        CHILD: "Child Repo\nseparate .git"
+        PARENT -> CHILD: gitlink
+    }
+    SUBTREE: Subtree {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        PARENT2: "Parent Repo"
+        MERGED: "External code\nmerged into subdir/"
+        PARENT2 -> MERGED
+    }

@@ -1,0 +1,17 @@
+direction: right
+
+DEV: Developer
+    DF: Dockerfile
+    BUILD: "docker build"
+    IMG: Image
+    REG: "Registry\nDocker Hub / ECR / GCR"
+    RUN: "docker run"
+    CONT: Container
+    ORCH: "Orchestrator\nKubernetes / ECS"
+    DEV -> DF
+    DF -> BUILD
+    BUILD -> IMG
+    IMG -> REG
+    REG -> RUN
+    RUN -> CONT
+    CONT -> ORCH

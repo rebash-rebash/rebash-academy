@@ -1,0 +1,31 @@
+direction: right
+
+Capture: "Capture Point" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        NIC: "eth0 / any interface"
+        TD: "tcpdump / dumpcap"
+        PCAP: capture.pcap
+    }
+    Analysis: Analysis {
+        WS: "Wireshark GUI"
+        FILT: "Display Filters"
+        STREAM: "TCP Stream Follow"
+    }
+    Evidence: Evidence {
+        SYN: "SYN retransmits"
+        RST: "RST packets"
+        TLS: "TLS handshake"
+        HTTP: "HTTP requests"
+    }
+    Capture.NIC -> Capture.TD
+    Capture.TD -> Capture.PCAP
+    Capture.PCAP -> Analysis.WS
+    Analysis.WS -> Analysis.FILT
+    Analysis.FILT -> Analysis.STREAM
+    Analysis.STREAM -> Evidence.HTTP
+    Analysis.FILT -> Evidence.SYN
+    Analysis.FILT -> Evidence.RST
+    Analysis.FILT -> Evidence.TLS

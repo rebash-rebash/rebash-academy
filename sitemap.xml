@@ -37,6 +37,30 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/cheatsheets/docker/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/cheatsheets/git/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/cheatsheets/kubernetes/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/cheatsheets/linux/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/cheatsheets/networking/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/cheatsheets/terraform/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/devsecops/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -225,6 +249,30 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
+         <loc>https://academy.rebash.in/interview/docker/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/interview/git/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/interview/kubernetes/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/interview/linux/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/interview/networking/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/interview/terraform/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
          <loc>https://academy.rebash.in/kubernetes/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
@@ -314,6 +362,10 @@
     </url>
     <url>
          <loc>https://academy.rebash.in/learning-paths/</loc>
+         <lastmod>2026-07-28</lastmod>
+    </url>
+    <url>
+         <loc>https://academy.rebash.in/learning-paths/devops-engineer/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>

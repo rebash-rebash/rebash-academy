@@ -1,0 +1,13 @@
+direction: down
+
+FILES: "Working Directory Files"
+    GI: ".gitignore patterns"
+    GA: ".gitattributes rules"
+    STAGE: "git add / staging"
+    REPO: Repository
+    FILES -> GI
+    SKIP: "Not tracked"
+    GI -> SKIP: excluded
+    GI -> STAGE: allowed
+    GA -> STAGE
+    STAGE -> REPO

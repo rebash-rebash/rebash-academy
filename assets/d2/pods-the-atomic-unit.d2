@@ -1,0 +1,39 @@
+direction: down
+
+POD: "Pod — shared context" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        NET: "Network namespace\nIP: 10.244.1.15"
+        VOL: "Shared volumes\nemptyDir / config"
+        MAIN: "Primary container" {
+          style: {
+            fill: "#dcfce7"
+            stroke: "#16a34a"
+          }
+            APP: "app :8080"
+        }
+        SIDE: "Sidecar container" {
+          style: {
+            fill: "#ffedd5"
+            stroke: "#ea580c"
+          }
+            LOG: log-shipper
+        }
+        INIT: "Init containers\nrun sequentially first" {
+          style: {
+            fill: "#f3e8ff"
+            stroke: "#9333ea"
+          }
+            INITC: fetch-config
+        }
+    }
+    NODE: "Worker Node\nkubelet + containerd"
+    SVC: "Service selector\napp=web"
+    POD: POD
+    NODE -> POD
+    POD.INIT.INITC -> POD.MAIN.APP
+    POD.MAIN.APP -> POD.VOL
+    POD.SIDE.LOG -> POD.VOL
+    SVC -> POD.NET

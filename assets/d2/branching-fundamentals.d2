@@ -1,0 +1,15 @@
+direction: right
+
+MAIN: "main → commit C3"
+    FEAT: "feature/waf → commit C2"
+    HOT: "hotfix/ssl → commit C3"
+    C1: "commit C1"
+    C2: C2
+    C1 -> C2
+    C3: C3
+    C2 -> C3
+    FEAT -> C2: {
+      style.stroke-dash: 3
+    }
+    MAIN -> C3
+    HOT -> C3

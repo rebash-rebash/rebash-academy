@@ -1,0 +1,14 @@
+direction: right
+
+REG: "Registry\nDocker Hub / ECR"
+    PULL: "docker pull"
+    LOCAL: "Local Image Store\n/var/lib/docker/image"
+    TAG: "docker tag"
+    RUN: "docker run"
+    CONT: "Container\nwritable layer"
+    REG -> PULL
+    PULL -> LOCAL
+    LOCAL -> TAG
+    TAG -> LOCAL
+    LOCAL -> RUN
+    RUN -> CONT
