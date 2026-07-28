@@ -1,0 +1,25 @@
+direction: down
+
+Host: Host {
+        APP: Application
+        SS: "ss / netstat"
+        IP: "ip command"
+    }
+    Stack: Stack {
+        NIC: "Network Interface eth0"
+        RT: "Routing Table"
+        DNS: "Resolver / systemd-resolved"
+    }
+    External: External {
+        GW: "Default Gateway"
+        DNSS: "DNS Server 8.8.8.8"
+        DEST: "Remote Host"
+    }
+    Host.APP -> Host.SS
+    Host.APP -> Stack.NIC
+    Host.IP -> Stack.NIC
+    Host.IP -> Stack.RT
+    Host.APP -> Stack.DNS
+    Stack.RT -> External.GW
+    Stack.DNS -> External.DNSS
+    External.GW -> External.DEST

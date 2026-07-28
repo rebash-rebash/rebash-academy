@@ -1,0 +1,55 @@
+direction: down
+
+USERS: Clients {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        KUBECTL: "kubectl / CI / GitOps"
+        DASH: "Dashboard / UI"
+    }
+    CP: "Control Plane" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        API: kube-apiserver
+        ETCD: etcd
+        SCHED: kube-scheduler
+        CM: kube-controller-manager
+        CCM: cloud-controller-manager
+        API <-> ETCD
+        SCHED -> API
+        CM -> API
+        CCM -> API
+    }
+    NODE1: "Worker Node" {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        KL1: kubelet
+        KP1: kube-proxy
+        CR1: "container runtime\ncontainerd + runc"
+        POD1: Pods
+        KL1 -> CR1
+        CR1 -> POD1
+        KP1 -> POD1
+    }
+    NODE2: "Worker Node" {
+      style: {
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
+      }
+        KL2: kubelet
+        KP2: kube-proxy
+        CR2: "container runtime"
+        POD2: Pods
+        KL2 -> CR2
+        CR2 -> POD2
+        KP2 -> POD2
+    }
+    USERS.KUBECTL -> CP.API
+    USERS.DASH -> CP.API
+    CP.API -> NODE1.KL1
+    CP.API -> NODE2.KL2

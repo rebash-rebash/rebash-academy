@@ -1,0 +1,11 @@
+direction: right
+
+DEV: Developer
+    KEY: "Signing Key\nGPG or SSH"
+    COMMIT: "Signed Commit"
+    REMOTE: "GitHub / GitLab"
+    VERIFY: "Signature Verification"
+    DEV -> KEY: "git commit -S"
+    KEY -> COMMIT
+    COMMIT -> REMOTE: push
+    REMOTE -> VERIFY

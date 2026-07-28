@@ -1,0 +1,25 @@
+direction: down
+
+Host: Host {
+        ORCH: "Docker Engine / Compose"
+        Container: Container {
+            INIT: "init / tini"
+            APP: Application
+            HC: "HEALTHCHECK probe"
+        }
+        CG: "cgroups limits"
+        LOG: "Log driver"
+    }
+    External: External {
+        LB: "Load balancer / proxy"
+        MON: Monitoring
+    }
+    Host.ORCH -> Host.CG
+    Container: Container
+    Host.ORCH -> Container
+    Host.Container.INIT -> Host.Container.APP
+    Host.Container.HC -> Host.Container.APP
+    Host.Container.APP -> Host.LOG
+    External.LB -> Host.Container.APP
+    External.MON -> Host.Container.HC
+    External.MON -> Host.LOG

@@ -1,0 +1,21 @@
+direction: down
+
+Before: "Before rebase" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        M1: "main: A-B-C"
+        F1: "feature: A-B-D-E"
+    }
+    After: "After rebase feature onto main" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        M2: "main: A-B-C"
+        F2: "feature: A-B-C-D'-E"
+    }
+    Before: Before
+    After: After
+    Before -> After

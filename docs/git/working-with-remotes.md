@@ -43,24 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Understand remote-tracking branches (`origin/main`)
 - [ ] Diagnose push rejection and authentication failures
 
-## Remote Sync Diagram
-
-```d2
-direction: right
-
-LOCAL: "Local Repo\nrefs/heads/main"
-    RTB: "Remote-tracking\norigin/main"
-    REMOTE: "Remote Server\nGitHub/GitLab"
-    CI: "CI Pipeline"
-    LOCAL -> REMOTE: "git push"
-    REMOTE -> RTB: "git fetch"
-    RTB -> LOCAL: "git merge / rebase"
-    REMOTE -> CI: webhook
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Remotes synchronise object databases: fetch updates remote-tracking refs, pull integrates them, and push publishes local commits.
+
+![Architecture diagram for Working with Remotes](../assets/images/working-with-remotes.svg)
 
 ## Theory
 
@@ -184,6 +171,8 @@ git push -u origin main
 git remote -v
 ```
 
+**Expected result:** `git remote -v` shows origin pointing at the bare repo; `main` is pushed and tracking is set.
+
 ### Step 2 – Clone and make divergent changes
 
 **Command:**
@@ -196,6 +185,8 @@ echo "clone change" >> app.txt && git commit -am "feat: clone side"
 git push origin main
 ```
 
+**Expected result:** Clone succeeds; clone-side commit is pushed to the shared bare remote.
+
 ### Step 3 – Fetch and compare on original
 
 **Command:**
@@ -207,6 +198,8 @@ git log main..origin/main --oneline
 git status -sb
 ```
 
+**Expected result:** `git fetch` updates `origin/main`; `main..origin/main` lists the clone commit; status shows behind.
+
 ### Step 4 – Pull with rebase
 
 **Command:**
@@ -216,6 +209,8 @@ echo "local change" >> app.txt && git commit -am "feat: local side"
 git pull --rebase origin main
 git log --oneline --graph -5
 ```
+
+**Expected result:** Rebase pull completes; graph shows local and remote commits in order without a merge commit.
 
 ### Step 5 – Push feature branch
 
@@ -227,6 +222,8 @@ echo "feature" >> feature.txt && git add . && git commit -m "feat: demo feature"
 git push -u origin feature/demo
 git branch -vv
 ```
+
+**Expected result:** `feature/demo` tracks `origin/feature/demo` in `git branch -vv`.
 
 ### Step 6 – Add second remote (upstream simulation)
 
@@ -240,6 +237,8 @@ git push upstream main
 git remote show upstream
 ```
 
+**Expected result:** Prune or status commands reflect remote reality after the lab’s fetch/push steps.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -247,6 +246,9 @@ git remote show upstream
 ```bash
 rm -rf /tmp/git-remote-lab /tmp/remote-origin.git /tmp/remote-clone /tmp/upstream.git
 ```
+
+**Expected result:** Temporary lab directories under `/tmp` are removed.
+
 
 ## Validation
 
@@ -258,9 +260,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Remote add | `git remote -v` lists origin with correct URLs |
+| fetch/pull | Tracking refs update; divergence resolved as lab shows |
+| push | Feature branch appears on the bare/remote lab |
+| Cleanup | `/tmp/git-remote-lab` and bare remote removed |
 
 ## Code Walkthrough
 
@@ -289,12 +292,11 @@ echo "Fork synced with upstream main."
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Verify `git remote -v` before push — wrong remotes leak code to unexpected hosts
+- Prefer `git push --force-with-lease` over `--force` when rewriting is unavoidable
+- Use deploy keys scoped to a single repository for automation
+- Fetch before push on shared branches to avoid non-fast-forward surprises
+- Remove stale remotes and credentials from laptops leaving the organisation
 
 ## Common Mistakes
 

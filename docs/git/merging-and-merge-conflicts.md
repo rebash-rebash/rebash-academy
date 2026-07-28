@@ -44,47 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `git log --merges` to audit merge history
 - [ ] Prevent unnecessary conflicts with communication and small PRs
 
-## Merge Types Diagram
-
-```d2
-direction: down
-
-FF: "Fast-Forward Merge" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        M1: main
-        C1: C1
-        M1 -> C1
-        C2: C2
-        C1 -> C2
-        F1: feature
-        F1 -> C2
-    }
-    TW: "Three-Way Merge" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        M2: main
-        A: A
-        M2 -> A
-        B: B
-        A -> B
-        F2: feature
-        F2 -> A
-        C: C
-        A -> C
-        Merged: "Merge commit M"
-        B -> Merged
-        C -> Merged
-    }
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Merging joins histories. Fast-forward advances a pointer; a true merge creates a commit with two parents when histories diverged.
+
+![Architecture diagram for Merging and Merge Conflicts](../assets/images/merging-and-merge-conflicts.svg)
 
 ## Theory
 
@@ -210,6 +174,8 @@ echo "team: sre" > metadata.yaml
 git add metadata.yaml && git commit -m "chore: update team metadata"
 ```
 
+**Expected result:** Fast-forward or merge commit appears per the step’s strategy.
+
 ### Step 2 – Merge without conflict
 
 **Command:**
@@ -221,6 +187,8 @@ git log --oneline --graph
 ```
 
 **Explanation:** Different files changed — clean three-way merge.
+
+**Expected result:** Conflict markers are present when induced; status lists unmerged paths.
 
 ### Step 3 – Create intentional conflict
 
@@ -237,6 +205,8 @@ git merge feature/conflict || true
 git status
 ```
 
+**Expected result:** Resolved files are committed; merge completes cleanly.
+
 ### Step 4 – Resolve conflict
 
 **Command:**
@@ -249,6 +219,8 @@ git add deploy.yaml
 git commit -m "merge: resolve replica count — compromise at 3"
 git log --oneline --graph -5
 ```
+
+**Expected result:** Abort restores the pre-merge branch tip.
 
 ### Step 5 – Practice abort
 
@@ -264,6 +236,8 @@ git merge --abort
 git status
 ```
 
+**Expected result:** Graph shows the expected merge topology.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -271,6 +245,9 @@ git status
 ```bash
 cd /tmp && rm -rf git-merge-lab
 ```
+
+**Expected result:** Lab repository removed.
+
 
 ## Validation
 
@@ -282,9 +259,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Merge | Fast-forward or merge commit appears as documented |
+| Conflict | Conflict markers resolved; `git status` clean after continue |
+| Abort | Abort path restores pre-merge state when practised |
+| Cleanup | Lab repo removed |
 
 ## Code Walkthrough
 
@@ -311,12 +289,11 @@ git status -sb
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Resolve conflicts consciously; accepting either side blindly can reintroduce vulnerable code
+- Require CI to pass on the merge commit, not only the feature tip
+- Prefer merge strategies your team documents; surprise force-merges bypass review
+- When conflicts touch IAM, network, or auth files, get a second reviewer
+- Do not disable merge queues or required reviews to unblock a broken conflict resolution
 
 ## Common Mistakes
 

@@ -450,9 +450,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Hierarchy map | You can state the role of `/etc`, `/var`, `/home`, `/usr`, and `/tmp` |
+| Navigation | Lab `cd`/`ls` steps show the expected directories on your system |
+| Find usage | Locate at least one config under `/etc` and one log under `/var/log` |
+| Cleanup | Temporary lab files removed |
 
 ## Code Walkthrough
 
@@ -527,12 +528,11 @@ find /var/log -type f -size +100M -exec ls -lh {} \; 2>/dev/null | \
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Restrict write access under `/etc`, `/boot`, and `/usr` — unexpected writes there often mean compromise or misconfiguration
+- Never run untrusted binaries from `/tmp` or world-writable directories; prefer `/opt` or home with execute disabled where possible
+- Mount removable or untrusted media with `noexec,nosuid,nodev` when policy allows
+- Protect `/home` and service data directories with correct ownership; avoid world-writable shared paths
+- Audit SUID/SGID binaries under `/usr` and `/sbin` periodically — unexpected setuid is a privilege-escalation risk
 
 ## Common Mistakes
 

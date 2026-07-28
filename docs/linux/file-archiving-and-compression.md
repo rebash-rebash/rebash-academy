@@ -46,7 +46,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Archiving bundles files; compression shrinks the bundle. Always list before extract when the source is untrusted.
+
+![Architecture diagram for File Archiving and Compression](../assets/images/file-archiving-and-compression.svg)
 
 ## Theory
 
@@ -207,9 +209,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Create | Archive lists (`tar -tzf` / zip listing) match included paths |
+| Extract | Extracted tree matches original lab content |
+| Compress | gzip/xz/zip sizes shrink versus uncompressed input |
+| Cleanup | Archives and extract dirs removed |
 
 ## Code Walkthrough
 
@@ -283,12 +286,11 @@ echo "Restored to $DEST"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Never extract untrusted archives as root; path traversal (`../../etc/cron.d`) is a classic attack
+- Prefer `tar` with `--restrict` / explicit destination directories and inspect `tar -tzf` before extract
+- Encrypt sensitive backups (`gpg` or age) before storing them on shared or cloud object storage
+- Set restrictive permissions on archive files containing configs or keys (`chmod 600`)
+- Verify checksums of downloaded archives before extraction
 
 ## Common Mistakes
 

@@ -1,0 +1,24 @@
+direction: right
+
+Docker: Docker {
+        DR: "docker run"
+        IMG: Image
+        COMP: "Compose service"
+        NET: "bridge / overlay"
+        VOL: "volume / bind mount"
+    }
+    Kubernetes: Kubernetes {
+        POD: Pod
+        DEP: Deployment
+        SVC: Service
+        CNI: "Pod network / CNI"
+        PV: "PV / PVC"
+    }
+    Docker.DR -> Kubernetes.POD
+    Docker.IMG -> Kubernetes.POD
+    Docker.COMP -> Kubernetes.DEP
+    Docker.COMP -> Kubernetes.SVC
+    Docker.NET -> Kubernetes.CNI
+    Docker.VOL -> Kubernetes.PV
+    Kubernetes.DEP -> Kubernetes.POD
+    Kubernetes.SVC -> Kubernetes.POD

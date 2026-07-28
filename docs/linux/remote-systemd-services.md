@@ -47,45 +47,8 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+![Architecture diagram for remote systemd services](../assets/images/remote-systemd-services.svg)
 
-Admin: Workstation {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        A: "systemctl --host"
-        B: "journalctl --host"
-    }
-    SSH: Transport {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        C: "Encrypted SSH Session"
-    }
-    Remote: Server {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        D: "systemd-manager user"
-        E: "polkit / pkaction"
-        F: "systemd PID 1"
-        G: "Unit Files"
-        H: "Running Services"
-    }
-    Admin.A -> SSH.C
-    Admin.B -> SSH.C
-    SSH.C -> Remote.D
-    Remote.D -> Remote.E
-    Remote.E -> Remote.F: authorized
-    I: "Access Denied"
-    Remote.E -> I: denied
-    Remote.F -> Remote.G
-    Remote.F -> Remote.H
-```
 
 ## Theory
 
@@ -369,9 +332,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Remote status | Remote `systemctl status` (via SSH/host) returns for the target unit |
+| Restart | Controlled restart completes; service returns to active |
+| Auth | Commands fail clearly without credentials (no silent success) |
+| Cleanup | No persistent insecure remote access left enabled |
 
 ## Code Walkthrough
 
@@ -439,12 +403,11 @@ done
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Restrict remote management to bastion hosts and SSH keys; never expose D-Bus or systemd remotely without auth
+- Prefer `systemctl --host` / SSH over opening additional management ports
+- Limit which units remote operators may restart via sudoers or polkit rules
+- Audit remote session logs when services are restarted outside change windows
+- Keep unit drop-ins under configuration management so drift is visible
 
 ## Common Mistakes
 

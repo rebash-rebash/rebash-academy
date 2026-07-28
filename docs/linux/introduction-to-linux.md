@@ -50,54 +50,8 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows how hardware, firmware, the kernel, userspace, and your applications relate. Every layer has a distinct responsibility — confusing them is a common source of beginner mistakes.
 
-```d2
-direction: down
+![Architecture diagram for introduction to linux](../assets/images/introduction-to-linux.svg)
 
-*: {
-  style: {
-    border-radius: 18
-    font-size: 17
-    bold: true
-    shadow: true
-    stroke-width: 2
-  }
-}
-
-(** -> **)[*]: {
-  style.stroke-width: 2
-  style.font-size: 13
-  style.bold: true
-  style.font-color: "#0f172a"
-}
-
-HW: "Hardware Layer\nCPU · RAM · Disk · NIC" {
-  style.fill: "#dbeafe"
-  style.stroke: "#2563eb"
-  style.font-color: "#1e3a8a"
-}
-FW: "Firmware\nUEFI · BIOS" {
-  style.fill: "#dcfce7"
-  style.stroke: "#16a34a"
-  style.font-color: "#14532d"
-}
-BL: "Bootloader\nGRUB · systemd-boot" {
-  style.fill: "#ffedd5"
-  style.stroke: "#ea580c"
-  style.font-color: "#9a3412"
-}
-KS: "Kernel Space\nscheduling · memory · drivers · syscalls" {
-  style.fill: "#f3e8ff"
-  style.stroke: "#9333ea"
-  style.font-color: "#581c87"
-}
-US: "User Space\nsystemd · services · shell · apps" {
-  style.fill: "#fce7f3"
-  style.stroke: "#db2777"
-  style.font-color: "#9d174d"
-}
-
-HW -> FW -> BL -> KS -> US
-```
 
 ## Theory
 
@@ -343,9 +297,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Distro identity | `cat /etc/os-release` shows NAME/VERSION; you can name the distro family |
+| Kernel | `uname -r` returns a kernel release string |
+| Boot analysis | `systemd-analyse` (or documented equivalent) completes without error |
+| Lab cleanup | No leftover test files outside your home/lab directory |
 
 ## Code Walkthrough
 
@@ -432,12 +387,11 @@ Use this in deployment scripts to assert the target environment before running A
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer least privilege on lab VMs: use a normal user and escalate with `sudo` only when required
+- Do not expose lab instances on `0.0.0.0` unless the exercise needs inbound access; prefer SSH from a known IP
+- Keep kernel and distribution packages patched — unpatched kernels are a common cloud compromise path
+- Treat `/etc` and boot configuration as change-controlled; back up before editing boot or network files
+- Never paste production credentials into a learning VM that will later be snapshotted or shared
 
 ## Common Mistakes
 

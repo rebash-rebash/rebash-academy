@@ -45,7 +45,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+A process moves through kernel-tracked states while the shell and systemd manage parent/child relationships and signals.
+
+![Architecture diagram for Process Management](../assets/images/process-management.svg)
 
 ## Theory
 
@@ -313,9 +315,11 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Process list | `ps` shows your sleep/lab processes with expected STAT |
+| Signals | SIGTERM stops the lab process; SIGKILL only used as shown |
+| Jobs | `jobs`/`fg`/`bg` control background work as documented |
+| Nice | `nice`/`renice` values visible in `ps` output |
+| Cleanup | No leftover sleep processes from the lab |
 
 ## Code Walkthrough
 
@@ -396,12 +400,11 @@ echo "OK: no zombies"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer SIGTERM and graceful shutdown over SIGKILL for stateful services that flush to disk
+- Do not run application workloads as root; drop privileges in the unit file or container
+- Restrict who can send signals to privileged processes (`kill`, `pkill`) via sudoers and group membership
+- Monitor for unexpected long-lived processes and reverse shells after incidents
+- Cap CPU/memory with cgroups or systemd resource controls so a runaway process cannot starve the host
 
 ## Common Mistakes
 

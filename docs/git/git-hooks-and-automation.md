@@ -43,28 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Bypass hooks safely when necessary (`--no-verify`)
 - [ ] Integrate hooks with Terraform, YAML, and secret scanning
 
-## Hook Lifecycle Diagram
-
-```d2
-direction: down
-
-COMMIT: "git commit"
-    PRE: "pre-commit hook"
-    MSG: "commit-msg hook"
-    POST: "post-commit hook"
-    PUSH: "git push"
-    PREPUSH: "pre-push hook"
-    SERVER: "server-side\npre-receive / update"
-    COMMIT -> PRE
-    PRE -> MSG
-    MSG -> POST
-    PUSH -> PREPUSH
-    PREPUSH -> SERVER
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Hooks run scripts around Git events so teams can enforce policy locally and on the server before history is accepted.
+
+![Architecture diagram for Git Hooks and Automation](../assets/images/git-hooks-and-automation.svg)
 
 ## Theory
 
@@ -228,6 +211,8 @@ EOF
 chmod +x .git/hooks/pre-commit
 ```
 
+**Expected result:** Hook script is executable under `.git/hooks` (or managed hooks path).
+
 ### Step 2 – Test hook blocks bad commit
 
 **Command:**
@@ -237,6 +222,8 @@ echo 'key = "AKIAFAKEKEY123456789"' > bad.tf
 git add bad.tf
 git commit -m "test: should fail" && echo "UNEXPECTED PASS" || echo "Hook blocked commit"
 ```
+
+**Expected result:** Commit or push is blocked/messaged when the hook condition fails.
 
 ### Step 3 – Test hook allows good commit
 
@@ -248,6 +235,8 @@ git add good.tf
 git commit -m "feat: add good terraform"
 git log --oneline -1
 ```
+
+**Expected result:** Successful path allows the commit when inputs are valid.
 
 ### Step 4 – commit-msg hook
 
@@ -266,6 +255,8 @@ echo "bad message" > /tmp/msg.txt
 .git/hooks/commit-msg /tmp/msg.txt && echo pass || echo blocked
 ```
 
+**Expected result:** Sample secret or message lint hook matches the tutorial’s expectation.
+
 ### Step 5 – core.hooksPath approach
 
 **Command:**
@@ -277,6 +268,8 @@ git config core.hooksPath .githooks
 git config core.hooksPath
 ```
 
+**Expected result:** You can explain why `--no-verify` is dangerous in shared repos.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -284,6 +277,9 @@ git config core.hooksPath
 ```bash
 cd /tmp && rm -rf git-hooks-lab
 ```
+
+**Expected result:** Lab hooks removed or disabled.
+
 
 ## Validation
 
@@ -295,9 +291,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Hook fires | Client hook blocks or messages as designed on commit/push |
+| Bypass awareness | You know `--no-verify` risks and did not leave risky hooks installed |
+| Sample script | Hook script is executable and path is correct |
+| Cleanup | Lab hooks removed or disabled |
 
 ## Code Walkthrough
 
@@ -330,12 +327,11 @@ repos:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Never install hooks from untrusted repos without reading them — hooks run as your user
+- Prefer managed hook frameworks (pre-commit) with pinned versions over ad-hoc curl installs
+- Do not put secrets in hook scripts; read them from the environment or a vault at runtime
+- Server-side hooks must validate, not silently mutate, pushed content
+- Fail closed on secret detection — do not allow `--no-verify` in CI
 
 ## Common Mistakes
 

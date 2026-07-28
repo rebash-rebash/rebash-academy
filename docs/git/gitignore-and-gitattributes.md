@@ -42,27 +42,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use global gitignore for personal editor files
 - [ ] Apply linguist and export-ignore attributes for GitHub
 
-## Ignore Flow Diagram
-
-```d2
-direction: down
-
-FILES: "Working Directory Files"
-    GI: ".gitignore patterns"
-    GA: ".gitattributes rules"
-    STAGE: "git add / staging"
-    REPO: Repository
-    FILES -> GI
-    SKIP: "Not tracked"
-    GI -> SKIP: excluded
-    GI -> STAGE: allowed
-    GA -> STAGE
-    STAGE -> REPO
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Ignore rules keep artefacts out of commits; attributes control how Git treats line endings, binaries, and filters for specific paths.
+
+![Architecture diagram for gitignore and gitattributes](../assets/images/gitignore-and-gitattributes.svg)
 
 ## Theory
 
@@ -223,6 +207,8 @@ git status
 
 **Explanation:** `.env` and `.log` ignored; `example.env` tracked via negation.
 
+**Expected result:** Ignored patterns no longer show as untracked in `git status`.
+
 ### Step 2 – Commit allowed files
 
 **Command:**
@@ -233,6 +219,8 @@ git status
 git commit -m "chore: add gitignore and example env"
 git check-ignore -v app.log .env example.env
 ```
+
+**Expected result:** `git rm --cached` untracks a previously committed ignored file without deleting the working copy.
 
 ### Step 3 – Add gitattributes
 
@@ -250,6 +238,8 @@ echo 'echo deploy' >> deploy.sh
 git add .gitattributes deploy.sh && git commit -m "chore: add gitattributes"
 ```
 
+**Expected result:** Negation patterns re-include the documented exception file.
+
 ### Step 4 – Remove accidentally tracked file
 
 **Command:**
@@ -263,6 +253,8 @@ git status
 test ! -f .env && echo "file missing" || echo ".env still on disk"
 ```
 
+**Expected result:** `git check-attr` reports the lab attributes on sample paths.
+
 ### Step 5 – Verify attributes
 
 **Command:**
@@ -272,6 +264,8 @@ git check-attr -a deploy.sh
 git check-attr binary -- *.png 2>/dev/null || echo "no png files"
 ```
 
+**Expected result:** Line-ending or binary attributes behave as configured for the sample file.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -279,6 +273,9 @@ git check-attr binary -- *.png 2>/dev/null || echo "no png files"
 ```bash
 cd /tmp && rm -rf gitignore-lab
 ```
+
+**Expected result:** Lab repository removed.
+
 
 ## Validation
 
@@ -290,9 +287,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Ignore | Ignored files do not appear as untracked after rule add |
+| Cached remove | Previously tracked ignored file leaves the index |
+| Attributes | `git check-attr` shows expected attributes on lab files |
+| Cleanup | Lab repo removed |
 
 ## Code Walkthrough
 
@@ -330,12 +328,11 @@ crash.*.log
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Put `.env`, key material, and `*.tfstate` in `.gitignore` before the first commit
+- Remember ignore rules do not remove already-tracked files — use `git rm --cached`
+- Review `gitattributes` filters so smudge/clean scripts cannot exfiltrate data
+- Do not force-add ignored secret files with `-f` unless you fully understand the risk
+- Keep ignore templates under review so new artefact types (SBOM caches, coverage) stay out
 
 ## Common Mistakes
 

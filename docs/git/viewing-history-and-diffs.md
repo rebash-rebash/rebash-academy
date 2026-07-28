@@ -43,31 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Visualize history graphs for merge-heavy repos
 - [ ] Export diffs for review and compliance archives
 
-## History Navigation Diagram
-
-```d2
-direction: down
-
-HEAD: "HEAD / main"
-    C1: "commit N\nlatest fix"
-    C2: "commit N-1\nfeature add"
-    C3: "commit N-2\ninitial"
-    HEAD -> C1
-    C1 -> C2
-    C2 -> C3
-    LOG: "git log"
-    LOG -> HEAD
-    DIFF: "git diff C2 C1"
-    DIFF -> C1
-    BLAME: "git blame file"
-    BLAME -> C2
-    SHOW: "git show C1"
-    SHOW -> C1
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+History commands walk the commit graph and diffs compare trees so you can answer what changed, when, and by whom.
+
+![Architecture diagram for Viewing History and Diffs](../assets/images/viewing-history-and-diffs.svg)
 
 ## Theory
 
@@ -198,6 +178,8 @@ echo "memory: 512Mi" >> deploy.yaml && git add . && git commit -m "feat: add mem
 git log --oneline
 ```
 
+**Expected result:** `git log --oneline` lists the lab commits in order.
+
 ### Step 2 – Graph and decorated log
 
 **Command:**
@@ -206,6 +188,8 @@ git log --oneline
 git log --graph --decorate --oneline --all
 git log --stat -2
 ```
+
+**Expected result:** Graph or decorate options show branch tips as expected.
 
 ### Step 3 – Compare commits
 
@@ -218,6 +202,8 @@ git diff HEAD~1 HEAD -- deploy.yaml
 
 **Explanation:** `HEAD~2` means two commits before HEAD.
 
+**Expected result:** `git show` / `git diff` include the lab file hunk.
+
 ### Step 4 – git show and file at commit
 
 **Command:**
@@ -226,6 +212,8 @@ git diff HEAD~1 HEAD -- deploy.yaml
 git show HEAD~1 -- deploy.yaml
 git show HEAD~2:deploy.yaml
 ```
+
+**Expected result:** Path-limited log only shows commits touching that path.
 
 ### Step 5 – git blame
 
@@ -236,6 +224,8 @@ git blame deploy.yaml
 git blame -L 1,3 deploy.yaml
 ```
 
+**Expected result:** Blame or pickaxe search returns the commit that introduced the lab string.
+
 ### Step 6 – Pickaxe search
 
 **Command:**
@@ -245,6 +235,8 @@ git log -S "replicas: 3" --oneline
 git log --grep="scale" --oneline
 ```
 
+**Expected result:** Range comparisons (`main..feature` style) list only divergent commits.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -252,6 +244,9 @@ git log --grep="scale" --oneline
 ```bash
 cd /tmp && rm -rf git-history-lab
 ```
+
+**Expected result:** Lab repository removed.
+
 
 ## Validation
 
@@ -263,9 +258,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| log | Oneline/graph output shows expected commits |
+| show/diff | Patch output includes the lab file change |
+| blame/pickaxe | At least one history search command returns the lab commit |
+| Cleanup | Lab repo removed |
 
 ## Code Walkthrough
 
@@ -297,12 +293,11 @@ git log --since="$SINCE" \
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Be careful pasting `git show` output into tickets — diffs may include secrets or PII
+- Limit who can clone repositories that contain historical credentials even after rotation
+- Prefer `git log -p` locally over exporting full patch series to untrusted channels
+- When reviewing binary diffs, confirm they are expected artefacts, not injected payloads
+- Use signed tags for release points you will audit later
 
 ## Common Mistakes
 

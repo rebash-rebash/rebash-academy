@@ -44,52 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Document team workflow in CONTRIBUTING.md
 - [ ] Migrate gradually between workflow models
 
-## Workflow Comparison Diagram
-
-```d2
-direction: down
-
-TBD: Trunk-Based {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        MAIN1: "main — always deployable"
-        FB1: "short feature branches\nhours to days"
-        FB1 -> MAIN1
-    }
-    GHF: "GitHub Flow" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        MAIN2: main
-        FB2: "feature branch + PR"
-        FB2 -> MAIN2
-        DEPLOY: "deploy from main"
-        MAIN2 -> DEPLOY
-    }
-    GF: GitFlow {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        MAIN3: main
-        DEV: develop
-        FEAT: "feature/*"
-        REL: "release/*"
-        HOT: "hotfix/*"
-        FEAT -> DEV
-        DEV -> REL
-        REL -> MAIN3
-        HOT -> MAIN3
-        HOT -> DEV
-    }
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Team workflows constrain which branches accept direct commits and how changes promote from development to release.
+
+![Architecture diagram for Advanced Git Workflows](../assets/images/advanced-git-workflows.svg)
 
 ## Theory
 
@@ -236,6 +195,8 @@ git tag -a v1.1.0 -m "Release 1.1.0"
 git log --oneline --graph --decorate -5
 ```
 
+**Expected result:** Branches match the workflow under test (feature, release, or trunk).
+
 ### Step 2 – Simulate hotfix (GitFlow-style)
 
 **Command:**
@@ -247,6 +208,8 @@ git switch main && git merge --no-ff hotfix/security-patch -m "Merge hotfix: sec
 git tag -a v1.0.1 -m "Hotfix 1.0.1"
 git log --oneline --graph --all --decorate -8
 ```
+
+**Expected result:** Promotion or release tag step succeeds.
 
 ### Step 3 – Trunk-based short branch
 
@@ -262,6 +225,8 @@ git branch -d fix/typo
 git log --oneline -3
 ```
 
+**Expected result:** You can point to which branches are protected from force-push.
+
 ### Step 4 – Clean up
 
 **Command:**
@@ -269,6 +234,9 @@ git log --oneline -3
 ```bash
 cd /tmp && rm -rf git-workflow-lab
 ```
+
+**Expected result:** Lab remotes cleaned up.
+
 
 ## Validation
 
@@ -280,9 +248,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Workflow | Chosen workflow (GitHub Flow/GitFlow/trunk) demonstrated with branches |
+| Promotion | Tag or release step completed as documented |
+| Protection | You can state which branches forbid force-push |
+| Cleanup | Lab remotes/repos removed |
 
 ## Code Walkthrough
 
@@ -310,12 +279,11 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Document which branches are force-pushable; treat `main` and release lines as immutable history
+- Separate build identities from human identities for auditable releases
+- Gate promotion between environments on signed tags or attested builds
+- Avoid embedding long-lived cloud keys in workflow files — use OIDC federation
+- Review monorepo path filters so skipped CI cannot bypass security checks
 
 ## Common Mistakes
 

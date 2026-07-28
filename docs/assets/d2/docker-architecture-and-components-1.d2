@@ -1,0 +1,9 @@
+direction: up
+
+RW: "Container Layer\nread-write · ephemeral"
+    L3: "Layer 3 — app code"
+    L2: "Layer 2 — dependencies"
+    L1: "Layer 1 — base OS"
+    RW -> L3
+    L3 -> L2
+    L2 -> L1

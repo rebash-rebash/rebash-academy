@@ -46,7 +46,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Package managers resolve dependencies from configured repositories, verify signatures, then install files and run maintainer scripts.
+
+![Architecture diagram for Package Management](../assets/images/package-management.svg)
 
 ## Theory
 
@@ -414,9 +416,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Refresh | Package index update completes without auth errors |
+| Install/remove | Lab package installs and removes cleanly |
+| Query | `apt`/`dnf`/`rpm` query shows package metadata |
+| Cleanup | Lab-only packages removed; system left usable |
 
 ## Code Walkthrough
 
@@ -505,12 +508,11 @@ exclude=kernel* linux-firmware
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Only enable package repositories you trust; verify GPG keys before `apt`/`dnf` installs from third parties
+- Prefer distribution packages or signed vendor repos over unsigned `.deb`/`.rpm` from random websites
+- Pin critical packages in production so unattended upgrades cannot silently break APIs
+- Review `apt`/`dnf` history after automated upgrades; unexpected package removal is a red flag
+- Do not install build-essential toolchains on hardened production hosts unless required
 
 ## Common Mistakes
 

@@ -1,0 +1,10 @@
+direction: right
+
+PEND: Pending
+    RUN: Running
+    SUCC: Succeeded
+    FAIL: Failed
+    PEND -> RUN
+    RUN -> SUCC
+    RUN -> FAIL
+    PEND -> FAIL

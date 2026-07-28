@@ -52,37 +52,8 @@ By the end of this tutorial, you will be able to:
 
 The diagram below contrasts centralized and distributed version control. Understanding this distinction explains why Git works offline, why every clone is a full backup, and why CI runners only need network access during push/pull — not for every local commit.
 
-```d2
-direction: down
+![Architecture diagram for introduction to git and version control](../assets/images/introduction-to-git-and-version-control.svg)
 
-CVCS: "Centralized VCS (e.g., SVN)" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        SVN_SRV: "Central Server\nsingle source of truth"
-        DEV_A: "Developer A\nworking copy only"
-        DEV_B: "Developer B\nworking copy only"
-        DEV_A -> SVN_SRV: "commit / update"
-        DEV_B -> SVN_SRV: "commit / update"
-    }
-    DVCS: "Distributed VCS (Git)" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        REMOTE: "Remote — GitHub / GitLab / Bitbucket"
-        DEV_C: "Developer C\nfull local repo"
-        DEV_D: "Developer D\nfull local repo"
-        CI: "CI Runner\nfull clone"
-        DEV_C <-> REMOTE: "push / pull"
-        DEV_D <-> REMOTE: "push / pull"
-        CI <-> REMOTE: "fetch / clone"
-        DEV_C -> DEV_C: "local commits\nno network" {
-          style.stroke-dash: 3
-        }
-    }
-```
 
 ## Theory
 
@@ -182,22 +153,8 @@ A **tag** marks a specific commit — usually a release: `v1.4.2`, `prod-2026-07
 
 ### Git in the DevOps Toolchain
 
-```d2
-direction: right
+![Architecture diagram for introduction to git and version control](../assets/images/introduction-to-git-and-version-control-1.svg)
 
-DEV: "Developer / Engineer"
-    GIT: "Git Repository"
-    PR: "Pull Request / MR"
-    CI: "CI Pipeline\nGitHub Actions / GitLab CI"
-    CD: "CD / GitOps\nArgo CD / Flux"
-    PROD: Production
-    DEV -> GIT: "commit / push"
-    GIT -> PR
-    PR -> CI: trigger
-    CI -> GIT: "pass + merge"
-    GIT -> CD: sync
-    CD -> PROD
-```
 
 Every arrow depends on Git. Terraform Cloud reads VCS webhooks. Ansible Tower pulls playbooks from Git. Kubernetes operators watch Git branches. Learning Git is prerequisite to every other DevOps skill in this academy.
 
@@ -356,6 +313,9 @@ rm -rf git-explore
 
 **Explanation:** Remove temporary clones after exploration. Never store credentials in world-readable `/tmp` directories.
 
+**Expected result:** Lab repository cleaned up; you can explain commit/branch/remote without notes.
+
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -366,9 +326,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Concepts | You can explain commit, branch, remote in your own words |
+| Lab repo | Local repo exists with at least one commit from the lab |
+| Status | `git status` is clean after the final lab step |
+| Cleanup | Temporary lab directory removed if required |
 
 ## Code Walkthrough
 
@@ -433,12 +394,11 @@ Make executable: `chmod +x ~/bin/git-preflight.sh && ~/bin/git-preflight.sh`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Treat every Git remote as a potential leak path — never commit secrets, even in private repos
+- Prefer signed commits and protected branches once you move beyond personal labs
+- Use dedicated machine users or deploy keys with least privilege for automation
+- Review `.gitignore` early so build artefacts and `.env` files never enter history
+- Assume pushed history is durable; force-pushing shared branches destroys auditability
 
 ## Common Mistakes
 

@@ -1,0 +1,18 @@
+direction: right
+
+start: "" {
+  shape: circle
+}
+Created: Created
+start -> Created: "docker create"
+Running: Running
+Created -> Running: "docker start / docker run"
+Paused: Paused
+Running -> Paused: "docker pause"
+Paused -> Running: "docker unpause"
+Stopped: Stopped
+Running -> Stopped: "docker stop / exit"
+Stopped -> Running: "docker start"
+Removed: Removed
+Stopped -> Removed: "docker rm"
+Running -> Removed: "docker rm -f"

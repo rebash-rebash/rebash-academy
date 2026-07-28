@@ -1,0 +1,19 @@
+direction: right
+
+shape: sequence_diagram
+
+U: kubectl
+A: "API Server"
+E: etcd
+S: Scheduler
+K: kubelet
+R: "container runtime"
+U -> A: "POST Pod object"
+A -> E: "persist Pod"
+A -> U: "201 Created"
+S -> A: "watch unscheduled Pods"
+S -> A: "PATCH nodeName onto Pod"
+K -> A: "watch Pods for this node"
+K -> R: CreateContainer(s)
+R -> K: "container started"
+K -> A: "update Pod status Running"

@@ -1,0 +1,59 @@
+direction: down
+
+Internet: Internet {
+        Attacker: "Attackers / Bots"
+        Users: "Legitimate Users"
+    }
+    Edge: "Edge Protection" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        DDoS: "DDoS Mitigation\nShield / Cloudflare / WAF"
+        WAF: "Web Application Firewall"
+        LB: "Load Balancer — TLS termination"
+    }
+    VPC: "Segmented VPC" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        DMZ: "Public Tier" {
+          style: {
+            fill: "#ffedd5"
+            stroke: "#ea580c"
+          }
+            Proxy: "Reverse Proxy / Ingress"
+        }
+        AppTier: "Application Tier — Private" {
+          style: {
+            fill: "#f3e8ff"
+            stroke: "#9333ea"
+          }
+            App: "App Servers\nSG: 443 from DMZ only"
+        }
+        DataTier: "Data Tier — Private" {
+          style: {
+            fill: "#fce7f3"
+            stroke: "#db2777"
+          }
+            DB: "Database\nSG: 5432 from App only"
+        }
+    }
+    Observability: "Audit & Monitoring" {
+      style: {
+        fill: "#e0f2f1"
+        stroke: "#00796b"
+      }
+        Flow: "VPC Flow Logs"
+        SIEM: "SIEM / CloudWatch / Splunk"
+    }
+    Internet.Attacker -> Edge.DDoS
+    Internet.Users -> Edge.DDoS
+    Edge.DDoS -> Edge.WAF
+    Edge.WAF -> Edge.LB
+    Edge.LB -> VPC.DMZ.Proxy
+    VPC.DMZ.Proxy -> VPC.AppTier.App
+    VPC.AppTier.App -> VPC.DataTier.DB
+    Observability.Flow -> Observability.SIEM
+    Edge.LB -> Observability.SIEM

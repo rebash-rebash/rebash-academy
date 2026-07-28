@@ -46,7 +46,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Schedulers wake jobs by calendar or interval; cron and systemd timers both end in a user or system command with logs you can audit.
+
+![Architecture diagram for Cron and Task Scheduling](../assets/images/cron-and-task-scheduling.svg)
 
 ## Theory
 
@@ -253,6 +255,9 @@ crontab -l | grep -v cron-test.log | grep -v backup-lab | crontab -
 crontab -l 2>/dev/null || echo "Crontab cleared"
 ```
 
+**Expected result:** Command completes successfully; output matches the tutorial intent for this step.
+
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -263,9 +268,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Crontab | `crontab -l` shows the lab schedule entries |
+| Execution | Test job appended log lines (or manual run succeeded) |
+| Timers | `systemctl list-timers` shows lab timer if you created one |
+| Cleanup | Lab crontab lines and optional timer units removed |
 
 ## Code Walkthrough
 
@@ -345,12 +351,11 @@ WantedBy=timers.target
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Cron jobs inherit a minimal environment — never hard-code secrets in crontab lines; use locked credential files
+- Redirect stdout/stderr to logs with restricted permissions; cron mail can leak sensitive output
+- Prefer dedicated service users for scheduled jobs rather than root whenever possible
+- Use absolute paths in crontab to avoid PATH-based binary substitution
+- Audit `/etc/cron.*` and user crontabs after incidents; unexpected jobs are a common persistence mechanism
 
 ## Common Mistakes
 

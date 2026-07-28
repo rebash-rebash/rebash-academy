@@ -44,25 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Understand Sigstore/gitsign as cloud-native alternative
 - [ ] Respond to leaked credential incidents in Git history
 
-## Signing Flow Diagram
-
-```d2
-direction: right
-
-DEV: Developer
-    KEY: "Signing Key\nGPG or SSH"
-    COMMIT: "Signed Commit"
-    REMOTE: "GitHub / GitLab"
-    VERIFY: "Signature Verification"
-    DEV -> KEY: "git commit -S"
-    KEY -> COMMIT
-    COMMIT -> REMOTE: push
-    REMOTE -> VERIFY
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Signed commits and tags bind identity cryptography to history so reviewers can verify authorship on protected branches.
+
+![Architecture diagram for Signed Commits and Git Security](../assets/images/signed-commits-and-git-security.svg)
 
 ## Theory
 
@@ -210,6 +196,8 @@ git config commit.gpgsign true
 git config tag.gpgsign true
 ```
 
+**Expected result:** Signing key/SSH key is configured for the lab identity.
+
 ### Step 2 – Create signed commit
 
 **Command:**
@@ -223,6 +211,8 @@ git log --show-signature -1 2>&1 | head -15
 
 **Explanation:** Without key on GitHub, shows "Good signature" locally but unverified on platform.
 
+**Expected result:** `git log --show-signature` reports a good signature on the signed commit.
+
 ### Step 3 – Verify signature status
 
 **Command:**
@@ -234,6 +224,8 @@ git log --format="%H %G? %aN" -1
 
 **Explanation:** `%G?` shows signature status: G=good, N=none, B=bad.
 
+**Expected result:** Unsigned comparison commit is clearly unmarked or unverified.
+
 ### Step 4 – Signed tag
 
 **Command:**
@@ -242,6 +234,8 @@ git log --format="%H %G? %aN" -1
 git tag -s v0.1.0 -m "Signed release 0.1.0"
 git tag -v v0.1.0 2>&1 | head -10
 ```
+
+**Expected result:** Tag signing (if practised) verifies with `git tag -v`.
 
 ### Step 5 – Simulate unsigned commit rejection policy
 
@@ -255,6 +249,8 @@ git log --format="%H %G?" -2
 git config commit.gpgsign true
 ```
 
+**Expected result:** Forge UI or local verify step matches “verified” expectations.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -262,6 +258,9 @@ git config commit.gpgsign true
 ```bash
 cd /tmp && rm -rf git-sign-lab sign_key sign_key.pub
 ```
+
+**Expected result:** Test key material not committed; lab repo cleaned.
+
 
 ## Validation
 
@@ -273,9 +272,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Sign | `git log --show-signature` reports a good signature on lab commits |
+| Config | `commit.gpgsign` or SSH signing config matches the lab |
+| Verify | Forged/unsigned comparison behaves as documented |
+| Cleanup | Test keys handled safely; no private keys committed |
 
 ## Code Walkthrough
 
@@ -307,12 +307,11 @@ echo "All commits in range are signed."
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Protect signing keys with passphrases or hardware tokens; never commit private keys
+- Enforce verified signatures on protected branches in GitHub/GitLab settings
+- Rotate compromised signing keys and re-sign tags that matter for releases
+- Prefer SSH or GPG signing consistently across the team to avoid unverified noise
+- Treat unsigned commits on release tags as suspicious until explained
 
 ## Common Mistakes
 

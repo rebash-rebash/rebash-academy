@@ -1,0 +1,15 @@
+direction: right
+
+USER: "User — docker group"
+    CLI: "Docker CLI\n/usr/bin/docker"
+    SOCK: "/var/run/docker.sock"
+    DAEMON: "dockerd\nsystemd service"
+    CONTAINERD: containerd
+    RUNC: runc
+    CONT: Containers
+    USER -> CLI
+    CLI -> SOCK
+    SOCK -> DAEMON
+    DAEMON -> CONTAINERD
+    CONTAINERD -> RUNC
+    RUNC -> CONT

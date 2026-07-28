@@ -1,0 +1,44 @@
+direction: right
+
+Dev: "Developer workflow" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        DEV: Developer
+        APP: "App repo"
+        DEV -> APP: "PR + merge"
+    }
+    CI: "Continuous Integration" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        BUILD: "Build + test"
+        SCAN: "Trivy scan"
+        PUSH: "Push to registry"
+        APP -> BUILD
+        BUILD -> SCAN
+        SCAN -> PUSH
+    }
+    GitOps: "GitOps repo" {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        MANI: "Manifests / Helm values"
+        PUSH -> MANI: "update image tag"
+    }
+    Cluster: "Kubernetes cluster" {
+      style: {
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
+      }
+        ARGO: "Argo CD / Flux"
+        K8S: Workloads
+        MANI -> ARGO
+        ARGO -> K8S: reconcile
+    }
+    REG: "Container registry"
+    CI.PUSH -> REG
+    Cluster.K8S -> REG: pull

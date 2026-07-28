@@ -42,76 +42,81 @@ By the end of this tutorial, you will be able to:
 - [ ] Backport hotfixes to release branches
 - [ ] Understand reflog expiration and limitations
 
-## Cherry-pick and Reflog Diagram
-
-```d2
-direction: right
-
-MAIN: "main: commit FIX"
-    REL: "release/2.1"
-    MAIN -> REL: "git cherry-pick FIX"
-    HEAD: "HEAD moves"
-    REFLOG: "reflog\n90 day journal"
-    HEAD -> REFLOG
-    RECOVER: "Recovered state"
-    REFLOG -> RECOVER: "git reset --hard SHA"
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Cherry-pick copies a commit’s patch onto another branch; reflog records local HEAD movements so you can recover after resets and deleted branches.
+
+![Architecture diagram for Cherry-pick and Reflog](../assets/images/cherry-pick-and-reflog.svg)
 
 ## Theory
 
 ### git cherry-pick
 
-Applies the **patch** of a specific commit onto current branch — new commit, new SHA, same diff (usually):
+Cherry-pick applies the **patch** of a specific commit onto the current branch. Git creates a **new** commit with a new SHA and (usually) the same tree diff relative to the new parent:
 
 ```bash
 git switch release/2.1
 git cherry-pick abc1234
 ```
 
+The original commit remains on its branch. You now have two commits that introduce the same change — useful for backports, dangerous if you later merge both lines without noticing duplicates.
+
 Use cases:
 
-- **Hotfix backport** — fix on main → cherry-pick to release branch
-- **Selective feature** — one commit from large feature branch
-- **Recover single commit** from abandoned branch
+- **Hotfix backport** — fix on `main` → cherry-pick onto a maintained release branch
+- **Selective feature** — lift one commit from a large feature branch without taking unrelated work
+- **Recover a single commit** from an abandoned or rewritten branch tip
 
-### Cherry-pick vs Merge
+Prefer cherry-picking **reviewed** commits only. Backporting an unreviewed emergency patch can spread a vulnerability across every release line you touch.
 
-| Aspect | Cherry-pick | Merge |
-|--------|-------------|-------|
-| Scope | Single commit(s) | Entire branch |
-| History | Linear add-on | Merge commit or FF |
-| Duplicates | Same change, two SHAs | Single integration point |
+### How the Patch Is Computed
 
-Cherry-picked commits appear twice in history (different SHAs) — document in release notes.
+Git reconstitutes the diff between the cherry-picked commit and its parent, then applies that diff to `HEAD`. That is why cherry-pick can conflict even when merge would succeed: the surrounding context on the target branch may differ, or an earlier dependency commit may be missing.
+
+When cherry-picking a sequence, apply commits in chronological order so each patch sees the prerequisites introduced by earlier picks.
+
+### Cherry-pick vs Merge vs Rebase
+
+| Aspect | Cherry-pick | Merge | Rebase |
+|--------|-------------|-------|--------|
+| Scope | Selected commit(s) | Entire branch | Replay branch tip |
+| History | Extra commit(s) on target | Merge commit or fast-forward | Rewritten SHAs on source branch |
+| Duplicates | Same change, two SHAs | Single integration point | Usually no duplicate once replayed |
+| Shared branches | Safe on release lines | Preferred for integrating features | Avoid on published history |
+
+Cherry-picked commits appear twice in history (different SHAs) — document the source SHA in release notes. Use `-x` so the commit message records the origin:
+
+```bash
+git cherry-pick -x abc1234
+```
 
 ### Conflict Resolution
 
-Same as merge/rebase:
+Conflict handling matches merge and rebase workflows:
 
 ```bash
-# fix conflicts
+# fix conflicts in the working tree
 git add resolved-file
 git cherry-pick --continue
 git cherry-pick --abort
 git cherry-pick --skip
 ```
 
+Inspect `git status` carefully: you may be mid-sequence (`cherry-picking` multiple SHAs). Aborting drops the whole in-progress sequence, not only the current commit.
+
 ### Cherry-pick Range
 
 ```bash
 git cherry-pick A..B      # commits after A through B (exclusive A)
 git cherry-pick A^..B     # include A
+git cherry-pick C1 C2 C3  # explicit list, oldest first recommended
 ```
 
-Order matters — applies oldest first.
+Order matters — Git applies oldest first when you pass a range. For hotfixes, an explicit list of SHAs from the incident ticket is clearer than an open-ended range.
 
 ### Cherry-pick Merge Commits
 
-Requires `-m` to specify mainline parent — rarely needed; prefer cherry-picking individual commits from feature branch.
+Cherry-picking a merge commit requires `-m` to choose the mainline parent. Prefer cherry-picking the individual non-merge commits from the feature branch instead — the intent is clearer in review and less likely to drag unintended parents.
 
 ### No-commit Cherry-pick
 
@@ -119,7 +124,11 @@ Requires `-m` to specify mainline parent — rarely needed; prefer cherry-pickin
 git cherry-pick -n abc1234   # apply without committing
 ```
 
-Useful to combine multiple picks into one commit.
+Useful when you must combine several picks, amend a message for the release branch, or run tests before creating the backport commit.
+
+### Empty Cherry-picks
+
+If the change is already present (perhaps via an earlier backport), Git may stop with an empty cherry-pick. Use `--skip` when that is expected, or `git cherry` beforehand to see which patches are still missing.
 
 ### Reflog — Git's Safety Journal
 
@@ -132,7 +141,7 @@ git reflog show main
 
 Format: `SHA HEAD@{n}: action: description`
 
-Entries include commits reachable even after reset — **local only**, not pushed to remote.
+Entries include commits that remain reachable from those recorded tips even after a hard reset — but reflog is **local only**. It is not pushed to the remote and is not a substitute for regular pushes of important work.
 
 ### Recovery Scenarios
 
@@ -157,19 +166,21 @@ git reflog
 git reset --hard HEAD@{1}   # before rebase started
 ```
 
+After recovery, push with care. If the branch was already published, prefer `git push --force-with-lease` only when the team expects a rewrite — release branches often forbid force-push entirely, in which case recover onto a new branch name and open a PR.
+
 ### Reflog Expiration
 
-Default: 90 days for reachable commits, 30 days for unreachable. Configurable via `gc.reflogExpire`. Don't rely on reflog as permanent backup.
+Defaults are typically 90 days for reachable entries and 30 days for unreachable ones, controlled by `gc.reflogExpire` and `gc.reflogExpireUnreachable`. Do not rely on reflog as a permanent backup — push important commits and tags to a remote you control.
 
 ### git cherry — Already Applied?
 
-Check if commit exists on branch:
+Check whether equivalent patches from a topic branch already exist on another branch:
 
 ```bash
 git cherry main feature-branch
 ```
 
-`+` means not on main; `-` means equivalent patch present.
+`+` means the patch is not on `main`; `-` means an equivalent patch is already present. Use this before mass backports so you do not create noisy empty or duplicate cherry-picks.
 
 ## Hands-on Lab
 
@@ -189,6 +200,8 @@ FIX_SHA=$(git rev-parse HEAD)
 git log --oneline --all
 ```
 
+**Expected result:** `git log --oneline --all` shows `main` with the fix commit and `release/2.0` at the baseline.
+
 ### Step 2 – Cherry-pick fix to release
 
 **Command:**
@@ -199,6 +212,8 @@ git cherry-pick "$FIX_SHA"
 git log --oneline --graph --all
 cat patch.log
 ```
+
+**Expected result:** Cherry-pick creates a new commit on `release/2.0`; `patch.log` contains the fix text.
 
 ### Step 3 – Simulate disaster and recover
 
@@ -214,6 +229,8 @@ git cherry-pick "$RECOVER"
 git log --oneline -3
 ```
 
+**Expected result:** Reflog still lists the deleted branch tip; recovered branch contains the cherry-picked fix.
+
 ### Step 4 – Reflog after hard reset
 
 **Command:**
@@ -226,6 +243,8 @@ git log --oneline -2
 git reset --hard "$TIP"
 git log --oneline -3
 ```
+
+**Expected result:** Hard reset moves HEAD back; second hard reset restores the tip via the saved SHA.
 
 ### Step 5 – Cherry-pick conflict
 
@@ -241,6 +260,8 @@ git status
 git cherry-pick --abort 2>/dev/null || true
 ```
 
+**Expected result:** `git status` reports a cherry-pick conflict (or abort leaves a clean tree after `--abort`).
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -248,6 +269,9 @@ git cherry-pick --abort 2>/dev/null || true
 ```bash
 cd /tmp && rm -rf git-cherry-lab
 ```
+
+**Expected result:** Lab directory `/tmp/git-cherry-lab` is gone.
+
 
 ## Validation
 
@@ -259,9 +283,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Cherry-pick | Fix commit appears on release branch with new SHA |
+| Reflog recover | Deleted/reset commit recoverable via reflog SHA |
+| Conflict | Cherry-pick conflict detected and aborted/resolved as lab shows |
+| Cleanup | `/tmp/git-cherry-lab` removed |
 
 ## Code Walkthrough
 
@@ -293,12 +318,11 @@ echo "Backported $COMMIT to $RELEASE"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Cherry-pick only reviewed commits; backporting an unreviewed hotfix can spread a vulnerability
+- Use `cherry-pick -x` so audit trails show the source SHA
+- Reflog is local — do not rely on it as a backup for commits never pushed
+- Restrict who can force-update release branches after recovery resets
+- Scrub recovered branches for secrets before publishing them again
 
 ## Common Mistakes
 

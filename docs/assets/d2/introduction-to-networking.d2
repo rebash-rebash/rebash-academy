@@ -1,0 +1,45 @@
+direction: down
+
+LAN: "Office LAN" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        PC1: Workstation
+        PC2: "Developer Laptop"
+        SW: "Layer 2 Switch"
+        PC1 -> SW
+        PC2 -> SW
+    }
+    EDGE: "Network Edge" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        FW: Firewall
+        RTR: "Router / Gateway"
+        SW -> FW
+        FW -> RTR
+    }
+    WAN: "WAN / Internet" {
+      style: {
+        fill: "#ffedd5"
+        stroke: "#ea580c"
+      }
+        ISP: "ISP Backbone"
+        RTR -> ISP
+    }
+    CLOUD: "Cloud VPC" {
+      style: {
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
+      }
+        IGW: "Internet Gateway"
+        ALB: "Load Balancer"
+        APP: "App Servers"
+        DB: Database
+        ISP -> IGW
+        IGW -> ALB
+        ALB -> APP
+        APP -> DB
+    }

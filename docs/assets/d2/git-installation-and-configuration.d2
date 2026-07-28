@@ -1,0 +1,17 @@
+direction: down
+
+ENV: "Environment variables\nGIT_AUTHOR_NAME, GIT_DIR, ..."
+    SYS: "System config\n/etc/gitconfig"
+    GLOBAL: "Global config\n~/.gitconfig"
+    LOCAL: "Local config\n.git/config"
+    CMD: "Command-line flags\n--author, -c key=value"
+    SYS -> GLOBAL
+    GLOBAL -> LOCAL
+    LOCAL -> ENV
+    ENV -> CMD
+    EFFECT: "Effective config value"
+    CMD -> EFFECT: "wins for this invocation"
+    LOCAL -> EFFECT
+    GLOBAL -> EFFECT
+    SYS -> EFFECT
+    ENV -> EFFECT

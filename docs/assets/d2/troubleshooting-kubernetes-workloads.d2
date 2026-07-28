@@ -1,0 +1,26 @@
+direction: down
+
+SYM: "Symptom\n502 / CrashLoop / Pending"
+    ING: "Ingress / LoadBalancer"
+    SVC: Service
+    EP: "Endpoints / EndpointSlice"
+    POD: "Pod Status"
+    CTR: "Container State"
+    APP: "Application Logs"
+    SYM -> ING
+    ING -> SVC: "route OK?"
+    SVC -> EP: "endpoints exist?"
+    EP -> POD: "targets ready?"
+    POD -> CTR: "scheduled? probes?"
+    CTR -> APP: "exit code / OOM"
+    EVT: Events
+    EVT -> POD: {
+      style.stroke-dash: 3
+    }
+    EVT -> ING: {
+      style.stroke-dash: 3
+    }
+    NODE: "Node Conditions"
+    NODE -> POD: {
+      style.stroke-dash: 3
+    }

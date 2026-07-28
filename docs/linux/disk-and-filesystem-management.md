@@ -46,43 +46,8 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+![Architecture diagram for disk and filesystem management](../assets/images/disk-and-filesystem-management.svg)
 
-Hardware: Hardware {
-        A: "Physical Disk /dev/sda"
-    }
-    Partitions: Partitions {
-        B: "/dev/sda1 boot"
-        C: "/dev/sda2 LVM PV"
-    }
-    LVM: LVM {
-        D: "Volume Group vg0"
-        E: "LV root /dev/vg0/root"
-        F: "LV data /dev/vg0/data"
-    }
-    Filesystems: Filesystems {
-        G: "ext4 on /"
-        H: "xfs on /var"
-    }
-    Mount: Points {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        I: "/"
-        J: "/var"
-    }
-    Hardware.A -> Partitions.B
-    Hardware.A -> Partitions.C
-    Partitions.C -> LVM.D
-    LVM.D -> LVM.E
-    LVM.D -> LVM.F
-    LVM.E -> Filesystems.G
-    LVM.F -> Filesystems.H
-    Filesystems.G -> Mount.I
-    Filesystems.H -> Mount.J
-```
 
 ## Theory
 
@@ -357,9 +322,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Inventory | `lsblk`/`df` output matches the devices you intended to touch |
+| Filesystem | Lab filesystem create/mount steps only use disposable devices |
+| Space | `df -h` shows expected mount usage after lab writes |
+| Cleanup | Lab mounts unmounted; no production disk reformatted |
 
 ## Code Walkthrough
 
@@ -437,12 +403,11 @@ sudo mount -a   # validates entries — fails loudly on error
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Never run destructive partition or `mkfs` commands against the wrong device — double-check with `lsblk` and serials
+- Encrypt sensitive volumes (LUKS) and protect key material separately from the host image
+- Mount data volumes with `nosuid,nodev` (and `noexec` where practical) for multi-tenant data disks
+- Monitor free space and inodes; full disks break logging and can force unsafe emergency writes
+- Restrict who can use `mount`, `umount`, and `fdisk` via sudoers
 
 ## Common Mistakes
 

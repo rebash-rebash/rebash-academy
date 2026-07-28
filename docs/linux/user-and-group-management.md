@@ -46,7 +46,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Identity on Linux is UID/GID membership: authentication maps a login to a user, then groups grant shared access.
+
+![Architecture diagram for User and Group Management](../assets/images/user-and-group-management.svg)
 
 ## Theory
 
@@ -306,9 +308,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Account create | `id labuser` (or named lab account) shows UID/GID/groups |
+| Group membership | Secondary group membership visible in `id` or `/etc/group` |
+| sudo/login | Documented sudo or login test behaves as expected |
+| Cleanup | Lab accounts locked or deleted per tutorial |
 
 ## Code Walkthrough
 
@@ -388,12 +391,11 @@ Validate after deployment: `visudo -c -f /etc/sudoers.d/deploy`.
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Create one account per human or service; never share interactive root or shared `admin` passwords
+- Grant `sudo` via named groups with explicit commands where possible — avoid blanket `ALL=(ALL) NOPASSWD:ALL` in production
+- Disable or lock unused accounts (`usermod -L`, expire dates) and remove leftover home directories carefully
+- Prefer SSH keys over passwords; disable password authentication once keys work
+- Separate administrative groups from application groups so deploy users cannot become root by accident
 
 ## Common Mistakes
 

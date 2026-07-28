@@ -1,0 +1,24 @@
+direction: down
+
+REQ: "API Request"
+    AUTHN: "Authentication\ncert / token / OIDC"
+    AUTHZ: "Authorization\nRBAC webhook"
+    ADM: "Admission Controllers"
+    ETCD: etcd
+    REQ -> AUTHN
+    AUTHN -> AUTHZ: identity
+    AUTHZ -> ADM: allowed
+    ADM -> ETCD
+    RBAC: "RBAC Objects" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        ROLE: "Role / ClusterRole\nrules: verbs + resources"
+        BIND: "RoleBinding / ClusterRoleBinding"
+        SA: ServiceAccount
+        ROLE -> BIND
+        SA -> BIND
+    }
+    RBAC: RBAC
+    AUTHZ -> RBAC

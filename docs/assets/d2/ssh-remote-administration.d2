@@ -1,0 +1,25 @@
+direction: right
+
+Client: Client {
+        A: "ssh client"
+        B: "~/.ssh/config"
+        C: "Private Key"
+        D: ssh-agent
+    }
+    Network: Network {
+        E: "Port 22 / TCP"
+    }
+    Server: Server {
+        F: sshd
+        G: authorized_keys
+        H: "Shell / sftp-server"
+    }
+    Client.A -> Client.B
+    Client.A -> Client.C
+    Client.C -> Client.D: {
+      style.stroke-dash: 3
+    }
+    Client.A -> Network.E: "encrypted session"
+    Network.E -> Server.F
+    Server.F -> Server.G
+    Server.F -> Server.H

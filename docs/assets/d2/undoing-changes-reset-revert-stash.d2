@@ -1,0 +1,17 @@
+direction: down
+
+WT: "Working Tree"
+    SA: "Staging Area"
+    REPO: "Repository / Commits"
+    RESTORE1: "git restore file"
+    RESTORE1 -> WT
+    RESTORE2: "git restore --staged"
+    RESTORE2 -> SA
+    RESET: "git reset --soft/mixed/hard"
+    RESET -> SA
+    RESET -> REPO
+    REVERT: "git revert"
+    REVERT -> REPO
+    STASH: "git stash"
+    STASH -> WT
+    STASH -> SA

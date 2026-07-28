@@ -42,29 +42,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Name branches following team conventions
 - [ ] Relate branches to CI/CD environment promotion
 
-## Branch Pointer Model
-
-```d2
-direction: right
-
-MAIN: "main → commit C3"
-    FEAT: "feature/waf → commit C2"
-    HOT: "hotfix/ssl → commit C3"
-    C1: "commit C1"
-    C2: C2
-    C1 -> C2
-    C3: C3
-    C2 -> C3
-    FEAT -> C2: {
-      style.stroke-dash: 3
-    }
-    MAIN -> C3
-    HOT -> C3
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Branches are movable pointers to commits. Multiple branch names can reference the same commit until histories diverge.
+
+![Architecture diagram for Branching Fundamentals](../assets/images/branching-fundamentals.svg)
 
 ## Theory
 
@@ -194,6 +176,8 @@ echo "v2" >> app.txt && git add . && git commit -m "feat: v2 update"
 git log --oneline
 ```
 
+**Expected result:** New branch appears in `git branch`; `git status` shows it as current after switch.
+
 ### Step 2 – Create and switch to feature branch
 
 **Command:**
@@ -203,6 +187,8 @@ git switch -c feature/logging
 echo "log=enabled" >> app.txt && git add . && git commit -m "feat: enable logging"
 git log --oneline --all --graph
 ```
+
+**Expected result:** Commits on the feature branch do not move `main` until merged.
 
 ### Step 3 – Switch back to main
 
@@ -216,6 +202,8 @@ git log --oneline -1
 
 **Explanation:** Main does not include logging commit — branches diverged.
 
+**Expected result:** Branch listing includes local (and remote, if practised) names with tracking info.
+
 ### Step 4 – List branches with tracking
 
 **Command:**
@@ -224,6 +212,8 @@ git log --oneline -1
 git branch -vv
 git branch -a
 ```
+
+**Expected result:** Merged branch deletes cleanly; unmerged delete requires `-D` as documented.
 
 ### Step 5 – Detached HEAD experiment
 
@@ -238,6 +228,8 @@ git switch -c recover-detached
 git log --oneline -3
 ```
 
+**Expected result:** Detached HEAD warning appears when checking out a raw commit; recovery branch created.
+
 ### Step 6 – Merge feature (preview for next tutorial)
 
 **Command:**
@@ -250,6 +242,8 @@ git branch -d recover-detached
 git log --oneline --graph
 ```
 
+**Expected result:** Naming convention examples match team style practised in the lab.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -257,6 +251,9 @@ git log --oneline --graph
 ```bash
 cd /tmp && rm -rf git-branch-lab
 ```
+
+**Expected result:** Lab repository cleaned up.
+
 
 ## Validation
 
@@ -268,9 +265,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Create/switch | New branch appears in `git branch` and HEAD points to it when switched |
+| Delete | Merged branch delete succeeds; unmerged delete behaves as documented |
+| Detached HEAD | You enter and recover from detached HEAD per lab |
+| Cleanup | Lab repo removed |
 
 ## Code Walkthrough
 
@@ -301,12 +299,11 @@ echo "Merged branches cleaned."
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Name branches without embedding secrets or customer identifiers
+- Delete stale remote branches so abandoned work cannot be mistaken for approved code
+- Protect long-lived environment branches with required checks
+- Avoid pushing experimental branches that contain production data dumps
+- Recover detached HEAD carefully — do not force-push recovery commits onto protected branches
 
 ## Common Mistakes
 

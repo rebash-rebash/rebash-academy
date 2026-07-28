@@ -45,25 +45,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Understand loose objects vs packfiles
 - [ ] Relate the object model to everyday porcelain commands
 
-## Object Model Diagram
-
-```d2
-direction: down
-
-COMMIT: "Commit Object\nauthor · message · tree · parent"
-    TREE: "Tree Object\ndirectory listing"
-    BLOB: "Blob Object\nfile content"
-    TAG: "Tag Object\nannotated release"
-    COMMIT -> TREE: "points to"
-    TREE -> BLOB: "name → blob"
-    TREE -> TREE: "name → tree"
-    TAG -> COMMIT: "points to"
-    COMMIT -> COMMIT: parent
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Git stores content-addressed objects—blobs, trees, and commits—linked into a directed acyclic graph that branches and tags merely name.
+
+![Architecture diagram for Understanding the Git Object Model](../assets/images/understanding-the-git-object-model.svg)
 
 ## Theory
 
@@ -163,6 +149,8 @@ mkdir config && echo "port=8080" > config/server.conf
 
 **Explanation:** We will manually trace how these files become Git objects.
 
+**Expected result:** `git cat-file -t` reports commit/tree/blob for the lab SHAs.
+
 ### Step 2 – Hash and store blobs manually
 
 **Command:**
@@ -175,6 +163,8 @@ ls .git/objects/*/*  | head -5
 ```
 
 **Explanation:** Each file becomes a blob. Note the object paths under `.git/objects/`.
+
+**Expected result:** Tree listing includes the lab filename mode and blob hash.
 
 ### Step 3 – Inspect object types with cat-file
 
@@ -211,6 +201,8 @@ git cat-file -p "$COMMIT"
 
 **Explanation:** The commit object lists tree SHA, parent (none for initial), author, and message.
 
+**Expected result:** Status/diff illustrate differences across the three trees.
+
 ### Step 5 – Walk from commit to files
 
 **Command:**
@@ -222,6 +214,8 @@ git ls-tree -r HEAD
 ```
 
 **Explanation:** `git ls-tree -r HEAD` recursively lists every blob in the commit — the same data `git archive` would export.
+
+**Expected result:** You can sketch commit → tree → blob on paper from the lab.
 
 ### Step 6 – Compare duplicate content deduplication
 
@@ -239,6 +233,8 @@ test "$BLOB1" = "$BLOB2" && echo "Same blob — deduplicated"
 
 **Explanation:** Identical content produces identical hashes — Git stores one blob for both files.
 
+**Expected result:** Hash-object demo (if present) produces a predictable blob SHA.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -246,6 +242,9 @@ test "$BLOB1" = "$BLOB2" && echo "Same blob — deduplicated"
 ```bash
 cd /tmp && rm -rf git-objects-lab
 ```
+
+**Expected result:** Lab repository removed.
+
 
 ## Validation
 
@@ -257,9 +256,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Objects | `git cat-file -t` identifies blob/tree/commit as in the lab |
+| Trees | You can walk from commit → tree → blob for a lab file |
+| Three trees | Status/diff demonstrate working vs index vs HEAD differences |
+| Cleanup | Lab repo removed |
 
 ## Code Walkthrough
 
@@ -292,12 +292,11 @@ git ls-tree -r HEAD --name-only
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Remember deleted files can remain reachable via objects and reflog until GC — secrets need history rewrite plus key rotation
+- Do not share raw `.git` directories from production builds; they contain full history
+- Verify object integrity with `git fsck` after suspicious disk or transfer issues
+- Treat packfiles as sensitive when repos contain proprietary or personal data
+- Avoid experimenting with `git hash-object -w` on machines that sync to remotes
 
 ## Common Mistakes
 

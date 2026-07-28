@@ -1,0 +1,29 @@
+direction: down
+
+Traffic: Traffic {
+        USERS: "Users / Ingress"
+    }
+    Control: Control {
+        HPA: "HPA controller"
+        METRICS: "metrics-server / Prometheus"
+        PDB: "PDB policy"
+    }
+    Workload: Workload {
+        DEP: "Deployment — api"
+        P1: Pod
+        P2: Pod
+        P3: Pod
+    }
+    Nodes: Nodes {
+        N1: "Node AZ-a"
+        N2: "Node AZ-b"
+        N3: "Node AZ-c"
+    }
+    Traffic.USERS -> Workload.DEP
+    Control.METRICS -> Control.HPA
+    Control.HPA -> Workload.DEP: "scale replicas"
+    Control.PDB -> Workload.DEP: "limits evictions"
+    Workload.DEP -> Workload.P1
+    Workload.P1 -> Nodes.N1
+    Workload.P2 -> Nodes.N2
+    Workload.P3 -> Nodes.N3

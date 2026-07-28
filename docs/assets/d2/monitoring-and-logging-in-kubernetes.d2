@@ -1,0 +1,33 @@
+direction: down
+
+Apps: "Application namespace" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        API: votestack-api
+        WEB: votestack-web
+        PROM: PROM
+        API -> PROM: "/metrics"
+    }
+    Observability: "monitoring namespace" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        AM: Alertmanager
+        GRAF: Grafana
+        LOKI: Loki
+        PROM -> AM
+        PROM -> GRAF
+        LOKI -> GRAF
+    }
+    Collection: Collection {
+        SM: ServiceMonitor
+        FB: "Fluent Bit / Promtail"
+    }
+    Collection.SM -> Apps.PROM
+    Apps.API -> Collection.FB
+    Collection.FB -> Observability.LOKI
+    ONCALL: "On-call engineer"
+    Observability.AM -> ONCALL: "PagerDuty / Slack"

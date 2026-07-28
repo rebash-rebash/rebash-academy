@@ -47,7 +47,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+A script is a reproducible command sequence: shebang, strict mode, arguments, then control flow and exit status.
+
+![Architecture diagram for Shell Scripting Fundamentals](../assets/images/shell-scripting-fundamentals.svg)
 
 ## Theory
 
@@ -390,9 +392,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Script runs | Lab scripts exit 0 with `set -euo pipefail` enabled |
+| Conditionals | if/loop exercises print expected branches |
+| Args | Positional parameters behave as documented |
+| Cleanup | Lab scripts removed from `/tmp` or home lab dir |
 
 ## Code Walkthrough
 
@@ -448,12 +451,11 @@ done
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Always use `set -euo pipefail` (or equivalent) in production scripts; quote variables to avoid word-splitting attacks
+- Never interpolate untrusted input into `eval`, `bash -c`, or SQL/shell constructed strings
+- Store scripts under version control; avoid world-writable script paths that an attacker could replace
+- Run privileged scripts with explicit interpreter paths and minimal environment (`env -i` patterns where appropriate)
+- Log script actions without echoing secrets; redact tokens in debug output
 
 ## Common Mistakes
 

@@ -46,30 +46,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Integrate Git with Terraform Cloud, GitHub Actions, and GitLab CI
 - [ ] Apply complete Git hygiene across the DevOps lifecycle
 
-## DevOps Git Pipeline Diagram
-
-```d2
-direction: down
-
-DEV: "Developer Push / PR"
-    GIT: "Git Repository"
-    WH: "Webhook / Event"
-    CI: "CI Pipeline\nbuild · test · scan"
-    ART: "Artifact Registry\nimage · plan"
-    CD: "CD / GitOps\nArgo CD · Flux"
-    PROD: Production
-    DEV -> GIT
-    GIT -> WH
-    WH -> CI
-    CI -> ART
-    GIT -> CD
-    CD -> PROD
-    ART -> PROD
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+CI/CD watches remotes for new commits, runs automated verification, and deploys only when policy checks pass.
+
+![Architecture diagram for Git in CI/CD and DevOps](../assets/images/git-in-ci-cd-and-devops.svg)
 
 ## Theory
 
@@ -321,6 +302,8 @@ SHA=$(git rev-parse HEAD)
 echo "Deploy identity: myapp@$SHA"
 ```
 
+**Expected result:** CI config file is present and syntactically valid for the platform.
+
 ### Step 2 – Tag production release
 
 **Command:**
@@ -330,6 +313,8 @@ git tag -a v1.0.0 -m "Production release 1.0.0"
 git push origin v1.0.0
 git show v1.0.0 --no-patch --format="Tag %D points to %H"
 ```
+
+**Expected result:** Documented trigger (push/PR) would run the pipeline.
 
 ### Step 3 – Simulate PR merge workflow
 
@@ -345,6 +330,8 @@ git merge --no-ff feature/ci-demo -m "Merge PR #42: CI demo"
 git push origin main
 git log --oneline --graph -5
 ```
+
+**Expected result:** Jobs demonstrate build/test separation as in the lab.
 
 ### Step 4 – Simulate GitOps manifest update
 
@@ -366,6 +353,8 @@ git add k8s/ && git commit -m "deploy: pin image to ${SHA:0:7}"
 git log -1 --format="GitOps commit %h — image tag %s"
 ```
 
+**Expected result:** No plaintext secrets remain in committed workflow files.
+
 ### Step 5 – Pipeline preflight script
 
 **Command:**
@@ -383,6 +372,8 @@ chmod +x ci-preflight.sh
 ./ci-preflight.sh
 ```
 
+**Expected result:** OIDC or masked secret pattern is identified in the example.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -390,6 +381,9 @@ chmod +x ci-preflight.sh
 ```bash
 cd /tmp && rm -rf git-cicd-lab cicd-remote.git
 ```
+
+**Expected result:** Lab repository cleaned; any personal tokens revoked.
+
 
 ## Validation
 
@@ -401,9 +395,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Pipeline file | Workflow/CI config validates (or dry-runs) successfully |
+| Trigger | Push/PR event path documented and understood |
+| Secrets | No plaintext secrets remain in the committed workflow |
+| Cleanup | Lab repo cleaned; tokens revoked if created |
 
 ## Code Walkthrough
 
@@ -443,12 +438,11 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Grant CI identities least privilege to cloud and forge APIs; prefer OIDC over static keys
+- Mask secrets in pipeline logs and forbid echo-debugging of tokens
+- Pin actions/images by digest; review third-party workflows before enabling them
+- Separate build, staging, and production deployment roles
+- Fail pipelines on secret scanning and signature verification errors
 
 ## Common Mistakes
 

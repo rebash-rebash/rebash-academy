@@ -43,31 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Know when NOT to reset shared history
 - [ ] Recover from accidental hard reset using reflog
 
-## Undo Operations Diagram
-
-```d2
-direction: down
-
-WT: "Working Tree"
-    SA: "Staging Area"
-    REPO: "Repository / Commits"
-    RESTORE1: "git restore file"
-    RESTORE1 -> WT
-    RESTORE2: "git restore --staged"
-    RESTORE2 -> SA
-    RESET: "git reset --soft/mixed/hard"
-    RESET -> SA
-    RESET -> REPO
-    REVERT: "git revert"
-    REVERT -> REPO
-    STASH: "git stash"
-    STASH -> WT
-    STASH -> SA
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Reset moves branch tips locally, revert adds an inverse commit for shared history, and stash shelves unfinished work.
+
+![Architecture diagram for Undoing Changes — Reset, Revert, and Stash](../assets/images/undoing-changes-reset-revert-stash.svg)
 
 ## Theory
 
@@ -193,6 +173,8 @@ echo "v3" >> app.txt && git add . && git commit -m "feat: v3"
 git log --oneline
 ```
 
+**Expected result:** Soft reset keeps changes staged; mixed keeps them unstaged; hard clears the working tree as shown.
+
 ### Step 2 – Soft reset
 
 **Command:**
@@ -203,6 +185,8 @@ git status
 git log --oneline -2
 git commit -m "feat: v3 improved message"
 ```
+
+**Expected result:** `git revert` adds a new commit that undoes the target change on the branch tip.
 
 ### Step 3 – Mixed reset and restore
 
@@ -217,6 +201,8 @@ git restore app.txt
 cat app.txt
 ```
 
+**Expected result:** Stash list gains an entry; `stash pop`/`apply` restores the working tree files.
+
 ### Step 4 – Stash workflow
 
 **Command:**
@@ -230,6 +216,8 @@ git stash pop
 git status
 ```
 
+**Expected result:** Reflog still references pre-reset commits for recovery.
+
 ### Step 5 – Revert (simulating shared branch)
 
 **Command:**
@@ -240,6 +228,8 @@ git revert --no-edit "$BAD"
 git log --oneline -5
 cat app.txt
 ```
+
+**Expected result:** Partial stash or path-limited undo behaves as the step describes.
 
 ### Step 6 – Hard reset and reflog recovery
 
@@ -253,6 +243,8 @@ git reset --hard "$BEFORE"
 git log --oneline -3
 ```
 
+**Expected result:** Status is clean after the final recovery path.
+
 ### Step 7 – Clean up
 
 **Command:**
@@ -260,6 +252,9 @@ git log --oneline -3
 ```bash
 cd /tmp && rm -rf git-undo-lab
 ```
+
+**Expected result:** Lab repository removed.
+
 
 ## Validation
 
@@ -271,9 +266,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Soft/mixed/hard | Each reset mode leaves the expected working/index/HEAD state |
+| Revert | New revert commit undoes the change on a shared-style branch |
+| Stash | Stash pop/apply restores work; stash list behaves as shown |
+| Cleanup | Lab repo removed |
 
 ## Code Walkthrough
 
@@ -302,12 +298,11 @@ echo "Reverted $(git rev-parse HEAD~1) on main."
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer `git revert` on shared history; `reset --hard` is for local recovery only
+- Stash contents can hold secrets — do not stash on shared jump hosts without clearing later
+- Confirm the target SHA twice before hard reset; reflog is time-limited insurance
+- Coordinate before resetting branches others may have based work on
+- After recovering from a bad reset, rotate any credentials that appeared in recovered files
 
 ## Common Mistakes
 

@@ -46,33 +46,8 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+![Architecture diagram for linux networking essentials](../assets/images/linux-networking-essentials.svg)
 
-Host: Host {
-        APP: Application
-        SS: "ss / netstat"
-        IP: "ip command"
-    }
-    Stack: Stack {
-        NIC: "Network Interface eth0"
-        RT: "Routing Table"
-        DNS: "Resolver / systemd-resolved"
-    }
-    External: External {
-        GW: "Default Gateway"
-        DNSS: "DNS Server 8.8.8.8"
-        DEST: "Remote Host"
-    }
-    Host.APP -> Host.SS
-    Host.APP -> Stack.NIC
-    Host.IP -> Stack.NIC
-    Host.IP -> Stack.RT
-    Host.APP -> Stack.DNS
-    Stack.RT -> External.GW
-    Stack.DNS -> External.DNSS
-    External.GW -> External.DEST
-```
 
 ## Theory
 
@@ -285,9 +260,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Interfaces | `ip addr` / `ip link` show expected interfaces and addresses |
+| Routes | Default route present; lab route changes reverted |
+| Sockets | `ss` shows listeners you expect for the lab |
+| Cleanup | Temporary firewall/rules or addresses removed |
 
 ## Code Walkthrough
 
@@ -365,12 +341,11 @@ timeout 3 bash -c "echo >/dev/tcp/$HOST/$PORT" 2>/dev/null \
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Default-deny inbound firewall rules; open only required ports from known sources
+- Prefer SSH over public management protocols; disable unused listeners with `ss -tulpn` audits
+- Do not bind lab services to all interfaces unless required; use localhost or private subnets
+- Protect against DNS and routing surprises — pin critical resolvers and document routes
+- Separate management and workload networks where the platform allows
 
 ## Common Mistakes
 

@@ -47,33 +47,8 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: right
+![Architecture diagram for ssh remote administration](../assets/images/ssh-remote-administration.svg)
 
-Client: Client {
-        A: "ssh client"
-        B: "~/.ssh/config"
-        C: "Private Key"
-        D: ssh-agent
-    }
-    Network: Network {
-        E: "Port 22 / TCP"
-    }
-    Server: Server {
-        F: sshd
-        G: authorized_keys
-        H: "Shell / sftp-server"
-    }
-    Client.A -> Client.B
-    Client.A -> Client.C
-    Client.C -> Client.D: {
-      style.stroke-dash: 3
-    }
-    Client.A -> Network.E: "encrypted session"
-    Network.E -> Server.F
-    Server.F -> Server.G
-    Server.F -> Server.H
-```
 
 ## Theory
 
@@ -331,9 +306,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Key auth | SSH login with key succeeds to the lab host |
+| Config | `sshd_config` hardening settings match the lab (password off if required) |
+| Agent | Agent/`ssh-add` behaviour matches steps |
+| Cleanup | Lab-only keys and config snippets removed or documented |
 
 ## Code Walkthrough
 
@@ -402,12 +378,11 @@ EOF
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Disable password authentication and root login once key-based access works (`PasswordAuthentication no`, `PermitRootLogin no`)
+- Use ed25519 keys with passphrases; store private keys outside shared filesystems
+- Restrict `AllowUsers` / `AllowGroups` and use `Match` blocks for jump hosts
+- Prefer short-lived certificates or hardware-backed keys for production bastions
+- Log and alert on failed SSH attempts; fail2ban or equivalent rate-limits reduce brute force noise
 
 ## Common Mistakes
 

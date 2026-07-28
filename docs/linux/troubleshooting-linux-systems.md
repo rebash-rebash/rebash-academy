@@ -46,7 +46,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Effective troubleshooting narrows the fault domain: symptoms to subsystem checks to a verified fix.
+
+![Architecture diagram for Troubleshooting Linux Systems](../assets/images/troubleshooting-linux-systems.svg)
 
 ## Theory
 
@@ -276,9 +278,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Triage order | You followed CPU → memory → disk → network → logs as appropriate |
+| Evidence | Commands captured process, disk, and journal clues for the injected fault |
+| Fix | Lab fault resolved and service/health check passes |
+| Cleanup | Fault injection artefacts removed |
 
 ## Code Walkthrough
 
@@ -364,12 +367,11 @@ systemd-analyze critical-chain default.target | head -20
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Collect evidence before reboot when safe — volatile data (process lists, network sockets) disappears on restart
+- Avoid posting full logs containing secrets into public tickets or chat
+- Use read-only forensic mounts when investigating suspected compromise
+- Limit live debugging tools that can alter state (`kill`, `iptables -F`) until you understand impact
+- Document every invasive action during an incident for the postmortem
 
 ## Common Mistakes
 

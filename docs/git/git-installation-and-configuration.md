@@ -54,25 +54,8 @@ By the end of this tutorial, you will be able to:
 
 Git configuration flows through four layers. Later layers override earlier ones — a common source of "I changed my email but commits still show the old one" confusion.
 
-```d2
-direction: down
+![Architecture diagram for git installation and configuration](../assets/images/git-installation-and-configuration.svg)
 
-ENV: "Environment variables\nGIT_AUTHOR_NAME, GIT_DIR, ..."
-    SYS: "System config\n/etc/gitconfig"
-    GLOBAL: "Global config\n~/.gitconfig"
-    LOCAL: "Local config\n.git/config"
-    CMD: "Command-line flags\n--author, -c key=value"
-    SYS -> GLOBAL
-    GLOBAL -> LOCAL
-    LOCAL -> ENV
-    ENV -> CMD
-    EFFECT: "Effective config value"
-    CMD -> EFFECT: "wins for this invocation"
-    LOCAL -> EFFECT
-    GLOBAL -> EFFECT
-    SYS -> EFFECT
-    ENV -> EFFECT
-```
 
 ## Theory
 
@@ -327,6 +310,9 @@ cd /tmp && rm -rf git-config-lab
 
 **Explanation:** Remove test repositories after configuration labs.
 
+**Expected result:** Identity settings persist; no credentials written into the repository itself.
+
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -337,9 +323,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Version | `git --version` reports an installed client |
+| Identity | `git config user.name` and `user.email` are set |
+| Sanity | `git config --list --show-origin` shows expected sources |
+| Cleanup | No credentials committed; helper choice documented |
 
 ## Code Walkthrough
 
@@ -429,12 +416,11 @@ Register it: `git config --global core.excludesfile ~/.gitignore_global`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Set `user.name` / `user.email` to identities your organisation recognises for audit trails
+- Store credentials in an OS keychain or credential helper — not in plaintext under `~/.git-credentials` on shared hosts
+- Prefer SSH keys or short-lived HTTPS tokens over long-lived personal access tokens
+- Keep Git itself updated; older clients miss security fixes for protocol and hook handling
+- Do not set `safe.directory=*` globally on multi-user machines without understanding the risks
 
 ## Common Mistakes
 

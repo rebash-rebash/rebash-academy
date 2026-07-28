@@ -1,0 +1,29 @@
+direction: down
+
+Private: "Private Network 10.0.11.0/24" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        APP: "App Server\n10.0.11.50"
+        DB: "Database\n10.0.11.60"
+    }
+    NATDevice: "NAT Gateway / Router" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        SNAT: "SNAT\n10.0.11.x → public IP"
+        DNAT: "DNAT\npublic:8080 → 10.0.11.50:80"
+    }
+    Internet: Internet {
+        EXT: "External Clients"
+        SVC: "External APIs"
+    }
+    Private.APP -> NATDevice.SNAT: outbound
+    NATDevice.SNAT -> Internet.SVC
+    Internet.EXT -> NATDevice.DNAT: "inbound :8080"
+    NATDevice.DNAT -> Private.APP
+    Private.DB -> Internet.EXT: "no direct inbound" {
+      style.stroke-dash: 3
+    }

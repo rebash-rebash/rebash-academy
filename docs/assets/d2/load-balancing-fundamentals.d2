@@ -1,0 +1,39 @@
+direction: down
+
+Clients: Clients {
+        C1: "Client A"
+        C2: "Client B"
+        C3: "Client C"
+    }
+    LB: "Load Balancer Tier" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        VIP: "Virtual IP / DNS Name"
+        HC: "Health Check Engine"
+        ALGO: "Scheduler\nround-robin · least conn · ip hash"
+    }
+    Backends: Backends {
+        W1: "Web Server 1\nhealthy"
+        W2: "Web Server 2\nhealthy"
+        W3: "Web Server 3\nunhealthy"
+    }
+    Clients.C1 -> LB.VIP
+    Clients.C2 -> LB.VIP
+    Clients.C3 -> LB.VIP
+    LB.VIP -> LB.ALGO
+    LB.HC -> Backends.W1: probe {
+      style.stroke-dash: 3
+    }
+    LB.HC -> Backends.W2: probe {
+      style.stroke-dash: 3
+    }
+    LB.HC -> Backends.W3: fail {
+      style.stroke-dash: 3
+    }
+    LB.ALGO -> Backends.W1
+    LB.ALGO -> Backends.W2
+    LB.ALGO -> Backends.W3: removed {
+      style.stroke-dash: 3
+    }

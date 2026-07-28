@@ -47,7 +47,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Hardening stacks controls from the edge inward: reduce exposure, strengthen authentication, then lock down local privilege and patch state.
+
+![Architecture diagram for Linux Security Hardening Basics](../assets/images/linux-security-hardening-basics.svg)
 
 ## Theory
 
@@ -289,9 +291,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Baseline | Hardening checklist items you applied are verifiable (`sshd`, firewall, packages) |
+| Services | Unused services remain disabled after hardening |
+| Users | Password/SSH policy matches lab recommendations |
+| Cleanup | Document residual changes; do not leave experimental firewall locks on shared labs |
 
 ## Code Walkthrough
 
@@ -368,12 +371,11 @@ done
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Apply CIS-style baselines incrementally and measure breakage in non-production first
+- Keep automatic security updates enabled for the kernel and critical libraries where policy allows
+- Enforce MFA on bastions and cloud consoles that gate Linux access
+- Disable unused services and remove packages that open attack surface
+- Centralise authz (sssd/LDAP) carefully — misconfigured bind credentials are high impact
 
 ## Common Mistakes
 

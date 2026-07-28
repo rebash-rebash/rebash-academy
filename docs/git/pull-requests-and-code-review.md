@@ -42,28 +42,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Review IaC changes with security and blast-radius mindset
 - [ ] Link PRs to tickets and deployment traceability
 
-## PR Lifecycle Diagram
-
-```d2
-direction: right
-
-BR: "Feature Branch"
-    PR: "Open Pull Request"
-    BR -> PR: push
-    CI: "CI Checks Run"
-    PR -> CI
-    REV: "Code Review"
-    CI -> REV
-    MERGE: "Merge to main"
-    REV -> MERGE: approve
-    REV -> BR: "changes requested"
-    DEPLOY: "CD / GitOps Deploy"
-    MERGE -> DEPLOY
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Pull requests turn branch differences into a reviewable change set with discussion, checks, and an explicit merge decision.
+
+![Architecture diagram for Pull Requests and Code Review](../assets/images/pull-requests-and-code-review.svg)
 
 ## Theory
 
@@ -221,6 +204,8 @@ chmod +x healthcheck.sh
 git add healthcheck.sh && git commit -m "feat: add healthcheck script"
 ```
 
+**Expected result:** Feature branch pushed to the forge (or local simulation completed).
+
 ### Step 2 – Push feature branch
 
 **Command:**
@@ -232,6 +217,8 @@ git diff main...feature/add-healthcheck --stat
 ```
 
 **Explanation:** Three-dot diff shows PR diff scope — what reviewers see.
+
+**Expected result:** PR description includes intent, test plan, and risk notes.
 
 ### Step 3 – Simulate review feedback
 
@@ -246,6 +233,8 @@ git add healthcheck.sh && git commit --amend --no-edit
 git push --force-with-lease origin feature/add-healthcheck
 ```
 
+**Expected result:** Review checklist items are addressed or marked.
+
 ### Step 4 – Merge (simulating platform merge)
 
 **Command:**
@@ -258,6 +247,8 @@ git push origin main
 git log --oneline --graph -5
 ```
 
+**Expected result:** Merge completes with the chosen strategy (merge/squash/rebase).
+
 ### Step 5 – Clean up
 
 **Command:**
@@ -265,6 +256,9 @@ git log --oneline --graph -5
 ```bash
 rm -rf /tmp/git-pr-lab /tmp/pr-remote.git
 ```
+
+**Expected result:** Branch deletion / protection settings match the lab wrap-up.
+
 
 ## Validation
 
@@ -276,9 +270,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Branch/PR | Feature branch pushed; PR (or simulated checklist) opened |
+| Review | Review comments/checklist items addressed |
+| Merge | Merge method matches team policy practised in the lab |
+| Cleanup | Feature branch deleted after merge if required |
 
 ## Code Walkthrough
 
@@ -305,12 +300,11 @@ git diff "$BASE"...HEAD --stat
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Require reviews from CODEOWNERS for security-sensitive paths
+- Do not approve PRs that disable CI, secret scanning, or branch protection
+- Scrutinise dependency and IaC diffs for overly broad IAM or public exposure
+- Prefer stacked small PRs over huge dumps that hide risky changes
+- Keep discussion of vulnerabilities in private channels until fixes ship
 
 ## Common Mistakes
 

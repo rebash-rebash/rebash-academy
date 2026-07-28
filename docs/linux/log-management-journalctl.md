@@ -46,31 +46,8 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+![Architecture diagram for log management journalctl](../assets/images/log-management-journalctl.svg)
 
-Sources: Sources {
-        K: Kernel
-        S: "systemd Units"
-        A: "Applications via stdout/stderr"
-    }
-    journald: journald {
-        J: systemd-journald
-        R: "Journal Files\n/run/log/journal\n/var/log/journal"
-    }
-    Consumers: Consumers {
-        C: "journalctl CLI"
-        F: "Forward to SIEM/syslog"
-        M: "Monitoring alerts"
-    }
-    Sources.K -> journald.J
-    Sources.S -> journald.J
-    Sources.A -> journald.J
-    journald.J -> journald.R
-    journald.R -> Consumers.C
-    journald.R -> Consumers.F
-    journald.R -> Consumers.M
-```
 
 ## Theory
 
@@ -251,9 +228,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Filters | Priority/unit/time filters return non-empty, relevant lines |
+| Follow | `-f` shows new lines when you generate a test message |
+| Persist | Persistent journal path exists if you enabled it |
+| Cleanup | Lab-only overrides reverted; disk usage sane |
 
 ## Code Walkthrough
 
@@ -332,12 +310,11 @@ echo "Exported to $OUT"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Restrict journal access — unprivileged users should not read other users' or privileged service logs by default
+- Persist journals on dedicated storage with retention limits to avoid disk-fill denial of service
+- Redact secrets before forwarding journals to SIEM; applications should not log tokens or passwords
+- Protect `/var/log/journal` permissions and backup encryption for compliance-sensitive environments
+- Prefer structured fields over free-text when filtering so operators do not over-collect
 
 ## Common Mistakes
 

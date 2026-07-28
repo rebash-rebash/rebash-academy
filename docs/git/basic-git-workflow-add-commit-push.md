@@ -55,21 +55,8 @@ By the end of this tutorial, you will be able to:
 
 The workflow moves changes through three trees before reaching the remote server where CI/CD watches for events.
 
-```d2
-direction: right
+![Architecture diagram for basic git workflow add commit push](../assets/images/basic-git-workflow-add-commit-push.svg)
 
-WD: "Working Directory\nedited files"
-    SA: "Staging Area\nindex"
-    REPO: "Local Repository\n.git/objects"
-    REMOTE: "Remote\norigin/main"
-    CI: "CI Pipeline"
-    WD -> SA: "git add"
-    SA -> REPO: "git commit"
-    REPO -> REMOTE: "git push"
-    REMOTE -> CI: webhook
-    REMOTE -> REPO: "git pull / fetch"
-    REPO -> WD: checkout
-```
 
 ## Theory
 
@@ -360,6 +347,9 @@ rm -rf ~/lab/git-workflow ~/lab/workflow-remote.git
 
 **Explanation:** Remove lab artifacts.
 
+**Expected result:** Working tree clean; temporary lab artefacts removed if the tutorial created any.
+
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -370,9 +360,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Stage/commit | `git log -1` shows your lab commit |
+| Push/pull | Remote tracking branch updated (or documented dry-run equivalent) |
+| Diff hygiene | You inspected staged diff before commit |
+| Cleanup | Lab repo/remote leftovers removed |
 
 ## Code Walkthrough
 
@@ -406,12 +397,11 @@ Install as pre-commit hook: `cp verify-no-tfstate.sh .git/hooks/pre-commit && ch
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Review `git diff --cached` before every commit so secrets do not slip through
+- Prefer small, intentional commits over `git add -A` on dirty trees with credential files
+- Protect `main`/`master` on the remote; require PR reviews for production infrastructure
+- Use pre-commit secret scanners where available
+- Never amend or force-push commits that already reached shared remotes
 
 ## Common Mistakes
 

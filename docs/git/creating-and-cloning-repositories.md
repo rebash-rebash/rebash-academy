@@ -56,44 +56,8 @@ By the end of this tutorial, you will be able to:
 
 DevOps workflows typically flow from a hosted remote to local clones and CI runners. Bare repositories on servers act as intermediaries in self-hosted Git deployments.
 
-```d2
-direction: down
+![Architecture diagram for creating and cloning repositories](../assets/images/creating-and-cloning-repositories.svg)
 
-HOSTING: "Git Hosting Platform" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        REMOTE: "origin\nGitHub / GitLab / Gitea"
-    }
-    DEV: "Developer Workstations" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        CLONE1: "non-bare clone\nworking directory + .git"
-        CLONE2: "non-bare clone"
-    }
-    CI: "CI/CD Infrastructure" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        RUNNER: "Pipeline runner\nshallow clone depth=1"
-    }
-    SELF: "Self-Hosted (optional)" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        BARE: "bare repo on server\n/srv/git/project.git"
-    }
-    HOSTING.REMOTE <-> DEV.CLONE1: "push / fetch"
-    HOSTING.REMOTE <-> DEV.CLONE2: "push / fetch"
-    HOSTING.REMOTE -> CI.RUNNER: "webhook trigger"
-    CI.RUNNER -> HOSTING.REMOTE: "clone / fetch"
-    SELF.BARE <-> HOSTING.REMOTE: "push mirror"
-```
 
 ## Theory
 
@@ -384,6 +348,9 @@ rm -rf ~/lab/git-shallow-clone ~/lab/hello-world ~/lab/hello-world.git ~/lab/inf
 
 **Explanation:** Remove practice repos. Never delete unpushed work — verify with `git log origin/main..main` before cleanup in real projects.
 
+**Expected result:** Temporary lab repositories removed; no leftover remotes on disk.
+
+
 ## Validation
 
 Confirm the lab before moving on:
@@ -394,9 +361,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| init/clone | Both init and clone paths produce a valid `.git` directory |
+| Remote | `git remote -v` shows the expected origin (if applicable) |
+| First commit | Log shows the lab commit message |
+| Cleanup | Temporary repos removed |
 
 ## Code Walkthrough
 
@@ -427,12 +395,11 @@ git push -u origin main
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Clone over SSH or HTTPS with verified hosts — confirm GitHub/GitLab host keys on first connect
+- Never initialise a repo inside another repo unless you intentionally use submodules
+- Scrub sample configs of real endpoints and credentials before the first commit
+- Set repository visibility correctly on the forge; default-private for company infrastructure code
+- Use sparse or partial clones carefully so you do not miss security-sensitive paths
 
 ## Common Mistakes
 

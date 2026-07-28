@@ -44,35 +44,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `git pull --rebase` for cleaner local updates
 - [ ] Recover from rebase mistakes with reflog
 
-## Rebase vs Merge Diagram
-
-```d2
-direction: down
-
-Before: "Before rebase" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        M1: "main: A-B-C"
-        F1: "feature: A-B-D-E"
-    }
-    After: "After rebase feature onto main" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        M2: "main: A-B-C"
-        F2: "feature: A-B-C-D'-E"
-    }
-    Before: Before
-    After: After
-    Before -> After
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Rebase replays commits onto a new base to keep history linear; interactive rebase lets you edit the todo list before applying.
+
+![Architecture diagram for Rebasing and Interactive Rebase](../assets/images/rebasing-and-interactive-rebase.svg)
 
 ## Theory
 
@@ -199,6 +175,8 @@ echo "main-update" >> app.txt && git add . && git commit -m "fix: main update"
 git log --oneline --all --graph
 ```
 
+**Expected result:** After rebase, feature commits sit on top of the updated base in a linear graph.
+
 ### Step 2 – Rebase feature onto main
 
 **Command:**
@@ -211,6 +189,8 @@ git log --oneline --graph --all
 
 **Explanation:** Feature commits now sit on top of main's latest commit.
 
+**Expected result:** Conflict (if induced) pauses rebase; continue completes successfully.
+
 ### Step 3 – Interactive rebase to squash
 
 **Command:**
@@ -222,6 +202,8 @@ git log --oneline -3
 ```
 
 **Explanation:** In practice, use editor to squash WIP into feature commit. Lab uses reset as fallback for non-interactive environments.
+
+**Expected result:** Interactive todo changes (squash/reword) appear in the rewritten log messages.
 
 ### Step 4 – Practice abort
 
@@ -237,6 +219,8 @@ git rebase --abort
 git log --oneline -1
 ```
 
+**Expected result:** Abort returns the branch to the pre-rebase tip when practised.
+
 ### Step 5 – pull --rebase simulation
 
 **Command:**
@@ -251,6 +235,8 @@ git pull --rebase origin main
 git log --oneline -3
 ```
 
+**Expected result:** `--force-with-lease` awareness documented; lab does not wreck a shared remote.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -258,6 +244,9 @@ git log --oneline -3
 ```bash
 cd /tmp && rm -rf git-rebase-lab rebase-remote.git
 ```
+
+**Expected result:** Lab repository removed.
+
 
 ## Validation
 
@@ -269,9 +258,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Rebase | Feature commits replay onto updated base; graph is linear as expected |
+| Interactive | Todo edits (squash/reword) reflected in final log |
+| Conflict | Continue/abort paths practised successfully |
+| Cleanup | Lab repo removed; no shared remote force-pushed |
 
 ## Code Walkthrough
 
@@ -297,12 +287,11 @@ git push --force-with-lease origin feature/my-branch
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Never rebase commits already pushed to shared branches unless the team explicitly agrees
+- Interactive rebase can drop security fixes — verify the todo list carefully
+- Avoid `exec` lines in rebase that run untrusted scripts from the branch being rewritten
+- After rebase, re-run tests and secret scanners before force-with-lease push
+- Keep backup branches (`backup/pre-rebase-…`) until the rewrite is verified
 
 ## Common Mistakes
 

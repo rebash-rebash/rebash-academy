@@ -45,7 +45,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+The kernel evaluates user, group, then other bits (plus ACL/umask) before allowing open, write, or execute.
+
+![Architecture diagram for File Permissions and Ownership](../assets/images/file-permissions-and-ownership.svg)
 
 ## Theory
 
@@ -301,9 +303,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Modes | `ls -l` shows expected permission bits after `chmod` steps |
+| Ownership | `chown`/`chgrp` lab files show the intended user/group |
+| umask | New file mode matches the umask you set in the lab |
+| Cleanup | Lab users/files removed or reverted |
 
 ## Code Walkthrough
 
@@ -382,12 +385,11 @@ echo "Shared directory ready: $(ls -ld "$DIR")"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Default new files to umask `027` or stricter in shared multi-user systems
+- Never leave secrets world-readable (`chmod 600` / `640` as appropriate); audit with `find /path -perm -o=r`
+- Avoid unnecessary SUID/SGID bits — prefer capabilities or polkit for specific privileges
+- Keep service accounts owning only their runtime directories; do not reuse shared UIDs across unrelated services
+- On shared hosts, disable or carefully control ACLs that grant broad group write
 
 ## Common Mistakes
 

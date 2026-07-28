@@ -46,34 +46,8 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+![Architecture diagram for environment variables shell config](../assets/images/environment-variables-shell-config.svg)
 
-Login: Login {
-        L1: "SSH / Console login"
-        LP: "/etc/profile"
-        L1 -> LP
-        LBP: "~/.bash_profile or ~/.profile"
-        LP -> LBP
-    }
-    Interactive: Interactive {
-        T1: "New terminal tab"
-        BR: "~/.bashrc"
-        T1 -> BR
-        LBP -> BR
-    }
-    NonInteractive: NonInteractive {
-        S1: "Script / cron / CI"
-        ENV: "Inherited environment only"
-        S1 -> ENV
-    }
-    EV: "Environment Variables"
-    Interactive.BR -> EV
-    Login.LBP -> EV
-    Login.LP -> EV
-    P: "Child Processes"
-    EV -> P
-```
 
 ## Theory
 
@@ -302,9 +276,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Export/scope | Child process sees exported vars; unexported stay parent-only |
+| Config files | Shell rc/profile changes take effect in a new shell |
+| Persistence | Lab env file permissions are restrictive (`600`/`640`) |
+| Cleanup | Experimental exports and rc snippets reverted |
 
 ## Code Walkthrough
 
@@ -395,12 +370,11 @@ exec /usr/bin/myapp
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Never export API keys or passwords in world-readable shell rc files; use `0600` secret files or a secrets manager
+- Avoid putting secrets in process environments that child processes inherit unnecessarily
+- Review `~/.bashrc` / `/etc/profile.d` changes — malicious PATH prepends are a common persistence technique
+- Prefer systemd `EnvironmentFile=` with locked permissions over ad-hoc `export` in shared shells
+- Clear sensitive variables after use in interactive sessions when working on shared bastions
 
 ## Common Mistakes
 

@@ -1,0 +1,25 @@
+direction: down
+
+Client: Client {
+        APP: "Application / Browser"
+        RES: "Recursive Resolver\n8.8.8.8 · 1.1.1.1"
+    }
+    Auth: "Authoritative DNS — example.com zone" {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        NS: "NS Records\nns1.example.com"
+        SOA: "SOA Record\nserial · refresh · expire"
+        A: "A / AAAA\nhost → IP"
+        CNAME: "CNAME\nalias → target"
+        MX: "MX\nmail priority"
+        TXT: "TXT\nSPF · DKIM · verify"
+    }
+    Client.APP -> Client.RES
+    Client.RES -> Auth.NS
+    Auth.NS -> Auth.SOA
+    Auth.NS -> Auth.A
+    Auth.NS -> Auth.CNAME
+    Auth.NS -> Auth.MX
+    Auth.NS -> Auth.TXT

@@ -1,0 +1,31 @@
+direction: right
+
+Git: Git {
+        PUSH: "Push / PR / Tag"
+        SHA: "Commit SHA"
+    }
+    CI: Runner {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        CLONE: "Clone repo"
+        BUILD: "docker build"
+        SCAN: "Image scan"
+        PUSHIMG: "docker push"
+    }
+    Registry: Registry {
+        REG: "ghcr.io / registry.gitlab.com"
+    }
+    Deploy: Deploy {
+        STG: Staging
+        PROD: Production
+    }
+    Git.PUSH -> CI.CLONE
+    CI.CLONE -> CI.BUILD
+    Git.SHA -> CI.BUILD
+    CI.BUILD -> CI.SCAN
+    CI.SCAN -> CI.PUSHIMG
+    CI.PUSHIMG -> Registry.REG
+    Registry.REG -> Deploy.STG
+    Registry.REG -> Deploy.PROD

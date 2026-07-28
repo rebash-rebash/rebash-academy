@@ -47,7 +47,9 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Text tools compose as filters: select lines, transform streams, then extract fields for reports and automation.
+
+![Architecture diagram for Text Processing with grep, sed, and awk](../assets/images/text-processing-grep-sed-awk.svg)
 
 ## Theory
 
@@ -266,9 +268,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| grep | Filters match the documented line sets |
+| sed | Substitutions rewrite files/streams as shown |
+| awk | Field extractions print the expected columns |
+| Cleanup | Sample data files removed |
 
 ## Code Walkthrough
 
@@ -343,12 +346,11 @@ awk -F, 'NR>1 { dept[$2]++; sal[$2]+=$3; n[$2]++ }
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Do not run `sed -i` or in-place edits on production configs without a backup and change ticket
+- Be careful with regex on untrusted log data — catastrophic backtracking can DoS analysis hosts
+- Avoid piping secrets through shell history; prefer files with restricted permissions
+- When processing multi-tenant logs, ensure filters cannot leak other customers' data into shared outputs
+- Validate encoding and null bytes before feeding files into scripts that assume clean text
 
 ## Common Mistakes
 

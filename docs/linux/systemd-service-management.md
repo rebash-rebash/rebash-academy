@@ -45,40 +45,8 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+![Architecture diagram for systemd service management](../assets/images/systemd-service-management.svg)
 
-Boot: Boot {
-        FW: "Firmware/Kernel"
-        S1: "systemd PID 1"
-    }
-    Units: Units {
-        SVC: ".service units"
-        SOCK: ".socket units"
-        TMR: ".timer units"
-        TGT: ".target units"
-    }
-    Paths: Paths {
-        PKG: "/usr/lib/systemd/system/"
-        ETC: "/etc/systemd/system/"
-        RUN: "/run/systemd/system/"
-    }
-    CLI: CLI {
-        CTL: systemctl
-        JRN: journalctl
-    }
-    Boot.FW -> Boot.S1
-    Boot.S1 -> Units.TGT
-    Units.TGT -> Units.SVC
-    Units.TGT -> Units.SOCK
-    Units.TGT -> Units.TMR
-    Paths.PKG -> Units.SVC
-    Paths.ETC -> Units.SVC
-    Paths.RUN -> Units.SVC
-    CLI.CTL -> Boot.S1
-    Units.SVC -> CLI.JRN
-    Units.SOCK -> CLI.JRN
-```
 
 ## Theory
 
@@ -379,9 +347,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Unit status | `systemctl status` shows active/inactive as expected per step |
+| Enable | Unit enabled/disabled state matches lab actions |
+| Logs | `journalctl -u` shows start/stop messages for the lab unit |
+| Cleanup | Lab units stopped, disabled, and unit files removed |
 
 ## Code Walkthrough
 
@@ -476,12 +445,11 @@ fi
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Run services as non-root users with `User=` / `Group=` and tighten with `NoNewPrivileges=`, `ProtectSystem=`, `PrivateTmp=`
+- Avoid `ExecStart` shell wrappers that expand untrusted environment variables
+- Restrict unit file permissions so unprivileged users cannot alter service definitions
+- Use `CapabilityBoundingSet` to drop unused Linux capabilities
+- Review `systemctl cat` after deploy — unexpected `ExecStartPre` scripts can hide malware
 
 ## Common Mistakes
 

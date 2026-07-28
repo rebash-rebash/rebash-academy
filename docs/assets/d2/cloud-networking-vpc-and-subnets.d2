@@ -1,0 +1,53 @@
+direction: down
+
+Internet: Internet {
+      style: {
+        fill: "#dbeafe"
+        stroke: "#2563eb"
+      }
+        Users: "Users / Clients"
+    }
+    VPC: "VPC 10.0.0.0/16" {
+      style: {
+        fill: "#dcfce7"
+        stroke: "#16a34a"
+      }
+        IGW: "Internet Gateway"
+        AZ1: "Availability Zone A" {
+          style: {
+            fill: "#ffedd5"
+            stroke: "#ea580c"
+          }
+            PubA: "Public Subnet\n10.0.1.0/24"
+            PrivA: "Private Subnet\n10.0.11.0/24"
+            ALB: "Application Load Balancer"
+            AppA: "App Servers"
+            DBA: "Database Primary"
+        }
+        AZ2: "Availability Zone B" {
+          style: {
+            fill: "#f3e8ff"
+            stroke: "#9333ea"
+          }
+            PubB: "Public Subnet\n10.0.2.0/24"
+            PrivB: "Private Subnet\n10.0.12.0/24"
+            NAT: "NAT Gateway"
+            AppB: "App Servers"
+            DBB: "Database Replica"
+        }
+        RTpub: "Public Route Table\n0.0.0.0/0 → IGW"
+        RTpriv: "Private Route Table\n0.0.0.0/0 → NAT"
+    }
+    Internet.Users -> VPC.IGW
+    VPC.IGW -> VPC.AZ1.ALB
+    VPC.AZ1.ALB -> VPC.AZ1.AppA
+    VPC.AZ1.ALB -> VPC.AZ2.AppB
+    VPC.AZ1.AppA -> VPC.AZ1.DBA
+    VPC.AZ2.AppB -> VPC.AZ2.DBB
+    VPC.AZ1.PrivA -> VPC.AZ2.NAT
+    VPC.AZ2.PrivB -> VPC.AZ2.NAT
+    VPC.AZ2.NAT -> VPC.IGW
+    VPC.AZ1.PubA -> VPC.RTpub
+    VPC.AZ2.PubB -> VPC.RTpub
+    VPC.AZ1.PrivA -> VPC.RTpriv
+    VPC.AZ2.PrivB -> VPC.RTpriv

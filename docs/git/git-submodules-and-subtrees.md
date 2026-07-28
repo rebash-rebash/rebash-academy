@@ -43,34 +43,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose embedding strategy for shared Terraform modules
 - [ ] Remove submodules cleanly
 
-## Submodule vs Subtree Diagram
-
-```d2
-direction: down
-
-SUBMOD: Submodule {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        PARENT: "Parent Repo\nrecords submodule SHA"
-        CHILD: "Child Repo\nseparate .git"
-        PARENT -> CHILD: gitlink
-    }
-    SUBTREE: Subtree {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        PARENT2: "Parent Repo"
-        MERGED: "External code\nmerged into subdir/"
-        PARENT2 -> MERGED
-    }
-```
-
 ## Architecture
 
-This topic is primarily procedural. The mental model is a straight line from inputs (commands, config files, or manifests) to observable system state — verify each change with the validation steps later in this tutorial.
+Submodules pin an external repository at a commit; subtrees vendor history into a subdirectory of the parent project.
+
+![Architecture diagram for Git Submodules and Subtrees](../assets/images/git-submodules-and-subtrees.svg)
 
 ## Theory
 
@@ -244,6 +221,8 @@ git init -b main
 echo "# Infra" > README.md && git add . && git commit -m "feat: parent repo"
 ```
 
+**Expected result:** Parent repo records a submodule gitlink (160000 mode) at a pinned commit.
+
 ### Step 2 – Add submodule
 
 **Command:**
@@ -254,6 +233,8 @@ cat .gitmodules
 git commit -m "chore: add vpc submodule"
 ls -la modules/vpc/
 ```
+
+**Expected result:** `git submodule update --init` populates the working tree files.
 
 ### Step 3 – Clone parent with submodules
 
@@ -266,6 +247,8 @@ ls sub-clone/modules/vpc/main.tf 2>/dev/null || echo "submodule not initialized"
 git clone --recurse-submodules /tmp/sub-parent.git sub-clone-full
 cat sub-clone-full/modules/vpc/main.tf
 ```
+
+**Expected result:** Updating the submodule and committing the parent advances the pin.
 
 ### Step 4 – Update submodule
 
@@ -280,6 +263,8 @@ git submodule update --remote modules/vpc
 git add modules/vpc && git commit -m "chore: bump vpc to v2"
 ```
 
+**Expected result:** Subtree (if used) copies history into the prefix path as shown.
+
 ### Step 5 – Subtree alternative (separate demo)
 
 **Command:**
@@ -293,6 +278,8 @@ ls vendor/vpc/
 git log --oneline -3
 ```
 
+**Expected result:** Fresh clone instructions you documented would include submodule init.
+
 ### Step 6 – Clean up
 
 **Command:**
@@ -301,6 +288,9 @@ git log --oneline -3
 rm -rf /tmp/sub-child /tmp/sub-child.git /tmp/sub-parent /tmp/sub-clone \
   /tmp/sub-clone-full /tmp/subtree-demo
 ```
+
+**Expected result:** Lab repos removed.
+
 
 ## Validation
 
@@ -312,9 +302,10 @@ Confirm the lab before moving on:
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Add/update | Submodule commit pin visible in parent tree |
+| Init/sync | Fresh clone with submodule init shows expected files |
+| Subtree | Subtree add/pull (if practised) updates the vendored path |
+| Cleanup | Lab parent and submodule repos removed |
 
 ## Code Walkthrough
 
@@ -330,12 +321,11 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Pin submodule commits; floating `main` tips invite supply-chain surprises
+- Verify remote URLs for submodules — typosquatting is a real risk
+- Update submodules deliberately and run their tests in your CI
+- Prefer subtree or vendoring when you need full control of third-party history
+- Audit submodule changes in PRs as carefully as first-party code
 
 ## Common Mistakes
 
