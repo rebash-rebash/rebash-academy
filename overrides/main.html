@@ -8,6 +8,8 @@
   {% if page.meta and page.meta.tags %}
     <meta name="keywords" content="{{ page.meta.tags | join(', ') }}">
   {% endif %}
+  <link rel="icon" href="{{ 'assets/images/favicon.svg' | url }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ 'assets/images/apple-touch-icon.png' | url }}">
   <link rel="canonical" href="{{ page.canonical_url }}">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{{ page.title | striptags }}">

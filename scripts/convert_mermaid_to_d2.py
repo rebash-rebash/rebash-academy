@@ -84,7 +84,11 @@ def _quote(text: str) -> str:
     if not text:
         return '""'
     if re.search(r'[:#{"\'\\/\n]', text) or " " in text or text[0].isdigit():
-        escaped = text.replace("\\", "\\\\").replace('"', '\\"')
+        # Preserve D2 newline escapes (\\n) while escaping other backslashes/quotes.
+        parts = text.split("\\n")
+        escaped = "\\n".join(
+            part.replace("\\", "\\\\").replace('"', '\\"') for part in parts
+        )
         return f'"{escaped}"'
     return text
 

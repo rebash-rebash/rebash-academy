@@ -56,8 +56,8 @@ Git: Git {
     }
     CI: Runner {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         CLONE: "Clone repo"
         BUILD: "docker build"

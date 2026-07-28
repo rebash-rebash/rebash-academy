@@ -54,8 +54,8 @@ Application processes write to stdout/stderr. The container runtime captures str
 ```d2
 direction: right
 
-APP: "Application\\nstdout / stderr"
-    ENGINE: "Docker Engine\\nlogging driver"
+APP: "Application\nstdout / stderr"
+    ENGINE: "Docker Engine\nlogging driver"
     LOCAL: "json-file on disk"
     SYSLOG: syslog
     FLUENT: "Fluentd / Fluent Bit"

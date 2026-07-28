@@ -26,7 +26,7 @@ Every kubectl command, every Pod schedule, and every Service endpoint flows thro
 
 This tutorial maps the full Kubernetes architecture: API server, etcd, scheduler, controller manager, kubelet, kube-proxy, and the container runtime interface (CRI). You will learn request flows, high availability patterns, and how this compares to Docker Engine's client-daemon model.
 
-This is **Tutorial 2** in **Module 1: Foundations** of the REBASH Academy Kubernetes series. Complete [Introduction to Kubernetes and Orchestration](introduction-to-kubernetes-and-orchestration.md) first. If you come from Docker, review [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md) for the concept bridge. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 2** in **Module 1: Foundations** of the REBASH Academy Kubernetes series. Complete [Introduction to Kubernetes and Orchestration](introduction-to-kubernetes-and-orchestration.md) first. If you come from Docker, review [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md) for the concept bridge.
 
 ## Prerequisites
 
@@ -55,16 +55,16 @@ direction: down
 
 USERS: Clients {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         KUBECTL: "kubectl / CI / GitOps"
         DASH: "Dashboard / UI"
     }
     CP: "Control Plane" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         API: kube-apiserver
         ETCD: etcd
@@ -78,12 +78,12 @@ USERS: Clients {
     }
     NODE1: "Worker Node" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         KL1: kubelet
         KP1: kube-proxy
-        CR1: "container runtime\\ncontainerd + runc"
+        CR1: "container runtime\ncontainerd + runc"
         POD1: Pods
         KL1 -> CR1
         CR1 -> POD1
@@ -91,8 +91,8 @@ USERS: Clients {
     }
     NODE2: "Worker Node" {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
         KL2: kubelet
         KP2: kube-proxy

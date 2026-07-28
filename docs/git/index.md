@@ -16,28 +16,62 @@ Master version control from first commit to production DevOps workflows — bran
 
 ## Overview
 
-The REBASH Academy **Git** track is a structured, 20-tutorial curriculum for developers and DevOps engineers. Every commit in infrastructure-as-code, every pull request in your pipeline, and every GitOps deployment starts here. Each tutorial follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, commands, best practices, and interview questions.
+The REBASH Academy **Git** track is a structured, 20-tutorial curriculum for developers and DevOps engineers. Every commit in infrastructure-as-code, every pull request in your pipeline, and every GitOps deployment starts here. Each tutorial includes theory, hands-on labs, commands, best practices, and interview questions.
 
 !!! tip "Learning Path"
     Git is step 3 in the [DevOps Engineer learning path](../learning-paths/index.md) — after [Linux](../linux/index.md) and [Networking](../networking/index.md).
 
 ## Curriculum Plan
 
-```d2
-direction: down
+Modules and tutorials in order. Use the tables below for links, level, and time estimates.
 
-M1: "Module 1: Foundations"
-    M2: "Module 2: Essential Workflow"
-    M1 -> M2
-    M3: "Module 3: Branching"
-    M2 -> M3
-    M4: "Module 4: Collaboration"
-    M3 -> M4
-    M5: "Module 5: Recovery & Debugging"
-    M4 -> M5
-    M6: "Module 6: Advanced & DevOps"
-    M5 -> M6
-```
+<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
+
+<p class="rebash-tree-title">Git Track</p>
+
+<ul class="rebash-tree">
+  <li>1 · Foundations
+<ul>
+  <li>Introduction to Git and Version Control</li>
+  <li>Git Installation and Configuration</li>
+  <li>Understanding the Git Object Model</li>
+</ul></li>
+  <li>2 · Essential Workflow
+<ul>
+  <li>Creating and Cloning Repositories</li>
+  <li>Basic Git Workflow — Add, Commit, Push</li>
+  <li>Viewing History and Diffs</li>
+</ul></li>
+  <li>3 · Branching
+<ul>
+  <li>Branching Fundamentals</li>
+  <li>Merging and Merge Conflicts</li>
+  <li>Rebasing and Interactive Rebase</li>
+</ul></li>
+  <li>4 · Collaboration
+<ul>
+  <li>Working with Remotes</li>
+  <li>Pull Requests and Code Review</li>
+  <li>gitignore and gitattributes</li>
+</ul></li>
+  <li>5 · Recovery
+<ul>
+  <li>Undoing Changes — Reset, Revert, Stash</li>
+  <li>Cherry-pick and Reflog</li>
+  <li>Git Bisect and Debugging History</li>
+</ul></li>
+  <li>6 · Advanced &amp; DevOps
+<ul>
+  <li>Git Hooks and Automation</li>
+  <li>Advanced Git Workflows</li>
+  <li>Git Submodules and Subtrees</li>
+  <li>Signed Commits and Git Security</li>
+  <li>Git in CI/CD and DevOps</li>
+</ul></li>
+</ul>
+</figure>
+
+
 
 ### Module 1 – Foundations
 

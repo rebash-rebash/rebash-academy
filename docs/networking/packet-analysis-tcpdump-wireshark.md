@@ -54,8 +54,8 @@ direction: right
 
 Capture: "Capture Point" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         NIC: "eth0 / any interface"
         TD: "tcpdump / dumpcap"

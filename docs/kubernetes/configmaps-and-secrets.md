@@ -57,26 +57,26 @@ direction: down
 
 Store: "etcd — namespace scoped" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        CM: "ConfigMap app-config\\nLOG_LEVEL=debug\\nconfig.yaml"
-        SEC: "Secret db-credentials\\nusername / password"
+        CM: "ConfigMap app-config\nLOG_LEVEL=debug\nconfig.yaml"
+        SEC: "Secret db-credentials\nusername / password"
     }
     Pod: "Pod spec" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         ENV: "envFrom / valueFrom"
-        VOL: "volumeMount\\n/etc/config"
+        VOL: "volumeMount\n/etc/config"
     }
     Container: Container {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
-        APP: "Application reads\\nenv vars and files"
+        APP: "Application reads\nenv vars and files"
     }
     Store.CM -> Pod.ENV
     Store.CM -> Pod.VOL

@@ -28,7 +28,7 @@ Firewalls are the first line of defense between your infrastructure and the inte
 
 Misconfigured firewalls cause more production outages than malicious attacks. A rule that blocks health-check traffic takes down a load-balanced fleet; an overly permissive rule exposes databases to the public internet. This tutorial teaches you how firewalls actually work, how to manage them on Linux, and how to design **least-privilege** policies that balance security with operability.
 
-This is **Tutorial 11** in **Module 4: Application Layer** of the REBASH Academy Networking series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 11** in **Module 4: Application Layer** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -59,12 +59,12 @@ Internet: Internet {
         ATT: "External Clients"
     }
     Perimeter: Perimeter {
-        NACL: "Network ACL\\nstateless · subnet boundary"
-        SG: "Security Group\\nstateful · instance ENI"
+        NACL: "Network ACL\nstateless · subnet boundary"
+        SG: "Security Group\nstateful · instance ENI"
     }
     Host: Host {
-        UFW: "UFW / nftables\\nhost firewall"
-        APP: "Application\\nnginx · postgres"
+        UFW: "UFW / nftables\nhost firewall"
+        APP: "Application\nnginx · postgres"
     }
     Internet.ATT -> Perimeter.NACL
     Perimeter.NACL -> Perimeter.SG

@@ -1,0 +1,199 @@
+---
+title: Remote State and Backends
+description: "Local state cannot support teams. Remote backends provide shared storage, locking, and often encryption. This tutorial covers backend concepts, S3+Dyn"
+difficulty: intermediate
+estimated_time: "45 min"
+author: Shaik Basha
+last_updated: "2026-07-28"
+category: terraform
+tags:
+  - terraform
+  - backend
+  - remote-state
+prerequisites:
+  - Completed Terraform State Fundamentals
+comments: false
+---
+
+# Remote State and Backends
+
+## Overview
+
+Local state cannot support teams. Remote backends provide shared storage, locking, and often encryption. This tutorial covers backend concepts, S3+DynamoDB and HCP Terraform patterns, and safe migration ideas — with a local lab plus production-shaped examples.
+
+This is **Tutorial 9** in **Module 3: Collaboration and Scale** of the REBASH Academy Terraform track.
+
+## Learning Objectives
+
+By the end of this tutorial, you will be able to:
+
+- [ ] Explain why remote state and locking matter
+- [ ] Compare local, S3, and HCP Terraform/cloud backends
+- [ ] Read a production S3 backend configuration
+- [ ] Describe init -migrate-state at a high level
+- [ ] Use terraform_remote_state cautiously
+
+## Prerequisites
+
+- Completed Terraform State Fundamentals
+
+- Terraform CLI **1.9+** (1.15.x recommended)
+- Ability to create directories and edit files
+
+## Architecture
+
+![Architecture diagram for Remote State and Backends](../assets/images/terraform-remote-backend.svg)
+
+
+## Theory
+
+### Requirements for teams
+
+- Shared durable storage
+- Mutual exclusion (locking)
+- Encryption at rest / in transit
+- Access control and audit
+
+### S3 backend (AWS example)
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "acme-tf-state"
+    key            = "payments/terraform.tfstate"
+    region         = "eu-west-1"
+    dynamodb_table = "acme-tf-locks"
+    encrypt        = true
+  }
+}
+```
+
+### HCP Terraform / `cloud` block
+
+HashiCorp-hosted runs, state, and policy integration. Mutually exclusive with `backend`.
+
+### `terraform_remote_state`
+
+Reads outputs from another state. Prefer lightweight outputs or a real data plane (SSM Parameter Store, etc.) over tight stack coupling.
+
+## Hands-on Lab
+
+Demonstrate an explicit local backend and document remote config (no AWS required):
+
+```hcl
+terraform {
+  required_version = ">= 1.9.0"
+  backend "local" {
+    path = "state/terraform.tfstate"
+  }
+  required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.9"
+    }
+  }
+}
+
+resource "local_file" "x" {
+  filename = "${path.module}/x.txt"
+  content  = "remote-state-lab\n"
+}
+```
+
+```bash
+mkdir -p state
+terraform init -input=false
+terraform apply -input=false -auto-approve
+ls -la state/
+terraform destroy -input=false -auto-approve
+```
+
+## Code Walkthrough
+
+The local backend path shows that ‘backend’ is just the state storage strategy — remote backends swap the storage engine.
+
+Explain every resource argument you introduced in the lab: why it exists, what happens if omitted, and how it appears in state after apply. Keep `required_version` and `required_providers` in every root module you create going forward.
+
+## Validation
+
+```bash
+terraform fmt -check
+terraform init -input=false
+terraform validate
+terraform plan -input=false
+```
+
+| Check | Pass criteria |
+|-------|----------------|
+| fmt | Exit code 0 |
+| validate | Configuration valid |
+| plan/apply | Matches the lab expectations |
+
+## Best Practices
+
+- Keep root modules explicit about `required_version` and `required_providers`
+- Prefer readable modules over clever expressions
+- Run plans in CI before any production apply
+- Document outputs that other stacks consume
+- Treat state and plan artifacts as sensitive
+
+## Security Considerations
+
+- Limit who can read remote state
+- Do not commit secrets in tfvars or code
+- Use least-privilege credentials for providers
+- Review plan output for unexpected destroys
+- Enable encryption and locking on remote backends when you leave local labs
+
+## Common Mistakes
+
+!!! warning "Remote state without locking"
+    Concurrent apply corruption. **Fix:** Always enable a lock table/mechanism.
+
+!!! warning "Open S3 ACLs on state buckets"
+    Data breach. **Fix:** Block public access; encrypt; least-privilege IAM.
+
+## Troubleshooting
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Provider download fails | Network/registry blocked | Check access to registry.terraform.io |
+| validate fails before init | Providers not installed | Run `terraform init` |
+| Unexpected replace | ForceNew argument change | Read plan carefully; use moved/for_each wisely |
+| State locked | Another apply in progress | Wait or follow backend unlock procedures carefully |
+| Permission denied writing files | Directory permissions | Ensure workspace is writable |
+
+## Interview Questions
+
+1. What problem does Remote State and Backends solve in a Terraform workflow?
+2. How does this topic change what you put in Git versus what stays local or remote?
+3. Which official HashiCorp documentation would you consult before changing production?
+4. How would you validate a change related to this topic in CI before apply?
+5. What failure mode appears if two engineers ignore this topic on the same state?
+6. How does this interact with Terraform state?
+7. What is a secure default related to this topic?
+8. Describe a common anti-pattern and its fix.
+9. How would you explain this topic to a teammate in two minutes?
+10. What production checklist item captures this topic?
+11. When would you intentionally not use the default approach taught here?
+12. How does this topic differ between a root module and a child module?
+
+## Summary
+
+- Local state cannot support teams. Remote backends provide shared storage, locking, and often encryption. This tutorial covers backend concepts, S3+DynamoDB and HCP Terraform patterns, and safe migration ideas — with a local lab plus production-shaped examples.
+- Practice the lab until `fmt` / `validate` / `plan` are muscle memory
+- Carry forward provider pins, sensitive handling, and plan-before-apply discipline
+
+## Related Tutorials
+
+- Track overview: [Terraform](index.md)
+- Previous: [Terraform State Fundamentals](terraform-state-fundamentals.md)
+- Next: [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md)
+
+## References
+
+1. [Terraform documentation](https://developer.hashicorp.com/terraform/docs)
+2. [Terraform CLI commands](https://developer.hashicorp.com/terraform/cli/commands)
+3. [Terraform language](https://developer.hashicorp.com/terraform/language)
+4. [Terraform Registry](https://registry.terraform.io/)
+5. [Version constraints](https://developer.hashicorp.com/terraform/language/expressions/version-constraints)

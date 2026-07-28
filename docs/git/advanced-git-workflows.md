@@ -50,17 +50,17 @@ direction: down
 
 TBD: Trunk-Based {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         MAIN1: "main — always deployable"
-        FB1: "short feature branches\\nhours to days"
+        FB1: "short feature branches\nhours to days"
         FB1 -> MAIN1
     }
     GHF: "GitHub Flow" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         MAIN2: main
         FB2: "feature branch + PR"
@@ -70,8 +70,8 @@ TBD: Trunk-Based {
     }
     GF: GitFlow {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         MAIN3: main
         DEV: develop

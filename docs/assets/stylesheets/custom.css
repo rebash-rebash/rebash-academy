@@ -1193,40 +1193,130 @@
   flex-wrap: wrap;
 }
 
-/* Architecture diagrams (build-time D2 SVG) */
+/* Architecture diagrams — rounded frame hugs content, not the full column */
 .md-typeset .mermaid,
 .md-typeset figure.rebash-diagram {
+  display: table;
+  width: auto;
+  max-width: 100%;
   margin: 1.75rem auto;
-  padding: 1.125rem 1rem;
-  width: 100%;
-  max-width: min(100%, 40rem);
-  overflow-x: auto;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.04);
+  padding: 0.85rem 1rem;
+  overflow: auto;
+  background: var(--md-default-bg-color, #fff);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   text-align: center;
+  box-sizing: border-box;
 }
 
 [data-md-color-scheme="slate"] .md-typeset .mermaid,
 [data-md-color-scheme="slate"] .md-typeset figure.rebash-diagram {
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-  border-color: #334155;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.2);
+  background: var(--md-default-bg-color, #1e293b);
+  border-color: rgba(71, 85, 105, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
-.md-typeset .mermaid svg,
-.md-typeset figure.rebash-diagram svg {
+/* Outer SVG — scale by width; avoid crushing tall trees with a low max-height */
+.md-typeset figure.rebash-diagram > svg {
   display: block;
-  width: 100% !important;
   max-width: 100% !important;
   height: auto !important;
-  margin-inline: auto;
+  margin: 0 auto;
+}
+
+/* Hierarchy trees — site typography, CSS connectors (not monospace) */
+.md-typeset figure.rebash-tree-diagram {
+  text-align: left;
+  padding: 1.1rem 1.35rem 1.2rem;
+}
+
+.md-typeset figure.rebash-tree-diagram .rebash-tree-title {
+  margin: 0 0 0.65rem;
+  padding: 0;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--md-typeset-color);
+  line-height: 1.35;
+}
+
+.md-typeset figure.rebash-tree-diagram ul.rebash-tree {
+  list-style: none !important;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--md-typeset-color);
+}
+
+.md-typeset figure.rebash-tree-diagram ul.rebash-tree ul {
+  list-style: none !important;
+  margin: 0.15rem 0 0.35rem;
+  padding: 0 0 0 1.15rem;
+  border-left: 2px solid rgba(148, 163, 184, 0.45);
+}
+
+.md-typeset figure.rebash-tree-diagram ul.rebash-tree li {
+  margin: 0;
+  padding: 0.28rem 0 0.28rem 0.85rem;
+  position: relative;
+  font-weight: 500;
+  list-style: none !important;
+}
+
+.md-typeset figure.rebash-tree-diagram ul.rebash-tree li::marker {
+  content: none;
+}
+
+.md-typeset figure.rebash-tree-diagram ul.rebash-tree li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.95em;
+  width: 0.65rem;
+  border-top: 2px solid rgba(148, 163, 184, 0.45);
+}
+
+.md-typeset figure.rebash-tree-diagram > ul.rebash-tree > li {
+  padding-left: 0;
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.md-typeset figure.rebash-tree-diagram > ul.rebash-tree > li::before {
+  display: none;
+}
+
+.md-typeset figure.rebash-tree-diagram ul.rebash-tree li .rebash-tree-note {
+  display: inline;
+  margin-left: 0.35rem;
+  font-weight: 400;
+  font-size: 0.88em;
+  color: var(--md-default-fg-color--light, #64748b);
+}
+
+[data-md-color-scheme="slate"] .md-typeset figure.rebash-tree-diagram ul.rebash-tree ul,
+[data-md-color-scheme="slate"] .md-typeset figure.rebash-tree-diagram ul.rebash-tree li::before {
+  border-color: rgba(100, 116, 139, 0.55);
+}
+
+.md-typeset .mermaid > svg {
+  display: block;
+  width: auto !important;
+  max-width: 100% !important;
+  max-height: min(62vh, 32rem) !important;
+  height: auto !important;
+  margin: 0 auto;
 }
 
 .md-typeset figure.rebash-diagram svg text,
 .md-typeset figure.rebash-diagram svg tspan {
   font-family: "Source Sans Pro", Roboto, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 /* Responsive */

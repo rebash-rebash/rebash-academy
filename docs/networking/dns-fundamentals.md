@@ -52,16 +52,16 @@ direction: down
 
 Client: Client {
         APP: Application
-        STUB: "Stub Resolver\\nglibc / systemd-resolved"
+        STUB: "Stub Resolver\nglibc / systemd-resolved"
     }
     Resolver: Resolver {
-        REC: "Recursive Resolver\\n8.8.8.8 / corporate DNS"
+        REC: "Recursive Resolver\n8.8.8.8 / corporate DNS"
         CACHE: "Local Cache"
     }
     Authoritative: Authoritative {
         ROOT: "Root ."
         TLD: "TLD .com"
-        AUTH: "Auth NS\\nexample.com"
+        AUTH: "Auth NS\nexample.com"
     }
     Client.APP -> Client.STUB
     Client.STUB -> Resolver.REC

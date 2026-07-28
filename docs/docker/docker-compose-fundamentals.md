@@ -53,14 +53,14 @@ direction: down
 
 Compose: Project {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        WEB: "web service\\nnginx:alpine"
-        API: "api service\\ncustom build"
-        DB: "db service\\npostgres:16"
-        VOL: "named volume\\npgdata"
-        NET: "user-defined network\\napp-net"
+        WEB: "web service\nnginx:alpine"
+        API: "api service\ncustom build"
+        DB: "db service\npostgres:16"
+        VOL: "named volume\npgdata"
+        NET: "user-defined network\napp-net"
     }
     USER: "Browser / curl"
     USER -> Compose.WEB: "port 8080"

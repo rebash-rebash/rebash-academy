@@ -42,7 +42,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Manage foreground/background jobs with `&`, `jobs`, `fg`, and `bg`
 - [ ] Identify and resolve zombie and orphan process conditions
 
-
 ## Theory
 
 ### Process states

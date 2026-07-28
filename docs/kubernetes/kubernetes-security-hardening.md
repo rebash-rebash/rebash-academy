@@ -65,8 +65,8 @@ Perimeter: Perimeter {
     }
     Namespace: "votestack namespace" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         NETP: NetworkPolicy
         PSS: "Pod Security: restricted"

@@ -59,17 +59,17 @@ Clients: Clients {
     }
     LB: "Load Balancer Tier" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         VIP: "Virtual IP / DNS Name"
         HC: "Health Check Engine"
-        ALGO: "Scheduler\\nround-robin · least conn · ip hash"
+        ALGO: "Scheduler\nround-robin · least conn · ip hash"
     }
     Backends: Backends {
-        W1: "Web Server 1\\nhealthy"
-        W2: "Web Server 2\\nhealthy"
-        W3: "Web Server 3\\nunhealthy"
+        W1: "Web Server 1\nhealthy"
+        W2: "Web Server 2\nhealthy"
+        W3: "Web Server 3\nunhealthy"
     }
     Clients.C1 -> LB.VIP
     Clients.C2 -> LB.VIP

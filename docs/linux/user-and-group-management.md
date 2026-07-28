@@ -43,7 +43,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Differentiate human accounts, system accounts, and service accounts
 - [ ] Troubleshoot login failures, locked accounts, and sudo permission errors
 
-
 ## Theory
 
 ### User identifiers

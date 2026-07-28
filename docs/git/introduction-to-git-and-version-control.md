@@ -26,7 +26,7 @@ Every production deployment, Terraform apply, Kubernetes manifest change, and CI
 
 This tutorial establishes your mental model: what **version control** solves, how **distributed** systems like Git differ from legacy **centralized** tools, why Git became the industry standard, and the core vocabulary — repository, commit, branch, remote — you will use daily in infrastructure-as-code, GitOps, and application pipelines.
 
-This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Git series. We recommend completing the [Linux Foundations track](../linux/index.md) first, since all hands-on labs assume a Linux shell. Basic [networking concepts](../networking/index.md) become relevant when you push to remotes in later tutorials. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Git series. We recommend completing the [Linux Foundations track](../linux/index.md) first, since all hands-on labs assume a Linux shell. Basic [networking concepts](../networking/index.md) become relevant when you push to remotes in later tutorials.
 
 ## Prerequisites
 
@@ -56,28 +56,28 @@ direction: down
 
 CVCS: "Centralized VCS (e.g., SVN)" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        SVN_SRV: "Central Server\\nsingle source of truth"
-        DEV_A: "Developer A\\nworking copy only"
-        DEV_B: "Developer B\\nworking copy only"
+        SVN_SRV: "Central Server\nsingle source of truth"
+        DEV_A: "Developer A\nworking copy only"
+        DEV_B: "Developer B\nworking copy only"
         DEV_A -> SVN_SRV: "commit / update"
         DEV_B -> SVN_SRV: "commit / update"
     }
     DVCS: "Distributed VCS (Git)" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         REMOTE: "Remote — GitHub / GitLab / Bitbucket"
-        DEV_C: "Developer C\\nfull local repo"
-        DEV_D: "Developer D\\nfull local repo"
-        CI: "CI Runner\\nfull clone"
+        DEV_C: "Developer C\nfull local repo"
+        DEV_D: "Developer D\nfull local repo"
+        CI: "CI Runner\nfull clone"
         DEV_C <-> REMOTE: "push / pull"
         DEV_D <-> REMOTE: "push / pull"
         CI <-> REMOTE: "fetch / clone"
-        DEV_C -> DEV_C: "local commits\\nno network" {
+        DEV_C -> DEV_C: "local commits\nno network" {
           style.stroke-dash: 3
         }
     }
@@ -187,8 +187,8 @@ direction: right
 DEV: "Developer / Engineer"
     GIT: "Git Repository"
     PR: "Pull Request / MR"
-    CI: "CI Pipeline\\nGitHub Actions / GitLab CI"
-    CD: "CD / GitOps\\nArgo CD / Flux"
+    CI: "CI Pipeline\nGitHub Actions / GitLab CI"
+    CD: "CD / GitOps\nArgo CD / Flux"
     PROD: Production
     DEV -> GIT: "commit / push"
     GIT -> PR

@@ -49,7 +49,7 @@ By the end of this tutorial, you will be able to:
 direction: right
 
 DEV: Developer
-    KEY: "Signing Key\\nGPG or SSH"
+    KEY: "Signing Key\nGPG or SSH"
     COMMIT: "Signed Commit"
     REMOTE: "GitHub / GitLab"
     VERIFY: "Signature Verification"

@@ -17,29 +17,62 @@ Master the command line, system administration, and shell scripting — from fir
 ## Overview
 
 The REBASH Academy **Linux** track is a structured, 20-tutorial curriculum designed for students
-and professionals. Each tutorial follows our [documentation standards](../about.md#documentation-standards)
-with theory, step-by-step labs, commands, best practices, and interview questions.
+and professionals. Each tutorial includes theory, step-by-step labs, commands, best practices, and interview questions.
 
 !!! tip "Learning Path"
     Linux is the first step in the [DevOps Engineer learning path](../learning-paths/index.md).
 
 ## Curriculum Plan
 
-```d2
-direction: down
+Modules and tutorials in order. Use the tables below for links, level, and time estimates.
 
-M1: "Module 1: Foundations"
-    M2: "Module 2: Users & Permissions"
-    M1 -> M2
-    M3: "Module 3: Processes & Services"
-    M2 -> M3
-    M4: "Module 4: Text & Scripting"
-    M3 -> M4
-    M5: "Module 5: Remote Admin"
-    M4 -> M5
-    M6: "Module 6: Storage & Operations"
-    M5 -> M6
-```
+<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
+
+<p class="rebash-tree-title">Linux Track</p>
+
+<ul class="rebash-tree">
+  <li>1 · Foundations
+<ul>
+  <li>Introduction to Linux</li>
+  <li>Linux Filesystem Hierarchy</li>
+  <li>Essential Linux Commands</li>
+</ul></li>
+  <li>2 · Users &amp; Permissions
+<ul>
+  <li>File Permissions and Ownership</li>
+  <li>User and Group Management</li>
+</ul></li>
+  <li>3 · Processes &amp; Services
+<ul>
+  <li>Process Management</li>
+  <li>systemd Service Management</li>
+  <li>Package Management</li>
+</ul></li>
+  <li>4 · Text &amp; Scripting
+<ul>
+  <li>Text Processing (grep, sed, awk)</li>
+  <li>Shell Scripting Fundamentals</li>
+</ul></li>
+  <li>5 · Remote Admin
+<ul>
+  <li>SSH and Remote Administration</li>
+  <li>Remote systemd Service Control</li>
+</ul></li>
+  <li>6 · Storage &amp; Ops
+<ul>
+  <li>Disk and Filesystem Management</li>
+  <li>Log Management with journalctl</li>
+  <li>Cron and Task Scheduling</li>
+  <li>Environment Variables &amp; Shell Config</li>
+  <li>Linux Networking Essentials</li>
+  <li>File Archiving and Compression</li>
+  <li>Linux Security Hardening Basics</li>
+  <li>Troubleshooting Linux Systems</li>
+</ul></li>
+</ul>
+</figure>
+
+
 
 ### Module 1 – Foundations
 

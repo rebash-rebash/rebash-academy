@@ -47,9 +47,9 @@ By the end of this tutorial, you will be able to:
 ```d2
 direction: right
 
-LOCAL: "Local Repo\\nrefs/heads/main"
-    RTB: "Remote-tracking\\norigin/main"
-    REMOTE: "Remote Server\\nGitHub/GitLab"
+LOCAL: "Local Repo\nrefs/heads/main"
+    RTB: "Remote-tracking\norigin/main"
+    REMOTE: "Remote Server\nGitHub/GitLab"
     CI: "CI Pipeline"
     LOCAL -> REMOTE: "git push"
     REMOTE -> RTB: "git fetch"

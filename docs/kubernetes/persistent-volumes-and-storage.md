@@ -57,32 +57,32 @@ direction: right
 
 Admin: "Cluster Admin" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        SC: "StorageClass\\nfast-ssd"
+        SC: "StorageClass\nfast-ssd"
     }
     Dev: Developer {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        PVC: "PVC data-vol\\n10Gi RWO"
+        PVC: "PVC data-vol\n10Gi RWO"
     }
     System: "Control Plane" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
-        PROV: "Dynamic Provisioner\\nEBS / hostPath / NFS"
-        PV: "PersistentVolume\\n10Gi Bound"
+        PROV: "Dynamic Provisioner\nEBS / hostPath / NFS"
+        PV: "PersistentVolume\n10Gi Bound"
     }
     Workload: Pod {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
-        MNT: "volumeMount\\n/var/lib/data"
+        MNT: "volumeMount\n/var/lib/data"
     }
     Admin.SC -> System.PROV
     Dev.PVC -> System.PROV

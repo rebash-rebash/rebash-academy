@@ -43,7 +43,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Hold or pin package versions to prevent unintended upgrades
 - [ ] Troubleshoot broken dependencies, cache corruption, and GPG key errors
 
-
 ## Theory
 
 ### Package manager responsibilities

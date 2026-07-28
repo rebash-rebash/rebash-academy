@@ -28,7 +28,7 @@ A **VPN (Virtual Private Network)** creates an encrypted tunnel over an untruste
 
 **Tunneling** wraps one protocol inside another — IP packets inside encrypted UDP, Ethernet frames inside GRE. VPNs are the primary mechanism for **hybrid cloud** connectivity when dedicated links (Direct Connect, ExpressRoute) are not yet justified. Misconfigured VPNs cause subtle outages: one-way traffic, MTU black holes, and overlapping CIDR blocks with VPC peering.
 
-This is **Tutorial 18** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 18** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -58,19 +58,19 @@ direction: right
 
 OnPrem: "On-Premises 192.168.0.0/16" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         SRV: "App Servers"
         VPNC: "VPN Customer Gateway"
     }
     Internet: Internet {
-        TUN: "Encrypted Tunnel\\nIPsec / WireGuard"
+        TUN: "Encrypted Tunnel\nIPsec / WireGuard"
     }
     Cloud: "AWS VPC 10.0.0.0/16" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         VPNGW: "VPN Gateway / TGW"
         EC2: "EC2 Instances"

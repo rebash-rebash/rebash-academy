@@ -56,8 +56,8 @@ Security layers stack from the host kernel upward. Each runtime flag removes att
 direction: down
 
 HOST: "Host kernel + patches"
-    SECCOMP: "seccomp profile\\nsyscall filter"
-    CAPS: "Linux capabilities\\nCAP_DROP / CAP_ADD"
+    SECCOMP: "seccomp profile\nsyscall filter"
+    CAPS: "Linux capabilities\nCAP_DROP / CAP_ADD"
     USER: "Non-root UID / GID"
     RO: "Read-only rootfs + tmpfs"
     APP: "Application code"

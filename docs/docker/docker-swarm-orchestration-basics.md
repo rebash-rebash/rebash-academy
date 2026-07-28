@@ -59,8 +59,8 @@ Managers: Managers {
     }
     Swarm: Objects {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         SVC: "Service api:3 replicas"
         T1: Task

@@ -43,7 +43,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Resolve full-disk emergencies without data loss
 - [ ] Triage network and performance issues with a layered diagnostic model
 
-
 ## Theory
 
 ### The systematic troubleshooting workflow

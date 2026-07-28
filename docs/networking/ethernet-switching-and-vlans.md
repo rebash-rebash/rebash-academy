@@ -56,21 +56,21 @@ direction: down
 
 VLAN10: "VLAN 10 — Web (10.0.1.0/24)" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        S1: "Server A\\nMAC aa:bb:cc:01"
-        S2: "Server B\\nMAC aa:bb:cc:02"
+        S1: "Server A\nMAC aa:bb:cc:01"
+        S2: "Server B\nMAC aa:bb:cc:02"
     }
     VLAN20: "VLAN 20 — DB (10.0.20.0/24)" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        S3: "DB Server\\nMAC ee:ff:00:01"
+        S3: "DB Server\nMAC ee:ff:00:01"
     }
-    SW: "Managed Switch\\n802.1Q trunk to router"
-    RTR: "L3 Switch / Router\\nInter-VLAN routing"
+    SW: "Managed Switch\n802.1Q trunk to router"
+    RTR: "L3 Switch / Router\nInter-VLAN routing"
     VLAN10.S1 -> SW
     VLAN10.S2 -> SW
     VLAN20.S3 -> SW

@@ -66,8 +66,8 @@ Hardware: Hardware {
     }
     Mount: Points {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         I: "/"
         J: "/var"

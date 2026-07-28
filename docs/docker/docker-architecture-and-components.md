@@ -57,8 +57,8 @@ direction: down
 
 USER_LAYER: "User Layer" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         CLI: "Docker CLI"
         COMPOSE: "Docker Compose"
@@ -66,24 +66,24 @@ USER_LAYER: "User Layer" {
     }
     ENGINE: "Docker Engine" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        DOCKERD: "dockerd\\nAPI · images · networks · volumes"
+        DOCKERD: "dockerd\nAPI · images · networks · volumes"
     }
     RUNTIME: "Container Runtime" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
-        CONTAINERD: "containerd\\nimage pull · snapshot · task"
+        CONTAINERD: "containerd\nimage pull · snapshot · task"
         SHIM: containerd-shim
-        RUNC: "runc\\nOCI runtime"
+        RUNC: "runc\nOCI runtime"
     }
     KERNEL: "Linux Kernel" {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
         NS: Namespaces
         CG: cgroups
@@ -179,7 +179,7 @@ Docker images are **stacked read-only layers** plus a **writable container layer
 ```d2
 direction: up
 
-RW: "Container Layer\\nread-write · ephemeral"
+RW: "Container Layer\nread-write · ephemeral"
     L3: "Layer 3 — app code"
     L2: "Layer 2 — dependencies"
     L1: "Layer 1 — base OS"

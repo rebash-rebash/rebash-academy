@@ -26,7 +26,7 @@ Running one container with `docker run` is straightforward. Running **five hundr
 
 This tutorial establishes your mental model: what **orchestration** means, why Kubernetes emerged after Docker, how it compares to Docker Swarm and managed platforms, and where it sits in the cloud-native stack alongside CI/CD, observability, and infrastructure as code.
 
-This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Kubernetes series. Complete the [Docker track](../docker/index.md) first — especially [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md), which maps Docker concepts to Kubernetes objects. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Kubernetes series. Complete the [Docker track](../docker/index.md) first — especially [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md), which maps Docker concepts to Kubernetes objects.
 
 ## Prerequisites
 
@@ -59,17 +59,17 @@ direction: down
 
 DEV: "Developer Workflow" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        GIT: "Git Repository\\nmanifests / Helm"
+        GIT: "Git Repository\nmanifests / Helm"
         CI: "CI/CD Pipeline"
-        REG: "Container Registry\\nDocker Hub / ECR / GCR"
+        REG: "Container Registry\nDocker Hub / ECR / GCR"
     }
     CP: "Kubernetes Control Plane" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         API: "API Server"
         ETCD: "etcd — cluster state"
@@ -81,11 +81,11 @@ DEV: "Developer Workflow" {
     }
     DATA: "Data Plane — Worker Nodes" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         KUBELET: kubelet
-        RUNTIME: "container runtime\\ncontainerd / CRI-O"
+        RUNTIME: "container runtime\ncontainerd / CRI-O"
         POD1: Pod
         POD2: Pod
         KUBELET -> RUNTIME
@@ -145,10 +145,10 @@ If a Pod crashes, the ReplicaSet controller notices the mismatch (desired: 3, ac
 direction: right
 
 USER: "Engineer / CI"
-    YAML: "Desired State\\nYAML manifest"
+    YAML: "Desired State\nYAML manifest"
     API: "API Server"
     CTRL: Controllers
-    ACTUAL: "Actual State\\nrunning Pods"
+    ACTUAL: "Actual State\nrunning Pods"
     USER -> YAML
     YAML -> API
     API -> CTRL
@@ -463,4 +463,3 @@ Make executable: `chmod +x ~/bin/k8s-preflight.sh && ~/bin/k8s-preflight.sh`
 - [CNCF Landscape](https://landscape.cncf.io/)
 - [Kubernetes – Declarative Management](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/)
 - [REBASH Academy – Docker Overview](../docker/index.md)
-- [REBASH Academy – Documentation Standards](../about.md#documentation-standards)

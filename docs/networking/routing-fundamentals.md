@@ -54,27 +54,27 @@ direction: right
 
 LAN1: "Subnet 10.0.1.0/24" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         H1: "Host 10.0.1.10"
     }
     LAN2: "Subnet 10.0.2.0/24" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         H2: "Host 10.0.2.20"
     }
     LAN3: "Subnet 10.0.3.0/24" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         DB: "Database 10.0.3.5"
     }
-    R1: "Router R1\\n10.0.1.1 · 10.0.2.1"
-    R2: "Router R2\\n10.0.2.2 · 10.0.3.1"
+    R1: "Router R1\n10.0.1.1 · 10.0.2.1"
+    R2: "Router R2\n10.0.2.2 · 10.0.3.1"
     IGW: "Internet Gateway"
     LAN1.H1 -> R1
     R1 -> R2

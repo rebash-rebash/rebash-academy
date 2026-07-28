@@ -46,13 +46,13 @@ By the end of this tutorial, you will be able to:
 ```d2
 direction: down
 
-START: "Start bisect\\nbad=HEAD good=v1.4.0"
+START: "Start bisect\nbad=HEAD good=v1.4.0"
     MID: "Checkout middle commit"
     TEST: "Test passes?" {
       shape: diamond
     }
-    GOOD: "Mark good\\nsearch upper half"
-    BAD: "Mark bad\\nsearch lower half"
+    GOOD: "Mark good\nsearch upper half"
+    BAD: "Mark bad\nsearch lower half"
     FOUND: "First bad commit found"
     START -> MID
     MID -> TEST

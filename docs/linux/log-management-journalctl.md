@@ -55,7 +55,7 @@ Sources: Sources {
     }
     journald: journald {
         J: systemd-journald
-        R: "Journal Files\\n/run/log/journal\\n/var/log/journal"
+        R: "Journal Files\n/run/log/journal\n/var/log/journal"
     }
     Consumers: Consumers {
         C: "journalctl CLI"

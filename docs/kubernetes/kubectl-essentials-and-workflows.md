@@ -24,7 +24,7 @@ comments: false
 
 **kubectl** is how engineers interact with Kubernetes every day — inspect Pods, apply manifests, stream logs, exec into containers, and roll out changes. Fluent kubectl separates beginners from production-ready operators. This tutorial covers the commands and **workflows** you will use repeatedly: declarative `apply`, imperative debugging, output formatting, context switching, and dry-run patterns.
 
-This is **Tutorial 4** in **Module 2: Workloads** of the REBASH Academy Kubernetes series. Ensure your local cluster from [Installing Kubernetes and kubectl](installing-kubernetes-and-kubectl.md) is running. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 4** in **Module 2: Workloads** of the REBASH Academy Kubernetes series. Ensure your local cluster from [Installing Kubernetes and kubectl](installing-kubernetes-and-kubectl.md) is running.
 
 ## Prerequisites
 
@@ -55,9 +55,9 @@ direction: right
 
 USER: "Engineer / CI"
     KUBECTL: kubectl
-    KCFG: "kubeconfig\\ncontext + credentials"
+    KCFG: "kubeconfig\ncontext + credentials"
     API: kube-apiserver
-    OBJ: "API Objects\\nPod / Deployment / Service"
+    OBJ: "API Objects\nPod / Deployment / Service"
     ETCD: etcd
     USER -> KUBECTL
     KUBECTL -> KCFG

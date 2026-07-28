@@ -28,7 +28,7 @@ comments: false
 
 NAT breaks end-to-end connectivity principles — hosts behind NAT are not directly reachable unless you explicitly forward ports. It complicates debugging: logs show the NAT device's IP, not the original client; protocols embedding IP addresses (FTP, SIP) require **ALG** helpers. This tutorial explains SNAT, DNAT, PAT, Linux netfilter NAT rules, cloud NAT gateways, and how to troubleshoot translation failures.
 
-This is **Tutorial 17** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 17** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -57,19 +57,19 @@ direction: down
 
 Private: "Private Network 10.0.11.0/24" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        APP: "App Server\\n10.0.11.50"
-        DB: "Database\\n10.0.11.60"
+        APP: "App Server\n10.0.11.50"
+        DB: "Database\n10.0.11.60"
     }
     NATDevice: "NAT Gateway / Router" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        SNAT: "SNAT\\n10.0.11.x → public IP"
-        DNAT: "DNAT\\npublic:8080 → 10.0.11.50:80"
+        SNAT: "SNAT\n10.0.11.x → public IP"
+        DNAT: "DNAT\npublic:8080 → 10.0.11.50:80"
     }
     Internet: Internet {
         EXT: "External Clients"

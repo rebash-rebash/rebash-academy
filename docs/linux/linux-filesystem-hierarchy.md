@@ -25,7 +25,7 @@ On Linux, **everything is a file** — regular files, directories, devices, sock
 
 Without FHS literacy, you waste hours searching for configs, accidentally edit the wrong copy of a file, or store application data in paths that break during upgrades. DevOps engineers live in this tree daily — Docker volumes map to `/var/lib/docker`, Kubernetes mounts host paths, Ansible templates target `/etc/`, and log agents tail `/var/log/`. This tutorial maps the entire hierarchy with real examples you will encounter in production.
 
-This is **Tutorial 2** in **Module 1: Foundations** of the REBASH Academy Linux series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 2** in **Module 1: Foundations** of the REBASH Academy Linux series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -47,55 +47,44 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-The diagram below shows the FHS tree with the most important directories and typical contents. Arrows indicate "contains" relationships — not symlinks.
+The diagram below is the classic FHS **directory tree** under `/`. Branches show containment (a folder inside its parent) — not execution order.
 
-```d2
-direction: down
+<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
+<p class="rebash-tree-title">/</p>
+<ul class="rebash-tree">
+  <li>boot/<span class="rebash-tree-note">kernel &amp; bootloader · vmlinuz · initramfs · grub/</span></li>
+  <li>etc/<span class="rebash-tree-note">static configuration</span>
+    <ul>
+      <li>passwd · shadow · hosts</li>
+      <li>nginx/nginx.conf</li>
+      <li>systemd/system/</li>
+    </ul>
+  </li>
+  <li>home/<span class="rebash-tree-note">user home directories · ubuntu/ · .bashrc · projects/</span></li>
+  <li>root/<span class="rebash-tree-note">superuser home</span></li>
+  <li>opt/<span class="rebash-tree-note">third-party add-ons</span></li>
+  <li>usr/<span class="rebash-tree-note">programs &amp; read-only data</span>
+    <ul>
+      <li>bin/<span class="rebash-tree-note">ls, grep, python3</span></li>
+      <li>lib/<span class="rebash-tree-note">shared libraries</span></li>
+      <li>share/<span class="rebash-tree-note">docs, man pages</span></li>
+    </ul>
+  </li>
+  <li>var/<span class="rebash-tree-note">variable data</span>
+    <ul>
+      <li>log/<span class="rebash-tree-note">syslog · journal/</span></li>
+      <li>lib/<span class="rebash-tree-note">docker/ · apt/</span></li>
+    </ul>
+  </li>
+  <li>tmp/<span class="rebash-tree-note">world-writable temp</span></li>
+  <li>run/<span class="rebash-tree-note">runtime state since boot</span></li>
+  <li>dev/<span class="rebash-tree-note">device nodes (sda, null, tty)</span></li>
+  <li>proc/<span class="rebash-tree-note">process &amp; kernel info</span></li>
+  <li>sys/<span class="rebash-tree-note">kernel object hierarchy</span></li>
+  <li>srv/<span class="rebash-tree-note">service data (web, git, ftp)</span></li>
+</ul>
+</figure>
 
-ROOT: "/  Root filesystem"
-    etc: "/etc\\nStatic configuration"
-    ROOT -> etc
-    var: "/var\\nVariable data"
-    ROOT -> var
-    usr: "/usr\\nUser programs & read-only data"
-    ROOT -> usr
-    home: "/home\\nUser home directories"
-    ROOT -> home
-    root: "/root\\nSuperuser home"
-    ROOT -> root
-    tmp: "/tmp\\nWorld-writable temp"
-    ROOT -> tmp
-    opt: "/opt\\nThird-party add-ons"
-    ROOT -> opt
-    boot: "/boot\\nKernel & initramfs"
-    ROOT -> boot
-    dev: "/dev\\nDevice nodes"
-    ROOT -> dev
-    proc: "/proc\\nProcess & kernel info"
-    ROOT -> proc
-    sys: "/sys\\nKernel object hierarchy"
-    ROOT -> sys
-    run: "/run\\nRuntime state since boot"
-    ROOT -> run
-    srv: "/srv\\nService data"
-    ROOT -> srv
-    etc_nginx: "nginx/nginx.conf"
-    etc -> etc_nginx
-    etc_systemd: "systemd/system/"
-    etc -> etc_systemd
-    var_log: "log/syslog"
-    var -> var_log
-    var_lib: "lib/docker/"
-    var -> var_lib
-    usr_bin: "bin/ — ls, grep, python3"
-    usr -> usr_bin
-    usr_lib: "lib/ — shared libraries"
-    usr -> usr_lib
-    home_user: "ubuntu/ .bashrc projects/"
-    home -> home_user
-    boot_vmlinuz: vmlinuz-6.8.0
-    boot -> boot_vmlinuz
-```
 
 ## Theory
 

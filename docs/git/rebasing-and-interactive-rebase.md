@@ -50,16 +50,16 @@ direction: down
 
 Before: "Before rebase" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         M1: "main: A-B-C"
         F1: "feature: A-B-D-E"
     }
     After: "After rebase feature onto main" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         M2: "main: A-B-C"
         F2: "feature: A-B-C-D'-E"

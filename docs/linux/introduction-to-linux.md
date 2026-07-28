@@ -25,7 +25,7 @@ Linux powers the majority of the world's servers, cloud instances, and container
 
 This tutorial takes you from "I've heard of Linux" to a working mental model: what the **kernel** does versus what a **distribution** adds, how a machine boots from power-on to a login shell, and how to identify the system you're working on. These concepts appear in every interview, every incident postmortem, and every architecture diagram you'll encounter in your career.
 
-This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Linux series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Linux series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -52,54 +52,50 @@ The diagram below shows how hardware, firmware, the kernel, userspace, and your 
 ```d2
 direction: down
 
-HW: "Hardware Layer" {
-      style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
-      }
-        CPU: "CPU / RAM / Disk / NIC"
-    }
-    FW: Firmware {
-      style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
-      }
-        UEFI: "UEFI / BIOS"
-    }
-    BL: Bootloader {
-      style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
-      }
-        GRUB: "GRUB / systemd-boot"
-    }
-    KS: "Kernel Space" {
-      style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
-      }
-        KERN: "Linux Kernel\\nscheduling · memory · drivers · syscalls"
-    }
-    US: "User Space" {
-      style: {
-        fill: "#fce4ec"
-        stroke: "#c2185b"
-      }
-        INIT: "PID 1 — systemd / init"
-        SVC: "systemd units\\nsshd · nginx · docker"
-        SHELL: "Login shell\\nbash · zsh"
-        APP: "User applications\\ngit · python · kubectl"
-    }
-    HW.CPU -> FW.UEFI
-    FW.UEFI -> BL.GRUB
-    BL.GRUB -> KS.KERN
-    KS.KERN -> US.INIT
-    US.INIT -> US.SVC
-    US.INIT -> US.SHELL
-    US.SHELL -> US.APP
-    US.SVC -> US.APP
-    US.APP -> KS.KERN: syscalls
-    KS.KERN -> HW.CPU
+*: {
+  style: {
+    border-radius: 18
+    font-size: 17
+    bold: true
+    shadow: true
+    stroke-width: 2
+  }
+}
+
+(** -> **)[*]: {
+  style.stroke-width: 2
+  style.font-size: 13
+  style.bold: true
+  style.font-color: "#0f172a"
+}
+
+HW: "Hardware Layer\nCPU · RAM · Disk · NIC" {
+  style.fill: "#dbeafe"
+  style.stroke: "#2563eb"
+  style.font-color: "#1e3a8a"
+}
+FW: "Firmware\nUEFI · BIOS" {
+  style.fill: "#dcfce7"
+  style.stroke: "#16a34a"
+  style.font-color: "#14532d"
+}
+BL: "Bootloader\nGRUB · systemd-boot" {
+  style.fill: "#ffedd5"
+  style.stroke: "#ea580c"
+  style.font-color: "#9a3412"
+}
+KS: "Kernel Space\nscheduling · memory · drivers · syscalls" {
+  style.fill: "#f3e8ff"
+  style.stroke: "#9333ea"
+  style.font-color: "#581c87"
+}
+US: "User Space\nsystemd · services · shell · apps" {
+  style.fill: "#fce7f3"
+  style.stroke: "#db2777"
+  style.font-color: "#9d174d"
+}
+
+HW -> FW -> BL -> KS -> US
 ```
 
 ## Theory

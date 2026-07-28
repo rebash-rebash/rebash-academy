@@ -51,23 +51,23 @@ direction: down
 
 Admin: Workstation {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         A: "systemctl --host"
         B: "journalctl --host"
     }
     SSH: Transport {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         C: "Encrypted SSH Session"
     }
     Remote: Server {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         D: "systemd-manager user"
         E: "polkit / pkaction"

@@ -43,42 +43,20 @@ Optional later: Docker Desktop or a Linux VM with Docker Engine, `kubectl`/`mini
 
 Start with foundations, then containers and orchestration. This order matches how production systems are built.
 
-```d2
-direction: right
+<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
 
-Linux: "1. Linux" {
-  style: {
-    fill: "#dbeafe"
-    stroke: "#1976d2"
-  }
-}
-Net: "2. Networking" {
-  style: {
-    fill: "#dcfce7"
-    stroke: "#22c55e"
-  }
-}
-Git: "3. Git" {
-  style: {
-    fill: "#ffedd5"
-    stroke: "#f97316"
-  }
-}
-Docker: "4. Docker" {
-  style: {
-    fill: "#e0e7ff"
-    stroke: "#4f46e5"
-  }
-}
-K8s: "5. Kubernetes" {
-  style: {
-    fill: "#f3e8ff"
-    stroke: "#9333ea"
-  }
-}
+<p class="rebash-tree-title">DevOps learning path</p>
 
-Linux -> Net -> Git -> Docker -> K8s
-```
+<ul class="rebash-tree">
+  <li>1 · Linux</li>
+  <li>2 · Networking</li>
+  <li>3 · Git</li>
+  <li>4 · Docker</li>
+  <li>5 · Kubernetes</li>
+</ul>
+</figure>
+
+
 
 ### Start here today
 
@@ -105,7 +83,7 @@ Linux -> Net -> Git -> Docker -> K8s
 
 | Available now | Coming next |
 |---------------|-------------|
-| Linux, Networking, Git, Docker, Kubernetes | Terraform, AWS / Azure / GCP |
+| Linux, Networking, Git, Docker, Kubernetes, Terraform | AWS / Azure / GCP |
 | Learning Paths overview | GitLab CI/CD, Monitoring |
 | Projects & blog placeholders | Dedicated Getting Started mini-series |
 

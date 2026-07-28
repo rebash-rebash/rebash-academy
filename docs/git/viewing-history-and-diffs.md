@@ -48,9 +48,9 @@ By the end of this tutorial, you will be able to:
 direction: down
 
 HEAD: "HEAD / main"
-    C1: "commit N\\nlatest fix"
-    C2: "commit N-1\\nfeature add"
-    C3: "commit N-2\\ninitial"
+    C1: "commit N\nlatest fix"
+    C2: "commit N-1\nfeature add"
+    C3: "commit N-2\ninitial"
     HEAD -> C1
     C1 -> C2
     C2 -> C3

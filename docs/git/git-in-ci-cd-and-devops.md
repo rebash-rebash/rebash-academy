@@ -53,9 +53,9 @@ direction: down
 DEV: "Developer Push / PR"
     GIT: "Git Repository"
     WH: "Webhook / Event"
-    CI: "CI Pipeline\\nbuild · test · scan"
-    ART: "Artifact Registry\\nimage · plan"
-    CD: "CD / GitOps\\nArgo CD · Flux"
+    CI: "CI Pipeline\nbuild · test · scan"
+    ART: "Artifact Registry\nimage · plan"
+    CD: "CD / GitOps\nArgo CD · Flux"
     PROD: Production
     DEV -> GIT
     GIT -> WH

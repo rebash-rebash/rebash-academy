@@ -27,7 +27,7 @@ When a Deployment fails at 2 AM, you need a **systematic method** — not random
 
 This tutorial teaches the **REBASH troubleshooting funnel** — start broad (namespace events), narrow to the failing object (Pod → container), then verify dependencies (Service, DNS, RBAC). You will practice on deliberately broken workloads and build reflexes that SRE and platform engineers use daily.
 
-This is **Tutorial 14** in **Module 5: Security & Tooling** of the REBASH Academy Kubernetes series. Complete [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md) first. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 14** in **Module 5: Security & Tooling** of the REBASH Academy Kubernetes series. Complete [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md) first.
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ Troubleshooting flows from the user-visible symptom down through Kubernetes laye
 ```d2
 direction: down
 
-SYM: "Symptom\\n502 / CrashLoop / Pending"
+SYM: "Symptom\n502 / CrashLoop / Pending"
     ING: "Ingress / LoadBalancer"
     SVC: Service
     EP: "Endpoints / EndpointSlice"
@@ -582,4 +582,3 @@ Usage: `chmod +x ~/bin/k8s-triage.sh && ~/bin/k8s-triage.sh troubleshoot-lab web
 - [Troubleshoot Applications](https://kubernetes.io/docs/tasks/debug/debug-application/)
 - [kubectl Reference – logs, describe, events](https://kubernetes.io/docs/reference/kubectl/)
 - [Deployment – Rolling Back](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
-- [REBASH Academy – Documentation Standards](../about.md#documentation-standards)

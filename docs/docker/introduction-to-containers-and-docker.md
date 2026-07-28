@@ -26,7 +26,7 @@ Every modern deployment pipeline — from a startup's CI/CD workflow to a bank's
 
 This tutorial establishes your mental model: what **containers** are, how they differ from **virtual machines**, why **Docker** became the de facto standard, and where containerization fits in the DevOps toolchain alongside Linux, Git, and Kubernetes.
 
-This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Docker series. We recommend completing the [Linux Foundations track](../linux/index.md) first — containers are built on Linux kernel features like namespaces and cgroups. Basic [Git](../git/index.md) skills help you version Dockerfiles and Compose files in later tutorials. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Docker series. We recommend completing the [Linux Foundations track](../linux/index.md) first — containers are built on Linux kernel features like namespaces and cgroups. Basic [Git](../git/index.md) skills help you version Dockerfiles and Compose files in later tutorials.
 
 ## Prerequisites
 
@@ -53,38 +53,50 @@ By the end of this tutorial, you will be able to:
 The diagram below contrasts virtual machines and containers at the infrastructure layer. Understanding this distinction explains why containers start in seconds, use less memory, and share the host kernel — and why VMs still matter for strong isolation and multi-OS workloads.
 
 ```d2
-direction: down
+direction: right
+
+*: {
+  style: {
+    border-radius: 16
+    font-size: 14
+    bold: true
+    shadow: true
+    stroke-width: 2
+  }
+}
+
+(** -> **)[*]: {
+  style.stroke-width: 2
+  style.font-size: 13
+  style.bold: true
+  style.font-color: "#0f172a"
+}
 
 VM: "Virtual Machine Stack" {
-      style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
-      }
-        APP_VM: Application
-        OS_GUEST: "Guest OS — full kernel"
-        HYP: "Hypervisor — KVM / VMware / Hyper-V"
-        HOST_OS_VM: "Host OS"
-        HW_VM: "Physical Hardware"
-        APP_VM -> OS_GUEST
-        OS_GUEST -> HYP
-        HYP -> HOST_OS_VM
-        HOST_OS_VM -> HW_VM
-    }
-    CONTAINER: "Container Stack" {
-      style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
-      }
-        APP_C1: "App Container A"
-        APP_C2: "App Container B"
-        ENGINE: "Container Engine — Docker / containerd"
-        HOST_OS_C: "Host OS — shared kernel"
-        HW_C: "Physical Hardware"
-        APP_C1 -> ENGINE
-        APP_C2 -> ENGINE
-        ENGINE -> HOST_OS_C
-        HOST_OS_C -> HW_C
-    }
+  style.fill: "#dbeafe"
+  style.stroke: "#2563eb"
+  style.font-color: "#1e3a8a"
+  APP_VM: Application
+  OS_GUEST: "Guest OS — full kernel"
+  HYP: "Hypervisor\nKVM / VMware / Hyper-V"
+  HOST_OS_VM: "Host OS"
+  HW_VM: "Physical Hardware"
+  APP_VM -> OS_GUEST -> HYP -> HOST_OS_VM -> HW_VM
+}
+
+CONTAINER: "Container Stack" {
+  style.fill: "#dcfce7"
+  style.stroke: "#16a34a"
+  style.font-color: "#14532d"
+  APP_C1: "App Container A"
+  APP_C2: "App Container B"
+  ENGINE: "Container Engine\nDocker / containerd"
+  HOST_OS_C: "Host OS — shared kernel"
+  HW_C: "Physical Hardware"
+  APP_C1 -> ENGINE
+  APP_C2 -> ENGINE
+  ENGINE -> HOST_OS_C -> HW_C
+}
 ```
 
 ## Theory
@@ -177,10 +189,10 @@ DEV: Developer
     DF: Dockerfile
     BUILD: "docker build"
     IMG: Image
-    REG: "Registry\\nDocker Hub / ECR / GCR"
+    REG: "Registry\nDocker Hub / ECR / GCR"
     RUN: "docker run"
     CONT: Container
-    ORCH: "Orchestrator\\nKubernetes / ECS"
+    ORCH: "Orchestrator\nKubernetes / ECS"
     DEV -> DF
     DF -> BUILD
     BUILD -> IMG

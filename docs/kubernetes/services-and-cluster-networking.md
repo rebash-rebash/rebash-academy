@@ -58,28 +58,28 @@ direction: down
 
 Client: "Calling Pod" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         C: "curl http://web.default.svc.cluster.local"
     }
     Control: "Control Plane" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        SVC: "Service web\\nClusterIP 10.96.100.50:80"
-        EP: "Endpoints\\n10.244.1.5:8080\\n10.244.2.3:8080\\n10.244.3.7:8080"
+        SVC: "Service web\nClusterIP 10.96.100.50:80"
+        EP: "Endpoints\n10.244.1.5:8080\n10.244.2.3:8080\n10.244.3.7:8080"
     }
     Nodes: "Worker Nodes" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
-        KP: "kube-proxy\\niptables / IPVS"
-        P1: "Pod web-aaa\\n10.244.1.5:8080"
-        P2: "Pod web-bbb\\n10.244.2.3:8080"
-        P3: "Pod web-ccc\\n10.244.3.7:8080"
+        KP: "kube-proxy\niptables / IPVS"
+        P1: "Pod web-aaa\n10.244.1.5:8080"
+        P2: "Pod web-bbb\n10.244.2.3:8080"
+        P3: "Pod web-ccc\n10.244.3.7:8080"
     }
     Client.C -> Control.SVC: "DNS lookup"
     Control.SVC -> Control.EP

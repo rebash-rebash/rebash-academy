@@ -480,4 +480,3 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - [Kubernetes – Assign Pods to Nodes (affinity)](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/)
 - [Kubernetes – Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/)
 - [Prometheus Adapter for Kubernetes](https://github.com/kubernetes-sigs/prometheus-adapter)
-- [REBASH Academy – Documentation Standards](../about.md#documentation-standards)

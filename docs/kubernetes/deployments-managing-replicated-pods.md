@@ -27,7 +27,7 @@ A single Pod is ephemeral — delete it and it is gone. Production workloads nee
 
 When an SRE scales an API from 3 to 30 replicas during a traffic spike, or a DevOps engineer ships version `2.1.0` with a controlled rollout, they use Deployments. When a bad image tag takes down every replica, `kubectl rollout undo` restores the previous ReplicaSet in seconds.
 
-This is **Tutorial 6** in **Module 2: Workloads** of the REBASH Academy Kubernetes series. Complete [Pods — The Atomic Unit](pods-the-atomic-unit.md) and [kubectl Essentials and Workflows](kubectl-essentials-and-workflows.md) first. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 6** in **Module 2: Workloads** of the REBASH Academy Kubernetes series. Complete [Pods — The Atomic Unit](pods-the-atomic-unit.md) and [kubectl Essentials and Workflows](kubectl-essentials-and-workflows.md) first.
 
 ## Prerequisites
 
@@ -58,17 +58,17 @@ direction: down
 
 Control: "Control Plane" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        DEP: "Deployment\\nreplicas: 3"
-        RS1: "ReplicaSet v1\\ndesired: 0"
-        RS2: "ReplicaSet v2\\ndesired: 3"
+        DEP: "Deployment\nreplicas: 3"
+        RS1: "ReplicaSet v1\ndesired: 0"
+        RS2: "ReplicaSet v2\ndesired: 3"
     }
     Data: "Worker Nodes" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         P1: "Pod v2"
         P2: "Pod v2"
@@ -79,7 +79,7 @@ Control: "Control Plane" {
     Control.RS2 -> Data.P1
     Control.RS2 -> Data.P2
     Control.RS2 -> Data.P3
-    Control.RS1 -> Control.DEP: "scaled to 0\\nafter rollout" {
+    Control.RS1 -> Control.DEP: "scaled to 0\nafter rollout" {
       style.stroke-dash: 3
     }
 ```

@@ -57,19 +57,19 @@ Host: Host {
     }
     Bridge: docker0 {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        C1: "Container A\\n172.17.0.2"
-        C2: "Container B\\n172.17.0.3"
+        C1: "Container A\n172.17.0.2"
+        C2: "Container B\n172.17.0.3"
     }
     UserBridge: app-net {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        C3: "Container C\\n172.18.0.2"
-        C4: "Container D\\n172.18.0.3"
+        C3: "Container C\n172.18.0.2"
+        C4: "Container D\n172.18.0.3"
     }
     EXT: "External client"
     EXT -> Host.IPT: "host:8080"

@@ -16,9 +16,7 @@ Shift-left security, SAST/DAST, secrets, and supply chain.
 
 ## Overview
 
-Welcome to the **DevSecOps** section of REBASH Academy. Tutorials in this category follow our
-[documentation standards](../about.md#documentation-standards) and include hands-on labs,
-architecture diagrams, and interview questions.
+Welcome to the **DevSecOps** section of REBASH Academy. Tutorials in this category include hands-on labs, architecture diagrams, and interview questions.
 
 !!! info "Coming Soon"
     Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.

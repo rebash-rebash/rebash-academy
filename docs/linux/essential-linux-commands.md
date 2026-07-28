@@ -26,7 +26,7 @@ The Linux command line is the primary interface for DevOps engineers, SREs, and 
 
 This tutorial covers the commands you will use dozens of times per day: navigating the filesystem, creating and manipulating files, searching with `find`, slicing output with `head`/`tail`/`wc`, and accelerating input with **tab completion**. These skills form the foundation for everything else in the REBASH Academy Linux track — permissions, processes, systemd, and shell scripting all assume fluency here.
 
-This is **Tutorial 3** in **Module 1: Foundations** of the REBASH Academy Linux series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 3** in **Module 1: Foundations** of the REBASH Academy Linux series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -45,7 +45,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Search the filesystem by name, type, size, and modification time using `find`
 - [ ] Extract portions of output with `head`, `tail`, and count lines/words/bytes with `wc`
 - [ ] Use tab completion and command history efficiently to reduce errors and save time
-
 
 ## Theory
 

@@ -28,7 +28,7 @@ A **Virtual Private Cloud (VPC)** is the foundational network boundary in every 
 
 This tutorial teaches you to design production-grade VPC architectures: **public subnets** for load balancers and bastion hosts, **private subnets** for databases and application tiers, **internet gateways (IGW)** for north-south traffic, and **route tables** that control every packet's path. You will learn **multi-AZ** placement for high availability and compare how AWS, GCP, and Azure implement the same concepts with different names.
 
-This is **Tutorial 16** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 16** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -59,41 +59,41 @@ direction: down
 
 Internet: Internet {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         Users: "Users / Clients"
     }
     VPC: "VPC 10.0.0.0/16" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         IGW: "Internet Gateway"
         AZ1: "Availability Zone A" {
           style: {
-            fill: "#fff3e0"
-            stroke: "#ef6c00"
+            fill: "#ffedd5"
+            stroke: "#ea580c"
           }
-            PubA: "Public Subnet\\n10.0.1.0/24"
-            PrivA: "Private Subnet\\n10.0.11.0/24"
+            PubA: "Public Subnet\n10.0.1.0/24"
+            PrivA: "Private Subnet\n10.0.11.0/24"
             ALB: "Application Load Balancer"
             AppA: "App Servers"
             DBA: "Database Primary"
         }
         AZ2: "Availability Zone B" {
           style: {
-            fill: "#f3e5f5"
-            stroke: "#7b1fa2"
+            fill: "#f3e8ff"
+            stroke: "#9333ea"
           }
-            PubB: "Public Subnet\\n10.0.2.0/24"
-            PrivB: "Private Subnet\\n10.0.12.0/24"
+            PubB: "Public Subnet\n10.0.2.0/24"
+            PrivB: "Private Subnet\n10.0.12.0/24"
             NAT: "NAT Gateway"
             AppB: "App Servers"
             DBB: "Database Replica"
         }
-        RTpub: "Public Route Table\\n0.0.0.0/0 → IGW"
-        RTpriv: "Private Route Table\\n0.0.0.0/0 → NAT"
+        RTpub: "Public Route Table\n0.0.0.0/0 → IGW"
+        RTpriv: "Private Route Table\n0.0.0.0/0 → NAT"
     }
     Internet.Users -> VPC.IGW
     VPC.IGW -> VPC.AZ1.ALB

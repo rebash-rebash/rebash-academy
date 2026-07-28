@@ -51,7 +51,7 @@ By the end of this tutorial, you will be able to:
 direction: right
 
 Host: Host {
-        CTX: "Build Context\\ndirectory on disk"
+        CTX: "Build Context\ndirectory on disk"
         DF: Dockerfile
         CLI: "docker build"
     }
@@ -60,7 +60,7 @@ Host: Host {
         CACHE: "Layer cache"
     }
     Output: Output {
-        IMG: "Local image\\nrepo:tag"
+        IMG: "Local image\nrepo:tag"
     }
     Host.CTX -> Host.CLI
     Host.DF -> Host.CLI

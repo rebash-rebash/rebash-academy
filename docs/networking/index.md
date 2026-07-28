@@ -16,28 +16,62 @@ Understand how data moves across the internet and inside your infrastructure —
 
 ## Overview
 
-The REBASH Academy **Networking** track is a structured, 20-tutorial curriculum for DevOps engineers, SREs, and cloud administrators. Each tutorial follows our [documentation standards](../about.md#documentation-standards) with theory, step-by-step labs, commands, best practices, and interview questions.
+The REBASH Academy **Networking** track is a structured, 20-tutorial curriculum for DevOps engineers, SREs, and cloud administrators. Each tutorial includes theory, step-by-step labs, commands, best practices, and interview questions.
 
 !!! tip "Learning Path"
     Complete the [Linux](../linux/index.md) track first, then continue here as step 2 in the [DevOps Engineer learning path](../learning-paths/index.md).
 
 ## Curriculum Plan
 
-```d2
-direction: down
+Modules and tutorials in order. Use the tables below for links, level, and time estimates.
 
-M1: "Module 1: Foundations"
-    M2: "Module 2: Data Link & Routing"
-    M1 -> M2
-    M3: "Module 3: Transport & DNS"
-    M2 -> M3
-    M4: "Module 4: Application Layer"
-    M3 -> M4
-    M5: "Module 5: Troubleshooting"
-    M4 -> M5
-    M6: "Module 6: Cloud & Advanced"
-    M5 -> M6
-```
+<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
+
+<p class="rebash-tree-title">Networking Track</p>
+
+<ul class="rebash-tree">
+  <li>1 · Foundations
+<ul>
+  <li>Introduction to Networking</li>
+  <li>OSI and TCP/IP Models</li>
+  <li>IP Addressing and Subnetting</li>
+</ul></li>
+  <li>2 · Data Link &amp; Routing
+<ul>
+  <li>Ethernet, Switching, and VLANs</li>
+  <li>Routing Fundamentals</li>
+  <li>ICMP, ARP, DHCP, and Network Services</li>
+</ul></li>
+  <li>3 · Transport &amp; DNS
+<ul>
+  <li>TCP and UDP Deep Dive</li>
+  <li>DNS Fundamentals</li>
+  <li>DNS Records and Troubleshooting</li>
+</ul></li>
+  <li>4 · Application Layer
+<ul>
+  <li>HTTP, HTTPS, and the Application Layer</li>
+  <li>Firewalls and Access Control</li>
+  <li>Load Balancing Fundamentals</li>
+  <li>Reverse Proxy and Ingress Basics</li>
+</ul></li>
+  <li>5 · Troubleshooting
+<ul>
+  <li>Network Troubleshooting Methodology</li>
+  <li>Packet Analysis (tcpdump / Wireshark)</li>
+</ul></li>
+  <li>6 · Cloud &amp; Advanced
+<ul>
+  <li>Cloud Networking — VPCs and Subnets</li>
+  <li>NAT and Port Forwarding</li>
+  <li>VPN and Tunneling Basics</li>
+  <li>Network Security Hardening</li>
+  <li>Network Automation and Monitoring</li>
+</ul></li>
+</ul>
+</figure>
+
+
 
 ### Module 1 – Foundations
 

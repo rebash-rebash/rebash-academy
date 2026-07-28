@@ -43,7 +43,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Implement a safe backup workflow with verification before deletion
 - [ ] Avoid common pitfalls like absolute paths and tarbombs
 
-
 ## Theory
 
 ### Archive vs compression

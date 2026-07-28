@@ -58,23 +58,23 @@ External clients hit the Ingress controller LoadBalancer. The controller reads I
 direction: down
 
 Internet: Internet {
-        USER: "Client\\nhttps://shop.example.com"
+        USER: "Client\nhttps://shop.example.com"
     }
     Edge: "Ingress Controller — nginx / Traefik" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        IC: "LoadBalancer IP\\nTLS termination"
-        RULES: "Ingress rules\\nhost + path routing"
+        IC: "LoadBalancer IP\nTLS termination"
+        RULES: "Ingress rules\nhost + path routing"
     }
     Cluster: "Cluster Internal" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        SVC1: "Service web\\nClusterIP :80"
-        SVC2: "Service api\\nClusterIP :8080"
+        SVC1: "Service web\nClusterIP :80"
+        SVC2: "Service api\nClusterIP :8080"
         P1: "Pods web"
         P2: "Pods api"
     }

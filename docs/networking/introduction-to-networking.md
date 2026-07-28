@@ -26,7 +26,7 @@ Every production incident involving "the app is down" eventually becomes a netwo
 
 This tutorial builds your foundational mental model: what a **network** is, how **nodes** and **links** relate, why **bandwidth**, **latency**, and **throughput** are different metrics, and how **client-server** architectures differ from **peer-to-peer** designs. You will also learn to identify the core **network devices** — NICs, switches, routers, and firewalls — that appear in every data center and cloud region diagram.
 
-This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Networking series. We recommend completing the [Linux Foundations track](../linux/index.md) first, since nearly all hands-on labs use Linux CLI tools. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Networking series. We recommend completing the [Linux Foundations track](../linux/index.md) first, since nearly all hands-on labs use Linux CLI tools.
 
 ## Prerequisites
 
@@ -56,8 +56,8 @@ direction: down
 
 LAN: "Office LAN" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         PC1: Workstation
         PC2: "Developer Laptop"
@@ -67,8 +67,8 @@ LAN: "Office LAN" {
     }
     EDGE: "Network Edge" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         FW: Firewall
         RTR: "Router / Gateway"
@@ -77,16 +77,16 @@ LAN: "Office LAN" {
     }
     WAN: "WAN / Internet" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         ISP: "ISP Backbone"
         RTR -> ISP
     }
     CLOUD: "Cloud VPC" {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
         IGW: "Internet Gateway"
         ALB: "Load Balancer"

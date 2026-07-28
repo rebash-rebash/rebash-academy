@@ -27,7 +27,7 @@ Every kubectl command and every in-cluster API call is **authenticated** (who ar
 
 Platform engineers use RBAC to enforce **least privilege** — developers deploy to their namespace but cannot read Secrets in production; CI pipelines apply manifests but cannot delete nodes; observability agents list Pods but cannot exec into them. This tutorial builds that mental model and hands-on skill set.
 
-This is **Tutorial 13** in **Module 5: Security & Tooling** of the REBASH Academy Kubernetes series. Complete [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md) first. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 13** in **Module 5: Security & Tooling** of the REBASH Academy Kubernetes series. Complete [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md) first.
 
 ## Prerequisites
 
@@ -57,8 +57,8 @@ RBAC sits in the authorization path after authentication. Bindings connect subje
 direction: down
 
 REQ: "API Request"
-    AUTHN: "Authentication\\ncert / token / OIDC"
-    AUTHZ: "Authorization\\nRBAC webhook"
+    AUTHN: "Authentication\ncert / token / OIDC"
+    AUTHZ: "Authorization\nRBAC webhook"
     ADM: "Admission Controllers"
     ETCD: etcd
     REQ -> AUTHN
@@ -67,10 +67,10 @@ REQ: "API Request"
     ADM -> ETCD
     RBAC: "RBAC Objects" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        ROLE: "Role / ClusterRole\\nrules: verbs + resources"
+        ROLE: "Role / ClusterRole\nrules: verbs + resources"
         BIND: "RoleBinding / ClusterRoleBinding"
         SA: ServiceAccount
         ROLE -> BIND
@@ -557,4 +557,3 @@ roleRef:
 - [Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 - [Controlling Access to the Kubernetes API](https://kubernetes.io/docs/concepts/security/controlling-access/)
 - [Authorization Overview](https://kubernetes.io/docs/reference/access-authn-authz/authorization/)
-- [REBASH Academy – Documentation Standards](../about.md#documentation-standards)

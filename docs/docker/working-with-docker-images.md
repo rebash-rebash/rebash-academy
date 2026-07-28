@@ -56,12 +56,12 @@ Images flow from registries to local storage, where layers are deduplicated acro
 ```d2
 direction: right
 
-REG: "Registry\\nDocker Hub / ECR"
+REG: "Registry\nDocker Hub / ECR"
     PULL: "docker pull"
-    LOCAL: "Local Image Store\\n/var/lib/docker/image"
+    LOCAL: "Local Image Store\n/var/lib/docker/image"
     TAG: "docker tag"
     RUN: "docker run"
-    CONT: "Container\\nwritable layer"
+    CONT: "Container\nwritable layer"
     REG -> PULL
     PULL -> LOCAL
     LOCAL -> TAG

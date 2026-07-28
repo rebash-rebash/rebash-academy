@@ -53,7 +53,7 @@ COMMIT: "git commit"
     POST: "post-commit hook"
     PUSH: "git push"
     PREPUSH: "pre-push hook"
-    SERVER: "server-side\\npre-receive / update"
+    SERVER: "server-side\npre-receive / update"
     COMMIT -> PRE
     PRE -> MSG
     MSG -> POST

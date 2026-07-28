@@ -60,32 +60,32 @@ direction: down
 
 HOSTING: "Git Hosting Platform" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        REMOTE: "origin\\nGitHub / GitLab / Gitea"
+        REMOTE: "origin\nGitHub / GitLab / Gitea"
     }
     DEV: "Developer Workstations" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        CLONE1: "non-bare clone\\nworking directory + .git"
+        CLONE1: "non-bare clone\nworking directory + .git"
         CLONE2: "non-bare clone"
     }
     CI: "CI/CD Infrastructure" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
-        RUNNER: "Pipeline runner\\nshallow clone depth=1"
+        RUNNER: "Pipeline runner\nshallow clone depth=1"
     }
     SELF: "Self-Hosted (optional)" {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
-        BARE: "bare repo on server\\n/srv/git/project.git"
+        BARE: "bare repo on server\n/srv/git/project.git"
     }
     HOSTING.REMOTE <-> DEV.CLONE1: "push / fetch"
     HOSTING.REMOTE <-> DEV.CLONE2: "push / fetch"

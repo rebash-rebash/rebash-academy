@@ -43,7 +43,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Compare cron with systemd timers and choose the appropriate scheduler
 - [ ] Diagnose why scheduled jobs fail or never run
 
-
 ## Theory
 
 ### Crontab syntax

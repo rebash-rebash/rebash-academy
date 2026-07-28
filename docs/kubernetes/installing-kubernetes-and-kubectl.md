@@ -26,7 +26,7 @@ Reading about Kubernetes without a cluster is like learning Docker without runni
 
 By the end, you will have a working API endpoint, kubeconfig context, and the ability to run Pods — the foundation for every hands-on lab in the REBASH Kubernetes track.
 
-This is **Tutorial 3** in **Module 1: Foundations** of the REBASH Academy Kubernetes series. Complete [Kubernetes Architecture and Components](kubernetes-architecture-and-components.md) first. Docker experience from [Docker Installation and Setup](../docker/docker-installation-and-setup.md) helps — kind runs cluster nodes as containers. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 3** in **Module 1: Foundations** of the REBASH Academy Kubernetes series. Complete [Kubernetes Architecture and Components](kubernetes-architecture-and-components.md) first. Docker experience from [Docker Installation and Setup](../docker/docker-installation-and-setup.md) helps — kind runs cluster nodes as containers.
 
 ## Prerequisites
 
@@ -58,25 +58,25 @@ direction: down
 
 LAPTOP: "Your Machine" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         KUBECTL: "kubectl CLI"
         KCFG: "~/.kube/config"
         KIND: "kind cluster (example)" {
           style: {
-            fill: "#e8f5e9"
-            stroke: "#388e3c"
+            fill: "#dcfce7"
+            stroke: "#16a34a"
           }
-            CP: "control-plane container\\nAPI + etcd + scheduler"
+            CP: "control-plane container\nAPI + etcd + scheduler"
             W1: "worker container optional"
         }
         MINIKU: "minikube cluster (docker driver)" {
           style: {
-            fill: "#fff3e0"
-            stroke: "#ef6c00"
+            fill: "#ffedd5"
+            stroke: "#ea580c"
           }
-            MK: "minikube VM/container\\ncontrol-plane + kubelet"
+            MK: "minikube VM/container\ncontrol-plane + kubelet"
         }
         DOCKER: "Docker Engine"
     }

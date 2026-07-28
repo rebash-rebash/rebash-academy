@@ -718,7 +718,7 @@ comments: false
 {description}
 
 This tutorial is part of **Module {module}: {mod_name}** in the REBASH Academy Linux series.
-It follows our [documentation standards](../about.md#documentation-standards) with theory,
+It includes theory,
 hands-on labs, and interview preparation.
 
 ## Prerequisites

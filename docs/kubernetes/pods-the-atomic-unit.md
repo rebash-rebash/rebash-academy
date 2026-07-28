@@ -26,7 +26,7 @@ A **Pod** is the smallest deployable unit in Kubernetes — not a container, but
 
 This tutorial explains what Pods are, how they differ from Docker containers, when to use multi-container Pods, and how to author Pod manifests for labs — while emphasizing that **Deployments** manage Pods in production.
 
-This is **Tutorial 5** in **Module 2: Workloads** of the REBASH Academy Kubernetes series. Complete [kubectl Essentials and Workflows](kubectl-essentials-and-workflows.md) and have a running cluster from [Installing Kubernetes and kubectl](installing-kubernetes-and-kubectl.md). Review [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md) for the Docker-to-Pod mapping. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 5** in **Module 2: Workloads** of the REBASH Academy Kubernetes series. Complete [kubectl Essentials and Workflows](kubectl-essentials-and-workflows.md) and have a running cluster from [Installing Kubernetes and kubectl](installing-kubernetes-and-kubectl.md). Review [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md) for the Docker-to-Pod mapping.
 
 ## Prerequisites
 
@@ -57,35 +57,35 @@ direction: down
 
 POD: "Pod — shared context" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        NET: "Network namespace\\nIP: 10.244.1.15"
-        VOL: "Shared volumes\\nemptyDir / config"
+        NET: "Network namespace\nIP: 10.244.1.15"
+        VOL: "Shared volumes\nemptyDir / config"
         MAIN: "Primary container" {
           style: {
-            fill: "#e8f5e9"
-            stroke: "#388e3c"
+            fill: "#dcfce7"
+            stroke: "#16a34a"
           }
             APP: "app :8080"
         }
         SIDE: "Sidecar container" {
           style: {
-            fill: "#fff3e0"
-            stroke: "#ef6c00"
+            fill: "#ffedd5"
+            stroke: "#ea580c"
           }
             LOG: log-shipper
         }
-        INIT: "Init containers\\nrun sequentially first" {
+        INIT: "Init containers\nrun sequentially first" {
           style: {
-            fill: "#f3e5f5"
-            stroke: "#7b1fa2"
+            fill: "#f3e8ff"
+            stroke: "#9333ea"
           }
             INITC: fetch-config
         }
     }
-    NODE: "Worker Node\\nkubelet + containerd"
-    SVC: "Service selector\\napp=web"
+    NODE: "Worker Node\nkubelet + containerd"
+    SVC: "Service selector\napp=web"
     POD: POD
     NODE -> POD
     POD.INIT.INITC -> POD.MAIN.APP

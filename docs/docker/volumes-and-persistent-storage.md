@@ -51,12 +51,12 @@ direction: down
 
 Container: Container {
         APP: "Application process"
-        RW: "Container writable layer\\nephemeral"
+        RW: "Container writable layer\nephemeral"
     }
     Mounts: Mounts {
-        VOL: "Named volume\\n/var/lib/docker/volumes"
-        BIND: "Bind mount\\nhost path"
-        TMP: "tmpfs\\nmemory only"
+        VOL: "Named volume\n/var/lib/docker/volumes"
+        BIND: "Bind mount\nhost path"
+        TMP: "tmpfs\nmemory only"
     }
     Container.APP -> Container.RW
     Container.APP -> Mounts.VOL

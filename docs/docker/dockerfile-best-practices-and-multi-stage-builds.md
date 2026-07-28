@@ -51,8 +51,8 @@ direction: down
 
 Stage1: "Stage 1: builder" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         B1: "FROM golang:1.22 AS builder"
         B2: "COPY source"
@@ -60,8 +60,8 @@ Stage1: "Stage 1: builder" {
     }
     Stage2: "Stage 2: runtime" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         R1: "FROM gcr.io/distroless/static"
         R2: "COPY --from=builder /app/binary"

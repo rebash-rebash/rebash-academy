@@ -57,10 +57,10 @@ The workflow moves changes through three trees before reaching the remote server
 ```d2
 direction: right
 
-WD: "Working Directory\\nedited files"
-    SA: "Staging Area\\nindex"
-    REPO: "Local Repository\\n.git/objects"
-    REMOTE: "Remote\\norigin/main"
+WD: "Working Directory\nedited files"
+    SA: "Staging Area\nindex"
+    REPO: "Local Repository\n.git/objects"
+    REMOTE: "Remote\norigin/main"
     CI: "CI Pipeline"
     WD -> SA: "git add"
     SA -> REPO: "git commit"

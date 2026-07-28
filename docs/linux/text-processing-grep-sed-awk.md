@@ -44,7 +44,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Chain grep → sed → awk into pipelines for ad-hoc incident analysis
 - [ ] Avoid common regex pitfalls (greedy matching, unescaped dots, locale issues)
 
-
 ## Theory
 
 ### Regular expressions — the shared language

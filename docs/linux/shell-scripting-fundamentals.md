@@ -44,7 +44,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Build a timestamped backup script with logging, validation, and retention
 - [ ] Debug scripts with `bash -x` and meaningful exit codes
 
-
 ## Theory
 
 ### Script anatomy

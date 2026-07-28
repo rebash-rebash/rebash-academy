@@ -27,7 +27,7 @@ Raw YAML manifests do not scale. A microservice platform might deploy hundreds o
 
 Platform and DevOps engineers use Helm to ship internal platforms, deploy third-party software (Prometheus, ingress-nginx, cert-manager), and enforce consistent labels, probes, and resource limits. GitOps workflows (Argo CD, Flux) often render Helm charts as the deployment source of truth. This tutorial teaches chart structure, templating, release lifecycle, and production patterns.
 
-This is **Tutorial 15** in **Module 5: Security & Tooling** of the REBASH Academy Kubernetes series. Complete [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md) first. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 15** in **Module 5: Security & Tooling** of the REBASH Academy Kubernetes series. Complete [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md) first.
 
 ## Prerequisites
 
@@ -58,10 +58,10 @@ Helm client renders chart templates + values into manifests, then applies them t
 direction: right
 
 DEV: "Developer / CI"
-    CHART: "Helm Chart\\ntemplates + values"
+    CHART: "Helm Chart\ntemplates + values"
     HELM: "Helm CLI"
     API: "Kubernetes API"
-    REL: "Release\\nrevision history"
+    REL: "Release\nrevision history"
     DEV -> HELM: "helm upgrade --install"
     CHART -> HELM
     HELM -> API: "render + apply"
@@ -568,4 +568,3 @@ Deploy: `helm upgrade -i web ./chart -f values.yaml -f values-staging.yaml -n st
 - [Helm Release Management](https://helm.sh/docs/intro/using_helm/#helm-install-and-helm-upgrade)
 - [Kubernetes Packaging with Helm (concept)](https://kubernetes.io/docs/concepts/overview/working-with-objects/)
 - [Artifact Hub — Helm charts](https://artifacthub.io/)
-- [REBASH Academy – Documentation Standards](../about.md#documentation-standards)

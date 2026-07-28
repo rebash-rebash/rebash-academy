@@ -50,7 +50,7 @@ MAIN: "main: commit FIX"
     REL: "release/2.1"
     MAIN -> REL: "git cherry-pick FIX"
     HEAD: "HEAD moves"
-    REFLOG: "reflog\\n90 day journal"
+    REFLOG: "reflog\n90 day journal"
     HEAD -> REFLOG
     RECOVER: "Recovered state"
     REFLOG -> RECOVER: "git reset --hard SHA"

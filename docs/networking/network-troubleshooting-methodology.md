@@ -56,36 +56,36 @@ direction: down
 
 L7: "Layer 7 — Application" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         APP: "HTTP / API / TLS cert validity"
     }
     L4: "Layer 4 — Transport" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         TCP: "TCP handshake · ports · firewalls"
     }
     L3: "Layer 3 — Network" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         IP: "Routing · ICMP · IP reachability"
     }
     L2: "Layer 2 — Data Link" {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
         ARP: "ARP · MAC · VLAN · switch"
     }
     L1: "Layer 1 — Physical" {
       style: {
-        fill: "#fce4ec"
-        stroke: "#c2185b"
+        fill: "#fce7f3"
+        stroke: "#db2777"
       }
         PHY: "Cable · NIC · link up/down"
     }

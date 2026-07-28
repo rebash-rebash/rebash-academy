@@ -29,7 +29,7 @@ Network security is not a product you install once — it is a **continuous disc
 
 This tutorial teaches production network hardening for DevOps and SRE teams: how to segment tiers, configure TLS correctly, deploy WAF and DDoS protection layers, and build audit trails that satisfy SOC 2, PCI-DSS, and internal security reviews. You will audit a sample environment, implement segmentation rules, and evaluate TLS configurations with industry-standard tools.
 
-This is **Tutorial 19** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 19** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -64,38 +64,38 @@ Internet: Internet {
     }
     Edge: "Edge Protection" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        DDoS: "DDoS Mitigation\\nShield / Cloudflare / WAF"
+        DDoS: "DDoS Mitigation\nShield / Cloudflare / WAF"
         WAF: "Web Application Firewall"
         LB: "Load Balancer — TLS termination"
     }
     VPC: "Segmented VPC" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         DMZ: "Public Tier" {
           style: {
-            fill: "#fff3e0"
-            stroke: "#ef6c00"
+            fill: "#ffedd5"
+            stroke: "#ea580c"
           }
             Proxy: "Reverse Proxy / Ingress"
         }
         AppTier: "Application Tier — Private" {
           style: {
-            fill: "#f3e5f5"
-            stroke: "#7b1fa2"
+            fill: "#f3e8ff"
+            stroke: "#9333ea"
           }
-            App: "App Servers\\nSG: 443 from DMZ only"
+            App: "App Servers\nSG: 443 from DMZ only"
         }
         DataTier: "Data Tier — Private" {
           style: {
-            fill: "#fce4ec"
-            stroke: "#c2185b"
+            fill: "#fce7f3"
+            stroke: "#db2777"
           }
-            DB: "Database\\nSG: 5432 from App only"
+            DB: "Database\nSG: 5432 from App only"
         }
     }
     Observability: "Audit & Monitoring" {

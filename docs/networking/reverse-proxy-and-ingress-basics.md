@@ -28,7 +28,7 @@ A **reverse proxy** sits in front of backend servers and handles client requests
 
 Confusing reverse proxies with load balancers causes architectural mistakes. Load balancers distribute connections across **multiple identical backends**; reverse proxies add **application-aware** behavior — URL rewriting, header injection, WebSocket upgrades, and authentication at the edge. In practice, one component often does both: an ALB load-balances and terminates TLS; nginx reverse-proxies and load-balances upstream pools.
 
-This is **Tutorial 13** in **Module 4: Application Layer** of the REBASH Academy Networking series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 13** in **Module 4: Application Layer** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -61,20 +61,20 @@ Internet: Internet {
     }
     Edge: "Reverse Proxy / Ingress" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         RP: "nginx / HAProxy / Ingress Controller"
         TLS: "TLS Termination"
     }
     Internal: "Private Network" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
-        B1: "Backend 1\\napp:8080"
-        B2: "Backend 2\\napp:8080"
-        API: "API Service\\napi:3000"
+        B1: "Backend 1\napp:8080"
+        B2: "Backend 2\napp:8080"
+        API: "API Service\napi:3000"
     }
     Internet.C -> Edge.RP: "HTTPS 443"
     Edge.RP -> Edge.TLS

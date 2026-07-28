@@ -29,7 +29,7 @@ Manual network configuration does not scale. When you manage hundreds of firewal
 
 This tutorial — the **final installment** of the REBASH Academy Networking series — teaches you to automate DNS and firewall management, use Ansible network modules, deploy Prometheus monitoring for network health, and integrate monitoring into your CI/CD pipeline. When you finish here, you will have the complete picture from TCP/IP fundamentals through production cloud networking, security, and operations.
 
-This is **Tutorial 20** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It follows our [documentation standards](../about.md#documentation-standards) with theory, hands-on labs, and interview preparation.
+This is **Tutorial 20** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
 
 ## Prerequisites
 
@@ -61,33 +61,33 @@ direction: right
 
 Git: "Git Repository" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        TF: "Terraform\\nVPC · DNS · SG"
-        ANS: "Ansible Playbooks\\nFirewall · DNS"
+        TF: "Terraform\nVPC · DNS · SG"
+        ANS: "Ansible Playbooks\nFirewall · DNS"
     }
     CI: "CI/CD Pipeline" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         Plan: "terraform plan"
         Apply: "ansible-playbook / apply"
     }
     Targets: "Monitored Infrastructure" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
-        NE: "node_exporter\\nLinux hosts"
-        SP: "SmokePing\\nLatency probes"
-        BB: "Blackbox Exporter\\nHTTP/TCP/ICMP"
+        NE: "node_exporter\nLinux hosts"
+        SP: "SmokePing\nLatency probes"
+        BB: "Blackbox Exporter\nHTTP/TCP/ICMP"
     }
     Observability: "Observability Stack" {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
         Prom: Prometheus
         Graf: Grafana

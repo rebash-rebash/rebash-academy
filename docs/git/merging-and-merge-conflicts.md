@@ -50,8 +50,8 @@ direction: down
 
 FF: "Fast-Forward Merge" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         M1: main
         C1: C1
@@ -63,8 +63,8 @@ FF: "Fast-Forward Merge" {
     }
     TW: "Three-Way Merge" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         M2: main
         A: A

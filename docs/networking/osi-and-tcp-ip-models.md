@@ -54,15 +54,15 @@ direction: down
 
 APP: "Application Layer" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        DATA: "Application Data\\nHTTP JSON DNS"
+        DATA: "Application Data\nHTTP JSON DNS"
     }
     L47: "OSI Layers 5-7 / TCP/IP Application" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         L7: "L7 Application — HTTP TLS DNS"
         L6: "L6 Presentation — Encoding TLS"
@@ -70,22 +70,22 @@ APP: "Application Layer" {
     }
     L4: "Layer 4 — Transport" {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
-        L4N: "TCP / UDP\\nSegment + Port"
+        L4N: "TCP / UDP\nSegment + Port"
     }
     L3: "Layer 3 — Network" {
       style: {
-        fill: "#f3e5f5"
-        stroke: "#7b1fa2"
+        fill: "#f3e8ff"
+        stroke: "#9333ea"
       }
         L3N: "IP — Packet + IP addr"
     }
     L2: "Layer 2 — Data Link" {
       style: {
-        fill: "#fce4ec"
-        stroke: "#c2185b"
+        fill: "#fce7f3"
+        stroke: "#db2777"
       }
         L2N: "Ethernet — Frame + MAC"
     }

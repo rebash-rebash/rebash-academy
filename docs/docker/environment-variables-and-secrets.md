@@ -56,25 +56,25 @@ direction: down
 
 sources: "Configuration Sources" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
-        ENVFILE: ".env file\\nnon-secrets only"
-        SECRET_MGR: "Secret Manager\\nVault / AWS / GCP"
+        ENVFILE: ".env file\nnon-secrets only"
+        SECRET_MGR: "Secret Manager\nVault / AWS / GCP"
         COMPOSE: "Compose / Stack YAML"
     }
     docker: "Docker Engine" {
       style: {
-        fill: "#e8f5e9"
-        stroke: "#388e3c"
+        fill: "#dcfce7"
+        stroke: "#16a34a"
       }
         RUN: "docker run / compose up"
-        SWARM_SEC: "Swarm secrets\\ntmpfs mount"
+        SWARM_SEC: "Swarm secrets\ntmpfs mount"
     }
     container: Container {
       style: {
-        fill: "#fff3e0"
-        stroke: "#ef6c00"
+        fill: "#ffedd5"
+        stroke: "#ea580c"
       }
         PROC: "Application process"
         MNT: "/run/secrets/*"

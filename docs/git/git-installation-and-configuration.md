@@ -56,11 +56,11 @@ Git configuration flows through four layers. Later layers override earlier ones 
 ```d2
 direction: down
 
-ENV: "Environment variables\\nGIT_AUTHOR_NAME, GIT_DIR, ..."
-    SYS: "System config\\n/etc/gitconfig"
-    GLOBAL: "Global config\\n~/.gitconfig"
-    LOCAL: "Local config\\n.git/config"
-    CMD: "Command-line flags\\n--author, -c key=value"
+ENV: "Environment variables\nGIT_AUTHOR_NAME, GIT_DIR, ..."
+    SYS: "System config\n/etc/gitconfig"
+    GLOBAL: "Global config\n~/.gitconfig"
+    LOCAL: "Local config\n.git/config"
+    CMD: "Command-line flags\n--author, -c key=value"
     SYS -> GLOBAL
     GLOBAL -> LOCAL
     LOCAL -> ENV

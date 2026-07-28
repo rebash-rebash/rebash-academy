@@ -28,7 +28,7 @@ Deploying a Pod is only the beginning. Production clusters must answer: **Is thi
 
 Combined with ReplicaSet controllers and node health monitoring, probes enable **self-healing**: crashed processes restart, unhealthy instances drain from load balancers, and the declared desired state converges without manual intervention. This is why Kubernetes replaces static "restart the service" runbooks with declarative health policies.
 
-This is **Tutorial 12** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Namespaces and Resource Management](namespaces-and-resource-management.md) first. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 12** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Namespaces and Resource Management](namespaces-and-resource-management.md) first.
 
 ## Prerequisites
 
@@ -59,14 +59,14 @@ direction: down
 
 Node: "Worker Node" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         KL: kubelet
         Pod: "Pod: web" {
           style: {
-            fill: "#e8f5e9"
-            stroke: "#388e3c"
+            fill: "#dcfce7"
+            stroke: "#16a34a"
           }
             C: "Container nginx"
             LP: "Liveness Probe"
@@ -567,4 +567,3 @@ containers:
 - [Pod Disruption Budgets](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/)
 - [Deployment – Rolling Update](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment)
 - [gRPC Health Checking Protocol](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-grpc-liveness-probe)
-- [REBASH Academy – Documentation Standards](../about.md#documentation-standards)

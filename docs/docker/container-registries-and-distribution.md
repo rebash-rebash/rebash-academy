@@ -58,7 +58,7 @@ direction: right
 
 DEV: "Developer / CI Builder"
     BUILD: "docker build"
-    REG: "Container Registry\\nHub / ECR / Artifact Registry"
+    REG: "Container Registry\nHub / ECR / Artifact Registry"
     RUN1: "Docker Host"
     RUN2: "Kubernetes Node"
     RUN3: "Cloud Run / ECS"

@@ -27,7 +27,7 @@ A production Kubernetes cluster rarely runs a single application in isolation. P
 
 This tutorial covers namespace design, **ResourceQuota** and **LimitRange** enforcement, label-based organization, and kubectl context workflows. You will learn how SRE and platform engineers prevent noisy-neighbor problems while keeping developer self-service intact.
 
-This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Ingress and External Access](ingress-and-external-access.md) first — external routing and namespace-scoped Ingress rules go hand in hand. This tutorial follows our [documentation standards](../about.md#documentation-standards).
+This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Ingress and External Access](ingress-and-external-access.md) first — external routing and namespace-scoped Ingress rules go hand in hand.
 
 ## Prerequisites
 
@@ -58,13 +58,13 @@ direction: down
 
 Cluster: "Kubernetes Cluster" {
       style: {
-        fill: "#e3f2fd"
-        stroke: "#1976d2"
+        fill: "#dbeafe"
+        stroke: "#2563eb"
       }
         NS_DEV: "Namespace: dev" {
           style: {
-            fill: "#e8f5e9"
-            stroke: "#388e3c"
+            fill: "#dcfce7"
+            stroke: "#16a34a"
           }
             D1: "Deployment web"
             S1: "Service web-svc"
@@ -72,8 +72,8 @@ Cluster: "Kubernetes Cluster" {
         }
         NS_PROD: "Namespace: production" {
           style: {
-            fill: "#fff3e0"
-            stroke: "#ef6c00"
+            fill: "#ffedd5"
+            stroke: "#ea580c"
           }
             D2: "Deployment web"
             S2: "Service web-svc"
@@ -81,8 +81,8 @@ Cluster: "Kubernetes Cluster" {
         }
         NS_SYS: "Namespace: kube-system" {
           style: {
-            fill: "#f3e5f5"
-            stroke: "#7b1fa2"
+            fill: "#f3e8ff"
+            stroke: "#9333ea"
           }
             K: "kube-proxy / CoreDNS"
         }
@@ -550,4 +550,3 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - [Manage Memory and CPU Resources](https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/)
 - [Configure a Pod to Use a QoS Class](https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/)
 - [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-- [REBASH Academy – Documentation Standards](../about.md#documentation-standards)

@@ -42,7 +42,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain and safely audit setuid, setgid, and sticky bits on production systems
 - [ ] Troubleshoot permission-denied errors using `namei` and `stat`
 
-
 ## Theory
 
 ### The permission model

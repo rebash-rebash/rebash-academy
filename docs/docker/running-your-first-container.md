@@ -58,8 +58,8 @@ direction: right
 
 HOST: "Host :8080"
     BRIDGE: "docker0 bridge"
-    CONT: "Container\\nnginx :80"
-    LOGS: "json-file logs\\n/var/lib/docker"
+    CONT: "Container\nnginx :80"
+    LOGS: "json-file logs\n/var/lib/docker"
     HOST -> BRIDGE: "NAT publish"
     BRIDGE -> CONT
     CONT -> LOGS: "stdout/stderr"

@@ -44,7 +44,6 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain fail2ban's role in blocking brute-force attacks
 - [ ] Map hardening actions to CIS Benchmark categories for audit readiness
 
-
 ## Theory
 
 ### Defense in depth

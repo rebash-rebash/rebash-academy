@@ -1,2 +1,25 @@
 title: Terraform
 icon: material/terraform
+
+nav:
+  - Overview: index.md
+  - Introduction to Terraform and IaC: introduction-to-terraform-and-iac.md
+  - Installing Terraform and the CLI Workflow: installing-terraform-and-the-cli-workflow.md
+  - HCL Fundamentals: hcl-fundamentals-blocks-arguments-and-expressions.md
+  - Providers and the Plugin Model: providers-and-the-terraform-plugin-model.md
+  - Variables, Locals, and Outputs: variables-locals-and-outputs.md
+  - Resources and Data Sources: resources-and-data-sources.md
+  - Dependencies and the Resource Graph: dependencies-and-the-resource-graph.md
+  - Terraform State Fundamentals: terraform-state-fundamentals.md
+  - Remote State and Backends: remote-state-and-backends.md
+  - Workspaces and Environments: workspaces-and-environment-strategies.md
+  - Modules — Reusable Infrastructure: modules-creating-reusable-infrastructure.md
+  - Registry Modules and Composition: registry-modules-and-composition.md
+  - Meta-Arguments: meta-arguments-count-for-each-and-lifecycle.md
+  - Functions, Templates, Dynamic Blocks: functions-templates-and-dynamic-blocks.md
+  - Import, Moved, and Safe Refactors: import-moved-and-safe-refactors.md
+  - Format, Validate, and Terraform Test: format-validate-and-terraform-test.md
+  - Secrets and Sensitive Values: secrets-and-sensitive-values.md
+  - Policy as Code Overview: policy-as-code-overview.md
+  - Terraform in CI/CD Pipelines: terraform-in-ci-cd-pipelines.md
+  - Production Patterns and Capstone: production-patterns-and-capstone.md

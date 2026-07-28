@@ -57,9 +57,9 @@ After installation, your host runs the Docker daemon as a systemd service. The C
 direction: right
 
 USER: "User — docker group"
-    CLI: "Docker CLI\\n/usr/bin/docker"
+    CLI: "Docker CLI\n/usr/bin/docker"
     SOCK: "/var/run/docker.sock"
-    DAEMON: "dockerd\\nsystemd service"
+    DAEMON: "dockerd\nsystemd service"
     CONTAINERD: containerd
     RUNC: runc
     CONT: Containers
