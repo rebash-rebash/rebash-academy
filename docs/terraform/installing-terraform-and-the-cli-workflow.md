@@ -1,6 +1,6 @@
 ---
 title: Installing Terraform and the CLI Workflow
-description: "Terraform is a single static binary. Getting it onto your PATH correctly — and learning the"
+description: "Install Terraform 1.9+, choose a version manager, and practise the non-interactive CLI loop with saved plan files."
 difficulty: beginner
 estimated_time: "30 min"
 author: Shaik Basha
@@ -98,6 +98,26 @@ Prefer a **version manager** when you contribute to multiple repos that pin diff
 | `*.tfstate*` | **No** (use remote state + secrets handling) |
 | `crash.log` | **No** |
 
+### Why version managers matter
+
+Production teams often pin different `required_version` floors per repository. Installing a single
+global binary works for personal labs, but **tfenv** or **asdf** lets you switch with a
+`.terraform-version` file checked into each repo — the same discipline as `.python-version` or `.nvmrc`.
+
+### Automation environment variables
+
+| Variable | Effect |
+|----------|--------|
+| `TF_IN_AUTOMATION=1` | Reduces chatter meant for humans; clearer for CI logs |
+| `TF_INPUT=0` | Equivalent to `-input=false` for many commands |
+| `TF_LOG` / `TF_LOG_PATH` | Provider and CLI debug traces (never commit logs with secrets) |
+
+### Plan files vs re-planning
+
+A saved plan is a **snapshot of intent**. Between plan and apply, another process can change state.
+Applying the plan file still applies that snapshot; if state moved, apply fails safely rather than
+silently computing a different plan. That is the point of `plan -out` in pull-request workflows.
+
 ## Hands-on Lab
 
 ### Step 1 – Verify installation
@@ -194,38 +214,55 @@ caches plugins under `.terraform/providers/...`.
 `plan -out=tfplan` produces a binary plan. Applying that file ensures CI applies **exactly**
 what was reviewed — not a newly computed plan that might differ if state changed.
 
-Explain every resource argument you introduced in the lab: why it exists, what happens if omitted, and how it appears in state after apply. Keep `required_version` and `required_providers` in every root module you create going forward.
+
+### `local_file.marker` arguments
+
+| Argument | Purpose |
+|----------|---------|
+| `filename` | Absolute or module-relative path of the file Terraform manages |
+| `content` | Desired file body; changing it updates in place |
+| `file_permission` | POSIX mode string; omit and the provider uses its default |
+
+After apply, state stores the path and content checksum so the next plan can detect drift if you edit the file by hand.
 
 ## Validation
 
+Confirm the CLI workflow end-to-end:
+
 ```bash
+terraform version | head -1
 terraform fmt -check
 terraform init -input=false
 terraform validate
-terraform plan -input=false
+terraform plan -input=false -out=tfplan
+terraform show -no-color tfplan | head -40
+terraform apply -input=false tfplan
+test -f out/cli-lab.txt
+terraform destroy -input=false -auto-approve
 ```
 
 | Check | Pass criteria |
 |-------|----------------|
-| fmt | Exit code 0 |
-| validate | Configuration valid |
-| plan/apply | Matches the lab expectations |
+| Version | Terraform 1.9+ reported |
+| Lockfile | `.terraform.lock.hcl` created after init |
+| Plan file | `tfplan` exists and `show` prints a create for `local_file.marker` |
+| Apply | `out/cli-lab.txt` contains the expected marker string |
+| Cleanup | Destroy removes the managed file |
 
 ## Best Practices
 
-- Keep root modules explicit about `required_version` and `required_providers`
-- Prefer readable modules over clever expressions
-- Run plans in CI before any production apply
-- Document outputs that other stacks consume
-- Treat state and plan artifacts as sensitive
+- Pin CLI versions per repository with tfenv/asdf and document the floor in `required_version`
+- Always run `fmt` before commit; enable `fmt -check` in CI
+- Prefer `plan -out` + apply of that artifact over `apply -auto-approve` on a live re-plan
+- Commit `.terraform.lock.hcl` for root modules so every engineer and CI get the same providers
+- Set `TF_IN_AUTOMATION=1` in pipeline jobs
 
 ## Security Considerations
 
-- Limit who can read remote state
-- Do not commit secrets in tfvars or code
-- Use least-privilege credentials for providers
-- Review plan output for unexpected destroys
-- Enable encryption and locking on remote backends when you leave local labs
+- Download Terraform only from HashiCorp releases or signed distribution packages; verify checksums in air-gapped installs
+- Never commit `crash.log`, plan files from production, or local state that may contain secrets
+- Restrict who can run apply against shared state — CLI access equals change authority
+- Treat `TF_LOG_PATH` output as sensitive; scrub before sharing support bundles
 
 ## Common Mistakes
 
@@ -242,32 +279,33 @@ terraform plan -input=false
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| Provider download fails | Network/registry blocked | Check access to registry.terraform.io |
-| validate fails before init | Providers not installed | Run `terraform init` |
-| Unexpected replace | ForceNew argument change | Read plan carefully; use moved/for_each wisely |
-| State locked | Another apply in progress | Wait or follow backend unlock procedures carefully |
-| Permission denied writing files | Directory permissions | Ensure workspace is writable |
+| `terraform: command not found` | Binary not on PATH | Re-open shell after install; check `which terraform` |
+| Wrong version in CI | Image/binary drift | Pin version explicitly; mirror tfenv file in the job |
+| `init` hangs or fails TLS | Proxy / firewall | Configure HTTPS proxy; allow registry.terraform.io |
+| Apply differs from reviewed plan | Re-planned instead of using `-out` | Apply the saved plan file only |
+| Permission denied under `out/` | Directory missing or not writable | Create parent dirs or adjust permissions |
 
 ## Interview Questions
 
-1. What problem does Installing Terraform and the CLI Workflow solve in a Terraform workflow?
-2. How does this topic change what you put in Git versus what stays local or remote?
-3. Which official HashiCorp documentation would you consult before changing production?
-4. How would you validate a change related to this topic in CI before apply?
-5. What failure mode appears if two engineers ignore this topic on the same state?
-6. How does this interact with Terraform state?
-7. What is a secure default related to this topic?
-8. Describe a common anti-pattern and its fix.
-9. How would you explain this topic to a teammate in two minutes?
-10. What production checklist item captures this topic?
-11. When would you intentionally not use the default approach taught here?
-12. How does this topic differ between a root module and a child module?
+1. Why commit `.terraform.lock.hcl` but gitignore `.terraform/`?
+2. What does `terraform plan -out=tfplan` protect you from in CI?
+3. When is `-auto-approve` acceptable, and when is it dangerous?
+4. How do `required_version` and a version manager work together?
+5. What is the difference between `validate` and `plan`?
+6. Why should production applies use a saved plan artifact?
+7. How would you install Terraform on an air-gapped bastion?
+8. What environment variables make Terraform safer in automation?
+9. Why is `fmt -check` useful in pull requests?
+10. What belongs in Git for a root module on day one?
+11. How does `terraform providers` help debug version skew?
+12. Describe a secure download and verification flow for the Terraform binary.
 
 ## Summary
 
-- Terraform is a single static binary. Getting it onto your PATH correctly — and learning the
-- Practice the lab until `fmt` / `validate` / `plan` are muscle memory
-- Carry forward provider pins, sensitive handling, and plan-before-apply discipline
+- Install an official Terraform binary and prefer a version manager for multi-repo work
+- Memorise the loop: fmt → init → validate → plan (-out) → apply → destroy
+- Commit the lockfile; never commit provider caches or local state
+- Use non-interactive flags and saved plans for CI-grade discipline
 
 ## Related Tutorials
 

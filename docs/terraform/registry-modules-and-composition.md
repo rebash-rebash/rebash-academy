@@ -1,6 +1,6 @@
 ---
 title: Registry Modules and Composition
-description: "The Terraform Registry distributes versioned modules. Learn source addresses, version pins, and composition patterns. Labs stay local while showing ho"
+description: "Consume Terraform Registry modules with version pins and compose them into a maintainable root."
 difficulty: intermediate
 estimated_time: "45 min"
 author: Shaik Basha
@@ -67,6 +67,19 @@ module "vpc" {
   # ... see module docs for required inputs
 }
 ```
+
+### Why this topic matters in production
+
+Teams that skip **Registry modules and composition** eventually pay in outages: unreviewable plans, brittle
+refactors, or secrets leaking into logs. Treat this tutorial as the minimum bar for merging
+Terraform changes on a shared state file.
+
+### Practical mental model
+
+1. Write the smallest config that proves the idea
+2. `fmt` / `validate` / `plan` until the diff matches your intent
+3. Apply only after you can explain every create/update/replace line
+4. Destroy lab resources so the next exercise starts clean
 
 ## Hands-on Lab
 
@@ -205,9 +218,14 @@ module "vpc" {
 
 Treat every external module like a dependency: pin versions, read changelogs, and wrap behind your own thin module if you need a stable internal API.
 
-Explain every resource argument you introduced in the lab: why it exists, what happens if omitted, and how it appears in state after apply. Keep `required_version` and `required_providers` in every root module you create going forward.
+
+Re-read every argument in the lab through the lens of **Registry modules and composition**.
+For each resource address, ask: what happens on the next plan if I change this value?
+Update in place, replace, or no-op? That habit is how you avoid surprise destroys.
 
 ## Validation
+
+Run the lab to completion, then confirm:
 
 ```bash
 terraform fmt -check
@@ -218,25 +236,27 @@ terraform plan -input=false
 
 | Check | Pass criteria |
 |-------|----------------|
-| fmt | Exit code 0 |
-| validate | Configuration valid |
-| plan/apply | Matches the lab expectations |
+| Formatting | `fmt -check` exits 0 |
+| Configuration | `validate` succeeds after init |
+| Intent | Plan matches the tutorial’s expected creates/updates only |
+| Topic focus | You can explain how this lab demonstrates Registry modules and composition |
+| Cleanup | Destroy (or documented teardown) left no stray lab files |
 
 ## Best Practices
 
-- Keep root modules explicit about `required_version` and `required_providers`
-- Prefer readable modules over clever expressions
-- Run plans in CI before any production apply
-- Document outputs that other stacks consume
-- Treat state and plan artifacts as sensitive
+- Keep examples small enough to run without cloud credentials unless the topic requires otherwise
+- Document assumptions (CLI version, providers, working directory) at the top of the root module
+- Prefer explicitness over cleverness when teaching **Registry modules and composition**
+- Add CI checks (`fmt`, `validate`, plan) as soon as a root is shared
+- Write outputs that help the next human debug, not just the next machine
 
 ## Security Considerations
 
-- Limit who can read remote state
-- Do not commit secrets in tfvars or code
-- Use least-privilege credentials for providers
-- Review plan output for unexpected destroys
-- Enable encryption and locking on remote backends when you leave local labs
+- Assume state and plan output may contain secrets related to **Registry modules and composition**
+- Use least-privilege credentials whenever a provider needs authentication
+- Do not commit tfvars with real secrets; use examples with placeholders
+- Review plans for unexpected destroys before apply
+- Limit who can unlock state and who can approve production applies
 
 ## Common Mistakes
 
@@ -247,32 +267,33 @@ terraform plan -input=false
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| Provider download fails | Network/registry blocked | Check access to registry.terraform.io |
-| validate fails before init | Providers not installed | Run `terraform init` |
-| Unexpected replace | ForceNew argument change | Read plan carefully; use moved/for_each wisely |
-| State locked | Another apply in progress | Wait or follow backend unlock procedures carefully |
-| Permission denied writing files | Directory permissions | Ensure workspace is writable |
+| validate fails | Missing init or syntax error | Run `terraform init`, read the file:line in the error |
+| Plan shows replace unexpectedly | ForceNew argument changed | Confirm intent; use moved/lifecycle if refactoring |
+| Provider auth errors | Credentials not available | Export the documented env vars for the provider |
+| Topic confusion around Registry modules and composition | Skipped theory | Re-read Theory, then re-run the lab from a clean directory |
+| Leftover lab files | Destroy skipped | Re-run destroy or delete the lab directory after state cleanup |
 
 ## Interview Questions
 
-1. What problem does Registry Modules and Composition solve in a Terraform workflow?
-2. How does this topic change what you put in Git versus what stays local or remote?
-3. Which official HashiCorp documentation would you consult before changing production?
-4. How would you validate a change related to this topic in CI before apply?
-5. What failure mode appears if two engineers ignore this topic on the same state?
-6. How does this interact with Terraform state?
-7. What is a secure default related to this topic?
-8. Describe a common anti-pattern and its fix.
-9. How would you explain this topic to a teammate in two minutes?
-10. What production checklist item captures this topic?
-11. When would you intentionally not use the default approach taught here?
-12. How does this topic differ between a root module and a child module?
+1. How do you pin a Registry module version?
+2. What is the risk of source = ref without a version?
+3. How do you evaluate a public module before adopting it?
+4. When should you wrap a Registry module in an internal module?
+5. How do module outputs feed other modules?
+6. What is the difference between count and for_each on modules?
+7. How do you upgrade a module version in a controlled way?
+8. Where do you find module documentation?
+9. How do provisioners in third-party modules increase risk?
+10. What licence and maintenance signals matter?
+11. How do you mirror modules for air-gapped use?
+12. Describe a composition pattern for network + app modules.
 
 ## Summary
 
-- The Terraform Registry distributes versioned modules. Learn source addresses, version pins, and composition patterns. Labs stay local while showing how a Registry module such as terraform-aws-modules/vpc/aws (v6.6.1) would be consumed.
-- Practice the lab until `fmt` / `validate` / `plan` are muscle memory
-- Carry forward provider pins, sensitive handling, and plan-before-apply discipline
+- Master **Registry modules and composition** before moving to the next tutorial in the track
+- Every shared root needs formatting, validation, and a reviewed plan
+- Prefer small, reversible labs that you can destroy confidently
+- Carry security and state hygiene forward into every later module
 
 ## Related Tutorials
 
