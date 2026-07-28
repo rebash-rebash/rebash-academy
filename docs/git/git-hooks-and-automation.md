@@ -44,18 +44,22 @@ By the end of this tutorial, you will be able to:
 
 ## Hook Lifecycle Diagram
 
-```mermaid
-flowchart TB
-    COMMIT[git commit]
-    PRE[pre-commit hook]
-    MSG[commit-msg hook]
-    POST[post-commit hook]
-    PUSH[git push]
-    PREPUSH[pre-push hook]
-    SERVER["server-side<br/>pre-receive / update"]
+```d2
+direction: down
 
-    COMMIT --> PRE --> MSG --> POST
-    PUSH --> PREPUSH --> SERVER```
+COMMIT: "git commit"
+    PRE: "pre-commit hook"
+    MSG: "commit-msg hook"
+    POST: "post-commit hook"
+    PUSH: "git push"
+    PREPUSH: "pre-push hook"
+    SERVER: "server-side\\npre-receive / update"
+    COMMIT -> PRE
+    PRE -> MSG
+    MSG -> POST
+    PUSH -> PREPUSH
+    PREPUSH -> SERVER
+```
 
 ## Theory
 

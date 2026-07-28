@@ -48,26 +48,25 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Server
+```d2
+shape: sequence_diagram
 
-    Note over Client,Server: TCP Three-Way Handshake
-    Client->>Server: SYN (seq=x)
-    Server->>Client: SYN-ACK (seq=y, ack=x+1)
-    Client->>Server: ACK (ack=y+1)
-    Note over Client,Server: ESTABLISHED — data transfer
-
-    Client->>Server: Data segments (ACKed)
-    Server->>Client: Response data
-
-    Note over Client,Server: Connection Teardown
-    Client->>Server: FIN
-    Server->>Client: ACK
-    Server->>Client: FIN
-    Client->>Server: ACK
-    Note over Client: TIME_WAIT (2×MSL)```
+Client: Client
+Server: Server
+# Note over Client,Server: TCP Three-Way Handshake
+Client -> Server: "SYN (seq=x)"
+Server -> Client: "SYN-ACK (seq=y, ack=x+1)"
+Client -> Server: "ACK (ack=y+1)"
+# Note over Client,Server: ESTABLISHED — data transfer
+Client -> Server: "Data segments (ACKed)"
+Server -> Client: "Response data"
+# Note over Client,Server: Connection Teardown
+Client -> Server: FIN
+Server -> Client: ACK
+Server -> Client: FIN
+Client -> Server: ACK
+# Note over Client: TIME_WAIT (2×MSL)
+```
 
 ## Theory
 

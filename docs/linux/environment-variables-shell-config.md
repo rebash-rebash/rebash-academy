@@ -45,26 +45,33 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Login
-        L1["SSH / Console login"] --> LP["/etc/profile"]
-        LP --> LBP["~/.bash_profile or ~/.profile"]
-    end
+```d2
+direction: down
 
-    subgraph Interactive
-        T1[New terminal tab] --> BR["~/.bashrc"]
-        LBP --> BR
-    end
-
-    subgraph NonInteractive
-        S1["Script / cron / CI"] --> ENV[Inherited environment only]
-    end
-
-    BR --> EV[Environment Variables]
-    LBP --> EV
-    LP --> EV
-    EV --> P[Child Processes]
+Login: Login {
+        L1: "SSH / Console login"
+        LP: "/etc/profile"
+        L1 -> LP
+        LBP: "~/.bash_profile or ~/.profile"
+        LP -> LBP
+    }
+    Interactive: Interactive {
+        T1: "New terminal tab"
+        BR: "~/.bashrc"
+        T1 -> BR
+        LBP -> BR
+    }
+    NonInteractive: NonInteractive {
+        S1: "Script / cron / CI"
+        ENV: "Inherited environment only"
+        S1 -> ENV
+    }
+    EV: "Environment Variables"
+    Interactive.BR -> EV
+    Login.LBP -> EV
+    Login.LP -> EV
+    P: "Child Processes"
+    EV -> P
 ```
 
 ## Theory

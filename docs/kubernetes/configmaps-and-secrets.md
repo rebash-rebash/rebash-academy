@@ -52,31 +52,38 @@ By the end of this tutorial, you will be able to:
 
 ConfigMaps and Secrets live in etcd (namespace-scoped). Pods consume them via env vars or volume mounts — the kubelet syncs mounted files.
 
-```mermaid
-flowchart TB
-    subgraph Store["etcd — namespace scoped"]
-        CM["ConfigMap app-config<br/>LOG_LEVEL=debug<br/>config.yaml"]
-        SEC["Secret db-credentials<br/>username / password"]
-    end
+```d2
+direction: down
 
-    subgraph Pod["Pod spec"]
-        ENV["envFrom / valueFrom"]
-        VOL["volumeMount<br/>/etc/config"]
-    end
-
-    subgraph Container["Container"]
-        APP["Application reads<br/>env vars and files"]
-    end
-
-    CM --> ENV
-    CM --> VOL
-    SEC --> ENV
-    SEC --> VOL
-    ENV --> APP
-    VOL --> APP
-    style Store fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Pod fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style Container fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+Store: "etcd — namespace scoped" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        CM: "ConfigMap app-config\\nLOG_LEVEL=debug\\nconfig.yaml"
+        SEC: "Secret db-credentials\\nusername / password"
+    }
+    Pod: "Pod spec" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        ENV: "envFrom / valueFrom"
+        VOL: "volumeMount\\n/etc/config"
+    }
+    Container: Container {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        APP: "Application reads\\nenv vars and files"
+    }
+    Store.CM -> Pod.ENV
+    Store.CM -> Pod.VOL
+    Store.SEC -> Pod.ENV
+    Store.SEC -> Pod.VOL
+    Pod.ENV -> Container.APP
+    Pod.VOL -> Container.APP
 ```
 
 ## Theory

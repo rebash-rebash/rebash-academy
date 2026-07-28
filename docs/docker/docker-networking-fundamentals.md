@@ -48,32 +48,39 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Host
-        ETH[Host NIC eth0]
-        IPT[iptables NAT]
-    end
+```d2
+direction: down
 
-    subgraph Bridge["docker0"]
-        C1["Container A<br/>172.17.0.2"]
-        C2["Container B<br/>172.17.0.3"]
-    end
-
-    subgraph UserBridge["app-net"]
-        C3["Container C<br/>172.18.0.2"]
-        C4["Container D<br/>172.18.0.3"]
-    end
-
-    EXT[External client] -->|host:8080| IPT
-    IPT -->|DNAT| C1
-    C3 <-->|DNS: api| C4
-    C1 --- Bridge
-    C2 --- Bridge
-    Bridge --- ETH
-    UserBridge --- ETH
-    style Bridge fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style UserBridge fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Host: Host {
+        ETH: "Host NIC eth0"
+        IPT: "iptables NAT"
+    }
+    Bridge: docker0 {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        C1: "Container A\\n172.17.0.2"
+        C2: "Container B\\n172.17.0.3"
+    }
+    UserBridge: app-net {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        C3: "Container C\\n172.18.0.2"
+        C4: "Container D\\n172.18.0.3"
+    }
+    EXT: "External client"
+    EXT -> Host.IPT: "host:8080"
+    Host.IPT -> Bridge.C1: DNAT
+    UserBridge.C3 <-> UserBridge.C4: "DNS: api"
+    Bridge: Bridge
+    Bridge.C1 -> Bridge
+    Bridge.C2 -> Bridge
+    Bridge -> Host.ETH
+    UserBridge: UserBridge
+    UserBridge -> Host.ETH
 ```
 
 User-defined networks add automatic DNS between connected containers.

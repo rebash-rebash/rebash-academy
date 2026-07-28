@@ -53,22 +53,23 @@ By the end of this tutorial, you will be able to:
 
 After installation, your host runs the Docker daemon as a systemd service. The CLI communicates over a Unix socket — understanding this path explains permission errors and remote Docker contexts.
 
-```mermaid
-flowchart LR
-    USER[User — docker group]
-    CLI["Docker CLI<br/>/usr/bin/docker"]
-    SOCK["/var/run/docker.sock"]
-    DAEMON["dockerd<br/>systemd service"]
-    CONTAINERD[containerd]
-    RUNC[runc]
-    CONT[Containers]
+```d2
+direction: right
 
-    USER --> CLI
-    CLI --> SOCK
-    SOCK --> DAEMON
-    DAEMON --> CONTAINERD
-    CONTAINERD --> RUNC
-    RUNC --> CONT```
+USER: "User — docker group"
+    CLI: "Docker CLI\\n/usr/bin/docker"
+    SOCK: "/var/run/docker.sock"
+    DAEMON: "dockerd\\nsystemd service"
+    CONTAINERD: containerd
+    RUNC: runc
+    CONT: Containers
+    USER -> CLI
+    CLI -> SOCK
+    SOCK -> DAEMON
+    DAEMON -> CONTAINERD
+    CONTAINERD -> RUNC
+    RUNC -> CONT
+```
 
 ## Theory
 

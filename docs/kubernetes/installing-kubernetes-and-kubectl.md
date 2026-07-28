@@ -53,32 +53,40 @@ By the end of this tutorial, you will be able to:
 
 Both minikube and kind run a **single-node or multi-node cluster** on your laptop. kind launches cluster "nodes" as Docker containers; minikube can use Docker, KVM, Hyper-V, or other drivers.
 
-```mermaid
-flowchart TB
-    subgraph LAPTOP["Your Machine"]
-        KUBECTL["kubectl CLI"]
-        KCFG["~/.kube/config"]
+```d2
+direction: down
 
-        subgraph KIND["kind cluster (example)"]
-            CP["control-plane container<br/>API + etcd + scheduler"]
-            W1["worker container optional"]
-        end
-
-        subgraph MINIKU["minikube cluster (docker driver)"]
-            MK["minikube VM/container<br/>control-plane + kubelet"]
-        end
-
-        DOCKER["Docker Engine"]
-    end
-
-    KUBECTL --> KCFG
-    KCFG --> CP
-    KCFG --> MK
-    KIND --> DOCKER
-    MINIKU --> DOCKER
-    style LAPTOP fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style KIND fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style MINIKU fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+LAPTOP: "Your Machine" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        KUBECTL: "kubectl CLI"
+        KCFG: "~/.kube/config"
+        KIND: "kind cluster (example)" {
+          style: {
+            fill: "#e8f5e9"
+            stroke: "#388e3c"
+          }
+            CP: "control-plane container\\nAPI + etcd + scheduler"
+            W1: "worker container optional"
+        }
+        MINIKU: "minikube cluster (docker driver)" {
+          style: {
+            fill: "#fff3e0"
+            stroke: "#ef6c00"
+          }
+            MK: "minikube VM/container\\ncontrol-plane + kubelet"
+        }
+        DOCKER: "Docker Engine"
+    }
+    LAPTOP.KUBECTL -> LAPTOP.KCFG
+    LAPTOP.KCFG -> LAPTOP.KIND.CP
+    LAPTOP.KCFG -> LAPTOP.MINIKU.MK
+    KIND: KIND
+    KIND -> LAPTOP.DOCKER
+    MINIKU: MINIKU
+    MINIKU -> LAPTOP.DOCKER
 ```
 
 ## Theory

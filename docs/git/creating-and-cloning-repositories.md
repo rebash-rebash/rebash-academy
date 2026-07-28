@@ -55,34 +55,43 @@ By the end of this tutorial, you will be able to:
 
 DevOps workflows typically flow from a hosted remote to local clones and CI runners. Bare repositories on servers act as intermediaries in self-hosted Git deployments.
 
-```mermaid
-flowchart TB
-    subgraph HOSTING["Git Hosting Platform"]
-        REMOTE["origin<br/>GitHub / GitLab / Gitea"]
-    end
+```d2
+direction: down
 
-    subgraph DEV["Developer Workstations"]
-        CLONE1["non-bare clone<br/>working directory + .git"]
-        CLONE2[non-bare clone]
-    end
-
-    subgraph CI["CI/CD Infrastructure"]
-        RUNNER["Pipeline runner<br/>shallow clone depth=1"]
-    end
-
-    subgraph SELF["Self-Hosted (optional)"]
-        BARE["bare repo on server<br/>/srv/git/project.git"]
-    end
-
-    REMOTE <-->|push / fetch| CLONE1
-    REMOTE <-->|push / fetch| CLONE2
-    REMOTE -->|webhook trigger| RUNNER
-    RUNNER -->|clone / fetch| REMOTE
-    BARE <-->|push mirror| REMOTE
-    style HOSTING fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style DEV fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style CI fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style SELF fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+HOSTING: "Git Hosting Platform" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        REMOTE: "origin\\nGitHub / GitLab / Gitea"
+    }
+    DEV: "Developer Workstations" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        CLONE1: "non-bare clone\\nworking directory + .git"
+        CLONE2: "non-bare clone"
+    }
+    CI: "CI/CD Infrastructure" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        RUNNER: "Pipeline runner\\nshallow clone depth=1"
+    }
+    SELF: "Self-Hosted (optional)" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        BARE: "bare repo on server\\n/srv/git/project.git"
+    }
+    HOSTING.REMOTE <-> DEV.CLONE1: "push / fetch"
+    HOSTING.REMOTE <-> DEV.CLONE2: "push / fetch"
+    HOSTING.REMOTE -> CI.RUNNER: "webhook trigger"
+    CI.RUNNER -> HOSTING.REMOTE: "clone / fetch"
+    SELF.BARE <-> HOSTING.REMOTE: "push mirror"
 ```
 
 ## Theory

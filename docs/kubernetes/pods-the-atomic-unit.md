@@ -52,37 +52,46 @@ By the end of this tutorial, you will be able to:
 
 A Pod creates a shared execution environment: one IP address, one set of network namespaces, optional shared volumes.
 
-```mermaid
-flowchart TB
-    subgraph POD["Pod — shared context"]
-        NET["Network namespace<br/>IP: 10.244.1.15"]
-        VOL["Shared volumes<br/>emptyDir / config"]
+```d2
+direction: down
 
-        subgraph MAIN["Primary container"]
-            APP["app :8080"]
-        end
-
-        subgraph SIDE["Sidecar container"]
-            LOG["log-shipper"]
-        end
-
-        subgraph INIT["Init containers<br/>run sequentially first"]
-            INITC["fetch-config"]
-        end
-    end
-
-    NODE["Worker Node<br/>kubelet + containerd"]
-    SVC["Service selector<br/>app=web"]
-
-    NODE --> POD
-    INITC --> APP
-    APP --> VOL
-    LOG --> VOL
-    SVC --> NET
-    style POD fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style MAIN fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style SIDE fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style INIT fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+POD: "Pod — shared context" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        NET: "Network namespace\\nIP: 10.244.1.15"
+        VOL: "Shared volumes\\nemptyDir / config"
+        MAIN: "Primary container" {
+          style: {
+            fill: "#e8f5e9"
+            stroke: "#388e3c"
+          }
+            APP: "app :8080"
+        }
+        SIDE: "Sidecar container" {
+          style: {
+            fill: "#fff3e0"
+            stroke: "#ef6c00"
+          }
+            LOG: log-shipper
+        }
+        INIT: "Init containers\\nrun sequentially first" {
+          style: {
+            fill: "#f3e5f5"
+            stroke: "#7b1fa2"
+          }
+            INITC: fetch-config
+        }
+    }
+    NODE: "Worker Node\\nkubelet + containerd"
+    SVC: "Service selector\\napp=web"
+    POD: POD
+    NODE -> POD
+    POD.INIT.INITC -> POD.MAIN.APP
+    POD.MAIN.APP -> POD.VOL
+    POD.SIDE.LOG -> POD.VOL
+    SVC -> POD.NET
 ```
 
 ## Theory
@@ -164,17 +173,17 @@ spec:
 
 Container states: **Waiting** (reason: `ContainerCreating`, `ImagePullBackOff`), **Running**, **Terminated**.
 
-```mermaid
-flowchart LR
-    PEND["Pending"]
-    RUN["Running"]
-    SUCC["Succeeded"]
-    FAIL["Failed"]
+```d2
+direction: right
 
-    PEND --> RUN
-    RUN --> SUCC
-    RUN --> FAIL
-    PEND --> FAIL
+PEND: Pending
+    RUN: Running
+    SUCC: Succeeded
+    FAIL: Failed
+    PEND -> RUN
+    RUN -> SUCC
+    RUN -> FAIL
+    PEND -> FAIL
 ```
 
 ### Restart Policies

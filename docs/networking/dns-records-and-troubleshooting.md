@@ -51,30 +51,32 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Client
-        APP["Application / Browser"]
-        RES["Recursive Resolver<br/>8.8.8.8 · 1.1.1.1"]
-    end
+```d2
+direction: down
 
-    subgraph Auth["Authoritative DNS — example.com zone"]
-        NS["NS Records<br/>ns1.example.com"]
-        SOA["SOA Record<br/>serial · refresh · expire"]
-        A["A / AAAA<br/>host → IP"]
-        CNAME["CNAME<br/>alias → target"]
-        MX["MX<br/>mail priority"]
-        TXT["TXT<br/>SPF · DKIM · verify"]
-    end
-
-    APP --> RES
-    RES --> NS
-    NS --> SOA
-    NS --> A
-    NS --> CNAME
-    NS --> MX
-    NS --> TXT
-    style Auth fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+Client: Client {
+        APP: "Application / Browser"
+        RES: "Recursive Resolver\\n8.8.8.8 · 1.1.1.1"
+    }
+    Auth: "Authoritative DNS — example.com zone" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        NS: "NS Records\\nns1.example.com"
+        SOA: "SOA Record\\nserial · refresh · expire"
+        A: "A / AAAA\\nhost → IP"
+        CNAME: "CNAME\\nalias → target"
+        MX: "MX\\nmail priority"
+        TXT: "TXT\\nSPF · DKIM · verify"
+    }
+    Client.APP -> Client.RES
+    Client.RES -> Auth.NS
+    Auth.NS -> Auth.SOA
+    Auth.NS -> Auth.A
+    Auth.NS -> Auth.CNAME
+    Auth.NS -> Auth.MX
+    Auth.NS -> Auth.TXT
 ```
 
 ## Theory

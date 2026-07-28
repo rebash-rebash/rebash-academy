@@ -51,43 +51,44 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Perimeter
-        ING[Ingress + TLS]
-        WAF["WAF / rate limit"]
-    end
+```d2
+direction: down
 
-    subgraph Admission
-        API[Kubernetes API]
-        KYV["Kyverno / Gatekeeper"]
-        API --> KYV
-    end
-
-    subgraph Namespace["votestack namespace"]
-        NETP[NetworkPolicy]
-        PSS["Pod Security: restricted"]
-        WEB[web]
-        APIP[api]
-        WORK[worker]
-        WEB --> NETP
-        APIP --> NETP
-        WORK --> NETP
-    end
-
-    subgraph Data
-        PG["postgres"]
-        RD["redis"]
-    end
-
-    ING --> WEB
-    ING --> APIP
-    APIP --> RD
-    APIP --> PG
-    WORK --> RD
-    WORK --> PG
-    KYV --> Namespace
-    style Namespace fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+Perimeter: Perimeter {
+        ING: "Ingress + TLS"
+        WAF: "WAF / rate limit"
+    }
+    Admission: Admission {
+        API: "Kubernetes API"
+        KYV: "Kyverno / Gatekeeper"
+        API -> KYV
+    }
+    Namespace: "votestack namespace" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        NETP: NetworkPolicy
+        PSS: "Pod Security: restricted"
+        WEB: web
+        APIP: api
+        WORK: worker
+        WEB -> NETP
+        APIP -> NETP
+        WORK -> NETP
+    }
+    Data: Data {
+        PG: postgres
+        RD: redis
+    }
+    Perimeter.ING -> Namespace.WEB
+    Perimeter.ING -> Namespace.APIP
+    Namespace.APIP -> Data.RD
+    Namespace.APIP -> Data.PG
+    Namespace.WORK -> Data.RD
+    Namespace.WORK -> Data.PG
+    Namespace: Namespace
+    Admission.KYV -> Namespace
 ```
 
 ## Theory

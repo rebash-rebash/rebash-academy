@@ -608,55 +608,81 @@ def interview_questions(slug: str, title: str) -> str:
     return "\n".join(f"{i}. {q}" for i, q in enumerate(common, 1))
 
 
-def mermaid_diagram(slug: str) -> str:
+def architecture_diagram(slug: str) -> str:
     if slug == "introduction-to-linux":
         return dedent("""
-            ```mermaid
-            flowchart TB
-                A[Bootloader GRUB] --> B[Linux Kernel]
-                B --> C[systemd PID 1]
-                C --> D[Services]
-                C --> E[Login / Shell]
-                E --> F[User Applications]
+            ```d2
+            direction: down
+            A: "Bootloader GRUB"
+            B: "Linux Kernel"
+            C: "systemd PID 1"
+            D: Services
+            E: "Login / Shell"
+            F: "User Applications"
+            A -> B
+            B -> C
+            C -> D
+            C -> E
+            E -> F
             ```
         """)
     if slug == "linux-filesystem-hierarchy":
         return dedent("""
-            ```mermaid
-            flowchart TD
-                R[/ Root] --> etc[/etc Config]
-                R --> var[/var Logs & Data]
-                R --> home[/home Users]
-                R --> usr[/usr Programs]
-                R --> tmp[/tmp Temporary]
+            ```d2
+            direction: down
+            R: "/ Root"
+            etc: "/etc Config"
+            var: "/var Logs & Data"
+            home: "/home Users"
+            usr: "/usr Programs"
+            tmp: "/tmp Temporary"
+            R -> etc
+            R -> var
+            R -> home
+            R -> usr
+            R -> tmp
             ```
         """)
     if slug == "systemd-service-management":
         return dedent("""
-            ```mermaid
-            flowchart LR
-                A[systemctl] --> B[systemd]
-                B --> C[Unit Files]
-                B --> D[Running Services]
-                B --> E[journald Logs]
+            ```d2
+            direction: right
+            A: systemctl
+            B: systemd
+            C: "Unit Files"
+            D: "Running Services"
+            E: "journald Logs"
+            A -> B
+            B -> C
+            B -> D
+            B -> E
             ```
         """)
     if slug == "remote-systemd-services":
         return dedent("""
-            ```mermaid
-            flowchart LR
-                A[Local systemctl --host] -->|SSH| B[Remote Server]
-                B --> C[polkit Auth]
-                C --> D[systemd]
-                D --> E[Services]
+            ```d2
+            direction: right
+            A: "Local systemctl --host"
+            B: "Remote Server"
+            C: "polkit Auth"
+            D: systemd
+            E: Services
+            A -> B: SSH
+            B -> C
+            C -> D
+            D -> E
             ```
         """)
     return dedent("""
-        ```mermaid
-        flowchart LR
-            A[Admin] --> B[Linux CLI]
-            B --> C[System Resources]
-            C --> D[Logs & Monitoring]
+        ```d2
+        direction: right
+        A: Admin
+        B: "Linux CLI"
+        C: "System Resources"
+        D: "Logs & Monitoring"
+        A -> B
+        B -> C
+        C -> D
         ```
     """)
 
@@ -712,7 +738,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-{mermaid_diagram(slug).strip()}
+{architecture_diagram(slug).strip()}
 
 ## Theory
 

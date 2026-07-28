@@ -54,32 +54,36 @@ By the end of this tutorial, you will be able to:
 
 External clients hit the Ingress controller LoadBalancer. The controller reads Ingress rules and proxies to internal ClusterIP Services.
 
-```mermaid
-flowchart TB
-    subgraph Internet
-        USER["Client<br/>https://shop.example.com"]
-    end
+```d2
+direction: down
 
-    subgraph Edge["Ingress Controller — nginx / Traefik"]
-        IC["LoadBalancer IP<br/>TLS termination"]
-        RULES["Ingress rules<br/>host + path routing"]
-    end
-
-    subgraph Cluster["Cluster Internal"]
-        SVC1["Service web<br/>ClusterIP :80"]
-        SVC2["Service api<br/>ClusterIP :8080"]
-        P1["Pods web"]
-        P2["Pods api"]
-    end
-
-    USER --> IC
-    IC --> RULES
-    RULES -->|"/"| SVC1
-    RULES -->|"/api"| SVC2
-    SVC1 --> P1
-    SVC2 --> P2
-    style Edge fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Cluster fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Internet: Internet {
+        USER: "Client\\nhttps://shop.example.com"
+    }
+    Edge: "Ingress Controller — nginx / Traefik" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        IC: "LoadBalancer IP\\nTLS termination"
+        RULES: "Ingress rules\\nhost + path routing"
+    }
+    Cluster: "Cluster Internal" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        SVC1: "Service web\\nClusterIP :80"
+        SVC2: "Service api\\nClusterIP :8080"
+        P1: "Pods web"
+        P2: "Pods api"
+    }
+    Internet.USER -> Edge.IC
+    Edge.IC -> Edge.RULES
+    Edge.RULES -> Cluster.SVC1: "/"
+    Edge.RULES -> Cluster.SVC2: "/api"
+    Cluster.SVC1 -> Cluster.P1
+    Cluster.SVC2 -> Cluster.P2
 ```
 
 ## Theory

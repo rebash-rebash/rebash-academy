@@ -1,35 +1,130 @@
 ---
 title: Overview
-description: Start your DevOps journey with foundational concepts and setup guides.
+description: Start learning on REBASH Academy — how the site works, what to study first, and where to go next.
 difficulty: beginner
-estimated_time: "Varies"
+estimated_time: "10 min"
 author: Shaik Basha
 category: getting-started
 tags:
   - getting-started
+  - onboarding
 comments: false
 ---
 
 # Getting Started
 
-Start your DevOps journey with foundational concepts and setup guides.
+Welcome to **REBASH Academy**. This page is your map: how tutorials work, what to learn first, and where the production-ready tracks live today.
 
-## Overview
+## How learning works here
 
-Welcome to the **Getting Started** section of REBASH Academy. Tutorials in this category follow our
-[documentation standards](../about.md#documentation-standards) and include hands-on labs,
-architecture diagrams, and interview questions.
+Every tutorial follows the same structure so you can move between topics without relearning the format:
 
-!!! info "Coming Soon"
-    Tutorials for this category are being prepared. Check the [roadmap](../roadmap.md) for updates.
+1. **Overview & prerequisites** — why it matters and what you need
+2. **Learning objectives** — clear outcomes you can check off
+3. **Architecture diagram** *(when useful)* — visual model of the system
+4. **Theory** — concepts explained for real engineering work
+5. **Hands-on lab** — step-by-step practice on your machine
+6. **Commands, mistakes, best practices, troubleshooting**
+7. **Interview questions & related tutorials** — reinforce and continue
 
-## Learning Objectives
+Prefer a career-shaped roadmap? Open **[Learning Paths](../learning-paths/index.md)** and start with **DevOps Engineer**.
 
-- [ ] Explore foundational concepts
-- [ ] Complete hands-on labs
-- [ ] Apply best practices in production scenarios
+## What you need
 
-## Related Sections
+| Requirement | Notes |
+|-------------|--------|
+| Laptop or VM | Linux preferred (Ubuntu 22.04+ / 24.04 works well) |
+| Terminal comfort | Basic shell use is enough to begin |
+| Curiosity | Break things in labs — that is the point |
 
-Browse other categories from the [Tutorials](../getting-started/index.md) menu or follow a
-[Learning Path](index.md) tailored to your career goals.
+Optional later: Docker Desktop or a Linux VM with Docker Engine, `kubectl`/`minikube`, and a cloud account when you reach those tracks.
+
+## Recommended first path
+
+Start with foundations, then containers and orchestration. This order matches how production systems are built.
+
+```d2
+direction: right
+
+Linux: "1. Linux" {
+  style: {
+    fill: "#dbeafe"
+    stroke: "#1976d2"
+  }
+}
+Net: "2. Networking" {
+  style: {
+    fill: "#dcfce7"
+    stroke: "#22c55e"
+  }
+}
+Git: "3. Git" {
+  style: {
+    fill: "#ffedd5"
+    stroke: "#f97316"
+  }
+}
+Docker: "4. Docker" {
+  style: {
+    fill: "#e0e7ff"
+    stroke: "#4f46e5"
+  }
+}
+K8s: "5. Kubernetes" {
+  style: {
+    fill: "#f3e8ff"
+    stroke: "#9333ea"
+  }
+}
+
+Linux -> Net -> Git -> Docker -> K8s
+```
+
+### Start here today
+
+| Step | Track | First tutorial | Status |
+|------|--------|----------------|--------|
+| 1 | [Linux](../linux/index.md) | [Introduction to Linux](../linux/introduction-to-linux.md) | Ready — 20 tutorials |
+| 2 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready |
+| 3 | [Git](../git/index.md) | [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md) | Ready |
+| 4 | [Docker](../docker/index.md) | [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md) | Ready |
+| 5 | [Kubernetes](../kubernetes/index.md) | [Introduction to Kubernetes and Orchestration](../kubernetes/introduction-to-kubernetes-and-orchestration.md) | Ready — 20 tutorials |
+
+!!! tip "New to DevOps?"
+    Begin with **[Introduction to Linux](../linux/introduction-to-linux.md)**. Do not skip the labs — reading alone will not stick.
+
+## Study tips
+
+- **One tutorial at a time** — finish the lab before jumping ahead
+- **Type the commands** — copy-paste only after you understand the step
+- **Keep notes** — short “what broke / what fixed it” notes beat passive bookmarks
+- **Use interview questions** — treat them as a checkpoint, not optional fluff
+- **Follow a path** — random topic hopping slows progress; use [Learning Paths](../learning-paths/index.md)
+
+## What is ready vs coming next
+
+| Available now | Coming next |
+|---------------|-------------|
+| Linux, Networking, Git, Docker, Kubernetes | Terraform, AWS / Azure / GCP |
+| Learning Paths overview | GitLab CI/CD, Monitoring |
+| Projects & blog placeholders | Dedicated Getting Started mini-series |
+
+See the full plan on the **[Roadmap](../roadmap.md)**.
+
+## Learning objectives
+
+After this page you should be able to:
+
+- [ ] Explain how REBASH Academy tutorials are structured
+- [ ] Choose a first track based on your experience
+- [ ] Open the correct first tutorial and start the lab
+- [ ] Find Learning Paths when you want a full career sequence
+
+## Next steps
+
+1. Open **[Introduction to Linux](../linux/introduction-to-linux.md)** *(recommended)*  
+   or pick another ready track from the table above
+2. Bookmark **[Learning Paths](../learning-paths/index.md)** for the full DevOps sequence
+3. Read **[About](../about.md)** if you want standards and site background
+
+Questions or feedback? Reach out on [LinkedIn](https://www.linkedin.com/in/shaikkhadarbasha/).

@@ -51,28 +51,26 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows how a new host joins a network: DHCP assigns L3 config, ARP resolves the gateway MAC, ICMP verifies reachability, and NTP aligns time with authoritative servers.
 
-```mermaid
-sequenceDiagram
-    participant Host
-    participant Switch
-    participant DHCP as DHCP Server
-    participant GW as Default Gateway
-    participant NTP as NTP Server
+```d2
+shape: sequence_diagram
 
-    Host->>Switch: DHCP Discover (broadcast)
-    Switch->>DHCP: Forward broadcast
-    DHCP->>Host: DHCP Offer (IP, mask, GW, DNS)
-    Host->>DHCP: DHCP Request (accept offer)
-    DHCP->>Host: DHCP ACK (lease time)
-
-    Host->>Switch: ARP Who-has GW IP?
-    GW->>Host: ARP Reply (MAC address)
-
-    Host->>GW: ICMP Echo Request (ping)
-    GW->>Host: ICMP Echo Reply
-
-    Host->>NTP: NTP client query (UDP 123)
-    NTP->>Host: Time sync response```
+Host: Host
+Switch: Switch
+DHCP: "DHCP Server"
+GW: "Default Gateway"
+NTP: "NTP Server"
+Host -> Switch: "DHCP Discover (broadcast)"
+Switch -> DHCP: "Forward broadcast"
+DHCP -> Host: "DHCP Offer (IP, mask, GW, DNS)"
+Host -> DHCP: "DHCP Request (accept offer)"
+DHCP -> Host: "DHCP ACK (lease time)"
+Host -> Switch: "ARP Who-has GW IP?"
+GW -> Host: "ARP Reply (MAC address)"
+Host -> GW: "ICMP Echo Request (ping)"
+GW -> Host: "ICMP Echo Reply"
+Host -> NTP: "NTP client query (UDP 123)"
+NTP -> Host: "Time sync response"
+```
 
 ## Theory
 

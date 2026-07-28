@@ -47,28 +47,27 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart LR
-    subgraph Host
-        CTX["Build Context<br/>directory on disk"]
-        DF[Dockerfile]
-        CLI[docker build]
-    end
+```d2
+direction: right
 
-    subgraph Engine
-        DA[Docker daemon]
-        CACHE["Layer cache"]
-    end
-
-    subgraph Output
-        IMG["Local image<br/>repo:tag"]
-    end
-
-    CTX --> CLI
-    DF --> CLI
-    CLI --> DA
-    DA --> CACHE
-    DA --> IMG```
+Host: Host {
+        CTX: "Build Context\\ndirectory on disk"
+        DF: Dockerfile
+        CLI: "docker build"
+    }
+    Engine: Engine {
+        DA: "Docker daemon"
+        CACHE: "Layer cache"
+    }
+    Output: Output {
+        IMG: "Local image\\nrepo:tag"
+    }
+    Host.CTX -> Host.CLI
+    Host.DF -> Host.CLI
+    Host.CLI -> Engine.DA
+    Engine.DA -> Engine.CACHE
+    Engine.DA -> Output.IMG
+```
 
 Each instruction in the Dockerfile typically creates one **immutable layer**. Cached layers speed rebuilds when inputs unchanged.
 

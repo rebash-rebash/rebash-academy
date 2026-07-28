@@ -47,32 +47,33 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Host
-        ORCH["Docker Engine / Compose"]
-        subgraph Container
-            INIT["init / tini"]
-            APP[Application]
-            HC[HEALTHCHECK probe]
-        end
-        CG[cgroups limits]
-        LOG[Log driver]
-    end
+```d2
+direction: down
 
-    subgraph External
-        LB["Load balancer / proxy"]
-        MON[Monitoring]
-    end
-
-    ORCH --> CG
-    ORCH --> Container
-    INIT --> APP
-    HC --> APP
-    APP --> LOG
-    LB --> APP
-    MON --> HC
-    MON --> LOG```
+Host: Host {
+        ORCH: "Docker Engine / Compose"
+        Container: Container {
+            INIT: "init / tini"
+            APP: Application
+            HC: "HEALTHCHECK probe"
+        }
+        CG: "cgroups limits"
+        LOG: "Log driver"
+    }
+    External: External {
+        LB: "Load balancer / proxy"
+        MON: Monitoring
+    }
+    Host.ORCH -> Host.CG
+    Container: Container
+    Host.ORCH -> Container
+    Host.Container.INIT -> Host.Container.APP
+    Host.Container.HC -> Host.Container.APP
+    Host.Container.APP -> Host.LOG
+    External.LB -> Host.Container.APP
+    External.MON -> Host.Container.HC
+    External.MON -> Host.LOG
+```
 
 ## Theory
 

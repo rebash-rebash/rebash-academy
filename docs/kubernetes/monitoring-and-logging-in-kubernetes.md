@@ -50,35 +50,40 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Apps["Application namespace"]
-        API[votestack-api]
-        WEB[votestack-web]
-        API -->|/metrics| PROM
-    end
+```d2
+direction: down
 
-    subgraph Observability["monitoring namespace"]
-        PROM[Prometheus]
-        AM[Alertmanager]
-        GRAF[Grafana]
-        LOKI[Loki]
-        PROM --> AM
-        PROM --> GRAF
-        LOKI --> GRAF
-    end
-
-    subgraph Collection
-        SM[ServiceMonitor]
-        FB["Fluent Bit / Promtail"]
-    end
-
-    SM --> PROM
-    API --> FB
-    FB --> LOKI
-    AM -->|PagerDuty / Slack| ONCALL[On-call engineer]
-    style Apps fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Observability fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Apps: "Application namespace" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        API: votestack-api
+        WEB: votestack-web
+        PROM: PROM
+        API -> PROM: "/metrics"
+    }
+    Observability: "monitoring namespace" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        AM: Alertmanager
+        GRAF: Grafana
+        LOKI: Loki
+        PROM -> AM
+        PROM -> GRAF
+        LOKI -> GRAF
+    }
+    Collection: Collection {
+        SM: ServiceMonitor
+        FB: "Fluent Bit / Promtail"
+    }
+    Collection.SM -> Apps.PROM
+    Apps.API -> Collection.FB
+    Collection.FB -> Observability.LOKI
+    ONCALL: "On-call engineer"
+    Observability.AM -> ONCALL: "PagerDuty / Slack"
 ```
 
 ## Theory

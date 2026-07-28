@@ -47,33 +47,32 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Client
-        APP[Application]
-        STUB["Stub Resolver<br/>glibc / systemd-resolved"]
-    end
+```d2
+direction: down
 
-    subgraph Resolver
-        REC["Recursive Resolver<br/>8.8.8.8 / corporate DNS"]
-        CACHE["Local Cache"]
-    end
-
-    subgraph Authoritative
-        ROOT[Root .]
-        TLD[TLD .com]
-        AUTH["Auth NS<br/>example.com"]
-    end
-
-    APP --> STUB
-    STUB --> REC
-    REC --> CACHE
-    REC -->|iterative| ROOT
-    ROOT -->|referral| TLD
-    TLD -->|referral| AUTH
-    AUTH -->|answer| REC
-    REC --> STUB
-    STUB --> APP```
+Client: Client {
+        APP: Application
+        STUB: "Stub Resolver\\nglibc / systemd-resolved"
+    }
+    Resolver: Resolver {
+        REC: "Recursive Resolver\\n8.8.8.8 / corporate DNS"
+        CACHE: "Local Cache"
+    }
+    Authoritative: Authoritative {
+        ROOT: "Root ."
+        TLD: "TLD .com"
+        AUTH: "Auth NS\\nexample.com"
+    }
+    Client.APP -> Client.STUB
+    Client.STUB -> Resolver.REC
+    Resolver.REC -> Resolver.CACHE
+    Resolver.REC -> Authoritative.ROOT: iterative
+    Authoritative.ROOT -> Authoritative.TLD: referral
+    Authoritative.TLD -> Authoritative.AUTH: referral
+    Authoritative.AUTH -> Resolver.REC: answer
+    Resolver.REC -> Client.STUB
+    Client.STUB -> Client.APP
+```
 
 ## Theory
 

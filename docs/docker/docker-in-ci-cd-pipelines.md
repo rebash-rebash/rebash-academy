@@ -47,38 +47,38 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart LR
-    subgraph Git
-        PUSH["Push / PR / Tag"]
-        SHA[Commit SHA]
-    end
+```d2
+direction: right
 
-    subgraph CI["Runner"]
-        CLONE[Clone repo]
-        BUILD[docker build]
-        SCAN[Image scan]
-        PUSHIMG[docker push]
-    end
-
-    subgraph Registry
-        REG["ghcr.io / registry.gitlab.com"]
-    end
-
-    subgraph Deploy
-        STG[Staging]
-        PROD[Production]
-    end
-
-    PUSH --> CLONE
-    CLONE --> BUILD
-    SHA --> BUILD
-    BUILD --> SCAN
-    SCAN --> PUSHIMG
-    PUSHIMG --> REG
-    REG --> STG
-    REG --> PROD
-    style CI fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+Git: Git {
+        PUSH: "Push / PR / Tag"
+        SHA: "Commit SHA"
+    }
+    CI: Runner {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        CLONE: "Clone repo"
+        BUILD: "docker build"
+        SCAN: "Image scan"
+        PUSHIMG: "docker push"
+    }
+    Registry: Registry {
+        REG: "ghcr.io / registry.gitlab.com"
+    }
+    Deploy: Deploy {
+        STG: Staging
+        PROD: Production
+    }
+    Git.PUSH -> CI.CLONE
+    CI.CLONE -> CI.BUILD
+    Git.SHA -> CI.BUILD
+    CI.BUILD -> CI.SCAN
+    CI.SCAN -> CI.PUSHIMG
+    CI.PUSHIMG -> Registry.REG
+    Registry.REG -> Deploy.STG
+    Registry.REG -> Deploy.PROD
 ```
 
 ## Theory

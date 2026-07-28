@@ -44,17 +44,18 @@ By the end of this tutorial, you will be able to:
 
 ## Remote Sync Diagram
 
-```mermaid
-flowchart LR
-    LOCAL["Local Repo<br/>refs/heads/main"]
-    RTB["Remote-tracking<br/>origin/main"]
-    REMOTE["Remote Server<br/>GitHub/GitLab"]
-    CI[CI Pipeline]
+```d2
+direction: right
 
-    LOCAL -->|git push| REMOTE
-    REMOTE -->|git fetch| RTB
-    RTB -->|git merge / rebase| LOCAL
-    REMOTE -->|webhook| CI```
+LOCAL: "Local Repo\\nrefs/heads/main"
+    RTB: "Remote-tracking\\norigin/main"
+    REMOTE: "Remote Server\\nGitHub/GitLab"
+    CI: "CI Pipeline"
+    LOCAL -> REMOTE: "git push"
+    REMOTE -> RTB: "git fetch"
+    RTB -> LOCAL: "git merge / rebase"
+    REMOTE -> CI: webhook
+```
 
 ## Theory
 

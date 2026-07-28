@@ -44,19 +44,25 @@ By the end of this tutorial, you will be able to:
 
 ## History Navigation Diagram
 
-```mermaid
-flowchart TB
-    HEAD["HEAD / main"]
-    C1["commit N<br/>latest fix"]
-    C2["commit N-1<br/>feature add"]
-    C3["commit N-2<br/>initial"]
+```d2
+direction: down
 
-    HEAD --> C1 --> C2 --> C3
-
-    LOG[git log] --> HEAD
-    DIFF[git diff C2 C1] --> C1
-    BLAME[git blame file] --> C2
-    SHOW[git show C1] --> C1```
+HEAD: "HEAD / main"
+    C1: "commit N\\nlatest fix"
+    C2: "commit N-1\\nfeature add"
+    C3: "commit N-2\\ninitial"
+    HEAD -> C1
+    C1 -> C2
+    C2 -> C3
+    LOG: "git log"
+    LOG -> HEAD
+    DIFF: "git diff C2 C1"
+    DIFF -> C1
+    BLAME: "git blame file"
+    BLAME -> C2
+    SHOW: "git show C1"
+    SHOW -> C1
+```
 
 ## Theory
 

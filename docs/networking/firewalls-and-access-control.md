@@ -52,30 +52,29 @@ By the end of this tutorial, you will be able to:
 
 Firewalls operate at multiple enforcement points. Defense in depth means layering controls — never relying on a single rule set.
 
-```mermaid
-flowchart TB
-    subgraph Internet
-        ATT[External Clients]
-    end
+```d2
+direction: down
 
-    subgraph Perimeter
-        NACL["Network ACL<br/>stateless · subnet boundary"]
-        SG["Security Group<br/>stateful · instance ENI"]
-    end
-
-    subgraph Host
-        UFW["UFW / nftables<br/>host firewall"]
-        APP["Application<br/>nginx · postgres"]
-    end
-
-    ATT --> NACL
-    NACL --> SG
-    SG --> UFW
-    UFW --> APP
-    APP -->|response| UFW
-    UFW --> SG
-    SG --> NACL
-    NACL --> ATT```
+Internet: Internet {
+        ATT: "External Clients"
+    }
+    Perimeter: Perimeter {
+        NACL: "Network ACL\\nstateless · subnet boundary"
+        SG: "Security Group\\nstateful · instance ENI"
+    }
+    Host: Host {
+        UFW: "UFW / nftables\\nhost firewall"
+        APP: "Application\\nnginx · postgres"
+    }
+    Internet.ATT -> Perimeter.NACL
+    Perimeter.NACL -> Perimeter.SG
+    Perimeter.SG -> Host.UFW
+    Host.UFW -> Host.APP
+    Host.APP -> Host.UFW: response
+    Host.UFW -> Perimeter.SG
+    Perimeter.SG -> Perimeter.NACL
+    Perimeter.NACL -> Internet.ATT
+```
 
 ## Theory
 

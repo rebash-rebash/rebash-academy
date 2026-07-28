@@ -52,30 +52,36 @@ By the end of this tutorial, you will be able to:
 
 NAT sits at the boundary between private and public address spaces.
 
-```mermaid
-flowchart TB
-    subgraph Private["Private Network 10.0.11.0/24"]
-        APP["App Server<br/>10.0.11.50"]
-        DB["Database<br/>10.0.11.60"]
-    end
+```d2
+direction: down
 
-    subgraph NATDevice["NAT Gateway / Router"]
-        SNAT["SNAT<br/>10.0.11.x → public IP"]
-        DNAT["DNAT<br/>public:8080 → 10.0.11.50:80"]
-    end
-
-    subgraph Internet
-        EXT[External Clients]
-        SVC[External APIs]
-    end
-
-    APP -->|outbound| SNAT
-    SNAT --> SVC
-    EXT -->|inbound :8080| DNAT
-    DNAT --> APP
-    DB -.->|no direct inbound| EXT
-    style Private fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style NATDevice fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Private: "Private Network 10.0.11.0/24" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        APP: "App Server\\n10.0.11.50"
+        DB: "Database\\n10.0.11.60"
+    }
+    NATDevice: "NAT Gateway / Router" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        SNAT: "SNAT\\n10.0.11.x → public IP"
+        DNAT: "DNAT\\npublic:8080 → 10.0.11.50:80"
+    }
+    Internet: Internet {
+        EXT: "External Clients"
+        SVC: "External APIs"
+    }
+    Private.APP -> NATDevice.SNAT: outbound
+    NATDevice.SNAT -> Internet.SVC
+    Internet.EXT -> NATDevice.DNAT: "inbound :8080"
+    NATDevice.DNAT -> Private.APP
+    Private.DB -> Internet.EXT: "no direct inbound" {
+      style.stroke-dash: 3
+    }
 ```
 
 ## Theory

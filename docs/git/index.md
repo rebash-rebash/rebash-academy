@@ -23,13 +23,20 @@ The REBASH Academy **Git** track is a structured, 20-tutorial curriculum for dev
 
 ## Curriculum Plan
 
-```mermaid
-flowchart TD
-    M1["Module 1: Foundations"] --> M2["Module 2: Essential Workflow"]
-    M2 --> M3["Module 3: Branching"]
-    M3 --> M4["Module 4: Collaboration"]
-    M4 --> M5["Module 5: Recovery & Debugging"]
-    M5 --> M6["Module 6: Advanced & DevOps"]
+```d2
+direction: down
+
+M1: "Module 1: Foundations"
+    M2: "Module 2: Essential Workflow"
+    M1 -> M2
+    M3: "Module 3: Branching"
+    M2 -> M3
+    M4: "Module 4: Collaboration"
+    M3 -> M4
+    M5: "Module 5: Recovery & Debugging"
+    M4 -> M5
+    M6: "Module 6: Advanced & DevOps"
+    M5 -> M6
 ```
 
 ### Module 1 – Foundations

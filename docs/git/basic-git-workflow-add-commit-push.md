@@ -54,20 +54,21 @@ By the end of this tutorial, you will be able to:
 
 The workflow moves changes through three trees before reaching the remote server where CI/CD watches for events.
 
-```mermaid
-flowchart LR
-    WD["Working Directory<br/>edited files"]
-    SA["Staging Area<br/>index"]
-    REPO["Local Repository<br/>.git/objects"]
-    REMOTE["Remote<br/>origin/main"]
-    CI["CI Pipeline"]
+```d2
+direction: right
 
-    WD -->|"git add"| SA
-    SA -->|"git commit"| REPO
-    REPO -->|"git push"| REMOTE
-    REMOTE -->|"webhook"| CI
-    REMOTE -->|"git pull / fetch"| REPO
-    REPO -->|"checkout"| WD```
+WD: "Working Directory\\nedited files"
+    SA: "Staging Area\\nindex"
+    REPO: "Local Repository\\n.git/objects"
+    REMOTE: "Remote\\norigin/main"
+    CI: "CI Pipeline"
+    WD -> SA: "git add"
+    SA -> REPO: "git commit"
+    REPO -> REMOTE: "git push"
+    REMOTE -> CI: webhook
+    REMOTE -> REPO: "git pull / fetch"
+    REPO -> WD: checkout
+```
 
 ## Theory
 

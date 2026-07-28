@@ -53,24 +53,25 @@ By the end of this tutorial, you will be able to:
 
 Git configuration flows through four layers. Later layers override earlier ones — a common source of "I changed my email but commits still show the old one" confusion.
 
-```mermaid
-flowchart TB
-    ENV["Environment variables<br/>GIT_AUTHOR_NAME, GIT_DIR, ..."]
-    SYS["System config<br/>/etc/gitconfig"]
-    GLOBAL["Global config<br/>~/.gitconfig"]
-    LOCAL["Local config<br/>.git/config"]
-    CMD["Command-line flags<br/>--author, -c key=value"]
+```d2
+direction: down
 
-    SYS --> GLOBAL
-    GLOBAL --> LOCAL
-    LOCAL --> ENV
-    ENV --> CMD
-
-    CMD -->|"wins for this invocation"| EFFECT[Effective config value]
-    LOCAL --> EFFECT
-    GLOBAL --> EFFECT
-    SYS --> EFFECT
-    ENV --> EFFECT```
+ENV: "Environment variables\\nGIT_AUTHOR_NAME, GIT_DIR, ..."
+    SYS: "System config\\n/etc/gitconfig"
+    GLOBAL: "Global config\\n~/.gitconfig"
+    LOCAL: "Local config\\n.git/config"
+    CMD: "Command-line flags\\n--author, -c key=value"
+    SYS -> GLOBAL
+    GLOBAL -> LOCAL
+    LOCAL -> ENV
+    ENV -> CMD
+    EFFECT: "Effective config value"
+    CMD -> EFFECT: "wins for this invocation"
+    LOCAL -> EFFECT
+    GLOBAL -> EFFECT
+    SYS -> EFFECT
+    ENV -> EFFECT
+```
 
 ## Theory
 

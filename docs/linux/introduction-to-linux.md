@@ -49,46 +49,57 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows how hardware, firmware, the kernel, userspace, and your applications relate. Every layer has a distinct responsibility — confusing them is a common source of beginner mistakes.
 
-```mermaid
-flowchart TB
-    subgraph HW["Hardware Layer"]
-        CPU["CPU / RAM / Disk / NIC"]
-    end
+```d2
+direction: down
 
-    subgraph FW["Firmware"]
-        UEFI["UEFI / BIOS"]
-    end
-
-    subgraph BL["Bootloader"]
-        GRUB["GRUB / systemd-boot"]
-    end
-
-    subgraph KS["Kernel Space"]
-        KERN["Linux Kernel<br/>scheduling · memory · drivers · syscalls"]
-    end
-
-    subgraph US["User Space"]
-        INIT["PID 1 — systemd / init"]
-        SVC["systemd units<br/>sshd · nginx · docker"]
-        SHELL["Login shell<br/>bash · zsh"]
-        APP["User applications<br/>git · python · kubectl"]
-    end
-
-    CPU --> UEFI
-    UEFI --> GRUB
-    GRUB --> KERN
-    KERN --> INIT
-    INIT --> SVC
-    INIT --> SHELL
-    SHELL --> APP
-    SVC --> APP
-    APP -->|syscalls| KERN
-    KERN --> CPU
-    style HW fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style FW fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style BL fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style KS fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    style US fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+HW: "Hardware Layer" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        CPU: "CPU / RAM / Disk / NIC"
+    }
+    FW: Firmware {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        UEFI: "UEFI / BIOS"
+    }
+    BL: Bootloader {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        GRUB: "GRUB / systemd-boot"
+    }
+    KS: "Kernel Space" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        KERN: "Linux Kernel\\nscheduling · memory · drivers · syscalls"
+    }
+    US: "User Space" {
+      style: {
+        fill: "#fce4ec"
+        stroke: "#c2185b"
+      }
+        INIT: "PID 1 — systemd / init"
+        SVC: "systemd units\\nsshd · nginx · docker"
+        SHELL: "Login shell\\nbash · zsh"
+        APP: "User applications\\ngit · python · kubectl"
+    }
+    HW.CPU -> FW.UEFI
+    FW.UEFI -> BL.GRUB
+    BL.GRUB -> KS.KERN
+    KS.KERN -> US.INIT
+    US.INIT -> US.SVC
+    US.INIT -> US.SHELL
+    US.SHELL -> US.APP
+    US.SVC -> US.APP
+    US.APP -> KS.KERN: syscalls
+    KS.KERN -> HW.CPU
 ```
 
 ## Theory

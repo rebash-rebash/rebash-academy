@@ -52,33 +52,39 @@ By the end of this tutorial, you will be able to:
 
 The diagram below contrasts virtual machines and containers at the infrastructure layer. Understanding this distinction explains why containers start in seconds, use less memory, and share the host kernel — and why VMs still matter for strong isolation and multi-OS workloads.
 
-```mermaid
-flowchart TB
-    subgraph VM["Virtual Machine Stack"]
-        APP_VM[Application]
-        OS_GUEST[Guest OS — full kernel]
-        HYP["Hypervisor — KVM / VMware / Hyper-V"]
-        HOST_OS_VM[Host OS]
-        HW_VM[Physical Hardware]
-        APP_VM --> OS_GUEST
-        OS_GUEST --> HYP
-        HYP --> HOST_OS_VM
-        HOST_OS_VM --> HW_VM
-    end
+```d2
+direction: down
 
-    subgraph CONTAINER["Container Stack"]
-        APP_C1[App Container A]
-        APP_C2[App Container B]
-        ENGINE["Container Engine — Docker / containerd"]
-        HOST_OS_C[Host OS — shared kernel]
-        HW_C[Physical Hardware]
-        APP_C1 --> ENGINE
-        APP_C2 --> ENGINE
-        ENGINE --> HOST_OS_C
-        HOST_OS_C --> HW_C
-    end
-    style VM fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style CONTAINER fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+VM: "Virtual Machine Stack" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        APP_VM: Application
+        OS_GUEST: "Guest OS — full kernel"
+        HYP: "Hypervisor — KVM / VMware / Hyper-V"
+        HOST_OS_VM: "Host OS"
+        HW_VM: "Physical Hardware"
+        APP_VM -> OS_GUEST
+        OS_GUEST -> HYP
+        HYP -> HOST_OS_VM
+        HOST_OS_VM -> HW_VM
+    }
+    CONTAINER: "Container Stack" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        APP_C1: "App Container A"
+        APP_C2: "App Container B"
+        ENGINE: "Container Engine — Docker / containerd"
+        HOST_OS_C: "Host OS — shared kernel"
+        HW_C: "Physical Hardware"
+        APP_C1 -> ENGINE
+        APP_C2 -> ENGINE
+        ENGINE -> HOST_OS_C
+        HOST_OS_C -> HW_C
+    }
 ```
 
 ## Theory
@@ -164,24 +170,25 @@ Today, Docker Inc. maintains Docker Desktop and Docker Engine, while the **Open 
 
 ### The Container Ecosystem
 
-```mermaid
-flowchart LR
-    DEV[Developer]
-    DF[Dockerfile]
-    BUILD[docker build]
-    IMG["Image"]
-    REG["Registry<br/>Docker Hub / ECR / GCR"]
-    RUN[docker run]
-    CONT[Container]
-    ORCH["Orchestrator<br/>Kubernetes / ECS"]
+```d2
+direction: right
 
-    DEV --> DF
-    DF --> BUILD
-    BUILD --> IMG
-    IMG --> REG
-    REG --> RUN
-    RUN --> CONT
-    CONT --> ORCH```
+DEV: Developer
+    DF: Dockerfile
+    BUILD: "docker build"
+    IMG: Image
+    REG: "Registry\\nDocker Hub / ECR / GCR"
+    RUN: "docker run"
+    CONT: Container
+    ORCH: "Orchestrator\\nKubernetes / ECS"
+    DEV -> DF
+    DF -> BUILD
+    BUILD -> IMG
+    IMG -> REG
+    REG -> RUN
+    RUN -> CONT
+    CONT -> ORCH
+```
 
 | Component | Role | Examples |
 |-----------|------|----------|

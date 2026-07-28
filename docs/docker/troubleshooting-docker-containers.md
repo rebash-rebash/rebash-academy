@@ -49,18 +49,36 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    SYM["Symptom<br/>502 / exit 137 / hang"]
-    SYM --> L1{"Container<br/>running?"}
-    L1 -->|No| EXIT["Check exit code<br/>logs / inspect"]
-    L1 -->|Yes| L2{"App healthy<br/>inside container?"}
-    L2 -->|No| APP["exec + app logs<br/>config / env"]
-    L2 -->|Yes| L3{"Network path<br/>OK?"}
-    L3 -->|No| NET["port / DNS / firewall"]
-    L3 -->|Yes| L4{"Storage / host<br/>OK?"}
-    L4 -->|No| STORE["volumes / disk / perms"]
-    L4 -->|Yes| EXT[Upstream dependency]
+```d2
+direction: down
+
+SYM: "Symptom\\n502 / exit 137 / hang"
+    L1: "Container\\nrunning?" {
+      shape: diamond
+    }
+    SYM -> L1
+    EXIT: "Check exit code\\nlogs / inspect"
+    L1 -> EXIT: No
+    L2: "App healthy\\ninside container?" {
+      shape: diamond
+    }
+    L1 -> L2: Yes
+    APP: "exec + app logs\\nconfig / env"
+    L2 -> APP: No
+    L3: "Network path\\nOK?" {
+      shape: diamond
+    }
+    L2 -> L3: Yes
+    NET: "port / DNS / firewall"
+    L3 -> NET: No
+    L4: "Storage / host\\nOK?" {
+      shape: diamond
+    }
+    L3 -> L4: Yes
+    STORE: "volumes / disk / perms"
+    L4 -> STORE: No
+    EXT: "Upstream dependency"
+    L4 -> EXT: Yes
 ```
 
 Work top-down: container lifecycle → application → network → storage → external services.

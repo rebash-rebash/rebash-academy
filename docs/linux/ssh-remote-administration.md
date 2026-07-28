@@ -46,29 +46,33 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart LR
-    subgraph Client
-        A[ssh client]
-        B["~/.ssh/config"]
-        C[Private Key]
-        D[ssh-agent]
-    end
-    subgraph Network
-        E["Port 22 / TCP"]
-    end
-    subgraph Server
-        F[sshd]
-        G[authorized_keys]
-        H["Shell / sftp-server"]
-    end
-    A --> B
-    A --> C
-    C -.-> D
-    A -->|encrypted session| E
-    E --> F
-    F --> G
-    F --> H```
+```d2
+direction: right
+
+Client: Client {
+        A: "ssh client"
+        B: "~/.ssh/config"
+        C: "Private Key"
+        D: ssh-agent
+    }
+    Network: Network {
+        E: "Port 22 / TCP"
+    }
+    Server: Server {
+        F: sshd
+        G: authorized_keys
+        H: "Shell / sftp-server"
+    }
+    Client.A -> Client.B
+    Client.A -> Client.C
+    Client.C -> Client.D: {
+      style.stroke-dash: 3
+    }
+    Client.A -> Network.E: "encrypted session"
+    Network.E -> Server.F
+    Server.F -> Server.G
+    Server.F -> Server.H
+```
 
 ## Theory
 

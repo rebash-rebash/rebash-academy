@@ -50,20 +50,20 @@ By the end of this tutorial, you will be able to:
 
 kubectl is a client — it never runs containers directly. Every command becomes an HTTPS request to the API server.
 
-```mermaid
-flowchart LR
-    USER["Engineer / CI"]
-    KUBECTL["kubectl"]
-    KCFG["kubeconfig<br/>context + credentials"]
-    API["kube-apiserver"]
-    OBJ["API Objects<br/>Pod / Deployment / Service"]
-    ETCD["etcd"]
+```d2
+direction: right
 
-    USER --> KUBECTL
-    KUBECTL --> KCFG
-    KCFG --> API
-    API --> OBJ
-    OBJ --> ETCD
+USER: "Engineer / CI"
+    KUBECTL: kubectl
+    KCFG: "kubeconfig\\ncontext + credentials"
+    API: kube-apiserver
+    OBJ: "API Objects\\nPod / Deployment / Service"
+    ETCD: etcd
+    USER -> KUBECTL
+    KUBECTL -> KCFG
+    KCFG -> API
+    API -> OBJ
+    OBJ -> ETCD
 ```
 
 ## Theory
@@ -162,15 +162,18 @@ See the full cheat sheet in [From Docker to Kubernetes](../docker/from-docker-to
 
 ### Production Workflow Pattern
 
-```mermaid
-flowchart LR
-    EDIT["Edit YAML locally"]
-    DIFF["kubectl diff -f ."]
-    APPLY["kubectl apply -f ."]
-    VERIFY["kubectl rollout status"]
-    GIT["git commit + push"]
+```d2
+direction: right
 
-    EDIT --> DIFF --> APPLY --> VERIFY --> GIT
+EDIT: "Edit YAML locally"
+    DIFF: "kubectl diff -f ."
+    APPLY: "kubectl apply -f ."
+    VERIFY: "kubectl rollout status"
+    GIT: "git commit + push"
+    EDIT -> DIFF
+    DIFF -> APPLY
+    APPLY -> VERIFY
+    VERIFY -> GIT
 ```
 
 Never `kubectl edit` in production without capturing changes back to Git.

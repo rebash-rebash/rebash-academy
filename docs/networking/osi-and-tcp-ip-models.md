@@ -49,41 +49,60 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows how the OSI and TCP/IP models align, and how data is encapsulated as it descends the stack.
 
-```mermaid
-flowchart TB
-    subgraph APP["Application Layer"]
-        DATA["Application Data<br/>HTTP JSON DNS"]
-    end
+```d2
+direction: down
 
-    subgraph L47["OSI Layers 5-7 / TCP/IP Application"]
-        L7[L7 Application — HTTP TLS DNS]
-        L6[L6 Presentation — Encoding TLS]
-        L5[L5 Session — Connection mgmt]
-    end
-
-    subgraph L4["Layer 4 — Transport"]
-        L4N["TCP / UDP<br/>Segment + Port"]
-    end
-
-    subgraph L3["Layer 3 — Network"]
-        L3N[IP — Packet + IP addr]
-    end
-
-    subgraph L2["Layer 2 — Data Link"]
-        L2N[Ethernet — Frame + MAC]
-    end
-
-    subgraph L1["Layer 1 — Physical"]
-        L1N["Bits on wire / fiber / radio"]
-    end
-
-    DATA --> L7 --> L6 --> L5 --> L4N --> L3N --> L2N --> L1N
-    style APP fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style L47 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style L4 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style L3 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    style L2 fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
-    style L1 fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#004d40
+APP: "Application Layer" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        DATA: "Application Data\\nHTTP JSON DNS"
+    }
+    L47: "OSI Layers 5-7 / TCP/IP Application" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        L7: "L7 Application — HTTP TLS DNS"
+        L6: "L6 Presentation — Encoding TLS"
+        L5: "L5 Session — Connection mgmt"
+    }
+    L4: "Layer 4 — Transport" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        L4N: "TCP / UDP\\nSegment + Port"
+    }
+    L3: "Layer 3 — Network" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        L3N: "IP — Packet + IP addr"
+    }
+    L2: "Layer 2 — Data Link" {
+      style: {
+        fill: "#fce4ec"
+        stroke: "#c2185b"
+      }
+        L2N: "Ethernet — Frame + MAC"
+    }
+    L1: "Layer 1 — Physical" {
+      style: {
+        fill: "#e0f2f1"
+        stroke: "#00796b"
+      }
+        L1N: "Bits on wire / fiber / radio"
+    }
+    APP.DATA -> L47.L7
+    L47.L7 -> L47.L6
+    L47.L6 -> L47.L5
+    L47.L5 -> L4.L4N
+    L4.L4N -> L3.L3N
+    L3.L3N -> L2.L2N
+    L2.L2N -> L1.L1N
 ```
 
 ## Theory

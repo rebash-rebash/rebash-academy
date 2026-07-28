@@ -45,38 +45,42 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Hardware
-        A["Physical Disk /dev/sda"]
-    end
-    subgraph Partitions
-        B["/dev/sda1 boot"]
-        C["/dev/sda2 LVM PV"]
-    end
-    subgraph LVM
-        D[Volume Group vg0]
-        E["LV root /dev/vg0/root"]
-        F["LV data /dev/vg0/data"]
-    end
-    subgraph Filesystems
-        G["ext4 on /"]
-        H["xfs on /var"]
-    end
-    subgraph Mount["Points"]
-        I["/"]
-        J["/var"]
-    end
-    A --> B
-    A --> C
-    C --> D
-    D --> E
-    D --> F
-    E --> G
-    F --> H
-    G --> I
-    H --> J
-    style Mount fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+```d2
+direction: down
+
+Hardware: Hardware {
+        A: "Physical Disk /dev/sda"
+    }
+    Partitions: Partitions {
+        B: "/dev/sda1 boot"
+        C: "/dev/sda2 LVM PV"
+    }
+    LVM: LVM {
+        D: "Volume Group vg0"
+        E: "LV root /dev/vg0/root"
+        F: "LV data /dev/vg0/data"
+    }
+    Filesystems: Filesystems {
+        G: "ext4 on /"
+        H: "xfs on /var"
+    }
+    Mount: Points {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        I: "/"
+        J: "/var"
+    }
+    Hardware.A -> Partitions.B
+    Hardware.A -> Partitions.C
+    Partitions.C -> LVM.D
+    LVM.D -> LVM.E
+    LVM.D -> LVM.F
+    LVM.E -> Filesystems.G
+    LVM.F -> Filesystems.H
+    Filesystems.G -> Mount.I
+    Filesystems.H -> Mount.J
 ```
 
 ## Theory

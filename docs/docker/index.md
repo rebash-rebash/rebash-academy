@@ -24,13 +24,20 @@ The REBASH Academy **Docker** track is a structured, 20-tutorial curriculum for 
 
 ## Curriculum Plan
 
-```mermaid
-flowchart TD
-    M1["Module 1: Foundations"] --> M2["Module 2: Images & Dockerfile"]
-    M2 --> M3["Module 3: Storage & Compose"]
-    M3 --> M4["Module 4: Networking & Registry"]
-    M4 --> M5["Module 5: Operations"]
-    M5 --> M6["Module 6: Production & Beyond"]
+```d2
+direction: down
+
+M1: "Module 1: Foundations"
+    M2: "Module 2: Images & Dockerfile"
+    M1 -> M2
+    M3: "Module 3: Storage & Compose"
+    M2 -> M3
+    M4: "Module 4: Networking & Registry"
+    M3 -> M4
+    M5: "Module 5: Operations"
+    M4 -> M5
+    M6: "Module 6: Production & Beyond"
+    M5 -> M6
 ```
 
 ### Module 1 – Foundations

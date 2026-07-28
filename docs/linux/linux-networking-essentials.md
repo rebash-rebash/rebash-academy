@@ -45,34 +45,33 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Host
-        APP[Application]
-        SS["ss / netstat"]
-        IP[ip command]
-    end
+```d2
+direction: down
 
-    subgraph Stack
-        NIC[Network Interface eth0]
-        RT[Routing Table]
-        DNS["Resolver / systemd-resolved"]
-    end
-
-    subgraph External
-        GW[Default Gateway]
-        DNSS[DNS Server 8.8.8.8]
-        DEST[Remote Host]
-    end
-
-    APP --> SS
-    APP --> NIC
-    IP --> NIC
-    IP --> RT
-    APP --> DNS
-    RT --> GW
-    DNS --> DNSS
-    GW --> DEST```
+Host: Host {
+        APP: Application
+        SS: "ss / netstat"
+        IP: "ip command"
+    }
+    Stack: Stack {
+        NIC: "Network Interface eth0"
+        RT: "Routing Table"
+        DNS: "Resolver / systemd-resolved"
+    }
+    External: External {
+        GW: "Default Gateway"
+        DNSS: "DNS Server 8.8.8.8"
+        DEST: "Remote Host"
+    }
+    Host.APP -> Host.SS
+    Host.APP -> Stack.NIC
+    Host.IP -> Stack.NIC
+    Host.IP -> Stack.RT
+    Host.APP -> Stack.DNS
+    Stack.RT -> External.GW
+    Stack.DNS -> External.DNSS
+    External.GW -> External.DEST
+```
 
 ## Theory
 

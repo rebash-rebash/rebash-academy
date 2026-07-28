@@ -46,18 +46,19 @@ By the end of this tutorial, you will be able to:
 
 ## Object Model Diagram
 
-```mermaid
-flowchart TB
-    COMMIT["Commit Object<br/>author · message · tree · parent"]
-    TREE["Tree Object<br/>directory listing"]
-    BLOB["Blob Object<br/>file content"]
-    TAG["Tag Object<br/>annotated release"]
+```d2
+direction: down
 
-    COMMIT -->|points to| TREE
-    TREE -->|name → blob| BLOB
-    TREE -->|name → tree| TREE
-    TAG -->|points to| COMMIT
-    COMMIT -->|parent| COMMIT```
+COMMIT: "Commit Object\\nauthor · message · tree · parent"
+    TREE: "Tree Object\\ndirectory listing"
+    BLOB: "Blob Object\\nfile content"
+    TAG: "Tag Object\\nannotated release"
+    COMMIT -> TREE: "points to"
+    TREE -> BLOB: "name → blob"
+    TREE -> TREE: "name → tree"
+    TAG -> COMMIT: "points to"
+    COMMIT -> COMMIT: parent
+```
 
 ## Theory
 

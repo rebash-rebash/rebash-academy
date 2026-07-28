@@ -53,29 +53,31 @@ By the end of this tutorial, you will be able to:
 
 RBAC sits in the authorization path after authentication. Bindings connect subjects (users, groups, ServiceAccounts) to roles.
 
-```mermaid
-flowchart TB
-    REQ[API Request]
-    AUTHN["Authentication<br/>cert / token / OIDC"]
-    AUTHZ["Authorization<br/>RBAC webhook"]
-    ADM[Admission Controllers]
-    ETCD["etcd"]
+```d2
+direction: down
 
-    REQ --> AUTHN
-    AUTHN -->|identity| AUTHZ
-    AUTHZ -->|allowed| ADM
-    ADM --> ETCD
-
-    subgraph RBAC["RBAC Objects"]
-        ROLE["Role / ClusterRole<br/>rules: verbs + resources"]
-        BIND["RoleBinding / ClusterRoleBinding"]
-        SA[ServiceAccount]
-        ROLE --> BIND
-        SA --> BIND
-    end
-
-    AUTHZ --> RBAC
-    style RBAC fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+REQ: "API Request"
+    AUTHN: "Authentication\\ncert / token / OIDC"
+    AUTHZ: "Authorization\\nRBAC webhook"
+    ADM: "Admission Controllers"
+    ETCD: etcd
+    REQ -> AUTHN
+    AUTHN -> AUTHZ: identity
+    AUTHZ -> ADM: allowed
+    ADM -> ETCD
+    RBAC: "RBAC Objects" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        ROLE: "Role / ClusterRole\\nrules: verbs + resources"
+        BIND: "RoleBinding / ClusterRoleBinding"
+        SA: ServiceAccount
+        ROLE -> BIND
+        SA -> BIND
+    }
+    RBAC: RBAC
+    AUTHZ -> RBAC
 ```
 
 ## Theory

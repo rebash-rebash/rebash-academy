@@ -52,46 +52,54 @@ By the end of this tutorial, you will be able to:
 
 The full stack from user command to running process. Kubernetes often bypasses dockerd and talks directly to containerd via CRI — but the lower layers remain the same.
 
-```mermaid
-flowchart TB
-    subgraph USER_LAYER["User Layer"]
-        CLI[Docker CLI]
-        COMPOSE[Docker Compose]
-        SDK["Docker SDK / API clients"]
-    end
+```d2
+direction: down
 
-    subgraph ENGINE["Docker Engine"]
-        DOCKERD["dockerd<br/>API · images · networks · volumes"]
-    end
-
-    subgraph RUNTIME["Container Runtime"]
-        CONTAINERD["containerd<br/>image pull · snapshot · task"]
-        SHIM[containerd-shim]
-        RUNC["runc<br/>OCI runtime"]
-    end
-
-    subgraph KERNEL["Linux Kernel"]
-        NS[Namespaces]
-        CG[cgroups]
-        OFS[OverlayFS]
-    end
-
-    CONT[Running Container]
-
-    CLI --> DOCKERD
-    COMPOSE --> DOCKERD
-    SDK --> DOCKERD
-    DOCKERD --> CONTAINERD
-    CONTAINERD --> SHIM
-    SHIM --> RUNC
-    RUNC --> NS
-    RUNC --> CG
-    RUNC --> OFS
-    RUNC --> CONT
-    style USER_LAYER fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style ENGINE fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style RUNTIME fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style KERNEL fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+USER_LAYER: "User Layer" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        CLI: "Docker CLI"
+        COMPOSE: "Docker Compose"
+        SDK: "Docker SDK / API clients"
+    }
+    ENGINE: "Docker Engine" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        DOCKERD: "dockerd\\nAPI · images · networks · volumes"
+    }
+    RUNTIME: "Container Runtime" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        CONTAINERD: "containerd\\nimage pull · snapshot · task"
+        SHIM: containerd-shim
+        RUNC: "runc\\nOCI runtime"
+    }
+    KERNEL: "Linux Kernel" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        NS: Namespaces
+        CG: cgroups
+        OFS: OverlayFS
+    }
+    CONT: "Running Container"
+    USER_LAYER.CLI -> ENGINE.DOCKERD
+    USER_LAYER.COMPOSE -> ENGINE.DOCKERD
+    USER_LAYER.SDK -> ENGINE.DOCKERD
+    ENGINE.DOCKERD -> RUNTIME.CONTAINERD
+    RUNTIME.CONTAINERD -> RUNTIME.SHIM
+    RUNTIME.SHIM -> RUNTIME.RUNC
+    RUNTIME.RUNC -> KERNEL.NS
+    RUNTIME.RUNC -> KERNEL.CG
+    RUNTIME.RUNC -> KERNEL.OFS
+    RUNTIME.RUNC -> CONT
 ```
 
 ## Theory
@@ -168,13 +176,17 @@ Other OCI runtimes:
 
 Docker images are **stacked read-only layers** plus a **writable container layer**:
 
-```mermaid
-flowchart BT
-    RW["Container Layer<br/>read-write · ephemeral"]
-    L3["Layer 3 — app code"]
-    L2["Layer 2 — dependencies"]
-    L1["Layer 1 — base OS"]
-    RW --> L3 --> L2 --> L1```
+```d2
+direction: up
+
+RW: "Container Layer\\nread-write · ephemeral"
+    L3: "Layer 3 — app code"
+    L2: "Layer 2 — dependencies"
+    L1: "Layer 1 — base OS"
+    RW -> L3
+    L3 -> L2
+    L2 -> L1
+```
 
 | Concept | Description |
 |---------|-------------|

@@ -24,13 +24,20 @@ The REBASH Academy **Kubernetes** track is a structured, 20-tutorial curriculum 
 
 ## Curriculum Plan
 
-```mermaid
-flowchart TD
-    M1["Module 1: Foundations"] --> M2["Module 2: Workloads"]
-    M2 --> M3["Module 3: Configuration & Storage"]
-    M3 --> M4["Module 4: Networking & Operations"]
-    M4 --> M5["Module 5: Security & Tooling"]
-    M5 --> M6["Module 6: Production"]
+```d2
+direction: down
+
+M1: "Module 1: Foundations"
+    M2: "Module 2: Workloads"
+    M1 -> M2
+    M3: "Module 3: Configuration & Storage"
+    M2 -> M3
+    M4: "Module 4: Networking & Operations"
+    M3 -> M4
+    M5: "Module 5: Security & Tooling"
+    M4 -> M5
+    M6: "Module 6: Production"
+    M5 -> M6
 ```
 
 ### Module 1 – Foundations

@@ -52,34 +52,43 @@ By the end of this tutorial, you will be able to:
 
 Administrators define StorageClasses; developers create PVCs; the provisioner binds PVs; Pods consume PVCs as volumes.
 
-```mermaid
-flowchart LR
-    subgraph Admin["Cluster Admin"]
-        SC["StorageClass<br/>fast-ssd"]
-    end
+```d2
+direction: right
 
-    subgraph Dev["Developer"]
-        PVC["PVC data-vol<br/>10Gi RWO"]
-    end
-
-    subgraph System["Control Plane"]
-        PROV["Dynamic Provisioner<br/>EBS / hostPath / NFS"]
-        PV["PersistentVolume<br/>10Gi Bound"]
-    end
-
-    subgraph Workload["Pod"]
-        MNT["volumeMount<br/>/var/lib/data"]
-    end
-
-    SC --> PROV
-    PVC --> PROV
-    PROV --> PV
-    PVC --> PV
-    PVC --> MNT
-    style Admin fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Dev fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style System fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style Workload fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+Admin: "Cluster Admin" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        SC: "StorageClass\\nfast-ssd"
+    }
+    Dev: Developer {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        PVC: "PVC data-vol\\n10Gi RWO"
+    }
+    System: "Control Plane" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        PROV: "Dynamic Provisioner\\nEBS / hostPath / NFS"
+        PV: "PersistentVolume\\n10Gi Bound"
+    }
+    Workload: Pod {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        MNT: "volumeMount\\n/var/lib/data"
+    }
+    Admin.SC -> System.PROV
+    Dev.PVC -> System.PROV
+    System.PROV -> System.PV
+    Dev.PVC -> System.PV
+    Dev.PVC -> Workload.MNT
 ```
 
 ## Theory

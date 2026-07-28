@@ -51,22 +51,23 @@ By the end of this tutorial, you will be able to:
 
 Application processes write to stdout/stderr. The container runtime captures streams and forwards them through the configured logging driver.
 
-```mermaid
-flowchart LR
-    APP["Application<br/>stdout / stderr"]
-    ENGINE["Docker Engine<br/>logging driver"]
-    LOCAL[json-file on disk]
-    SYSLOG[syslog]
-    FLUENT["Fluentd / Fluent Bit"]
-    CLOUD["CloudWatch / Stackdriver"]
-    ELK["Elasticsearch / Loki"]
+```d2
+direction: right
 
-    APP --> ENGINE
-    ENGINE --> LOCAL
-    ENGINE --> SYSLOG
-    ENGINE --> FLUENT
-    FLUENT --> ELK
-    FLUENT --> CLOUD```
+APP: "Application\\nstdout / stderr"
+    ENGINE: "Docker Engine\\nlogging driver"
+    LOCAL: "json-file on disk"
+    SYSLOG: syslog
+    FLUENT: "Fluentd / Fluent Bit"
+    CLOUD: "CloudWatch / Stackdriver"
+    ELK: "Elasticsearch / Loki"
+    APP -> ENGINE
+    ENGINE -> LOCAL
+    ENGINE -> SYSLOG
+    ENGINE -> FLUENT
+    FLUENT -> ELK
+    FLUENT -> CLOUD
+```
 
 ## Theory
 

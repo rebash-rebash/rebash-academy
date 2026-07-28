@@ -50,39 +50,36 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Traffic
-        USERS["Users / Ingress"]
-    end
+```d2
+direction: down
 
-    subgraph Control
-        HPA[HPA controller]
-        METRICS["metrics-server / Prometheus"]
-        PDB[PDB policy]
-    end
-
-    subgraph Workload
-        DEP[Deployment — api]
-        P1[Pod]
-        P2[Pod]
-        P3[Pod]
-    end
-
-    subgraph Nodes
-        N1[Node AZ-a]
-        N2[Node AZ-b]
-        N3[Node AZ-c]
-    end
-
-    USERS --> DEP
-    METRICS --> HPA
-    HPA -->|scale replicas| DEP
-    PDB -->|limits evictions| DEP
-    DEP --> P1 & P2 & P3
-    P1 --> N1
-    P2 --> N2
-    P3 --> N3
+Traffic: Traffic {
+        USERS: "Users / Ingress"
+    }
+    Control: Control {
+        HPA: "HPA controller"
+        METRICS: "metrics-server / Prometheus"
+        PDB: "PDB policy"
+    }
+    Workload: Workload {
+        DEP: "Deployment — api"
+        P1: Pod
+        P2: Pod
+        P3: Pod
+    }
+    Nodes: Nodes {
+        N1: "Node AZ-a"
+        N2: "Node AZ-b"
+        N3: "Node AZ-c"
+    }
+    Traffic.USERS -> Workload.DEP
+    Control.METRICS -> Control.HPA
+    Control.HPA -> Workload.DEP: "scale replicas"
+    Control.PDB -> Workload.DEP: "limits evictions"
+    Workload.DEP -> Workload.P1
+    Workload.P1 -> Nodes.N1
+    Workload.P2 -> Nodes.N2
+    Workload.P3 -> Nodes.N3
 ```
 
 ## Theory

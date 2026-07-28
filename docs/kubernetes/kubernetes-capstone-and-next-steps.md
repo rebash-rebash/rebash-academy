@@ -51,43 +51,54 @@ By the end of this capstone, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph External
-        USER[Browser]
-        DNS[votestack.example.com]
-    end
+```d2
+direction: down
 
-    subgraph IngressLayer["ingress-nginx"]
-        ING[Ingress + TLS]
-    end
-
-    subgraph Votestack["namespace: votestack"]
-        WEB[web Deployment]
-        API[api Deployment + HPA]
-        WORK[worker Deployment + HPA]
-        REDIS[redis StatefulSet]
-        PG[postgres StatefulSet + PVC]
-    end
-
-    subgraph Platform
-        ARGO[Argo CD]
-        PROM["Prometheus / Grafana"]
-        KYV[Kyverno]
-    end
-
-    USER --> DNS --> ING
-    ING --> WEB
-    ING --> API
-    API --> REDIS
-    API --> PG
-    WORK --> REDIS
-    WORK --> PG
-    ARGO -.->|sync| Votestack
-    PROM -.->|scrape| API
-    KYV -.->|enforce| Votestack
-    style IngressLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Votestack fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+External: External {
+        USER: Browser
+        DNS: votestack.example.com
+    }
+    IngressLayer: ingress-nginx {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        ING: "Ingress + TLS"
+    }
+    Votestack: "namespace: votestack" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        WEB: "web Deployment"
+        API: "api Deployment + HPA"
+        WORK: "worker Deployment + HPA"
+        REDIS: "redis StatefulSet"
+        PG: "postgres StatefulSet + PVC"
+    }
+    Platform: Platform {
+        ARGO: "Argo CD"
+        PROM: "Prometheus / Grafana"
+        KYV: Kyverno
+    }
+    External.USER -> External.DNS
+    External.DNS -> IngressLayer.ING
+    IngressLayer.ING -> Votestack.WEB
+    IngressLayer.ING -> Votestack.API
+    Votestack.API -> Votestack.REDIS
+    Votestack.API -> Votestack.PG
+    Votestack.WORK -> Votestack.REDIS
+    Votestack.WORK -> Votestack.PG
+    Votestack: Votestack
+    Platform.ARGO -> Votestack: sync {
+      style.stroke-dash: 3
+    }
+    Platform.PROM -> Votestack.API: scrape {
+      style.stroke-dash: 3
+    }
+    Platform.KYV -> Votestack: enforce {
+      style.stroke-dash: 3
+    }
 ```
 
 ## Project Overview — VoteStack on Kubernetes
@@ -490,19 +501,19 @@ If your organization standardizes on GitLab, port the VoteStack CI workflow — 
 
 ### Recommended learning path
 
-```mermaid
-flowchart LR
-    DOCKER[Docker track ✓]
-    K8S[Kubernetes track ✓]
-    TF[Terraform track]
-    GL["GitLab CI/CD"]
-    LP[Learning Paths]
+```d2
+direction: right
 
-    DOCKER --> K8S
-    K8S --> TF
-    K8S --> GL
-    TF --> LP
-    GL --> LP
+DOCKER: "Docker track ✓"
+    K8S: "Kubernetes track ✓"
+    TF: "Terraform track"
+    GL: "GitLab CI/CD"
+    LP: "Learning Paths"
+    DOCKER -> K8S
+    K8S -> TF
+    K8S -> GL
+    TF -> LP
+    GL -> LP
 ```
 
 1. Deploy VoteStack capstone as portfolio project

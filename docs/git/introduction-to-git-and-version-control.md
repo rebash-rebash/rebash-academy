@@ -51,28 +51,36 @@ By the end of this tutorial, you will be able to:
 
 The diagram below contrasts centralized and distributed version control. Understanding this distinction explains why Git works offline, why every clone is a full backup, and why CI runners only need network access during push/pull — not for every local commit.
 
-```mermaid
-flowchart TB
-    subgraph CVCS["Centralized VCS (e.g., SVN)"]
-        SVN_SRV["Central Server<br/>single source of truth"]
-        DEV_A["Developer A<br/>working copy only"]
-        DEV_B["Developer B<br/>working copy only"]
-        DEV_A -->|commit / update| SVN_SRV
-        DEV_B -->|commit / update| SVN_SRV
-    end
+```d2
+direction: down
 
-    subgraph DVCS["Distributed VCS (Git)"]
-        REMOTE["Remote — GitHub / GitLab / Bitbucket"]
-        DEV_C["Developer C<br/>full local repo"]
-        DEV_D["Developer D<br/>full local repo"]
-        CI["CI Runner<br/>full clone"]
-        DEV_C <-->|push / pull| REMOTE
-        DEV_D <-->|push / pull| REMOTE
-        CI <-->|fetch / clone| REMOTE
-        DEV_C -.->|local commits<br/>no network| DEV_C
-    end
-    style CVCS fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style DVCS fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+CVCS: "Centralized VCS (e.g., SVN)" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        SVN_SRV: "Central Server\\nsingle source of truth"
+        DEV_A: "Developer A\\nworking copy only"
+        DEV_B: "Developer B\\nworking copy only"
+        DEV_A -> SVN_SRV: "commit / update"
+        DEV_B -> SVN_SRV: "commit / update"
+    }
+    DVCS: "Distributed VCS (Git)" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        REMOTE: "Remote — GitHub / GitLab / Bitbucket"
+        DEV_C: "Developer C\\nfull local repo"
+        DEV_D: "Developer D\\nfull local repo"
+        CI: "CI Runner\\nfull clone"
+        DEV_C <-> REMOTE: "push / pull"
+        DEV_D <-> REMOTE: "push / pull"
+        CI <-> REMOTE: "fetch / clone"
+        DEV_C -> DEV_C: "local commits\\nno network" {
+          style.stroke-dash: 3
+        }
+    }
 ```
 
 ## Theory
@@ -173,21 +181,22 @@ A **tag** marks a specific commit — usually a release: `v1.4.2`, `prod-2026-07
 
 ### Git in the DevOps Toolchain
 
-```mermaid
-flowchart LR
-    DEV["Developer / Engineer"]
-    GIT["Git Repository"]
-    PR["Pull Request / MR"]
-    CI["CI Pipeline<br/>GitHub Actions / GitLab CI"]
-    CD["CD / GitOps<br/>Argo CD / Flux"]
-    PROD[Production]
+```d2
+direction: right
 
-    DEV -->|commit / push| GIT
-    GIT --> PR
-    PR -->|trigger| CI
-    CI -->|pass + merge| GIT
-    GIT -->|sync| CD
-    CD --> PROD```
+DEV: "Developer / Engineer"
+    GIT: "Git Repository"
+    PR: "Pull Request / MR"
+    CI: "CI Pipeline\\nGitHub Actions / GitLab CI"
+    CD: "CD / GitOps\\nArgo CD / Flux"
+    PROD: Production
+    DEV -> GIT: "commit / push"
+    GIT -> PR
+    PR -> CI: trigger
+    CI -> GIT: "pass + merge"
+    GIT -> CD: sync
+    CD -> PROD
+```
 
 Every arrow depends on Git. Terraform Cloud reads VCS webhooks. Ansible Tower pulls playbooks from Git. Kubernetes operators watch Git branches. Learning Git is prerequisite to every other DevOps skill in this academy.
 

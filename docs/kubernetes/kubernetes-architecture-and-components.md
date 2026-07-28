@@ -50,53 +50,62 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph USERS["Clients"]
-        KUBECTL["kubectl / CI / GitOps"]
-        DASH["Dashboard / UI"]
-    end
+```d2
+direction: down
 
-    subgraph CP["Control Plane"]
-        API["kube-apiserver"]
-        ETCD["etcd"]
-        SCHED["kube-scheduler"]
-        CM["kube-controller-manager"]
-        CCM["cloud-controller-manager"]
-        API <--> ETCD
-        SCHED --> API
-        CM --> API
-        CCM --> API
-    end
-
-    subgraph NODE1["Worker Node"]
-        KL1["kubelet"]
-        KP1["kube-proxy"]
-        CR1["container runtime<br/>containerd + runc"]
-        POD1["Pods"]
-        KL1 --> CR1
-        CR1 --> POD1
-        KP1 --> POD1
-    end
-
-    subgraph NODE2["Worker Node"]
-        KL2["kubelet"]
-        KP2["kube-proxy"]
-        CR2["container runtime"]
-        POD2["Pods"]
-        KL2 --> CR2
-        CR2 --> POD2
-        KP2 --> POD2
-    end
-
-    KUBECTL --> API
-    DASH --> API
-    API --> KL1
-    API --> KL2
-    style USERS fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style CP fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style NODE1 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style NODE2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+USERS: Clients {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        KUBECTL: "kubectl / CI / GitOps"
+        DASH: "Dashboard / UI"
+    }
+    CP: "Control Plane" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        API: kube-apiserver
+        ETCD: etcd
+        SCHED: kube-scheduler
+        CM: kube-controller-manager
+        CCM: cloud-controller-manager
+        API <-> ETCD
+        SCHED -> API
+        CM -> API
+        CCM -> API
+    }
+    NODE1: "Worker Node" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        KL1: kubelet
+        KP1: kube-proxy
+        CR1: "container runtime\\ncontainerd + runc"
+        POD1: Pods
+        KL1 -> CR1
+        CR1 -> POD1
+        KP1 -> POD1
+    }
+    NODE2: "Worker Node" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        KL2: kubelet
+        KP2: kube-proxy
+        CR2: "container runtime"
+        POD2: Pods
+        KL2 -> CR2
+        CR2 -> POD2
+        KP2 -> POD2
+    }
+    USERS.KUBECTL -> CP.API
+    USERS.DASH -> CP.API
+    CP.API -> NODE1.KL1
+    CP.API -> NODE2.KL2
 ```
 
 ## Theory
@@ -122,17 +131,22 @@ Responsibilities:
 - **Validation** — schema checks on object specs
 - **Persistence** — read/write objects in etcd
 
-```mermaid
-flowchart LR
-    REQ["kubectl apply"]
-    AUTH["Authentication"]
-    AUTHZ["Authorization"]
-    ADM["Admission"]
-    VAL["Validation"]
-    ETCD["etcd persist"]
-    RESP["201 Created"]
+```d2
+direction: right
 
-    REQ --> AUTH --> AUTHZ --> ADM --> VAL --> ETCD --> RESP
+REQ: "kubectl apply"
+    AUTH: Authentication
+    AUTHZ: Authorization
+    ADM: Admission
+    VAL: Validation
+    ETCD: "etcd persist"
+    RESP: "201 Created"
+    REQ -> AUTH
+    AUTH -> AUTHZ
+    AUTHZ -> ADM
+    ADM -> VAL
+    VAL -> ETCD
+    ETCD -> RESP
 ```
 
 Compare to Docker: `docker` CLI → dockerd API. Kubernetes separates concerns across more components but uses the same client/server pattern from [Docker Architecture and Components](../docker/docker-architecture-and-components.md).
@@ -230,24 +244,24 @@ Pod-to-Pod traffic crosses the CNI overlay; Service abstraction is kube-proxy's 
 
 Tracing one `kubectl apply -f pod.yaml`:
 
-```mermaid
-sequenceDiagram
-    participant U as kubectl
-    participant A as API Server
-    participant E as etcd
-    participant S as Scheduler
-    participant K as kubelet
-    participant R as container runtime
+```d2
+shape: sequence_diagram
 
-    U->>A: POST Pod object
-    A->>E: persist Pod
-    A-->>U: 201 Created
-    S->>A: watch unscheduled Pods
-    S->>A: PATCH nodeName onto Pod
-    K->>A: watch Pods for this node
-    K->>R: CreateContainer(s)
-    R-->>K: container started
-    K->>A: update Pod status Running
+U: kubectl
+A: "API Server"
+E: etcd
+S: Scheduler
+K: kubelet
+R: "container runtime"
+U -> A: "POST Pod object"
+A -> E: "persist Pod"
+A -> U: "201 Created"
+S -> A: "watch unscheduled Pods"
+S -> A: "PATCH nodeName onto Pod"
+K -> A: "watch Pods for this node"
+K -> R: CreateContainer(s)
+R -> K: "container started"
+K -> A: "update Pod status Running"
 ```
 
 ### Kubernetes vs Docker Architecture

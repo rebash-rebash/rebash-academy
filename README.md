@@ -8,7 +8,7 @@ Built with [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/), 
 
 - Structured learning paths (DevOps, AWS, Azure, GCP, DevSecOps, Platform, Cloud Architect)
 - 20+ documentation categories with consistent tutorial structure
-- Mermaid diagrams, syntax highlighting, search, and dark/light themes
+- D2 architecture diagrams, syntax highlighting, search, and dark/light themes
 - GitHub Actions CI/CD with automatic deployment to GitHub Pages
 - Tutorial scaffolding and validation scripts
 
@@ -18,12 +18,16 @@ Built with [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/), 
 
 - Python 3.12+
 - Git
+- [D2](https://d2lang.com) (for architecture diagrams)
 
 ### Local Development
 
 ```bash
 git clone https://github.com/rebash-rebash/rebash-academy.git
 cd rebash-academy
+
+# Install D2 (macOS / Linux)
+curl -fsSL https://d2lang.com/install.sh | sh -s --
 
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate

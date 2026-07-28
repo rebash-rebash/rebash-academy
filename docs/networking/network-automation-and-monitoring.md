@@ -56,40 +56,53 @@ By the end of this tutorial, you will be able to:
 
 The diagram shows a typical network observability and automation stack: Prometheus scrapes exporters, Grafana visualizes, Alertmanager notifies, and Ansible/Terraform push configuration from Git.
 
-```mermaid
-flowchart LR
-    subgraph Git["Git Repository"]
-        TF["Terraform<br/>VPC · DNS · SG"]
-        ANS["Ansible Playbooks<br/>Firewall · DNS"]
-    end
+```d2
+direction: right
 
-    subgraph CI["CI/CD Pipeline"]
-        Plan[terraform plan]
-        Apply["ansible-playbook / apply"]
-    end
-
-    subgraph Targets["Monitored Infrastructure"]
-        NE["node_exporter<br/>Linux hosts"]
-        SP["SmokePing<br/>Latency probes"]
-        BB["Blackbox Exporter<br/>HTTP/TCP/ICMP"]
-    end
-
-    subgraph Observability["Observability Stack"]
-        Prom[Prometheus]
-        Graf[Grafana]
-        Alert[Alertmanager]
-    end
-
-    Git --> CI --> Targets
-    NE --> Prom
-    SP --> Prom
-    BB --> Prom
-    Prom --> Graf
-    Prom --> Alert
-    style Git fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style CI fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style Targets fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style Observability fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+Git: "Git Repository" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        TF: "Terraform\\nVPC · DNS · SG"
+        ANS: "Ansible Playbooks\\nFirewall · DNS"
+    }
+    CI: "CI/CD Pipeline" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        Plan: "terraform plan"
+        Apply: "ansible-playbook / apply"
+    }
+    Targets: "Monitored Infrastructure" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        NE: "node_exporter\\nLinux hosts"
+        SP: "SmokePing\\nLatency probes"
+        BB: "Blackbox Exporter\\nHTTP/TCP/ICMP"
+    }
+    Observability: "Observability Stack" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        Prom: Prometheus
+        Graf: Grafana
+        Alert: Alertmanager
+    }
+    Git: Git
+    CI: CI
+    Git -> CI
+    Targets: Targets
+    CI -> Targets
+    Targets.NE -> Observability.Prom
+    Targets.SP -> Observability.Prom
+    Targets.BB -> Observability.Prom
+    Observability.Prom -> Observability.Graf
+    Observability.Prom -> Observability.Alert
 ```
 
 ## Theory

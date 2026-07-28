@@ -52,40 +52,51 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart LR
-    subgraph Dev["Developer workflow"]
-        DEV[Developer]
-        APP[App repo]
-        DEV -->|PR + merge| APP
-    end
+```d2
+direction: right
 
-    subgraph CI["Continuous Integration"]
-        BUILD[Build + test]
-        SCAN[Trivy scan]
-        PUSH[Push to registry]
-        APP --> BUILD --> SCAN --> PUSH
-    end
-
-    subgraph GitOps["GitOps repo"]
-        MANI["Manifests / Helm values"]
-        PUSH -->|update image tag| MANI
-    end
-
-    subgraph Cluster["Kubernetes cluster"]
-        ARGO["Argo CD / Flux"]
-        K8S[Workloads]
-        MANI --> ARGO
-        ARGO -->|reconcile| K8S
-    end
-
-    REG["Container registry"]
-    PUSH --> REG
-    K8S -->|pull| REG
-    style Dev fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style CI fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style GitOps fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style Cluster fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+Dev: "Developer workflow" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        DEV: Developer
+        APP: "App repo"
+        DEV -> APP: "PR + merge"
+    }
+    CI: "Continuous Integration" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        BUILD: "Build + test"
+        SCAN: "Trivy scan"
+        PUSH: "Push to registry"
+        APP -> BUILD
+        BUILD -> SCAN
+        SCAN -> PUSH
+    }
+    GitOps: "GitOps repo" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        MANI: "Manifests / Helm values"
+        PUSH -> MANI: "update image tag"
+    }
+    Cluster: "Kubernetes cluster" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        ARGO: "Argo CD / Flux"
+        K8S: Workloads
+        MANI -> ARGO
+        ARGO -> K8S: reconcile
+    }
+    REG: "Container registry"
+    CI.PUSH -> REG
+    Cluster.K8S -> REG: pull
 ```
 
 ## Theory

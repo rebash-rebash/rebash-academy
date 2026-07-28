@@ -54,26 +54,33 @@ By the end of this tutorial, you will be able to:
 
 Troubleshooting flows from the user-visible symptom down through Kubernetes layers to the container process.
 
-```mermaid
-flowchart TB
-    SYM["Symptom<br/>502 / CrashLoop / Pending"]
-    ING["Ingress / LoadBalancer"]
-    SVC[Service]
-    EP["Endpoints / EndpointSlice"]
-    POD[Pod Status]
-    CTR[Container State]
-    APP[Application Logs]
+```d2
+direction: down
 
-    SYM --> ING
-    ING -->|route OK?| SVC
-    SVC -->|endpoints exist?| EP
-    EP -->|targets ready?| POD
-    POD -->|scheduled? probes?| CTR
-    CTR -->|exit code / OOM| APP
-
-    EVT[Events] -.-> POD
-    EVT -.-> ING
-    NODE[Node Conditions] -.-> POD
+SYM: "Symptom\\n502 / CrashLoop / Pending"
+    ING: "Ingress / LoadBalancer"
+    SVC: Service
+    EP: "Endpoints / EndpointSlice"
+    POD: "Pod Status"
+    CTR: "Container State"
+    APP: "Application Logs"
+    SYM -> ING
+    ING -> SVC: "route OK?"
+    SVC -> EP: "endpoints exist?"
+    EP -> POD: "targets ready?"
+    POD -> CTR: "scheduled? probes?"
+    CTR -> APP: "exit code / OOM"
+    EVT: Events
+    EVT -> POD: {
+      style.stroke-dash: 3
+    }
+    EVT -> ING: {
+      style.stroke-dash: 3
+    }
+    NODE: "Node Conditions"
+    NODE -> POD: {
+      style.stroke-dash: 3
+    }
 ```
 
 ## Theory

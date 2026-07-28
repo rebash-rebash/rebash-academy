@@ -53,18 +53,22 @@ By the end of this tutorial, you will be able to:
 
 Images flow from registries to local storage, where layers are deduplicated across tags. Containers add a writable layer on top without modifying the image.
 
-```mermaid
-flowchart LR
-    REG["Registry<br/>Docker Hub / ECR"]
-    PULL[docker pull]
-    LOCAL["Local Image Store<br/>/var/lib/docker/image"]
-    TAG[docker tag]
-    RUN[docker run]
-    CONT["Container<br/>writable layer"]
+```d2
+direction: right
 
-    REG --> PULL --> LOCAL
-    LOCAL --> TAG --> LOCAL
-    LOCAL --> RUN --> CONT```
+REG: "Registry\\nDocker Hub / ECR"
+    PULL: "docker pull"
+    LOCAL: "Local Image Store\\n/var/lib/docker/image"
+    TAG: "docker tag"
+    RUN: "docker run"
+    CONT: "Container\\nwritable layer"
+    REG -> PULL
+    PULL -> LOCAL
+    LOCAL -> TAG
+    TAG -> LOCAL
+    LOCAL -> RUN
+    RUN -> CONT
+```
 
 ## Theory
 

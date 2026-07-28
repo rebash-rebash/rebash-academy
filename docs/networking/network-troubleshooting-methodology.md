@@ -51,43 +51,48 @@ By the end of this tutorial, you will be able to:
 
 The OSI/TCP-IP layered model provides the framework for bottom-up troubleshooting. Each layer must work before the layer above can function.
 
-```mermaid
-flowchart TB
-    subgraph L7["Layer 7 — Application"]
-        APP["HTTP / API / TLS cert validity"]
-    end
+```d2
+direction: down
 
-    subgraph L4["Layer 4 — Transport"]
-        TCP[TCP handshake · ports · firewalls]
-    end
-
-    subgraph L3["Layer 3 — Network"]
-        IP[Routing · ICMP · IP reachability]
-    end
-
-    subgraph L2["Layer 2 — Data Link"]
-        ARP[ARP · MAC · VLAN · switch]
-    end
-
-    subgraph L1["Layer 1 — Physical"]
-        PHY["Cable · NIC · link up/down"]
-    end
-
-    APP --> TCP
-    TCP --> IP
-    IP --> ARP
-    ARP --> PHY
-
-    style APP fill:#e1f5fe
-    style TCP fill:#b3e5fc
-    style IP fill:#81d4fa
-    style ARP fill:#4fc3f7
-    style PHY fill:#29b6f6
-    style L7 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style L4 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style L3 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style L2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    style L1 fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+L7: "Layer 7 — Application" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        APP: "HTTP / API / TLS cert validity"
+    }
+    L4: "Layer 4 — Transport" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        TCP: "TCP handshake · ports · firewalls"
+    }
+    L3: "Layer 3 — Network" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        IP: "Routing · ICMP · IP reachability"
+    }
+    L2: "Layer 2 — Data Link" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        ARP: "ARP · MAC · VLAN · switch"
+    }
+    L1: "Layer 1 — Physical" {
+      style: {
+        fill: "#fce4ec"
+        stroke: "#c2185b"
+      }
+        PHY: "Cable · NIC · link up/down"
+    }
+    L7.APP -> L4.TCP
+    L4.TCP -> L3.IP
+    L3.IP -> L2.ARP
+    L2.ARP -> L1.PHY
 ```
 
 ## Theory

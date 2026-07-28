@@ -54,42 +54,49 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows where Kubernetes sits between your container images and production infrastructure. Images still come from the same registries you used with Docker; Kubernetes adds a control plane that continuously reconciles cluster state with your declared manifests.
 
-```mermaid
-flowchart TB
-    subgraph DEV["Developer Workflow"]
-        GIT["Git Repository<br/>manifests / Helm"]
-        CI["CI/CD Pipeline"]
-        REG["Container Registry<br/>Docker Hub / ECR / GCR"]
-    end
+```d2
+direction: down
 
-    subgraph CP["Kubernetes Control Plane"]
-        API["API Server"]
-        ETCD["etcd — cluster state"]
-        SCHED["Scheduler"]
-        CM["Controller Manager"]
-        API --> ETCD
-        SCHED --> API
-        CM --> API
-    end
-
-    subgraph DATA["Data Plane — Worker Nodes"]
-        KUBELET["kubelet"]
-        RUNTIME["container runtime<br/>containerd / CRI-O"]
-        POD1["Pod"]
-        POD2["Pod"]
-        KUBELET --> RUNTIME
-        RUNTIME --> POD1
-        RUNTIME --> POD2
-    end
-
-    GIT --> CI
-    CI --> REG
-    CI --> API
-    REG --> RUNTIME
-    API --> KUBELET
-    style DEV fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style CP fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style DATA fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+DEV: "Developer Workflow" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        GIT: "Git Repository\\nmanifests / Helm"
+        CI: "CI/CD Pipeline"
+        REG: "Container Registry\\nDocker Hub / ECR / GCR"
+    }
+    CP: "Kubernetes Control Plane" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        API: "API Server"
+        ETCD: "etcd — cluster state"
+        SCHED: Scheduler
+        CM: "Controller Manager"
+        API -> ETCD
+        SCHED -> API
+        CM -> API
+    }
+    DATA: "Data Plane — Worker Nodes" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        KUBELET: kubelet
+        RUNTIME: "container runtime\\ncontainerd / CRI-O"
+        POD1: Pod
+        POD2: Pod
+        KUBELET -> RUNTIME
+        RUNTIME -> POD1
+        RUNTIME -> POD2
+    }
+    DEV.GIT -> DEV.CI
+    DEV.CI -> DEV.REG
+    DEV.CI -> CP.API
+    DEV.REG -> DATA.RUNTIME
+    CP.API -> DATA.KUBELET
 ```
 
 ## Theory
@@ -134,20 +141,20 @@ Kubernetes follows a **control loop** pattern:
 
 If a Pod crashes, the ReplicaSet controller notices the mismatch (desired: 3, actual: 2) and creates a replacement. This is **self-healing** without custom scripts.
 
-```mermaid
-flowchart LR
-    USER["Engineer / CI"]
-    YAML["Desired State<br/>YAML manifest"]
-    API["API Server"]
-    CTRL["Controllers"]
-    ACTUAL["Actual State<br/>running Pods"]
+```d2
+direction: right
 
-    USER --> YAML
-    YAML --> API
-    API --> CTRL
-    CTRL --> ACTUAL
-    ACTUAL --> CTRL
-    CTRL --> API
+USER: "Engineer / CI"
+    YAML: "Desired State\\nYAML manifest"
+    API: "API Server"
+    CTRL: Controllers
+    ACTUAL: "Actual State\\nrunning Pods"
+    USER -> YAML
+    YAML -> API
+    API -> CTRL
+    CTRL -> ACTUAL
+    ACTUAL -> CTRL
+    CTRL -> API
 ```
 
 ### Kubernetes vs Other Orchestrators

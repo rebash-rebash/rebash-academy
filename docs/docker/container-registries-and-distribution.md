@@ -53,20 +53,21 @@ By the end of this tutorial, you will be able to:
 
 Registries sit between image builders and runtime consumers. The same image digest can be pulled by development laptops, CI agents, ECS tasks, GKE nodes, and Kubernetes clusters worldwide.
 
-```mermaid
-flowchart LR
-    DEV["Developer / CI Builder"]
-    BUILD[docker build]
-    REG["Container Registry<br/>Hub / ECR / Artifact Registry"]
-    RUN1[Docker Host]
-    RUN2[Kubernetes Node]
-    RUN3["Cloud Run / ECS"]
+```d2
+direction: right
 
-    DEV --> BUILD
-    BUILD -->|docker push| REG
-    REG -->|docker pull| RUN1
-    REG -->|kubelet pull| RUN2
-    REG -->|service pull| RUN3```
+DEV: "Developer / CI Builder"
+    BUILD: "docker build"
+    REG: "Container Registry\\nHub / ECR / Artifact Registry"
+    RUN1: "Docker Host"
+    RUN2: "Kubernetes Node"
+    RUN3: "Cloud Run / ECS"
+    DEV -> BUILD
+    BUILD -> REG: "docker push"
+    REG -> RUN1: "docker pull"
+    REG -> RUN2: "kubelet pull"
+    REG -> RUN3: "service pull"
+```
 
 ## Theory
 

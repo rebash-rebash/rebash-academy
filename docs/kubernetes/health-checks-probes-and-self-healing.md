@@ -54,37 +54,43 @@ By the end of this tutorial, you will be able to:
 
 The kubelet runs probes locally on each node. Readiness state flows to the endpoints controller; liveness failures trigger container restarts.
 
-```mermaid
-flowchart TB
-    subgraph Node["Worker Node"]
-        KL[kubelet]
-        subgraph Pod["Pod: web"]
-            C[Container nginx]
-            LP[Liveness Probe]
-            RP[Readiness Probe]
-            SP[Startup Probe]
-        end
-        KL --> LP
-        KL --> RP
-        KL --> SP
-        LP -->|HTTP GET /healthz| C
-        RP -->|HTTP GET /ready| C
-        SP -->|TCP :8080| C
-    end
+```d2
+direction: down
 
-    API[API Server]
-    EP[Endpoints Controller]
-    SVC[Service web-svc]
-    ING[Ingress]
-
-    RP -->|Ready=true/false| API
-    API --> EP
-    EP --> SVC
-    SVC --> ING
-    LP -->|Fail threshold| RESTART[Container Restart]
-    RESTART --> C
-    style Node fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Pod fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Node: "Worker Node" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        KL: kubelet
+        Pod: "Pod: web" {
+          style: {
+            fill: "#e8f5e9"
+            stroke: "#388e3c"
+          }
+            C: "Container nginx"
+            LP: "Liveness Probe"
+            RP: "Readiness Probe"
+            SP: "Startup Probe"
+        }
+        KL -> LP
+        KL -> RP
+        KL -> SP
+        LP -> C: "HTTP GET /healthz"
+        RP -> C: "HTTP GET /ready"
+        SP -> C: "TCP :8080"
+    }
+    API: "API Server"
+    EP: "Endpoints Controller"
+    SVC: "Service web-svc"
+    ING: Ingress
+    Node.Pod.RP -> API: "Ready=true/false"
+    API -> EP
+    EP -> SVC
+    SVC -> ING
+    RESTART: "Container Restart"
+    Node.Pod.LP -> RESTART: "Fail threshold"
+    RESTART -> Node.Pod.C
 ```
 
 ## Theory
@@ -175,13 +181,22 @@ Total time before restart (liveness): roughly `initialDelaySeconds + (periodSeco
 
 Probes are one layer of resilience:
 
-```mermaid
-flowchart LR
-    RS[ReplicaSet] -->|desired replicas| POD[Pods]
-    KL[kubelet] -->|liveness fail| RESTART[Restart container]
-    NC[Node Controller] -->|node NotReady| RESCH[Reschedule pods]
-    DC[Deployment Controller] -->|rollout| RS
-    PDB[PodDisruptionBudget] -->|min available| RS
+```d2
+direction: right
+
+RS: ReplicaSet
+    POD: Pods
+    RS -> POD: "desired replicas"
+    KL: kubelet
+    RESTART: "Restart container"
+    KL -> RESTART: "liveness fail"
+    NC: "Node Controller"
+    RESCH: "Reschedule pods"
+    NC -> RESCH: "node NotReady"
+    DC: "Deployment Controller"
+    DC -> RS: rollout
+    PDB: PodDisruptionBudget
+    PDB -> RS: "min available"
 ```
 
 - **ReplicaSet** recreates deleted pods to match `replicas`

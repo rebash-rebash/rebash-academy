@@ -53,30 +53,34 @@ By the end of this tutorial, you will be able to:
 
 Clients connect to the reverse proxy; the proxy forwards requests to internal backends that are not directly exposed.
 
-```mermaid
-flowchart LR
-    subgraph Internet
-        C[Clients]
-    end
+```d2
+direction: right
 
-    subgraph Edge["Reverse Proxy / Ingress"]
-        RP["nginx / HAProxy / Ingress Controller"]
-        TLS[TLS Termination]
-    end
-
-    subgraph Internal["Private Network"]
-        B1["Backend 1<br/>app:8080"]
-        B2["Backend 2<br/>app:8080"]
-        API["API Service<br/>api:3000"]
-    end
-
-    C -->|HTTPS 443| RP
-    RP --> TLS
-    TLS -->|HTTP| B1
-    TLS -->|HTTP| B2
-    TLS -->|/api/*| API
-    style Edge fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Internal fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Internet: Internet {
+        C: Clients
+    }
+    Edge: "Reverse Proxy / Ingress" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        RP: "nginx / HAProxy / Ingress Controller"
+        TLS: "TLS Termination"
+    }
+    Internal: "Private Network" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        B1: "Backend 1\\napp:8080"
+        B2: "Backend 2\\napp:8080"
+        API: "API Service\\napi:3000"
+    }
+    Internet.C -> Edge.RP: "HTTPS 443"
+    Edge.RP -> Edge.TLS
+    Edge.TLS -> Internal.B1: HTTP
+    Edge.TLS -> Internal.B2: HTTP
+    Edge.TLS -> Internal.API: "/api/*"
 ```
 
 ## Theory

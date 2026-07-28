@@ -53,16 +53,17 @@ By the end of this tutorial, you will be able to:
 
 A single `docker run` creates a container with an isolated process tree, optional port mapping, and captured stdout/stderr streams.
 
-```mermaid
-flowchart LR
-    HOST["Host :8080"]
-    BRIDGE[docker0 bridge]
-    CONT["Container<br/>nginx :80"]
-    LOGS["json-file logs<br/>/var/lib/docker"]
+```d2
+direction: right
 
-    HOST -->|NAT publish| BRIDGE
-    BRIDGE --> CONT
-    CONT -->|stdout/stderr| LOGS```
+HOST: "Host :8080"
+    BRIDGE: "docker0 bridge"
+    CONT: "Container\\nnginx :80"
+    LOGS: "json-file logs\\n/var/lib/docker"
+    HOST -> BRIDGE: "NAT publish"
+    BRIDGE -> CONT
+    CONT -> LOGS: "stdout/stderr"
+```
 
 ## Theory
 
@@ -103,16 +104,26 @@ Combine `-dit` for a detached container that still has a TTY available for later
 
 ### Container Lifecycle States
 
-```mermaid
-stateDiagram-v2
-    [*] --> Created: docker create
-    Created --> Running: docker start / docker run
-    Running --> Paused: docker pause
-    Paused --> Running: docker unpause
-    Running --> Stopped: docker stop / exit
-    Stopped --> Running: docker start
-    Stopped --> Removed: docker rm
-    Running --> Removed: docker rm -f```
+```d2
+direction: right
+
+start: "" {
+  shape: circle
+}
+Created: Created
+start -> Created: "docker create"
+Running: Running
+Created -> Running: "docker start / docker run"
+Paused: Paused
+Running -> Paused: "docker pause"
+Paused -> Running: "docker unpause"
+Stopped: Stopped
+Running -> Stopped: "docker stop / exit"
+Stopped -> Running: "docker start"
+Removed: Removed
+Stopped -> Removed: "docker rm"
+Running -> Removed: "docker rm -f"
+```
 
 | State | Description |
 |-------|-------------|

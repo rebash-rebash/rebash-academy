@@ -44,19 +44,25 @@ By the end of this tutorial, you will be able to:
 
 ## Undo Operations Diagram
 
-```mermaid
-flowchart TB
-    WT[Working Tree]
-    SA[Staging Area]
-    REPO["Repository / Commits"]
+```d2
+direction: down
 
-    RESTORE1[git restore file] --> WT
-    RESTORE2[git restore --staged] --> SA
-    RESET["git reset --soft/mixed/hard"] --> SA
-    RESET --> REPO
-    REVERT[git revert] --> REPO
-    STASH[git stash] --> WT
-    STASH --> SA```
+WT: "Working Tree"
+    SA: "Staging Area"
+    REPO: "Repository / Commits"
+    RESTORE1: "git restore file"
+    RESTORE1 -> WT
+    RESTORE2: "git restore --staged"
+    RESTORE2 -> SA
+    RESET: "git reset --soft/mixed/hard"
+    RESET -> SA
+    RESET -> REPO
+    REVERT: "git revert"
+    REVERT -> REPO
+    STASH: "git stash"
+    STASH -> WT
+    STASH -> SA
+```
 
 ## Theory
 

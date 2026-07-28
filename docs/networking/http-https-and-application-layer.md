@@ -50,28 +50,26 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-sequenceDiagram
-    participant Client as curl / Browser
-    participant DNS as DNS Resolver
-    participant LB as Load Balancer
-    participant TLS as TLS Termination
-    participant App as Application Server
+```d2
+shape: sequence_diagram
 
-    Client->>DNS: Resolve api.example.com
-    DNS->>Client: 203.0.113.10
-    Client->>LB: TCP SYN :443
-    LB->>Client: TCP SYN-ACK (established)
-    Client->>TLS: ClientHello (TLS 1.3)
-    TLS->>Client: ServerHello + Certificate
-    Client->>TLS: Encrypted HTTP GET /health
-
-    alt L7 routing
-        LB->>App: Forward GET /health (HTTP or re-encrypted)
-    end
-
-    App->>LB: 200 OK {"status":"ok"}
-    LB->>Client: 200 OK (encrypted)```
+Client: "curl / Browser"
+DNS: "DNS Resolver"
+LB: "Load Balancer"
+TLS: "TLS Termination"
+App: "Application Server"
+Client -> DNS: "Resolve api.example.com"
+DNS -> Client: "203.0.113.10"
+Client -> LB: "TCP SYN :443"
+LB -> Client: "TCP SYN-ACK (established)"
+Client -> TLS: "ClientHello (TLS 1.3)"
+TLS -> Client: "ServerHello + Certificate"
+Client -> TLS: "Encrypted HTTP GET /health"
+# alt L7 routing
+LB -> App: "Forward GET /health (HTTP or re-encrypted)"
+App -> LB: "200 OK {\"status\":\"ok\"}"
+LB -> Client: "200 OK (encrypted)"
+```
 
 ## Theory
 

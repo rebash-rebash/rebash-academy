@@ -45,18 +45,19 @@ By the end of this tutorial, you will be able to:
 
 ## Signing Flow Diagram
 
-```mermaid
-flowchart LR
-    DEV[Developer]
-    KEY["Signing Key<br/>GPG or SSH"]
-    COMMIT[Signed Commit]
-    REMOTE["GitHub / GitLab"]
-    VERIFY[Signature Verification]
+```d2
+direction: right
 
-    DEV -->|git commit -S| KEY
-    KEY --> COMMIT
-    COMMIT -->|push| REMOTE
-    REMOTE --> VERIFY```
+DEV: Developer
+    KEY: "Signing Key\\nGPG or SSH"
+    COMMIT: "Signed Commit"
+    REMOTE: "GitHub / GitLab"
+    VERIFY: "Signature Verification"
+    DEV -> KEY: "git commit -S"
+    KEY -> COMMIT
+    COMMIT -> REMOTE: push
+    REMOTE -> VERIFY
+```
 
 ## Theory
 

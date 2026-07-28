@@ -46,26 +46,34 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Stage1["Stage 1: builder"]
-        B1["FROM golang:1.22 AS builder"]
-        B2[COPY source]
-        B3[RUN go build]
-    end
+```d2
+direction: down
 
-    subgraph Stage2["Stage 2: runtime"]
-        R1["FROM gcr.io/distroless/static"]
-        R2["COPY --from=builder /app/binary"]
-        R3[USER nonroot]
-    end
-
-    B1 --> B2 --> B3
-    B3 -->|artifact only| R2
-    R1 --> R2 --> R3
-    R3 --> IMG[Final image ~10MB]
-    style Stage1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Stage2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Stage1: "Stage 1: builder" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        B1: "FROM golang:1.22 AS builder"
+        B2: "COPY source"
+        B3: "RUN go build"
+    }
+    Stage2: "Stage 2: runtime" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        R1: "FROM gcr.io/distroless/static"
+        R2: "COPY --from=builder /app/binary"
+        R3: "USER nonroot"
+    }
+    Stage1.B1 -> Stage1.B2
+    Stage1.B2 -> Stage1.B3
+    Stage1.B3 -> Stage2.R2: "artifact only"
+    Stage2.R1 -> Stage2.R2
+    Stage2.R2 -> Stage2.R3
+    IMG: "Final image ~10MB"
+    Stage2.R3 -> IMG
 ```
 
 Only the runtime stage becomes the final image. Build tools never ship to production.

@@ -47,22 +47,24 @@ By the end of this tutorial, you will be able to:
 
 ## DevOps Git Pipeline Diagram
 
-```mermaid
-flowchart TB
-    DEV["Developer Push / PR"]
-    GIT["Git Repository"]
-    WH["Webhook / Event"]
-    CI["CI Pipeline<br/>build · test · scan"]
-    ART["Artifact Registry<br/>image · plan"]
-    CD["CD / GitOps<br/>Argo CD · Flux"]
-    PROD[Production]
+```d2
+direction: down
 
-    DEV --> GIT
-    GIT --> WH --> CI
-    CI --> ART
-    GIT --> CD
-    CD --> PROD
-    ART --> PROD```
+DEV: "Developer Push / PR"
+    GIT: "Git Repository"
+    WH: "Webhook / Event"
+    CI: "CI Pipeline\\nbuild · test · scan"
+    ART: "Artifact Registry\\nimage · plan"
+    CD: "CD / GitOps\\nArgo CD · Flux"
+    PROD: Production
+    DEV -> GIT
+    GIT -> WH
+    WH -> CI
+    CI -> ART
+    GIT -> CD
+    CD -> PROD
+    ART -> PROD
+```
 
 ## Theory
 

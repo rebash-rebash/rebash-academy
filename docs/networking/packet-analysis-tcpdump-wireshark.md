@@ -49,37 +49,38 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart LR
-    subgraph Capture["Capture Point"]
-        NIC["eth0 / any interface"]
-        TD["tcpdump / dumpcap"]
-        PCAP["capture.pcap"]
-    end
+```d2
+direction: right
 
-    subgraph Analysis
-        WS[Wireshark GUI]
-        FILT[Display Filters]
-        STREAM[TCP Stream Follow]
-    end
-
-    subgraph Evidence
-        SYN[SYN retransmits]
-        RST[RST packets]
-        TLS[TLS handshake]
-        HTTP[HTTP requests]
-    end
-
-    NIC --> TD
-    TD --> PCAP
-    PCAP --> WS
-    WS --> FILT
-    FILT --> STREAM
-    STREAM --> HTTP
-    FILT --> SYN
-    FILT --> RST
-    FILT --> TLS
-    style Capture fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+Capture: "Capture Point" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        NIC: "eth0 / any interface"
+        TD: "tcpdump / dumpcap"
+        PCAP: capture.pcap
+    }
+    Analysis: Analysis {
+        WS: "Wireshark GUI"
+        FILT: "Display Filters"
+        STREAM: "TCP Stream Follow"
+    }
+    Evidence: Evidence {
+        SYN: "SYN retransmits"
+        RST: "RST packets"
+        TLS: "TLS handshake"
+        HTTP: "HTTP requests"
+    }
+    Capture.NIC -> Capture.TD
+    Capture.TD -> Capture.PCAP
+    Capture.PCAP -> Analysis.WS
+    Analysis.WS -> Analysis.FILT
+    Analysis.FILT -> Analysis.STREAM
+    Analysis.STREAM -> Evidence.HTTP
+    Analysis.FILT -> Evidence.SYN
+    Analysis.FILT -> Evidence.RST
+    Analysis.FILT -> Evidence.TLS
 ```
 
 ## Theory

@@ -44,21 +44,27 @@ By the end of this tutorial, you will be able to:
 
 ## Submodule vs Subtree Diagram
 
-```mermaid
-flowchart TB
-    subgraph SUBMOD["Submodule"]
-        PARENT["Parent Repo<br/>records submodule SHA"]
-        CHILD["Child Repo<br/>separate .git"]
-        PARENT -->|gitlink| CHILD
-    end
+```d2
+direction: down
 
-    subgraph SUBTREE["Subtree"]
-        PARENT2[Parent Repo]
-        MERGED["External code<br/>merged into subdir/"]
-        PARENT2 --> MERGED
-    end
-    style SUBMOD fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style SUBTREE fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+SUBMOD: Submodule {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        PARENT: "Parent Repo\\nrecords submodule SHA"
+        CHILD: "Child Repo\\nseparate .git"
+        PARENT -> CHILD: gitlink
+    }
+    SUBTREE: Subtree {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        PARENT2: "Parent Repo"
+        MERGED: "External code\\nmerged into subdir/"
+        PARENT2 -> MERGED
+    }
 ```
 
 ## Theory

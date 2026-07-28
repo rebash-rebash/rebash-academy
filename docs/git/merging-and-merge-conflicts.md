@@ -45,21 +45,40 @@ By the end of this tutorial, you will be able to:
 
 ## Merge Types Diagram
 
-```mermaid
-flowchart TB
-    subgraph FF["Fast-Forward Merge"]
-        M1[main] --> C1 --> C2
-        F1[feature] --> C2
-    end
+```d2
+direction: down
 
-    subgraph TW["Three-Way Merge"]
-        M2[main] --> A --> B
-        F2[feature] --> A --> C
-        B --> Merged[Merge commit M]
-        C --> Merged
-    end
-    style FF fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style TW fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+FF: "Fast-Forward Merge" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        M1: main
+        C1: C1
+        M1 -> C1
+        C2: C2
+        C1 -> C2
+        F1: feature
+        F1 -> C2
+    }
+    TW: "Three-Way Merge" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        M2: main
+        A: A
+        M2 -> A
+        B: B
+        A -> B
+        F2: feature
+        F2 -> A
+        C: C
+        A -> C
+        Merged: "Merge commit M"
+        B -> Merged
+        C -> Merged
+    }
 ```
 
 ## Theory

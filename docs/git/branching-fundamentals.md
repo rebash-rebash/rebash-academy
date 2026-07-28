@@ -43,16 +43,23 @@ By the end of this tutorial, you will be able to:
 
 ## Branch Pointer Model
 
-```mermaid
-flowchart LR
-    MAIN["main → commit C3"]
-    FEAT["feature/waf → commit C2"]
-    HOT["hotfix/ssl → commit C3"]
+```d2
+direction: right
 
-    C1[commit C1] --> C2 --> C3
-    FEAT -.-> C2
-    MAIN --> C3
-    HOT --> C3```
+MAIN: "main → commit C3"
+    FEAT: "feature/waf → commit C2"
+    HOT: "hotfix/ssl → commit C3"
+    C1: "commit C1"
+    C2: C2
+    C1 -> C2
+    C3: C3
+    C2 -> C3
+    FEAT -> C2: {
+      style.stroke-dash: 3
+    }
+    MAIN -> C3
+    HOT -> C3
+```
 
 ## Theory
 

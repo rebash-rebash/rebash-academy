@@ -43,20 +43,26 @@ By the end of this tutorial, you will be able to:
 
 ## Bisect Process Diagram
 
-```mermaid
-flowchart TB
-    START["Start bisect<br/>bad=HEAD good=v1.4.0"]
-    MID[Checkout middle commit]
-    TEST{Test passes?}
-    GOOD["Mark good<br/>search upper half"]
-    BAD["Mark bad<br/>search lower half"]
-    FOUND[First bad commit found]
+```d2
+direction: down
 
-    START --> MID --> TEST
-    TEST -->|yes| GOOD --> MID
-    TEST -->|no| BAD --> MID
-    GOOD --> FOUND
-    BAD --> FOUND```
+START: "Start bisect\\nbad=HEAD good=v1.4.0"
+    MID: "Checkout middle commit"
+    TEST: "Test passes?" {
+      shape: diamond
+    }
+    GOOD: "Mark good\\nsearch upper half"
+    BAD: "Mark bad\\nsearch lower half"
+    FOUND: "First bad commit found"
+    START -> MID
+    MID -> TEST
+    TEST -> GOOD: yes
+    GOOD -> MID
+    TEST -> BAD: no
+    BAD -> MID
+    GOOD -> FOUND
+    BAD -> FOUND
+```
 
 ## Theory
 

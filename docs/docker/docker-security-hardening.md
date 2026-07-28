@@ -52,20 +52,21 @@ By the end of this tutorial, you will be able to:
 
 Security layers stack from the host kernel upward. Each runtime flag removes attack surface without replacing host patching or network segmentation.
 
-```mermaid
-flowchart TB
-    HOST[Host kernel + patches]
-    SECCOMP["seccomp profile<br/>syscall filter"]
-    CAPS["Linux capabilities<br/>CAP_DROP / CAP_ADD"]
-    USER["Non-root UID / GID"]
-    RO[Read-only rootfs + tmpfs]
-    APP[Application code]
+```d2
+direction: down
 
-    HOST --> SECCOMP
-    SECCOMP --> CAPS
-    CAPS --> USER
-    USER --> RO
-    RO --> APP```
+HOST: "Host kernel + patches"
+    SECCOMP: "seccomp profile\\nsyscall filter"
+    CAPS: "Linux capabilities\\nCAP_DROP / CAP_ADD"
+    USER: "Non-root UID / GID"
+    RO: "Read-only rootfs + tmpfs"
+    APP: "Application code"
+    HOST -> SECCOMP
+    SECCOMP -> CAPS
+    CAPS -> USER
+    USER -> RO
+    RO -> APP
+```
 
 ## Theory
 

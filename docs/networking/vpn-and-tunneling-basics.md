@@ -53,28 +53,32 @@ By the end of this tutorial, you will be able to:
 
 Site-to-site VPN connects on-premises networks to cloud VPCs over encrypted internet tunnels.
 
-```mermaid
-flowchart LR
-    subgraph OnPrem["On-Premises 192.168.0.0/16"]
-        SRV[App Servers]
-        VPNC[VPN Customer Gateway]
-    end
+```d2
+direction: right
 
-    subgraph Internet
-        TUN["Encrypted Tunnel<br/>IPsec / WireGuard"]
-    end
-
-    subgraph Cloud["AWS VPC 10.0.0.0/16"]
-        VPNGW["VPN Gateway / TGW"]
-        EC2[EC2 Instances]
-    end
-
-    SRV --> VPNC
-    VPNC --> TUN
-    TUN --> VPNGW
-    VPNGW --> EC2
-    style OnPrem fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Cloud fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+OnPrem: "On-Premises 192.168.0.0/16" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        SRV: "App Servers"
+        VPNC: "VPN Customer Gateway"
+    }
+    Internet: Internet {
+        TUN: "Encrypted Tunnel\\nIPsec / WireGuard"
+    }
+    Cloud: "AWS VPC 10.0.0.0/16" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        VPNGW: "VPN Gateway / TGW"
+        EC2: "EC2 Instances"
+    }
+    OnPrem.SRV -> OnPrem.VPNC
+    OnPrem.VPNC -> Internet.TUN
+    Internet.TUN -> Cloud.VPNGW
+    Cloud.VPNGW -> Cloud.EC2
 ```
 
 ## Theory

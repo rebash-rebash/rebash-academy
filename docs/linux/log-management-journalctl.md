@@ -45,32 +45,31 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Sources
-        K[Kernel]
-        S[systemd Units]
-        A["Applications via stdout/stderr"]
-    end
+```d2
+direction: down
 
-    subgraph journald
-        J[systemd-journald]
-        R["Journal Files<br/>/run/log/journal<br/>/var/log/journal"]
-    end
-
-    subgraph Consumers
-        C[journalctl CLI]
-        F["Forward to SIEM/syslog"]
-        M[Monitoring alerts]
-    end
-
-    K --> J
-    S --> J
-    A --> J
-    J --> R
-    R --> C
-    R --> F
-    R --> M```
+Sources: Sources {
+        K: Kernel
+        S: "systemd Units"
+        A: "Applications via stdout/stderr"
+    }
+    journald: journald {
+        J: systemd-journald
+        R: "Journal Files\\n/run/log/journal\\n/var/log/journal"
+    }
+    Consumers: Consumers {
+        C: "journalctl CLI"
+        F: "Forward to SIEM/syslog"
+        M: "Monitoring alerts"
+    }
+    Sources.K -> journald.J
+    Sources.S -> journald.J
+    Sources.A -> journald.J
+    journald.J -> journald.R
+    journald.R -> Consumers.C
+    journald.R -> Consumers.F
+    journald.R -> Consumers.M
+```
 
 ## Theory
 

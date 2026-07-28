@@ -53,38 +53,56 @@ By the end of this tutorial, you will be able to:
 
 Namespaces sit logically above workloads. The API server enforces quotas at admission time; the scheduler respects requests and limits on each node.
 
-```mermaid
-flowchart TB
-    subgraph Cluster["Kubernetes Cluster"]
-        subgraph NS_DEV["Namespace: dev"]
-            D1[Deployment web]
-            S1[Service web-svc]
-            Q1[ResourceQuota dev-quota]
-        end
-        subgraph NS_PROD["Namespace: production"]
-            D2[Deployment web]
-            S2[Service web-svc]
-            Q2[ResourceQuota prod-quota]
-        end
-        subgraph NS_SYS["Namespace: kube-system"]
-            K["kube-proxy / CoreDNS"]
-        end
-    end
+```d2
+direction: down
 
-    API[API Server + Admission]
-    SCH[Scheduler]
-
-    API --> NS_DEV
-    API --> NS_PROD
-    API --> NS_SYS
-    D1 --> SCH
-    D2 --> SCH
-    Q1 -.->|enforces| D1
-    Q2 -.->|enforces| D2
-    style Cluster fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style NS_DEV fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style NS_PROD fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style NS_SYS fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+Cluster: "Kubernetes Cluster" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        NS_DEV: "Namespace: dev" {
+          style: {
+            fill: "#e8f5e9"
+            stroke: "#388e3c"
+          }
+            D1: "Deployment web"
+            S1: "Service web-svc"
+            Q1: "ResourceQuota dev-quota"
+        }
+        NS_PROD: "Namespace: production" {
+          style: {
+            fill: "#fff3e0"
+            stroke: "#ef6c00"
+          }
+            D2: "Deployment web"
+            S2: "Service web-svc"
+            Q2: "ResourceQuota prod-quota"
+        }
+        NS_SYS: "Namespace: kube-system" {
+          style: {
+            fill: "#f3e5f5"
+            stroke: "#7b1fa2"
+          }
+            K: "kube-proxy / CoreDNS"
+        }
+    }
+    API: "API Server + Admission"
+    SCH: Scheduler
+    NS_DEV: NS_DEV
+    API -> NS_DEV
+    NS_PROD: NS_PROD
+    API -> NS_PROD
+    NS_SYS: NS_SYS
+    API -> NS_SYS
+    Cluster.NS_DEV.D1 -> SCH
+    Cluster.NS_PROD.D2 -> SCH
+    Cluster.NS_DEV.Q1 -> Cluster.NS_DEV.D1: enforces {
+      style.stroke-dash: 3
+    }
+    Cluster.NS_PROD.Q2 -> Cluster.NS_PROD.D2: enforces {
+      style.stroke-dash: 3
+    }
 ```
 
 ## Theory

@@ -46,39 +46,40 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Managers
-        M1[Manager 1 - Leader]
-        M2[Manager 2]
-    end
+```d2
+direction: down
 
-    subgraph Workers
-        W1[Worker 1]
-        W2[Worker 2]
-    end
-
-    subgraph Swarm["Objects"]
-        SVC["Service api:3 replicas"]
-        T1[Task]
-        T2[Task]
-        T3[Task]
-        NET[Overlay network]
-        SEC["Secrets / Configs"]
-    end
-
-    M1 --- M2
-    M1 --- W1
-    M1 --- W2
-    SVC --> T1
-    SVC --> T2
-    SVC --> T3
-    T1 --> W1
-    T2 --> W2
-    T3 --> W1
-    NET --- T1
-    SEC --- SVC
-    style Swarm fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+Managers: Managers {
+        M1: "Manager 1 - Leader"
+        M2: "Manager 2"
+    }
+    Workers: Workers {
+        W1: "Worker 1"
+        W2: "Worker 2"
+    }
+    Swarm: Objects {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        SVC: "Service api:3 replicas"
+        T1: Task
+        T2: Task
+        T3: Task
+        NET: "Overlay network"
+        SEC: "Secrets / Configs"
+    }
+    Managers.M1 -> Managers.M2
+    Managers.M1 -> Workers.W1
+    Managers.M1 -> Workers.W2
+    Swarm.SVC -> Swarm.T1
+    Swarm.SVC -> Swarm.T2
+    Swarm.SVC -> Swarm.T3
+    Swarm.T1 -> Workers.W1
+    Swarm.T2 -> Workers.W2
+    Swarm.T3 -> Workers.W1
+    Swarm.NET -> Swarm.T1
+    Swarm.SEC -> Swarm.SVC
 ```
 
 ## Theory

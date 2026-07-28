@@ -53,33 +53,40 @@ By the end of this tutorial, you will be able to:
 
 A Service fronts a set of Pods selected by labels. kube-proxy programs rules on each node to route traffic to Pod endpoints.
 
-```mermaid
-flowchart TB
-    subgraph Client["Calling Pod"]
-        C["curl http://web.default.svc.cluster.local"]
-    end
+```d2
+direction: down
 
-    subgraph Control["Control Plane"]
-        SVC["Service web<br/>ClusterIP 10.96.100.50:80"]
-        EP["Endpoints<br/>10.244.1.5:8080<br/>10.244.2.3:8080<br/>10.244.3.7:8080"]
-    end
-
-    subgraph Nodes["Worker Nodes"]
-        KP["kube-proxy<br/>iptables / IPVS"]
-        P1["Pod web-aaa<br/>10.244.1.5:8080"]
-        P2["Pod web-bbb<br/>10.244.2.3:8080"]
-        P3["Pod web-ccc<br/>10.244.3.7:8080"]
-    end
-
-    C -->|DNS lookup| SVC
-    SVC --> EP
-    C --> KP
-    KP --> P1
-    KP --> P2
-    KP --> P3
-    style Client fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Control fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style Nodes fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+Client: "Calling Pod" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        C: "curl http://web.default.svc.cluster.local"
+    }
+    Control: "Control Plane" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        SVC: "Service web\\nClusterIP 10.96.100.50:80"
+        EP: "Endpoints\\n10.244.1.5:8080\\n10.244.2.3:8080\\n10.244.3.7:8080"
+    }
+    Nodes: "Worker Nodes" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        KP: "kube-proxy\\niptables / IPVS"
+        P1: "Pod web-aaa\\n10.244.1.5:8080"
+        P2: "Pod web-bbb\\n10.244.2.3:8080"
+        P3: "Pod web-ccc\\n10.244.3.7:8080"
+    }
+    Client.C -> Control.SVC: "DNS lookup"
+    Control.SVC -> Control.EP
+    Client.C -> Nodes.KP
+    Nodes.KP -> Nodes.P1
+    Nodes.KP -> Nodes.P2
+    Nodes.KP -> Nodes.P3
 ```
 
 ## Theory

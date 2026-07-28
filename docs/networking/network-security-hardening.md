@@ -55,49 +55,66 @@ By the end of this tutorial, you will be able to:
 
 The diagram shows defense-in-depth layers: DDoS scrubbing at the edge, WAF for application attacks, segmented VPC tiers, and centralized audit logging.
 
-```mermaid
-flowchart TB
-    subgraph Internet
-        Attacker["Attackers / Bots"]
-        Users[Legitimate Users]
-    end
+```d2
+direction: down
 
-    subgraph Edge["Edge Protection"]
-        DDoS["DDoS Mitigation<br/>Shield / Cloudflare / WAF"]
-        WAF[Web Application Firewall]
-        LB[Load Balancer — TLS termination]
-    end
-
-    subgraph VPC["Segmented VPC"]
-        subgraph DMZ["Public Tier"]
-            Proxy["Reverse Proxy / Ingress"]
-        end
-        subgraph AppTier["Application Tier — Private"]
-            App["App Servers<br/>SG: 443 from DMZ only"]
-        end
-        subgraph DataTier["Data Tier — Private"]
-            DB["Database<br/>SG: 5432 from App only"]
-        end
-    end
-
-    subgraph Observability["Audit & Monitoring"]
-        Flow[VPC Flow Logs]
-        SIEM["SIEM / CloudWatch / Splunk"]
-    end
-
-    Attacker --> DDoS
-    Users --> DDoS
-    DDoS --> WAF --> LB --> Proxy
-    Proxy --> App
-    App --> DB
-    Flow --> SIEM
-    LB --> SIEM
-    style Edge fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style VPC fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style DMZ fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style AppTier fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    style DataTier fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
-    style Observability fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#004d40
+Internet: Internet {
+        Attacker: "Attackers / Bots"
+        Users: "Legitimate Users"
+    }
+    Edge: "Edge Protection" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        DDoS: "DDoS Mitigation\\nShield / Cloudflare / WAF"
+        WAF: "Web Application Firewall"
+        LB: "Load Balancer — TLS termination"
+    }
+    VPC: "Segmented VPC" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        DMZ: "Public Tier" {
+          style: {
+            fill: "#fff3e0"
+            stroke: "#ef6c00"
+          }
+            Proxy: "Reverse Proxy / Ingress"
+        }
+        AppTier: "Application Tier — Private" {
+          style: {
+            fill: "#f3e5f5"
+            stroke: "#7b1fa2"
+          }
+            App: "App Servers\\nSG: 443 from DMZ only"
+        }
+        DataTier: "Data Tier — Private" {
+          style: {
+            fill: "#fce4ec"
+            stroke: "#c2185b"
+          }
+            DB: "Database\\nSG: 5432 from App only"
+        }
+    }
+    Observability: "Audit & Monitoring" {
+      style: {
+        fill: "#e0f2f1"
+        stroke: "#00796b"
+      }
+        Flow: "VPC Flow Logs"
+        SIEM: "SIEM / CloudWatch / Splunk"
+    }
+    Internet.Attacker -> Edge.DDoS
+    Internet.Users -> Edge.DDoS
+    Edge.DDoS -> Edge.WAF
+    Edge.WAF -> Edge.LB
+    Edge.LB -> VPC.DMZ.Proxy
+    VPC.DMZ.Proxy -> VPC.AppTier.App
+    VPC.AppTier.App -> VPC.DataTier.DB
+    Observability.Flow -> Observability.SIEM
+    Edge.LB -> Observability.SIEM
 ```
 
 ## Theory

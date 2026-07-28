@@ -51,26 +51,30 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph VLAN10["VLAN 10 — Web (10.0.1.0/24)"]
-        S1["Server A<br/>MAC aa:bb:cc:01"]
-        S2["Server B<br/>MAC aa:bb:cc:02"]
-    end
+```d2
+direction: down
 
-    subgraph VLAN20["VLAN 20 — DB (10.0.20.0/24)"]
-        S3["DB Server<br/>MAC ee:ff:00:01"]
-    end
-
-    SW["Managed Switch<br/>802.1Q trunk to router"]
-    RTR["L3 Switch / Router<br/>Inter-VLAN routing"]
-
-    S1 --> SW
-    S2 --> SW
-    S3 --> SW
-    SW -->|trunk: VLAN 10, 20| RTR
-    style VLAN10 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style VLAN20 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+VLAN10: "VLAN 10 — Web (10.0.1.0/24)" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        S1: "Server A\\nMAC aa:bb:cc:01"
+        S2: "Server B\\nMAC aa:bb:cc:02"
+    }
+    VLAN20: "VLAN 20 — DB (10.0.20.0/24)" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        S3: "DB Server\\nMAC ee:ff:00:01"
+    }
+    SW: "Managed Switch\\n802.1Q trunk to router"
+    RTR: "L3 Switch / Router\\nInter-VLAN routing"
+    VLAN10.S1 -> SW
+    VLAN10.S2 -> SW
+    VLAN20.S3 -> SW
+    SW -> RTR: "trunk: VLAN 10, 20"
 ```
 
 Traffic within VLAN 10 stays on the same broadcast domain. Cross-VLAN communication requires Layer 3 routing through the router.

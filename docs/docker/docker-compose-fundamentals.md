@@ -48,24 +48,28 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Compose["Project"]
-        WEB["web service<br/>nginx:alpine"]
-        API["api service<br/>custom build"]
-        DB["db service<br/>postgres:16"]
-        VOL["named volume<br/>pgdata"]
-        NET["user-defined network<br/>app-net"]
-    end
+```d2
+direction: down
 
-    USER["Browser / curl"] -->|port 8080| WEB
-    WEB -->|proxy /api| API
-    API -->|postgres:5432| DB
-    DB --> VOL
-    WEB --- NET
-    API --- NET
-    DB --- NET
-    style Compose fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+Compose: Project {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        WEB: "web service\\nnginx:alpine"
+        API: "api service\\ncustom build"
+        DB: "db service\\npostgres:16"
+        VOL: "named volume\\npgdata"
+        NET: "user-defined network\\napp-net"
+    }
+    USER: "Browser / curl"
+    USER -> Compose.WEB: "port 8080"
+    Compose.WEB -> Compose.API: "proxy /api"
+    Compose.API -> Compose.DB: "postgres:5432"
+    Compose.DB -> Compose.VOL
+    Compose.WEB -> Compose.NET
+    Compose.API -> Compose.NET
+    Compose.DB -> Compose.NET
 ```
 
 Compose creates a project-scoped network. Services resolve each other by **service name**.

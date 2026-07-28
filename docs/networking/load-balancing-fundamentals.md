@@ -49,37 +49,46 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Clients
-        C1[Client A]
-        C2[Client B]
-        C3[Client C]
-    end
+```d2
+direction: down
 
-    subgraph LB["Load Balancer Tier"]
-        VIP["Virtual IP / DNS Name"]
-        HC[Health Check Engine]
-        ALGO["Scheduler<br/>round-robin · least conn · ip hash"]
-    end
-
-    subgraph Backends
-        W1["Web Server 1<br/>healthy"]
-        W2["Web Server 2<br/>healthy"]
-        W3["Web Server 3<br/>unhealthy"]
-    end
-
-    C1 --> VIP
-    C2 --> VIP
-    C3 --> VIP
-    VIP --> ALGO
-    HC -.->|probe| W1
-    HC -.->|probe| W2
-    HC -.->|fail| W3
-    ALGO --> W1
-    ALGO --> W2
-    ALGO -.-x|removed| W3
-    style LB fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+Clients: Clients {
+        C1: "Client A"
+        C2: "Client B"
+        C3: "Client C"
+    }
+    LB: "Load Balancer Tier" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        VIP: "Virtual IP / DNS Name"
+        HC: "Health Check Engine"
+        ALGO: "Scheduler\\nround-robin · least conn · ip hash"
+    }
+    Backends: Backends {
+        W1: "Web Server 1\\nhealthy"
+        W2: "Web Server 2\\nhealthy"
+        W3: "Web Server 3\\nunhealthy"
+    }
+    Clients.C1 -> LB.VIP
+    Clients.C2 -> LB.VIP
+    Clients.C3 -> LB.VIP
+    LB.VIP -> LB.ALGO
+    LB.HC -> Backends.W1: probe {
+      style.stroke-dash: 3
+    }
+    LB.HC -> Backends.W2: probe {
+      style.stroke-dash: 3
+    }
+    LB.HC -> Backends.W3: fail {
+      style.stroke-dash: 3
+    }
+    LB.ALGO -> Backends.W1
+    LB.ALGO -> Backends.W2
+    LB.ALGO -> Backends.W3: removed {
+      style.stroke-dash: 3
+    }
 ```
 
 ## Theory

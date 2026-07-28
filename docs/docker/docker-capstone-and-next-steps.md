@@ -50,34 +50,32 @@ By the end of this capstone, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph External
-        USER[Browser]
-    end
+```d2
+direction: down
 
-    subgraph Edge
-        NGX["nginx reverse proxy :80"]
-    end
-
-    subgraph Application
-        WEB["web frontend :3000"]
-        API["api service :8080"]
-        WORK[worker]
-    end
-
-    subgraph Data
-        REDIS["redis"]
-        PG["postgres"]
-    end
-
-    USER --> NGX
-    NGX --> WEB
-    NGX --> API
-    API --> REDIS
-    API --> PG
-    WORK --> REDIS
-    WORK --> PG```
+External: External {
+        USER: Browser
+    }
+    Edge: Edge {
+        NGX: "nginx reverse proxy :80"
+    }
+    Application: Application {
+        WEB: "web frontend :3000"
+        API: "api service :8080"
+        WORK: worker
+    }
+    Data: Data {
+        REDIS: redis
+        PG: postgres
+    }
+    External.USER -> Edge.NGX
+    Edge.NGX -> Application.WEB
+    Edge.NGX -> Application.API
+    Application.API -> Data.REDIS
+    Application.API -> Data.PG
+    Application.WORK -> Data.REDIS
+    Application.WORK -> Data.PG
+```
 
 ## Project Overview — VoteStack
 

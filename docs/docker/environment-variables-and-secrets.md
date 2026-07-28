@@ -51,34 +51,41 @@ By the end of this tutorial, you will be able to:
 
 Configuration flows from sources of truth into the container process environment or mounted files — never through rebuilt image layers for secrets.
 
-```mermaid
-flowchart TB
-    subgraph sources["Configuration Sources"]
-        ENVFILE[".env file<br/>non-secrets only"]
-        SECRET_MGR["Secret Manager<br/>Vault / AWS / GCP"]
-        COMPOSE["Compose / Stack YAML"]
-    end
+```d2
+direction: down
 
-    subgraph docker["Docker Engine"]
-        RUN["docker run / compose up"]
-        SWARM_SEC["Swarm secrets<br/>tmpfs mount"]
-    end
-
-    subgraph container["Container"]
-        PROC[Application process]
-        MNT["/run/secrets/*"]
-    end
-
-    ENVFILE --> COMPOSE
-    SECRET_MGR --> COMPOSE
-    COMPOSE --> RUN
-    RUN -->|environment vars| PROC
-    RUN --> SWARM_SEC
-    SWARM_SEC --> MNT
-    MNT --> PROC
-    style sources fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style docker fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style container fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+sources: "Configuration Sources" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        ENVFILE: ".env file\\nnon-secrets only"
+        SECRET_MGR: "Secret Manager\\nVault / AWS / GCP"
+        COMPOSE: "Compose / Stack YAML"
+    }
+    docker: "Docker Engine" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        RUN: "docker run / compose up"
+        SWARM_SEC: "Swarm secrets\\ntmpfs mount"
+    }
+    container: Container {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        PROC: "Application process"
+        MNT: "/run/secrets/*"
+    }
+    sources.ENVFILE -> sources.COMPOSE
+    sources.SECRET_MGR -> sources.COMPOSE
+    sources.COMPOSE -> docker.RUN
+    docker.RUN -> container.PROC: "environment vars"
+    docker.RUN -> docker.SWARM_SEC
+    docker.SWARM_SEC -> container.MNT
+    container.MNT -> container.PROC
 ```
 
 ## Theory

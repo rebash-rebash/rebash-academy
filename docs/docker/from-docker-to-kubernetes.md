@@ -47,32 +47,32 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart LR
-    subgraph Docker
-        DR[docker run]
-        IMG[Image]
-        COMP[Compose service]
-        NET["bridge / overlay"]
-        VOL["volume / bind mount"]
-    end
+```d2
+direction: right
 
-    subgraph Kubernetes
-        POD[Pod]
-        DEP[Deployment]
-        SVC[Service]
-        CNI["Pod network / CNI"]
-        PV["PV / PVC"]
-    end
-
-    DR --> POD
-    IMG --> POD
-    COMP --> DEP
-    COMP --> SVC
-    NET --> CNI
-    VOL --> PV
-    DEP --> POD
-    SVC --> POD```
+Docker: Docker {
+        DR: "docker run"
+        IMG: Image
+        COMP: "Compose service"
+        NET: "bridge / overlay"
+        VOL: "volume / bind mount"
+    }
+    Kubernetes: Kubernetes {
+        POD: Pod
+        DEP: Deployment
+        SVC: Service
+        CNI: "Pod network / CNI"
+        PV: "PV / PVC"
+    }
+    Docker.DR -> Kubernetes.POD
+    Docker.IMG -> Kubernetes.POD
+    Docker.COMP -> Kubernetes.DEP
+    Docker.COMP -> Kubernetes.SVC
+    Docker.NET -> Kubernetes.CNI
+    Docker.VOL -> Kubernetes.PV
+    Kubernetes.DEP -> Kubernetes.POD
+    Kubernetes.SVC -> Kubernetes.POD
+```
 
 ## Theory
 

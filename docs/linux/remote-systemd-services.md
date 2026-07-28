@@ -46,33 +46,44 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TD
-    subgraph Admin["Workstation"]
-        A[systemctl --host]
-        B[journalctl --host]
-    end
-    subgraph SSH["Transport"]
-        C[Encrypted SSH Session]
-    end
-    subgraph Remote["Server"]
-        D[systemd-manager user]
-        E["polkit / pkaction"]
-        F[systemd PID 1]
-        G[Unit Files]
-        H[Running Services]
-    end
-    A --> C
-    B --> C
-    C --> D
-    D --> E
-    E -->|authorized| F
-    E -->|denied| I[Access Denied]
-    F --> G
-    F --> H
-    style Admin fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style SSH fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style Remote fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+```d2
+direction: down
+
+Admin: Workstation {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        A: "systemctl --host"
+        B: "journalctl --host"
+    }
+    SSH: Transport {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        C: "Encrypted SSH Session"
+    }
+    Remote: Server {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        D: "systemd-manager user"
+        E: "polkit / pkaction"
+        F: "systemd PID 1"
+        G: "Unit Files"
+        H: "Running Services"
+    }
+    Admin.A -> SSH.C
+    Admin.B -> SSH.C
+    SSH.C -> Remote.D
+    Remote.D -> Remote.E
+    Remote.E -> Remote.F: authorized
+    I: "Access Denied"
+    Remote.E -> I: denied
+    Remote.F -> Remote.G
+    Remote.F -> Remote.H
 ```
 
 ## Theory

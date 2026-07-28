@@ -54,52 +54,60 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows a standard **multi-AZ VPC** with two public subnets (for NAT gateways and load balancers) and two private subnets (for application and database tiers). Each AZ has its own subnet pair; route tables differ between public and private tiers.
 
-```mermaid
-flowchart TB
-    subgraph Internet["Internet"]
-        Users["Users / Clients"]
-    end
+```d2
+direction: down
 
-    subgraph VPC["VPC 10.0.0.0/16"]
-        IGW[Internet Gateway]
-
-        subgraph AZ1["Availability Zone A"]
-            PubA["Public Subnet<br/>10.0.1.0/24"]
-            PrivA["Private Subnet<br/>10.0.11.0/24"]
-            ALB[Application Load Balancer]
-            AppA[App Servers]
-            DBA[Database Primary]
-        end
-
-        subgraph AZ2["Availability Zone B"]
-            PubB["Public Subnet<br/>10.0.2.0/24"]
-            PrivB["Private Subnet<br/>10.0.12.0/24"]
-            NAT[NAT Gateway]
-            AppB[App Servers]
-            DBB[Database Replica]
-        end
-
-        RTpub["Public Route Table<br/>0.0.0.0/0 → IGW"]
-        RTpriv["Private Route Table<br/>0.0.0.0/0 → NAT"]
-    end
-
-    Users --> IGW
-    IGW --> ALB
-    ALB --> AppA
-    ALB --> AppB
-    AppA --> DBA
-    AppB --> DBB
-    PrivA --> NAT
-    PrivB --> NAT
-    NAT --> IGW
-    PubA --- RTpub
-    PubB --- RTpub
-    PrivA --- RTpriv
-    PrivB --- RTpriv
-    style Internet fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style VPC fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style AZ1 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style AZ2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+Internet: Internet {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        Users: "Users / Clients"
+    }
+    VPC: "VPC 10.0.0.0/16" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        IGW: "Internet Gateway"
+        AZ1: "Availability Zone A" {
+          style: {
+            fill: "#fff3e0"
+            stroke: "#ef6c00"
+          }
+            PubA: "Public Subnet\\n10.0.1.0/24"
+            PrivA: "Private Subnet\\n10.0.11.0/24"
+            ALB: "Application Load Balancer"
+            AppA: "App Servers"
+            DBA: "Database Primary"
+        }
+        AZ2: "Availability Zone B" {
+          style: {
+            fill: "#f3e5f5"
+            stroke: "#7b1fa2"
+          }
+            PubB: "Public Subnet\\n10.0.2.0/24"
+            PrivB: "Private Subnet\\n10.0.12.0/24"
+            NAT: "NAT Gateway"
+            AppB: "App Servers"
+            DBB: "Database Replica"
+        }
+        RTpub: "Public Route Table\\n0.0.0.0/0 → IGW"
+        RTpriv: "Private Route Table\\n0.0.0.0/0 → NAT"
+    }
+    Internet.Users -> VPC.IGW
+    VPC.IGW -> VPC.AZ1.ALB
+    VPC.AZ1.ALB -> VPC.AZ1.AppA
+    VPC.AZ1.ALB -> VPC.AZ2.AppB
+    VPC.AZ1.AppA -> VPC.AZ1.DBA
+    VPC.AZ2.AppB -> VPC.AZ2.DBB
+    VPC.AZ1.PrivA -> VPC.AZ2.NAT
+    VPC.AZ2.PrivB -> VPC.AZ2.NAT
+    VPC.AZ2.NAT -> VPC.IGW
+    VPC.AZ1.PubA -> VPC.RTpub
+    VPC.AZ2.PubB -> VPC.RTpub
+    VPC.AZ1.PrivA -> VPC.RTpriv
+    VPC.AZ2.PrivB -> VPC.RTpriv
 ```
 
 ## Theory

@@ -45,34 +45,45 @@ By the end of this tutorial, you will be able to:
 
 ## Workflow Comparison Diagram
 
-```mermaid
-flowchart TB
-    subgraph TBD["Trunk-Based"]
-        MAIN1[main — always deployable]
-        FB1["short feature branches<br/>hours to days"]
-        FB1 --> MAIN1
-    end
+```d2
+direction: down
 
-    subgraph GHF["GitHub Flow"]
-        MAIN2[main]
-        FB2[feature branch + PR]
-        FB2 --> MAIN2
-        MAIN2 --> DEPLOY[deploy from main]
-    end
-
-    subgraph GF["GitFlow"]
-        MAIN3[main]
-        DEV[develop]
-        FEAT["feature/*"]
-        REL["release/*"]
-        HOT["hotfix/*"]
-        FEAT --> DEV --> REL --> MAIN3
-        HOT --> MAIN3
-        HOT --> DEV
-    end
-    style TBD fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style GHF fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style GF fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+TBD: Trunk-Based {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        MAIN1: "main — always deployable"
+        FB1: "short feature branches\\nhours to days"
+        FB1 -> MAIN1
+    }
+    GHF: "GitHub Flow" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        MAIN2: main
+        FB2: "feature branch + PR"
+        FB2 -> MAIN2
+        DEPLOY: "deploy from main"
+        MAIN2 -> DEPLOY
+    }
+    GF: GitFlow {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        MAIN3: main
+        DEV: develop
+        FEAT: "feature/*"
+        REL: "release/*"
+        HOT: "hotfix/*"
+        FEAT -> DEV
+        DEV -> REL
+        REL -> MAIN3
+        HOT -> MAIN3
+        HOT -> DEV
+    }
 ```
 
 ## Theory

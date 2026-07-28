@@ -24,17 +24,16 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+      - name: Install D2
+        run: |
+          curl -fsSL https://d2lang.com/install.sh | sh -s --
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Build documentation
         run: mkdocs build --strict
-        env:
-          PUPPETEER_ARGS: "--no-sandbox"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

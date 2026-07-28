@@ -43,19 +43,21 @@ By the end of this tutorial, you will be able to:
 
 ## Ignore Flow Diagram
 
-```mermaid
-flowchart TB
-    FILES[Working Directory Files]
-    GI[.gitignore patterns]
-    GA[.gitattributes rules]
-    STAGE["git add / staging"]
-    REPO[Repository]
+```d2
+direction: down
 
-    FILES --> GI
-    GI -->|excluded| SKIP[Not tracked]
-    GI -->|allowed| STAGE
-    GA --> STAGE
-    STAGE --> REPO```
+FILES: "Working Directory Files"
+    GI: ".gitignore patterns"
+    GA: ".gitattributes rules"
+    STAGE: "git add / staging"
+    REPO: Repository
+    FILES -> GI
+    SKIP: "Not tracked"
+    GI -> SKIP: excluded
+    GI -> STAGE: allowed
+    GA -> STAGE
+    STAGE -> REPO
+```
 
 ## Theory
 

@@ -51,42 +51,52 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows a simplified enterprise-to-cloud topology. Every component you will encounter in DevOps maps to one of these roles — even when the physical switch is replaced by a virtual cloud switch or hypervisor vSwitch.
 
-```mermaid
-flowchart TB
-    subgraph LAN["Office LAN"]
-        PC1[Workstation]
-        PC2[Developer Laptop]
-        SW[Layer 2 Switch]
-        PC1 --> SW
-        PC2 --> SW
-    end
+```d2
+direction: down
 
-    subgraph EDGE["Network Edge"]
-        FW[Firewall]
-        RTR["Router / Gateway"]
-        SW --> FW
-        FW --> RTR
-    end
-
-    subgraph WAN["WAN / Internet"]
-        ISP[ISP Backbone]
-        RTR --> ISP
-    end
-
-    subgraph CLOUD["Cloud VPC"]
-        IGW[Internet Gateway]
-        ALB[Load Balancer]
-        APP[App Servers]
-        DB["Database"]
-        ISP --> IGW
-        IGW --> ALB
-        ALB --> APP
-        APP --> DB
-    end
-    style LAN fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style EDGE fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style WAN fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style CLOUD fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+LAN: "Office LAN" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        PC1: Workstation
+        PC2: "Developer Laptop"
+        SW: "Layer 2 Switch"
+        PC1 -> SW
+        PC2 -> SW
+    }
+    EDGE: "Network Edge" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        FW: Firewall
+        RTR: "Router / Gateway"
+        SW -> FW
+        FW -> RTR
+    }
+    WAN: "WAN / Internet" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        ISP: "ISP Backbone"
+        RTR -> ISP
+    }
+    CLOUD: "Cloud VPC" {
+      style: {
+        fill: "#f3e5f5"
+        stroke: "#7b1fa2"
+      }
+        IGW: "Internet Gateway"
+        ALB: "Load Balancer"
+        APP: "App Servers"
+        DB: Database
+        ISP -> IGW
+        IGW -> ALB
+        ALB -> APP
+        APP -> DB
+    }
 ```
 
 ## Theory

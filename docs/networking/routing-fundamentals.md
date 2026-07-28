@@ -49,32 +49,38 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart LR
-    subgraph LAN1["Subnet 10.0.1.0/24"]
-        H1[Host 10.0.1.10]
-    end
+```d2
+direction: right
 
-    subgraph LAN2["Subnet 10.0.2.0/24"]
-        H2[Host 10.0.2.20]
-    end
-
-    subgraph LAN3["Subnet 10.0.3.0/24"]
-        DB[Database 10.0.3.5]
-    end
-
-    R1["Router R1<br/>10.0.1.1 · 10.0.2.1"]
-    R2["Router R2<br/>10.0.2.2 · 10.0.3.1"]
-    IGW[Internet Gateway]
-
-    H1 --> R1
-    R1 --> R2
-    R2 --> DB
-    R2 --> IGW
-    H2 --> R1
-    style LAN1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style LAN2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    style LAN3 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+LAN1: "Subnet 10.0.1.0/24" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        H1: "Host 10.0.1.10"
+    }
+    LAN2: "Subnet 10.0.2.0/24" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        H2: "Host 10.0.2.20"
+    }
+    LAN3: "Subnet 10.0.3.0/24" {
+      style: {
+        fill: "#fff3e0"
+        stroke: "#ef6c00"
+      }
+        DB: "Database 10.0.3.5"
+    }
+    R1: "Router R1\\n10.0.1.1 · 10.0.2.1"
+    R2: "Router R2\\n10.0.2.2 · 10.0.3.1"
+    IGW: "Internet Gateway"
+    LAN1.H1 -> R1
+    R1 -> R2
+    R2 -> LAN3.DB
+    R2 -> IGW
+    LAN2.H2 -> R1
 ```
 
 Each router maintains a routing table. Traffic from `10.0.1.10` to `10.0.3.5` crosses two routers because the destination is not on the local subnet.

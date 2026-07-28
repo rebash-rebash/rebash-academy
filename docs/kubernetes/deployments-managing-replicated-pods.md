@@ -53,28 +53,35 @@ By the end of this tutorial, you will be able to:
 
 Deployments own ReplicaSets; ReplicaSets own Pods. Each rollout creates a new ReplicaSet while phasing out the old one.
 
-```mermaid
-flowchart TB
-    subgraph Control["Control Plane"]
-        DEP["Deployment<br/>replicas: 3"]
-        RS1["ReplicaSet v1<br/>desired: 0"]
-        RS2["ReplicaSet v2<br/>desired: 3"]
-    end
+```d2
+direction: down
 
-    subgraph Data["Worker Nodes"]
-        P1["Pod v2"]
-        P2["Pod v2"]
-        P3["Pod v2"]
-    end
-
-    DEP --> RS1
-    DEP --> RS2
-    RS2 --> P1
-    RS2 --> P2
-    RS2 --> P3
-    RS1 -.->|"scaled to 0<br/>after rollout"| DEP
-    style Control fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style Data fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Control: "Control Plane" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        DEP: "Deployment\\nreplicas: 3"
+        RS1: "ReplicaSet v1\\ndesired: 0"
+        RS2: "ReplicaSet v2\\ndesired: 3"
+    }
+    Data: "Worker Nodes" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        P1: "Pod v2"
+        P2: "Pod v2"
+        P3: "Pod v2"
+    }
+    Control.DEP -> Control.RS1
+    Control.DEP -> Control.RS2
+    Control.RS2 -> Data.P1
+    Control.RS2 -> Data.P2
+    Control.RS2 -> Data.P3
+    Control.RS1 -> Control.DEP: "scaled to 0\\nafter rollout" {
+      style.stroke-dash: 3
+    }
 ```
 
 ## Theory

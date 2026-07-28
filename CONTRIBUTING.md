@@ -55,7 +55,7 @@ Every tutorial must include:
 1. Overview
 2. Prerequisites
 3. Learning Objectives
-4. Architecture Diagram (Mermaid)
+4. Architecture Diagram (D2)
 5. Theory
 6. Hands-on Lab
 7. Commands & Code

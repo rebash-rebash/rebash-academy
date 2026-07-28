@@ -45,21 +45,28 @@ By the end of this tutorial, you will be able to:
 
 ## Rebase vs Merge Diagram
 
-```mermaid
-flowchart TB
-    subgraph Before["Before rebase"]
-        M1["main: A-B-C"]
-        F1["feature: A-B-D-E"]
-    end
+```d2
+direction: down
 
-    subgraph After["After rebase feature onto main"]
-        M2["main: A-B-C"]
-        F2[feature: A-B-C-D'-E']
-    end
-
-    Before --> After
-    style Before fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    style After fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+Before: "Before rebase" {
+      style: {
+        fill: "#e3f2fd"
+        stroke: "#1976d2"
+      }
+        M1: "main: A-B-C"
+        F1: "feature: A-B-D-E"
+    }
+    After: "After rebase feature onto main" {
+      style: {
+        fill: "#e8f5e9"
+        stroke: "#388e3c"
+      }
+        M2: "main: A-B-C"
+        F2: "feature: A-B-C-D'-E"
+    }
+    Before: Before
+    After: After
+    Before -> After
 ```
 
 ## Theory

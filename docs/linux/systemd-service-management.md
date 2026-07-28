@@ -44,42 +44,40 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph Boot
-        FW["Firmware/Kernel"]
-        S1[systemd PID 1]
-    end
+```d2
+direction: down
 
-    subgraph Units
-        SVC[.service units]
-        SOCK[.socket units]
-        TMR[.timer units]
-        TGT[.target units]
-    end
-
-    subgraph Paths
-        PKG["/usr/lib/systemd/system/"]
-        ETC["/etc/systemd/system/"]
-        RUN["/run/systemd/system/"]
-    end
-
-    subgraph CLI
-        CTL[systemctl]
-        JRN[journalctl]
-    end
-
-    FW --> S1
-    S1 --> TGT
-    TGT --> SVC
-    TGT --> SOCK
-    TGT --> TMR
-    PKG --> SVC
-    ETC --> SVC
-    RUN --> SVC
-    CTL --> S1
-    SVC --> JRN
-    SOCK --> JRN```
+Boot: Boot {
+        FW: "Firmware/Kernel"
+        S1: "systemd PID 1"
+    }
+    Units: Units {
+        SVC: ".service units"
+        SOCK: ".socket units"
+        TMR: ".timer units"
+        TGT: ".target units"
+    }
+    Paths: Paths {
+        PKG: "/usr/lib/systemd/system/"
+        ETC: "/etc/systemd/system/"
+        RUN: "/run/systemd/system/"
+    }
+    CLI: CLI {
+        CTL: systemctl
+        JRN: journalctl
+    }
+    Boot.FW -> Boot.S1
+    Boot.S1 -> Units.TGT
+    Units.TGT -> Units.SVC
+    Units.TGT -> Units.SOCK
+    Units.TGT -> Units.TMR
+    Paths.PKG -> Units.SVC
+    Paths.ETC -> Units.SVC
+    Paths.RUN -> Units.SVC
+    CLI.CTL -> Boot.S1
+    Units.SVC -> CLI.JRN
+    Units.SOCK -> CLI.JRN
+```
 
 ## Theory
 

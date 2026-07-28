@@ -43,14 +43,21 @@ By the end of this tutorial, you will be able to:
 
 ## PR Lifecycle Diagram
 
-```mermaid
-flowchart LR
-    BR[Feature Branch] -->|push| PR[Open Pull Request]
-    PR --> CI[CI Checks Run]
-    CI --> REV[Code Review]
-    REV -->|approve| MERGE[Merge to main]
-    REV -->|changes requested| BR
-    MERGE --> DEPLOY["CD / GitOps Deploy"]
+```d2
+direction: right
+
+BR: "Feature Branch"
+    PR: "Open Pull Request"
+    BR -> PR: push
+    CI: "CI Checks Run"
+    PR -> CI
+    REV: "Code Review"
+    CI -> REV
+    MERGE: "Merge to main"
+    REV -> MERGE: approve
+    REV -> BR: "changes requested"
+    DEPLOY: "CD / GitOps Deploy"
+    MERGE -> DEPLOY
 ```
 
 ## Theory

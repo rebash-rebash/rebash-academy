@@ -54,19 +54,19 @@ By the end of this tutorial, you will be able to:
 
 Helm client renders chart templates + values into manifests, then applies them to the cluster as a tracked release.
 
-```mermaid
-flowchart LR
-    DEV["Developer / CI"]
-    CHART["Helm Chart<br/>templates + values"]
-    HELM[Helm CLI]
-    API[Kubernetes API]
-    REL["Release<br/>revision history"]
+```d2
+direction: right
 
-    DEV -->|helm upgrade --install| HELM
-    CHART --> HELM
-    HELM -->|render + apply| API
-    HELM -->|store metadata| REL
-    REL -->|helm rollback| HELM
+DEV: "Developer / CI"
+    CHART: "Helm Chart\\ntemplates + values"
+    HELM: "Helm CLI"
+    API: "Kubernetes API"
+    REL: "Release\\nrevision history"
+    DEV -> HELM: "helm upgrade --install"
+    CHART -> HELM
+    HELM -> API: "render + apply"
+    HELM -> REL: "store metadata"
+    REL -> HELM: "helm rollback"
 ```
 
 ## Theory

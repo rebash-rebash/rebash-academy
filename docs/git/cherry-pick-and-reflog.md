@@ -43,16 +43,17 @@ By the end of this tutorial, you will be able to:
 
 ## Cherry-pick and Reflog Diagram
 
-```mermaid
-flowchart LR
-    MAIN["main: commit FIX"]
-    REL["release/2.1"]
-    MAIN -->|git cherry-pick FIX| REL
+```d2
+direction: right
 
-    HEAD[HEAD moves]
-    REFLOG["reflog<br/>90 day journal"]
-    HEAD --> REFLOG
-    REFLOG -->|git reset --hard SHA| RECOVER[Recovered state]
+MAIN: "main: commit FIX"
+    REL: "release/2.1"
+    MAIN -> REL: "git cherry-pick FIX"
+    HEAD: "HEAD moves"
+    REFLOG: "reflog\\n90 day journal"
+    HEAD -> REFLOG
+    RECOVER: "Recovered state"
+    REFLOG -> RECOVER: "git reset --hard SHA"
 ```
 
 ## Theory

@@ -49,32 +49,52 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows the FHS tree with the most important directories and typical contents. Arrows indicate "contains" relationships — not symlinks.
 
-```mermaid
-flowchart TD
-    ROOT["/  Root filesystem"]
+```d2
+direction: down
 
-    ROOT --> etc["/etc<br/>Static configuration"]
-    ROOT --> var["/var<br/>Variable data"]
-    ROOT --> usr["/usr<br/>User programs & read-only data"]
-    ROOT --> home["/home<br/>User home directories"]
-    ROOT --> root["/root<br/>Superuser home"]
-    ROOT --> tmp["/tmp<br/>World-writable temp"]
-    ROOT --> opt["/opt<br/>Third-party add-ons"]
-    ROOT --> boot["/boot<br/>Kernel & initramfs"]
-    ROOT --> dev["/dev<br/>Device nodes"]
-    ROOT --> proc["/proc<br/>Process & kernel info"]
-    ROOT --> sys["/sys<br/>Kernel object hierarchy"]
-    ROOT --> run["/run<br/>Runtime state since boot"]
-    ROOT --> srv["/srv<br/>Service data"]
-
-    etc --> etc_nginx["nginx/nginx.conf"]
-    etc --> etc_systemd["systemd/system/"]
-    var --> var_log["log/syslog"]
-    var --> var_lib["lib/docker/"]
-    usr --> usr_bin["bin/ — ls, grep, python3"]
-    usr --> usr_lib["lib/ — shared libraries"]
-    home --> home_user["ubuntu/ .bashrc projects/"]
-    boot --> boot_vmlinuz["vmlinuz-6.8.0"]
+ROOT: "/  Root filesystem"
+    etc: "/etc\\nStatic configuration"
+    ROOT -> etc
+    var: "/var\\nVariable data"
+    ROOT -> var
+    usr: "/usr\\nUser programs & read-only data"
+    ROOT -> usr
+    home: "/home\\nUser home directories"
+    ROOT -> home
+    root: "/root\\nSuperuser home"
+    ROOT -> root
+    tmp: "/tmp\\nWorld-writable temp"
+    ROOT -> tmp
+    opt: "/opt\\nThird-party add-ons"
+    ROOT -> opt
+    boot: "/boot\\nKernel & initramfs"
+    ROOT -> boot
+    dev: "/dev\\nDevice nodes"
+    ROOT -> dev
+    proc: "/proc\\nProcess & kernel info"
+    ROOT -> proc
+    sys: "/sys\\nKernel object hierarchy"
+    ROOT -> sys
+    run: "/run\\nRuntime state since boot"
+    ROOT -> run
+    srv: "/srv\\nService data"
+    ROOT -> srv
+    etc_nginx: "nginx/nginx.conf"
+    etc -> etc_nginx
+    etc_systemd: "systemd/system/"
+    etc -> etc_systemd
+    var_log: "log/syslog"
+    var -> var_log
+    var_lib: "lib/docker/"
+    var -> var_lib
+    usr_bin: "bin/ — ls, grep, python3"
+    usr -> usr_bin
+    usr_lib: "lib/ — shared libraries"
+    usr -> usr_lib
+    home_user: "ubuntu/ .bashrc projects/"
+    home -> home_user
+    boot_vmlinuz: vmlinuz-6.8.0
+    boot -> boot_vmlinuz
 ```
 
 ## Theory
