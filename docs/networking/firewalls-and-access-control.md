@@ -25,7 +25,7 @@ comments: false
 
 ## Overview
 
-Firewalls are the first line of defense between your infrastructure and the internet. They enforce **access control** — deciding which packets may enter, leave, or traverse a network boundary based on IP addresses, ports, protocols, and connection state. Every production environment uses firewalls at multiple layers: host-based rules on Linux servers, perimeter appliances, and cloud-native controls like AWS Security Groups and Network ACLs.
+Firewalls are the first line of defence between your infrastructure and the internet. They enforce **access control** — deciding which packets may enter, leave, or traverse a network boundary based on IP addresses, ports, protocols, and connection state. Every production environment uses firewalls at multiple layers: host-based rules on Linux servers, perimeter appliances, and cloud-native controls like AWS Security Groups and Network ACLs.
 
 Misconfigured firewalls cause more production outages than malicious attacks. A rule that blocks health-check traffic takes down a load-balanced fleet; an overly permissive rule exposes databases to the public internet. This tutorial teaches you how firewalls actually work, how to manage them on Linux, and how to design **least-privilege** policies that balance security with operability.
 
@@ -51,31 +51,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-Firewalls operate at multiple enforcement points. Defense in depth means layering controls — never relying on a single rule set.
+Firewalls operate at multiple enforcement points. Defence in depth means layering controls — never relying on a single rule set.
 
-```d2
-direction: down
+![Architecture diagram for Firewalls and Access Control](../assets/images/firewalls-and-access-control.svg)
 
-Internet: Internet {
-        ATT: "External Clients"
-    }
-    Perimeter: Perimeter {
-        NACL: "Network ACL\nstateless · subnet boundary"
-        SG: "Security Group\nstateful · instance ENI"
-    }
-    Host: Host {
-        UFW: "UFW / nftables\nhost firewall"
-        APP: "Application\nnginx · postgres"
-    }
-    Internet.ATT -> Perimeter.NACL
-    Perimeter.NACL -> Perimeter.SG
-    Perimeter.SG -> Host.UFW
-    Host.UFW -> Host.APP
-    Host.APP -> Host.UFW: response
-    Host.UFW -> Perimeter.SG
-    Perimeter.SG -> Perimeter.NACL
-    Perimeter.NACL -> Internet.ATT
-```
 
 ## Theory
 
@@ -200,7 +179,7 @@ In AWS (similar concepts exist in GCP/Azure):
 | Security Group | Instance ENI | Yes | Deny inbound |
 | NACL | Subnet | No | Varies |
 
-**Defense in depth example:** Public subnet NACL allows 80/443 from `0.0.0.0/0`. Web-tier SG allows 80/443 from ALB SG only. App-tier SG allows 8080 from web-tier SG only. Database SG allows 5432 from app-tier SG only. No rule anywhere allows 5432 from the internet.
+**Defence in depth example:** Public subnet NACL allows 80/443 from `0.0.0.0/0`. Web-tier SG allows 80/443 from ALB SG only. App-tier SG allows 8080 from web-tier SG only. Database SG allows 5432 from app-tier SG only. No rule anywhere allows 5432 from the internet.
 
 ### Least Privilege in Network Design
 
@@ -304,6 +283,10 @@ sudo ufw status verbose
 
 **Explanation:** Source-restricted rules implement least privilege for administrative access. In production, combine with bastion hosts or SSM Session Manager to avoid exposing SSH broadly.
 
+**Expected result:**
+
+Rule appears in `ufw status numbered` / nft list with your admin CIDR — not `Anywhere` — for the restricted service.
+
 ### Step 5 – Inspect raw iptables/nftables counters
 
 **Command:**
@@ -347,6 +330,10 @@ sudo ufw delete deny 8888/tcp
 kill %1 2>/dev/null
 ```
 
+**Expected result:**
+
+`nc`/`curl` to the blocked port fails (timeout/refused); allowed port still succeeds.
+
 ### Step 7 – Document a Security Group policy (AWS CLI or console)
 
 If you have AWS access:
@@ -358,19 +345,25 @@ aws ec2 describe-security-groups --group-ids sg-0123456789abcdef0 \
 
 **Explanation:** Practice reading SG rules: protocol, port range, source SG vs CIDR. Map each rule to a tier in your architecture diagram.
 
+**Expected result:**
+
+SG JSON/table shows inbound rules with ports and CIDRs; or console screenshot/notes if CLI lacks permissions.
+
 ## Validation
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run UFW/nft/iptables list commands and the blocked-port simulation.
+2. Explain default-deny vs an explicit allow for your lab rule set.
+3. Restore firewall to a known-good state so you are not locked out.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Policy visible | Current rules listed with `ufw status` / `nft list` / `iptables -L` |
+| Restrictive rule | Source-limited allow demonstrated or dry-run documented |
+| Block test | Connection to blocked port fails; allowed port succeeds |
+| Cloud SG | Example SG policy reviewed (CLI or console) |
+| Cleanup | Temporary deny/allow rules removed; SSH access still works |
 
 ## Code Walkthrough
 
@@ -427,12 +420,11 @@ resource "aws_security_group" "web" {
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Default-deny inbound; allow only required source CIDRs, ports, and protocols
+- Prefer security groups / stateful host firewalls plus network ACLs for defence in depth — do not rely on one layer
+- Never leave temporary `0.0.0.0/0` admin rules in place after a break-glass session
+- Version-control firewall policies and review diffs; undocumented holes accumulate quickly
+- Separate management-plane access (bastion, VPN) from application data paths
 
 ## Common Mistakes
 
@@ -500,7 +492,7 @@ resource "aws_security_group" "web" {
 
     **Q1 — Stateful vs stateless:** A stateless firewall evaluates each packet in isolation — return traffic needs explicit rules. A stateful firewall maintains a connection table (conntrack); when it sees an outbound SYN or permitted inbound SYN, it tracks the session and automatically allows matching return packets. Security Groups and UFW are stateful; AWS NACLs are stateless.
 
-    **Q4 — SG vs NACL:** Security Groups attach to ENIs, are stateful, default deny inbound, and support allow-only rules including references to other SGs. NACLs attach to subnets, are stateless, use ordered rule numbers with explicit allow and deny, and require separate inbound/outbound rules including ephemeral ports for TCP return traffic. SGs are the primary instance-level control; NACLs add subnet-level deny lists and defense in depth.
+    **Q4 — SG vs NACL:** Security Groups attach to ENIs, are stateful, default deny inbound, and support allow-only rules including references to other SGs. NACLs attach to subnets, are stateless, use ordered rule numbers with explicit allow and deny, and require separate inbound/outbound rules including ephemeral ports for TCP return traffic. SGs are the primary instance-level control; NACLs add subnet-level deny lists and defence in depth.
 
     **Q6 — SSH works, HTTPS times out:** SSH success proves routing and basic connectivity. Timeouts suggest filtered drops, not refusal. Check: (1) `ss -tlnp` — is anything listening on 443? (2) UFW/nftables — is 443 allowed inbound? (3) cloud SG — is 443 open from client source or LB SG? (4) NACL — outbound ephemeral ports allowed? (5) application — TLS misconfig causes refusal, not timeout; timeout implies firewall or no listener. Use `curl -v`, `tcpdump port 443`, and SG flow logs.
 

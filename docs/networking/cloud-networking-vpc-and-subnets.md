@@ -55,61 +55,8 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows a standard **multi-AZ VPC** with two public subnets (for NAT gateways and load balancers) and two private subnets (for application and database tiers). Each AZ has its own subnet pair; route tables differ between public and private tiers.
 
-```d2
-direction: down
+![Architecture diagram for Cloud Networking: VPC and Subnets](../assets/images/cloud-networking-vpc-and-subnets.svg)
 
-Internet: Internet {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        Users: "Users / Clients"
-    }
-    VPC: "VPC 10.0.0.0/16" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        IGW: "Internet Gateway"
-        AZ1: "Availability Zone A" {
-          style: {
-            fill: "#ffedd5"
-            stroke: "#ea580c"
-          }
-            PubA: "Public Subnet\n10.0.1.0/24"
-            PrivA: "Private Subnet\n10.0.11.0/24"
-            ALB: "Application Load Balancer"
-            AppA: "App Servers"
-            DBA: "Database Primary"
-        }
-        AZ2: "Availability Zone B" {
-          style: {
-            fill: "#f3e8ff"
-            stroke: "#9333ea"
-          }
-            PubB: "Public Subnet\n10.0.2.0/24"
-            PrivB: "Private Subnet\n10.0.12.0/24"
-            NAT: "NAT Gateway"
-            AppB: "App Servers"
-            DBB: "Database Replica"
-        }
-        RTpub: "Public Route Table\n0.0.0.0/0 → IGW"
-        RTpriv: "Private Route Table\n0.0.0.0/0 → NAT"
-    }
-    Internet.Users -> VPC.IGW
-    VPC.IGW -> VPC.AZ1.ALB
-    VPC.AZ1.ALB -> VPC.AZ1.AppA
-    VPC.AZ1.ALB -> VPC.AZ2.AppB
-    VPC.AZ1.AppA -> VPC.AZ1.DBA
-    VPC.AZ2.AppB -> VPC.AZ2.DBB
-    VPC.AZ1.PrivA -> VPC.AZ2.NAT
-    VPC.AZ2.PrivB -> VPC.AZ2.NAT
-    VPC.AZ2.NAT -> VPC.IGW
-    VPC.AZ1.PubA -> VPC.RTpub
-    VPC.AZ2.PubB -> VPC.RTpub
-    VPC.AZ1.PrivA -> VPC.RTpriv
-    VPC.AZ2.PrivB -> VPC.RTpriv
-```
 
 ## Theory
 
@@ -263,6 +210,14 @@ echo "IGW: $IGW_ID"
 
 **Explanation:** DNS hostnames allow instances to receive public DNS names (`ec2-xx-xx-xx-xx.compute-1.amazonaws.com`). The IGW must be attached before public routing works.
 
+**Expected result:**
+
+```text
+"VpcId": "vpc-........"
+```
+
+VPC created (or planned) with your chosen CIDR.
+
 ### Step 3 – Create subnets in two availability zones
 
 **Command:**
@@ -287,6 +242,10 @@ echo "Public: $PUB_SUBNET | Private: $PRIV_SUBNET"
 ```
 
 **Explanation:** Public subnets auto-assign public IPs at launch. Private subnets do not — instances there are reachable only from within the VPC unless you add a load balancer or bastion.
+
+**Expected result:**
+
+Subnet IDs returned for public and private subnets across the chosen AZs.
 
 ### Step 4 – Configure route tables
 
@@ -331,6 +290,10 @@ ip route show
 
 **Explanation:** Public instances reach the internet directly. Private instances without a NAT route cannot resolve external endpoints — this is expected and desirable for database tiers.
 
+**Expected result:**
+
+Public instance reaches Internet via IGW path; private instance uses NAT or has no public route, matching design.
+
 ### Step 6 – Clean up lab resources
 
 **Command:**
@@ -345,19 +308,25 @@ aws ec2 delete-internet-gateway --internet-gateway-id "$IGW_ID"
 
 **Explanation:** AWS enforces dependency order on deletion. Always destroy in reverse creation order to avoid orphaned resources and billing surprises.
 
+**Expected result:**
+
+`aws ec2 describe-vpcs` no longer shows the lab VPC (or destroy plan applied).
+
 ## Validation
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Confirm VPC, subnets, IGW/NAT roles, and route tables match the architecture diagram intent.
+2. Explain public vs private subnet routing in one paragraph.
+3. Delete lab VPC resources if you created them in a real account.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| VPC/CIDR | Custom VPC exists (or Terraform plan reviewed) with non-overlapping CIDR |
+| Subnets | Public and private subnets in ≥1 AZ with correct route targets |
+| Routing | Public uses IGW; private uses NAT or no Internet route as designed |
+| Instance test | Optional reachability test matches subnet role |
+| Cleanup | Lab VPC/IGW/NAT/subnets/instances terminated to avoid cost |
 
 ## Code Walkthrough
 
@@ -432,12 +401,11 @@ resource "aws_route_table_association" "public" {
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Keep databases and internal APIs on private subnets without public IPs; use bastions, SSM, or VPN for admin access
+- Restrict security groups to least privilege source CIDRs; avoid `0.0.0.0/0` on SSH/RDP and data stores
+- Enable VPC Flow Logs for reject/accept visibility and retain them per compliance needs
+- Prevent accidental IGW routes on private route tables; review route tables after every Terraform apply
+- Use separate VPCs or accounts for prod and non-prod to contain blast radius
 
 ## Common Mistakes
 

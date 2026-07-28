@@ -54,35 +54,8 @@ By the end of this tutorial, you will be able to:
 
 Clients connect to the reverse proxy; the proxy forwards requests to internal backends that are not directly exposed.
 
-```d2
-direction: right
+![Architecture diagram for Reverse Proxy and Ingress Basics](../assets/images/reverse-proxy-and-ingress-basics.svg)
 
-Internet: Internet {
-        C: Clients
-    }
-    Edge: "Reverse Proxy / Ingress" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        RP: "nginx / HAProxy / Ingress Controller"
-        TLS: "TLS Termination"
-    }
-    Internal: "Private Network" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        B1: "Backend 1\napp:8080"
-        B2: "Backend 2\napp:8080"
-        API: "API Service\napi:3000"
-    }
-    Internet.C -> Edge.RP: "HTTPS 443"
-    Edge.RP -> Edge.TLS
-    Edge.TLS -> Internal.B1: HTTP
-    Edge.TLS -> Internal.B2: HTTP
-    Edge.TLS -> Internal.API: "/api/*"
-```
 
 ## Theory
 
@@ -119,7 +92,7 @@ Production reverse proxies typically handle:
 
 | Approach | Cert management | Header inspection | Internal traffic |
 |----------|-----------------|-------------------|------------------|
-| Termination | Centralized at proxy | Full L7 routing | Often plain HTTP |
+| Termination | Centralised at proxy | Full L7 routing | Often plain HTTP |
 | Pass-through | Per backend | L4 only (SNI routing) | Encrypted end-to-end |
 
 !!! tip "Production pattern"
@@ -297,6 +270,10 @@ for i in $(seq 1 6); do curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.
 
 **Explanation:** Repeated requests should alternate between backends (200 responses). Check nginx access log to confirm different upstream response sizes or add custom backend headers in production.
 
+**Expected result:**
+
+Repeated curls return HTTP 200; upstream selection varies across backends if round-robin is configured.
+
 ### Step 4 – Add path-based routing
 
 **Command:**
@@ -330,6 +307,10 @@ curl -sI http://127.0.0.1:8888/api/ | head -3
 
 **Explanation:** Path-based routing sends `/api/*` to a specific backend while `/` uses the pool. Note the trailing slash in `proxy_pass` — it affects URL rewriting behaviour.
 
+**Expected result:**
+
+`nginx -t` OK; `/api/` and `/` paths hit different upstreams as configured.
+
 ### Step 5 – Simulate backend failure (502 Bad Gateway)
 
 **Command:**
@@ -349,6 +330,14 @@ sudo rm /etc/nginx/conf.d/proxy-lab.conf
 sudo systemctl reload nginx
 ```
 
+**Expected result:**
+
+```text
+502
+```
+
+(or 504) when the killed upstream is selected; restore backend afterwards for cleanup.
+
 ### Step 6 – Review Kubernetes Ingress (optional)
 
 If you have kubectl access:
@@ -360,19 +349,25 @@ kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress 
 
 **Explanation:** Inspect which Ingress controller is installed, assigned external IP, and backend service endpoints.
 
+**Expected result:**
+
+Ingress list or “No resources found”; optional step may be skipped without cluster access.
+
 ## Validation
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Confirm nginx proxies to backends and path rules return expected status codes.
+2. Explain the 502 you induced when a backend was killed.
+3. Remove lab `conf.d` files and stop temporary HTTP servers.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Proxy | Frontend returns 200 from healthy backends |
+| Paths | Path-based routes hit the correct upstream |
+| Failure | Killing a backend yields 502/504 as expected |
+| Ingress | Optional `kubectl get ingress` reviewed or skipped with note |
+| Cleanup | nginx lab config removed; ports 808x free |
 
 ## Code Walkthrough
 
@@ -387,12 +382,11 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Never forward `Host` or hop-by-hop headers blindly from untrusted clients without validation
+- Enforce TLS at the edge; use internal mTLS or network policy between proxy and backends when feasible
+- Lock down Ingress/annotations that enable snippets or arbitrary config injection
+- Hide backend version banners and detailed error pages on public listeners
+- Limit which namespaces/service accounts may create Ingress objects that bind privileged hosts
 
 ## Common Mistakes
 

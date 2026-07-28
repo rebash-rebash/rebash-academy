@@ -26,7 +26,7 @@ comments: false
 
 ## Overview
 
-Manual network configuration does not scale. When you manage hundreds of firewall rules, dozens of DNS zones, and a fleet of load balancers, **infrastructure as code (IaC)** and **network automation** become mandatory. Ansible playbooks configure devices consistently, Terraform modules provision cloud networking, and GitOps workflows enforce review before any change hits production. Equally critical is **observability**: you cannot fix what you cannot measure. **Prometheus** with **node_exporter** exposes host and network metrics, **SmokePing** tracks latency and packet loss over time, and centralized dashboards turn raw data into actionable alerts.
+Manual network configuration does not scale. When you manage hundreds of firewall rules, dozens of DNS zones, and a fleet of load balancers, **infrastructure as code (IaC)** and **network automation** become mandatory. Ansible playbooks configure devices consistently, Terraform modules provision cloud networking, and GitOps workflows enforce review before any change hits production. Equally critical is **observability**: you cannot fix what you cannot measure. **Prometheus** with **node_exporter** exposes host and network metrics, **SmokePing** tracks latency and packet loss over time, and centralised dashboards turn raw data into actionable alerts.
 
 This tutorial — the **final installment** of the REBASH Academy Networking series — teaches you to automate DNS and firewall management, use Ansible network modules, deploy Prometheus monitoring for network health, and integrate monitoring into your CI/CD pipeline. When you finish here, you will have the complete picture from TCP/IP fundamentals through production cloud networking, security, and operations.
 
@@ -57,54 +57,8 @@ By the end of this tutorial, you will be able to:
 
 The diagram shows a typical network observability and automation stack: Prometheus scrapes exporters, Grafana visualizes, Alertmanager notifies, and Ansible/Terraform push configuration from Git.
 
-```d2
-direction: right
+![Architecture diagram for Network Automation and Monitoring](../assets/images/network-automation-and-monitoring.svg)
 
-Git: "Git Repository" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        TF: "Terraform\nVPC · DNS · SG"
-        ANS: "Ansible Playbooks\nFirewall · DNS"
-    }
-    CI: "CI/CD Pipeline" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        Plan: "terraform plan"
-        Apply: "ansible-playbook / apply"
-    }
-    Targets: "Monitored Infrastructure" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        NE: "node_exporter\nLinux hosts"
-        SP: "SmokePing\nLatency probes"
-        BB: "Blackbox Exporter\nHTTP/TCP/ICMP"
-    }
-    Observability: "Observability Stack" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        Prom: Prometheus
-        Graf: Grafana
-        Alert: Alertmanager
-    }
-    Git: Git
-    CI: CI
-    Git -> CI
-    Targets: Targets
-    CI -> Targets
-    Targets.NE -> Observability.Prom
-    Targets.SP -> Observability.Prom
-    Targets.BB -> Observability.Prom
-    Observability.Prom -> Observability.Graf
-    Observability.Prom -> Observability.Alert
-```
 
 ## Theory
 
@@ -260,6 +214,10 @@ ansible-playbook -i ~/net-automation/inventory/hosts ~/net-automation/playbooks/
 
 **Explanation:** Idempotent firewall configuration — re-running produces no changes unless drift occurs.
 
+**Expected result:**
+
+Ansible reports `ok`/`changed` for UFW tasks (or check-mode diff) without embedding secrets in the playbook.
+
 ### Step 3 – Deploy node_exporter
 
 **Command:**
@@ -288,6 +246,14 @@ curl -s localhost:9100/metrics | grep node_network_receive_bytes_total | head -3
 
 **Explanation:** Restrict port 9100 to Prometheus server IP via firewall — metrics expose system information.
 
+**Expected result:**
+
+```text
+# HELP node_network_receive_bytes_total ...
+```
+
+Metrics on `:9100/metrics` (or your chosen port).
+
 ### Step 4 – Configure Prometheus to scrape node_exporter
 
 **Command:**
@@ -315,6 +281,10 @@ curl -s 'http://localhost:9090/api/v1/targets' | python3 -m json.tool | head -20
 
 **Explanation:** Open http://localhost:9090/targets — UP status means metrics are flowing.
 
+**Expected result:**
+
+Prometheus UI/API shows `node` target state UP.
+
 ### Step 5 – Query network metrics with PromQL
 
 **Command:**
@@ -328,6 +298,10 @@ curl -sG 'http://localhost:9090/api/v1/query' \
 ```
 
 **Explanation:** Sustained retransmit rates correlate with congestion, packet loss, or MTU mismatches.
+
+**Expected result:**
+
+PromQL JSON `"status":"success"` with at least one result sample for a network metric.
 
 ### Step 6 – Install SmokePing (Docker)
 
@@ -367,6 +341,10 @@ docker run -d --name smokeping -p 8080:80 \
 
 **Explanation:** Open http://localhost:8080 after 5–10 minutes to see latency smoke graphs populate.
 
+**Expected result:**
+
+SmokePing container running and UI/latency graphs reachable, or alternative `ping` RRD note if skipped.
+
 ### Step 7 – Cleanup lab resources
 
 **Command:**
@@ -380,15 +358,17 @@ sudo systemctl stop node_exporter 2>/dev/null || true
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Confirm Ansible playbook dry-run/apply, exporter listen, and Prometheus scrape succeed.
+2. Explain one PromQL network metric you queried.
+3. Remove lab containers and stop exporters you do not intend to keep.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Automation | Firewall playbook runs (check mode acceptable) without secrets in Git |
+| Exporter | `node_exporter` metrics endpoint returns text exposition |
+| Prometheus | Target UP; PromQL query returns a vector/matrix |
+| SmokePing | Container healthy or alternative latency check documented |
+| Cleanup | Docker lab stack removed; ports freed |
 
 ## Code Walkthrough
 
@@ -411,12 +391,11 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Store Ansible vault secrets and Prometheus credentials outside Git; rotate scrape tokens regularly
+- Bind exporters to localhost or private interfaces and scrape via authenticated reverse proxy where exposed
+- Alert on missing metrics as well as threshold breaches — silence can mean a compromised agent
+- Least-privilege the automation identity that pushes firewall or DNS changes
+- Separate monitoring networks from user workloads when architecture allows
 
 ## Common Mistakes
 
@@ -496,3 +475,7 @@ Confirm the lab before moving on:
 - [node_exporter GitHub](https://github.com/prometheus/node_exporter)
 - [SmokePing Documentation](https://oss.oetiker.ch/smokeping/doc/index.html)
 - [Ansible Documentation](https://docs.ansible.com/)
+
+**Expected result:**
+
+Lab containers removed; node_exporter process stopped if you started it only for this lab.

@@ -52,26 +52,8 @@ By the end of this tutorial, you will be able to:
 
 The diagram below shows how a new host joins a network: DHCP assigns L3 config, ARP resolves the gateway MAC, ICMP verifies reachability, and NTP aligns time with authoritative servers.
 
-```d2
-shape: sequence_diagram
+![Architecture diagram for ICMP, ARP, DHCP and Network Services](../assets/images/icmp-arp-dhcp-and-network-services.svg)
 
-Host: Host
-Switch: Switch
-DHCP: "DHCP Server"
-GW: "Default Gateway"
-NTP: "NTP Server"
-Host -> Switch: "DHCP Discover (broadcast)"
-Switch -> DHCP: "Forward broadcast"
-DHCP -> Host: "DHCP Offer (IP, mask, GW, DNS)"
-Host -> DHCP: "DHCP Request (accept offer)"
-DHCP -> Host: "DHCP ACK (lease time)"
-Host -> Switch: "ARP Who-has GW IP?"
-GW -> Host: "ARP Reply (MAC address)"
-Host -> GW: "ICMP Echo Request (ping)"
-GW -> Host: "ICMP Echo Reply"
-Host -> NTP: "NTP client query (UDP 123)"
-NTP -> Host: "Time sync response"
-```
 
 ## Theory
 
@@ -258,6 +240,10 @@ ip addr show eth0
 
 **Explanation:** Forces lease renewal on systems using dhclient or systemd-networkd. Use during maintenance windows only.
 
+**Expected result:**
+
+Verbose dhclient output shows DHCPREQUEST/ACK **or** the fallback prints current lease/DNS info without dropping your session. Prefer the non-disruptive fallback on remote VMs.
+
 ### Step 7 – Verify NTP synchronization
 
 **Command:**
@@ -305,15 +291,17 @@ EOF
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run ping, ARP/neighbour, and DHCP lease inspection commands.
+2. Explain why ARP is L2 and ICMP is L3 using your outputs.
+3. Do not leave `dhclient` mid-renewal on a production NIC without restoring connectivity.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| ICMP | Echo to a permitted target shows RTT or a clear admin-prohibited error |
+| ARP/ND | Neighbour entry for gateway exists after traffic |
+| DHCP | Lease/DNS/gateway sources identified from leases or `resolvectl` |
+| Services | You can name which service provides address, name resolution, and L2 mapping |
+| Cleanup | No stuck dhclient processes; interface still has a usable address |
 
 ## Code Walkthrough
 
@@ -383,12 +371,11 @@ sudo tcpdump -i eth0 -n arp
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Treat rogue DHCP servers as a high-severity incident; use DHCP snooping / authorised servers on switches where available
+- Static ARP entries for critical gateways reduce ARP spoofing risk on small segments (with operational trade-offs)
+- Rate-limit or filter ICMP types you do not need; allow echo carefully rather than blanket permit-all
+- Do not run `dhclient` against production interfaces during labs without a recovery plan — lease loss can lock you out
+- Monitor for duplicate IPs and unexpected gateway MAC changes after DHCP renewals
 
 ## Common Mistakes
 

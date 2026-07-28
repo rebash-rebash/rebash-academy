@@ -52,49 +52,8 @@ By the end of this tutorial, you will be able to:
 
 The OSI/TCP-IP layered model provides the framework for bottom-up troubleshooting. Each layer must work before the layer above can function.
 
-```d2
-direction: down
+![Architecture diagram for Network Troubleshooting Methodology](../assets/images/network-troubleshooting-methodology.svg)
 
-L7: "Layer 7 — Application" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        APP: "HTTP / API / TLS cert validity"
-    }
-    L4: "Layer 4 — Transport" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        TCP: "TCP handshake · ports · firewalls"
-    }
-    L3: "Layer 3 — Network" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        IP: "Routing · ICMP · IP reachability"
-    }
-    L2: "Layer 2 — Data Link" {
-      style: {
-        fill: "#f3e8ff"
-        stroke: "#9333ea"
-      }
-        ARP: "ARP · MAC · VLAN · switch"
-    }
-    L1: "Layer 1 — Physical" {
-      style: {
-        fill: "#fce7f3"
-        stroke: "#db2777"
-      }
-        PHY: "Cable · NIC · link up/down"
-    }
-    L7.APP -> L4.TCP
-    L4.TCP -> L3.IP
-    L3.IP -> L2.ARP
-    L2.ARP -> L1.PHY
-```
 
 ## Theory
 
@@ -226,6 +185,10 @@ CHANGE:  Security group rule modified on app-tier SG
 
 **Explanation:** Vague "network is broken" leads to vague debugging. Scope determines which methodology fits.
 
+**Expected result:**
+
+Completed template with specific symptoms, scope, start time, and recent changes — not only “network is down”.
+
 ### Step 2 – Top-down: application layer check
 
 **Command:**
@@ -297,6 +260,14 @@ timeout 3 bash -c 'cat < /dev/null > /dev/tcp/example.com/443' && echo "TCP 443 
 
 **Explanation:** Distinguishes "DNS works but port filtered" (timeout) from "port closed" (refused).
 
+**Expected result:**
+
+```text
+Connection to example.com 443 port [tcp/https] succeeded!
+```
+
+Or a clear timeout/refused that becomes your next isolation clue.
+
 ### Step 6 – Divide-and-conquer: simulate path bisection
 
 Draw your production path on paper. For this lab, simulate:
@@ -324,6 +295,10 @@ curl -sI --connect-timeout 5 "https://$RESOLVED/" -H "Host: example.com" | head 
 
 **Explanation:** Testing IP directly with Host header isolates DNS from HTTP — classic bisection technique.
 
+**Expected result:**
+
+Written bisect plan naming a midpoint (DNS vs path vs origin) before changing multiple variables.
+
 ### Step 7 – Document findings in incident format
 
 **Command:**
@@ -349,15 +324,17 @@ cat /tmp/incident-notes.txt
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Complete the problem statement, layer checks, and incident notes file.
+2. Show where you would bisect the path for a real outage using your notes.
+3. Keep the incident template for future on-call use.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Problem statement | Who/what/when/scope filled without vague “network down” only |
+| Layers | DNS, route, and TCP checks executed and recorded |
+| Bisect | Midpoint hypothesis written before changing multiple things |
+| Incident notes | `/tmp/incident-notes.txt` (or equivalent) completed |
+| Cleanup | Temporary listeners/routes from testing removed |
 
 ## Code Walkthrough
 
@@ -398,12 +375,11 @@ dig +short SERVICE.example.com @8.8.8.8
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Follow change-control during incidents; ad-hoc firewall openings must be time-boxed and ticketed
+- Avoid disabling security controls “just to test” without a rollback and observer
+- Limit who can run privileged diagnostics (`tcpdump`, `ss` with processes) on shared bastions
+- Document findings without pasting secrets, customer data, or full packet payloads into public channels
+- Preserve forensic evidence (timestamps, command history) before reboot or rule flushes
 
 ## Common Mistakes
 
@@ -488,3 +464,7 @@ dig +short SERVICE.example.com @8.8.8.8
 ## References
 - [AWS Troubleshooting VPC Connectivity](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-troubleshooting.html)
 - [REBASH Academy — Troubleshooting Linux Systems](../linux/troubleshooting-linux-systems.md)
+
+**Expected result:**
+
+`/tmp/incident-notes.txt` contains timeline, evidence commands, and next actions.

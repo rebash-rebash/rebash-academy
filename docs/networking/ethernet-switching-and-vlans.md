@@ -52,33 +52,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **Ethernet Switching and VLANs**.
 
-VLAN10: "VLAN 10 — Web (10.0.1.0/24)" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        S1: "Server A\nMAC aa:bb:cc:01"
-        S2: "Server B\nMAC aa:bb:cc:02"
-    }
-    VLAN20: "VLAN 20 — DB (10.0.20.0/24)" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        S3: "DB Server\nMAC ee:ff:00:01"
-    }
-    SW: "Managed Switch\n802.1Q trunk to router"
-    RTR: "L3 Switch / Router\nInter-VLAN routing"
-    VLAN10.S1 -> SW
-    VLAN10.S2 -> SW
-    VLAN20.S3 -> SW
-    SW -> RTR: "trunk: VLAN 10, 20"
-```
+![Architecture diagram for Ethernet Switching and VLANs](../assets/images/ethernet-switching-and-vlans.svg)
 
-Traffic within VLAN 10 stays on the same broadcast domain. Cross-VLAN communication requires Layer 3 routing through the router.
 
 ## Theory
 
@@ -241,6 +218,10 @@ done
 
 **Explanation:** All hosts in the same subnet share a broadcast domain — frames to broadcast MAC reach all members.
 
+**Expected result:**
+
+Broadcast address for your CIDR (for example `10.0.1.255` for `10.0.1.0/24`) printed or calculated correctly.
+
 ### Step 4 – Monitor ARP traffic
 
 **Command:**
@@ -291,6 +272,10 @@ docker network ls 2>/dev/null | head -5 || echo "(Docker not installed — skip)
 
 **Explanation:** Bridges connect virtual interfaces at Layer 2 — same MAC learning behaviour as physical switches.
 
+**Expected result:**
+
+Bridge ports/veth pairs listed, or a clear message that no bridge exists on this host (acceptable on a simple VM).
+
 ### Step 7 – Document three-tier VLAN design
 
 Create a table for a sample application:
@@ -308,15 +293,17 @@ Inter-VLAN traffic flows only through the firewall/router — no direct L2 path 
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run MAC, broadcast, and bridge inspection commands and compare to expected results.
+2. Explain how a VLAN separates broadcast domains versus an IP subnet.
+3. Note any missing `bridge` tools and use the `ip link` fallback successfully.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| MAC / L2 | Interface MAC visible via `ip link` |
+| Broadcast | Broadcast address derived correctly for your CIDR |
+| Bridge | Bridge or veth links listed, or documented “not present” on bare VM |
+| Design | Three-tier VLAN plan names VLANs, purposes, and example subnets |
+| Cleanup | No lasting switch config required on cloud VMs |
 
 ## Code Walkthrough
 
@@ -351,12 +338,11 @@ ip route show default
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Enforce VLAN separation for untrusted, user, and server traffic; do not put management interfaces on user VLANs
+- Disable unused switch ports and require 802.1X or MAC controls where physical access is shared
+- Protect trunk links: restrict allowed VLANs and disable DTP/auto-trunking to prevent VLAN hopping
+- Isolate container/bridge networks from host management networks unless explicitly required
+- Monitor for unexpected MAC flapping or unknown MAC addresses on critical VLANs
 
 ## Common Mistakes
 
@@ -455,3 +441,7 @@ ip route show default
 - [Wireshark — Ethernet](https://wiki.wireshark.org/Ethernet)
 - [Linux VLAN documentation](https://www.kernel.org/doc/Documentation/networking/vlan.txt)
 - [REBASH Academy – Networking Overview](index.md)
+
+**Expected result:**
+
+Script or notes list three VLANs (for example users/app/data) with IDs and example subnets.

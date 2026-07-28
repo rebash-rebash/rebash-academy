@@ -51,26 +51,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-shape: sequence_diagram
+The diagram below summarises the core relationships for **HTTP, HTTPS and the Application Layer**.
 
-Client: "curl / Browser"
-DNS: "DNS Resolver"
-LB: "Load Balancer"
-TLS: "TLS Termination"
-App: "Application Server"
-Client -> DNS: "Resolve api.example.com"
-DNS -> Client: "203.0.113.10"
-Client -> LB: "TCP SYN :443"
-LB -> Client: "TCP SYN-ACK (established)"
-Client -> TLS: "ClientHello (TLS 1.3)"
-TLS -> Client: "ServerHello + Certificate"
-Client -> TLS: "Encrypted HTTP GET /health"
-# alt L7 routing
-LB -> App: "Forward GET /health (HTTP or re-encrypted)"
-App -> LB: "200 OK {\"status\":\"ok\"}"
-LB -> Client: "200 OK (encrypted)"
-```
+![Architecture diagram for HTTP, HTTPS and the Application Layer](../assets/images/http-https-and-application-layer.svg)
+
 
 ## Theory
 
@@ -269,6 +253,15 @@ curl -sI https://example.com | grep -iE '^(HTTP|cache|content-type|server|locati
 
 **Explanation:** HEAD is useful for health checks without downloading body. `-I` is shorthand for HEAD.
 
+**Expected result:**
+
+```text
+HTTP/2 200
+content-type: text/html; charset=UTF-8
+```
+
+Headers only; empty body for HEAD.
+
 ### Step 4 – Follow redirects
 
 **Command:**
@@ -303,6 +296,10 @@ curl -s -X POST https://httpbin.org/post \
 
 **Explanation:** httpbin.org echoes request for learning. In production, replace with your API endpoint.
 
+**Expected result:**
+
+JSON response from httpbin includes your posted JSON under `"json"`.
+
 ### Step 6 – Inspect certificate with openssl
 
 **Command:**
@@ -334,6 +331,10 @@ curl -sI --resolve example.com:443:93.184.216.34 https://example.com | head -5
 
 **Explanation:** `--resolve` forces DNS mapping for testing before propagation. Host header routes to correct vhost on shared IP.
 
+**Expected result:**
+
+Response headers reflect the Host you sent (virtual hosting); connection to raw IP may differ without correct Host.
+
 ### Step 8 – Compare HTTP/1.1 and HTTP/2
 
 **Command:**
@@ -345,19 +346,30 @@ curl -s -o /dev/null -w "HTTP/2:   %{http_version} %{http_code}\n" --http2 https
 
 **Explanation:** Confirms server HTTP/2 support. ALPN negotiates during TLS handshake.
 
+**Expected result:**
+
+```text
+HTTP/1.1: 1.1 200
+HTTP/2: 2 200
+```
+
+(Exact versions depend on server support.)
+
 ## Validation
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run GET/HEAD/POST and TLS/`http_version` checks; match expected status codes.
+2. Explain why HTTPS certificate validation matters using your curl output.
+3. Avoid leaving `-k` in any scripts you keep from the lab.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| GET/HEAD | example.com (or lab URL) returns 200/301/302 as appropriate |
+| POST | httpbin (or equivalent) echoes JSON body |
+| Virtual host | Host header demo shows expected Server/HTTP behaviour |
+| HTTP/2 | Version field shows 2 when negotiated (or 1.1 if not) |
+| Cleanup | No credentials left in shell history from Authorization demos |
 
 ## Code Walkthrough
 
@@ -396,12 +408,11 @@ fi
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer HTTPS everywhere; redirect HTTP and enable HSTS only after confirming all hosts support TLS
+- Validate certificates (not `curl -k` in production scripts); pin or use private CAs for internal APIs carefully
+- Avoid sending secrets in query strings; use headers or body over TLS and short-lived tokens
+- Set secure cookie attributes (`Secure`, `HttpOnly`, `SameSite`) for session traffic
+- Treat verbose `curl -v` output as sensitive — it may include `Authorization` headers
 
 ## Common Mistakes
 

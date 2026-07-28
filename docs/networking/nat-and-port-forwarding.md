@@ -53,37 +53,8 @@ By the end of this tutorial, you will be able to:
 
 NAT sits at the boundary between private and public address spaces.
 
-```d2
-direction: down
+![Architecture diagram for NAT and Port Forwarding](../assets/images/nat-and-port-forwarding.svg)
 
-Private: "Private Network 10.0.11.0/24" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        APP: "App Server\n10.0.11.50"
-        DB: "Database\n10.0.11.60"
-    }
-    NATDevice: "NAT Gateway / Router" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        SNAT: "SNAT\n10.0.11.x → public IP"
-        DNAT: "DNAT\npublic:8080 → 10.0.11.50:80"
-    }
-    Internet: Internet {
-        EXT: "External Clients"
-        SVC: "External APIs"
-    }
-    Private.APP -> NATDevice.SNAT: outbound
-    NATDevice.SNAT -> Internet.SVC
-    Internet.EXT -> NATDevice.DNAT: "inbound :8080"
-    NATDevice.DNAT -> Private.APP
-    Private.DB -> Internet.EXT: "no direct inbound" {
-      style.stroke-dash: 3
-    }
-```
 
 ## Theory
 
@@ -243,6 +214,15 @@ sudo nft list table ip nat 2>/dev/null || echo "No nftables nat table"
 
 **Explanation:** Most servers have empty NAT tables unless acting as routers, Docker hosts, or Kubernetes nodes. Docker creates MASQUERADE rules automatically.
 
+**Expected result:**
+
+```text
+Chain PREROUTING (policy ACCEPT ...)
+Chain POSTROUTING (policy ACCEPT ...)
+```
+
+NAT table lists; Docker/cloud hosts often already show MASQUERADE rules.
+
 ### Step 3 – Simulate outbound connection tracking
 
 **Command:**
@@ -255,6 +235,10 @@ sudo conntrack -L 2>/dev/null | grep -E "tcp|dport=443" | head -3
 
 **Explanation:** Even without explicit SNAT rules, conntrack tracks outbound connections. On NAT-enabled routers, these entries include translation mappings.
 
+**Expected result:**
+
+`conntrack`/`ss` shows an established outbound HTTPS flow while curl runs.
+
 ### Step 4 – Docker NAT inspection (if Docker installed)
 
 **Command:**
@@ -266,6 +250,14 @@ docker rm -f nat-lab 2>/dev/null || echo "Docker not available — skip"
 ```
 
 **Explanation:** Docker publishes ports via DNAT rules in the `DOCKER` chain — a real-world NAT example on most DevOps workstations.
+
+**Expected result:**
+
+```text
+0.0.0.0:8888->80/tcp
+```
+
+`docker ps` port mapping and HTTP 200 from `localhost:8888`, or a clear “Docker not installed” skip.
 
 ### Step 5 – Manual port forward lab (requires network namespaces)
 
@@ -288,6 +280,10 @@ echo "Namespaces created — cleanup with: sudo ip netns del private public"
 
 **Explanation:** Network namespaces simulate NAT boundaries without multiple VMs. Production NAT rules would MASQUERADE traffic from `private` namespace outbound via `public`.
 
+**Expected result:**
+
+Namespace ping/curl through NAT succeeds, or each command’s error is noted if netns lab prerequisites are missing.
+
 ### Step 6 – Trace AWS NAT Gateway route (AWS CLI)
 
 **Command:**
@@ -302,6 +298,10 @@ aws ec2 describe-route-tables \
 
 **Explanation:** Private subnet default routes should point to `nat-xxxxxxxx`, not `igw-xxxxxxxx`. Wrong route is the #1 "private instance can't reach internet" cause.
 
+**Expected result:**
+
+Private subnet route table shows `NatGateway` target for `0.0.0.0/0`, or you document N/A without AWS access.
+
 ### Step 7 – Diagnose NAT failure scenario
 
 **Scenario:** EC2 in private subnet cannot `curl https://example.com`. Same instance CAN reach another instance in the same subnet. Route table shows `0.0.0.0/0 → nat-0abc123`. NAT GW is in public subnet with EIP.
@@ -314,6 +314,9 @@ aws ec2 describe-route-tables \
 4. NACL on private subnet allows outbound ephemeral ports AND inbound ephemeral return
 5. NAT GW CloudWatch metrics — ActiveConnectionCount, ErrorPortAllocation
 
+**Expected result:**
+
+Diagnosis checklist identifies missing default route, SG egress deny, or NAT exhaustion as plausible causes.
 ### Step 8 – Cleanup network namespaces
 
 **Command:**
@@ -328,15 +331,17 @@ sudo ip link del veth-priv 2>/dev/null
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run NAT table inspection and any namespace/Docker demos; compare to expected results.
+2. Explain SNAT vs DNAT with a one-sentence example each.
+3. Delete lab namespaces, containers, and temporary iptables rules.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| NAT table | `iptables -t nat -L` or nft equivalent readable |
+| Conntrack | Outbound flow creates expected mappings (or Docker publish works) |
+| Forward | Lab DNAT/namespace demo succeeds or failure mode documented |
+| Cloud | NAT Gateway route purpose explained even if CLI is read-only |
+| Cleanup | Namespaces/containers removed; host NAT left as found |
 
 ## Code Walkthrough
 
@@ -381,12 +386,11 @@ echo "conntrack: ${COUNT}/${MAX} (${PCT}%)"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Expose the minimum ports via DNAT/port-forward; never forward SSH/RDP from the Internet to broad internal ranges
+- Prefer reverse proxies or load balancers with auth over raw port forwards for application traffic
+- Log NAT translations where supported — they are essential for incident attribution after compromise
+- Keep SNAT/MASQUERADE scopes tight so internal hosts cannot reach unintended destinations
+- Remove temporary lab forwards and Docker `-p` publishes immediately after validation
 
 ## Common Mistakes
 
@@ -477,3 +481,7 @@ echo "conntrack: ${COUNT}/${MAX} (${PCT}%)"
 - [Linux netfilter NAT HOWTO](https://www.netfilter.org/documentation/HOWTO/NAT-HOWTO.html)
 - [AWS NAT Gateway documentation](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html)
 - [nftables NAT wiki](https://wiki.nftables.org/wiki-nftables/index.php/Performing_Network_Address_Translation_(NAT))
+
+**Expected result:**
+
+`ip netns list` no longer shows `private` (and related) lab namespaces.

@@ -1,6 +1,6 @@
 ---
 title: Network Security Hardening
-description: Apply zero trust principles, network segmentation, DDoS mitigation, TLS best practices, and audit logging for production network defense.
+description: Apply zero trust principles, network segmentation, DDoS mitigation, TLS best practices, and audit logging for production network defence.
 difficulty: advanced
 estimated_time: "50 min"
 author: Shaik Basha
@@ -54,69 +54,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-The diagram shows defense-in-depth layers: DDoS scrubbing at the edge, WAF for application attacks, segmented VPC tiers, and centralized audit logging.
+The diagram shows defence-in-depth layers: DDoS scrubbing at the edge, WAF for application attacks, segmented VPC tiers, and centralised audit logging.
 
-```d2
-direction: down
+![Architecture diagram for Network Security Hardening](../assets/images/network-security-hardening.svg)
 
-Internet: Internet {
-        Attacker: "Attackers / Bots"
-        Users: "Legitimate Users"
-    }
-    Edge: "Edge Protection" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        DDoS: "DDoS Mitigation\nShield / Cloudflare / WAF"
-        WAF: "Web Application Firewall"
-        LB: "Load Balancer — TLS termination"
-    }
-    VPC: "Segmented VPC" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        DMZ: "Public Tier" {
-          style: {
-            fill: "#ffedd5"
-            stroke: "#ea580c"
-          }
-            Proxy: "Reverse Proxy / Ingress"
-        }
-        AppTier: "Application Tier — Private" {
-          style: {
-            fill: "#f3e8ff"
-            stroke: "#9333ea"
-          }
-            App: "App Servers\nSG: 443 from DMZ only"
-        }
-        DataTier: "Data Tier — Private" {
-          style: {
-            fill: "#fce7f3"
-            stroke: "#db2777"
-          }
-            DB: "Database\nSG: 5432 from App only"
-        }
-    }
-    Observability: "Audit & Monitoring" {
-      style: {
-        fill: "#e0f2f1"
-        stroke: "#00796b"
-      }
-        Flow: "VPC Flow Logs"
-        SIEM: "SIEM / CloudWatch / Splunk"
-    }
-    Internet.Attacker -> Edge.DDoS
-    Internet.Users -> Edge.DDoS
-    Edge.DDoS -> Edge.WAF
-    Edge.WAF -> Edge.LB
-    Edge.LB -> VPC.DMZ.Proxy
-    VPC.DMZ.Proxy -> VPC.AppTier.App
-    VPC.AppTier.App -> VPC.DataTier.DB
-    Observability.Flow -> Observability.SIEM
-    Edge.LB -> Observability.SIEM
-```
 
 ## Theory
 
@@ -229,7 +170,7 @@ Audit logs provide **non-repudiation** — proof of who accessed what, when, and
 | WAF logs | Blocked requests, rule matches | CloudWatch, Splunk |
 | DNS query logs | Resolver queries | S3, security analytics |
 | VPN connection logs | Tunnel up/down, authentication events | CloudWatch, syslog |
-| Linux host | auth.log, auditd (syscall-level) | Centralized logging stack |
+| Linux host | auth.log, auditd (syscall-level) | Centralised logging stack |
 
 **Audit logging best practices:**
 
@@ -293,6 +234,10 @@ sudo nft list ruleset
 
 **Explanation:** Default **drop** policy denies unexpected traffic. Explicit allows for SSH (restricted source), HTTP/S, and established connections.
 
+**Expected result:**
+
+`nft list ruleset` shows your lab input policy with established/related accept and explicit service allows.
+
 ### Step 3 – Evaluate TLS configuration with testssl.sh
 
 **Command:**
@@ -327,6 +272,15 @@ echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/
 
 **Explanation:** Inspect SAN entries, expiration, and key size (2048-bit RSA minimum; 4096 or ECDSA P-256 preferred). Automate renewal via certbot or cert-manager.
 
+**Expected result:**
+
+```text
+Protocol  : TLSv1.3
+Cipher    : TLS_AES_256_GCM_SHA384
+```
+
+Certificate subject/issuer lines present for example.com.
+
 ### Step 5 – Configure nginx TLS hardening
 
 **Command:**
@@ -350,6 +304,10 @@ sudo nginx -t && sudo systemctl reload nginx
 
 **Explanation:** TLS 1.2+ only, modern cipher suites, OCSP stapling, HSTS for transport enforcement. Mozilla SSL Configuration Generator provides updated templates.
 
+**Expected result:**
+
+Snippet file exists under `/etc/nginx/snippets/` with `ssl_protocols` excluding TLSv1/TLSv1.1.
+
 ### Step 6 – Enable VPC Flow Logs (AWS)
 
 **Command:**
@@ -369,6 +327,10 @@ aws ec2 create-flow-logs \
 
 **Explanation:** Start with **REJECT** traffic logging — rejected packets often indicate scanning or misconfigured SGs. Expand to ALL traffic for forensics when storage budget allows.
 
+**Expected result:**
+
+Flow log create command succeeds or returns a clear IAM/permission error you can interpret; do not leave orphan log groups billed unintentionally.
+
 ### Step 7 – Configure auditd for network syscalls
 
 **Command:**
@@ -384,21 +346,27 @@ sudo augenrules --load
 sudo ausearch -k network_connect --start recent | tail -10
 ```
 
-**Explanation:** auditd logs syscalls for compliance and forensics. Pair with centralized log shipping (Fluent Bit, Vector) for production SIEM correlation.
+**Explanation:** auditd logs syscalls for compliance and forensics. Pair with centralised log shipping (Fluent Bit, Vector) for production SIEM correlation.
+
+**Expected result:**
+
+`auditctl -l` shows network-related rules, or `ausearch` finds recent syscall records after generating traffic.
 
 ## Validation
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run nftables, TLS inspection, and logging steps; match expected results.
+2. Explain one control at host, network, and TLS layers from your lab.
+3. Disable experimental audit rules that are too noisy for your laptop if needed.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Host firewall | nft/ufw policy loaded and listed |
+| TLS | `openssl s_client` shows protocol/cipher for example.com |
+| Hardening snippet | TLS params file present or reviewed |
+| Flow logs | AWS flow log command understood (created or dry-run) |
+| Cleanup | Lab-only rules/snippets reverted if they break other work |
 
 ## Code Walkthrough
 
@@ -413,12 +381,11 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Enforce TLS 1.2+ with modern ciphers; disable legacy SSL/TLS and weak signature algorithms
+- Centralise flow logs, DNS logs, and host firewall deny logs; alert on repeated rejects to sensitive ports
+- Apply least privilege to network admin roles (IAM, sudo, device AAA) separately from application deploy roles
+- Segment blast radius with VPC/subnet boundaries, private endpoints, and egress controls
+- Rotate certificates and VPN keys on a schedule; monitor expiry before outages become security events
 
 ## Common Mistakes
 
@@ -428,15 +395,15 @@ Confirm the lab before moving on:
 !!! warning "TLS termination with weak ciphers downstream"
     Terminating TLS at the load balancer then sending plaintext HTTP to backends exposes traffic to anyone with VPC access. Use HTTPS or mTLS on backend connections.
 
-!!! warning "No log retention or centralized aggregation"
-    Logs stored only on the compromised host are useless for forensics. Ship to centralized, immutable storage from day one.
+!!! warning "No log retention or centralised aggregation"
+    Logs stored only on the compromised host are useless for forensics. Ship to centralised, immutable storage from day one.
 
 !!! warning "Ignoring certificate expiration"
     Expired certificates cause outages and teach users to click through warnings. Automate renewal and alert weeks before expiry.
 
 ## Best Practices
 
-!!! tip "Implement defense in depth"
+!!! tip "Implement defence in depth"
     Layer DDoS protection, WAF, security groups, NACLs, host firewall, and application auth — no single control is sufficient.
 
 !!! tip "Default deny everywhere"
@@ -462,7 +429,7 @@ Confirm the lab before moving on:
 - **DDoS mitigation** combines edge scrubbing, rate limiting, WAF, and autoscaling — never expose raw instances
 - **TLS best practices** require TLS 1.2+ (prefer 1.3), strong ciphers, automated cert renewal, and HSTS
 - **Audit logging** via flow logs, firewall logs, WAF logs, and host audit trails enables compliance and forensics
-- **Defense in depth** layers multiple controls — perimeter-only security fails in cloud and remote-work environments
+- **Defence in depth** layers multiple controls — perimeter-only security fails in cloud and remote-work environments
 - Regular **automated audits** of security groups, TLS configs, and open ports prevent configuration drift
 
 ## Interview Questions

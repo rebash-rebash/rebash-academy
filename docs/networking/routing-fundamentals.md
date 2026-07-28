@@ -50,41 +50,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: right
+The diagram below summarises the core relationships for **Routing Fundamentals**.
 
-LAN1: "Subnet 10.0.1.0/24" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        H1: "Host 10.0.1.10"
-    }
-    LAN2: "Subnet 10.0.2.0/24" {
-      style: {
-        fill: "#dcfce7"
-        stroke: "#16a34a"
-      }
-        H2: "Host 10.0.2.20"
-    }
-    LAN3: "Subnet 10.0.3.0/24" {
-      style: {
-        fill: "#ffedd5"
-        stroke: "#ea580c"
-      }
-        DB: "Database 10.0.3.5"
-    }
-    R1: "Router R1\n10.0.1.1 · 10.0.2.1"
-    R2: "Router R2\n10.0.2.2 · 10.0.3.1"
-    IGW: "Internet Gateway"
-    LAN1.H1 -> R1
-    R1 -> R2
-    R2 -> LAN3.DB
-    R2 -> IGW
-    LAN2.H2 -> R1
-```
+![Architecture diagram for Routing Fundamentals](../assets/images/routing-fundamentals.svg)
 
-Each router maintains a routing table. Traffic from `10.0.1.10` to `10.0.3.5` crosses two routers because the destination is not on the local subnet.
 
 ## Theory
 
@@ -249,6 +218,10 @@ sudo ip route del 10.0.0.0/8 via 10.0.0.1 dev eth0 2>/dev/null || true
 
 **Explanation:** For `10.0.0.50`, the connected `/24` route wins over `/8`. For `10.50.0.1`, only `/8` matches (if `/24` doesn't cover it).
 
+**Expected result:**
+
+More-specific route appears in `ip route get` for an address inside that prefix; remove the temporary route afterwards.
+
 ### Step 5 – Check IP forwarding status
 
 **Command:**
@@ -277,6 +250,10 @@ traceroute -n 8.8.8.8 2>/dev/null | head -10 \
 
 **Explanation:** Each hop is a router decrementing TTL. First hop is usually your default gateway. Asterisks indicate ICMP filtered at that hop — not necessarily a problem.
 
+**Expected result:**
+
+Numbered hop lines toward 8.8.8.8, or `*` hops where ICMP is filtered. At least the first hop (gateway) should resolve.
+
 ### Step 7 – Diagnose missing default route (simulation)
 
 **Command:**
@@ -303,15 +280,17 @@ RTNETLINK answers: Network is unreachable
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run `ip route`, longest-prefix demos, and traceroute; match expected shapes.
+2. Explain how the kernel chooses between overlapping routes.
+3. Remove any temporary static routes added during the lab.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Table | Default and connected routes visible and understood |
+| LPM | More-specific route preferred when present |
+| Trace | Traceroute/tracepath shows hops or documents ICMP filtering |
+| Cleanup | Temporary `ip route add` entries deleted |
+| Understanding | You can predict next-hop for a sample destination IP |
 
 ## Code Walkthrough
 
@@ -354,12 +333,11 @@ echo "net.ipv4.ip_forward = $(cat /proc/sys/net/ipv4/ip_forward)"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Protect route tables: unauthorised default-route changes redirect traffic for interception (blackhole or MITM)
+- Prefer more-specific routes only when intentional; accidental `/32` or overlapping static routes cause stealthy outages
+- Restrict who can modify cloud route tables, IGW attachments, and on-prem static routes
+- Avoid advertising private lab routes into production routing domains
+- Use source-based policy routing sparingly and document it — it is a common source of asymmetric, hard-to-audit paths
 
 ## Common Mistakes
 

@@ -49,25 +49,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-shape: sequence_diagram
+The diagram below summarises the core relationships for **TCP and UDP Deep Dive**.
 
-Client: Client
-Server: Server
-# Note over Client,Server: TCP Three-Way Handshake
-Client -> Server: "SYN (seq=x)"
-Server -> Client: "SYN-ACK (seq=y, ack=x+1)"
-Client -> Server: "ACK (ack=y+1)"
-# Note over Client,Server: ESTABLISHED — data transfer
-Client -> Server: "Data segments (ACKed)"
-Server -> Client: "Response data"
-# Note over Client,Server: Connection Teardown
-Client -> Server: FIN
-Server -> Client: ACK
-Server -> Client: FIN
-Client -> Server: ACK
-# Note over Client: TIME_WAIT (2×MSL)
-```
+![Architecture diagram for TCP and UDP Deep Dive](../assets/images/tcp-and-udp-deep-dive.svg)
+
 
 ## Theory
 
@@ -215,6 +200,15 @@ wait $LISTEN_PID 2>/dev/null || kill $LISTEN_PID 2>/dev/null
 
 **Explanation:** Demonstrates LISTEN → ESTABLISHED transition. `syn-recv` may flash too quickly to catch without `tcpdump`.
 
+**Expected result:**
+
+```text
+State      Recv-Q Send-Q Local Address:Port  Peer Address:Port
+ESTAB      0      0      127.0.0.1:9999      127.0.0.1:xxxxx
+```
+
+Listener accepts; client reaches ESTABLISHED.
+
 ### Step 4 – Inspect TIME_WAIT accumulation
 
 **Command:**
@@ -269,6 +263,10 @@ time netstat -tan >/dev/null 2>&1 || true
 
 **Explanation:** Line counts should be similar. `ss` typically completes faster on busy servers with thousands of sockets.
 
+**Expected result:**
+
+`ss` listen count is ≥ `netstat` listen count (or equal). Minor differences are normal; both tools should list SSH if enabled.
+
 ### Step 7 – Diagnose "connection refused" vs "timeout"
 
 **Command:**
@@ -311,15 +309,17 @@ ESTAB 0 0 10.0.0.42:22 203.0.113.50:52134
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run `ss`/`nc` steps and confirm TCP handshake and UDP behaviour match expected results.
+2. Explain when you would choose TCP vs UDP for a new service.
+3. Ensure no leftover `nc` listeners remain after cleanup.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Listeners | `ss -tuln` shows expected TCP/UDP sockets during the lab |
+| Handshake | Connection to lab listener reaches ESTABLISHED (or documented failure) |
+| UDP | UDP send/receive demo works or timeout behaviour is understood |
+| Comparison | `ss` vs `netstat` counts reconciled |
+| Cleanup | Lab listeners stopped; no open ports left on non-loopback |
 
 ## Code Walkthrough
 
@@ -380,12 +380,11 @@ Run: `python3 tcp_echo.py` then `echo test | nc localhost 9090`
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer TLS-wrapped TCP (HTTPS, SMTPS) over cleartext; UDP services need application-layer crypto (QUIC, DTLS, WireGuard)
+- Bind listeners to specific addresses; avoid `0.0.0.0` for admin ports in labs unless the exercise requires it
+- Rate-limit or firewall high-risk UDP (DNS amplification, NTP, SNMP) and unused TCP listeners
+- Understand that half-open SYN floods and UDP floods are DoS vectors — know your host firewall and SYN cookie settings
+- Do not expose debug listeners (`nc -l`) beyond localhost; remove them after each lab step
 
 ## Common Mistakes
 

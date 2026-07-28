@@ -52,33 +52,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **DNS Records and Troubleshooting**.
 
-Client: Client {
-        APP: "Application / Browser"
-        RES: "Recursive Resolver\n8.8.8.8 · 1.1.1.1"
-    }
-    Auth: "Authoritative DNS — example.com zone" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NS: "NS Records\nns1.example.com"
-        SOA: "SOA Record\nserial · refresh · expire"
-        A: "A / AAAA\nhost → IP"
-        CNAME: "CNAME\nalias → target"
-        MX: "MX\nmail priority"
-        TXT: "TXT\nSPF · DKIM · verify"
-    }
-    Client.APP -> Client.RES
-    Client.RES -> Auth.NS
-    Auth.NS -> Auth.SOA
-    Auth.NS -> Auth.A
-    Auth.NS -> Auth.CNAME
-    Auth.NS -> Auth.MX
-    Auth.NS -> Auth.TXT
-```
+![Architecture diagram for DNS Records and Troubleshooting](../assets/images/dns-records-and-troubleshooting.svg)
+
 
 ## Theory
 
@@ -225,6 +202,14 @@ dig www.github.com +trace 2>/dev/null | tail -15
 
 **Explanation:** Follow alias to final A record. Long chains increase resolution latency.
 
+**Expected result:**
+
+```text
+github.github.io.
+```
+
+One or more CNAME targets ending in a final A/AAAA when fully followed.
+
 ### Step 3 – Inspect MX and mail routing
 
 **Command:**
@@ -255,6 +240,14 @@ dig TXT google.com +noall +answer
 
 **Explanation:** Multiple TXT records return as separate lines. SPF and DMARC are critical for email deliverability.
 
+**Expected result:**
+
+```text
+"v=spf1 include:_spf.google.com ~all"
+```
+
+Quoted TXT strings; content varies by domain.
+
 ### Step 5 – Query authoritative nameserver directly
 
 **Command:**
@@ -268,6 +261,10 @@ dig @$AUTH_NS example.com A +norecurse +noall +answer
 
 **Explanation:** Querying authoritative NS bypasses resolver cache — shows current zone data. `+norecurse` ensures iterative behaviour.
 
+**Expected result:**
+
+Authoritative answer section with AA flag set when querying the zone’s NS directly.
+
 ### Step 6 – Reverse DNS lookup
 
 **Command:**
@@ -278,6 +275,14 @@ dig +short -x 1.1.1.1
 ```
 
 **Explanation:** `-x` performs reverse lookup. Missing PTR is common for cloud IPs unless explicitly configured.
+
+**Expected result:**
+
+```text
+dns.google.
+```
+
+PTR for 8.8.8.8 (or NXDOMAIN for addresses without PTR).
 
 ### Step 7 – Compare resolver answers (split-horizon simulation)
 
@@ -290,6 +295,10 @@ dig +short example.com A @208.67.222.222
 ```
 
 **Explanation:** Public resolvers should agree for public zones. Disagreement suggests propagation in progress or geo/load-balanced DNS.
+
+**Expected result:**
+
+Public resolvers return the same public A/AAAA for `example.com`; differences indicate split-horizon or cache skew.
 
 ### Step 8 – Full troubleshooting workflow
 
@@ -308,19 +317,25 @@ echo "=== Trace ===" && dig +trace $DOMAIN A 2>/dev/null | grep -E "^($DOMAIN|[a
 
 **Explanation:** Reusable checklist for incident response — run before blaming application code.
 
+**Expected result:**
+
+Workflow prints NS, A, and authoritative checks without unexplained SERVFAIL; you can state where failure would be isolated.
+
 ## Validation
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run CNAME, TXT, authoritative, and reverse lookups; compare to each step’s expected result.
+2. Explain how you would isolate a wrong A record vs a stale CNAME.
+3. Document any split-horizon differences between public resolvers.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| CNAME | Chain resolves to a final A/AAAA or is documented |
+| TXT | SPF/verification-style TXT visible for a known domain |
+| Authoritative | Query against NS returns consistent answers |
+| PTR | Reverse lookup for 8.8.8.8 (or lab IP) returns a name or NXDOMAIN |
+| Workflow | Troubleshooting script completes without unresolved errors you cannot explain |
 
 ## Code Walkthrough
 
@@ -357,12 +372,11 @@ IP=$(dig +short "$DOMAIN" A | head -1)
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Lock down SPF, DKIM, and DMARC carefully; overly permissive SPF (`+all`) enables spoofing
+- Prefer CAA records to limit which CAs may issue certificates for your domains
+- Verify TXT challenge records before deleting them; leftover or forged validation records can aid domain takeover
+- Restrict who can edit production DNS zones; use change tickets and dual control for NS/SOA changes
+- When using dig against third-party nameservers, do not leak internal hostnames in query logs on shared resolvers
 
 ## Common Mistakes
 

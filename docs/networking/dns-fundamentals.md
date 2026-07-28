@@ -48,32 +48,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **DNS Fundamentals**.
 
-Client: Client {
-        APP: Application
-        STUB: "Stub Resolver\nglibc / systemd-resolved"
-    }
-    Resolver: Resolver {
-        REC: "Recursive Resolver\n8.8.8.8 / corporate DNS"
-        CACHE: "Local Cache"
-    }
-    Authoritative: Authoritative {
-        ROOT: "Root ."
-        TLD: "TLD .com"
-        AUTH: "Auth NS\nexample.com"
-    }
-    Client.APP -> Client.STUB
-    Client.STUB -> Resolver.REC
-    Resolver.REC -> Resolver.CACHE
-    Resolver.REC -> Authoritative.ROOT: iterative
-    Authoritative.ROOT -> Authoritative.TLD: referral
-    Authoritative.TLD -> Authoritative.AUTH: referral
-    Authoritative.AUTH -> Resolver.REC: answer
-    Resolver.REC -> Client.STUB
-    Client.STUB -> Client.APP
-```
+![Architecture diagram for DNS Fundamentals](../assets/images/dns-fundamentals.svg)
+
 
 ## Theory
 
@@ -323,15 +301,17 @@ dns.google.
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Re-run `dig`/`nslookup` queries and confirm A/AAAA/NS answers match expected shapes.
+2. Explain recursion vs authoritative answers using your dig output flags.
+3. Fix resolver/`dig` install issues before continuing.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| A/AAAA | Queries return addresses or documented NXDOMAIN/SERVFAIL |
+| NS/SOA | Authority section or NS records visible for a public zone |
+| Recursion | Trace or `+norecurse` behaviour understood from output |
+| Local resolver | `/etc/resolv.conf` nameserver listed and reachable |
+| Cleanup | No persistent DNS config changes unless intentional |
 
 ## Code Walkthrough
 
@@ -388,12 +368,11 @@ done < "${1:?hostfile}"
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Prefer authenticated recursive resolvers you control; avoid sending corporate queries to random public resolvers on untrusted networks
+- Enable DNSSEC validation where supported and monitor for SERVFAIL vs NXDOMAIN differences during incidents
+- Restrict dynamic updates and zone transfers (AXFR/IXFR) to authorised secondaries only
+- Treat `/etc/resolv.conf` and VPC DNS settings as security-critical — hijacked resolvers enable phishing and MITM
+- Log and alert on unusual NXDOMAIN spikes and sudden CNAME chain changes for critical domains
 
 ## Common Mistakes
 

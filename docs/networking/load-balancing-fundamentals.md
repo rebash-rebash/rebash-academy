@@ -50,47 +50,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: down
+The diagram below summarises the core relationships for **Load Balancing Fundamentals**.
 
-Clients: Clients {
-        C1: "Client A"
-        C2: "Client B"
-        C3: "Client C"
-    }
-    LB: "Load Balancer Tier" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        VIP: "Virtual IP / DNS Name"
-        HC: "Health Check Engine"
-        ALGO: "Scheduler\nround-robin · least conn · ip hash"
-    }
-    Backends: Backends {
-        W1: "Web Server 1\nhealthy"
-        W2: "Web Server 2\nhealthy"
-        W3: "Web Server 3\nunhealthy"
-    }
-    Clients.C1 -> LB.VIP
-    Clients.C2 -> LB.VIP
-    Clients.C3 -> LB.VIP
-    LB.VIP -> LB.ALGO
-    LB.HC -> Backends.W1: probe {
-      style.stroke-dash: 3
-    }
-    LB.HC -> Backends.W2: probe {
-      style.stroke-dash: 3
-    }
-    LB.HC -> Backends.W3: fail {
-      style.stroke-dash: 3
-    }
-    LB.ALGO -> Backends.W1
-    LB.ALGO -> Backends.W2
-    LB.ALGO -> Backends.W3: removed {
-      style.stroke-dash: 3
-    }
-```
+![Architecture diagram for Load Balancing Fundamentals](../assets/images/load-balancing-fundamentals.svg)
+
 
 ## Theory
 
@@ -125,7 +88,7 @@ Characteristics:
 | Use case | Gaming, DB proxies, extreme throughput | Web apps, microservices, API gateways |
 | WebSocket | TCP pass-through works | Requires L7-aware config |
 
-**Rule of thumb:** Use L7 when you need path-based routing, host-based multi-tenancy, or centralized TLS. Use L4 when you need maximum throughput, non-HTTP protocols, or static IP with TLS pass-through.
+**Rule of thumb:** Use L7 when you need path-based routing, host-based multi-tenancy, or centralised TLS. Use L4 when you need maximum throughput, non-HTTP protocols, or static IP with TLS pass-through.
 
 ### Scheduling Algorithms
 
@@ -230,6 +193,14 @@ grep -v '^\s*#' /etc/haproxy/haproxy.cfg | grep -v '^$' | head -20
 
 **Explanation:** HAProxy is a production-grade L4/L7 load balancer used by GitHub, Reddit, and Stack Overflow. Review the default config before modifying.
 
+**Expected result:**
+
+```text
+haproxy.service active (running)
+```
+
+Default config path `/etc/haproxy/haproxy.cfg` exists.
+
 ### Step 2 – Start two backend web servers
 
 **Command:**
@@ -285,6 +256,10 @@ sudo systemctl restart haproxy
 
 **Explanation:** Frontend listens on 8888; backend pool uses round-robin with HTTP health checks against `/`.
 
+**Expected result:**
+
+`haproxy -c -f /etc/haproxy/haproxy.cfg` reports configuration is valid; reload succeeds.
+
 ### Step 4 – Verify round-robin distribution
 
 **Command:**
@@ -338,6 +313,10 @@ grep balance /etc/haproxy/haproxy.cfg
 
 **Explanation:** `leastconn` minimizes active connections per backend — observe behaviour under concurrent long requests in advanced labs.
 
+**Expected result:**
+
+Config shows `balance leastconn`; traffic still returns HTTP 200 from backends after reload.
+
 ### Step 7 – Explore AWS ALB concepts (CLI or console)
 
 **Command:**
@@ -350,6 +329,10 @@ aws elbv2 describe-load-balancers \
 ```
 
 **Explanation:** Note `Type` column: `application` vs `network`. Map DNS names to Route 53 records in production.
+
+**Expected result:**
+
+`aws elbv2 describe-load-balancers` lists ALBs or returns empty/permissions error you can explain.
 
 ### Step 8 – Cleanup
 
@@ -365,15 +348,17 @@ rm -rf /tmp/lb-lab
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Hit the HAProxy frontend repeatedly and observe backend distribution / health checks.
+2. Explain round-robin vs leastconn using your observed behaviour.
+3. Stop lab backends and restore or remove the HAProxy lab config.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| HAProxy | Service active; frontend port accepts connections |
+| Distribution | Multiple backend hits observed across servers |
+| Algorithm | leastconn change reloads cleanly |
+| Cloud ALB | ALB concepts listed via CLI or console (or documented N/A) |
+| Cleanup | Lab Python servers stopped; HAProxy returned to prior config |
 
 ## Code Walkthrough
 
@@ -413,12 +398,11 @@ server {
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Terminate TLS on the load balancer with managed certificates; restrict backend plaintext to private networks only
+- Health-check endpoints should not leak sensitive data; authenticate admin/stats pages (HAProxy stats, cloud consoles)
+- Prefer security groups that allow LB → backend only from the LB subnets, not from the Internet
+- Rate-limit and WAF public listeners; LBs amplify exposure of every backend behind them
+- Remove lab backends and listeners after exercises so orphan targets are not accidentally published
 
 ## Common Mistakes
 
@@ -437,7 +421,7 @@ server {
 ## Best Practices
 
 !!! tip "Terminate TLS at the load balancer for most web apps"
-    Centralized certificate management, HTTP/2, and WAF integration justify L7 termination. Use TLS pass-through only when compliance requires end-to-end encryption without intermediary inspection.
+    Centralised certificate management, HTTP/2, and WAF integration justify L7 termination. Use TLS pass-through only when compliance requires end-to-end encryption without intermediary inspection.
 
 !!! tip "Set deregistration delay to match longest request"
     ALB default deregistration delay is 300 seconds. Tune based on your P99 request duration to avoid 502 errors during rolling deploys.
@@ -508,3 +492,7 @@ server {
 - [AWS ALB vs NLB decision guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/introduction.html)
 - [nginx load balancing documentation](https://nginx.org/en/docs/http/load_balancing.html)
 - [Google SRE Book — Load Balancing at the Frontend](https://sre.google/sre-book/load-balancing-frontend/)
+
+**Expected result:**
+
+Lab backend PIDs gone; HAProxy no longer references lab ports 8082+.

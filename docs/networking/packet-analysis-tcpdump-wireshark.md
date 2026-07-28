@@ -50,39 +50,10 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-```d2
-direction: right
+The diagram below summarises the core relationships for **Packet Analysis with tcpdump and Wireshark**.
 
-Capture: "Capture Point" {
-      style: {
-        fill: "#dbeafe"
-        stroke: "#2563eb"
-      }
-        NIC: "eth0 / any interface"
-        TD: "tcpdump / dumpcap"
-        PCAP: capture.pcap
-    }
-    Analysis: Analysis {
-        WS: "Wireshark GUI"
-        FILT: "Display Filters"
-        STREAM: "TCP Stream Follow"
-    }
-    Evidence: Evidence {
-        SYN: "SYN retransmits"
-        RST: "RST packets"
-        TLS: "TLS handshake"
-        HTTP: "HTTP requests"
-    }
-    Capture.NIC -> Capture.TD
-    Capture.TD -> Capture.PCAP
-    Capture.PCAP -> Analysis.WS
-    Analysis.WS -> Analysis.FILT
-    Analysis.FILT -> Analysis.STREAM
-    Analysis.STREAM -> Evidence.HTTP
-    Analysis.FILT -> Evidence.SYN
-    Analysis.FILT -> Evidence.RST
-    Analysis.FILT -> Evidence.TLS
-```
+![Architecture diagram for Packet Analysis with tcpdump and Wireshark](../assets/images/packet-analysis-tcpdump-wireshark.svg)
+
 
 ## Theory
 
@@ -316,6 +287,14 @@ sudo tcpdump -nn -r /tmp/lab.pcap -A 'tcp port 80' 2>/dev/null | head -30
 
 **Explanation:** `-r` reads file offline. SYN filter shows connection attempts. `-A` prints ASCII — useful for cleartext HTTP.
 
+**Expected result:**
+
+```text
+IP a.b.c.d.ep > e.f.g.h.443: Flags [P.], seq ...
+```
+
+Readable summaries from the saved pcap.
+
 ### Step 4 – Capture SYN-only handshake to example.com:80
 
 **Command:**
@@ -352,19 +331,25 @@ wait
 
 Transfer `/tmp/lab.pcap` to Wireshark on your workstation (`scp` or open locally). Apply display filter `dns || http || tcp.flags.syn == 1`, then use Follow → TCP Stream and Statistics → Conversations.
 
+**Expected result:**
+
+UDP/53 packets with DNS query names visible after generating lookups (for example `dig`).
+
 ## Validation
 
 Confirm the lab before moving on:
 
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
+1. Confirm `/tmp/lab.pcap` (or your path) contains packets and readable summaries.
+2. Explain one TCP conversation using Wireshark or `tcpdump -r`.
+3. Delete pcaps that may contain sensitive data after the exercise.
 
 | Check | Pass criteria |
 |-------|----------------|
-| Lab steps | All required steps completed on your machine |
-| Expected output | Matches the tutorial (or a documented equivalent) |
-| Cleanup | Temporary files, containers, or resources removed if the lab says so |
+| Capture | pcap non-empty; `tcpdump -r` shows frames |
+| Filters | BPF filter limits capture to intended traffic |
+| DNS filter | DNS query packets visible when generated |
+| Analysis | You can identify src/dst/ports for a sample flow |
+| Cleanup | Lab pcaps deleted or moved to an encrypted store |
 
 ## Code Walkthrough
 
@@ -379,12 +364,11 @@ Confirm the lab before moving on:
 
 ## Security Considerations
 
-- Prefer least privilege for every account, role, and service identity you create in labs
-- Never commit secrets, private keys, kubeconfigs, or cloud credentials to Git
-- Prefer official packages and signed images; verify checksums for air-gapped installs
-- Limit network exposure: bind services to localhost in labs unless the exercise requires otherwise
-- Enable audit logging where the platform supports it, and practise reading those logs
-- Treat production as hostile: assume misconfiguration will be probed
+- Capture only with explicit authorisation; unauthorised sniffing may violate law and policy
+- Store pcaps encrypted and delete them after analysis — they often contain credentials and PII
+- Prefer capture filters to reduce volume; never capture on mirrored production spans longer than necessary
+- Run Wireshark as an unprivileged user on exported pcaps when possible; avoid routine root GUI use
+- Redact packet contents before sharing traces in tickets or chat
 
 ## Common Mistakes
 
