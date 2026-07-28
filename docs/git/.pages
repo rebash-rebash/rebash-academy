@@ -1,5 +1,5 @@
 title: Git
-icon: material/source-branch
+icon: material/git
 nav:
   - index.md
   - Foundations:
