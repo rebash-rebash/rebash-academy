@@ -22,11 +22,17 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Build documentation
         run: mkdocs build --strict
+        env:
+          PUPPETEER_ARGS: "--no-sandbox"
 
       - name: Upload site artifact
         if: github.event_name == 'pull_request'

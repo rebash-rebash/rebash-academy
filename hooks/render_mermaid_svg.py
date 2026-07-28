@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / ".cache" / "mermaid"
 MERMAID_CLI = "@mermaid-js/mermaid-cli@11.4.0"
 MERMAID_CONFIG = ROOT / "config" / "mermaid-build.json"
+PUPPETEER_CONFIG = ROOT / "config" / "mermaid-puppeteer.json"
 MERMAID_FENCE = re.compile(r"```mermaid\s*\n(.*?)```", re.DOTALL)
 
 
@@ -57,6 +58,8 @@ def _render_svg(source: str) -> str | None:
         ]
         if MERMAID_CONFIG.exists():
             command.extend(["-c", str(MERMAID_CONFIG)])
+        if PUPPETEER_CONFIG.exists():
+            command.extend(["-p", str(PUPPETEER_CONFIG)])
 
         try:
             result = subprocess.run(
