@@ -44,7 +44,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-Meta-arguments sit on resource (and module) blocks. Terraform expands `for_each` / `count` into multiple instances in the resource graph; `lifecycle` rules then constrain how each instance may be created, replaced, or destroyed.
+Meta-arguments sit on resource (and module) blocks. Choose **`count` or `for_each`** to expand instances in the resource graph (prefer `for_each` for named objects). Optional **`lifecycle`** rules then constrain create/replace/destroy for those instances. Prefer provider features over **provisioners**.
 
 ![Architecture diagram for Meta-Arguments — count, for_each, and lifecycle](../assets/images/terraform-meta-arguments.svg)
 

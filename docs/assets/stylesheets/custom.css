@@ -1219,6 +1219,19 @@
   box-sizing: border-box;
 }
 
+/* Static architecture SVGs referenced as Markdown images — stop tall/narrow
+   diagrams from scaling to full column width and dominating the viewport */
+.md-typeset p > img[src*="/assets/images/"][src$=".svg"],
+.md-typeset p > img[src*="assets/images/"][src$=".svg"] {
+  display: block;
+  max-width: min(100%, 42rem);
+  max-height: min(52vh, 26rem);
+  width: auto;
+  height: auto;
+  margin: 1.25rem auto;
+  object-fit: contain;
+}
+
 [data-md-color-scheme="slate"] .md-typeset .mermaid,
 [data-md-color-scheme="slate"] .md-typeset figure.rebash-diagram {
   background: var(--md-default-bg-color, #1e293b);
