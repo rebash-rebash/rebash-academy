@@ -1,0 +1,109 @@
+{% extends "main.html" %}
+{% import "partials/rebash-macros.html" as rebash with context %}
+
+{% block tabs %}
+  {{ super() }}
+  {{ rebash.landing_styles() }}
+  {{ rebash.page_hero(
+    "Portfolio builds",
+    "Projects",
+    "End-to-end DevOps projects that connect tutorials into real-world workflows you can showcase."
+  ) }}
+
+  <section class="rebash-section rebash-section--paths md-grid">
+    {{ rebash.section_header(
+      "Production projects",
+      "Portfolio-ready builds covering CI/CD, cloud infrastructure, and platform engineering."
+    ) }}
+    <div class="rebash-feature-grid rebash-feature-grid--2">
+      {{ rebash.path_card(
+        "projects/",
+        "projects",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M3 5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v13h14V7h-7l-2-2H5Z"/></svg>',
+        "CI/CD Pipeline Project",
+        "Build a complete pipeline from Git push to production deploy with tests, scans, and rollback.",
+        ["GitLab", "Docker", "Kubernetes"],
+        "On the roadmap",
+        static=true
+      ) }}
+      {{ rebash.path_card(
+        "projects/",
+        "aws",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96Z"/></svg>',
+        "Cloud Infrastructure Stack",
+        "Provision VPC, compute, and storage with Terraform across a multi-tier application.",
+        ["Terraform", "AWS", "Networking"],
+        "On the roadmap",
+        static=true
+      ) }}
+      {{ rebash.path_card(
+        "projects/",
+        "platform",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2.5 4 6.8v10.4L12 21.5l8-4.3V6.8L12 2.5Zm0 2.2 5.5 3-5.5 3-5.5-3 5.5-3ZM6.5 9.8 11 12v4.4l-4.5-2.4V9.8Zm11 0v4.2L13 16.4v-4.4l4.5-2.2Z"/></svg>',
+        "Kubernetes Platform",
+        "Deploy, scale, and observe a production-grade cluster workload with ingress and monitoring.",
+        ["Kubernetes", "Helm", "Monitoring"],
+        "On the roadmap",
+        static=true
+      ) }}
+      {{ rebash.path_card(
+        "projects/",
+        "secops",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8Z"/></svg>',
+        "DevSecOps Pipeline",
+        "Integrate SAST, dependency scanning, and secrets detection into an automated delivery flow.",
+        ["Security", "CI/CD", "Compliance"],
+        "On the roadmap",
+        static=true
+      ) }}
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    {{ rebash.section_header(
+      "Practice while you wait",
+      "Sharpen skills with guided labs and tutorials until project walkthroughs are published."
+    ) }}
+    <div class="rebash-feature-grid rebash-feature-grid--2">
+      {{ rebash.path_card(
+        "labs/",
+        "labs",
+        "Hands-on",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M6 2h12a2 2 0 0 1 2 2v3H4V4a2 2 0 0 1 2-2Zm14 7v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9h16ZM8 12h2v6H8v-6Zm4-2h2v8h-2v-8Zm4 4h2v4h-2v-4Z"/></svg>',
+        "Hands-on Labs",
+        "Step-by-step exercises with checkpoints, expected outputs, and troubleshooting guides.",
+        ["Guided", "Sandbox", "Practice"],
+        "Browse labs"
+      ) }}
+      {{ rebash.path_card(
+        "learning-paths/",
+        "devops",
+        "Structured",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.26A7.002 7.002 0 0 1 5.26 19H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7 15a5 5 0 0 0 10 0H7Z"/></svg>',
+        "Learning Paths",
+        "Follow curated module sequences from Linux fundamentals to production deployments.",
+        ["11 modules", "Beginner friendly"],
+        "View paths"
+      ) }}
+    </div>
+  </section>
+
+  {{ rebash.cta_panels(
+    "Build skills first",
+    "Start with tutorials",
+    "Projects are being authored alongside core tutorial tracks. Begin with Linux, Docker, or a learning path.",
+    "linux/",
+    "Start with Linux",
+    "docker/",
+    "Explore Docker",
+    "Track progress",
+    "See what's shipping",
+    "Follow the roadmap for upcoming project releases and content milestones.",
+    "roadmap/",
+    "View roadmap"
+  ) }}
+{% endblock %}

@@ -1,6 +1,7 @@
 ---
 title: About REBASH Academy
 description: Learn about REBASH Academy, our mission, and how we build production-grade documentation.
+template: about.html
 difficulty: beginner
 estimated_time: "5 min"
 author: Shaik Basha

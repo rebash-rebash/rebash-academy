@@ -1,0 +1,121 @@
+{% extends "main.html" %}
+{% import "partials/rebash-macros.html" as rebash with context %}
+
+{% block tabs %}
+  {{ super() }}
+  {{ rebash.landing_styles() }}
+  {{ rebash.page_hero(
+    "Updates & insights",
+    "Blog",
+    "Articles, release notes, deep dives, and community highlights from REBASH Academy."
+  ) }}
+
+  <section class="rebash-section rebash-section--paths md-grid">
+    {{ rebash.section_header(
+      "Featured topics",
+      "What we'll publish — tutorials in context, platform updates, and engineering best practices."
+    ) }}
+    <div class="rebash-feature-grid rebash-feature-grid--2">
+      {{ rebash.path_card(
+        "blog/",
+        "blog",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14l4-4h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 12H6.83L4 17.83V5h15v10ZM7 7h10v2H7V7Zm0 4h7v2H7v-2Z"/></svg>',
+        "Release Notes",
+        "New tutorials, site improvements, and documentation milestones as they ship.",
+        ["Changelog", "Updates"],
+        "On the roadmap",
+        static=true
+      ) }}
+      {{ rebash.path_card(
+        "blog/",
+        "devops",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.26A7.002 7.002 0 0 1 5.26 19H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7 15a5 5 0 0 0 10 0H7Z"/></svg>',
+        "Engineering Deep Dives",
+        "Long-form posts on architecture decisions, production incidents, and tool comparisons.",
+        ["DevOps", "Cloud", "Security"],
+        "On the roadmap",
+        static=true
+      ) }}
+      {{ rebash.path_card(
+        "blog/",
+        "cheatsheets",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6Zm7 1.5L18.5 9H13V3.5ZM8 12h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg>',
+        "Tips & Short Guides",
+        "Quick wins, command recipes, and workflow shortcuts for daily engineering work.",
+        ["How-to", "Reference"],
+        "On the roadmap",
+        static=true
+      ) }}
+      {{ rebash.path_card(
+        "blog/",
+        "interview",
+        "Coming soon",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-2.05-4.95L14 9h6V3l-2.24 2.24A8.96 8.96 0 0 0 12 3Zm-1 6v4.41l3.71 2.13.99-1.72L13 12.17V9h-2Z"/></svg>',
+        "Community Highlights",
+        "Contributor spotlights, learning journeys, and open-source project features.",
+        ["Community", "Careers"],
+        "On the roadmap",
+        static=true
+      ) }}
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    {{ rebash.section_header(
+      "Explore now",
+      "While articles are in progress, dive into tutorials and reference material."
+    ) }}
+    <div class="rebash-feature-grid rebash-feature-grid--3">
+      {{ rebash.path_card(
+        "getting-started/",
+        "linux",
+        "Start here",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="m12 3-7 4v10l7 4 7-4V7l-7-4Zm0 2.18 4.9 2.8L12 10.78 7.1 7.98 12 5.18ZM6 9.27l5 2.86v5.74l-5-2.86V9.27Zm12 0v5.74l-5 2.86v-5.74l5-2.86Z"/></svg>',
+        "Getting Started",
+        "New to DevOps? Begin with guided onboarding and tool setup.",
+        [],
+        "Get started",
+        compact=true
+      ) }}
+      {{ rebash.path_card(
+        "cheatsheets/",
+        "cheatsheets",
+        "Reference",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6Zm7 1.5L18.5 9H13V3.5ZM8 12h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg>',
+        "Cheat Sheets",
+        "Copy-paste command guides for daily engineering tasks.",
+        [],
+        "Open cheatsheets",
+        compact=true
+      ) }}
+      {{ rebash.path_card(
+        "roadmap/",
+        "architect",
+        "Planning",
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M3 3h8v8H3V3Zm10 0h8v5h-8V3ZM3 13h5v8H3v-8Zm7 3h11v5H10v-5Z"/></svg>',
+        "Roadmap",
+        "See what content is live, in progress, and planned next.",
+        [],
+        "View roadmap",
+        compact=true
+      ) }}
+    </div>
+  </section>
+
+  {{ rebash.cta_panels(
+    "Stay in the loop",
+    "Follow the project",
+    "Star the repo on GitHub to track releases and contribute when blog posts go live.",
+    "https://github.com/rebash-rebash/rebash-academy",
+    "GitHub",
+    "learning-paths/",
+    "Learning Paths",
+    "New content weekly",
+    "Tutorials and paths are added regularly — check the roadmap for what's next.",
+    "roadmap/",
+    "View roadmap"
+  ) }}
+{% endblock %}
