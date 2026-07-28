@@ -25,23 +25,20 @@
 .rebash-hero {
   background: linear-gradient(135deg, var(--rebash-blue) 0%, var(--rebash-blue-dark) 100%);
   color: #fff;
-  padding: 4rem 0 5rem;
+  padding: 3rem 0 5rem;
 }
 
 .rebash-hero__inner {
   max-width: 61rem;
 }
 
-.rebash-hero__badge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2rem;
-  padding: 0.25rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+.rebash-hero__eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin-bottom: 1rem;
+  opacity: 0.88;
 }
 
 .rebash-hero__title {
@@ -57,34 +54,160 @@
   line-height: 1.6;
   opacity: 0.92;
   max-width: 42rem;
-  margin: 0 0 2rem;
+  margin: 0 0 2.25rem;
 }
 
 .rebash-hero__actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.rebash-hero__actions .md-button--primary {
+/* Hero & section CTA buttons */
+.rebash-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  border: 2px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.rebash-cta:hover {
+  transform: translateY(-1px);
+}
+
+.rebash-cta--primary {
   background-color: #fff;
   color: var(--rebash-blue);
   border-color: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
-.rebash-hero__actions .md-button--primary:hover {
+.rebash-cta--primary:hover {
   background-color: var(--rebash-grey-light);
   color: var(--rebash-blue-dark);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
 
-.rebash-hero__actions .md-button:not(.md-button--primary) {
+.rebash-cta--secondary {
+  background-color: transparent;
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.75);
 }
 
-.rebash-hero__actions .md-button:not(.md-button--primary):hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.rebash-cta--secondary:hover {
+  background-color: rgba(255, 255, 255, 0.12);
   border-color: #fff;
+  color: #fff;
+}
+
+/* CTAs on light section backgrounds */
+.rebash-cta--on-light.rebash-cta--primary {
+  background-color: var(--rebash-blue);
+  color: #fff;
+  border-color: var(--rebash-blue);
+}
+
+.rebash-cta--on-light.rebash-cta--primary:hover {
+  background-color: var(--rebash-blue-dark);
+  border-color: var(--rebash-blue-dark);
+  color: #fff;
+}
+
+.rebash-cta--on-light.rebash-cta--secondary {
+  background-color: transparent;
+  color: var(--rebash-blue);
+  border-color: var(--rebash-blue);
+}
+
+.rebash-cta--on-light.rebash-cta--secondary:hover {
+  background-color: rgba(25, 118, 210, 0.08);
+  color: var(--rebash-blue-dark);
+  border-color: var(--rebash-blue-dark);
+}
+
+/* Header brand lockup: icon + title, vertically centered */
+.md-header__inner {
+  align-items: center;
+}
+
+.rebash-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  height: 2.4rem;
+  margin-right: 0.25rem;
+  flex-shrink: 0;
+}
+
+.rebash-header-spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 2.4rem;
+}
+
+.rebash-header-brand .md-header__button.md-logo {
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.rebash-header-brand .md-header__button.md-logo img,
+.rebash-header-brand .md-header__button.md-logo svg {
+  display: block;
+  height: 1.75rem;
+  width: 1.75rem;
+}
+
+.rebash-header-brand__title {
+  display: flex;
+  align-items: center;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rebash-header-brand__title:hover {
+  opacity: 0.92;
+}
+
+/* Lifted header: keep brand on one compact row above tabs */
+.md-header--lifted .rebash-header-brand {
+  align-self: center;
+}
+
+/* Utilities: theme, search, repo — stay grouped on the right */
+.md-header__option,
+.md-header__inner > .md-header__button[for="__search"],
+.md-header__source {
+  flex-shrink: 0;
+}
+
+@media screen and (min-width: 60em) {
+  [dir=ltr] .md-header__source {
+    margin-left: 0.75rem;
+  }
+}
+
+@media screen and (max-width: 59.9375em) {
+  .rebash-header-brand__title {
+    font-size: 1rem;
+  }
 }
 
 /* Sections */
@@ -107,12 +230,380 @@
   color: var(--md-default-fg-color--light);
 }
 
-.rebash-section--community,
-.rebash-section--newsletter {
-  background: var(--md-default-bg-color--light);
-  padding: 3rem 1.5rem;
-  border-radius: 0.5rem;
+.rebash-section--paths {
+  padding-top: 3.5rem;
+  padding-bottom: 3.5rem;
+  background: linear-gradient(180deg, var(--md-default-bg-color--light) 0%, var(--md-default-bg-color) 100%);
+}
+
+.rebash-section__header {
   margin-bottom: 2rem;
+}
+
+.rebash-section__header .rebash-section__title {
+  margin-bottom: 0;
+}
+
+.rebash-section__lead--inline {
+  margin: 0.35rem 0 0;
+  max-width: 36rem;
+}
+
+.rebash-section--alt {
+  background: var(--md-default-bg-color--light);
+}
+
+.rebash-section--panels {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  padding-bottom: 4rem;
+}
+
+@media screen and (min-width: 768px) {
+  .rebash-section--panels {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Learning path cards */
+.rebash-path-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media screen and (min-width: 768px) {
+  .rebash-path-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 1100px) {
+  .rebash-path-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.rebash-path-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-default-bg-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.rebash-path-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(25, 118, 210, 0.14);
+  border-color: rgba(25, 118, 210, 0.35);
+}
+
+.rebash-path-card__banner {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: 5.5rem;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.rebash-path-card--devops .rebash-path-card__banner {
+  background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+}
+
+.rebash-path-card--aws .rebash-path-card__banner {
+  background: linear-gradient(135deg, #ff9900 0%, #ec7211 100%);
+}
+
+.rebash-path-card--secops .rebash-path-card__banner {
+  background: linear-gradient(135deg, #5e35b1 0%, #311b92 100%);
+}
+
+.rebash-path-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+.rebash-path-card__icon svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.rebash-path-card__badge {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rebash-path-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.75rem;
+  padding: 1.25rem 1.25rem 1.35rem;
+}
+
+.rebash-path-card__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--md-default-fg-color);
+}
+
+.rebash-path-card__summary {
+  margin: 0;
+  font-size: 0.925rem;
+  line-height: 1.55;
+  color: var(--md-default-fg-color--light);
+}
+
+.rebash-path-card__track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rebash-path-card__track span {
+  position: relative;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.35rem;
+  background: rgba(25, 118, 210, 0.1);
+  color: var(--rebash-blue-dark);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.rebash-path-card--aws .rebash-path-card__track span,
+.rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(25, 118, 210, 0.1);
+  color: var(--rebash-blue-dark);
+}
+
+.rebash-path-card--aws .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(255, 153, 0, 0.12);
+  color: #e65100;
+}
+
+.rebash-path-card--secops .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(94, 53, 177, 0.12);
+  color: #4527a0;
+}
+
+.rebash-path-card__topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.rebash-path-card__topic {
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.rebash-path-card__meta {
+  margin-top: auto;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--md-default-fg-color--lighter);
+}
+
+.rebash-path-card__link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--rebash-blue);
+  transition: color 0.15s ease;
+}
+
+.rebash-path-card:hover .rebash-path-card__link {
+  color: var(--rebash-blue-dark);
+}
+
+.rebash-path-card__link::after {
+  content: " →";
+}
+
+/* Compact cards + feature grids */
+.rebash-path-card--compact .rebash-path-card__banner {
+  min-height: 4.25rem;
+  padding: 1rem 1rem 0.85rem;
+}
+
+.rebash-path-card--compact .rebash-path-card__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.6rem;
+}
+
+.rebash-path-card--compact .rebash-path-card__icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.rebash-path-card--compact .rebash-path-card__body {
+  padding: 1rem 1.15rem 1.2rem;
+  gap: 0.55rem;
+}
+
+.rebash-path-card--compact .rebash-path-card__title {
+  font-size: 1.05rem;
+}
+
+.rebash-path-card--compact .rebash-path-card__summary {
+  font-size: 0.86rem;
+}
+
+.rebash-feature-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+
+@media screen and (min-width: 640px) {
+  .rebash-feature-grid--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rebash-feature-grid--3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rebash-feature-grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 960px) {
+  .rebash-feature-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .rebash-feature-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tutorial & resource card colors */
+.rebash-path-card--linux .rebash-path-card__banner {
+  background: linear-gradient(135deg, #263238 0%, #37474f 100%);
+}
+
+.rebash-path-card--docker .rebash-path-card__banner {
+  background: linear-gradient(135deg, #0288d1 0%, #01579b 100%);
+}
+
+.rebash-path-card--k8s .rebash-path-card__banner {
+  background: linear-gradient(135deg, #00838f 0%, #006064 100%);
+}
+
+.rebash-path-card--terraform .rebash-path-card__banner {
+  background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
+}
+
+.rebash-path-card--projects .rebash-path-card__banner {
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+}
+
+.rebash-path-card--labs .rebash-path-card__banner {
+  background: linear-gradient(135deg, #00897b 0%, #004d40 100%);
+}
+
+.rebash-path-card--blog .rebash-path-card__banner {
+  background: linear-gradient(135deg, #546e7a 0%, #37474f 100%);
+}
+
+.rebash-path-card--cheatsheets .rebash-path-card__banner {
+  background: linear-gradient(135deg, #6a1b9a 0%, #4a148c 100%);
+}
+
+.rebash-path-card--interview .rebash-path-card__banner {
+  background: linear-gradient(135deg, #ef6c00 0%, #e65100 100%);
+}
+
+.rebash-path-card--projects .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(46, 125, 50, 0.12);
+  color: #2e7d32;
+}
+
+.rebash-path-card--labs .rebash-path-card__topics .rebash-path-card__topic {
+  background: rgba(0, 137, 123, 0.12);
+  color: #00695c;
+}
+
+/* Bottom panels: community + updates */
+.rebash-panel {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.rebash-panel__content {
+  padding: 1.75rem 1.5rem;
+}
+
+.rebash-panel__eyebrow {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.rebash-panel__title {
+  margin: 0 0 0.65rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.rebash-panel__lead {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--md-default-fg-color--light);
+  max-width: 28rem;
+}
+
+.rebash-panel--community {
+  background: linear-gradient(145deg, rgba(25, 118, 210, 0.08) 0%, var(--md-default-bg-color) 55%);
+}
+
+.rebash-panel--community .rebash-panel__eyebrow,
+.rebash-panel--community .rebash-panel__title {
+  color: var(--rebash-blue-dark);
+}
+
+.rebash-panel--updates {
+  background: linear-gradient(145deg, rgba(94, 53, 177, 0.08) 0%, var(--md-default-bg-color) 55%);
+}
+
+.rebash-panel--updates .rebash-panel__eyebrow,
+.rebash-panel--updates .rebash-panel__title {
+  color: #4527a0;
 }
 
 /* Grid */
@@ -194,6 +685,11 @@
   }
 
   .rebash-hero {
-    padding: 2.5rem 0 3rem;
+    padding: 2rem 0 3rem;
+  }
+
+  .rebash-cta {
+    width: 100%;
+    max-width: 20rem;
   }
 }
