@@ -19,7 +19,9 @@ comments: false
 
 ## Overview
 
-Quality gates keep infrastructure changes safe: canonical formatting, static validation, and `terraform test` for module behaviour. Wire them into CI before any apply job.
+Quality gates keep infrastructure changes safe. **`terraform fmt`** makes style non-negotiable, **`terraform validate`** catches structural mistakes after providers are initialised, and **`terraform test`** runs plan/apply-style scenarios against modules with assertions on outputs and state. Wire all three into CI before any apply job — formatting alone never proved a module correct.
+
+This tutorial builds a tiny `modules/hello` child module that writes a greeting file, authors a `*.tftest.hcl` file, and runs the same gates you should demand on every pull request.
 
 This is **Tutorial 16** in **Module 5: Quality and Security** of the REBASH Academy Terraform track.
 
@@ -27,33 +29,61 @@ This is **Tutorial 16** in **Module 5: Quality and Security** of the REBASH Acad
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Use terraform fmt and fmt -check
-- [ ] Run terraform validate after init
-- [ ] Author *.tftest.hcl tests with assertions
-- [ ] Integrate gates into CI
-- [ ] Interpret test failures
+- [ ] Use `terraform fmt` and `fmt -check` correctly
+- [ ] Run `terraform validate` after `init`
+- [ ] Author `*.tftest.hcl` tests with `run` and `assert` blocks
+- [ ] Integrate formatting, validation, and tests into CI
+- [ ] Interpret test failures and keep tests hermetic with local providers
 
 ## Prerequisites
 
-- Completed Import, Moved, and Safe Refactors
-
-- Terraform CLI **1.9+** (1.15.x recommended)
+- Completed [Import, Moved, and Safe Refactors](import-moved-and-safe-refactors.md)
+- Terraform CLI **1.9+** (1.15.x recommended; `terraform test` is available on modern 1.x)
 - Ability to create directories and edit files
+- No cloud account required
 
 ## Architecture
 
+Quality gates sit before human review and apply. Each layer catches a different failure mode: style, schema/config errors, and behavioural regressions.
+
 ![Architecture diagram for Format, Validate, and Terraform Test](../assets/images/terraform-test.svg)
 
+| Gate | Catches | Does not catch |
+|------|---------|----------------|
+| `fmt -check` | Style drift | Wrong logic |
+| `validate` | Invalid references, type issues (after init) | “Looks valid but wrong” behaviour |
+| `terraform test` | Broken module contracts via asserts | Full production IAM/network reality unless you add integration tests |
+| `plan` in CI | Unexpected destroys/creates | Policy intent without policy-as-code |
 
 ## Theory
 
-### terraform test
+### `terraform fmt`
 
-Test files use `run` blocks to execute plans/applies against a module and `assert` conditions on outputs.
+Rewrites HCL to the canonical style. In CI use:
+
+```bash
+terraform fmt -check -recursive
+```
+
+Exit non-zero if files would change — fail the PR. Developers run `terraform fmt -recursive` locally before push. Do not bikeshed alignment in review; let the tool own whitespace.
+
+### `terraform validate`
+
+Checks that configuration is internally consistent **with providers installed**. Always `init` first (or `terraform validate` after init in that directory). Validate does not access real APIs for most checks and does not prove the plan is safe.
+
+### `terraform test`
+
+Test files are `*.tftest.hcl` (often under `tests/`). They contain:
+
+- Optional top-level `variables` for defaults
+- One or more `run` blocks with `command = plan` or `command = apply`
+- `assert` blocks with `condition` and `error_message`
+- Optional `expect_failures` for negative tests
 
 ```hcl
 run "ok" {
   command = apply
+
   assert {
     condition     = output.path != ""
     error_message = "path should be set"
@@ -61,18 +91,32 @@ run "ok" {
 }
 ```
 
-### Why this topic matters in production
+Tests create temporary state under the module’s test working directories — keep providers local (`local`, `random`, `terraform_data`) so CI needs no cloud credentials.
 
-Teams that skip **fmt, validate, and Terraform test** eventually pay in outages: unreviewable plans, brittle
-refactors, or secrets leaking into logs. Treat this tutorial as the minimum bar for merging
-Terraform changes on a shared state file.
+### What to assert
+
+| Strong asserts | Weak asserts |
+|----------------|--------------|
+| Output equals expected contract | “Resource exists” without checking value |
+| Length / membership of collections | Brittle absolute paths across OS without normalisation |
+| Encoded policy (`starts with`, `contains`) | Exact random IDs |
+
+### CI order
+
+1. `fmt -check`
+2. `init -input=false`
+3. `validate`
+4. `test`
+5. `plan` (root modules) with artefact upload
+
+Fail fast — do not plan if fmt or validate failed.
 
 ### Practical mental model
 
-1. Write the smallest config that proves the idea
-2. `fmt` / `validate` / `plan` until the diff matches your intent
-3. Apply only after you can explain every create/update/replace line
-4. Destroy lab resources so the next exercise starts clean
+1. Format so humans review behaviour
+2. Validate so Terraform accepts the graph
+3. Test so modules keep their promises
+4. Plan so environments stay intentional
 
 ## Hands-on Lab
 
@@ -81,17 +125,27 @@ Terraform changes on a shared state file.
 ```bash
 mkdir -p ~/rebash-tf-test/modules/hello/tests
 cd ~/rebash-tf-test
+terraform version
 ```
+
+**Expected:** Terraform 1.9+.
+
+### Step 2 – Write module files
 
 `modules/hello/versions.tf`:
 
 ```hcl
 terraform {
   required_version = ">= 1.9.0"
+
   required_providers {
     local = {
       source  = "hashicorp/local"
       version = "~> 2.9"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.7"
     }
   }
 }
@@ -101,28 +155,66 @@ terraform {
 
 ```hcl
 variable "name" {
-  type = string
+  description = "Name embedded in the greeting file and outputs"
+  type        = string
+
+  validation {
+    condition     = length(trimspace(var.name)) > 0
+    error_message = "name must be a non-empty string."
+  }
+}
+
+variable "prefix" {
+  description = "Directory prefix under the module for the greeting file"
+  type        = string
+  default     = "generated"
 }
 ```
 
 `modules/hello/main.tf`:
 
 ```hcl
+resource "random_id" "nonce" {
+  byte_length = 2
+}
+
 resource "local_file" "hello" {
-  filename = "${path.module}/hello-${var.name}.txt"
-  content  = "hello ${var.name}\n"
+  filename = "${path.module}/${var.prefix}/hello-${var.name}.txt"
+  content  = "hello ${var.name}\nnonce=${random_id.nonce.hex}\n"
+}
+
+resource "terraform_data" "contract" {
+  input = {
+    name  = var.name
+    path  = local_file.hello.filename
+    nonce = random_id.nonce.hex
+  }
 }
 
 output "path" {
-  value = local_file.hello.filename
+  description = "Path to the greeting file"
+  value       = local_file.hello.filename
 }
 
 output "name" {
-  value = var.name
+  description = "Echo of the input name"
+  value       = var.name
+}
+
+output "nonce" {
+  description = "Random nonce written into the greeting"
+  value       = random_id.nonce.hex
+}
+
+output "contract" {
+  description = "Structured marker for tests"
+  value       = terraform_data.contract.output
 }
 ```
 
-### Step 2 – Terraform test file
+**Expected:** Module writes a greeting, exposes path/name/nonce, and stores a `terraform_data` contract object.
+
+### Step 3 – Write the Terraform test file
 
 `modules/hello/tests/basic.tftest.hcl`:
 
@@ -143,100 +235,201 @@ run "creates_greeting" {
     condition     = length(output.path) > 0
     error_message = "path output must be non-empty"
   }
+
+  assert {
+    condition     = length(output.nonce) == 4
+    error_message = "nonce should be four hex characters (byte_length=2)"
+  }
+
+  assert {
+    condition     = output.contract.name == "rebash"
+    error_message = "terraform_data contract should record the name"
+  }
+}
+
+run "plan_is_noop_after_apply" {
+  command = plan
+
+  assert {
+    condition     = output.name == "rebash"
+    error_message = "name should remain stable on subsequent plan"
+  }
 }
 ```
 
-### Step 3 – Run tests and fmt/validate
+**Expected:** First run applies and asserts; second run plans against the prior test state within the test runner’s sequencing for that file.
+
+### Step 4 – Format, validate, and test
 
 ```bash
-terraform -chdir=modules/hello fmt
+terraform -chdir=modules/hello fmt -recursive
 terraform -chdir=modules/hello init -input=false
 terraform -chdir=modules/hello validate
 terraform -chdir=modules/hello test
 ```
 
-**Expected:** test run passes with apply + assertions.
+**Expected:** `Success! The configuration is valid.` and test runs pass with apply + assertions. Failures print the `error_message` from the failing assert.
+
+### Step 5 – Force a failure (learning drill)
+
+Temporarily change the assert to expect `output.name == "wrong"`, re-run `terraform test`, observe the failure text, then revert. Confirm CI would go red on such a regression.
+
+### Step 6 – fmt-check gate
+
+```bash
+# Introduce ugly spacing, then:
+terraform -chdir=modules/hello fmt -check
+echo "exit=$?"
+terraform -chdir=modules/hello fmt
+terraform -chdir=modules/hello fmt -check
+```
+
+**Expected:** `-check` fails before format and passes after.
+
+### Step 7 – Optional root wrapper
+
+From `~/rebash-tf-test`, a tiny root can call the module — useful later for plan-on-PR demos. Not required for `terraform test`, which targets the module directory directly.
+
+### Step 8 – Clean up test artefacts
+
+```bash
+# terraform test cleans ephemeral state; remove leftover greeting files if any
+rm -rf modules/hello/generated
+```
+
+**Expected:** Working tree tidy; `.terraform` may remain — safe to delete locally with `rm -rf modules/hello/.terraform`.
 
 ## Code Walkthrough
 
-Tests should be deterministic: avoid random providers unless you assert on patterns, not exact IDs.
+### Module contract
 
+| Output | Why test it |
+|--------|-------------|
+| `name` | Echo contract for callers |
+| `path` | Non-empty path proves the file resource ran |
+| `nonce` | Length check avoids asserting unstable exact IDs elsewhere |
+| `contract` | Structured `terraform_data` payload for richer asserts |
 
-Re-read every argument in the lab through the lens of **fmt, validate, and Terraform test**.
-For each resource address, ask: what happens on the next plan if I change this value?
-Update in place, replace, or no-op? That habit is how you avoid surprise destroys.
+### `run` blocks
+
+| Argument | Purpose |
+|----------|---------|
+| `command = apply` | Execute apply semantics for the module under test |
+| `command = plan` | Assert on plan-time conditions |
+| `assert.condition` | Boolean expression (often on `output.*`) |
+| `assert.error_message` | Human-readable CI failure |
+
+### Providers in tests
+
+Pinning `local` and `random` in the module under test keeps CI hermetic. Avoid cloud providers in unit-style module tests unless you maintain integration credentials and cleanup rigorously.
+
+### `fmt` versus `validate`
+
+`fmt` never loads providers. `validate` needs plugin schemas from `init`. Both belong in CI; neither replaces tests.
 
 ## Validation
 
-Run the lab to completion, then confirm:
-
 ```bash
-terraform fmt -check
-terraform init -input=false
-terraform validate
-terraform plan -input=false
+terraform -chdir=modules/hello fmt -check
+terraform -chdir=modules/hello init -input=false
+terraform -chdir=modules/hello validate
+terraform -chdir=modules/hello test
 ```
 
 | Check | Pass criteria |
 |-------|----------------|
 | Formatting | `fmt -check` exits 0 |
-| Configuration | `validate` succeeds after init |
-| Intent | Plan matches the tutorial’s expected creates/updates only |
-| Topic focus | You can explain how this lab demonstrates fmt, validate, and Terraform test |
-| Cleanup | Destroy (or documented teardown) left no stray lab files |
+| Configuration | `validate` succeeds |
+| Tests | All `run` blocks pass |
+| Assertions | name, path, nonce length, contract.name verified |
+| Hermetic | No cloud credentials required |
 
 ## Best Practices
 
-- Keep examples small enough to run without cloud credentials unless the topic requires otherwise
-- Document assumptions (CLI version, providers, working directory) at the top of the root module
-- Prefer explicitness over cleverness when teaching **fmt, validate, and Terraform test**
-- Add CI checks (`fmt`, `validate`, plan) as soon as a root is shared
-- Write outputs that help the next human debug, not just the next machine
+- Run `fmt -check`, `validate`, `test`, then `plan` in that order in CI
+- Keep module tests fast and local; add separate integration jobs for cloud
+- Assert contracts (outputs), not incidental formatting of provider diffs
+- Commit `.terraform.lock.hcl` for modules you publish or share
+- Use `validation` blocks on variables plus tests — defence in depth
+- Name `run` blocks with intent (`creates_greeting`, not `test1`)
 
 ## Security Considerations
 
-- Assume state and plan output may contain secrets related to **fmt, validate, and Terraform test**
-- Use least-privilege credentials whenever a provider needs authentication
-- Do not commit tfvars with real secrets; use examples with placeholders
-- Review plans for unexpected destroys before apply
-- Limit who can unlock state and who can approve production applies
+- Tests that apply still write state and files — exclude secrets from fixtures
+- Do not log sensitive variable values in `error_message` strings
+- Cache provider plugins in CI carefully; verify lockfile checksums
+- Fail closed: a red test job must block merge
+- Treat plan artefacts from CI as potentially sensitive even for local providers if variables ever include secrets
 
 ## Common Mistakes
 
 !!! warning "Only formatting in CI"
     Invalid configs merge. **Fix:** fmt + validate + test + plan.
 
+!!! warning "Asserting exact random IDs"
+    Flaky tests. **Fix:** Assert length, prefix, or patterns — not one-off hex strings unless fixed with a test seed pattern you control.
+
+!!! warning "Running validate before init"
+    Confusing errors. **Fix:** Always init in that module/root first.
+
+!!! warning "Cloud credentials in unit tests"
+    Slow, costly, flaky. **Fix:** Local providers for unit tests; separate integration pipeline.
+
 ## Troubleshooting
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| validate fails | Missing init or syntax error | Run `terraform init`, read the file:line in the error |
-| Plan shows replace unexpectedly | ForceNew argument changed | Confirm intent; use moved/lifecycle if refactoring |
-| Provider auth errors | Credentials not available | Export the documented env vars for the provider |
-| Topic confusion around fmt, validate, and Terraform test | Skipped theory | Re-read Theory, then re-run the lab from a clean directory |
-| Leftover lab files | Destroy skipped | Re-run destroy or delete the lab directory after state cleanup |
+| `terraform test` not found | Old CLI | Upgrade to Terraform 1.9+ |
+| Assert fails on path separators | OS path differences | Assert `endswith` / `contains` instead of full string equality |
+| Provider missing in test | Module lacks `required_providers` | Declare providers in the module under test |
+| fmt thrash | Mixed tool versions | Standardise Terraform version in CI and local via `required_version` |
+| Tests pass but prod fails | Only unit coverage | Add plan policies and staging applies |
 
 ## Interview Questions
 
-1. What does terraform test add beyond validate?
-2. Where do .tftest.hcl files live?
+1. What does `terraform test` add beyond `validate`?
+   *Behavioural assertions via plan/apply runs against a module, not just structural validity.*
+
+2. Where do `.tftest.hcl` files live?
+   *Commonly under a `tests/` directory inside the module; Terraform discovers `*.tftest.hcl` relative to the module.*
+
 3. How do you run tests in CI?
+   *After fmt and init/validate, run `terraform test` in the module directory and fail the job on non-zero exit.*
+
 4. What assertions are useful for a module?
-5. Why is fmt -check valuable in pull requests?
-6. What can validate not catch?
+   *Output contracts, invariant lengths, required tag keys, and expected resource counts — not flaky random values.*
+
+5. Why is `fmt -check` valuable in pull requests?
+   *It enforces canonical style automatically so reviews focus on behaviour and safety.*
+
+6. What can `validate` not catch?
+   *Wrong business logic, unsafe plans, missing cloud permissions, and policy violations.*
+
 7. How do you structure tests for child modules?
+   *Colocate `tests/*.tftest.hcl` with the module; keep fixtures hermetic; assert published outputs.*
+
 8. When do integration-style tests need cloud credentials?
+   *When asserting real provider APIs; isolate them from unit tests and clean up aggressively.*
+
 9. How do you keep tests hermetic with local providers?
+   *Declare `local`/`random` only, avoid network resources, and assert on outputs rather than external side effects.*
+
 10. What is the difference between unit and contract tests here?
+    *Unit tests exercise one module quickly; contract tests lock the output API callers rely on.*
+
 11. How do you fail a pipeline on test failure?
+    *Do not `continue-on-error`; use non-zero exit from `terraform test` as a required status check.*
+
 12. Why test outputs and not only resources?
+    *Outputs are the module’s public API; resources may refactor while the contract stays stable.*
 
 ## Summary
 
-- Master **fmt, validate, and Terraform test** before moving to the next tutorial in the track
-- Every shared root needs formatting, validation, and a reviewed plan
-- Prefer small, reversible labs that you can destroy confidently
-- Carry security and state hygiene forward into every later module
+- `fmt`, `validate`, and `terraform test` catch different classes of defects — use all three
+- Prefer hermetic module tests with local providers in everyday CI
+- Assert contracts, not flaky identifiers
+- Quality gates belong before apply, never instead of reading the plan
+- Treat test failures as merge blockers in production repositories
 
 ## Related Tutorials
 
@@ -249,8 +442,10 @@ terraform plan -input=false
 
 ## References
 
-1. [Terraform documentation](https://developer.hashicorp.com/terraform/docs)
-2. [Terraform CLI commands](https://developer.hashicorp.com/terraform/cli/commands)
-3. [Terraform language](https://developer.hashicorp.com/terraform/language)
-4. [Terraform Registry](https://registry.terraform.io/)
-5. [Version constraints](https://developer.hashicorp.com/terraform/language/expressions/version-constraints)
+1. [terraform test](https://developer.hashicorp.com/terraform/language/tests)
+2. [Tests — CLI](https://developer.hashicorp.com/terraform/cli/commands/test)
+3. [terraform fmt](https://developer.hashicorp.com/terraform/cli/commands/fmt)
+4. [terraform validate](https://developer.hashicorp.com/terraform/cli/commands/validate)
+5. [terraform_data resource](https://developer.hashicorp.com/terraform/language/resources/terraform-data)
+6. [hashicorp/local provider](https://registry.terraform.io/providers/hashicorp/local/latest)
+7. [hashicorp/random provider](https://registry.terraform.io/providers/hashicorp/random/latest)
