@@ -54,55 +54,18 @@
     </div>
   </section>
 
-  <section class="rebash-section rebash-section--alt md-grid">
-    {{ rebash.section_header(
-      "Documentation standards",
-      "Every tutorial follows a consistent, production-ready structure."
-    ) }}
-    <ol class="rebash-standards-grid">
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">1</span><span class="rebash-standards-item__title">Overview</span><span class="rebash-standards-item__desc">What you'll learn and why it matters</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">2</span><span class="rebash-standards-item__title">Prerequisites</span><span class="rebash-standards-item__desc">Required knowledge and tools</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">3</span><span class="rebash-standards-item__title">Learning Objectives</span><span class="rebash-standards-item__desc">Measurable outcomes</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">4</span><span class="rebash-standards-item__title">Architecture Diagram</span><span class="rebash-standards-item__desc">Visual when systems benefit from it</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">5</span><span class="rebash-standards-item__title">Theory</span><span class="rebash-standards-item__desc">Core concepts explained clearly</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">6</span><span class="rebash-standards-item__title">Hands-on Lab</span><span class="rebash-standards-item__desc">Step-by-step practical exercises</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">7</span><span class="rebash-standards-item__title">Commands & Code</span><span class="rebash-standards-item__desc">Copy-paste ready examples</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">8</span><span class="rebash-standards-item__title">Common Mistakes</span><span class="rebash-standards-item__desc">Pitfalls to avoid</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">9</span><span class="rebash-standards-item__title">Best Practices</span><span class="rebash-standards-item__desc">Production-ready recommendations</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">10</span><span class="rebash-standards-item__title">Troubleshooting</span><span class="rebash-standards-item__desc">Debug guide for common issues</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">11</span><span class="rebash-standards-item__title">Summary</span><span class="rebash-standards-item__desc">Key takeaways</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">12</span><span class="rebash-standards-item__title">Interview Questions</span><span class="rebash-standards-item__desc">Practice for technical interviews</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">13</span><span class="rebash-standards-item__title">Related Tutorials</span><span class="rebash-standards-item__desc">Continue your learning path</span></li>
-      <li class="rebash-standards-item"><span class="rebash-standards-item__num">14</span><span class="rebash-standards-item__title">References</span><span class="rebash-standards-item__desc">Official docs and further reading</span></li>
-    </ol>
-  </section>
-
-  <section class="rebash-section rebash-section--panels md-grid">
-    <div class="rebash-panel rebash-panel--community">
-      <div class="rebash-panel__content">
-        <span class="rebash-panel__eyebrow">Open source</span>
-        <h2 class="rebash-panel__title">Built with Material for MkDocs</h2>
-        <p class="rebash-panel__lead">
-          Static site generation with Python 3.12+, GitHub Actions CI/CD, and GitHub Pages hosting. MIT licensed content.
-        </p>
-        <div class="rebash-hero__actions">
-          <a href="https://github.com/rebash-rebash/rebash-academy" class="rebash-cta rebash-cta--primary rebash-cta--on-light" target="_blank" rel="noopener">GitHub</a>
-          <a href="https://github.com/rebash-rebash/rebash-academy/blob/main/CONTRIBUTING.md" class="rebash-cta rebash-cta--secondary rebash-cta--on-light" target="_blank" rel="noopener">Contribute</a>
-        </div>
-      </div>
-    </div>
-    <div class="rebash-panel rebash-panel--updates">
-      <div class="rebash-panel__content">
-        <span class="rebash-panel__eyebrow">Connect</span>
-        <h2 class="rebash-panel__title">Get in touch</h2>
-        <p class="rebash-panel__lead">
-          Questions, feedback, or collaboration — reach out on GitHub or LinkedIn.
-        </p>
-        <div class="rebash-hero__actions">
-          <a href="https://www.linkedin.com/in/shaikkhadarbasha/" class="rebash-cta rebash-cta--primary rebash-cta--on-light" target="_blank" rel="noopener">LinkedIn</a>
-          <a href="{{ 'learning-paths/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Learning Paths</a>
-        </div>
-      </div>
-    </div>
-  </section>
+  {{ rebash.cta_panels(
+    "Community",
+    "Build with us",
+    "Star the repo on GitHub, contribute tutorials, and help others learn by building.",
+    "https://github.com/rebash-rebash/rebash-academy",
+    "GitHub",
+    "https://github.com/rebash-rebash/rebash-academy/blob/main/CONTRIBUTING.md",
+    "Contribute",
+    "Connect",
+    "Get in touch",
+    "Questions, feedback, or collaboration — reach out on GitHub or LinkedIn.",
+    "https://www.linkedin.com/in/shaikkhadarbasha/",
+    "LinkedIn"
+  ) }}
 {% endblock %}
