@@ -1,0 +1,49 @@
+direction: down
+
+Tutorial: Tutorial {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E3F2FD"
+    stroke: "#1976D2"
+  }
+}
+
+GuidedLab: Guided Lab {
+  shape: rectangle
+  style: {
+    fill: "#E8F5E9"
+    stroke: "#2E7D32"
+  }
+}
+
+PracticeLab: Practice Lab {
+  shape: rectangle
+}
+
+ChallengeLab: Challenge Lab {
+  shape: rectangle
+}
+
+Project: Project {
+  shape: rectangle
+  style: {
+    fill: "#FFF3E0"
+    stroke: "#EF6C00"
+  }
+}
+
+Capstone: Capstone {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+  }
+}
+
+Tutorial -> GuidedLab: apply concepts
+GuidedLab -> PracticeLab: partial guidance
+PracticeLab -> ChallengeLab: problem only
+ChallengeLab -> Project: portfolio build
+Project -> Capstone: prove end to end

@@ -1,0 +1,7 @@
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+direction: right
+Dry: "dry-run" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Idem: "idempotent" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Log: "structured logs" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Blast: "blast radius" { style.fill: "#fce7f3"; style.stroke: "#db2777" }
+Dry -> Idem -> Log -> Blast

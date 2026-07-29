@@ -1,0 +1,8 @@
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+direction: right
+App: "script" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Err: "stderr logs" { style.fill: "#fee2e2"; style.stroke: "#dc2626" }
+Out: "stdout data\nRESULT" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+CI: "CI / human" { style.fill: "#f3e8ff"; style.stroke: "#9333ea" }
+App -> Err -> CI
+App -> Out -> CI

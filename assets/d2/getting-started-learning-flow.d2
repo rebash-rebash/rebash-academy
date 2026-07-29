@@ -1,0 +1,63 @@
+direction: down
+
+Learner: Beginner {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E3F2FD"
+    stroke: "#1976D2"
+  }
+}
+
+Path: Career Path {
+  shape: rectangle
+  style: {
+    fill: "#E8F5E9"
+    stroke: "#2E7D32"
+  }
+}
+
+Tech: Technology {
+  shape: rectangle
+  style: {
+    fill: "#FFF3E0"
+    stroke: "#EF6C00"
+  }
+}
+
+Tutorials: Tutorials {
+  shape: rectangle
+}
+
+Labs: Labs {
+  shape: rectangle
+}
+
+Projects: Projects {
+  shape: rectangle
+}
+
+Capstone: Capstone {
+  shape: rectangle
+  style: {
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+  }
+}
+
+Ready: Job Ready {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E8F5E9"
+    stroke: "#1B5E20"
+  }
+}
+
+Learner -> Path: choose goal
+Path -> Tech: follow roadmap
+Tech -> Tutorials: learn in order
+Tutorials -> Labs: practise
+Labs -> Projects: build
+Projects -> Capstone: prove skills
+Capstone -> Ready: interview + certs
