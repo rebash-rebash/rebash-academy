@@ -1,2 +1,5 @@
 title: Blog
 icon: material/post
+
+nav:
+  - Overview: index.md

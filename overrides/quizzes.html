@@ -1,0 +1,293 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  {% set categories = [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "lead": "Validate core skills in Linux, automation, networking, and scripting before production scenarios.",
+      "tracks": [
+        {"id": "linux", "title": "Linux", "url": "quizzes/linux-for-cloud-devops-fundamentals/", "icon": "linux", "theme": "linux", "status": "ready", "badge": "3 quizzes", "meta": "40 or 25 questions", "summary": "Course fundamentals, legacy bank, and Linux servers module assessment."},
+        {"id": "shell", "title": "Shell Scripting", "url": "quizzes/shell-scripting-for-devops-fundamentals/", "icon": "bash", "theme": "linux", "status": "ready", "badge": "2 quizzes", "meta": "40 questions", "summary": "Bash automation, pipelines, functions, and production shell patterns."},
+        {"id": "python", "title": "Python for DevOps", "url": "quizzes/python-for-devops-engineers-fundamentals/", "icon": "language-python", "theme": "docker", "status": "ready", "badge": "2 quizzes", "meta": "40 questions", "summary": "CLI tools, APIs, cloud SDKs, packaging, and DevOps automation concepts."},
+        {"id": "networking", "title": "Networking", "url": "quizzes/networking-production/", "icon": "lan", "theme": "devops", "status": "ready", "badge": "1 quiz", "meta": "25 questions", "summary": "Production networking — DNS, HTTP, load balancing, and triage judgement."},
+        {"id": "git", "title": "Git", "url": "git/", "icon": "git", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Branching, remotes, pull requests, and recovery workflows."},
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Cloud platforms",
+      "lead": "Test identity, networking, and compute knowledge on major cloud providers.",
+      "tracks": [
+        {"id": "aws", "title": "AWS", "url": "quizzes/aws-fundamentals/", "icon": "aws", "theme": "aws", "status": "ready", "badge": "1 quiz", "meta": "40 questions", "summary": "IAM, VPC, EC2, S3, and production AWS operations fundamentals."},
+        {"id": "azure", "title": "Azure", "url": "azure/", "icon": "microsoft-azure", "theme": "azure", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Azure fundamentals and identity — assessments on the roadmap."},
+        {"id": "gcp", "title": "Google Cloud", "url": "gcp/", "icon": "google-cloud", "theme": "gcp", "status": "planned", "badge": "Planned", "meta": "—", "summary": "GCP core services and GKE foundations — planned."},
+      ]
+    },
+    {
+      "id": "containers",
+      "title": "Containers",
+      "lead": "Check understanding of images, orchestration, and cluster operations.",
+      "tracks": [
+        {"id": "docker", "title": "Docker", "url": "quizzes/docker-fundamentals/", "icon": "docker", "theme": "docker", "status": "ready", "badge": "1 quiz", "meta": "40 questions", "summary": "Images, Compose, networking, storage, and container production patterns."},
+        {"id": "kubernetes", "title": "Kubernetes", "url": "quizzes/kubernetes-fundamentals/", "icon": "kubernetes", "theme": "k8s", "status": "ready", "badge": "1 quiz", "meta": "40 questions", "summary": "Workloads, networking, storage, security, and cluster troubleshooting."},
+        {"id": "helm", "title": "Helm", "url": "helm/", "icon": "ship-wheel", "theme": "k8s", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Charts, releases, and package management assessments planned."},
+      ]
+    },
+    {
+      "id": "iac",
+      "title": "Infrastructure as Code",
+      "lead": "Assess plan, apply, and module design knowledge for reproducible infrastructure.",
+      "tracks": [
+        {"id": "terraform", "title": "Terraform", "url": "terraform/", "icon": "terraform", "theme": "terraform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Providers, state, modules, and IaC patterns — quiz bank planned."},
+        {"id": "ansible", "title": "Ansible", "url": "ansible/", "icon": "ansible", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Playbooks, roles, and idempotency assessments planned."},
+      ]
+    },
+    {
+      "id": "cicd",
+      "title": "CI/CD",
+      "lead": "Validate pipeline design, delivery gates, and GitOps concepts.",
+      "tracks": [
+        {"id": "gitlab", "title": "GitLab CI/CD", "url": "quizzes/cicd-fundamentals/", "icon": "gitlab", "theme": "devops", "status": "ready", "badge": "1 quiz", "meta": "40 questions", "summary": "Pipelines, runners, environments, and secure delivery fundamentals."},
+        {"id": "github-actions", "title": "GitHub Actions", "url": "github-actions/", "icon": "github", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Workflow and reusable action assessments planned."},
+        {"id": "jenkins", "title": "Jenkins", "url": "jenkins/", "icon": "cog", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Pipeline and agent assessments planned."},
+        {"id": "argocd", "title": "Argo CD", "url": "argocd/", "icon": "sync", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "GitOps continuous delivery assessments planned."},
+      ]
+    },
+    {
+      "id": "observability",
+      "title": "Observability",
+      "lead": "Metrics, logs, traces, and on-call signal knowledge.",
+      "tracks": [
+        {"id": "prometheus", "title": "Prometheus", "url": "prometheus/", "icon": "chart-line", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "PromQL, alerting, and SRE signal assessments planned."},
+        {"id": "grafana", "title": "Grafana", "url": "grafana/", "icon": "monitor", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Dashboard and datasource assessments planned."},
+        {"id": "loki", "title": "Loki", "url": "loki/", "icon": "text-box-search", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Log aggregation assessments planned."},
+        {"id": "tempo", "title": "Tempo", "url": "tempo/", "icon": "timeline-clock", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Distributed tracing assessments planned."},
+        {"id": "opentelemetry", "title": "OpenTelemetry", "url": "opentelemetry/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Instrumentation assessments planned."},
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "lead": "DevSecOps practices and security engineering for cloud-native systems.",
+      "tracks": [
+        {"id": "devsecops", "title": "DevSecOps", "url": "devsecops/", "icon": "shield-lock", "theme": "secops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Pipeline security and shift-left assessments planned."},
+      ]
+    },
+    {
+      "id": "platform",
+      "title": "Platform &amp; reliability",
+      "lead": "Internal platforms, SRE workflows, and architecture decisions.",
+      "tracks": [
+        {"id": "platform-engineering", "title": "Platform Engineering", "url": "platform-engineering/", "icon": "layers", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Golden path and IDP assessments planned."},
+        {"id": "sre", "title": "Site Reliability Engineering", "url": "sre/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "SLOs, error budgets, and incident response assessments planned."},
+        {"id": "architecture", "title": "Cloud Architecture", "url": "architecture/", "icon": "sitemap", "theme": "architect", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Landing zone and multi-cloud design assessments planned."},
+        {"id": "ai", "title": "AI for DevOps", "url": "ai/", "icon": "brain", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Practical AI workflow assessments planned."},
+      ]
+    },
+  ] %}
+
+  {% set featured = [
+    {"title": "Linux for Cloud & DevOps Fundamentals", "url": "quizzes/linux-for-cloud-devops-fundamentals/", "icon": "linux", "theme": "linux", "badge": "40 questions", "summary": "Full course fundamentals — FHS, permissions, systemd, logs, and production judgement."},
+    {"title": "Kubernetes Fundamentals", "url": "quizzes/kubernetes-fundamentals/", "icon": "kubernetes", "theme": "k8s", "badge": "40 questions", "summary": "Workloads, networking, storage, and cluster troubleshooting concepts."},
+    {"title": "AWS Fundamentals", "url": "quizzes/aws-fundamentals/", "icon": "aws", "theme": "aws", "badge": "40 questions", "summary": "IAM, VPC, EC2, S3, and core AWS operations knowledge."},
+    {"title": "Docker Fundamentals", "url": "quizzes/docker-fundamentals/", "icon": "docker", "theme": "docker", "badge": "40 questions", "summary": "Images, Compose, networking, and production container patterns."},
+    {"title": "CI/CD Fundamentals", "url": "quizzes/cicd-fundamentals/", "icon": "gitlab", "theme": "devops", "badge": "40 questions", "summary": "Pipelines, runners, environments, and secure delivery workflows."},
+    {"title": "Python for DevOps Engineers", "url": "quizzes/python-for-devops-engineers-fundamentals/", "icon": "language-python", "theme": "docker", "badge": "40 questions", "summary": "CLI tools, APIs, automation libraries, and packaging for ops teams."},
+  ] %}
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Self-assessment</p>
+      <h1 class="rebash-page-hero__title">Quizzes</h1>
+      <p class="rebash-page-hero__lead">
+        Check your understanding after tutorials — self-mark with explanations, identify gaps,
+        then reinforce with labs and cheat sheets before moving on.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-stats md-grid" aria-label="Quizzes catalog highlights">
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">12</span>
+      <span class="rebash-stats__label">Published quizzes</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">8</span>
+      <span class="rebash-stats__label">Live technology areas</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">70%</span>
+      <span class="rebash-stats__label">Standard pass mark</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Explanations</span>
+      <span class="rebash-stats__label">After every question</span>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Browse by technology</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Open a quiz from the sidebar or jump in from a technology card below.
+      </p>
+    </div>
+
+    <div class="rebash-tech-filter rebash-reveal" role="toolbar" aria-label="Filter quiz tracks">
+      <button type="button" class="rebash-tech-filter__btn is-active" data-filter="all">All</button>
+      {% for category in categories %}
+      <button type="button" class="rebash-tech-filter__btn" data-filter="{{ category.id }}">{{ category.title | replace(" &amp; ", " & ") }}</button>
+      {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div class="rebash-tech-category rebash-reveal" data-category="{{ category.id }}">
+      <div class="rebash-tech-category__header">
+        <h3 class="rebash-tech-category__title">{{ category.title | replace(" &amp; ", " & ") }}</h3>
+        <p class="rebash-tech-category__lead">{{ category.lead }}</p>
+      </div>
+      <div class="rebash-feature-grid rebash-feature-grid--3">
+        {% for track in category.tracks %}
+        <a
+          href="{{ track.url | url }}"
+          class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ track.theme }} rebash-tech-card rebash-tech-card--{{ track.status }}"
+          data-category="{{ category.id }}"
+          data-status="{{ track.status }}"
+        >
+          <div class="rebash-path-card__banner">
+            <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(track.icon) }}</div>
+            <span class="rebash-path-card__badge">{{ track.badge }}</span>
+          </div>
+          <div class="rebash-path-card__body">
+            <h4 class="rebash-path-card__title">{{ track.title }}</h4>
+            <p class="rebash-path-card__summary">{{ track.summary }}</p>
+            <div class="rebash-path-card__topics">
+              <span class="rebash-path-card__topic">{{ track.meta }}</span>
+              <span class="rebash-path-card__topic rebash-tech-card__status">{{ track.status | replace("ready", "Live") | replace("planned", "Planned") }}</span>
+            </div>
+            <span class="rebash-path-card__link">{% if track.status == "ready" %}Open quizzes{% else %}View track{% endif %}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Featured quizzes</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Popular fundamentals assessments — start here after finishing the related tutorials.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--3 rebash-reveal">
+      {% for quiz in featured %}
+      <a href="{{ quiz.url | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ quiz.theme }}">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(quiz.icon) }}</div>
+          <span class="rebash-path-card__badge">{{ quiz.badge }}</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">{{ quiz.title }}</h3>
+          <p class="rebash-path-card__summary">{{ quiz.summary }}</p>
+          <span class="rebash-path-card__link">Start quiz</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Learn first, then check</span>
+        <h2 class="rebash-panel__title">Tutorials and technologies</h2>
+        <p class="rebash-panel__lead">
+          Quizzes work best after tutorials. Study a track, then return here to validate before labs.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'technologies/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Browse technologies</a>
+          <a href="{{ 'labs/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Browse labs</a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Prepare for interviews and exams</span>
+        <h2 class="rebash-panel__title">Interview prep and certifications</h2>
+        <p class="rebash-panel__lead">
+          Use quizzes to find gaps, then drill with interview questions and certification mapping.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'interview/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Interview prep</a>
+          <a href="{{ 'certifications/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Certifications</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var filterBar = document.querySelector(".rebash-tech-filter");
+      if (!filterBar) return;
+      var buttons = filterBar.querySelectorAll(".rebash-tech-filter__btn");
+      var categories = document.querySelectorAll(".rebash-tech-category");
+
+      function applyFilter(id) {
+        buttons.forEach(function (btn) {
+          btn.classList.toggle("is-active", btn.dataset.filter === id);
+        });
+        categories.forEach(function (section) {
+          var show = id === "all" || section.dataset.category === id;
+          section.hidden = !show;
+        });
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          applyFilter(btn.dataset.filter);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var nodes = document.querySelectorAll(".rebash-reveal");
+      if (!nodes.length) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      nodes.forEach(function (n) { io.observe(n); });
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{{ super() }}{% endblock %}

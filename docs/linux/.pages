@@ -1,36 +1,46 @@
 title: Linux
 icon: material/linux
+
 nav:
-  - index.md
-  - Foundations:
-    - introduction-to-linux.md
-    - linux-filesystem-hierarchy.md
-    - essential-linux-commands.md
-  - Users & Permissions:
-    - file-permissions-and-ownership.md
-    - user-and-group-management.md
-  - Processes & Services:
-    - process-management.md
-    - systemd-service-management.md
-    - package-management.md
-  - Text & Scripting:
-    - text-processing-grep-sed-awk.md
-    - shell-scripting-fundamentals.md
-  - Remote Administration:
-    - ssh-remote-administration.md
-    - remote-systemd-services.md
-  - Storage & Operations:
-    - disk-and-filesystem-management.md
-    - log-management-journalctl.md
-    - cron-and-task-scheduling.md
-    - environment-variables-shell-config.md
-    - linux-networking-essentials.md
-    - file-archiving-and-compression.md
-    - linux-security-hardening-basics.md
-    - troubleshooting-linux-systems.md
-  - Advanced Linux Servers:
-    - linux-server-baseline-and-lifecycle.md
-    - nginx-web-server-and-reverse-proxy.md
-    - tls-certificates-on-linux-servers.md
-    - server-storage-lvm-and-fstab.md
-    - backup-restore-and-recovery-drills.md
+  - Overview: index.md
+  - "Module 1 · Fundamentals":
+    - Linux Fundamentals — Distributions and Architecture: linux-fundamentals-distributions-and-architecture.md
+    - Boot Process and Filesystem Hierarchy: boot-process-and-filesystem-hierarchy.md
+  - "Module 2 · Command Line":
+    - Essential Linux Commands: essential-linux-commands.md
+  - "Module 3 · Filesystem":
+    - Paths, Links, Mounts, and Inodes: filesystem-paths-links-mounts-and-inodes.md
+    - Disk Usage and File Attributes: disk-usage-and-file-attributes.md
+  - "Module 4 · Users & Permissions":
+    - Users, Groups, and sudo: users-groups-and-sudo.md
+    - Permissions, ACLs, and Special Bits: permissions-acls-and-special-bits.md
+  - "Module 5 · Text Processing":
+    - Text Processing with grep, sed, and awk: text-processing-grep-sed-awk.md
+  - "Module 6 · Processes":
+    - Process Management: process-management.md
+  - "Module 7 · Services & Boot":
+    - systemd Services and journalctl: systemd-services-and-journalctl.md
+    - systemd Targets, Timers, and Boot: systemd-targets-timers-and-boot.md
+  - "Module 8 · Storage":
+    - Disks, Partitions, and Filesystems: storage-disks-partitions-and-filesystems.md
+    - LVM, Swap, and Disk Monitoring: lvm-swap-and-disk-monitoring.md
+  - "Module 9 · Networking":
+    - Linux Networking Tools: linux-networking-tools.md
+    - SSH and Remote Access: ssh-and-remote-access.md
+  - "Module 10 · Packages":
+    - Package Management: package-management.md
+  - "Module 11 · Scheduling":
+    - Scheduling — cron, at, and Timers: scheduling-cron-at-and-timers.md
+  - "Module 12 · Logging & Monitoring":
+    - Logging — syslog, journald, logrotate: logging-syslog-journald-logrotate.md
+    - Host Monitoring — vmstat, iostat, sar: host-monitoring-vmstat-iostat-sar.md
+  - "Module 13 · Security":
+    - SSH Hardening and Firewalls: ssh-hardening-and-firewalls.md
+    - SELinux, AppArmor, Fail2Ban, Auditd, PAM: selinux-apparmor-fail2ban-auditd-pam.md
+  - "Module 14 · Containers & Cloud":
+    - Containers — Namespaces, cgroups, and OCI: containers-namespaces-cgroups-and-oci.md
+  - "Module 15 · Troubleshooting":
+    - Troubleshooting Linux Systems: troubleshooting-linux-systems.md
+  - "Module 16 · Production Linux":
+    - Production Hardening and Performance: production-linux-hardening-and-performance.md
+    - Backup, Disaster Recovery, and Capacity: backup-disaster-recovery-and-capacity.md

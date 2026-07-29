@@ -1,122 +1,310 @@
 {% extends "main.html" %}
-{% import "partials/rebash-macros.html" as rebash with context %}
+{% from "partials/rebash-icons.html" import mdi %}
 
 {% block tabs %}
   {{ super() }}
-  {{ rebash.landing_styles() }}
-  {{ rebash.page_hero(
-    "Updates & insights",
-    "Blog",
-    "Articles, release notes, deep dives, and community highlights from REBASH Academy."
-  ) }}
 
-  <section class="rebash-section rebash-section--paths md-grid">
-    {{ rebash.section_header(
-      "Featured topics",
-      "What we'll publish — tutorials in context, platform updates, and engineering best practices."
-    ) }}
-    <div class="rebash-feature-grid rebash-feature-grid--2">
-      {{ rebash.path_card(
-        "blog/",
-        "blog",
-        "Coming soon",
-        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14l4-4h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 12H6.83L4 17.83V5h15v10ZM7 7h10v2H7V7Zm0 4h7v2H7v-2Z"/></svg>',
-        "Release Notes",
-        "New tutorials, site improvements, and documentation milestones as they ship.",
-        ["Changelog", "Updates"],
-        "On the roadmap",
-        static=true
-      ) }}
-      {{ rebash.path_card(
-        "blog/",
-        "devops",
-        "Coming soon",
-        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.26A7.002 7.002 0 0 1 5.26 19H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7 15a5 5 0 0 0 10 0H7Z"/></svg>',
-        "Engineering Deep Dives",
-        "Long-form posts on architecture decisions, production incidents, and tool comparisons.",
-        ["DevOps", "Cloud", "Security"],
-        "On the roadmap",
-        static=true
-      ) }}
-      {{ rebash.path_card(
-        "blog/",
-        "cheatsheets",
-        "Coming soon",
-        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6Zm7 1.5L18.5 9H13V3.5ZM8 12h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg>',
-        "Tips & Short Guides",
-        "Quick wins, command recipes, and workflow shortcuts for daily engineering work.",
-        ["How-to", "Reference"],
-        "On the roadmap",
-        static=true
-      ) }}
-      {{ rebash.path_card(
-        "blog/",
-        "interview",
-        "Coming soon",
-        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-2.05-4.95L14 9h6V3l-2.24 2.24A8.96 8.96 0 0 0 12 3Zm-1 6v4.41l3.71 2.13.99-1.72L13 12.17V9h-2Z"/></svg>',
-        "Community Highlights",
-        "Contributor spotlights, learning journeys, and open-source project features.",
-        ["Community", "Careers"],
-        "On the roadmap",
-        static=true
-      ) }}
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  {% set categories = [
+    {
+      "id": "engineering",
+      "title": "Engineering",
+      "lead": "Technical insights, opinions, lessons learned, and day-two engineering practice.",
+      "tracks": [
+        {"id": "engineering-general", "title": "Engineering Insights", "url": "technologies/", "icon": "lightbulb-on", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Deep dives", "summary": "Architecture decisions, tool comparisons, and production engineering stories."},
+        {"id": "linux", "title": "Linux", "url": "linux/", "icon": "linux", "theme": "linux", "status": "planned", "badge": "Planned", "meta": "Series", "summary": "Linux internals, administration patterns, and hiring fundamentals for operators."},
+        {"id": "python", "title": "Python", "url": "python/", "icon": "language-python", "theme": "docker", "status": "planned", "badge": "Planned", "meta": "Automation", "summary": "Python vs Shell trade-offs, automation patterns, and ops scripting at scale."},
+        {"id": "git", "title": "Git", "url": "git/", "icon": "git", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Workflows", "summary": "Recovery patterns, branching strategies, and collaboration anti-patterns."},
+        {"id": "networking", "title": "Networking", "url": "networking/", "icon": "lan", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Production", "summary": "DNS, firewalls, and triage stories from real outage investigations."},
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Cloud",
+      "lead": "AWS, Azure, Google Cloud, and multi-cloud architecture discussions.",
+      "tracks": [
+        {"id": "aws", "title": "AWS", "url": "aws/", "icon": "aws", "theme": "aws", "status": "planned", "badge": "Planned", "meta": "Architecture", "summary": "Landing zones, service trade-offs, and cost-aware design on AWS."},
+        {"id": "azure", "title": "Azure", "url": "azure/", "icon": "microsoft-azure", "theme": "azure", "status": "planned", "badge": "Planned", "meta": "Planned", "summary": "Azure identity, foundation stacks, and enterprise patterns — articles on the roadmap."},
+        {"id": "gcp", "title": "Google Cloud", "url": "gcp/", "icon": "google-cloud", "theme": "gcp", "status": "planned", "badge": "Planned", "meta": "Planned", "summary": "GKE, organisation policies, and GCP architecture notes — planned."},
+        {"id": "multi-cloud", "title": "Multi-cloud", "url": "career-paths/cloud-architect/", "icon": "cloud", "theme": "architect", "status": "planned", "badge": "Planned", "meta": "Opinion", "summary": "When multi-cloud helps, when it hurts, and how to decide with eyes open."},
+      ]
+    },
+    {
+      "id": "containers",
+      "title": "Containers &amp; DevOps",
+      "lead": "Docker, Kubernetes, CI/CD, and delivery culture — beyond the tutorial syllabus.",
+      "tracks": [
+        {"id": "docker", "title": "Docker", "url": "docker/", "icon": "docker", "theme": "docker", "status": "planned", "badge": "Planned", "meta": "Migration", "summary": "Container patterns, Compose-to-Kubernetes paths, and production hardening stories."},
+        {"id": "kubernetes", "title": "Kubernetes", "url": "kubernetes/", "icon": "kubernetes", "theme": "k8s", "status": "planned", "badge": "Series", "meta": "Deep dive", "summary": "Multi-part Kubernetes deep dive — control plane, networking, and operations."},
+        {"id": "cicd", "title": "CI/CD", "url": "gitlab/", "icon": "gitlab", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Delivery", "summary": "Pipeline design, deploy gates, and the culture around safe releases."},
+        {"id": "devops-culture", "title": "DevOps", "url": "career-paths/devops-engineer/", "icon": "source-branch", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Culture", "summary": "DevOps practice, team boundaries, and what hiring panels actually test."},
+      ]
+    },
+    {
+      "id": "infrastructure",
+      "title": "Infrastructure",
+      "lead": "Terraform, Ansible, and Infrastructure as Code lessons from production.",
+      "tracks": [
+        {"id": "terraform", "title": "Terraform", "url": "terraform/", "icon": "terraform", "theme": "terraform", "status": "planned", "badge": "Series", "meta": "Best practices", "summary": "State management mistakes, module design, and IaC review patterns."},
+        {"id": "ansible", "title": "Ansible", "url": "ansible/", "icon": "ansible", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Planned", "summary": "Configuration management patterns and idempotency war stories — planned."},
+        {"id": "platform", "title": "Platform Engineering", "url": "platform-engineering/", "icon": "layers", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "IDP", "summary": "Golden paths, internal developer platforms, and platform team scope."},
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "lead": "DevSecOps, pipeline security, and security architecture analysis.",
+      "tracks": [
+        {"id": "devsecops", "title": "DevSecOps", "url": "devsecops/", "icon": "shield-lock", "theme": "secops", "status": "planned", "badge": "Planned", "meta": "Pipelines", "summary": "Security gates teams keep enabled — and the ones they regret disabling."},
+        {"id": "security-arch", "title": "Security Architecture", "url": "career-paths/devsecops-engineer/", "icon": "shield-lock", "theme": "secops", "status": "planned", "badge": "Planned", "meta": "Analysis", "summary": "Threat modelling and supply-chain security for cloud-native systems."},
+      ]
+    },
+    {
+      "id": "observability",
+      "title": "Observability &amp; SRE",
+      "lead": "Monitoring, incidents, postmortems, and reliability engineering practice.",
+      "tracks": [
+        {"id": "sre", "title": "Site Reliability Engineering", "url": "career-paths/site-reliability-engineer/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "SLOs", "summary": "SLO burn rates, error budgets, and on-call practices that scale."},
+        {"id": "incidents", "title": "Incident Analysis", "url": "interview/", "icon": "alert-circle", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "Postmortems", "summary": "Sanitised outage walkthroughs and postmortems that change team behaviour."},
+        {"id": "prometheus", "title": "Observability", "url": "prometheus/", "icon": "chart-line", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "Alerting", "summary": "Alert fatigue, signal design, and metrics that survive production."},
+      ]
+    },
+    {
+      "id": "architecture",
+      "title": "Architecture",
+      "lead": "System design, landing zones, HA, DR, and cost trade-offs at scale.",
+      "tracks": [
+        {"id": "cloud-arch", "title": "Cloud Architecture", "url": "architecture/", "icon": "sitemap", "theme": "architect", "status": "planned", "badge": "Planned", "meta": "Design", "summary": "Landing zones, network design, and architect-level decision frameworks."},
+        {"id": "ha-dr", "title": "HA &amp; DR", "url": "career-paths/cloud-architect/", "icon": "backup-restore", "theme": "architect", "status": "planned", "badge": "Planned", "meta": "Resilience", "summary": "Failover testing, DR drills, and availability targets that match the business."},
+      ]
+    },
+    {
+      "id": "ai",
+      "title": "AI",
+      "lead": "Practical AI developments for DevOps and platform teams.",
+      "tracks": [
+        {"id": "ai-devops", "title": "AI for DevOps", "url": "ai/", "icon": "brain", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "Practical", "summary": "What works today in AI-assisted triage, docs, and automation — without the hype."},
+      ]
+    },
+    {
+      "id": "career",
+      "title": "Career",
+      "lead": "Career advice, portfolio strategy, and certification preparation context.",
+      "tracks": [
+        {"id": "career-paths", "title": "Career Advice", "url": "career-paths/", "icon": "briefcase", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Roles", "summary": "Which skills matter for DevOps, platform, and SRE roles in 2026."},
+        {"id": "portfolio", "title": "Portfolio &amp; Interviews", "url": "projects/", "icon": "rocket-launch", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Interviews", "summary": "Portfolio projects that survive technical interviews and hiring panel scrutiny."},
+        {"id": "certifications", "title": "Certifications", "url": "certifications/", "icon": "certificate", "theme": "devops", "status": "ready", "badge": "Live map", "meta": "Exams", "summary": "How Academy content maps to CKA, Terraform Associate, AWS, and RHCSA — not exam dumps."},
+      ]
+    },
+    {
+      "id": "community",
+      "title": "Community &amp; releases",
+      "lead": "Release notes, roadmap updates, contributor highlights, and community news.",
+      "tracks": [
+        {"id": "release-notes", "title": "Release Notes", "url": "roadmap/", "icon": "newspaper", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Changelog", "summary": "New tutorials, site improvements, and documentation milestones as they ship."},
+        {"id": "roadmap", "title": "Roadmap Updates", "url": "roadmap/", "icon": "map", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Planning", "summary": "What is live, in progress, and planned next across REBASH Academy."},
+        {"id": "community", "title": "Community", "url": "about/", "icon": "account-group", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "Contributors", "summary": "Contributor guides, learning journeys, and open-source highlights."},
+      ]
+    },
+  ] %}
+
+  {% set featured = [
+    {"title": "Release Notes", "url": "roadmap/", "icon": "newspaper", "theme": "devops", "badge": "Coming first", "summary": "New tutorials, site improvements, and documentation milestones — launch article on the roadmap."},
+    {"title": "Kubernetes Deep Dive", "url": "kubernetes/", "icon": "kubernetes", "theme": "k8s", "badge": "Series", "summary": "Multi-part series on control plane, networking, and day-two operations beyond the tutorial track."},
+    {"title": "Terraform Best Practices", "url": "terraform/", "icon": "terraform", "theme": "terraform", "badge": "Series", "summary": "State mistakes, module design, and IaC review patterns from production lessons learned."},
+    {"title": "Incident Analysis", "url": "interview/", "icon": "alert-circle", "theme": "platform", "badge": "SRE", "summary": "Sanitised postmortems and outage walkthroughs — what broke, why, and what changed after."},
+    {"title": "Platform Engineering", "url": "platform-engineering/", "icon": "layers", "theme": "platform", "badge": "IDP", "summary": "Golden paths, internal developer platforms, and where platform teams should draw boundaries."},
+    {"title": "AI for DevOps", "url": "ai/", "icon": "brain", "theme": "platform", "badge": "Practical", "summary": "Honest take on AI-assisted triage, documentation, and automation for operations teams."},
+  ] %}
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Engineering journal</p>
+      <h1 class="rebash-page-hero__title">Blog</h1>
+      <p class="rebash-page-hero__lead">
+        Industry insights, architecture discussions, lessons learned, and release notes —
+        complementing tutorials with opinion, analysis, and real-world engineering context.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-stats md-grid" aria-label="Blog catalog highlights">
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">12</span>
+      <span class="rebash-stats__label">Content categories</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">18+</span>
+      <span class="rebash-stats__label">Article types</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">8</span>
+      <span class="rebash-stats__label">Planned article series</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Tutorial companion</span>
+      <span class="rebash-stats__label">Not a replacement</span>
     </div>
   </section>
 
   <section class="rebash-section rebash-section--alt md-grid">
-    {{ rebash.section_header(
-      "Explore now",
-      "While articles are in progress, dive into tutorials and reference material."
-    ) }}
-    <div class="rebash-feature-grid rebash-feature-grid--3">
-      {{ rebash.path_card(
-        "getting-started/",
-        "linux",
-        "Start here",
-        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="m12 3-7 4v10l7 4 7-4V7l-7-4Zm0 2.18 4.9 2.8L12 10.78 7.1 7.98 12 5.18ZM6 9.27l5 2.86v5.74l-5-2.86V9.27Zm12 0v5.74l-5 2.86v-5.74l5-2.86Z"/></svg>',
-        "Getting Started",
-        "New to DevOps? Begin with guided onboarding and tool setup.",
-        [],
-        "Get started",
-        compact=true
-      ) }}
-      {{ rebash.path_card(
-        "cheatsheets/",
-        "cheatsheets",
-        "Reference",
-        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6Zm7 1.5L18.5 9H13V3.5ZM8 12h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg>',
-        "Cheat Sheets",
-        "Copy-paste command guides for daily engineering tasks.",
-        [],
-        "Open cheatsheets",
-        compact=true
-      ) }}
-      {{ rebash.path_card(
-        "roadmap/",
-        "architect",
-        "Planning",
-        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M3 3h8v8H3V3Zm10 0h8v5h-8V3ZM3 13h5v8H3v-8Zm7 3h11v5H10v-5Z"/></svg>',
-        "Roadmap",
-        "See what content is live, in progress, and planned next.",
-        [],
-        "View roadmap",
-        compact=true
-      ) }}
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Browse by category</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Articles will appear in the sidebar as they publish. Explore planned topics below — each links to the related Academy track.
+      </p>
+    </div>
+
+    <div class="rebash-tech-filter rebash-reveal" role="toolbar" aria-label="Filter blog categories">
+      <button type="button" class="rebash-tech-filter__btn is-active" data-filter="all">All</button>
+      {% for category in categories %}
+      <button type="button" class="rebash-tech-filter__btn" data-filter="{{ category.id }}">{{ category.title | replace(" &amp; ", " & ") }}</button>
+      {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div class="rebash-tech-category rebash-reveal" data-category="{{ category.id }}">
+      <div class="rebash-tech-category__header">
+        <h3 class="rebash-tech-category__title">{{ category.title | replace(" &amp; ", " & ") }}</h3>
+        <p class="rebash-tech-category__lead">{{ category.lead }}</p>
+      </div>
+      <div class="rebash-feature-grid rebash-feature-grid--3">
+        {% for track in category.tracks %}
+        <a
+          href="{{ track.url | url }}"
+          class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ track.theme }} rebash-tech-card rebash-tech-card--{{ track.status }}"
+          data-category="{{ category.id }}"
+          data-status="{{ track.status }}"
+        >
+          <div class="rebash-path-card__banner">
+            <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(track.icon) }}</div>
+            <span class="rebash-path-card__badge">{{ track.badge }}</span>
+          </div>
+          <div class="rebash-path-card__body">
+            <h4 class="rebash-path-card__title">{{ track.title }}</h4>
+            <p class="rebash-path-card__summary">{{ track.summary }}</p>
+            <div class="rebash-path-card__topics">
+              <span class="rebash-path-card__topic">{{ track.meta }}</span>
+              <span class="rebash-path-card__topic rebash-tech-card__status">{{ track.status | replace("ready", "Live") | replace("planned", "Planned") }}</span>
+            </div>
+            <span class="rebash-path-card__link">{% if track.status == "ready" %}Explore{% else %}View topic{% endif %}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Editor's picks</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Planned flagship topics — first articles will land here as the engineering journal launches.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--3 rebash-reveal">
+      {% for article in featured %}
+      <a href="{{ article.url | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ article.theme }}">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(article.icon) }}</div>
+          <span class="rebash-path-card__badge">{{ article.badge }}</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">{{ article.title }}</h3>
+          <p class="rebash-path-card__summary">{{ article.summary }}</p>
+          <span class="rebash-path-card__link">View topic</span>
+        </div>
+      </a>
+      {% endfor %}
     </div>
   </section>
 
-  {{ rebash.cta_panels(
-    "Stay in the loop",
-    "Follow along",
-    "Connect on LinkedIn and explore learning paths as new tutorials go live.",
-    "https://www.linkedin.com/in/shaikkhadarbasha/",
-    "LinkedIn",
-    "learning-paths/",
-    "Learning Paths",
-    "New content weekly",
-    "See what's coming next",
-    "Tutorials and paths are added regularly — check the roadmap for what's next.",
-    "roadmap/",
-    "View roadmap"
-  ) }}
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Learn first, then read deeper</span>
+        <h2 class="rebash-panel__title">Tutorials and technologies</h2>
+        <p class="rebash-panel__lead">
+          The journal complements structured tutorials. Start a track, then return here for context, opinions, and lessons learned.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'technologies/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Browse technologies</a>
+          <a href="{{ 'getting-started/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Getting started</a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Stay current</span>
+        <h2 class="rebash-panel__title">Roadmap and release notes</h2>
+        <p class="rebash-panel__lead">
+          See what content is live and what ships next — release notes articles will mirror the public roadmap.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'roadmap/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">View roadmap</a>
+          <a href="{{ 'about/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">About REBASH</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var filterBar = document.querySelector(".rebash-tech-filter");
+      if (!filterBar) return;
+      var buttons = filterBar.querySelectorAll(".rebash-tech-filter__btn");
+      var categories = document.querySelectorAll(".rebash-tech-category");
+
+      function applyFilter(id) {
+        buttons.forEach(function (btn) {
+          btn.classList.toggle("is-active", btn.dataset.filter === id);
+        });
+        categories.forEach(function (section) {
+          var show = id === "all" || section.dataset.category === id;
+          section.hidden = !show;
+        });
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          applyFilter(btn.dataset.filter);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var nodes = document.querySelectorAll(".rebash-reveal");
+      if (!nodes.length) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      nodes.forEach(function (n) { io.observe(n); });
+    })();
+  </script>
 {% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{{ super() }}{% endblock %}

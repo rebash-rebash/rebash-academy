@@ -1,0 +1,57 @@
+---
+description: REBASH Academy style guide
+alwaysApply: true
+---
+
+# REBASH Academy Style Guide
+
+Voice:
+
+Professional
+
+Friendly
+
+Educational
+
+Practical
+
+Avoid:
+
+Buzzwords
+
+Marketing
+
+Filler
+
+Corporate jargon
+
+Always explain acronyms on first use.
+
+Examples:
+
+Infrastructure as Code (IaC)
+
+Role-Based Access Control (RBAC)
+
+Site Reliability Engineering (SRE)
+
+Container Storage Interface (CSI)
+
+Be consistent throughout the documentation.
+
+Prefer active voice.
+
+Use British English spelling consistently unless quoting commands or official product names.
+
+Keep terminology consistent across all tutorials.
+
+---
+
+## Brand logos and icons
+
+Use real brand logos and Material Design Icons — never invent placeholder glyphs.
+
+- Nav / `.pages`: `icon: material/<brand>` (e.g. `material/docker`, `material/aws`, `material/gitlab`, `material/kubernetes`, `material/terraform`, `material/linux`, `material/git`).
+- Landing cards (`overrides/home.html`, `overrides/learning-paths.html`): import `mdi` from `partials/rebash-icons.html` and call `{{ mdi("docker") }}` (same icon names as Material).
+- Site chrome: keep the REBASH `logo.svg` / favicon assets; do not replace them with generated stand-ins.
+- Social links: Font Awesome brand icons in `mkdocs.yml` (`fontawesome/brands/...`).

@@ -1,0 +1,333 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  {% set categories = [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "lead": "OS, automation, networking, and version control — build muscle memory before production scenarios.",
+      "tracks": [
+        {"id": "linux", "title": "Linux", "url": "labs/linux-install-and-first-boot/", "icon": "linux", "theme": "linux", "status": "ready", "badge": "10 labs", "level": "Guided → Production", "summary": "Install, SSH, storage, systemd, hardening, and on-call incident triage."},
+        {"id": "shell", "title": "Shell Scripting", "url": "labs/shell-first-script/", "icon": "bash", "theme": "linux", "status": "ready", "badge": "15 labs", "level": "Guided → Challenge", "summary": "Scripts, monitoring, JSON/YAML parsing, deployment automation, and hardening."},
+        {"id": "python", "title": "Python for DevOps", "url": "labs/python-log-analyser/", "icon": "language-python", "theme": "docker", "status": "ready", "badge": "17 labs", "level": "Practice → Production", "summary": "Log analysis, cloud inventory, Kubernetes health checks, and CI/CD tooling."},
+        {"id": "networking", "title": "Networking", "url": "labs/networking-dns-firewall-triage/", "icon": "lan", "theme": "devops", "status": "ready", "badge": "2 labs", "level": "Production", "summary": "DNS and firewall triage, edge failover under realistic outage pressure."},
+        {"id": "git", "title": "Git", "url": "labs/git-history-pr-recovery/", "icon": "git", "theme": "devops", "status": "ready", "badge": "1 lab", "level": "Challenge", "summary": "Recover history, fix pull request conflicts, and restore team workflow."},
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Cloud platforms",
+      "lead": "Operate identity, networking, and compute on major cloud providers.",
+      "tracks": [
+        {"id": "aws", "title": "AWS", "url": "labs/aws-iam-vpc-triage/", "icon": "aws", "theme": "aws", "status": "ready", "badge": "2 labs", "level": "Production", "summary": "IAM and VPC reachability triage, secure EC2 access via SSM and S3."},
+        {"id": "azure", "title": "Azure", "url": "azure/", "icon": "microsoft-azure", "theme": "azure", "status": "planned", "badge": "Planned", "level": "—", "summary": "Resource inventory labs planned — Python inventory lab available today."},
+        {"id": "gcp", "title": "Google Cloud", "url": "gcp/", "icon": "google-cloud", "theme": "gcp", "status": "planned", "badge": "Planned", "level": "—", "summary": "GCP inventory and networking labs on the roadmap."},
+      ]
+    },
+    {
+      "id": "containers",
+      "title": "Containers",
+      "lead": "Images, Compose stacks, and Kubernetes deployment troubleshooting.",
+      "tracks": [
+        {"id": "docker", "title": "Docker", "url": "labs/docker-compose-stack-recovery/", "icon": "docker", "theme": "docker", "status": "ready", "badge": "1 lab", "level": "Production", "summary": "Recover a broken Compose stack and prove services are healthy again."},
+        {"id": "kubernetes", "title": "Kubernetes", "url": "labs/kubernetes-deployment-triage/", "icon": "kubernetes", "theme": "k8s", "status": "ready", "badge": "1 lab", "level": "Production", "summary": "Diagnose a failed deployment using kubectl, events, and rollout strategy."},
+        {"id": "helm", "title": "Helm", "url": "helm/", "icon": "ship-wheel", "theme": "k8s", "status": "planned", "badge": "Planned", "level": "—", "summary": "Chart install, upgrade, and rollback scenario labs coming soon."},
+      ]
+    },
+    {
+      "id": "iac",
+      "title": "Infrastructure as Code",
+      "lead": "Plan, review, and apply infrastructure changes safely.",
+      "tracks": [
+        {"id": "terraform", "title": "Terraform", "url": "labs/terraform-plan-review-workflow/", "icon": "terraform", "theme": "terraform", "status": "ready", "badge": "1 lab", "level": "Production", "summary": "Review a plan, spot risky changes, and walk through a safe apply workflow."},
+        {"id": "ansible", "title": "Ansible", "url": "ansible/", "icon": "ansible", "theme": "devops", "status": "planned", "badge": "Planned", "level": "—", "summary": "Playbook-driven configuration and idempotency labs planned."},
+      ]
+    },
+    {
+      "id": "cicd",
+      "title": "CI/CD",
+      "lead": "Pipeline failures, build gates, and secure delivery workflows.",
+      "tracks": [
+        {"id": "gitlab", "title": "GitLab CI/CD", "url": "labs/cicd-pipeline-triage/", "icon": "gitlab", "theme": "devops", "status": "ready", "badge": "2 labs", "level": "Production", "summary": "Pipeline failure triage and Docker build, scan, and deploy gate scenarios."},
+        {"id": "github-actions", "title": "GitHub Actions", "url": "github-actions/", "icon": "github", "theme": "devops", "status": "planned", "badge": "Planned", "level": "—", "summary": "Workflow debugging and reusable action labs on the roadmap."},
+        {"id": "jenkins", "title": "Jenkins", "url": "jenkins/", "icon": "cog", "theme": "devops", "status": "planned", "badge": "Planned", "level": "—", "summary": "Pipeline and agent troubleshooting labs planned."},
+        {"id": "argocd", "title": "Argo CD", "url": "argocd/", "icon": "sync", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "GitOps sync and drift remediation labs planned."},
+      ]
+    },
+    {
+      "id": "observability",
+      "title": "Observability",
+      "lead": "Metrics, logs, traces, and on-call signal under failure.",
+      "tracks": [
+        {"id": "prometheus", "title": "Prometheus", "url": "prometheus/", "icon": "chart-line", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Alerting and PromQL troubleshooting labs planned."},
+        {"id": "grafana", "title": "Grafana", "url": "grafana/", "icon": "monitor", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Dashboard and datasource failure labs planned."},
+        {"id": "loki", "title": "Loki", "url": "loki/", "icon": "text-box-search", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Log query and ingestion triage labs planned."},
+        {"id": "tempo", "title": "Tempo", "url": "tempo/", "icon": "timeline-clock", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Trace backend troubleshooting labs planned."},
+        {"id": "opentelemetry", "title": "OpenTelemetry", "url": "opentelemetry/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Instrumentation and collector pipeline labs planned."},
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "lead": "DevSecOps scenarios — scanning, secrets, and secure delivery.",
+      "tracks": [
+        {"id": "devsecops", "title": "DevSecOps", "url": "devsecops/", "icon": "shield-lock", "theme": "secops", "status": "planned", "badge": "Planned", "level": "—", "summary": "Pipeline security gate and policy labs planned — secrets scanner lab live under Python."},
+      ]
+    },
+    {
+      "id": "platform",
+      "title": "Platform &amp; reliability",
+      "lead": "Internal platforms, SRE workflows, and architecture decisions.",
+      "tracks": [
+        {"id": "platform-engineering", "title": "Platform Engineering", "url": "platform-engineering/", "icon": "layers", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Golden path and self-service platform labs planned."},
+        {"id": "sre", "title": "Site Reliability Engineering", "url": "sre/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Incident response and SLO burn-rate labs planned."},
+        {"id": "architecture", "title": "Cloud Architecture", "url": "architecture/", "icon": "sitemap", "theme": "architect", "status": "planned", "badge": "Planned", "level": "—", "summary": "Landing zone and multi-account design labs planned."},
+        {"id": "ai", "title": "AI for DevOps", "url": "ai/", "icon": "brain", "theme": "platform", "status": "planned", "badge": "Planned", "level": "—", "summary": "Practical AI automation labs planned after core ops foundations."},
+      ]
+    },
+  ] %}
+
+  {% set featured = [
+    {"title": "Linux Production Incident Triage", "url": "labs/linux-production-incident-triage/", "icon": "linux", "theme": "linux", "badge": "On-call", "summary": "Restore a failed systemd service under pager pressure with journalctl and health checks."},
+    {"title": "Kubernetes Deployment Triage", "url": "labs/kubernetes-deployment-triage/", "icon": "kubernetes", "theme": "k8s", "badge": "Production", "summary": "Diagnose rollout failures using events, logs, and kubectl inspection."},
+    {"title": "CI/CD Pipeline Failure Triage", "url": "labs/cicd-pipeline-triage/", "icon": "gitlab", "theme": "devops", "badge": "Scenario", "summary": "Find why a GitLab pipeline broke and restore green builds safely."},
+    {"title": "Docker Compose Stack Recovery", "url": "labs/docker-compose-stack-recovery/", "icon": "docker", "theme": "docker", "badge": "Troubleshooting", "summary": "Bring a multi-service Compose stack back online and verify dependencies."},
+    {"title": "Terraform Plan Review Workflow", "url": "labs/terraform-plan-review-workflow/", "icon": "terraform", "theme": "terraform", "badge": "IaC", "summary": "Review a plan for risk, apply with confidence, and document the change."},
+    {"title": "DNS and Firewall Site-Down Triage", "url": "labs/networking-dns-firewall-triage/", "icon": "lan", "theme": "devops", "badge": "Networking", "summary": "Trace a site-down report through DNS, firewall rules, and reachability."},
+  ] %}
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Hands-on practice</p>
+      <h1 class="rebash-page-hero__title">Labs</h1>
+      <p class="rebash-page-hero__lead">
+        Scenario-driven practice after tutorials — guided steps through production triage.
+        Every lab includes validation so you know the fix worked before you move on.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-stats md-grid" aria-label="Labs catalog highlights">
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">52</span>
+      <span class="rebash-stats__label">Published labs</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10</span>
+      <span class="rebash-stats__label">Live technology tracks</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Scenario</span>
+      <span class="rebash-stats__label">Production triage focus</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Validation</span>
+      <span class="rebash-stats__label">Built into every lab</span>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Browse by technology</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Open a track from the sidebar or jump in from a category card below.
+      </p>
+    </div>
+
+    <div class="rebash-tech-filter rebash-reveal" role="toolbar" aria-label="Filter lab tracks">
+      <button type="button" class="rebash-tech-filter__btn is-active" data-filter="all">All</button>
+      {% for category in categories %}
+      <button type="button" class="rebash-tech-filter__btn" data-filter="{{ category.id }}">{{ category.title | replace(" &amp; ", " & ") }}</button>
+      {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div class="rebash-tech-category rebash-reveal" data-category="{{ category.id }}">
+      <div class="rebash-tech-category__header">
+        <h3 class="rebash-tech-category__title">{{ category.title | replace(" &amp; ", " & ") }}</h3>
+        <p class="rebash-tech-category__lead">{{ category.lead }}</p>
+      </div>
+      <div class="rebash-feature-grid rebash-feature-grid--3">
+        {% for track in category.tracks %}
+        <a
+          href="{{ track.url | url }}"
+          class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ track.theme }} rebash-tech-card rebash-tech-card--{{ track.status }}"
+          data-category="{{ category.id }}"
+          data-status="{{ track.status }}"
+        >
+          <div class="rebash-path-card__banner">
+            <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(track.icon) }}</div>
+            <span class="rebash-path-card__badge">{{ track.badge }}</span>
+          </div>
+          <div class="rebash-path-card__body">
+            <h4 class="rebash-path-card__title">{{ track.title }}</h4>
+            <p class="rebash-path-card__summary">{{ track.summary }}</p>
+            <div class="rebash-path-card__topics">
+              <span class="rebash-path-card__topic">{{ track.level }}</span>
+              <span class="rebash-path-card__topic rebash-tech-card__status">{{ track.status | replace("ready", "Live") | replace("planned", "Planned") }}</span>
+            </div>
+            <span class="rebash-path-card__link">{% if track.status == "ready" %}Open labs{% else %}View track{% endif %}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Featured scenario labs</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Production-style triage — start here if you want realistic on-call practice.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--3 rebash-reveal">
+      {% for lab in featured %}
+      <a href="{{ lab.url | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ lab.theme }}">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(lab.icon) }}</div>
+          <span class="rebash-path-card__badge">{{ lab.badge }}</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">{{ lab.title }}</h3>
+          <p class="rebash-path-card__summary">{{ lab.summary }}</p>
+          <span class="rebash-path-card__link">Start lab</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">What every lab includes</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        A consistent template so you always know where objectives, tasks, and validation live.
+      </p>
+    </div>
+    <div class="rebash-standards-grid rebash-reveal">
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">1</span><span class="rebash-standards-item__title">Scenario</span><span class="rebash-standards-item__desc">Business context and expected outcome</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">2</span><span class="rebash-standards-item__title">Objectives</span><span class="rebash-standards-item__desc">Skills you will demonstrate by the end</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">3</span><span class="rebash-standards-item__title">Architecture</span><span class="rebash-standards-item__desc">Diagram when topology matters</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">4</span><span class="rebash-standards-item__title">Tasks</span><span class="rebash-standards-item__desc">Guided steps or open-ended problems by level</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">5</span><span class="rebash-standards-item__title">Validation</span><span class="rebash-standards-item__desc">Commands, checklists, and success criteria</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">6</span><span class="rebash-standards-item__title">Cleanup</span><span class="rebash-standards-item__desc">Tear down resources and leave no cost behind</span></div>
+    </div>
+  </section>
+
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Supported environments</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Each lab declares what you need — local machine, containers, clusters, or cloud accounts.
+      </p>
+    </div>
+    <div class="rebash-tech-cloud rebash-reveal" aria-label="Lab environment types">
+      <span class="rebash-tech-cloud__chip">Local machine</span>
+      <span class="rebash-tech-cloud__chip">Docker</span>
+      <span class="rebash-tech-cloud__chip">Virtual machine</span>
+      <span class="rebash-tech-cloud__chip">Kind</span>
+      <span class="rebash-tech-cloud__chip">Minikube</span>
+      <span class="rebash-tech-cloud__chip">k3d</span>
+      <span class="rebash-tech-cloud__chip">Kubernetes</span>
+      <span class="rebash-tech-cloud__chip">AWS</span>
+      <span class="rebash-tech-cloud__chip">Azure</span>
+      <span class="rebash-tech-cloud__chip">Google Cloud</span>
+      <span class="rebash-tech-cloud__chip">GitHub Codespaces</span>
+      <span class="rebash-tech-cloud__chip">Dev container</span>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Learn the concepts first</span>
+        <h2 class="rebash-panel__title">Tutorials and technologies</h2>
+        <p class="rebash-panel__lead">
+          Labs assume you have read the related tutorials. Pick a technology track, then return here to practise.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'technologies/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Browse technologies</a>
+          <a href="{{ 'getting-started/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Getting started</a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Apply at portfolio scale</span>
+        <h2 class="rebash-panel__title">Projects and capstones</h2>
+        <p class="rebash-panel__lead">
+          Labs prove you can fix one scenario. Projects and capstones combine tools into builds you can show employers.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'projects/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Browse projects</a>
+          <a href="{{ 'career-paths/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Career paths</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var filterBar = document.querySelector(".rebash-tech-filter");
+      if (!filterBar) return;
+      var buttons = filterBar.querySelectorAll(".rebash-tech-filter__btn");
+      var categories = document.querySelectorAll(".rebash-tech-category");
+
+      function applyFilter(id) {
+        buttons.forEach(function (btn) {
+          btn.classList.toggle("is-active", btn.dataset.filter === id);
+        });
+        categories.forEach(function (section) {
+          var show = id === "all" || section.dataset.category === id;
+          section.hidden = !show;
+        });
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          applyFilter(btn.dataset.filter);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var nodes = document.querySelectorAll(".rebash-reveal");
+      if (!nodes.length) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      nodes.forEach(function (n) { io.observe(n); });
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{{ super() }}{% endblock %}

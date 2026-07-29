@@ -26,7 +26,7 @@ comments: false
 
 **DNS (Domain Name System)** is the distributed phone book of the internet. Every `curl`, browser request, database connection string, and Kubernetes service lookup depends on translating human-readable names like `api.example.com` into IP addresses. When DNS breaks, everything looks like a network outage — even when routing and firewalls are fine.
 
-This tutorial is **Tutorial 8** in **Module 3: Transport & DNS** of the REBASH Academy Networking series. You will learn the hierarchical namespace, the difference between recursive and iterative queries, how Linux resolves names, and how to debug with **`dig`** and **`nslookup`**. For Linux resolver configuration overlap, see [Linux Networking Essentials](../linux/linux-networking-essentials.md); here we focus on DNS architecture and query mechanics.
+This tutorial is **Tutorial 8** in **Module 3: Transport & DNS** of the REBASH Academy Networking series. You will learn the hierarchical namespace, the difference between recursive and iterative queries, how Linux resolves names, and how to debug with **`dig`** and **`nslookup`**. For Linux resolver configuration overlap, see [Linux Networking Tools](../linux/linux-networking-tools.md); here we focus on DNS architecture and query mechanics.
 
 ## Prerequisites
 
@@ -457,7 +457,7 @@ done < "${1:?hostfile}"
 - [Networking – Category Overview](index.md)
 - [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md) *(previous)*
 - [DNS Records and Troubleshooting](dns-records-and-troubleshooting.md) *(next)*
-- [Linux Networking Essentials](../linux/linux-networking-essentials.md)
+- [Linux Networking Tools](../linux/linux-networking-tools.md)
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)

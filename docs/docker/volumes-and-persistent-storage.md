@@ -510,7 +510,7 @@ Combines read-only container security with persistent logs and temp scratch spac
 - [Docker – Category Overview](index.md)
 - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md) *(previous)*
 - [Docker Compose Fundamentals](docker-compose-fundamentals.md) *(next)*
-- [Linux – Disk and Filesystem Management](../linux/disk-and-filesystem-management.md)
+- [Linux – Disk and Filesystem Management](../linux/storage-disks-partitions-and-filesystems.md)
 - [Production Docker Patterns](production-docker-patterns.md)
 - Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
 - Interview prep: [Docker Interview Prep](../interview/docker.md)

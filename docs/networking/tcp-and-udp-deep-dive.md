@@ -27,7 +27,7 @@ comments: false
 
 Transport layer protocols decide **how** data moves between applications: **TCP** provides reliable, ordered, connection-oriented delivery; **UDP** offers lightweight, best-effort datagrams. Every production outage involving "connection refused," "timeout," or "too many open files" eventually leads here — to ports, sockets, handshake state, and kernel connection tables.
 
-This tutorial is **Tutorial 7** in **Module 3: Transport & DNS** of the REBASH Academy Networking series. You will dissect the three-way handshake, interpret `/proc/net/tcp` states via `ss`, understand why **TIME_WAIT** accumulates on busy servers, and know when UDP beats TCP. For command basics, see [Linux Networking Essentials](../linux/linux-networking-essentials.md); this tutorial focuses on transport-layer theory and production debugging.
+This tutorial is **Tutorial 7** in **Module 3: Transport & DNS** of the REBASH Academy Networking series. You will dissect the three-way handshake, interpret `/proc/net/tcp` states via `ss`, understand why **TIME_WAIT** accumulates on busy servers, and know when UDP beats TCP. For command basics, see [Linux Networking Tools](../linux/linux-networking-tools.md); this tutorial focuses on transport-layer theory and production debugging.
 
 ## Prerequisites
 
@@ -469,7 +469,7 @@ Run: `python3 tcp_echo.py` then `echo test | nc localhost 9090`
 - [Networking – Category Overview](index.md)
 - [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md) *(Module 2)*
 - [DNS Fundamentals](dns-fundamentals.md) *(next in Module 3)*
-- [Linux Networking Essentials](../linux/linux-networking-essentials.md)
+- [Linux Networking Tools](../linux/linux-networking-tools.md)
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)

@@ -36,7 +36,7 @@ This is **Tutorial 2** in **Module 1: Foundations** of the REBASH Academy Docker
 - At least 2 GB RAM and 10 GB free disk space
 - Outbound HTTPS access to `download.docker.com` and container registries
 - Completion of [Introduction to Containers and Docker](introduction-to-containers-and-docker.md)
-- Familiarity with [Introduction to Linux](../linux/introduction-to-linux.md) — especially `systemctl`, users, and groups
+- Familiarity with [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) — especially `systemctl`, users, and groups
 
 ## Learning Objectives
 
@@ -465,7 +465,7 @@ Make executable: `chmod +x ~/bin/docker-verify.sh && ~/bin/docker-verify.sh`
 - [Docker – Category Overview](index.md)
 - [Introduction to Containers and Docker](introduction-to-containers-and-docker.md) *(previous in Module 1)*
 - [Docker Architecture and Components](docker-architecture-and-components.md) *(next in Module 1)*
-- [Introduction to Linux](../linux/introduction-to-linux.md)
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md)
 - [Git Installation and Configuration](../git/git-installation-and-configuration.md)
 - Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
 - Interview prep: [Docker Interview Prep](../interview/docker.md)

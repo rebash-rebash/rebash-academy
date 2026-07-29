@@ -5,7 +5,7 @@ difficulty: intermediate
 estimated_time: "60 min"
 category: labs
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-29"
 tags:
   - labs
   - linux
@@ -46,11 +46,11 @@ By the end of this lab, you will be able to:
 
 ### Knowledge
 
-- [Introduction to Linux](../linux/introduction-to-linux.md)
+- [Linux Fundamentals: Distributions and Architecture](../linux/linux-fundamentals-distributions-and-architecture.md)
 - [Process Management](../linux/process-management.md)
-- [systemd Service Management](../linux/systemd-service-management.md)
-- [Log Management with journalctl](../linux/log-management-journalctl.md)
-- [File Permissions and Ownership](../linux/file-permissions-and-ownership.md)
+- [systemd Services and journalctl](../linux/systemd-services-and-journalctl.md)
+- [Logging: syslog, journald, logrotate](../linux/logging-syslog-journald-logrotate.md)
+- [Permissions, ACLs, and Special Bits](../linux/permissions-acls-and-special-bits.md)
 - [Troubleshooting Linux Systems](../linux/troubleshooting-linux-systems.md)
 
 ### Software
@@ -345,16 +345,17 @@ Interviewers often ask you to **walk an incident**. Use this lab as your story:
 - How you avoid risky changes under pressure
 - How you verify and communicate recovery
 
-Related tutorial questions live in [Troubleshooting Linux Systems](../linux/troubleshooting-linux-systems.md) and [systemd Service Management](../linux/systemd-service-management.md).
+Related tutorial questions live in [Troubleshooting Linux Systems](../linux/troubleshooting-linux-systems.md) and [systemd Services and journalctl](../linux/systemd-services-and-journalctl.md).
 
 ## Related Tutorials
 
 - Track: [Linux](../linux/index.md)
-- [systemd Service Management](../linux/systemd-service-management.md)
-- [Log Management with journalctl](../linux/log-management-journalctl.md)
+- [systemd Services and journalctl](../linux/systemd-services-and-journalctl.md)
+- [Logging: syslog, journald, logrotate](../linux/logging-syslog-journald-logrotate.md)
+- Lab: [Manage Services and Analyse Logs](linux-services-and-logs-lab.md)
 - Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
-- Next lab: [Terraform Plan Review Workflow](terraform-plan-review-workflow.md)
+- Learning path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Next lab: [Performance Troubleshooting](linux-performance-troubleshooting-lab.md)
 
 ## References
 

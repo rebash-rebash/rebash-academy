@@ -33,7 +33,7 @@ This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Git se
 
 - Basic computer literacy and comfort typing commands in a terminal
 - A Linux environment: Ubuntu VM, WSL2, or a free-tier cloud instance (AWS, GCP, Azure)
-- Familiarity with the [Introduction to Linux](../linux/introduction-to-linux.md) tutorial — especially navigating directories and running basic CLI commands
+- Familiarity with the [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) tutorial — especially navigating directories and running basic CLI commands
 - No prior Git experience required — this tutorial starts from zero
 
 ## Learning Objectives
@@ -472,7 +472,7 @@ Make executable: `chmod +x ~/bin/git-preflight.sh && ~/bin/git-preflight.sh`
 ## Related Tutorials
 
 - [Git – Category Overview](index.md)
-- [Introduction to Linux](../linux/introduction-to-linux.md) — recommended prerequisite
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) — recommended prerequisite
 - [Introduction to Networking](../networking/introduction-to-networking.md) — connectivity for remotes
 - [Git Installation and Configuration](git-installation-and-configuration.md) *(next in Module 1)*
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)

@@ -5,7 +5,7 @@ difficulty: advanced
 estimated_time: "90 min"
 category: labs
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-29"
 tags:
   - labs
   - linux
@@ -19,14 +19,17 @@ comments: false
 
 ## Lab Overview
 
-**Purpose:** Assemble Module 7 skills into one production-shaped Ubuntu host.
+**Purpose:** Assemble production Linux skills into one production-shaped Ubuntu host (app + reverse proxy + TLS + backup).
 
 **Scenario:** You must stand up an internal status API behind nginx with TLS (self-signed for the lab), then prove you can restore app data from backup.
 
 **Expected outcome:** HTTPS returns the API through nginx, firewall only exposes intended ports, and a restore drill succeeds with checksum verification.
 
 !!! tip "This is a lab, not a tutorial"
-    Prefer evidence (`ss`, `curl`, `nginx -t`, checksums) over skipping ahead.
+    Prefer evidence (`ss`, `curl`, `nginx -t`, checksums) over skipping ahead. Pair with the rewritten track modules below — nginx/TLS deep dives remain useful operational skills even when filenames change.
+
+!!! note "Track alignment"
+    Prefer these production modules for theory: [SSH Hardening and Firewalls](../linux/ssh-hardening-and-firewalls.md), [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md), [Backup, Disaster Recovery, and Capacity](../linux/backup-disaster-recovery-and-capacity.md), [systemd Services and journalctl](../linux/systemd-services-and-journalctl.md).
 
 ## Business Scenario
 
@@ -46,11 +49,13 @@ By the end of this lab, you will be able to:
 
 ### Knowledge
 
-- [Linux Server Baseline and Lifecycle](../linux/linux-server-baseline-and-lifecycle.md)
-- [nginx Web Server and Reverse Proxy](../linux/nginx-web-server-and-reverse-proxy.md)
-- [TLS Certificates on Linux Servers](../linux/tls-certificates-on-linux-servers.md)
-- [Backup, Restore, and Recovery Drills](../linux/backup-restore-and-recovery-drills.md)
-- [Linux Security Hardening Basics](../linux/linux-security-hardening-basics.md)
+- [SSH Hardening and Firewalls](../linux/ssh-hardening-and-firewalls.md)
+- [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md)
+- [Backup, Disaster Recovery, and Capacity](../linux/backup-disaster-recovery-and-capacity.md)
+- [systemd Services and journalctl](../linux/systemd-services-and-journalctl.md)
+- [Package Management](../linux/package-management.md)
+- [Users, Groups, and sudo](../linux/users-groups-and-sudo.md)
+- Labs: [Firewall Hardening](linux-firewall-hardening-lab.md), [SSH Secure Access](linux-ssh-secure-access.md)
 
 ### Software
 
@@ -266,8 +271,11 @@ Tell this build story in interviews. Continue with [Linux Interview Prep](../int
 
 ## Related Tutorials
 
-- [Advanced Linux Servers module](../linux/index.md)
+- Track: [Linux](../linux/index.md)
+- [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md)
+- [Backup, Disaster Recovery, and Capacity](../linux/backup-disaster-recovery-and-capacity.md)
 - [Linux Production Incident Triage](linux-production-incident-triage.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
 - [Docker](../docker/index.md)
 
 ## References

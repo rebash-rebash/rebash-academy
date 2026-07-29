@@ -28,7 +28,7 @@ comments: false
 
 DNS is the control plane of the internet — a wrong A record or aggressive TTL change redirects production traffic faster than most deploy pipelines. **Production DNS operations** means understanding **recursive vs authoritative** roles, how **TTL and caching** shape cutovers, when **split-horizon** views differ inside and outside the corporate network, and how **change control** prevents Friday-afternoon outages.
 
-This tutorial teaches operator playbooks: document intent, lower TTL before migration, validate with `dig`, and observe cache behaviour locally using `/etc/hosts` plus public resolvers. Host-level nginx and TLS certificate issuance on Linux are covered in [TLS Certificates on Linux Servers](../linux/tls-certificates-on-linux-servers.md) — here we focus on the DNS layer only.
+This tutorial teaches operator playbooks: document intent, lower TTL before migration, validate with `dig`, and observe cache behaviour locally using `/etc/hosts` plus public resolvers. Host-level nginx and TLS certificate issuance on Linux are covered in [SSH Hardening and Firewalls](../linux/ssh-hardening-and-firewalls.md) — here we focus on the DNS layer only.
 
 This is **Tutorial 22** in **Module 7: Production Network Operations** of the REBASH Academy Networking series.
 
@@ -274,7 +274,7 @@ Confirm the lab before moving on:
 - Enable DNSSEC validation on resolvers where provider supports it
 - Log authoritative change audit trails; alert on apex NS or SOA modifications
 - Never paste production zone files into public tickets — redact internal IPs
-- Pair DNS changes with TLS cert SAN checks — see [TLS Certificates on Linux Servers](../linux/tls-certificates-on-linux-servers.md)
+- Pair DNS changes with TLS cert SAN checks — see [SSH Hardening and Firewalls](../linux/ssh-hardening-and-firewalls.md)
 
 ## Common Mistakes
 
@@ -350,7 +350,7 @@ Confirm the lab before moving on:
 - [DNS Fundamentals](dns-fundamentals.md)
 - [DNS Records and Troubleshooting](dns-records-and-troubleshooting.md)
 - [Network Automation and Monitoring](network-automation-and-monitoring.md)
-- [TLS Certificates on Linux Servers](../linux/tls-certificates-on-linux-servers.md) *(Linux Module 7)*
+- [SSH Hardening and Firewalls](../linux/ssh-hardening-and-firewalls.md) *(Linux Module 7)*
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

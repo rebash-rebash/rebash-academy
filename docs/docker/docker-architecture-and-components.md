@@ -34,7 +34,7 @@ This is **Tutorial 3** in **Module 1: Foundations** of the REBASH Academy Docker
 - Docker Engine installed and verified (`docker run hello-world` succeeds)
 - Non-root or sudo access to Docker on a Linux host
 - Completion of [Introduction to Containers and Docker](introduction-to-containers-and-docker.md) and [Docker Installation and Setup](docker-installation-and-setup.md)
-- Familiarity with [Introduction to Linux](../linux/introduction-to-linux.md) — processes, systemd, and `/proc`
+- Familiarity with [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) — processes, systemd, and `/proc`
 - Optional: [Introduction to Networking](../networking/introduction-to-networking.md) for bridge network concepts
 
 ## Learning Objectives
@@ -480,7 +480,7 @@ Make executable: `chmod +x ~/bin/docker-arch-inspect.sh`
 - [Docker – Category Overview](index.md)
 - [Docker Installation and Setup](docker-installation-and-setup.md) *(previous in Module 1)*
 - [Running Your First Container](running-your-first-container.md) *(first in Module 2)*
-- [Introduction to Linux](../linux/introduction-to-linux.md)
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md)
 - Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

@@ -1,0 +1,74 @@
+direction: down
+
+CareerPath: Career Path {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E3F2FD"
+    stroke: "#1976D2"
+  }
+}
+
+Tutorials: Tutorials {
+  shape: rectangle
+}
+
+Labs: Labs {
+  shape: rectangle
+  style: {
+    fill: "#E8F5E9"
+    stroke: "#2E7D32"
+  }
+}
+
+Quizzes: Quizzes {
+  shape: rectangle
+}
+
+Projects: Projects {
+  shape: rectangle
+  style: {
+    fill: "#FFF3E0"
+    stroke: "#EF6C00"
+  }
+}
+
+InterviewPrep: Interview Preparation {
+  shape: rectangle
+}
+
+Capstone: Capstone {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+  }
+}
+
+CertificationReady: Certification Ready {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E8EAF6"
+    stroke: "#3949AB"
+  }
+}
+
+ProfessionalEngineer: Professional Engineer {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E0F2F1"
+    stroke: "#00695C"
+  }
+}
+
+CareerPath -> Tutorials: learn fundamentals
+Tutorials -> Labs: hands-on practice
+Labs -> Quizzes: check understanding
+Quizzes -> Projects: apply skills
+Projects -> InterviewPrep: defend knowledge
+InterviewPrep -> Capstone: path milestone
+Capstone -> CertificationReady: exam ready
+CertificationReady -> ProfessionalEngineer: credentialed

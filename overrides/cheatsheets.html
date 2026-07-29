@@ -1,0 +1,296 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  {% set categories = [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "lead": "Commands and syntax for Linux, automation, networking, and version control — keep these open while you work.",
+      "tracks": [
+        {"id": "linux", "title": "Linux", "url": "cheatsheets/linux/", "icon": "linux", "theme": "linux", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "Commands, permissions, text processing, processes, storage, networking, SSH, and systemd."},
+        {"id": "shell", "title": "Shell Scripting", "url": "cheatsheets/shell/", "icon": "bash", "theme": "linux", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "Bash syntax, quoting, conditionals, loops, functions, pipelines, and strict mode."},
+        {"id": "python", "title": "Python for DevOps", "url": "cheatsheets/python/", "icon": "language-python", "theme": "docker", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "CLI patterns, pathlib, subprocess, httpx, pytest, and packaging quick reference."},
+        {"id": "networking", "title": "Networking", "url": "cheatsheets/networking/", "icon": "lan", "theme": "devops", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "DNS, TCP/UDP, HTTP, curl, dig, ss, firewall, and production triage commands."},
+        {"id": "git", "title": "Git", "url": "cheatsheets/git/", "icon": "git", "theme": "devops", "status": "ready", "badge": "Live", "meta": "10 min read", "summary": "Branching, remotes, merge, rebase, stash, recovery, and pull request workflows."},
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Cloud platforms",
+      "lead": "Cloud CLI commands, IAM patterns, and core service quick reference.",
+      "tracks": [
+        {"id": "aws", "title": "AWS", "url": "cheatsheets/aws/", "icon": "aws", "theme": "aws", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "IAM, VPC, EC2, S3, CloudWatch, and common AWS CLI operations."},
+        {"id": "azure", "title": "Azure", "url": "azure/", "icon": "microsoft-azure", "theme": "azure", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Azure CLI, identity, and core resource commands — sheet on the roadmap."},
+        {"id": "gcp", "title": "Google Cloud", "url": "gcp/", "icon": "google-cloud", "theme": "gcp", "status": "planned", "badge": "Planned", "meta": "—", "summary": "gcloud CLI and GKE quick reference — planned."},
+      ]
+    },
+    {
+      "id": "containers",
+      "title": "Containers",
+      "lead": "Docker, Compose, Kubernetes, and Helm command reference for daily ops.",
+      "tracks": [
+        {"id": "docker", "title": "Docker", "url": "cheatsheets/docker/", "icon": "docker", "theme": "docker", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "Images, containers, networks, volumes, Dockerfile, and Compose essentials."},
+        {"id": "kubernetes", "title": "Kubernetes", "url": "cheatsheets/kubernetes/", "icon": "kubernetes", "theme": "k8s", "status": "ready", "badge": "Live", "meta": "20 min read", "summary": "kubectl, YAML workloads, networking, storage, RBAC, and troubleshooting."},
+        {"id": "helm", "title": "Helm", "url": "helm/", "icon": "ship-wheel", "theme": "k8s", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Chart install, upgrade, rollback, and values reference — planned."},
+      ]
+    },
+    {
+      "id": "iac",
+      "title": "Infrastructure as Code",
+      "lead": "Terraform, Ansible, and OpenTofu CLI and config syntax at a glance.",
+      "tracks": [
+        {"id": "terraform", "title": "Terraform", "url": "cheatsheets/terraform/", "icon": "terraform", "theme": "terraform", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "CLI, providers, variables, modules, state, outputs, and functions."},
+        {"id": "ansible", "title": "Ansible", "url": "ansible/", "icon": "ansible", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Playbooks, roles, inventory, and ad-hoc commands — planned."},
+        {"id": "opentofu", "title": "OpenTofu", "url": "opentofu/", "icon": "terraform", "theme": "terraform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "OpenTofu CLI parity reference — planned."},
+      ]
+    },
+    {
+      "id": "cicd",
+      "title": "CI/CD",
+      "lead": "Pipeline YAML, workflow syntax, and delivery tool commands.",
+      "tracks": [
+        {"id": "cicd", "title": "CI/CD (GitLab)", "url": "cheatsheets/cicd/", "icon": "gitlab", "theme": "devops", "status": "ready", "badge": "Live", "meta": "15 min read", "summary": "GitLab CI/CD YAML, runners, environments, and pipeline troubleshooting."},
+        {"id": "github-actions", "title": "GitHub Actions", "url": "github-actions/", "icon": "github", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Workflow syntax and reusable actions reference — planned."},
+        {"id": "jenkins", "title": "Jenkins", "url": "jenkins/", "icon": "cog", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Pipeline DSL and CLI quick reference — planned."},
+        {"id": "argocd", "title": "Argo CD", "url": "argocd/", "icon": "sync", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Application sync, diff, and GitOps CLI — planned."},
+        {"id": "flux", "title": "Flux", "url": "flux/", "icon": "sync", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Flux CLI and GitRepository reference — planned."},
+      ]
+    },
+    {
+      "id": "observability",
+      "title": "Observability",
+      "lead": "Metrics, logs, traces, and query language reference for on-call work.",
+      "tracks": [
+        {"id": "prometheus", "title": "Prometheus", "url": "prometheus/", "icon": "chart-line", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Prometheus config and alerting reference — planned."},
+        {"id": "promql", "title": "PromQL", "url": "prometheus/", "icon": "chart-line", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "PromQL query syntax and functions — planned."},
+        {"id": "grafana", "title": "Grafana", "url": "grafana/", "icon": "monitor", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Dashboard, datasource, and alert reference — planned."},
+        {"id": "loki", "title": "Loki / LogQL", "url": "loki/", "icon": "text-box-search", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "LogQL query syntax and ingestion patterns — planned."},
+        {"id": "tempo", "title": "Tempo", "url": "tempo/", "icon": "timeline-clock", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Trace query and backend reference — planned."},
+        {"id": "opentelemetry", "title": "OpenTelemetry", "url": "opentelemetry/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Instrumentation and collector config reference — planned."},
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "lead": "DevSecOps checklists and secure delivery quick reference.",
+      "tracks": [
+        {"id": "devsecops", "title": "DevSecOps", "url": "devsecops/", "icon": "shield-lock", "theme": "secops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Pipeline security gates and shift-left checklist — planned."},
+      ]
+    },
+    {
+      "id": "platform",
+      "title": "Platform &amp; reliability",
+      "lead": "Platform engineering, SRE, architecture, and AI ops reference.",
+      "tracks": [
+        {"id": "platform-engineering", "title": "Platform Engineering", "url": "platform-engineering/", "icon": "layers", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Golden paths and IDP patterns — planned."},
+        {"id": "sre", "title": "Site Reliability Engineering", "url": "sre/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "SLOs, error budgets, and incident response quick reference — planned."},
+        {"id": "architecture", "title": "Cloud Architecture", "url": "architecture/", "icon": "sitemap", "theme": "architect", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Landing zone and multi-cloud decision matrix — planned."},
+        {"id": "ai", "title": "AI for DevOps", "url": "ai/", "icon": "brain", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Practical AI workflow quick start — planned."},
+      ]
+    },
+  ] %}
+
+  {% set featured = [
+    {"title": "Linux Cheat Sheet", "url": "cheatsheets/linux/", "icon": "linux", "theme": "linux", "badge": "Foundations", "summary": "Production-focused commands for permissions, systemd, storage, networking, and triage."},
+    {"title": "Kubernetes Cheat Sheet", "url": "cheatsheets/kubernetes/", "icon": "kubernetes", "theme": "k8s", "badge": "Containers", "summary": "kubectl, YAML workloads, networking, storage, RBAC, and cluster troubleshooting."},
+    {"title": "Docker Cheat Sheet", "url": "cheatsheets/docker/", "icon": "docker", "theme": "docker", "badge": "Containers", "summary": "Images, containers, networks, volumes, Dockerfile, and Compose essentials."},
+    {"title": "Terraform Cheat Sheet", "url": "cheatsheets/terraform/", "icon": "terraform", "theme": "terraform", "badge": "IaC", "summary": "CLI, providers, variables, modules, state, outputs, and functions at a glance."},
+    {"title": "AWS Cheat Sheet", "url": "cheatsheets/aws/", "icon": "aws", "theme": "aws", "badge": "Cloud", "summary": "IAM, VPC, EC2, S3, CloudWatch, and common AWS CLI operations."},
+    {"title": "Shell Scripting Cheat Sheet", "url": "cheatsheets/shell/", "icon": "bash", "theme": "linux", "badge": "Automation", "summary": "Bash syntax, quoting, control flow, functions, pipelines, and strict mode patterns."},
+  ] %}
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Quick reference</p>
+      <h1 class="rebash-page-hero__title">Cheat Sheets</h1>
+      <p class="rebash-page-hero__lead">
+        Scannable command and syntax guides for engineers at the keyboard — not tutorials.
+        Use them after a lesson, during labs, and on the job when you need the right command fast.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-stats md-grid" aria-label="Cheat sheets catalog highlights">
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10</span>
+      <span class="rebash-stats__label">Published cheat sheets</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10</span>
+      <span class="rebash-stats__label">Live technology tracks</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10–20 min</span>
+      <span class="rebash-stats__label">Typical reading time</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Production-focused</span>
+      <span class="rebash-stats__label">Commands &amp; workflows</span>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Browse by technology</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Open a cheat sheet from the sidebar or jump in from a technology card below.
+      </p>
+    </div>
+
+    <div class="rebash-tech-filter rebash-reveal" role="toolbar" aria-label="Filter cheat sheet tracks">
+      <button type="button" class="rebash-tech-filter__btn is-active" data-filter="all">All</button>
+      {% for category in categories %}
+      <button type="button" class="rebash-tech-filter__btn" data-filter="{{ category.id }}">{{ category.title | replace(" &amp; ", " & ") }}</button>
+      {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div class="rebash-tech-category rebash-reveal" data-category="{{ category.id }}">
+      <div class="rebash-tech-category__header">
+        <h3 class="rebash-tech-category__title">{{ category.title | replace(" &amp; ", " & ") }}</h3>
+        <p class="rebash-tech-category__lead">{{ category.lead }}</p>
+      </div>
+      <div class="rebash-feature-grid rebash-feature-grid--3">
+        {% for track in category.tracks %}
+        <a
+          href="{{ track.url | url }}"
+          class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ track.theme }} rebash-tech-card rebash-tech-card--{{ track.status }}"
+          data-category="{{ category.id }}"
+          data-status="{{ track.status }}"
+        >
+          <div class="rebash-path-card__banner">
+            <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(track.icon) }}</div>
+            <span class="rebash-path-card__badge">{{ track.badge }}</span>
+          </div>
+          <div class="rebash-path-card__body">
+            <h4 class="rebash-path-card__title">{{ track.title }}</h4>
+            <p class="rebash-path-card__summary">{{ track.summary }}</p>
+            <div class="rebash-path-card__topics">
+              <span class="rebash-path-card__topic">{{ track.meta }}</span>
+              <span class="rebash-path-card__topic rebash-tech-card__status">{{ track.status | replace("ready", "Live") | replace("planned", "Planned") }}</span>
+            </div>
+            <span class="rebash-path-card__link">{% if track.status == "ready" %}Open cheat sheet{% else %}View track{% endif %}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Featured cheat sheets</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Most-used references — bookmark these after finishing the related tutorials.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--3 rebash-reveal">
+      {% for sheet in featured %}
+      <a href="{{ sheet.url | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ sheet.theme }}">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(sheet.icon) }}</div>
+          <span class="rebash-path-card__badge">{{ sheet.badge }}</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">{{ sheet.title }}</h3>
+          <p class="rebash-path-card__summary">{{ sheet.summary }}</p>
+          <span class="rebash-path-card__link">Open cheat sheet</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Learn first, then reference</span>
+        <h2 class="rebash-panel__title">Technologies and tutorials</h2>
+        <p class="rebash-panel__lead">
+          Cheat sheets reinforce tutorials — study a track first, then keep the sheet open while you practice in labs.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'technologies/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Browse technologies</a>
+          <a href="{{ 'linux/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Start with Linux</a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Practice and validate</span>
+        <h2 class="rebash-panel__title">Labs and quizzes</h2>
+        <p class="rebash-panel__lead">
+          Use cheat sheets during labs for command lookup, then take a quiz to check what you retained without the reference.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'labs/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Browse labs</a>
+          <a href="{{ 'quizzes/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Take a quiz</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var filterBar = document.querySelector(".rebash-tech-filter");
+      if (!filterBar) return;
+      var buttons = filterBar.querySelectorAll(".rebash-tech-filter__btn");
+      var categories = document.querySelectorAll(".rebash-tech-category");
+
+      function applyFilter(id) {
+        buttons.forEach(function (btn) {
+          btn.classList.toggle("is-active", btn.dataset.filter === id);
+        });
+        categories.forEach(function (section) {
+          var show = id === "all" || section.dataset.category === id;
+          section.hidden = !show;
+        });
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          applyFilter(btn.dataset.filter);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var nodes = document.querySelectorAll(".rebash-reveal");
+      if (!nodes.length) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      nodes.forEach(function (n) { io.observe(n); });
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{{ super() }}{% endblock %}

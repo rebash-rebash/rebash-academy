@@ -1,23 +1,47 @@
 nav:
   - Home: index.md
-  - Learning Paths: learning-paths
-  - Tutorials:
+  - Career Paths: career-paths
+  - Technologies:
+    - technologies
     - getting-started
     - linux
+    - shell
+    - python
     - networking
     - aws
+    - azure
+    - gcp
     - git
     - gitlab
     - docker
     - kubernetes
+    - helm
     - terraform
+    - ansible
+    - github-actions
+    - jenkins
+    - argocd
+    - prometheus
+    - grafana
+    - loki
+    - tempo
+    - opentelemetry
+    - monitoring
+    - security
+    - devsecops
+    - platform-engineering
+    - sre
+    - architecture
+    - ai
   - Labs: labs
   - Quizzes: quizzes
   - Projects: projects
+  - Capstones: capstones
+  - Cheat Sheets: cheatsheets
+  - Interview Guides: interview
+  - Certifications: certifications
   - Blog: blog
   - About:
-    - about.md
+    - about
     - roadmap.md
-    - cheatsheets
-    - interview
-    - architecture
+    - Learning Paths (legacy): learning-paths

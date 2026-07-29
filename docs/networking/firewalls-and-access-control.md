@@ -501,7 +501,7 @@ resource "aws_security_group" "web" {
 - [Networking – Category Overview](index.md)
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md) *(previous in Module 4)*
 - [Load Balancing Fundamentals](load-balancing-fundamentals.md) *(next in Module 4)*
-- [Linux Networking Essentials](../linux/linux-networking-essentials.md)
+- [Linux Networking Tools](../linux/linux-networking-tools.md)
 - [Network Security Hardening](network-security-hardening.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)

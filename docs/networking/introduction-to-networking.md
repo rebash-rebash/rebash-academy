@@ -33,7 +33,7 @@ This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Networ
 
 - Basic computer literacy and comfort typing commands in a terminal
 - A Linux environment: Ubuntu VM, WSL2, or a free-tier cloud instance (AWS, GCP, Azure)
-- Familiarity with the [Introduction to Linux](../linux/introduction-to-linux.md) tutorial — especially identifying your system and using basic CLI commands
+- Familiarity with the [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) tutorial — especially identifying your system and using basic CLI commands
 - Network access on your lab machine (Wi-Fi or Ethernet connected and working)
 
 ## Learning Objectives
@@ -469,9 +469,9 @@ Make executable: `chmod +x ~/bin/net-baseline.sh && ~/bin/net-baseline.sh`
 ## Related Tutorials
 
 - [Networking – Category Overview](index.md)
-- [Introduction to Linux](../linux/introduction-to-linux.md) — recommended prerequisite from the Linux track
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) — recommended prerequisite from the Linux track
 - [OSI and TCP/IP Models](osi-and-tcp-ip-models.md) *(next in Module 1)*
-- [Linux Networking Essentials](../linux/linux-networking-essentials.md)
+- [Linux Networking Tools](../linux/linux-networking-tools.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)

@@ -1,20 +1,21 @@
 ---
 title: Learning Paths
-description: Structured career paths from Linux fundamentals to production-ready cloud engineering.
-template: learning-paths.html
-difficulty: beginner
-estimated_time: "Varies"
-author: Shaik Basha
-last_updated: "2026-07-28"
-category: learning-paths
-tags:
-  - learning-paths
-  - career
-comments: false
+description: Legacy learning-paths URL — use Career Paths instead.
 ---
 
 # Learning Paths
 
-Visual learning-path cards are rendered by the site theme.
+This section has moved to **[Career Paths](../career-paths/index.md)**.
 
-**Start here in Markdown:** [DevOps Engineer Learning Path](devops-engineer.md) — Linux → Networking → AWS → Git → CI/CD → Docker → Kubernetes → Terraform, plus cheat sheets, labs, and quizzes.
+## Quick links
+
+- [Career Paths overview](../career-paths/index.md)
+- [DevOps Engineer](../career-paths/devops-engineer/index.md)
+- [Linux Administrator](../career-paths/linux-administrator/index.md)
+- [Beginner](../career-paths/beginner/index.md)
+
+Detailed Markdown companions (still useful):
+
+- [DevOps Engineer (legacy notes)](devops-engineer.md)
+- [Linux for Cloud & DevOps](linux-for-cloud-devops.md)
+- [Python for DevOps Engineers](python-for-devops.md)

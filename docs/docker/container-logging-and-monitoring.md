@@ -34,7 +34,7 @@ This is **Tutorial 13** in **Module 5: Operations** of the REBASH Academy Docker
 
 - Docker Engine on Linux (logging driver behaviour differs slightly on Docker Desktop)
 - Completion of [Running Your First Container](running-your-first-container.md)
-- Familiarity with [Log Management with journalctl](../linux/log-management-journalctl.md) concepts
+- Familiarity with [Log Management with journalctl](../linux/logging-syslog-journald-logrotate.md) concepts
 - Optional: second terminal window to generate load while observing stats
 
 ## Learning Objectives
@@ -500,7 +500,7 @@ Exact paths depend on your log driver and distribution.
 - [Docker – Category Overview](index.md)
 - [Environment Variables and Secrets](environment-variables-and-secrets.md) *(end of Module 4)*
 - [Docker Security Hardening](docker-security-hardening.md) *(next in Module 5)*
-- [Log Management with journalctl](../linux/log-management-journalctl.md)
+- [Log Management with journalctl](../linux/logging-syslog-journald-logrotate.md)
 - [Monitoring – Category Overview](../monitoring/index.md)
 - Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
 - Interview prep: [Docker Interview Prep](../interview/docker.md)

@@ -1,0 +1,7 @@
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+direction: right
+Source: "Fixture pods JSON\nor kubeconfig" { style.fill: "#fee2e2"; style.stroke: "#dc2626" }
+Client: "Normalise Ready\nand phase" { style.fill: "#fef9c3"; style.stroke: "#ca8a04" }
+Report: "health.json\nnot-ready list" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Gate: "Exit 0 or 1\n--fail-on-not-ready" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Source -> Client -> Report -> Gate

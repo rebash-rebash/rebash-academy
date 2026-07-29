@@ -1,8 +1,10 @@
 title: Interview Prep
 icon: material/account-question
 nav:
-  - index.md
+  - Overview: index.md
   - linux.md
+  - shell.md
+  - python.md
   - networking.md
   - aws.md
   - git.md

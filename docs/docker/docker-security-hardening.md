@@ -29,13 +29,13 @@ Containers are **not virtual machines**. They share the host kernel and isolate 
 
 This tutorial applies **defense in depth** for Docker workloads: **non-root users**, **read-only root filesystems**, dropping **Linux capabilities**, custom **seccomp** profiles, and complementary controls (no new privileges, resource limits, user namespaces overview). You will harden a sample container incrementally and validate each layer.
 
-This is **Tutorial 14** in **Module 5: Operations** of the REBASH Academy Docker series. Pair with [Linux Security Hardening Basics](../linux/linux-security-hardening-basics.md) for host-level controls.
+This is **Tutorial 14** in **Module 5: Operations** of the REBASH Academy Docker series. Pair with [Linux Security Hardening Basics](../linux/ssh-hardening-and-firewalls.md) for host-level controls.
 
 ## Prerequisites
 
 - Docker Engine on Linux (security options vary on Docker Desktop)
 - Ability to build images — see [Building Images with Dockerfile](building-images-with-dockerfile.md)
-- Understanding of [File Permissions and Ownership](../linux/file-permissions-and-ownership.md)
+- Understanding of [File Permissions and Ownership](../linux/permissions-acls-and-special-bits.md)
 - Lab environment only — aggressive hardening can break applications
 
 ## Learning Objectives
@@ -518,7 +518,7 @@ Plain `docker compose` on a single node supports most keys; validate with `docke
 - [Docker – Category Overview](index.md)
 - [Container Logging and Monitoring](container-logging-and-monitoring.md) *(previous in Module 5)*
 - [Troubleshooting Docker Containers](troubleshooting-docker-containers.md) *(next in Module 5)*
-- [Linux Security Hardening Basics](../linux/linux-security-hardening-basics.md)
+- [Linux Security Hardening Basics](../linux/ssh-hardening-and-firewalls.md)
 - [Environment Variables and Secrets](environment-variables-and-secrets.md)
 - Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
 - Interview prep: [Docker Interview Prep](../interview/docker.md)

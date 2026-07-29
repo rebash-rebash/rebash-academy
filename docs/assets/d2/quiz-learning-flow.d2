@@ -1,0 +1,54 @@
+direction: down
+
+Tutorial: Tutorial {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E3F2FD"
+    stroke: "#1976D2"
+  }
+}
+
+KnowledgeQuiz: Knowledge Quiz {
+  shape: rectangle
+  style: {
+    fill: "#E8F5E9"
+    stroke: "#2E7D32"
+  }
+}
+
+HandsOnLab: Hands-on Lab {
+  shape: rectangle
+}
+
+PracticeQuiz: Practice Quiz {
+  shape: rectangle
+}
+
+Project: Project {
+  shape: rectangle
+  style: {
+    fill: "#FFF3E0"
+    stroke: "#EF6C00"
+  }
+}
+
+FinalAssessment: Final Assessment {
+  shape: rectangle
+}
+
+Capstone: Capstone {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+  }
+}
+
+Tutorial -> KnowledgeQuiz: check understanding
+KnowledgeQuiz -> HandsOnLab: apply concepts
+HandsOnLab -> PracticeQuiz: reinforce skills
+PracticeQuiz -> Project: portfolio build
+Project -> FinalAssessment: prove mastery
+FinalAssessment -> Capstone: end to end

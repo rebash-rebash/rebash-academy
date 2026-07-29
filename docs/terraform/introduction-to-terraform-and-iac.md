@@ -414,7 +414,7 @@ terraform output -json | head
 ## Related Tutorials
 
 - Track overview: [Terraform](index.md)
-- Prior skills: [Introduction to Linux](../linux/introduction-to-linux.md), [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
+- Prior skills: [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md), [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
 
 - Next: [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
 - Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)

@@ -1,16 +1,67 @@
 title: Labs
 icon: material/flask
+
 nav:
-  - index.md
-  - linux-production-incident-triage.md
-  - linux-app-server-from-zero.md
-  - networking-dns-firewall-triage.md
-  - networking-edge-failover.md
-  - aws-iam-vpc-triage.md
-  - aws-ssm-s3.md
-  - git-history-pr-recovery.md
-  - cicd-pipeline-triage.md
-  - cicd-docker-secure-gate.md
-  - docker-compose-stack-recovery.md
-  - kubernetes-deployment-triage.md
-  - terraform-plan-review-workflow.md
+  - Overview: index.md
+  - Linux:
+    - Install Linux and First Boot: linux-install-and-first-boot.md
+    - Configure SSH Secure Access: linux-ssh-secure-access.md
+    - Users, Groups, and Permissions: linux-users-permissions-lab.md
+    - Configure Linux Storage: linux-storage-lab.md
+    - Manage Services and Analyse Logs: linux-services-and-logs-lab.md
+    - Firewall and Server Hardening: linux-firewall-hardening-lab.md
+    - Performance Troubleshooting and Service Recovery: linux-performance-troubleshooting-lab.md
+    - Linux Ops Toolkit: linux-ops-toolkit-lab.md
+    - Linux Production Incident Triage: linux-production-incident-triage.md
+    - Linux App Server from Zero: linux-app-server-from-zero.md
+  - Shell Scripting:
+    - Create Your First Script: shell-first-script.md
+    - Build a User Management Script: shell-user-management-script.md
+    - Automate Software Installation: shell-automate-software-installation.md
+    - Build a Backup Utility: shell-backup-utility.md
+    - Rotate Logs: shell-rotate-logs.md
+    - Monitor Disk Usage: shell-monitor-disk-usage.md
+    - Monitor CPU & Memory: shell-monitor-cpu-memory.md
+    - Build a Service Health Checker: shell-service-health-checker.md
+    - Build an SSL Certificate Monitor: shell-ssl-certificate-monitor.md
+    - Parse JSON with jq: shell-parse-json-jq.md
+    - Parse YAML with yq: shell-parse-yaml-yq.md
+    - Automate SSH Tasks: shell-automate-ssh-tasks.md
+    - Build a Deployment Script: shell-deployment-script.md
+    - Create a Linux Operations Toolkit: shell-linux-operations-toolkit.md
+    - Shell Ops Script Hardening: shell-ops-script-hardening.md
+  - Python for DevOps:
+    - Python Log Analyser: python-log-analyser.md
+    - Python Linux Health Checker: python-linux-health-checker.md
+    - Python YAML Config Validator: python-yaml-config-validator.md
+    - Python JSON Validator: python-json-validator.md
+    - Python GitHub Repository Auditor: python-github-repository-auditor.md
+    - Python Docker Cleanup Tool: python-docker-cleanup-tool.md
+    - Python Kubernetes Health Checker: python-kubernetes-health-checker.md
+    - Python Kubernetes Deployment Validator: python-kubernetes-deployment-validator.md
+    - Python Terraform Wrapper: python-terraform-wrapper.md
+    - Python AWS EC2 Inventory: python-aws-ec2-inventory.md
+    - Python Azure Resource Inventory: python-azure-resource-inventory.md
+    - Python GCP Inventory: python-gcp-inventory.md
+    - Python Certificate Expiry Monitor: python-certificate-expiry-monitor.md
+    - Python Slack Notification Bot: python-slack-notification-bot.md
+    - Python REST API Monitoring Service: python-rest-api-monitoring-service.md
+    - Python Secrets Scanner: python-secrets-scanner.md
+    - Python CI/CD Automation Tool: python-cicd-automation-tool.md
+  - Networking:
+    - DNS and Firewall Site-Down Triage: networking-dns-firewall-triage.md
+    - Networking Edge Failover: networking-edge-failover.md
+  - AWS:
+    - AWS IAM and VPC Reachability Triage: aws-iam-vpc-triage.md
+    - Secure EC2 via SSM and S3: aws-ssm-s3.md
+  - Git:
+    - Git History and PR Recovery: git-history-pr-recovery.md
+  - GitLab CI/CD:
+    - CI/CD Pipeline Failure Triage: cicd-pipeline-triage.md
+    - Docker Build, Scan, and Deploy Gate: cicd-docker-secure-gate.md
+  - Docker:
+    - Docker Compose Stack Recovery: docker-compose-stack-recovery.md
+  - Kubernetes:
+    - Kubernetes Deployment Triage: kubernetes-deployment-triage.md
+  - Terraform:
+    - Terraform Plan Review Workflow: terraform-plan-review-workflow.md

@@ -33,7 +33,7 @@ This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Docker
 
 - Basic computer literacy and comfort typing commands in a terminal
 - A Linux environment: Ubuntu VM, WSL2, or a free-tier cloud instance (AWS, GCP, Azure)
-- Familiarity with the [Introduction to Linux](../linux/introduction-to-linux.md) tutorial — especially processes, filesystems, and package management
+- Familiarity with the [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) tutorial — especially processes, filesystems, and package management
 - Basic understanding of [Introduction to Networking](../networking/introduction-to-networking.md) — ports and client-server concepts
 - No prior Docker or container experience required — this tutorial starts from zero
 
@@ -469,7 +469,7 @@ Make executable: `chmod +x ~/bin/container-preflight.sh && ~/bin/container-prefl
 ## Related Tutorials
 
 - [Docker – Category Overview](index.md)
-- [Introduction to Linux](../linux/introduction-to-linux.md) — recommended prerequisite
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) — recommended prerequisite
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md) — version Dockerfiles and configs
 - [Docker Installation and Setup](docker-installation-and-setup.md) *(next in Module 1)*
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)

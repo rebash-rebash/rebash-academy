@@ -448,7 +448,7 @@ Register it: `git config --global core.excludesfile ~/.gitignore_global`
     Platform teams bake `/etc/gitconfig` and `safe.directory` into Jenkins agent AMIs and Kubernetes CI pod images.
 
 !!! tip "Align with Linux SSH hardening"
-    File permissions matter: `chmod 700 ~/.ssh`, `chmod 600 ~/.ssh/id_*`. See [Linux user management](../linux/user-and-group-management.md) for permission fundamentals.
+    File permissions matter: `chmod 700 ~/.ssh`, `chmod 600 ~/.ssh/id_*`. See [Linux user management](../linux/users-groups-and-sudo.md) for permission fundamentals.
 
 ## Troubleshooting
 
@@ -497,7 +497,7 @@ Register it: `git config --global core.excludesfile ~/.gitignore_global`
 - [Git – Category Overview](index.md)
 - [Introduction to Git and Version Control](introduction-to-git-and-version-control.md) *(previous in Module 1)*
 - [Understanding the Git Object Model](understanding-the-git-object-model.md) *(next in Module 1)*
-- [Introduction to Linux](../linux/introduction-to-linux.md)
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md)
 - [Introduction to Networking](../networking/introduction-to-networking.md) — SSH and HTTPS connectivity
 - Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
 - Interview prep: [Git Interview Prep](../interview/git.md)

@@ -1,0 +1,360 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  {% set paths = [
+    {
+      "id": "beginner",
+      "theme": "devops",
+      "title": "Beginner",
+      "badge": "Start here",
+      "meta": "4–6 weeks · 4/4 ready techs",
+      "summary": "First steps into Linux, the shell, networking basics, and Git.",
+      "icon": "school",
+      "detail_url": "career-paths/beginner/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Shell Scripting", "url": "shell/", "icon": "shell", "desc": "18 tutorials"},
+        {"title": "Networking", "url": "networking/", "icon": "net", "desc": "25 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+      ]
+    },
+    {
+      "id": "linux-administrator",
+      "theme": "devops",
+      "title": "Linux Administrator",
+      "badge": "Ops",
+      "meta": "8–12 weeks · 5/5 ready techs",
+      "summary": "Deep Linux operations — storage, systemd, security, and production hardening.",
+      "icon": "linux",
+      "detail_url": "career-paths/linux-administrator/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Shell Scripting", "url": "shell/", "icon": "shell", "desc": "18 tutorials"},
+        {"title": "Networking", "url": "networking/", "icon": "net", "desc": "25 tutorials"},
+        {"title": "Python for DevOps", "url": "python/", "icon": "python", "desc": "27 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+      ]
+    },
+    {
+      "id": "cloud-engineer",
+      "theme": "aws",
+      "title": "Cloud Engineer",
+      "badge": "Cloud",
+      "meta": "12–16 weeks · 7/9 ready techs",
+      "summary": "Build and operate cloud infrastructure on AWS (Azure and GCP next).",
+      "icon": "cloud",
+      "detail_url": "career-paths/cloud-engineer/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Networking", "url": "networking/", "icon": "net", "desc": "25 tutorials"},
+        {"title": "Shell Scripting", "url": "shell/", "icon": "shell", "desc": "18 tutorials"},
+        {"title": "Python for DevOps", "url": "python/", "icon": "python", "desc": "27 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+        {"title": "AWS", "url": "aws/", "icon": "aws", "desc": "20 tutorials"},
+        {"title": "Terraform", "url": "terraform/", "icon": "tf", "desc": "20 tutorials"},
+        {"title": "Azure", "url": "azure/", "icon": "az", "desc": "stub"},
+        {"title": "Google Cloud", "url": "gcp/", "icon": "gcp", "desc": "stub"},
+      ]
+    },
+    {
+      "id": "devops-engineer",
+      "theme": "devops",
+      "title": "DevOps Engineer",
+      "badge": "Recommended",
+      "meta": "20–28 weeks · 10/27 ready techs",
+      "summary": "Full-stack platform skills from Linux through CI/CD, containers, Kubernetes, and IaC.",
+      "icon": "robot",
+      "detail_url": "career-paths/devops-engineer/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Shell Scripting", "url": "shell/", "icon": "shell", "desc": "18 tutorials"},
+        {"title": "Python for DevOps", "url": "python/", "icon": "python", "desc": "27 tutorials"},
+        {"title": "Networking", "url": "networking/", "icon": "net", "desc": "25 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+        {"title": "Docker", "url": "docker/", "icon": "docker", "desc": "20 tutorials"},
+        {"title": "Kubernetes", "url": "kubernetes/", "icon": "k8s", "desc": "20 tutorials"},
+        {"title": "Helm", "url": "helm/", "icon": "k8s", "desc": "planned"},
+        {"title": "Terraform", "url": "terraform/", "icon": "tf", "desc": "20 tutorials"},
+        {"title": "Ansible", "url": "ansible/", "icon": "tf", "desc": "planned"},
+        {"title": "AWS", "url": "aws/", "icon": "aws", "desc": "20 tutorials"},
+        {"title": "Azure", "url": "azure/", "icon": "az", "desc": "stub"},
+        {"title": "Google Cloud", "url": "gcp/", "icon": "gcp", "desc": "stub"},
+        {"title": "GitLab CI/CD", "url": "gitlab/", "icon": "cicd", "desc": "20 tutorials"},
+        {"title": "GitHub Actions", "url": "github-actions/", "icon": "cicd", "desc": "planned"},
+        {"title": "Jenkins", "url": "jenkins/", "icon": "cicd", "desc": "planned"},
+        {"title": "Argo CD", "url": "argocd/", "icon": "k8s", "desc": "planned"},
+        {"title": "Prometheus", "url": "prometheus/", "icon": "mon", "desc": "planned"},
+        {"title": "Grafana", "url": "grafana/", "icon": "mon", "desc": "planned"},
+        {"title": "Loki", "url": "loki/", "icon": "mon", "desc": "planned"},
+        {"title": "Tempo", "url": "tempo/", "icon": "mon", "desc": "planned"},
+        {"title": "OpenTelemetry", "url": "opentelemetry/", "icon": "mon", "desc": "planned"},
+        {"title": "DevSecOps", "url": "devsecops/", "icon": "sec", "desc": "stub"},
+        {"title": "Security", "url": "security/", "icon": "sec", "desc": "stub"},
+        {"title": "Platform Engineering", "url": "platform-engineering/", "icon": "prj", "desc": "planned"},
+        {"title": "Site Reliability Engineering", "url": "sre/", "icon": "mon", "desc": "planned"},
+        {"title": "Cloud Architecture", "url": "architecture/", "icon": "arch", "desc": "stub"},
+      ]
+    },
+    {
+      "id": "kubernetes-engineer",
+      "theme": "platform",
+      "title": "Kubernetes Engineer",
+      "badge": "Containers",
+      "meta": "12–16 weeks · 7/9 ready techs",
+      "summary": "Containers, Kubernetes workloads, Helm, GitOps, and cluster operations.",
+      "icon": "kubernetes",
+      "detail_url": "career-paths/kubernetes-engineer/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Networking", "url": "networking/", "icon": "net", "desc": "25 tutorials"},
+        {"title": "Docker", "url": "docker/", "icon": "docker", "desc": "20 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+        {"title": "Kubernetes", "url": "kubernetes/", "icon": "k8s", "desc": "20 tutorials"},
+        {"title": "Helm", "url": "helm/", "icon": "k8s", "desc": "planned"},
+        {"title": "Argo CD", "url": "argocd/", "icon": "k8s", "desc": "planned"},
+        {"title": "GitLab CI/CD", "url": "gitlab/", "icon": "cicd", "desc": "20 tutorials"},
+        {"title": "Terraform", "url": "terraform/", "icon": "tf", "desc": "20 tutorials"},
+      ]
+    },
+    {
+      "id": "platform-engineer",
+      "theme": "platform",
+      "title": "Platform Engineer",
+      "badge": "Platform",
+      "meta": "16–24 weeks · 6/14 ready techs",
+      "summary": "Internal developer platforms — Kubernetes, GitOps, observability, and self-service.",
+      "icon": "server",
+      "detail_url": "career-paths/platform-engineer/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Docker", "url": "docker/", "icon": "docker", "desc": "20 tutorials"},
+        {"title": "Kubernetes", "url": "kubernetes/", "icon": "k8s", "desc": "20 tutorials"},
+        {"title": "Helm", "url": "helm/", "icon": "k8s", "desc": "planned"},
+        {"title": "Terraform", "url": "terraform/", "icon": "tf", "desc": "20 tutorials"},
+        {"title": "GitLab CI/CD", "url": "gitlab/", "icon": "cicd", "desc": "20 tutorials"},
+        {"title": "Argo CD", "url": "argocd/", "icon": "k8s", "desc": "planned"},
+        {"title": "Python for DevOps", "url": "python/", "icon": "python", "desc": "27 tutorials"},
+        {"title": "Prometheus", "url": "prometheus/", "icon": "mon", "desc": "planned"},
+        {"title": "Grafana", "url": "grafana/", "icon": "mon", "desc": "planned"},
+        {"title": "Loki", "url": "loki/", "icon": "mon", "desc": "planned"},
+        {"title": "OpenTelemetry", "url": "opentelemetry/", "icon": "mon", "desc": "planned"},
+        {"title": "Platform Engineering", "url": "platform-engineering/", "icon": "prj", "desc": "planned"},
+        {"title": "Site Reliability Engineering", "url": "sre/", "icon": "mon", "desc": "planned"},
+      ]
+    },
+    {
+      "id": "devsecops-engineer",
+      "theme": "secops",
+      "title": "DevSecOps Engineer",
+      "badge": "Security",
+      "meta": "14–20 weeks · 7/9 ready techs",
+      "summary": "Shift-left security across containers, Kubernetes, pipelines, and cloud.",
+      "icon": "shield-lock",
+      "detail_url": "career-paths/devsecops-engineer/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Docker", "url": "docker/", "icon": "docker", "desc": "20 tutorials"},
+        {"title": "Kubernetes", "url": "kubernetes/", "icon": "k8s", "desc": "20 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+        {"title": "GitLab CI/CD", "url": "gitlab/", "icon": "cicd", "desc": "20 tutorials"},
+        {"title": "DevSecOps", "url": "devsecops/", "icon": "sec", "desc": "stub"},
+        {"title": "Security", "url": "security/", "icon": "sec", "desc": "stub"},
+        {"title": "AWS", "url": "aws/", "icon": "aws", "desc": "20 tutorials"},
+        {"title": "Terraform", "url": "terraform/", "icon": "tf", "desc": "20 tutorials"},
+      ]
+    },
+    {
+      "id": "site-reliability-engineer",
+      "theme": "platform",
+      "title": "Site Reliability Engineer",
+      "badge": "SRE",
+      "meta": "16–24 weeks · 7/13 ready techs",
+      "summary": "Reliability, observability, incident response, and production operations at scale.",
+      "icon": "heart-pulse",
+      "detail_url": "career-paths/site-reliability-engineer/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Networking", "url": "networking/", "icon": "net", "desc": "25 tutorials"},
+        {"title": "Python for DevOps", "url": "python/", "icon": "python", "desc": "27 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+        {"title": "Kubernetes", "url": "kubernetes/", "icon": "k8s", "desc": "20 tutorials"},
+        {"title": "Terraform", "url": "terraform/", "icon": "tf", "desc": "20 tutorials"},
+        {"title": "GitLab CI/CD", "url": "gitlab/", "icon": "cicd", "desc": "20 tutorials"},
+        {"title": "Prometheus", "url": "prometheus/", "icon": "mon", "desc": "planned"},
+        {"title": "Grafana", "url": "grafana/", "icon": "mon", "desc": "planned"},
+        {"title": "Loki", "url": "loki/", "icon": "mon", "desc": "planned"},
+        {"title": "Tempo", "url": "tempo/", "icon": "mon", "desc": "planned"},
+        {"title": "OpenTelemetry", "url": "opentelemetry/", "icon": "mon", "desc": "planned"},
+        {"title": "Site Reliability Engineering", "url": "sre/", "icon": "mon", "desc": "planned"},
+      ]
+    },
+    {
+      "id": "cloud-architect",
+      "theme": "architect",
+      "title": "Cloud Architect",
+      "badge": "Architecture",
+      "meta": "20–28 weeks · 4/9 ready techs",
+      "summary": "Multi-cloud design, IaC at scale, security architecture, and production patterns.",
+      "icon": "sitemap",
+      "detail_url": "career-paths/cloud-architect/",
+      "steps": [
+        {"title": "AWS", "url": "aws/", "icon": "aws", "desc": "20 tutorials"},
+        {"title": "Azure", "url": "azure/", "icon": "az", "desc": "stub"},
+        {"title": "Google Cloud", "url": "gcp/", "icon": "gcp", "desc": "stub"},
+        {"title": "Terraform", "url": "terraform/", "icon": "tf", "desc": "20 tutorials"},
+        {"title": "Kubernetes", "url": "kubernetes/", "icon": "k8s", "desc": "20 tutorials"},
+        {"title": "GitLab CI/CD", "url": "gitlab/", "icon": "cicd", "desc": "20 tutorials"},
+        {"title": "Cloud Architecture", "url": "architecture/", "icon": "arch", "desc": "stub"},
+        {"title": "Security", "url": "security/", "icon": "sec", "desc": "stub"},
+        {"title": "Site Reliability Engineering", "url": "sre/", "icon": "mon", "desc": "planned"},
+      ]
+    },
+    {
+      "id": "ai-for-devops",
+      "theme": "platform",
+      "title": "AI for DevOps Engineer",
+      "badge": "AI",
+      "meta": "10–14 weeks · 6/7 ready techs",
+      "summary": "Practical AI for automation — APIs, agents, and DevOps tooling on a solid Python base.",
+      "icon": "robot-outline",
+      "detail_url": "career-paths/ai-for-devops/",
+      "steps": [
+        {"title": "Linux", "url": "linux/", "icon": "linux", "desc": "25 tutorials"},
+        {"title": "Shell Scripting", "url": "shell/", "icon": "shell", "desc": "18 tutorials"},
+        {"title": "Python for DevOps", "url": "python/", "icon": "python", "desc": "27 tutorials"},
+        {"title": "Git", "url": "git/", "icon": "git", "desc": "20 tutorials"},
+        {"title": "AI for DevOps", "url": "ai/", "icon": "python", "desc": "stub"},
+        {"title": "Docker", "url": "docker/", "icon": "docker", "desc": "20 tutorials"},
+        {"title": "Kubernetes", "url": "kubernetes/", "icon": "k8s", "desc": "20 tutorials"},
+      ]
+    },
+  ] %}
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Career roadmaps</p>
+      <h1 class="rebash-page-hero__title">Career Paths</h1>
+      <p class="rebash-page-hero__lead">
+        Choose a path to open its winding track. Each checkpoint opens a technology course. Tutorials are shared across paths — never duplicated.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--paths md-grid">
+    <div class="rebash-section__header">
+      <h2 class="rebash-section__title">Choose your path</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Click a career track to reveal the visual learning path.
+      </p>
+    </div>
+
+    <div class="rebash-path-picker" role="tablist" aria-label="Career paths">
+      {% for path in paths %}
+      <button
+        type="button"
+        class="rebash-path-tile rebash-path-tile--{{ path.theme }}"
+        role="tab"
+        id="tab-{{ path.id }}"
+        aria-controls="panel-{{ path.id }}"
+        aria-selected="false"
+        data-path-id="{{ path.id }}"
+      >
+        <div class="rebash-path-tile__banner">
+          <div class="rebash-path-tile__icon" aria-hidden="true">{{ mdi(path.icon) }}</div>
+          <span class="rebash-path-tile__badge">{{ path.badge }}</span>
+        </div>
+        <div class="rebash-path-tile__body">
+          <h3 class="rebash-path-tile__title">{{ path.title }}</h3>
+          <p class="rebash-path-tile__summary">{{ path.summary }}</p>
+          <span class="rebash-path-tile__meta">{{ path.meta }}</span>
+          <span class="rebash-path-tile__hint">View path</span>
+        </div>
+      </button>
+      {% endfor %}
+    </div>
+
+    <div class="rebash-path-steps" id="rebash-path-steps" hidden>
+      {% for path in paths %}
+      <div
+        class="rebash-path-steps__panel rebash-path-steps__panel--{{ path.theme }}"
+        id="panel-{{ path.id }}"
+        role="tabpanel"
+        aria-labelledby="tab-{{ path.id }}"
+        hidden
+      >
+        <div class="rebash-path-steps__header">
+          <h3 class="rebash-path-steps__title">{{ path.title }}</h3>
+          <p class="rebash-path-steps__lead">{{ path.summary }}</p>
+          <p class="rebash-path-steps__lead"><a href="{{ path.detail_url | url }}">Open full path page</a></p>
+        </div>
+
+        <div class="rebash-roadmap-wrap">
+          <nav class="rebash-roadmap" aria-label="{{ path.title }} learning path">
+            <div class="rebash-roadmap__canvas">
+              <svg class="rebash-roadmap__path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <path class="rebash-roadmap__stroke" d=""></path>
+                <path class="rebash-roadmap__dash" d=""></path>
+              </svg>
+              <ol class="rebash-roadmap__stops">
+                <li class="rebash-roadmap__marker rebash-roadmap__marker--start"><span>Start</span></li>
+                {% for step in path.steps %}
+                <li class="rebash-roadmap__stop {% if loop.index is odd %}rebash-roadmap__stop--left{% else %}rebash-roadmap__stop--right{% endif %}">
+                  <a class="rebash-roadmap__card" href="{{ step.url | url }}">
+                    <span class="rebash-roadmap__icon rebash-roadmap__icon--{{ step.icon }}" aria-hidden="true"></span>
+                    <span class="rebash-roadmap__title">{{ step.title }}</span>
+                  </a>
+                </li>
+                {% endfor %}
+                <li class="rebash-roadmap__marker rebash-roadmap__marker--finish"><span>Finish</span></li>
+              </ol>
+            </div>
+          </nav>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">New to DevOps?</span>
+        <h2 class="rebash-panel__title">Not sure where to start</h2>
+        <p class="rebash-panel__lead">
+          Begin with Getting Started, then take the Beginner or DevOps Engineer path.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'getting-started/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">
+            Getting Started
+          </a>
+          <a href="{{ 'career-paths/' | url }}#beginner" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">
+            Beginner path
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Certifications</span>
+        <h2 class="rebash-panel__title">Map skills to exams</h2>
+        <p class="rebash-panel__lead">
+          CKA, Terraform Associate, AWS, Azure, RHCSA, and more — aligned to career paths.
+        </p>
+        <a href="{{ 'certifications/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">
+          View certifications
+        </a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

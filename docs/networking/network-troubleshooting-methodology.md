@@ -33,7 +33,7 @@ This is **Tutorial 14** in **Module 5: Troubleshooting** of the REBASH Academy N
 ## Prerequisites
 
 - Complete [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md) and prior Module 4 tutorials
-- Familiarity with [Linux Networking Essentials](../linux/linux-networking-essentials.md) tools: `ip`, `ss`, `dig`, `curl`
+- Familiarity with [Linux Networking Tools](../linux/linux-networking-tools.md) tools: `ip`, `ss`, `dig`, `curl`
 - Access to a Linux lab environment or cloud instance for hands-on exercises
 - Optional: past incident experience to map concepts to real scenarios
 
@@ -455,7 +455,7 @@ dig +short SERVICE.example.com @8.8.8.8
 - [Networking – Category Overview](index.md)
 - [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md) *(previous — Module 4)*
 - [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md) *(next in Module 5)*
-- [Linux Networking Essentials](../linux/linux-networking-essentials.md)
+- [Linux Networking Tools](../linux/linux-networking-tools.md)
 - [DNS Records and Troubleshooting](dns-records-and-troubleshooting.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)

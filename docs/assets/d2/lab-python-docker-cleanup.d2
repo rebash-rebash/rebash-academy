@@ -1,0 +1,7 @@
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+direction: right
+Fixture: "Fixture JSON\nor Docker daemon" { style.fill: "#fee2e2"; style.stroke: "#dc2626" }
+Inventory: "List dangling\nimages & exited" { style.fill: "#fef9c3"; style.stroke: "#ca8a04" }
+DryRun: "Dry-run report\n(default)" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Apply: "Optional --apply\ndelete" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Fixture -> Inventory -> DryRun -> Apply

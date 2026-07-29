@@ -1,182 +1,282 @@
 ---
 title: Overview
-description: Linux learning track — 25 tutorials from foundations through advanced Linux servers (nginx, TLS, LVM, backups).
+description: "Linux for Cloud & DevOps Engineers — 16 modules and 25 tutorials covering fundamentals through production operations, containers, security, and troubleshooting."
 difficulty: beginner
-estimated_time: "Varies"
+estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-29"
 category: linux
 tags:
   - linux
+  - devops
+  - cloud
+  - course
 comments: false
 ---
 
-# Linux
+# Linux for Cloud & DevOps Engineers
 
-Master the command line, system administration, and shell scripting — from first login to production troubleshooting.
+A production-focused Linux course for administering, troubleshooting, automating, and operating Linux systems used in Cloud, DevOps, Platform Engineering, and SRE — practical engineering, not certification-only knowledge.
 
-## Overview
+!!! tip "Course status"
+    **Track ready** — **16 modules · 25 tutorials**, labs, quiz, cheat sheet, interview prep, and projects. Start with [Linux Fundamentals — Distributions and Architecture](linux-fundamentals-distributions-and-architecture.md).
 
-The REBASH Academy **Linux** track is the golden foundation for DevOps: a structured curriculum from first login through **production-like app servers** (nginx, TLS, LVM, backups). Each tutorial includes theory, step-by-step labs, commands, best practices, and interview questions.
+!!! tip "Learning path"
+    Linux is step 1 on the [DevOps Engineer path](../learning-paths/devops-engineer.md). Next: [Shell Scripting](../shell/index.md) → [Python for DevOps](../python/index.md) → Networking. Dedicated path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md).
 
-!!! tip "Learning Path"
-    Linux is the first step in the [DevOps Engineer learning path](../learning-paths/index.md).
+---
 
-## Curriculum Plan
+## 1. Course overview
 
-Modules and tutorials in order. Use the tables below for links, level, and time estimates.
+### Purpose
 
-<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
+Prepare learners to confidently operate Linux on cloud VMs, bastions, CI runners, and container hosts.
 
-<p class="rebash-tree-title">Linux Track</p>
+### Target roles
 
-<ul class="rebash-tree">
-  <li>1 · Foundations
-<ul>
-  <li>Introduction to Linux</li>
-  <li>Linux Filesystem Hierarchy</li>
-  <li>Essential Linux Commands</li>
-</ul></li>
-  <li>2 · Users &amp; Permissions
-<ul>
-  <li>File Permissions and Ownership</li>
-  <li>User and Group Management</li>
-</ul></li>
-  <li>3 · Processes &amp; Services
-<ul>
-  <li>Process Management</li>
-  <li>systemd Service Management</li>
-  <li>Package Management</li>
-</ul></li>
-  <li>4 · Text &amp; Scripting
-<ul>
-  <li>Text Processing (grep, sed, awk)</li>
-  <li>Shell Scripting Fundamentals</li>
-</ul></li>
-  <li>5 · Remote Admin
-<ul>
-  <li>SSH and Remote Administration</li>
-  <li>Remote systemd Service Control</li>
-</ul></li>
-  <li>6 · Storage &amp; Ops
-<ul>
-  <li>Disk and Filesystem Management</li>
-  <li>Log Management with journalctl</li>
-  <li>Cron and Task Scheduling</li>
-  <li>Environment Variables &amp; Shell Config</li>
-  <li>Linux Networking Essentials</li>
-  <li>File Archiving and Compression</li>
-  <li>Linux Security Hardening Basics</li>
-  <li>Troubleshooting Linux Systems</li>
-</ul></li>
-  <li>7 · Advanced Linux Servers
-<ul>
-  <li>Linux Server Baseline and Lifecycle</li>
-  <li>nginx Web Server and Reverse Proxy</li>
-  <li>TLS Certificates on Linux Servers</li>
-  <li>Server Storage — LVM and fstab</li>
-  <li>Backup, Restore, and Recovery Drills</li>
-</ul></li>
-</ul>
-</figure>
+Linux Administrator · DevOps · Cloud · Platform · SRE · DevSecOps · Infrastructure Engineer
 
+### Prerequisites
 
+None beyond basic computer knowledge. A disposable Ubuntu 22.04/24.04 (or Rocky/RHEL) lab VM is enough.
 
-### Module 1 – Foundations
+### Tools
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 1 | [Introduction to Linux](introduction-to-linux.md) | Beginner | 30 min |
-| 2 | [Linux Filesystem Hierarchy](linux-filesystem-hierarchy.md) | Beginner | 25 min |
-| 3 | [Essential Linux Commands](essential-linux-commands.md) | Beginner | 40 min |
+| Tool | Notes |
+|------|--------|
+| Ubuntu LTS or RHEL-family | Preferred lab images |
+| Terminal + SSH | Local VM, WSL2, or cloud Free Tier |
+| `sudo` user | Not daily root |
+| Snapshots | Before storage/security labs |
 
-### Module 2 – Users, Groups & Permissions
+### Duration
+
+**8–10 weeks** (≈ 45–60 hours contact time at a professional pace).
+
+### Capstone outcomes
+
+Administer servers · troubleshoot production · secure environments · optimise performance · support Kubernetes nodes · operate cloud VMs · automate admin tasks · prepare hosts for DevOps/Platform work.
+
+### Certification mapping (light)
+
+| Theme | RHCSA/LFCS | RHCE/LFCE | Modules |
+|-------|:----------:|:---------:|---------|
+| Users / permissions / ACL | ● | ○ | 4 |
+| Storage / LVM | ● | ● | 8 |
+| systemd / services | ● | ● | 7 |
+| Networking / SSH | ● | ● | 9, 13 |
+| Security / firewalls / MAC | ● | ● | 13, 16 |
+| Containers host concepts | ○ | ● | 14 |
+| Troubleshooting / performance | ● | ● | 12, 15, 16 |
+
+---
+
+## 2. Learning path
+
+```text
+M1 Fundamentals → M2 CLI → M3 Filesystem → M4 Users/Permissions
+        ↓
+M5 Text → M6 Processes → M7 Services/Boot → M8 Storage
+        ↓
+M9 Networking → M10 Packages → M11 Scheduling → M12 Logging/Monitoring
+        ↓
+M13 Security → M14 Containers/Cloud → M15 Troubleshooting → M16 Production
+        ↓
+Projects → Capstone → Shell Scripting track
+```
+
+---
+
+## 3. Modules and tutorials
+
+### Module 1 — Linux Fundamentals
 
 | # | Tutorial | Level | Time |
 |---|----------|-------|------|
-| 4 | [File Permissions and Ownership](file-permissions-and-ownership.md) | Beginner | 35 min |
-| 5 | [User and Group Management](user-and-group-management.md) | Beginner | 35 min |
+| 1 | [Distributions and Architecture](linux-fundamentals-distributions-and-architecture.md) | Beginner | 45 min |
+| 2 | [Boot Process and Filesystem Hierarchy](boot-process-and-filesystem-hierarchy.md) | Beginner | 45 min |
 
-### Module 3 – Processes, Services & Packages
+**Topics:** What is Linux · Distros · Architecture · Kernel · User Space · Shell vs Terminal · Boot Process · FHS
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 6 | [Process Management](process-management.md) | Intermediate | 40 min |
-| 7 | [systemd Service Management](systemd-service-management.md) | Intermediate | 45 min |
-| 8 | [Package Management](package-management.md) | Beginner | 35 min |
-
-### Module 4 – Text Processing & Shell Scripting
+### Module 2 — Command Line Essentials
 
 | # | Tutorial | Level | Time |
 |---|----------|-------|------|
-| 9 | [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md) | Intermediate | 50 min |
-| 10 | [Shell Scripting Fundamentals](shell-scripting-fundamentals.md) | Intermediate | 60 min |
+| 3 | [Essential Linux Commands](essential-linux-commands.md) | Beginner | 50 min |
 
-### Module 5 – Remote Administration
+**Topics:** pwd ls cd mkdir rm cp mv touch cat less head tail stat file history
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 11 | [SSH and Remote Administration](ssh-remote-administration.md) | Intermediate | 40 min |
-| 12 | [Remote systemd Service Control](remote-systemd-services.md) | Intermediate | 45 min |
-
-### Module 6 – Storage, Logs, Networking & Operations
+### Module 3 — Linux Filesystem
 
 | # | Tutorial | Level | Time |
 |---|----------|-------|------|
-| 13 | [Disk and Filesystem Management](disk-and-filesystem-management.md) | Intermediate | 45 min |
-| 14 | [Log Management with journalctl](log-management-journalctl.md) | Intermediate | 35 min |
-| 15 | [Cron and Task Scheduling](cron-and-task-scheduling.md) | Beginner | 30 min |
-| 16 | [Environment Variables and Shell Configuration](environment-variables-shell-config.md) | Beginner | 25 min |
-| 17 | [Linux Networking Essentials](linux-networking-essentials.md) | Intermediate | 45 min |
-| 18 | [File Archiving and Compression](file-archiving-and-compression.md) | Beginner | 25 min |
-| 19 | [Linux Security Hardening Basics](linux-security-hardening-basics.md) | Advanced | 55 min |
-| 20 | [Troubleshooting Linux Systems](troubleshooting-linux-systems.md) | Advanced | 60 min |
+| 4 | [Paths, Links, Mounts, and Inodes](filesystem-paths-links-mounts-and-inodes.md) | Beginner | 50 min |
+| 5 | [Disk Usage and File Attributes](disk-usage-and-file-attributes.md) | Beginner | 40 min |
 
-### Module 7 – Advanced Linux Servers
+**Topics:** Directory structure · Absolute/relative paths · Hard/symbolic links · Mount points · File attributes · Disk usage · inode
 
-Build and operate a production-like Ubuntu app server: baseline → nginx → TLS → LVM → backups.
+### Module 4 — Users & Permissions
 
 | # | Tutorial | Level | Time |
 |---|----------|-------|------|
-| 21 | [Linux Server Baseline and Lifecycle](linux-server-baseline-and-lifecycle.md) | Advanced | 55 min |
-| 22 | [nginx Web Server and Reverse Proxy](nginx-web-server-and-reverse-proxy.md) | Advanced | 65 min |
-| 23 | [TLS Certificates on Linux Servers](tls-certificates-on-linux-servers.md) | Advanced | 60 min |
-| 24 | [Server Storage — LVM and fstab](server-storage-lvm-and-fstab.md) | Advanced | 65 min |
-| 25 | [Backup, Restore, and Recovery Drills](backup-restore-and-recovery-drills.md) | Advanced | 55 min |
+| 6 | [Users, Groups, and sudo](users-groups-and-sudo.md) | Beginner | 45 min |
+| 7 | [Permissions, ACLs, and Special Bits](permissions-acls-and-special-bits.md) | Intermediate | 50 min |
 
-**Total estimated time:** ~18 hours of hands-on learning (Modules 1–7)
+**Topics:** Users · Groups · sudo · chmod · chown · chgrp · umask · ACLs · Sticky · SUID · SGID
 
-## Learning Objectives
+### Module 5 — Text Processing
 
-After completing this track, you will be able to:
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 8 | [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md) | Intermediate | 55 min |
 
-- [ ] Navigate and administer a Linux server confidently
-- [ ] Manage users, permissions, processes, and services
-- [ ] Write Bash scripts and process text from the CLI
-- [ ] Administer remote servers over SSH and systemd
-- [ ] Monitor logs, schedule tasks, and troubleshoot production issues
-- [ ] Harden a VM and expose only intended services (SSH/HTTP/HTTPS)
-- [ ] Run nginx as a reverse proxy with TLS on a local Ubuntu server
-- [ ] Manage LVM storage and prove backup/restore drills
+**Topics:** grep sed awk cut paste tr sort uniq wc xargs
 
-## Who Is This For?
+### Module 6 — Process Management
 
-| Audience | Benefit |
-|----------|---------|
-| **Students** | Build job-ready Linux skills from zero |
-| **Developers** | Understand the OS your applications run on |
-| **DevOps / SRE** | Foundation for Docker, Kubernetes, and cloud |
-| **Sysadmins** | Structured refresher with modern systemd practices |
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 9 | [Process Management](process-management.md) | Intermediate | 50 min |
 
-## Related Sections
+**Topics:** ps top htop kill pkill jobs fg bg nice renice nohup
 
-- [Networking](../networking/index.md) — next step in the DevOps path
-- [Docker](../docker/index.md) — containerize your applications
-- [Interview Prep](../interview/index.md) — Linux interview questions
+### Module 7 — Services & Boot
 
-- [Linux Cheat Sheet](../cheatsheets/linux.md)
-- [Linux Interview Prep](../interview/linux.md)
-- [Linux Fundamentals Quiz](../quizzes/linux-fundamentals.md)
-- [Linux Servers Quiz](../quizzes/linux-servers.md)
-- [Linux App Server from Zero lab](../labs/linux-app-server-from-zero.md)
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 10 | [systemd Services and journalctl](systemd-services-and-journalctl.md) | Intermediate | 55 min |
+| 11 | [systemd Targets, Timers, and Boot](systemd-targets-timers-and-boot.md) | Intermediate | 50 min |
+
+**Topics:** systemd · systemctl · journalctl · Targets · Services · Timers · Boot
+
+### Module 8 — Storage Management
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 12 | [Disks, Partitions, and Filesystems](storage-disks-partitions-and-filesystems.md) | Intermediate | 55 min |
+| 13 | [LVM, Swap, and Disk Monitoring](lvm-swap-and-disk-monitoring.md) | Advanced | 55 min |
+
+**Topics:** lsblk fdisk parted mkfs mount umount · LVM · Swap · Disk monitoring
+
+### Module 9 — Linux Networking
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 14 | [Linux Networking Tools](linux-networking-tools.md) | Intermediate | 55 min |
+| 15 | [SSH and Remote Access](ssh-and-remote-access.md) | Intermediate | 45 min |
+
+**Topics:** ip ss ping traceroute dig nslookup host curl wget tcpdump netcat · SSH
+
+### Module 10 — Package Management
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 16 | [Package Management](package-management.md) | Beginner | 45 min |
+
+**Topics:** apt dnf yum zypper snap flatpak
+
+### Module 11 — Scheduling & Automation
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 17 | [Scheduling — cron, at, and Timers](scheduling-cron-at-and-timers.md) | Intermediate | 45 min |
+
+**Topics:** cron crontab at systemd timers
+
+### Module 12 — Logging & Monitoring
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 18 | [Logging — syslog, journald, logrotate](logging-syslog-journald-logrotate.md) | Intermediate | 45 min |
+| 19 | [Host Monitoring — vmstat, iostat, sar](host-monitoring-vmstat-iostat-sar.md) | Intermediate | 45 min |
+
+**Topics:** syslog journald logrotate · vmstat iostat free uptime df du sar
+
+### Module 13 — Linux Security
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 20 | [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md) | Advanced | 55 min |
+| 21 | [SELinux, AppArmor, Fail2Ban, Auditd, PAM](selinux-apparmor-fail2ban-auditd-pam.md) | Advanced | 55 min |
+
+**Topics:** SSH hardening · SSH keys · firewalld · ufw · SELinux · AppArmor · Fail2Ban · Auditd · PAM
+
+### Module 14 — Containers & Cloud
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 22 | [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md) | Advanced | 55 min |
+
+**Topics:** Namespaces · cgroups · OverlayFS · OCI · Container runtime basics
+
+### Module 15 — Troubleshooting
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 23 | [Troubleshooting Linux Systems](troubleshooting-linux-systems.md) | Advanced | 60 min |
+
+**Topics:** Boot · High CPU/memory · Disk full · Permissions · Network · Services · Logs · Performance
+
+### Module 16 — Production Linux
+
+| # | Tutorial | Level | Time |
+|---|----------|-------|------|
+| 24 | [Production Hardening and Performance](production-linux-hardening-and-performance.md) | Advanced | 55 min |
+| 25 | [Backup, Disaster Recovery, and Capacity](backup-disaster-recovery-and-capacity.md) | Advanced | 55 min |
+
+**Topics:** Hardening · Performance tuning · Capacity · Monitoring · Logging · Operational excellence · Backup · DR
+
+---
+
+## 4. Practice
+
+### Labs
+
+| Lab | Focus |
+|-----|--------|
+| [Install and first boot](../labs/linux-install-and-first-boot.md) | Lab VM ready |
+| [SSH secure access](../labs/linux-ssh-secure-access.md) | Keys and SSH |
+| [Users and permissions](../labs/linux-users-permissions-lab.md) | Identity lock-down |
+| [Storage lab](../labs/linux-storage-lab.md) | Disks / mounts |
+| [Services and logs](../labs/linux-services-and-logs-lab.md) | systemd + journal |
+| [Firewall hardening](../labs/linux-firewall-hardening-lab.md) | Secure the host |
+| [Performance troubleshooting](../labs/linux-performance-troubleshooting-lab.md) | CPU/memory/service |
+| [Ops toolkit](../labs/linux-ops-toolkit-lab.md) | Monitoring + cron toolkit |
+| [Production incident triage](../labs/linux-production-incident-triage.md) | Scenario drill |
+| [App server from zero](../labs/linux-app-server-from-zero.md) | End-to-end host build |
+
+### Projects
+
+| Level | Project |
+|-------|---------|
+| Beginner | [System Information Utility](../projects/linux-system-information-utility.md) |
+| Intermediate | [Server Health Dashboard](../projects/linux-server-health-dashboard.md) |
+| Advanced | [Operations Toolkit](../projects/linux-operations-toolkit.md) |
+| Capstone | [Production Linux Operations Platform](../projects/linux-production-operations-platform.md) |
+
+### Assessment & reference
+
+- Quiz: [Linux for Cloud & DevOps Fundamentals](../quizzes/linux-for-cloud-devops-fundamentals.md) (40 Q)
+- Also: [Linux Fundamentals](../quizzes/linux-fundamentals.md) · [Linux Servers](../quizzes/linux-servers.md)
+- [Cheat sheet](../cheatsheets/linux.md) · [Interview prep](../interview/linux.md)
+
+---
+
+## 5. D2 diagrams
+
+Architecture · Boot process · Filesystem / links · Permission model · Process lifecycle · Storage layout · Networking stack · systemd · Container internals — under `docs/assets/d2/linux-*.d2`.
+
+---
+
+## Start here
+
+1. [Linux Fundamentals — Distributions and Architecture](linux-fundamentals-distributions-and-architecture.md)
+2. Lab VM with snapshots
+3. After Module 11–12, deepen automation in [Shell Scripting](../shell/index.md)
+
+## Related
+
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Next: [Shell Scripting](../shell/index.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [Getting Started](../getting-started/index.md)

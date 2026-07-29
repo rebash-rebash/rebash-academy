@@ -15,106 +15,418 @@
     }
   </style>
 
-  <section class="rebash-hero">
+  {# ——— Hero ——— #}
+  <section class="rebash-hero rebash-hero--home">
+    <div class="rebash-hero__glow" aria-hidden="true"></div>
+    <div class="rebash-hero__grid" aria-hidden="true"></div>
     <div class="rebash-hero__inner md-grid">
       <div class="rebash-hero__content">
-        <p class="rebash-hero__eyebrow">Production-grade DevOps documentation</p>
-        <h1 class="rebash-hero__title">Learn by Building.</h1>
+        <p class="rebash-hero__eyebrow">Open learning platform</p>
+        <h1 class="rebash-hero__title">REBASH Academy</h1>
         <p class="rebash-hero__subtitle">
-          Hands-on tutorials for Linux, Cloud, Kubernetes, Terraform, DevSecOps, and more.
-          Build real skills with labs, projects, and production-ready guides.
+          Master Cloud, DevOps, Kubernetes, and Platform Engineering through structured,
+          hands-on learning — career paths, labs, and projects you can show in an interview.
         </p>
         <div class="rebash-hero__actions">
           <a href="{{ 'getting-started/' | url }}" class="rebash-cta rebash-cta--primary">
-            Get Started
+            Start learning
           </a>
-          <a href="{{ 'learning-paths/' | url }}" class="rebash-cta rebash-cta--secondary">
-            View Learning Paths
+          <a href="{{ 'career-paths/' | url }}" class="rebash-cta rebash-cta--secondary">
+            Browse career paths
+          </a>
+          <a href="{{ 'technologies/' | url }}" class="rebash-cta rebash-cta--secondary">
+            Browse technologies
           </a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="rebash-section rebash-section--paths md-grid">
-    <div class="rebash-section__header">
-      <h2 class="rebash-section__title">Popular Learning Paths</h2>
+  {# ——— Stats ——— #}
+  <section class="rebash-stats md-grid" aria-label="Academy highlights">
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10</span>
+      <span class="rebash-stats__label">Career paths</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">29</span>
+      <span class="rebash-stats__label">Technology tracks</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">215+</span>
+      <span class="rebash-stats__label">Ready tutorials</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Labs</span>
+      <span class="rebash-stats__label">Projects &amp; capstones</span>
+    </div>
+  </section>
+
+  {# ——— Who for ——— #}
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Who this is for</h2>
       <p class="rebash-section__lead rebash-section__lead--inline">
-        Structured roadmaps from fundamentals to production-ready skills.
+        Pick the role that matches where you are — each links to a recommended career path.
       </p>
     </div>
-    <div class="rebash-path-grid">
-      <a href="{{ 'learning-paths/' | url }}" class="rebash-path-card rebash-path-card--devops">
+    <div class="rebash-audience-grid rebash-reveal">
+      <a href="{{ 'career-paths/' | url }}#beginner" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("school") }}</span>
+        <h3 class="rebash-audience-card__title">Students</h3>
+        <p class="rebash-audience-card__text">Build a portfolio before your first Cloud or DevOps role.</p>
+        <span class="rebash-audience-card__link">Beginner path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#linux-administrator" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("linux") }}</span>
+        <h3 class="rebash-audience-card__title">Linux administrators</h3>
+        <p class="rebash-audience-card__text">Deepen ops skills and add automation.</p>
+        <span class="rebash-audience-card__link">Linux Administrator</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#cloud-engineer" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("cloud") }}</span>
+        <h3 class="rebash-audience-card__title">Cloud engineers</h3>
+        <p class="rebash-audience-card__text">Design and operate cloud infrastructure.</p>
+        <span class="rebash-audience-card__link">Cloud Engineer</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#devops-engineer" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("robot") }}</span>
+        <h3 class="rebash-audience-card__title">DevOps engineers</h3>
+        <p class="rebash-audience-card__text">Connect Git, CI/CD, containers, and IaC end to end.</p>
+        <span class="rebash-audience-card__link">DevOps Engineer</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#platform-engineer" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("layers") }}</span>
+        <h3 class="rebash-audience-card__title">Platform engineers</h3>
+        <p class="rebash-audience-card__text">Move toward internal platforms and GitOps.</p>
+        <span class="rebash-audience-card__link">Platform Engineer</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#site-reliability-engineer" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("pulse") }}</span>
+        <h3 class="rebash-audience-card__title">Site reliability engineers</h3>
+        <p class="rebash-audience-card__text">Strengthen reliability and observability.</p>
+        <span class="rebash-audience-card__link">SRE path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#devsecops-engineer" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("shield-lock") }}</span>
+        <h3 class="rebash-audience-card__title">DevSecOps engineers</h3>
+        <p class="rebash-audience-card__text">Layer security onto pipelines and workloads.</p>
+        <span class="rebash-audience-card__link">DevSecOps Engineer</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#cloud-architect" class="rebash-audience-card">
+        <span class="rebash-audience-card__icon" aria-hidden="true">{{ mdi("sitemap") }}</span>
+        <h3 class="rebash-audience-card__title">Cloud architects</h3>
+        <p class="rebash-audience-card__text">Multi-cloud design and delivery at scale.</p>
+        <span class="rebash-audience-card__link">Cloud Architect</span>
+      </a>
+    </div>
+  </section>
+
+  {# ——— Goals / career paths ——— #}
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">What do you want to become?</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Job-shaped roadmaps. Tutorials are shared across paths — not duplicated.
+      </p>
+    </div>
+    <div class="rebash-goal-grid rebash-reveal">
+      <a href="{{ 'career-paths/' | url }}#beginner" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--beginner">Beginner</span>
+          <span class="rebash-goal-card__time">4–6 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">Beginner</h3>
+        <p class="rebash-goal-card__text">Solid foundations for any Cloud or DevOps role.</p>
+        <p class="rebash-goal-card__tech">Linux · Shell · Networking · Git</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#linux-administrator" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--beginner">Beginner</span>
+          <span class="rebash-goal-card__time">8–12 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">Linux Administrator</h3>
+        <p class="rebash-goal-card__text">Production Linux ops and automation habits.</p>
+        <p class="rebash-goal-card__tech">Linux · Shell · Networking · Python</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#cloud-engineer" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--intermediate">Intermediate</span>
+          <span class="rebash-goal-card__time">12–16 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">Cloud Engineer</h3>
+        <p class="rebash-goal-card__text">Build and operate cloud infrastructure (AWS first).</p>
+        <p class="rebash-goal-card__tech">Linux · Networking · AWS · Terraform</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#devops-engineer" class="rebash-goal-card rebash-goal-card--featured">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--intermediate">Intermediate</span>
+          <span class="rebash-goal-card__time">20–28 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">DevOps Engineer</h3>
+        <p class="rebash-goal-card__text">Full delivery stack from OS to IaC.</p>
+        <p class="rebash-goal-card__tech">Linux → Docker → K8s → GitLab CI → Terraform</p>
+        <span class="rebash-goal-card__link">Recommended</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#kubernetes-engineer" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--intermediate">Intermediate</span>
+          <span class="rebash-goal-card__time">12–16 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">Kubernetes Engineer</h3>
+        <p class="rebash-goal-card__text">Workloads, Helm, and cluster operations.</p>
+        <p class="rebash-goal-card__tech">Docker · Kubernetes · Helm · Git</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#platform-engineer" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--advanced">Advanced</span>
+          <span class="rebash-goal-card__time">16–24 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">Platform Engineer</h3>
+        <p class="rebash-goal-card__text">Platform, GitOps, and developer experience skills.</p>
+        <p class="rebash-goal-card__tech">Kubernetes · Terraform · Observability</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#site-reliability-engineer" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--advanced">Advanced</span>
+          <span class="rebash-goal-card__time">16–24 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">Site Reliability Engineer</h3>
+        <p class="rebash-goal-card__text">Reliability, incidents, and observability.</p>
+        <p class="rebash-goal-card__tech">Linux · Kubernetes · Prometheus · Grafana</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#devsecops-engineer" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--advanced">Advanced</span>
+          <span class="rebash-goal-card__time">14–20 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">DevSecOps Engineer</h3>
+        <p class="rebash-goal-card__text">Shift-left security across pipelines and cloud.</p>
+        <p class="rebash-goal-card__tech">Kubernetes · GitLab CI · Security</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#cloud-architect" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--expert">Expert</span>
+          <span class="rebash-goal-card__time">20–28 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">Cloud Architect</h3>
+        <p class="rebash-goal-card__text">Multi-cloud design and IaC at scale.</p>
+        <p class="rebash-goal-card__tech">AWS · Azure · GCP · Terraform</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+      <a href="{{ 'career-paths/' | url }}#ai-for-devops" class="rebash-goal-card">
+        <div class="rebash-goal-card__top">
+          <span class="rebash-goal-card__level rebash-goal-card__level--intermediate">Intermediate</span>
+          <span class="rebash-goal-card__time">10–14 weeks</span>
+        </div>
+        <h3 class="rebash-goal-card__title">AI for DevOps Engineer</h3>
+        <p class="rebash-goal-card__text">Practical AI on a solid ops base.</p>
+        <p class="rebash-goal-card__tech">Python · Linux · Docker</p>
+        <span class="rebash-goal-card__link">Open path</span>
+      </a>
+    </div>
+    <p class="rebash-section__more rebash-reveal">
+      <a href="{{ 'career-paths/' | url }}">See all career paths with winding tracks →</a>
+    </p>
+  </section>
+
+  {# ——— Features ——— #}
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">What you get</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Everything you need to learn, practise, and prove skills.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--4 rebash-reveal">
+      <a href="{{ 'career-paths/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--devops">
         <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("robot") }}</div>
-          <span class="rebash-path-card__badge">Recommended</span>
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("map-marker-path") }}</div>
+          <span class="rebash-path-card__badge">Paths</span>
         </div>
         <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">DevOps Engineer</h3>
-          <p class="rebash-path-card__summary">Full-stack platform skills from Linux through AWS, CI/CD, and Terraform. Azure, GCP, and DevSecOps are next.</p>
-          <div class="rebash-path-card__track" aria-label="Path steps">
-            <span>Linux</span><span>Networking</span><span>AWS</span><span>Git</span><span>CI/CD</span><span>Docker</span><span>K8s</span><span>Terraform</span>
-          </div>
-          <span class="rebash-path-card__meta">8 ready tracks · more planned</span>
-          <span class="rebash-path-card__link">Explore path</span>
+          <h3 class="rebash-path-card__title">Career paths</h3>
+          <p class="rebash-path-card__summary">Ordered roadmaps for job roles.</p>
+          <span class="rebash-path-card__link">Explore</span>
         </div>
       </a>
-      <a href="{{ 'aws/' | url }}" class="rebash-path-card rebash-path-card--aws">
+      <a href="{{ 'linux/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--linux">
         <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("aws") }}</div>
-          <span class="rebash-path-card__badge">Ready</span>
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("book-open-page-variant") }}</div>
+          <span class="rebash-path-card__badge">Courses</span>
         </div>
         <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">AWS</h3>
-          <p class="rebash-path-card__summary">IAM, VPC, EC2, S3, load balancing, and ops — Free Tier and LocalStack-friendly labs.</p>
-          <div class="rebash-path-card__topics">
-            <span class="rebash-path-card__topic">IAM</span>
-            <span class="rebash-path-card__topic">VPC</span>
-            <span class="rebash-path-card__topic">EC2</span>
-            <span class="rebash-path-card__topic">S3</span>
-          </div>
-          <span class="rebash-path-card__meta">20 tutorials · After Networking</span>
-          <span class="rebash-path-card__link">Start AWS track</span>
+          <h3 class="rebash-path-card__title">Technology courses</h3>
+          <p class="rebash-path-card__summary">Deep tracks with modules and labs.</p>
+          <span class="rebash-path-card__link">Browse</span>
         </div>
       </a>
-      <a href="{{ 'roadmap/' | url }}" class="rebash-path-card rebash-path-card--secops">
+      <a href="{{ 'labs/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--labs">
         <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("shield-lock") }}</div>
-          <span class="rebash-path-card__badge">Coming next</span>
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("flask") }}</div>
+          <span class="rebash-path-card__badge">Hands-on</span>
         </div>
         <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">Azure, GCP &amp; DevSecOps</h3>
-          <p class="rebash-path-card__summary">Multi-cloud and DevSecOps tracks are on the roadmap. AWS is live — build it next.</p>
-          <div class="rebash-path-card__topics">
-            <span class="rebash-path-card__topic">Azure</span>
-            <span class="rebash-path-card__topic">GCP</span>
-            <span class="rebash-path-card__topic">DevSecOps</span>
-            <span class="rebash-path-card__topic">GitLab</span>
-          </div>
-          <span class="rebash-path-card__meta">Planned · see roadmap</span>
-          <span class="rebash-path-card__link">View roadmap</span>
+          <h3 class="rebash-path-card__title">Labs</h3>
+          <p class="rebash-path-card__summary">Scenario drills after modules.</p>
+          <span class="rebash-path-card__link">Practise</span>
+        </div>
+      </a>
+      <a href="{{ 'projects/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--projects">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("rocket-launch") }}</div>
+          <span class="rebash-path-card__badge">Portfolio</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Projects</h3>
+          <p class="rebash-path-card__summary">Builds you can show in interviews.</p>
+          <span class="rebash-path-card__link">View</span>
+        </div>
+      </a>
+      <a href="{{ 'capstones/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--platform">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("trophy") }}</div>
+          <span class="rebash-path-card__badge">Capstone</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Capstones</h3>
+          <p class="rebash-path-card__summary">End-to-end proofs across tools.</p>
+          <span class="rebash-path-card__link">Explore</span>
+        </div>
+      </a>
+      <a href="{{ 'cheatsheets/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--cheatsheets">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("file-document-multiple") }}</div>
+          <span class="rebash-path-card__badge">Reference</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Cheat sheets</h3>
+          <p class="rebash-path-card__summary">Quick command and pattern reference.</p>
+          <span class="rebash-path-card__link">Open</span>
+        </div>
+      </a>
+      <a href="{{ 'interview/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--interview">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("account-question") }}</div>
+          <span class="rebash-path-card__badge">Career</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Interview prep</h3>
+          <p class="rebash-path-card__summary">Role-oriented themes per technology.</p>
+          <span class="rebash-path-card__link">Prepare</span>
+        </div>
+      </a>
+      <a href="{{ 'certifications/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--aws">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("certificate") }}</div>
+          <span class="rebash-path-card__badge">Exams</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Certifications</h3>
+          <p class="rebash-path-card__summary">Practical study mapped to common exams.</p>
+          <span class="rebash-path-card__link">Map exams</span>
         </div>
       </a>
     </div>
   </section>
 
-  <section class="rebash-section md-grid">
-    <div class="rebash-section__header">
-      <h2 class="rebash-section__title">Featured Tutorials</h2>
+  {# ——— Learning journey ——— #}
+  <section class="rebash-section rebash-section--journey md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Learning journey</h2>
       <p class="rebash-section__lead rebash-section__lead--inline">
-        Jump into our most popular hands-on tracks.
+        From first steps to job-ready — understand, practise, build, then prove.
       </p>
     </div>
-    <div class="rebash-feature-grid rebash-feature-grid--4">
+
+    <nav class="rebash-journey rebash-reveal" aria-label="Learning journey steps">
+      <ol class="rebash-journey__rail">
+        <li class="rebash-journey__step">
+          <span class="rebash-journey__badge" aria-hidden="true">
+            <span class="rebash-journey__icon">{{ mdi("map-marker-path") }}</span>
+          </span>
+          <span class="rebash-journey__num">01</span>
+          <strong class="rebash-journey__title">Career path</strong>
+          <span class="rebash-journey__hint">Choose your goal</span>
+        </li>
+        <li class="rebash-journey__step">
+          <span class="rebash-journey__badge" aria-hidden="true">
+            <span class="rebash-journey__icon">{{ mdi("layers") }}</span>
+          </span>
+          <span class="rebash-journey__num">02</span>
+          <strong class="rebash-journey__title">Technology</strong>
+          <span class="rebash-journey__hint">Open a track</span>
+        </li>
+        <li class="rebash-journey__step">
+          <span class="rebash-journey__badge" aria-hidden="true">
+            <span class="rebash-journey__icon">{{ mdi("book-open-page-variant") }}</span>
+          </span>
+          <span class="rebash-journey__num">03</span>
+          <strong class="rebash-journey__title">Tutorials</strong>
+          <span class="rebash-journey__hint">Learn in order</span>
+        </li>
+        <li class="rebash-journey__step">
+          <span class="rebash-journey__badge" aria-hidden="true">
+            <span class="rebash-journey__icon">{{ mdi("flask") }}</span>
+          </span>
+          <span class="rebash-journey__num">04</span>
+          <strong class="rebash-journey__title">Labs</strong>
+          <span class="rebash-journey__hint">Practise hands-on</span>
+        </li>
+        <li class="rebash-journey__step">
+          <span class="rebash-journey__badge" aria-hidden="true">
+            <span class="rebash-journey__icon">{{ mdi("rocket-launch") }}</span>
+          </span>
+          <span class="rebash-journey__num">05</span>
+          <strong class="rebash-journey__title">Projects</strong>
+          <span class="rebash-journey__hint">Build &amp; prove</span>
+        </li>
+        <li class="rebash-journey__step rebash-journey__step--finish">
+          <span class="rebash-journey__badge" aria-hidden="true">
+            <span class="rebash-journey__icon">{{ mdi("briefcase-check") }}</span>
+          </span>
+          <span class="rebash-journey__num">06</span>
+          <strong class="rebash-journey__title">Job ready</strong>
+          <span class="rebash-journey__hint">Interview &amp; certs</span>
+        </li>
+      </ol>
+    </nav>
+
+    <ol class="rebash-philosophy rebash-reveal" aria-label="Learning philosophy">
+      <li><strong>Understand</strong></li>
+      <li><strong>Practise</strong></li>
+      <li><strong>Experiment</strong></li>
+      <li><strong>Build</strong></li>
+      <li><strong>Troubleshoot</strong></li>
+      <li><strong>Production</strong></li>
+    </ol>
+  </section>
+
+  {# ——— Technologies ——— #}
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Featured technologies</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Ready tracks with full tutorial series — <a href="{{ 'technologies/' | url }}">browse the full catalog</a> or start below.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--4 rebash-reveal">
       <a href="{{ 'linux/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--linux">
         <div class="rebash-path-card__banner">
           <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("linux") }}</div>
-          <span class="rebash-path-card__badge">25 tutorials</span>
+          <span class="rebash-path-card__badge">Foundations</span>
         </div>
         <div class="rebash-path-card__body">
           <h3 class="rebash-path-card__title">Linux</h3>
-          <p class="rebash-path-card__summary">Command line, systemd, scripting, and production troubleshooting.</p>
-          <span class="rebash-path-card__link">Start learning</span>
+          <p class="rebash-path-card__summary">Command line, systemd, and production troubleshooting.</p>
+          <span class="rebash-path-card__link">Start</span>
         </div>
       </a>
       <a href="{{ 'docker/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--docker">
@@ -124,8 +436,8 @@
         </div>
         <div class="rebash-path-card__body">
           <h3 class="rebash-path-card__title">Docker</h3>
-          <p class="rebash-path-card__summary">Images, Compose, networking, and production container patterns.</p>
-          <span class="rebash-path-card__link">Start learning</span>
+          <p class="rebash-path-card__summary">Images, Compose, networking, and hardening.</p>
+          <span class="rebash-path-card__link">Start</span>
         </div>
       </a>
       <a href="{{ 'kubernetes/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--k8s">
@@ -136,7 +448,7 @@
         <div class="rebash-path-card__body">
           <h3 class="rebash-path-card__title">Kubernetes</h3>
           <p class="rebash-path-card__summary">Deploy, scale, and operate workloads at cluster scale.</p>
-          <span class="rebash-path-card__link">Start learning</span>
+          <span class="rebash-path-card__link">Start</span>
         </div>
       </a>
       <a href="{{ 'terraform/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--terraform">
@@ -146,147 +458,144 @@
         </div>
         <div class="rebash-path-card__body">
           <h3 class="rebash-path-card__title">Terraform</h3>
-          <p class="rebash-path-card__summary">Infrastructure as Code for reproducible cloud environments.</p>
-          <span class="rebash-path-card__link">Start learning</span>
+          <p class="rebash-path-card__summary">Infrastructure as Code for reproducible cloud.</p>
+          <span class="rebash-path-card__link">Start</span>
         </div>
       </a>
+    </div>
+    <div class="rebash-tech-cloud rebash-reveal" aria-label="More technologies">
+      <a href="{{ 'networking/' | url }}" class="rebash-tech-chip">Networking</a>
+      <a href="{{ 'shell/' | url }}" class="rebash-tech-chip">Shell</a>
+      <a href="{{ 'python/' | url }}" class="rebash-tech-chip">Python</a>
+      <a href="{{ 'git/' | url }}" class="rebash-tech-chip">Git</a>
+      <a href="{{ 'aws/' | url }}" class="rebash-tech-chip">AWS</a>
+      <a href="{{ 'helm/' | url }}" class="rebash-tech-chip">Helm</a>
+      <a href="{{ 'gitlab/' | url }}" class="rebash-tech-chip">GitLab CI/CD</a>
+      <a href="{{ 'ansible/' | url }}" class="rebash-tech-chip">Ansible</a>
+      <a href="{{ 'prometheus/' | url }}" class="rebash-tech-chip">Prometheus</a>
+      <a href="{{ 'grafana/' | url }}" class="rebash-tech-chip">Grafana</a>
+      <a href="{{ 'ai/' | url }}" class="rebash-tech-chip">AI for DevOps</a>
     </div>
   </section>
 
-  <section class="rebash-section rebash-section--alt md-grid">
-    <div class="rebash-section__header">
-      <h2 class="rebash-section__title">Practice</h2>
+  {# ——— Projects ——— #}
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Featured projects</h2>
       <p class="rebash-section__lead rebash-section__lead--inline">
-        Apply tutorials with labs, check understanding with quizzes, then ship portfolio projects.
+        Portfolio builds that stitch tutorials together.
       </p>
     </div>
-    <div class="rebash-feature-grid rebash-feature-grid--3">
-      <a href="{{ 'labs/' | url }}" class="rebash-path-card rebash-path-card--labs">
-        <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("flask") }}</div>
-          <span class="rebash-path-card__badge">Hands-on</span>
-        </div>
-        <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">Labs</h3>
-          <p class="rebash-path-card__summary">Scenario labs with validation, troubleshooting, and cleanup — one per ready track.</p>
-          <div class="rebash-path-card__topics">
-            <span class="rebash-path-card__topic">Guided</span>
-            <span class="rebash-path-card__topic">Sandbox</span>
-            <span class="rebash-path-card__topic">Practice</span>
-          </div>
-          <span class="rebash-path-card__link">Browse labs</span>
-        </div>
-      </a>
-      <a href="{{ 'quizzes/' | url }}" class="rebash-path-card rebash-path-card--quizzes">
-        <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("help-circle") }}</div>
-          <span class="rebash-path-card__badge">Assessment</span>
-        </div>
-        <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">Quizzes</h3>
-          <p class="rebash-path-card__summary">40-question self-mark quizzes for Linux, Docker, and Kubernetes with explanations.</p>
-          <div class="rebash-path-card__topics">
-            <span class="rebash-path-card__topic">40 questions</span>
-            <span class="rebash-path-card__topic">70% pass</span>
-            <span class="rebash-path-card__topic">Self-mark</span>
-          </div>
-          <span class="rebash-path-card__link">Take a quiz</span>
-        </div>
-      </a>
-      <a href="{{ 'projects/' | url }}" class="rebash-path-card rebash-path-card--projects">
+    <div class="rebash-feature-grid rebash-feature-grid--3 rebash-reveal">
+      <a href="{{ 'projects/status-api-portfolio/' | url }}" class="rebash-path-card rebash-path-card--projects">
         <div class="rebash-path-card__banner">
           <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("rocket-launch") }}</div>
-          <span class="rebash-path-card__badge">Portfolio</span>
+          <span class="rebash-path-card__badge">Ready</span>
         </div>
         <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">Projects</h3>
-          <p class="rebash-path-card__summary">End-to-end DevOps builds you can showcase — Git through Terraform.</p>
+          <h3 class="rebash-path-card__title">Status API Portfolio</h3>
+          <p class="rebash-path-card__summary">Git → Docker → Kubernetes → Terraform in one portfolio build.</p>
           <div class="rebash-path-card__topics">
             <span class="rebash-path-card__topic">CI/CD</span>
-            <span class="rebash-path-card__topic">Cloud</span>
-            <span class="rebash-path-card__topic">Portfolio</span>
+            <span class="rebash-path-card__topic">K8s</span>
+            <span class="rebash-path-card__topic">IaC</span>
           </div>
-          <span class="rebash-path-card__link">View projects</span>
+          <span class="rebash-path-card__link">Open project</span>
+        </div>
+      </a>
+      <a href="{{ 'projects/python-devops-automation-framework/' | url }}" class="rebash-path-card rebash-path-card--docker">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("language-python") }}</div>
+          <span class="rebash-path-card__badge">Ready</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Python DevOps Automation</h3>
+          <p class="rebash-path-card__summary">Packaged Python automation for day-to-day ops work.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">Python</span>
+            <span class="rebash-path-card__topic">CLI</span>
+            <span class="rebash-path-card__topic">Ops</span>
+          </div>
+          <span class="rebash-path-card__link">Open project</span>
+        </div>
+      </a>
+      <a href="{{ 'capstones/' | url }}" class="rebash-path-card rebash-path-card--platform">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("trophy") }}</div>
+          <span class="rebash-path-card__badge">Capstones</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Platform &amp; GitOps capstones</h3>
+          <p class="rebash-path-card__summary">End-to-end proofs — monitoring stacks, landing zones, and more.</p>
+          <div class="rebash-path-card__topics">
+            <span class="rebash-path-card__topic">Platform</span>
+            <span class="rebash-path-card__topic">GitOps</span>
+            <span class="rebash-path-card__topic">Cloud</span>
+          </div>
+          <span class="rebash-path-card__link">Browse capstones</span>
         </div>
       </a>
     </div>
   </section>
 
-  <section class="rebash-section md-grid">
-    <div class="rebash-section__header">
-      <h2 class="rebash-section__title">Resources</h2>
-      <p class="rebash-section__lead rebash-section__lead--inline">
-        Quick references, interview prep, and community updates.
-      </p>
-    </div>
-    <div class="rebash-feature-grid rebash-feature-grid--3">
-      <a href="{{ 'blog/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--blog">
-        <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("post") }}</div>
-          <span class="rebash-path-card__badge">Updates</span>
-        </div>
-        <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">Blog</h3>
-          <p class="rebash-path-card__summary">Articles, release notes, and community highlights.</p>
-          <span class="rebash-path-card__link">Read blog</span>
-        </div>
-      </a>
-      <a href="{{ 'cheatsheets/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--cheatsheets">
-        <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("file-document-multiple") }}</div>
-          <span class="rebash-path-card__badge">Reference</span>
-        </div>
-        <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">Cheat Sheets</h3>
-          <p class="rebash-path-card__summary">Copy-paste command guides for daily engineering work.</p>
-          <span class="rebash-path-card__link">Open cheatsheets</span>
-        </div>
-      </a>
-      <a href="{{ 'interview/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--interview">
-        <div class="rebash-path-card__banner">
-          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("account-question") }}</div>
-          <span class="rebash-path-card__badge">Career</span>
-        </div>
-        <div class="rebash-path-card__body">
-          <h3 class="rebash-path-card__title">Interview Prep</h3>
-          <p class="rebash-path-card__summary">Technical questions with model answers for DevOps roles.</p>
-          <span class="rebash-path-card__link">Prepare now</span>
-        </div>
-      </a>
-    </div>
-  </section>
-
-  <section class="rebash-section rebash-section--panels md-grid">
-    <div class="rebash-panel rebash-panel--community">
-      <div class="rebash-panel__content">
-        <span class="rebash-panel__eyebrow">Connect</span>
-        <h2 class="rebash-panel__title">Learn with REBASH</h2>
-        <p class="rebash-panel__lead">
-          Follow along on LinkedIn and explore structured learning paths built for real engineering work.
+  {# ——— Why + CTA ——— #}
+  <section class="rebash-section rebash-section--why md-grid">
+    <div class="rebash-why rebash-reveal">
+      <div class="rebash-why__copy">
+        <h2 class="rebash-section__title">Why REBASH Academy</h2>
+        <p class="rebash-section__lead">
+          Production-first, hands-on, and open source. Learn patterns used on real platforms —
+          with labs, clear trade-offs, and official documentation in the references.
+        </p>
+        <ul class="rebash-why__list">
+          <li>Production-first tutorials</li>
+          <li>Hands-on labs and portfolio projects</li>
+          <li>Career-shaped paths across shared courses</li>
+          <li>Interview and certification support</li>
+          <li>British English · continuously updated</li>
+        </ul>
+      </div>
+      <div class="rebash-why__panel">
+        <span class="rebash-why__eyebrow">Ready to start?</span>
+        <h3 class="rebash-why__title">Begin with Getting Started</h3>
+        <p class="rebash-why__text">
+          New here? Read the short onboarding guide, then pick Beginner or DevOps Engineer.
         </p>
         <div class="rebash-hero__actions">
-          <a href="https://www.linkedin.com/in/shaikkhadarbasha/" class="rebash-cta rebash-cta--primary rebash-cta--on-light" target="_blank" rel="noopener">
-            LinkedIn
+          <a href="{{ 'getting-started/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">
+            Start learning
           </a>
-          <a href="{{ 'learning-paths/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">
-            Learning Paths
+          <a href="{{ 'career-paths/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">
+            Career paths
           </a>
         </div>
       </div>
     </div>
-    <div class="rebash-panel rebash-panel--updates">
-      <div class="rebash-panel__content">
-        <span class="rebash-panel__eyebrow">Stay updated</span>
-        <h2 class="rebash-panel__title">New content weekly</h2>
-        <p class="rebash-panel__lead">
-          Tutorials and learning paths are added regularly. Follow the roadmap to see what is coming next.
-        </p>
-        <a href="{{ 'roadmap/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">
-          View roadmap
-        </a>
-      </div>
-    </div>
   </section>
+
+  <script>
+    (function () {
+      var nodes = document.querySelectorAll(".rebash-reveal");
+      if (!nodes.length) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      nodes.forEach(function (n) { io.observe(n); });
+    })();
+  </script>
 {% endblock %}
 
 {% block content %}{% endblock %}

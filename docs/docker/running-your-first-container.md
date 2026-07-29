@@ -34,7 +34,7 @@ This is **Tutorial 4** in **Module 2: Images & Dockerfile** of the REBASH Academ
 - Docker Engine installed and working (`docker run hello-world` succeeds)
 - User in the `docker` group or sudo access
 - Completion of [Docker Installation and Setup](docker-installation-and-setup.md) and [Docker Architecture and Components](docker-architecture-and-components.md)
-- Familiarity with [Introduction to Linux](../linux/introduction-to-linux.md) — processes, signals, and basic networking
+- Familiarity with [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) — processes, signals, and basic networking
 - Port 8080 available on your lab host (or adjust examples)
 
 ## Learning Objectives
@@ -499,7 +499,7 @@ Make executable: `chmod +x ~/bin/docker-lifecycle-demo.sh && ~/bin/docker-lifecy
 - [Docker – Category Overview](index.md)
 - [Docker Architecture and Components](docker-architecture-and-components.md) *(Module 1)*
 - [Working with Docker Images](working-with-docker-images.md) *(next in Module 2)*
-- [Introduction to Linux](../linux/introduction-to-linux.md)
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md)
 - [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
 - Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
 - Interview prep: [Docker Interview Prep](../interview/docker.md)

@@ -1,0 +1,6694 @@
+version: 1
+site: REBASH Academy
+description: Single source of truth for career paths, technologies, modules, and tutorials. Tutorial bodies
+  live under docs/<technology>/; this file drives navigation and roadmaps.
+career_paths:
+- id: beginner
+  title: Beginner
+  badge: Start here
+  duration: 4–6 weeks
+  difficulty: beginner
+  summary: First steps into Linux, the shell, networking basics, and Git.
+  job_roles:
+  - Junior Linux Admin
+  - IT Support Engineer
+  - Helpdesk Engineer
+  phases:
+  - name: Foundations
+    technologies:
+    - linux
+    - shell
+    - networking
+    - git
+  certifications:
+  - RHCSA
+- id: linux-administrator
+  title: Linux Administrator
+  badge: Ops
+  duration: 8–12 weeks
+  difficulty: beginner
+  summary: Deep Linux operations — storage, systemd, security, and production hardening.
+  job_roles:
+  - Linux Administrator
+  - Systems Administrator
+  - Infrastructure Engineer
+  phases:
+  - name: Core
+    technologies:
+    - linux
+    - shell
+    - networking
+  - name: Automation
+    technologies:
+    - python
+    - git
+  certifications:
+  - RHCSA
+  - RHCE
+- id: cloud-engineer
+  title: Cloud Engineer
+  badge: Cloud
+  duration: 12–16 weeks
+  difficulty: intermediate
+  summary: Build and operate cloud infrastructure on AWS (Azure and GCP next).
+  job_roles:
+  - Cloud Engineer
+  - Cloud Operations Engineer
+  - Junior Solutions Architect
+  phases:
+  - name: Foundations
+    technologies:
+    - linux
+    - networking
+    - shell
+    - python
+    - git
+  - name: Cloud
+    technologies:
+    - aws
+    - terraform
+  - name: Multi-cloud
+    technologies:
+    - azure
+    - gcp
+  certifications:
+  - AWS SAA
+  - Azure AZ-104
+  - Google ACE
+- id: devops-engineer
+  title: DevOps Engineer
+  badge: Recommended
+  duration: 20–28 weeks
+  difficulty: intermediate
+  summary: Full-stack platform skills from Linux through CI/CD, containers, Kubernetes, and IaC.
+  job_roles:
+  - DevOps Engineer
+  - CI/CD Engineer
+  - Release Engineer
+  phases:
+  - name: Phase 1 · Foundations
+    technologies:
+    - linux
+    - shell
+    - python
+    - networking
+    - git
+  - name: Phase 2 · Containers
+    technologies:
+    - docker
+    - kubernetes
+    - helm
+  - name: Phase 3 · Cloud & IaC
+    technologies:
+    - terraform
+    - ansible
+    - aws
+    - azure
+    - gcp
+  - name: Phase 4 · Pipelines
+    technologies:
+    - gitlab
+    - github-actions
+    - jenkins
+    - argocd
+  - name: Phase 5 · Observability
+    technologies:
+    - prometheus
+    - grafana
+    - loki
+    - tempo
+    - opentelemetry
+  - name: Phase 6 · Security
+    technologies:
+    - devsecops
+    - security
+  - name: Phase 7 · Platform
+    technologies:
+    - platform-engineering
+    - sre
+    - architecture
+  certifications:
+  - CKA
+  - Terraform Associate
+  - AWS SAA
+- id: kubernetes-engineer
+  title: Kubernetes Engineer
+  badge: Containers
+  duration: 12–16 weeks
+  difficulty: intermediate
+  summary: Containers, Kubernetes workloads, Helm, GitOps, and cluster operations.
+  job_roles:
+  - Kubernetes Engineer
+  - Container Platform Engineer
+  - SRE (Kubernetes)
+  phases:
+  - name: Prerequisites
+    technologies:
+    - linux
+    - networking
+    - docker
+    - git
+  - name: Kubernetes
+    technologies:
+    - kubernetes
+    - helm
+    - argocd
+  - name: Delivery
+    technologies:
+    - gitlab
+    - terraform
+  certifications:
+  - CKA
+  - CKAD
+- id: platform-engineer
+  title: Platform Engineer
+  badge: Platform
+  duration: 16–24 weeks
+  difficulty: advanced
+  summary: Internal developer platforms — Kubernetes, GitOps, observability, and self-service.
+  job_roles:
+  - Platform Engineer
+  - Developer Experience Engineer
+  - Infrastructure Platform Lead
+  phases:
+  - name: Core
+    technologies:
+    - linux
+    - docker
+    - kubernetes
+    - helm
+    - terraform
+  - name: Delivery
+    technologies:
+    - gitlab
+    - argocd
+    - python
+  - name: Observability
+    technologies:
+    - prometheus
+    - grafana
+    - loki
+    - opentelemetry
+  - name: Platform
+    technologies:
+    - platform-engineering
+    - sre
+  certifications:
+  - CKA
+  - CKS
+- id: devsecops-engineer
+  title: DevSecOps Engineer
+  badge: Security
+  duration: 14–20 weeks
+  difficulty: advanced
+  summary: Shift-left security across containers, Kubernetes, pipelines, and cloud.
+  job_roles:
+  - DevSecOps Engineer
+  - Security Engineer (Cloud)
+  - AppSec Engineer
+  phases:
+  - name: Foundations
+    technologies:
+    - linux
+    - docker
+    - kubernetes
+    - git
+    - gitlab
+  - name: Security
+    technologies:
+    - devsecops
+    - security
+  - name: Cloud
+    technologies:
+    - aws
+    - terraform
+  certifications:
+  - CKS
+  - AWS Security Specialty
+- id: site-reliability-engineer
+  title: Site Reliability Engineer
+  badge: SRE
+  duration: 16–24 weeks
+  difficulty: advanced
+  summary: Reliability, observability, incident response, and production operations at scale.
+  job_roles:
+  - Site Reliability Engineer
+  - Production Engineer
+  - Reliability Engineer
+  phases:
+  - name: Foundations
+    technologies:
+    - linux
+    - networking
+    - python
+    - git
+  - name: Platform
+    technologies:
+    - kubernetes
+    - terraform
+    - gitlab
+  - name: Observability
+    technologies:
+    - prometheus
+    - grafana
+    - loki
+    - tempo
+    - opentelemetry
+    - sre
+  certifications:
+  - CKA
+  - PCA
+- id: cloud-architect
+  title: Cloud Architect
+  badge: Architecture
+  duration: 20–28 weeks
+  difficulty: expert
+  summary: Multi-cloud design, IaC at scale, security architecture, and production patterns.
+  job_roles:
+  - Cloud Architect
+  - Solutions Architect
+  - Principal Engineer
+  phases:
+  - name: Clouds
+    technologies:
+    - aws
+    - azure
+    - gcp
+  - name: IaC & Delivery
+    technologies:
+    - terraform
+    - kubernetes
+    - gitlab
+  - name: Architecture
+    technologies:
+    - architecture
+    - security
+    - sre
+  certifications:
+  - AWS SAP
+  - Azure AZ-305
+  - Google PCA
+- id: ai-for-devops
+  title: AI for DevOps Engineer
+  badge: AI
+  duration: 10–14 weeks
+  difficulty: intermediate
+  summary: Practical AI for automation — APIs, agents, and DevOps tooling on a solid Python base.
+  job_roles:
+  - AI for DevOps Engineer
+  - Automation Engineer
+  - MLOps Associate
+  phases:
+  - name: Prerequisites
+    technologies:
+    - linux
+    - shell
+    - python
+    - git
+  - name: AI
+    technologies:
+    - ai
+  - name: Platform context
+    technologies:
+    - docker
+    - kubernetes
+  certifications: []
+technologies:
+- id: linux
+  title: Linux
+  status: ready
+  path_prefix: linux/
+  difficulty: beginner
+  modules:
+  - id: linux-m1
+    title: Module 1 · Fundamentals
+    tutorials:
+    - linux/linux-fundamentals-distributions-and-architecture
+    - linux/boot-process-and-filesystem-hierarchy
+  - id: linux-m2
+    title: Module 2 · Command Line
+    tutorials:
+    - linux/essential-linux-commands
+  - id: linux-m3
+    title: Module 3 · Filesystem
+    tutorials:
+    - linux/filesystem-paths-links-mounts-and-inodes
+    - linux/disk-usage-and-file-attributes
+  - id: linux-m4
+    title: Module 4 · Users & Permissions
+    tutorials:
+    - linux/users-groups-and-sudo
+    - linux/permissions-acls-and-special-bits
+  - id: linux-m5
+    title: Module 5 · Text Processing
+    tutorials:
+    - linux/text-processing-grep-sed-awk
+  - id: linux-m6
+    title: Module 6 · Processes
+    tutorials:
+    - linux/process-management
+  - id: linux-m7
+    title: Module 7 · Services & Boot
+    tutorials:
+    - linux/systemd-services-and-journalctl
+    - linux/systemd-targets-timers-and-boot
+  - id: linux-m8
+    title: Module 8 · Storage
+    tutorials:
+    - linux/storage-disks-partitions-and-filesystems
+    - linux/lvm-swap-and-disk-monitoring
+  - id: linux-m9
+    title: Module 9 · Networking
+    tutorials:
+    - linux/linux-networking-tools
+    - linux/ssh-and-remote-access
+  - id: linux-m10
+    title: Module 10 · Packages
+    tutorials:
+    - linux/package-management
+  - id: linux-m11
+    title: Module 11 · Scheduling
+    tutorials:
+    - linux/scheduling-cron-at-and-timers
+  - id: linux-m12
+    title: Module 12 · Logging & Monitoring
+    tutorials:
+    - linux/logging-syslog-journald-logrotate
+    - linux/host-monitoring-vmstat-iostat-sar
+  - id: linux-m13
+    title: Module 13 · Security
+    tutorials:
+    - linux/ssh-hardening-and-firewalls
+    - linux/selinux-apparmor-fail2ban-auditd-pam
+  - id: linux-m14
+    title: Module 14 · Containers & Cloud
+    tutorials:
+    - linux/containers-namespaces-cgroups-and-oci
+  - id: linux-m15
+    title: Module 15 · Troubleshooting
+    tutorials:
+    - linux/troubleshooting-linux-systems
+  - id: linux-m16
+    title: Module 16 · Production Linux
+    tutorials:
+    - linux/production-linux-hardening-and-performance
+    - linux/backup-disaster-recovery-and-capacity
+  tutorial_count: 25
+- id: shell
+  title: Shell Scripting
+  status: ready
+  path_prefix: shell/
+  difficulty: beginner
+  modules:
+  - id: shell-m1
+    title: Module 1 · Shell Fundamentals
+    tutorials:
+    - shell/shell-fundamentals-bash-vs-sh-and-execution
+  - id: shell-m2
+    title: Module 2 · First Script
+    tutorials:
+    - shell/writing-your-first-script
+  - id: shell-m3
+    title: Module 3 · Variables
+    tutorials:
+    - shell/variables-quoting-and-arithmetic
+  - id: shell-m4
+    title: Module 4 · Input & Output
+    tutorials:
+    - shell/input-output-redirection-and-pipes
+  - id: shell-m5
+    title: Module 5 · Control Flow
+    tutorials:
+    - shell/control-flow-conditionals
+  - id: shell-m6
+    title: Module 6 · Loops
+    tutorials:
+    - shell/loops-for-while-until
+  - id: shell-m7
+    title: Module 7 · Functions
+    tutorials:
+    - shell/functions-parameters-and-locals
+  - id: shell-m8
+    title: Module 8 · Arrays & Strings
+    tutorials:
+    - shell/arrays-and-string-manipulation
+  - id: shell-m9
+    title: Module 9 · File Operations
+    tutorials:
+    - shell/file-operations-in-shell
+  - id: shell-m10
+    title: Module 10 · Text Processing
+    tutorials:
+    - shell/text-processing-in-shell-scripts
+  - id: shell-m11
+    title: Module 11 · Process Automation
+    tutorials:
+    - shell/process-automation-signals-and-traps
+  - id: shell-m12
+    title: Module 12 · Linux Administration
+    tutorials:
+    - shell/linux-admin-automation
+  - id: shell-m13
+    title: Module 13 · Networking Automation
+    tutorials:
+    - shell/networking-automation-with-shell
+  - id: shell-m14
+    title: Module 14 · JSON & YAML
+    tutorials:
+    - shell/json-and-yaml-with-jq-yq
+  - id: shell-m15
+    title: Module 15 · Scheduling
+    tutorials:
+    - shell/scheduling-cron-at-and-timers
+  - id: shell-m16
+    title: Module 16 · Error Handling
+    tutorials:
+    - shell/error-handling-logging-and-debugging
+  - id: shell-m17
+    title: Module 17 · Production Shell
+    tutorials:
+    - shell/production-shell-scripting
+  - id: shell-m18
+    title: Module 18 · Troubleshooting
+    tutorials:
+    - shell/troubleshooting-shell-scripts
+  tutorial_count: 18
+- id: python
+  title: Python for DevOps
+  status: ready
+  path_prefix: python/
+  difficulty: intermediate
+  modules:
+  - id: python-m1
+    title: Module 1 · Fundamentals
+    tutorials:
+    - python/python-fundamentals-install-venv-and-tooling
+  - id: python-m2
+    title: Module 2 · Basics
+    tutorials:
+    - python/python-basics-types-and-io
+  - id: python-m3
+    title: Module 3 · Control Flow
+    tutorials:
+    - python/control-flow-conditionals-and-loops
+  - id: python-m4
+    title: Module 4 · Functions
+    tutorials:
+    - python/functions-parameters-and-scope
+  - id: python-m5
+    title: Module 5 · Data Structures
+    tutorials:
+    - python/data-structures-comprehensions-and-generators
+  - id: python-m6
+    title: Module 6 · Modules & Packages
+    tutorials:
+    - python/modules-packages-and-dependencies
+  - id: python-m7
+    title: Module 7 · File Handling
+    tutorials:
+    - python/file-handling-pathlib-json-yaml-csv
+  - id: python-m8
+    title: Module 8 · Error Handling
+    tutorials:
+    - python/error-handling-and-exceptions
+  - id: python-m9
+    title: Module 9 · OOP
+    tutorials:
+    - python/oop-classes-and-dataclasses
+  - id: python-m10
+    title: Module 10 · Logging & Debugging
+    tutorials:
+    - python/logging-and-debugging
+  - id: python-m11
+    title: Module 11 · Configuration
+    tutorials:
+    - python/configuration-management-and-secrets
+  - id: python-m12
+    title: Module 12 · CLI Applications
+    tutorials:
+    - python/cli-applications-argparse-click-typer
+  - id: python-m13
+    title: Module 13 · Linux Automation
+    tutorials:
+    - python/linux-automation-subprocess-and-psutil
+  - id: python-m14
+    title: Module 14 · REST APIs
+    tutorials:
+    - python/rest-apis-requests-auth-and-resilience
+  - id: python-m15
+    title: Module 15 · Cloud Automation
+    tutorials:
+    - python/cloud-automation-aws-azure-gcp
+  - id: python-m16
+    title: Module 16 · Git Automation
+    tutorials:
+    - python/git-automation-github-and-gitlab
+  - id: python-m17
+    title: Module 17 · Docker Automation
+    tutorials:
+    - python/docker-sdk-automation
+  - id: python-m18
+    title: Module 18 · Kubernetes Automation
+    tutorials:
+    - python/kubernetes-python-client-automation
+  - id: python-m19
+    title: Module 19 · Infrastructure
+    tutorials:
+    - python/infrastructure-automation-terraform
+  - id: python-m20
+    title: Module 20 · SSH Automation
+    tutorials:
+    - python/ssh-automation-paramiko-and-fabric
+  - id: python-m21
+    title: Module 21 · Concurrency
+    tutorials:
+    - python/concurrency-threads-asyncio-and-futures
+  - id: python-m22
+    title: Module 22 · Testing
+    tutorials:
+    - python/testing-with-pytest
+  - id: python-m23
+    title: Module 23 · Packaging
+    tutorials:
+    - python/packaging-pyproject-and-wheels
+  - id: python-m24
+    title: Module 24 · Production Engineering
+    tutorials:
+    - python/production-engineering-patterns
+  - id: python-m25
+    title: Module 25 · Security
+    tutorials:
+    - python/security-for-devops-python
+  - id: python-m26
+    title: Module 26 · AI for DevOps
+    tutorials:
+    - python/ai-for-devops-openai-mcp-langchain
+  - id: python-m27
+    title: Module 27 · Troubleshooting
+    tutorials:
+    - python/troubleshooting-python-automation
+  tutorial_count: 27
+- id: networking
+  title: Networking
+  status: ready
+  path_prefix: networking/
+  difficulty: intermediate
+  modules:
+  - id: networking-m1
+    title: Foundations
+    tutorials:
+    - networking/introduction-to-networking
+    - networking/osi-and-tcp-ip-models
+    - networking/ip-addressing-and-subnetting
+  - id: networking-m2
+    title: Data Link & Routing
+    tutorials:
+    - networking/ethernet-switching-and-vlans
+    - networking/routing-fundamentals
+    - networking/icmp-arp-dhcp-and-network-services
+  - id: networking-m3
+    title: Transport & DNS
+    tutorials:
+    - networking/tcp-and-udp-deep-dive
+    - networking/dns-fundamentals
+    - networking/dns-records-and-troubleshooting
+  - id: networking-m4
+    title: Application Layer
+    tutorials:
+    - networking/http-https-and-application-layer
+    - networking/firewalls-and-access-control
+    - networking/load-balancing-fundamentals
+    - networking/reverse-proxy-and-ingress-basics
+  - id: networking-m5
+    title: Troubleshooting
+    tutorials:
+    - networking/network-troubleshooting-methodology
+    - networking/packet-analysis-tcpdump-wireshark
+  - id: networking-m6
+    title: Cloud & Advanced
+    tutorials:
+    - networking/cloud-networking-vpc-and-subnets
+    - networking/nat-and-port-forwarding
+    - networking/vpn-and-tunneling-basics
+    - networking/network-security-hardening
+    - networking/network-automation-and-monitoring
+  - id: networking-m7
+    title: Production Network Operations
+    tutorials:
+    - networking/network-segmentation-and-trust-boundaries
+    - networking/production-dns-operations
+    - networking/load-balancer-operations-and-health-checks
+    - networking/firewall-change-control-and-production-acls
+    - networking/network-incident-response-and-observability
+  tutorial_count: 25
+- id: aws
+  title: AWS
+  status: ready
+  path_prefix: aws/
+  difficulty: intermediate
+  modules:
+  - id: aws-m1
+    title: Module 1 · Foundations
+    tutorials:
+    - aws/introduction-to-aws-and-global-infrastructure
+    - aws/accounts-free-tier-billing-and-cost-hygiene
+    - aws/iam-fundamentals
+    - aws/aws-cli-credentials-and-profiles
+  - id: aws-m2
+    title: Module 2 · VPC Networking
+    tutorials:
+    - aws/vpc-subnets-and-multi-az-design
+    - aws/internet-gateways-routes-and-egress
+    - aws/security-groups-and-nacls
+    - aws/vpc-endpoints-and-private-aws-access
+  - id: aws-m3
+    title: Module 3 · Compute
+    tutorials:
+    - aws/ec2-fundamentals
+    - aws/user-data-imds-and-ssm-session-manager
+    - aws/ebs-volumes-snapshots-and-encryption
+  - id: aws-m4
+    title: Module 4 · Storage
+    tutorials:
+    - aws/s3-fundamentals
+    - aws/s3-security-and-static-hosting
+  - id: aws-m5
+    title: Module 5 · Edge and Data
+    tutorials:
+    - aws/elastic-load-balancing-alb-and-nlb
+    - aws/route-53-dns-and-health-checks
+    - aws/rds-fundamentals
+    - aws/auto-scaling-groups-and-launch-templates
+  - id: aws-m6
+    title: Module 6 · Ops and Capstone
+    tutorials:
+    - aws/cloudwatch-metrics-logs-and-alarms
+    - aws/cloudtrail-config-and-account-guardrails
+    - aws/lambda-and-three-tier-capstone
+  tutorial_count: 20
+- id: git
+  title: Git
+  status: ready
+  path_prefix: git/
+  difficulty: beginner
+  modules:
+  - id: git-m1
+    title: Foundations
+    tutorials:
+    - git/introduction-to-git-and-version-control
+    - git/git-installation-and-configuration
+    - git/understanding-the-git-object-model
+  - id: git-m2
+    title: Essential Workflow
+    tutorials:
+    - git/creating-and-cloning-repositories
+    - git/basic-git-workflow-add-commit-push
+    - git/viewing-history-and-diffs
+  - id: git-m3
+    title: Branching
+    tutorials:
+    - git/branching-fundamentals
+    - git/merging-and-merge-conflicts
+    - git/rebasing-and-interactive-rebase
+  - id: git-m4
+    title: Collaboration
+    tutorials:
+    - git/working-with-remotes
+    - git/pull-requests-and-code-review
+    - git/gitignore-and-gitattributes
+  - id: git-m5
+    title: Recovery & Debugging
+    tutorials:
+    - git/undoing-changes-reset-revert-stash
+    - git/cherry-pick-and-reflog
+    - git/git-bisect-and-debugging-history
+  - id: git-m6
+    title: Advanced & DevOps
+    tutorials:
+    - git/git-hooks-and-automation
+    - git/advanced-git-workflows
+    - git/git-submodules-and-subtrees
+    - git/signed-commits-and-git-security
+    - git/git-in-ci-cd-and-devops
+  tutorial_count: 20
+- id: gitlab
+  title: GitLab CI/CD
+  status: ready
+  path_prefix: gitlab/
+  difficulty: intermediate
+  modules:
+  - id: gitlab-m1
+    title: Module 1 · Foundations
+    tutorials:
+    - gitlab/introduction-to-cicd-and-delivery-models
+    - gitlab/pipeline-anatomy-stages-jobs-and-artifacts
+    - gitlab/gitlab-ci-fundamentals
+    - gitlab/gitlab-merge-requests-and-pipeline-triggers
+  - id: gitlab-m2
+    title: Module 2 · Runners and Configuration
+    tutorials:
+    - gitlab/gitlab-runners-and-executors
+    - gitlab/gitlab-runner-tags-and-scaling
+    - gitlab/variables-secrets-and-credentials
+    - gitlab/triggers-rules-and-branch-protection
+  - id: gitlab-m3
+    title: Module 3 · Build and Quality
+    tutorials:
+    - gitlab/building-docker-images-in-ci
+    - gitlab/testing-reports-and-quality-gates
+    - gitlab/artifacts-caches-and-dependencies
+    - gitlab/parallelism-matrix-and-pipeline-dags
+  - id: gitlab-m4
+    title: Module 4 · Secure Pipelines
+    tutorials:
+    - gitlab/least-privilege-ci-identities
+    - gitlab/security-scanning-in-pipelines
+    - gitlab/secret-detection-and-supply-chain-basics
+    - gitlab/protected-environments-and-approvals
+  - id: gitlab-m5
+    title: Module 5 · Deploy and Capstone
+    tutorials:
+    - gitlab/gitlab-deployment-patterns
+    - gitlab/kubernetes-deploys-from-ci
+    - gitlab/gitlab-ci-production-patterns
+    - gitlab/cicd-capstone-and-terraform-handoff
+  tutorial_count: 20
+- id: docker
+  title: Docker
+  status: ready
+  path_prefix: docker/
+  difficulty: intermediate
+  modules:
+  - id: docker-m1
+    title: Foundations
+    tutorials:
+    - docker/introduction-to-containers-and-docker
+    - docker/docker-installation-and-setup
+    - docker/docker-architecture-and-components
+  - id: docker-m2
+    title: Images & Dockerfile
+    tutorials:
+    - docker/running-your-first-container
+    - docker/working-with-docker-images
+    - docker/building-images-with-dockerfile
+  - id: docker-m3
+    title: Storage & Compose
+    tutorials:
+    - docker/dockerfile-best-practices-and-multi-stage-builds
+    - docker/volumes-and-persistent-storage
+    - docker/docker-compose-fundamentals
+  - id: docker-m4
+    title: Networking & Registry
+    tutorials:
+    - docker/docker-networking-fundamentals
+    - docker/container-registries-and-distribution
+    - docker/environment-variables-and-secrets
+  - id: docker-m5
+    title: Operations
+    tutorials:
+    - docker/container-logging-and-monitoring
+    - docker/docker-security-hardening
+    - docker/troubleshooting-docker-containers
+  - id: docker-m6
+    title: Production & Beyond
+    tutorials:
+    - docker/docker-in-ci-cd-pipelines
+    - docker/production-docker-patterns
+    - docker/docker-swarm-orchestration-basics
+    - docker/from-docker-to-kubernetes
+    - docker/docker-capstone-and-next-steps
+  tutorial_count: 20
+- id: kubernetes
+  title: Kubernetes
+  status: ready
+  path_prefix: kubernetes/
+  difficulty: intermediate
+  modules:
+  - id: kubernetes-m1
+    title: Foundations
+    tutorials:
+    - kubernetes/introduction-to-kubernetes-and-orchestration
+    - kubernetes/kubernetes-architecture-and-components
+    - kubernetes/installing-kubernetes-and-kubectl
+  - id: kubernetes-m2
+    title: Workloads
+    tutorials:
+    - kubernetes/kubectl-essentials-and-workflows
+    - kubernetes/pods-the-atomic-unit
+    - kubernetes/deployments-managing-replicated-pods
+  - id: kubernetes-m3
+    title: Configuration & Storage
+    tutorials:
+    - kubernetes/services-and-cluster-networking
+    - kubernetes/configmaps-and-secrets
+    - kubernetes/persistent-volumes-and-storage
+  - id: kubernetes-m4
+    title: Networking & Operations
+    tutorials:
+    - kubernetes/ingress-and-external-access
+    - kubernetes/namespaces-and-resource-management
+    - kubernetes/health-checks-probes-and-self-healing
+  - id: kubernetes-m5
+    title: Security & Tooling
+    tutorials:
+    - kubernetes/rbac-and-kubernetes-security-basics
+    - kubernetes/troubleshooting-kubernetes-workloads
+    - kubernetes/helm-package-management
+  - id: kubernetes-m6
+    title: Production
+    tutorials:
+    - kubernetes/gitops-and-cicd-with-kubernetes
+    - kubernetes/production-patterns-hpa-pdb-and-affinity
+    - kubernetes/monitoring-and-logging-in-kubernetes
+    - kubernetes/kubernetes-security-hardening
+    - kubernetes/kubernetes-capstone-and-next-steps
+  tutorial_count: 20
+- id: terraform
+  title: Terraform
+  status: ready
+  path_prefix: terraform/
+  difficulty: intermediate
+  modules:
+  - id: terraform-m1
+    title: General
+    tutorials:
+    - terraform/introduction-to-terraform-and-iac
+    - terraform/installing-terraform-and-the-cli-workflow
+    - terraform/hcl-fundamentals-blocks-arguments-and-expressions
+    - terraform/providers-and-the-terraform-plugin-model
+    - terraform/variables-locals-and-outputs
+    - terraform/resources-and-data-sources
+    - terraform/dependencies-and-the-resource-graph
+    - terraform/terraform-state-fundamentals
+    - terraform/remote-state-and-backends
+    - terraform/workspaces-and-environment-strategies
+    - terraform/modules-creating-reusable-infrastructure
+    - terraform/registry-modules-and-composition
+    - terraform/meta-arguments-count-for-each-and-lifecycle
+    - terraform/functions-templates-and-dynamic-blocks
+    - terraform/import-moved-and-safe-refactors
+    - terraform/format-validate-and-terraform-test
+    - terraform/secrets-and-sensitive-values
+    - terraform/policy-as-code-overview
+    - terraform/terraform-in-ci-cd-pipelines
+    - terraform/production-patterns-and-capstone
+  tutorial_count: 20
+- id: helm
+  title: Helm
+  status: planned
+  path_prefix: helm/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: ansible
+  title: Ansible
+  status: planned
+  path_prefix: ansible/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: azure
+  title: Azure
+  status: stub
+  path_prefix: azure/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: gcp
+  title: Google Cloud
+  status: stub
+  path_prefix: gcp/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: github-actions
+  title: GitHub Actions
+  status: planned
+  path_prefix: github-actions/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: jenkins
+  title: Jenkins
+  status: planned
+  path_prefix: jenkins/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: argocd
+  title: Argo CD
+  status: planned
+  path_prefix: argocd/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: prometheus
+  title: Prometheus
+  status: planned
+  path_prefix: prometheus/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: grafana
+  title: Grafana
+  status: planned
+  path_prefix: grafana/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: loki
+  title: Loki
+  status: planned
+  path_prefix: loki/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: tempo
+  title: Tempo
+  status: planned
+  path_prefix: tempo/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: opentelemetry
+  title: OpenTelemetry
+  status: planned
+  path_prefix: opentelemetry/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: devsecops
+  title: DevSecOps
+  status: stub
+  path_prefix: devsecops/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: platform-engineering
+  title: Platform Engineering
+  status: planned
+  path_prefix: platform-engineering/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: sre
+  title: Site Reliability Engineering
+  status: planned
+  path_prefix: sre/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: architecture
+  title: Cloud Architecture
+  status: stub
+  path_prefix: architecture/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: ai
+  title: AI for DevOps
+  status: stub
+  path_prefix: ai/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: monitoring
+  title: Monitoring
+  status: stub
+  path_prefix: monitoring/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+- id: security
+  title: Security
+  status: stub
+  path_prefix: security/
+  difficulty: intermediate
+  modules: []
+  tutorial_count: 0
+tutorials:
+- id: linux/linux-fundamentals-distributions-and-architecture
+  slug: linux-fundamentals-distributions-and-architecture
+  title: Linux Fundamentals — Distributions and Architecture
+  path: linux/linux-fundamentals-distributions-and-architecture.md
+  technology: linux
+  module: Module 1 · Fundamentals
+  order: 1
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - linux/boot-process-and-filesystem-hierarchy
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/boot-process-and-filesystem-hierarchy
+  slug: boot-process-and-filesystem-hierarchy
+  title: Boot Process and Filesystem Hierarchy
+  path: linux/boot-process-and-filesystem-hierarchy.md
+  technology: linux
+  module: Module 1 · Fundamentals
+  order: 2
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/linux-fundamentals-distributions-and-architecture
+  next:
+  - linux/essential-linux-commands
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/essential-linux-commands
+  slug: essential-linux-commands
+  title: Essential Linux Commands
+  path: linux/essential-linux-commands.md
+  technology: linux
+  module: Module 2 · Command Line
+  order: 3
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/boot-process-and-filesystem-hierarchy
+  next:
+  - linux/filesystem-paths-links-mounts-and-inodes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/filesystem-paths-links-mounts-and-inodes
+  slug: filesystem-paths-links-mounts-and-inodes
+  title: Paths, Links, Mounts, and Inodes
+  path: linux/filesystem-paths-links-mounts-and-inodes.md
+  technology: linux
+  module: Module 3 · Filesystem
+  order: 4
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/essential-linux-commands
+  next:
+  - linux/disk-usage-and-file-attributes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/disk-usage-and-file-attributes
+  slug: disk-usage-and-file-attributes
+  title: Disk Usage and File Attributes
+  path: linux/disk-usage-and-file-attributes.md
+  technology: linux
+  module: Module 3 · Filesystem
+  order: 5
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/filesystem-paths-links-mounts-and-inodes
+  next:
+  - linux/users-groups-and-sudo
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/users-groups-and-sudo
+  slug: users-groups-and-sudo
+  title: Users, Groups, and sudo
+  path: linux/users-groups-and-sudo.md
+  technology: linux
+  module: Module 4 · Users & Permissions
+  order: 6
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/disk-usage-and-file-attributes
+  next:
+  - linux/permissions-acls-and-special-bits
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/permissions-acls-and-special-bits
+  slug: permissions-acls-and-special-bits
+  title: Permissions, ACLs, and Special Bits
+  path: linux/permissions-acls-and-special-bits.md
+  technology: linux
+  module: Module 4 · Users & Permissions
+  order: 7
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/users-groups-and-sudo
+  next:
+  - linux/text-processing-grep-sed-awk
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/text-processing-grep-sed-awk
+  slug: text-processing-grep-sed-awk
+  title: Text Processing with grep, sed, and awk
+  path: linux/text-processing-grep-sed-awk.md
+  technology: linux
+  module: Module 5 · Text Processing
+  order: 8
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/permissions-acls-and-special-bits
+  next:
+  - linux/process-management
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/process-management
+  slug: process-management
+  title: Process Management
+  path: linux/process-management.md
+  technology: linux
+  module: Module 6 · Processes
+  order: 9
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/text-processing-grep-sed-awk
+  next:
+  - linux/systemd-services-and-journalctl
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/systemd-services-and-journalctl
+  slug: systemd-services-and-journalctl
+  title: systemd Services and journalctl
+  path: linux/systemd-services-and-journalctl.md
+  technology: linux
+  module: Module 7 · Services & Boot
+  order: 10
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/process-management
+  next:
+  - linux/systemd-targets-timers-and-boot
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/systemd-targets-timers-and-boot
+  slug: systemd-targets-timers-and-boot
+  title: systemd Targets, Timers, and Boot
+  path: linux/systemd-targets-timers-and-boot.md
+  technology: linux
+  module: Module 7 · Services & Boot
+  order: 11
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/systemd-services-and-journalctl
+  next:
+  - linux/storage-disks-partitions-and-filesystems
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/storage-disks-partitions-and-filesystems
+  slug: storage-disks-partitions-and-filesystems
+  title: Disks, Partitions, and Filesystems
+  path: linux/storage-disks-partitions-and-filesystems.md
+  technology: linux
+  module: Module 8 · Storage
+  order: 12
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/systemd-targets-timers-and-boot
+  next:
+  - linux/lvm-swap-and-disk-monitoring
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/lvm-swap-and-disk-monitoring
+  slug: lvm-swap-and-disk-monitoring
+  title: LVM, Swap, and Disk Monitoring
+  path: linux/lvm-swap-and-disk-monitoring.md
+  technology: linux
+  module: Module 8 · Storage
+  order: 13
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/storage-disks-partitions-and-filesystems
+  next:
+  - linux/linux-networking-tools
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/linux-networking-tools
+  slug: linux-networking-tools
+  title: Linux Networking Tools
+  path: linux/linux-networking-tools.md
+  technology: linux
+  module: Module 9 · Networking
+  order: 14
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/lvm-swap-and-disk-monitoring
+  next:
+  - linux/ssh-and-remote-access
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/ssh-and-remote-access
+  slug: ssh-and-remote-access
+  title: SSH and Remote Access
+  path: linux/ssh-and-remote-access.md
+  technology: linux
+  module: Module 9 · Networking
+  order: 15
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/linux-networking-tools
+  next:
+  - linux/package-management
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/package-management
+  slug: package-management
+  title: Package Management
+  path: linux/package-management.md
+  technology: linux
+  module: Module 10 · Packages
+  order: 16
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/ssh-and-remote-access
+  next:
+  - linux/scheduling-cron-at-and-timers
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/scheduling-cron-at-and-timers
+  slug: scheduling-cron-at-and-timers
+  title: Scheduling — cron, at, and Timers
+  path: linux/scheduling-cron-at-and-timers.md
+  technology: linux
+  module: Module 11 · Scheduling
+  order: 17
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/package-management
+  next:
+  - linux/logging-syslog-journald-logrotate
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/logging-syslog-journald-logrotate
+  slug: logging-syslog-journald-logrotate
+  title: Logging — syslog, journald, logrotate
+  path: linux/logging-syslog-journald-logrotate.md
+  technology: linux
+  module: Module 12 · Logging & Monitoring
+  order: 18
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/scheduling-cron-at-and-timers
+  next:
+  - linux/host-monitoring-vmstat-iostat-sar
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/host-monitoring-vmstat-iostat-sar
+  slug: host-monitoring-vmstat-iostat-sar
+  title: Host Monitoring — vmstat, iostat, sar
+  path: linux/host-monitoring-vmstat-iostat-sar.md
+  technology: linux
+  module: Module 12 · Logging & Monitoring
+  order: 19
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/logging-syslog-journald-logrotate
+  next:
+  - linux/ssh-hardening-and-firewalls
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/ssh-hardening-and-firewalls
+  slug: ssh-hardening-and-firewalls
+  title: SSH Hardening and Firewalls
+  path: linux/ssh-hardening-and-firewalls.md
+  technology: linux
+  module: Module 13 · Security
+  order: 20
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/host-monitoring-vmstat-iostat-sar
+  next:
+  - linux/selinux-apparmor-fail2ban-auditd-pam
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/selinux-apparmor-fail2ban-auditd-pam
+  slug: selinux-apparmor-fail2ban-auditd-pam
+  title: SELinux, AppArmor, Fail2Ban, Auditd, PAM
+  path: linux/selinux-apparmor-fail2ban-auditd-pam.md
+  technology: linux
+  module: Module 13 · Security
+  order: 21
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/ssh-hardening-and-firewalls
+  next:
+  - linux/containers-namespaces-cgroups-and-oci
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/containers-namespaces-cgroups-and-oci
+  slug: containers-namespaces-cgroups-and-oci
+  title: Containers — Namespaces, cgroups, and OCI
+  path: linux/containers-namespaces-cgroups-and-oci.md
+  technology: linux
+  module: Module 14 · Containers & Cloud
+  order: 22
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/selinux-apparmor-fail2ban-auditd-pam
+  next:
+  - linux/troubleshooting-linux-systems
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/troubleshooting-linux-systems
+  slug: troubleshooting-linux-systems
+  title: Troubleshooting Linux Systems
+  path: linux/troubleshooting-linux-systems.md
+  technology: linux
+  module: Module 15 · Troubleshooting
+  order: 23
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/containers-namespaces-cgroups-and-oci
+  next:
+  - linux/production-linux-hardening-and-performance
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/production-linux-hardening-and-performance
+  slug: production-linux-hardening-and-performance
+  title: Production Hardening and Performance
+  path: linux/production-linux-hardening-and-performance.md
+  technology: linux
+  module: Module 16 · Production Linux
+  order: 24
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/troubleshooting-linux-systems
+  next:
+  - linux/backup-disaster-recovery-and-capacity
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: linux/backup-disaster-recovery-and-capacity
+  slug: backup-disaster-recovery-and-capacity
+  title: Backup, Disaster Recovery, and Capacity
+  path: linux/backup-disaster-recovery-and-capacity.md
+  technology: linux
+  module: Module 16 · Production Linux
+  order: 25
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - linux/production-linux-hardening-and-performance
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/shell-fundamentals-bash-vs-sh-and-execution
+  slug: shell-fundamentals-bash-vs-sh-and-execution
+  title: Shell Fundamentals — Bash vs sh and Execution
+  path: shell/shell-fundamentals-bash-vs-sh-and-execution.md
+  technology: shell
+  module: Module 1 · Shell Fundamentals
+  order: 1
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - shell/writing-your-first-script
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/writing-your-first-script
+  slug: writing-your-first-script
+  title: Writing Your First Script
+  path: shell/writing-your-first-script.md
+  technology: shell
+  module: Module 2 · First Script
+  order: 2
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/shell-fundamentals-bash-vs-sh-and-execution
+  next:
+  - shell/variables-quoting-and-arithmetic
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/variables-quoting-and-arithmetic
+  slug: variables-quoting-and-arithmetic
+  title: Variables, Quoting, and Arithmetic
+  path: shell/variables-quoting-and-arithmetic.md
+  technology: shell
+  module: Module 3 · Variables
+  order: 3
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/writing-your-first-script
+  next:
+  - shell/input-output-redirection-and-pipes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/input-output-redirection-and-pipes
+  slug: input-output-redirection-and-pipes
+  title: Input, Output, Redirection, and Pipes
+  path: shell/input-output-redirection-and-pipes.md
+  technology: shell
+  module: Module 4 · Input & Output
+  order: 4
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/variables-quoting-and-arithmetic
+  next:
+  - shell/control-flow-conditionals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/control-flow-conditionals
+  slug: control-flow-conditionals
+  title: Control Flow — Conditionals
+  path: shell/control-flow-conditionals.md
+  technology: shell
+  module: Module 5 · Control Flow
+  order: 5
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/input-output-redirection-and-pipes
+  next:
+  - shell/loops-for-while-until
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/loops-for-while-until
+  slug: loops-for-while-until
+  title: Loops — for, while, until
+  path: shell/loops-for-while-until.md
+  technology: shell
+  module: Module 6 · Loops
+  order: 6
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/control-flow-conditionals
+  next:
+  - shell/functions-parameters-and-locals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/functions-parameters-and-locals
+  slug: functions-parameters-and-locals
+  title: Functions, Parameters, and Locals
+  path: shell/functions-parameters-and-locals.md
+  technology: shell
+  module: Module 7 · Functions
+  order: 7
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/loops-for-while-until
+  next:
+  - shell/arrays-and-string-manipulation
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/arrays-and-string-manipulation
+  slug: arrays-and-string-manipulation
+  title: Arrays and String Manipulation
+  path: shell/arrays-and-string-manipulation.md
+  technology: shell
+  module: Module 8 · Arrays & Strings
+  order: 8
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/functions-parameters-and-locals
+  next:
+  - shell/file-operations-in-shell
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/file-operations-in-shell
+  slug: file-operations-in-shell
+  title: File Operations in Shell
+  path: shell/file-operations-in-shell.md
+  technology: shell
+  module: Module 9 · File Operations
+  order: 9
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/arrays-and-string-manipulation
+  next:
+  - shell/text-processing-in-shell-scripts
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/text-processing-in-shell-scripts
+  slug: text-processing-in-shell-scripts
+  title: Text Processing in Shell Scripts
+  path: shell/text-processing-in-shell-scripts.md
+  technology: shell
+  module: Module 10 · Text Processing
+  order: 10
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/file-operations-in-shell
+  next:
+  - shell/process-automation-signals-and-traps
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/process-automation-signals-and-traps
+  slug: process-automation-signals-and-traps
+  title: Process Automation — Signals and Traps
+  path: shell/process-automation-signals-and-traps.md
+  technology: shell
+  module: Module 11 · Process Automation
+  order: 11
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/text-processing-in-shell-scripts
+  next:
+  - shell/linux-admin-automation
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/linux-admin-automation
+  slug: linux-admin-automation
+  title: Linux Admin Automation
+  path: shell/linux-admin-automation.md
+  technology: shell
+  module: Module 12 · Linux Administration
+  order: 12
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/process-automation-signals-and-traps
+  next:
+  - shell/networking-automation-with-shell
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/networking-automation-with-shell
+  slug: networking-automation-with-shell
+  title: Networking Automation with Shell
+  path: shell/networking-automation-with-shell.md
+  technology: shell
+  module: Module 13 · Networking Automation
+  order: 13
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/linux-admin-automation
+  next:
+  - shell/json-and-yaml-with-jq-yq
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/json-and-yaml-with-jq-yq
+  slug: json-and-yaml-with-jq-yq
+  title: JSON and YAML with jq and yq
+  path: shell/json-and-yaml-with-jq-yq.md
+  technology: shell
+  module: Module 14 · JSON & YAML
+  order: 14
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/networking-automation-with-shell
+  next:
+  - shell/scheduling-cron-at-and-timers
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/scheduling-cron-at-and-timers
+  slug: scheduling-cron-at-and-timers
+  title: Scheduling — cron, at, and Timers
+  path: shell/scheduling-cron-at-and-timers.md
+  technology: shell
+  module: Module 15 · Scheduling
+  order: 15
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/json-and-yaml-with-jq-yq
+  next:
+  - shell/error-handling-logging-and-debugging
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/error-handling-logging-and-debugging
+  slug: error-handling-logging-and-debugging
+  title: Error Handling, Logging, and Debugging
+  path: shell/error-handling-logging-and-debugging.md
+  technology: shell
+  module: Module 16 · Error Handling
+  order: 16
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/scheduling-cron-at-and-timers
+  next:
+  - shell/production-shell-scripting
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/production-shell-scripting
+  slug: production-shell-scripting
+  title: Production Shell Scripting
+  path: shell/production-shell-scripting.md
+  technology: shell
+  module: Module 17 · Production Shell
+  order: 17
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/error-handling-logging-and-debugging
+  next:
+  - shell/troubleshooting-shell-scripts
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: shell/troubleshooting-shell-scripts
+  slug: troubleshooting-shell-scripts
+  title: Troubleshooting Shell Scripts
+  path: shell/troubleshooting-shell-scripts.md
+  technology: shell
+  module: Module 18 · Troubleshooting
+  order: 18
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - shell/production-shell-scripting
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/python-fundamentals-install-venv-and-tooling
+  slug: python-fundamentals-install-venv-and-tooling
+  title: Install, venv, and Tooling
+  path: python/python-fundamentals-install-venv-and-tooling.md
+  technology: python
+  module: Module 1 · Fundamentals
+  order: 1
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - python/python-basics-types-and-io
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/python-basics-types-and-io
+  slug: python-basics-types-and-io
+  title: Types and I/O
+  path: python/python-basics-types-and-io.md
+  technology: python
+  module: Module 2 · Basics
+  order: 2
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/python-fundamentals-install-venv-and-tooling
+  next:
+  - python/control-flow-conditionals-and-loops
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/control-flow-conditionals-and-loops
+  slug: control-flow-conditionals-and-loops
+  title: Conditionals and Loops
+  path: python/control-flow-conditionals-and-loops.md
+  technology: python
+  module: Module 3 · Control Flow
+  order: 3
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/python-basics-types-and-io
+  next:
+  - python/functions-parameters-and-scope
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/functions-parameters-and-scope
+  slug: functions-parameters-and-scope
+  title: Parameters and Scope
+  path: python/functions-parameters-and-scope.md
+  technology: python
+  module: Module 4 · Functions
+  order: 4
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/control-flow-conditionals-and-loops
+  next:
+  - python/data-structures-comprehensions-and-generators
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/data-structures-comprehensions-and-generators
+  slug: data-structures-comprehensions-and-generators
+  title: Comprehensions and Generators
+  path: python/data-structures-comprehensions-and-generators.md
+  technology: python
+  module: Module 5 · Data Structures
+  order: 5
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/functions-parameters-and-scope
+  next:
+  - python/modules-packages-and-dependencies
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/modules-packages-and-dependencies
+  slug: modules-packages-and-dependencies
+  title: Modules, Packages, and Dependencies
+  path: python/modules-packages-and-dependencies.md
+  technology: python
+  module: Module 6 · Modules & Packages
+  order: 6
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/data-structures-comprehensions-and-generators
+  next:
+  - python/file-handling-pathlib-json-yaml-csv
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/file-handling-pathlib-json-yaml-csv
+  slug: file-handling-pathlib-json-yaml-csv
+  title: pathlib, JSON, YAML, CSV
+  path: python/file-handling-pathlib-json-yaml-csv.md
+  technology: python
+  module: Module 7 · File Handling
+  order: 7
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/modules-packages-and-dependencies
+  next:
+  - python/error-handling-and-exceptions
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/error-handling-and-exceptions
+  slug: error-handling-and-exceptions
+  title: Exceptions and Defensive Programming
+  path: python/error-handling-and-exceptions.md
+  technology: python
+  module: Module 8 · Error Handling
+  order: 8
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/file-handling-pathlib-json-yaml-csv
+  next:
+  - python/oop-classes-and-dataclasses
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/oop-classes-and-dataclasses
+  slug: oop-classes-and-dataclasses
+  title: Classes and Dataclasses
+  path: python/oop-classes-and-dataclasses.md
+  technology: python
+  module: Module 9 · OOP
+  order: 9
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/error-handling-and-exceptions
+  next:
+  - python/logging-and-debugging
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/logging-and-debugging
+  slug: logging-and-debugging
+  title: Logging and Debugging
+  path: python/logging-and-debugging.md
+  technology: python
+  module: Module 10 · Logging & Debugging
+  order: 10
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/oop-classes-and-dataclasses
+  next:
+  - python/configuration-management-and-secrets
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/configuration-management-and-secrets
+  slug: configuration-management-and-secrets
+  title: Configuration and Secrets
+  path: python/configuration-management-and-secrets.md
+  technology: python
+  module: Module 11 · Configuration
+  order: 11
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/logging-and-debugging
+  next:
+  - python/cli-applications-argparse-click-typer
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/cli-applications-argparse-click-typer
+  slug: cli-applications-argparse-click-typer
+  title: argparse, Click, and Typer
+  path: python/cli-applications-argparse-click-typer.md
+  technology: python
+  module: Module 12 · CLI Applications
+  order: 12
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/configuration-management-and-secrets
+  next:
+  - python/linux-automation-subprocess-and-psutil
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/linux-automation-subprocess-and-psutil
+  slug: linux-automation-subprocess-and-psutil
+  title: subprocess and psutil
+  path: python/linux-automation-subprocess-and-psutil.md
+  technology: python
+  module: Module 13 · Linux Automation
+  order: 13
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/cli-applications-argparse-click-typer
+  next:
+  - python/rest-apis-requests-auth-and-resilience
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/rest-apis-requests-auth-and-resilience
+  slug: rest-apis-requests-auth-and-resilience
+  title: requests, Auth, and Resilience
+  path: python/rest-apis-requests-auth-and-resilience.md
+  technology: python
+  module: Module 14 · REST APIs
+  order: 14
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/linux-automation-subprocess-and-psutil
+  next:
+  - python/cloud-automation-aws-azure-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/cloud-automation-aws-azure-gcp
+  slug: cloud-automation-aws-azure-gcp
+  title: AWS, Azure, and GCP
+  path: python/cloud-automation-aws-azure-gcp.md
+  technology: python
+  module: Module 15 · Cloud Automation
+  order: 15
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/rest-apis-requests-auth-and-resilience
+  next:
+  - python/git-automation-github-and-gitlab
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/git-automation-github-and-gitlab
+  slug: git-automation-github-and-gitlab
+  title: GitHub and GitLab
+  path: python/git-automation-github-and-gitlab.md
+  technology: python
+  module: Module 16 · Git Automation
+  order: 16
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/cloud-automation-aws-azure-gcp
+  next:
+  - python/docker-sdk-automation
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/docker-sdk-automation
+  slug: docker-sdk-automation
+  title: Docker SDK Automation
+  path: python/docker-sdk-automation.md
+  technology: python
+  module: Module 17 · Docker Automation
+  order: 17
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/git-automation-github-and-gitlab
+  next:
+  - python/kubernetes-python-client-automation
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/kubernetes-python-client-automation
+  slug: kubernetes-python-client-automation
+  title: Kubernetes Python Client
+  path: python/kubernetes-python-client-automation.md
+  technology: python
+  module: Module 18 · Kubernetes Automation
+  order: 18
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/docker-sdk-automation
+  next:
+  - python/infrastructure-automation-terraform
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/infrastructure-automation-terraform
+  slug: infrastructure-automation-terraform
+  title: Terraform Automation
+  path: python/infrastructure-automation-terraform.md
+  technology: python
+  module: Module 19 · Infrastructure
+  order: 19
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/kubernetes-python-client-automation
+  next:
+  - python/ssh-automation-paramiko-and-fabric
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/ssh-automation-paramiko-and-fabric
+  slug: ssh-automation-paramiko-and-fabric
+  title: Paramiko and Fabric
+  path: python/ssh-automation-paramiko-and-fabric.md
+  technology: python
+  module: Module 20 · SSH Automation
+  order: 20
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/infrastructure-automation-terraform
+  next:
+  - python/concurrency-threads-asyncio-and-futures
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/concurrency-threads-asyncio-and-futures
+  slug: concurrency-threads-asyncio-and-futures
+  title: Threads, asyncio, and Futures
+  path: python/concurrency-threads-asyncio-and-futures.md
+  technology: python
+  module: Module 21 · Concurrency
+  order: 21
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/ssh-automation-paramiko-and-fabric
+  next:
+  - python/testing-with-pytest
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/testing-with-pytest
+  slug: testing-with-pytest
+  title: Testing with pytest
+  path: python/testing-with-pytest.md
+  technology: python
+  module: Module 22 · Testing
+  order: 22
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/concurrency-threads-asyncio-and-futures
+  next:
+  - python/packaging-pyproject-and-wheels
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/packaging-pyproject-and-wheels
+  slug: packaging-pyproject-and-wheels
+  title: pyproject.toml and Wheels
+  path: python/packaging-pyproject-and-wheels.md
+  technology: python
+  module: Module 23 · Packaging
+  order: 23
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/testing-with-pytest
+  next:
+  - python/production-engineering-patterns
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/production-engineering-patterns
+  slug: production-engineering-patterns
+  title: Production Engineering Patterns
+  path: python/production-engineering-patterns.md
+  technology: python
+  module: Module 24 · Production Engineering
+  order: 24
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/packaging-pyproject-and-wheels
+  next:
+  - python/security-for-devops-python
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/security-for-devops-python
+  slug: security-for-devops-python
+  title: Security for DevOps Python
+  path: python/security-for-devops-python.md
+  technology: python
+  module: Module 25 · Security
+  order: 25
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/production-engineering-patterns
+  next:
+  - python/ai-for-devops-openai-mcp-langchain
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/ai-for-devops-openai-mcp-langchain
+  slug: ai-for-devops-openai-mcp-langchain
+  title: OpenAI, MCP, and LangChain
+  path: python/ai-for-devops-openai-mcp-langchain.md
+  technology: python
+  module: Module 26 · AI for DevOps
+  order: 26
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/security-for-devops-python
+  next:
+  - python/troubleshooting-python-automation
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: python/troubleshooting-python-automation
+  slug: troubleshooting-python-automation
+  title: Troubleshooting Python Automation
+  path: python/troubleshooting-python-automation.md
+  technology: python
+  module: Module 27 · Troubleshooting
+  order: 27
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-engineer
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - python/ai-for-devops-openai-mcp-langchain
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/introduction-to-networking
+  slug: introduction-to-networking
+  title: Introduction To Networking
+  path: networking/introduction-to-networking.md
+  technology: networking
+  module: Foundations
+  order: 1
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - networking/osi-and-tcp-ip-models
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/osi-and-tcp-ip-models
+  slug: osi-and-tcp-ip-models
+  title: Osi And Tcp Ip Models
+  path: networking/osi-and-tcp-ip-models.md
+  technology: networking
+  module: Foundations
+  order: 2
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/introduction-to-networking
+  next:
+  - networking/ip-addressing-and-subnetting
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/ip-addressing-and-subnetting
+  slug: ip-addressing-and-subnetting
+  title: Ip Addressing And Subnetting
+  path: networking/ip-addressing-and-subnetting.md
+  technology: networking
+  module: Foundations
+  order: 3
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/osi-and-tcp-ip-models
+  next:
+  - networking/ethernet-switching-and-vlans
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/ethernet-switching-and-vlans
+  slug: ethernet-switching-and-vlans
+  title: Ethernet Switching And Vlans
+  path: networking/ethernet-switching-and-vlans.md
+  technology: networking
+  module: Data Link & Routing
+  order: 4
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/ip-addressing-and-subnetting
+  next:
+  - networking/routing-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/routing-fundamentals
+  slug: routing-fundamentals
+  title: Routing Fundamentals
+  path: networking/routing-fundamentals.md
+  technology: networking
+  module: Data Link & Routing
+  order: 5
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/ethernet-switching-and-vlans
+  next:
+  - networking/icmp-arp-dhcp-and-network-services
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/icmp-arp-dhcp-and-network-services
+  slug: icmp-arp-dhcp-and-network-services
+  title: Icmp Arp Dhcp And Network Services
+  path: networking/icmp-arp-dhcp-and-network-services.md
+  technology: networking
+  module: Data Link & Routing
+  order: 6
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/routing-fundamentals
+  next:
+  - networking/tcp-and-udp-deep-dive
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/tcp-and-udp-deep-dive
+  slug: tcp-and-udp-deep-dive
+  title: Tcp And Udp Deep Dive
+  path: networking/tcp-and-udp-deep-dive.md
+  technology: networking
+  module: Transport & DNS
+  order: 7
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/icmp-arp-dhcp-and-network-services
+  next:
+  - networking/dns-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/dns-fundamentals
+  slug: dns-fundamentals
+  title: Dns Fundamentals
+  path: networking/dns-fundamentals.md
+  technology: networking
+  module: Transport & DNS
+  order: 8
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/tcp-and-udp-deep-dive
+  next:
+  - networking/dns-records-and-troubleshooting
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/dns-records-and-troubleshooting
+  slug: dns-records-and-troubleshooting
+  title: Dns Records And Troubleshooting
+  path: networking/dns-records-and-troubleshooting.md
+  technology: networking
+  module: Transport & DNS
+  order: 9
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/dns-fundamentals
+  next:
+  - networking/http-https-and-application-layer
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/http-https-and-application-layer
+  slug: http-https-and-application-layer
+  title: Http Https And Application Layer
+  path: networking/http-https-and-application-layer.md
+  technology: networking
+  module: Application Layer
+  order: 10
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/dns-records-and-troubleshooting
+  next:
+  - networking/firewalls-and-access-control
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/firewalls-and-access-control
+  slug: firewalls-and-access-control
+  title: Firewalls And Access Control
+  path: networking/firewalls-and-access-control.md
+  technology: networking
+  module: Application Layer
+  order: 11
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/http-https-and-application-layer
+  next:
+  - networking/load-balancing-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/load-balancing-fundamentals
+  slug: load-balancing-fundamentals
+  title: Load Balancing Fundamentals
+  path: networking/load-balancing-fundamentals.md
+  technology: networking
+  module: Application Layer
+  order: 12
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/firewalls-and-access-control
+  next:
+  - networking/reverse-proxy-and-ingress-basics
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/reverse-proxy-and-ingress-basics
+  slug: reverse-proxy-and-ingress-basics
+  title: Reverse Proxy And Ingress Basics
+  path: networking/reverse-proxy-and-ingress-basics.md
+  technology: networking
+  module: Application Layer
+  order: 13
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/load-balancing-fundamentals
+  next:
+  - networking/network-troubleshooting-methodology
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/network-troubleshooting-methodology
+  slug: network-troubleshooting-methodology
+  title: Network Troubleshooting Methodology
+  path: networking/network-troubleshooting-methodology.md
+  technology: networking
+  module: Troubleshooting
+  order: 14
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/reverse-proxy-and-ingress-basics
+  next:
+  - networking/packet-analysis-tcpdump-wireshark
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/packet-analysis-tcpdump-wireshark
+  slug: packet-analysis-tcpdump-wireshark
+  title: Packet Analysis Tcpdump Wireshark
+  path: networking/packet-analysis-tcpdump-wireshark.md
+  technology: networking
+  module: Troubleshooting
+  order: 15
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/network-troubleshooting-methodology
+  next:
+  - networking/cloud-networking-vpc-and-subnets
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/cloud-networking-vpc-and-subnets
+  slug: cloud-networking-vpc-and-subnets
+  title: Cloud Networking Vpc And Subnets
+  path: networking/cloud-networking-vpc-and-subnets.md
+  technology: networking
+  module: Cloud & Advanced
+  order: 16
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/packet-analysis-tcpdump-wireshark
+  next:
+  - networking/nat-and-port-forwarding
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/nat-and-port-forwarding
+  slug: nat-and-port-forwarding
+  title: Nat And Port Forwarding
+  path: networking/nat-and-port-forwarding.md
+  technology: networking
+  module: Cloud & Advanced
+  order: 17
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/cloud-networking-vpc-and-subnets
+  next:
+  - networking/vpn-and-tunneling-basics
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/vpn-and-tunneling-basics
+  slug: vpn-and-tunneling-basics
+  title: Vpn And Tunneling Basics
+  path: networking/vpn-and-tunneling-basics.md
+  technology: networking
+  module: Cloud & Advanced
+  order: 18
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/nat-and-port-forwarding
+  next:
+  - networking/network-security-hardening
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/network-security-hardening
+  slug: network-security-hardening
+  title: Network Security Hardening
+  path: networking/network-security-hardening.md
+  technology: networking
+  module: Cloud & Advanced
+  order: 19
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/vpn-and-tunneling-basics
+  next:
+  - networking/network-automation-and-monitoring
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/network-automation-and-monitoring
+  slug: network-automation-and-monitoring
+  title: Network Automation And Monitoring
+  path: networking/network-automation-and-monitoring.md
+  technology: networking
+  module: Cloud & Advanced
+  order: 20
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/network-security-hardening
+  next:
+  - networking/network-segmentation-and-trust-boundaries
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/network-segmentation-and-trust-boundaries
+  slug: network-segmentation-and-trust-boundaries
+  title: Network Segmentation And Trust Boundaries
+  path: networking/network-segmentation-and-trust-boundaries.md
+  technology: networking
+  module: Production Network Operations
+  order: 21
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/network-automation-and-monitoring
+  next:
+  - networking/production-dns-operations
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/production-dns-operations
+  slug: production-dns-operations
+  title: Production Dns Operations
+  path: networking/production-dns-operations.md
+  technology: networking
+  module: Production Network Operations
+  order: 22
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/network-segmentation-and-trust-boundaries
+  next:
+  - networking/load-balancer-operations-and-health-checks
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/load-balancer-operations-and-health-checks
+  slug: load-balancer-operations-and-health-checks
+  title: Load Balancer Operations And Health Checks
+  path: networking/load-balancer-operations-and-health-checks.md
+  technology: networking
+  module: Production Network Operations
+  order: 23
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/production-dns-operations
+  next:
+  - networking/firewall-change-control-and-production-acls
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/firewall-change-control-and-production-acls
+  slug: firewall-change-control-and-production-acls
+  title: Firewall Change Control And Production Acls
+  path: networking/firewall-change-control-and-production-acls.md
+  technology: networking
+  module: Production Network Operations
+  order: 24
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/load-balancer-operations-and-health-checks
+  next:
+  - networking/network-incident-response-and-observability
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: networking/network-incident-response-and-observability
+  slug: network-incident-response-and-observability
+  title: Network Incident Response And Observability
+  path: networking/network-incident-response-and-observability.md
+  technology: networking
+  module: Production Network Operations
+  order: 25
+  status: ready
+  career_paths:
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - networking/firewall-change-control-and-production-acls
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/introduction-to-aws-and-global-infrastructure
+  slug: introduction-to-aws-and-global-infrastructure
+  title: Introduction to AWS and Global Infrastructure
+  path: aws/introduction-to-aws-and-global-infrastructure.md
+  technology: aws
+  module: Module 1 · Foundations
+  order: 1
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - aws/accounts-free-tier-billing-and-cost-hygiene
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/accounts-free-tier-billing-and-cost-hygiene
+  slug: accounts-free-tier-billing-and-cost-hygiene
+  title: Accounts, Free Tier, Billing, and Cost Hygiene
+  path: aws/accounts-free-tier-billing-and-cost-hygiene.md
+  technology: aws
+  module: Module 1 · Foundations
+  order: 2
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/introduction-to-aws-and-global-infrastructure
+  next:
+  - aws/iam-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/iam-fundamentals
+  slug: iam-fundamentals
+  title: IAM Fundamentals
+  path: aws/iam-fundamentals.md
+  technology: aws
+  module: Module 1 · Foundations
+  order: 3
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/accounts-free-tier-billing-and-cost-hygiene
+  next:
+  - aws/aws-cli-credentials-and-profiles
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/aws-cli-credentials-and-profiles
+  slug: aws-cli-credentials-and-profiles
+  title: AWS CLI, Credentials, and Profiles
+  path: aws/aws-cli-credentials-and-profiles.md
+  technology: aws
+  module: Module 1 · Foundations
+  order: 4
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/iam-fundamentals
+  next:
+  - aws/vpc-subnets-and-multi-az-design
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/vpc-subnets-and-multi-az-design
+  slug: vpc-subnets-and-multi-az-design
+  title: VPC, Subnets, and Multi-AZ Design
+  path: aws/vpc-subnets-and-multi-az-design.md
+  technology: aws
+  module: Module 2 · VPC Networking
+  order: 5
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/aws-cli-credentials-and-profiles
+  next:
+  - aws/internet-gateways-routes-and-egress
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/internet-gateways-routes-and-egress
+  slug: internet-gateways-routes-and-egress
+  title: Internet Gateways, Routes, and Egress
+  path: aws/internet-gateways-routes-and-egress.md
+  technology: aws
+  module: Module 2 · VPC Networking
+  order: 6
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/vpc-subnets-and-multi-az-design
+  next:
+  - aws/security-groups-and-nacls
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/security-groups-and-nacls
+  slug: security-groups-and-nacls
+  title: Security Groups and NACLs
+  path: aws/security-groups-and-nacls.md
+  technology: aws
+  module: Module 2 · VPC Networking
+  order: 7
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/internet-gateways-routes-and-egress
+  next:
+  - aws/vpc-endpoints-and-private-aws-access
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/vpc-endpoints-and-private-aws-access
+  slug: vpc-endpoints-and-private-aws-access
+  title: VPC Endpoints and Private AWS Access
+  path: aws/vpc-endpoints-and-private-aws-access.md
+  technology: aws
+  module: Module 2 · VPC Networking
+  order: 8
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/security-groups-and-nacls
+  next:
+  - aws/ec2-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/ec2-fundamentals
+  slug: ec2-fundamentals
+  title: EC2 Fundamentals
+  path: aws/ec2-fundamentals.md
+  technology: aws
+  module: Module 3 · Compute
+  order: 9
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/vpc-endpoints-and-private-aws-access
+  next:
+  - aws/user-data-imds-and-ssm-session-manager
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/user-data-imds-and-ssm-session-manager
+  slug: user-data-imds-and-ssm-session-manager
+  title: User Data, IMDS, and SSM Session Manager
+  path: aws/user-data-imds-and-ssm-session-manager.md
+  technology: aws
+  module: Module 3 · Compute
+  order: 10
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/ec2-fundamentals
+  next:
+  - aws/ebs-volumes-snapshots-and-encryption
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/ebs-volumes-snapshots-and-encryption
+  slug: ebs-volumes-snapshots-and-encryption
+  title: EBS Volumes, Snapshots, and Encryption
+  path: aws/ebs-volumes-snapshots-and-encryption.md
+  technology: aws
+  module: Module 3 · Compute
+  order: 11
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/user-data-imds-and-ssm-session-manager
+  next:
+  - aws/s3-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/s3-fundamentals
+  slug: s3-fundamentals
+  title: S3 Fundamentals
+  path: aws/s3-fundamentals.md
+  technology: aws
+  module: Module 4 · Storage
+  order: 12
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/ebs-volumes-snapshots-and-encryption
+  next:
+  - aws/s3-security-and-static-hosting
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/s3-security-and-static-hosting
+  slug: s3-security-and-static-hosting
+  title: S3 Security and Static Hosting
+  path: aws/s3-security-and-static-hosting.md
+  technology: aws
+  module: Module 4 · Storage
+  order: 13
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/s3-fundamentals
+  next:
+  - aws/elastic-load-balancing-alb-and-nlb
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/elastic-load-balancing-alb-and-nlb
+  slug: elastic-load-balancing-alb-and-nlb
+  title: Elastic Load Balancing — ALB and NLB
+  path: aws/elastic-load-balancing-alb-and-nlb.md
+  technology: aws
+  module: Module 5 · Edge and Data
+  order: 14
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/s3-security-and-static-hosting
+  next:
+  - aws/route-53-dns-and-health-checks
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/route-53-dns-and-health-checks
+  slug: route-53-dns-and-health-checks
+  title: Route 53 DNS and Health Checks
+  path: aws/route-53-dns-and-health-checks.md
+  technology: aws
+  module: Module 5 · Edge and Data
+  order: 15
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/elastic-load-balancing-alb-and-nlb
+  next:
+  - aws/rds-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/rds-fundamentals
+  slug: rds-fundamentals
+  title: RDS Fundamentals
+  path: aws/rds-fundamentals.md
+  technology: aws
+  module: Module 5 · Edge and Data
+  order: 16
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/route-53-dns-and-health-checks
+  next:
+  - aws/auto-scaling-groups-and-launch-templates
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/auto-scaling-groups-and-launch-templates
+  slug: auto-scaling-groups-and-launch-templates
+  title: Auto Scaling Groups and Launch Templates
+  path: aws/auto-scaling-groups-and-launch-templates.md
+  technology: aws
+  module: Module 5 · Edge and Data
+  order: 17
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/rds-fundamentals
+  next:
+  - aws/cloudwatch-metrics-logs-and-alarms
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/cloudwatch-metrics-logs-and-alarms
+  slug: cloudwatch-metrics-logs-and-alarms
+  title: CloudWatch Metrics, Logs, and Alarms
+  path: aws/cloudwatch-metrics-logs-and-alarms.md
+  technology: aws
+  module: Module 6 · Ops and Capstone
+  order: 18
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/auto-scaling-groups-and-launch-templates
+  next:
+  - aws/cloudtrail-config-and-account-guardrails
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/cloudtrail-config-and-account-guardrails
+  slug: cloudtrail-config-and-account-guardrails
+  title: CloudTrail, Config, and Account Guardrails
+  path: aws/cloudtrail-config-and-account-guardrails.md
+  technology: aws
+  module: Module 6 · Ops and Capstone
+  order: 19
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/cloudwatch-metrics-logs-and-alarms
+  next:
+  - aws/lambda-and-three-tier-capstone
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: aws/lambda-and-three-tier-capstone
+  slug: lambda-and-three-tier-capstone
+  title: Lambda and Three-Tier Capstone
+  path: aws/lambda-and-three-tier-capstone.md
+  technology: aws
+  module: Module 6 · Ops and Capstone
+  order: 20
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - aws/cloudtrail-config-and-account-guardrails
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/introduction-to-git-and-version-control
+  slug: introduction-to-git-and-version-control
+  title: Introduction To Git And Version Control
+  path: git/introduction-to-git-and-version-control.md
+  technology: git
+  module: Foundations
+  order: 1
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - git/git-installation-and-configuration
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/git-installation-and-configuration
+  slug: git-installation-and-configuration
+  title: Git Installation And Configuration
+  path: git/git-installation-and-configuration.md
+  technology: git
+  module: Foundations
+  order: 2
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/introduction-to-git-and-version-control
+  next:
+  - git/understanding-the-git-object-model
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/understanding-the-git-object-model
+  slug: understanding-the-git-object-model
+  title: Understanding The Git Object Model
+  path: git/understanding-the-git-object-model.md
+  technology: git
+  module: Foundations
+  order: 3
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/git-installation-and-configuration
+  next:
+  - git/creating-and-cloning-repositories
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/creating-and-cloning-repositories
+  slug: creating-and-cloning-repositories
+  title: Creating And Cloning Repositories
+  path: git/creating-and-cloning-repositories.md
+  technology: git
+  module: Essential Workflow
+  order: 4
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/understanding-the-git-object-model
+  next:
+  - git/basic-git-workflow-add-commit-push
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/basic-git-workflow-add-commit-push
+  slug: basic-git-workflow-add-commit-push
+  title: Basic Git Workflow Add Commit Push
+  path: git/basic-git-workflow-add-commit-push.md
+  technology: git
+  module: Essential Workflow
+  order: 5
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/creating-and-cloning-repositories
+  next:
+  - git/viewing-history-and-diffs
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/viewing-history-and-diffs
+  slug: viewing-history-and-diffs
+  title: Viewing History And Diffs
+  path: git/viewing-history-and-diffs.md
+  technology: git
+  module: Essential Workflow
+  order: 6
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/basic-git-workflow-add-commit-push
+  next:
+  - git/branching-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/branching-fundamentals
+  slug: branching-fundamentals
+  title: Branching Fundamentals
+  path: git/branching-fundamentals.md
+  technology: git
+  module: Branching
+  order: 7
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/viewing-history-and-diffs
+  next:
+  - git/merging-and-merge-conflicts
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/merging-and-merge-conflicts
+  slug: merging-and-merge-conflicts
+  title: Merging And Merge Conflicts
+  path: git/merging-and-merge-conflicts.md
+  technology: git
+  module: Branching
+  order: 8
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/branching-fundamentals
+  next:
+  - git/rebasing-and-interactive-rebase
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/rebasing-and-interactive-rebase
+  slug: rebasing-and-interactive-rebase
+  title: Rebasing And Interactive Rebase
+  path: git/rebasing-and-interactive-rebase.md
+  technology: git
+  module: Branching
+  order: 9
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/merging-and-merge-conflicts
+  next:
+  - git/working-with-remotes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/working-with-remotes
+  slug: working-with-remotes
+  title: Working With Remotes
+  path: git/working-with-remotes.md
+  technology: git
+  module: Collaboration
+  order: 10
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/rebasing-and-interactive-rebase
+  next:
+  - git/pull-requests-and-code-review
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/pull-requests-and-code-review
+  slug: pull-requests-and-code-review
+  title: Pull Requests And Code Review
+  path: git/pull-requests-and-code-review.md
+  technology: git
+  module: Collaboration
+  order: 11
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/working-with-remotes
+  next:
+  - git/gitignore-and-gitattributes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/gitignore-and-gitattributes
+  slug: gitignore-and-gitattributes
+  title: Gitignore And Gitattributes
+  path: git/gitignore-and-gitattributes.md
+  technology: git
+  module: Collaboration
+  order: 12
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/pull-requests-and-code-review
+  next:
+  - git/undoing-changes-reset-revert-stash
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/undoing-changes-reset-revert-stash
+  slug: undoing-changes-reset-revert-stash
+  title: Undoing Changes Reset Revert Stash
+  path: git/undoing-changes-reset-revert-stash.md
+  technology: git
+  module: Recovery & Debugging
+  order: 13
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/gitignore-and-gitattributes
+  next:
+  - git/cherry-pick-and-reflog
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/cherry-pick-and-reflog
+  slug: cherry-pick-and-reflog
+  title: Cherry Pick And Reflog
+  path: git/cherry-pick-and-reflog.md
+  technology: git
+  module: Recovery & Debugging
+  order: 14
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/undoing-changes-reset-revert-stash
+  next:
+  - git/git-bisect-and-debugging-history
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/git-bisect-and-debugging-history
+  slug: git-bisect-and-debugging-history
+  title: Git Bisect And Debugging History
+  path: git/git-bisect-and-debugging-history.md
+  technology: git
+  module: Recovery & Debugging
+  order: 15
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/cherry-pick-and-reflog
+  next:
+  - git/git-hooks-and-automation
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/git-hooks-and-automation
+  slug: git-hooks-and-automation
+  title: Git Hooks And Automation
+  path: git/git-hooks-and-automation.md
+  technology: git
+  module: Advanced & DevOps
+  order: 16
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/git-bisect-and-debugging-history
+  next:
+  - git/advanced-git-workflows
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/advanced-git-workflows
+  slug: advanced-git-workflows
+  title: Advanced Git Workflows
+  path: git/advanced-git-workflows.md
+  technology: git
+  module: Advanced & DevOps
+  order: 17
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/git-hooks-and-automation
+  next:
+  - git/git-submodules-and-subtrees
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/git-submodules-and-subtrees
+  slug: git-submodules-and-subtrees
+  title: Git Submodules And Subtrees
+  path: git/git-submodules-and-subtrees.md
+  technology: git
+  module: Advanced & DevOps
+  order: 18
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/advanced-git-workflows
+  next:
+  - git/signed-commits-and-git-security
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/signed-commits-and-git-security
+  slug: signed-commits-and-git-security
+  title: Signed Commits And Git Security
+  path: git/signed-commits-and-git-security.md
+  technology: git
+  module: Advanced & DevOps
+  order: 19
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/git-submodules-and-subtrees
+  next:
+  - git/git-in-ci-cd-and-devops
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: git/git-in-ci-cd-and-devops
+  slug: git-in-ci-cd-and-devops
+  title: Git In Ci Cd And Devops
+  path: git/git-in-ci-cd-and-devops.md
+  technology: git
+  module: Advanced & DevOps
+  order: 20
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - beginner
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - git/signed-commits-and-git-security
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/introduction-to-cicd-and-delivery-models
+  slug: introduction-to-cicd-and-delivery-models
+  title: Introduction to CI/CD and Delivery Models
+  path: gitlab/introduction-to-cicd-and-delivery-models.md
+  technology: gitlab
+  module: Module 1 · Foundations
+  order: 1
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - gitlab/pipeline-anatomy-stages-jobs-and-artifacts
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/pipeline-anatomy-stages-jobs-and-artifacts
+  slug: pipeline-anatomy-stages-jobs-and-artifacts
+  title: Pipeline Anatomy — Stages, Jobs, and Artifacts
+  path: gitlab/pipeline-anatomy-stages-jobs-and-artifacts.md
+  technology: gitlab
+  module: Module 1 · Foundations
+  order: 2
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/introduction-to-cicd-and-delivery-models
+  next:
+  - gitlab/gitlab-ci-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/gitlab-ci-fundamentals
+  slug: gitlab-ci-fundamentals
+  title: GitLab CI Fundamentals
+  path: gitlab/gitlab-ci-fundamentals.md
+  technology: gitlab
+  module: Module 1 · Foundations
+  order: 3
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/pipeline-anatomy-stages-jobs-and-artifacts
+  next:
+  - gitlab/gitlab-merge-requests-and-pipeline-triggers
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/gitlab-merge-requests-and-pipeline-triggers
+  slug: gitlab-merge-requests-and-pipeline-triggers
+  title: GitLab Merge Requests and Pipeline Triggers
+  path: gitlab/gitlab-merge-requests-and-pipeline-triggers.md
+  technology: gitlab
+  module: Module 1 · Foundations
+  order: 4
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/gitlab-ci-fundamentals
+  next:
+  - gitlab/gitlab-runners-and-executors
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/gitlab-runners-and-executors
+  slug: gitlab-runners-and-executors
+  title: GitLab Runners and Executors
+  path: gitlab/gitlab-runners-and-executors.md
+  technology: gitlab
+  module: Module 2 · Runners and Configuration
+  order: 5
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/gitlab-merge-requests-and-pipeline-triggers
+  next:
+  - gitlab/gitlab-runner-tags-and-scaling
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/gitlab-runner-tags-and-scaling
+  slug: gitlab-runner-tags-and-scaling
+  title: GitLab Runner Tags and Scaling
+  path: gitlab/gitlab-runner-tags-and-scaling.md
+  technology: gitlab
+  module: Module 2 · Runners and Configuration
+  order: 6
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/gitlab-runners-and-executors
+  next:
+  - gitlab/variables-secrets-and-credentials
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/variables-secrets-and-credentials
+  slug: variables-secrets-and-credentials
+  title: Variables, Secrets, and Credentials
+  path: gitlab/variables-secrets-and-credentials.md
+  technology: gitlab
+  module: Module 2 · Runners and Configuration
+  order: 7
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/gitlab-runner-tags-and-scaling
+  next:
+  - gitlab/triggers-rules-and-branch-protection
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/triggers-rules-and-branch-protection
+  slug: triggers-rules-and-branch-protection
+  title: Triggers, Rules, and Branch Protection
+  path: gitlab/triggers-rules-and-branch-protection.md
+  technology: gitlab
+  module: Module 2 · Runners and Configuration
+  order: 8
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/variables-secrets-and-credentials
+  next:
+  - gitlab/building-docker-images-in-ci
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/building-docker-images-in-ci
+  slug: building-docker-images-in-ci
+  title: Building Docker Images in CI
+  path: gitlab/building-docker-images-in-ci.md
+  technology: gitlab
+  module: Module 3 · Build and Quality
+  order: 9
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/triggers-rules-and-branch-protection
+  next:
+  - gitlab/testing-reports-and-quality-gates
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/testing-reports-and-quality-gates
+  slug: testing-reports-and-quality-gates
+  title: Testing, Reports, and Quality Gates
+  path: gitlab/testing-reports-and-quality-gates.md
+  technology: gitlab
+  module: Module 3 · Build and Quality
+  order: 10
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/building-docker-images-in-ci
+  next:
+  - gitlab/artifacts-caches-and-dependencies
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/artifacts-caches-and-dependencies
+  slug: artifacts-caches-and-dependencies
+  title: Artifacts, Caches, and Dependencies
+  path: gitlab/artifacts-caches-and-dependencies.md
+  technology: gitlab
+  module: Module 3 · Build and Quality
+  order: 11
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/testing-reports-and-quality-gates
+  next:
+  - gitlab/parallelism-matrix-and-pipeline-dags
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/parallelism-matrix-and-pipeline-dags
+  slug: parallelism-matrix-and-pipeline-dags
+  title: Parallelism, Matrix, and Pipeline DAGs
+  path: gitlab/parallelism-matrix-and-pipeline-dags.md
+  technology: gitlab
+  module: Module 3 · Build and Quality
+  order: 12
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/artifacts-caches-and-dependencies
+  next:
+  - gitlab/least-privilege-ci-identities
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/least-privilege-ci-identities
+  slug: least-privilege-ci-identities
+  title: Least-Privilege CI Identities
+  path: gitlab/least-privilege-ci-identities.md
+  technology: gitlab
+  module: Module 4 · Secure Pipelines
+  order: 13
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/parallelism-matrix-and-pipeline-dags
+  next:
+  - gitlab/security-scanning-in-pipelines
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/security-scanning-in-pipelines
+  slug: security-scanning-in-pipelines
+  title: Security Scanning in Pipelines
+  path: gitlab/security-scanning-in-pipelines.md
+  technology: gitlab
+  module: Module 4 · Secure Pipelines
+  order: 14
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/least-privilege-ci-identities
+  next:
+  - gitlab/secret-detection-and-supply-chain-basics
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/secret-detection-and-supply-chain-basics
+  slug: secret-detection-and-supply-chain-basics
+  title: Secret Detection and Supply Chain Basics
+  path: gitlab/secret-detection-and-supply-chain-basics.md
+  technology: gitlab
+  module: Module 4 · Secure Pipelines
+  order: 15
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/security-scanning-in-pipelines
+  next:
+  - gitlab/protected-environments-and-approvals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/protected-environments-and-approvals
+  slug: protected-environments-and-approvals
+  title: Protected Environments and Approvals
+  path: gitlab/protected-environments-and-approvals.md
+  technology: gitlab
+  module: Module 4 · Secure Pipelines
+  order: 16
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/secret-detection-and-supply-chain-basics
+  next:
+  - gitlab/gitlab-deployment-patterns
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/gitlab-deployment-patterns
+  slug: gitlab-deployment-patterns
+  title: GitLab Deployment Patterns
+  path: gitlab/gitlab-deployment-patterns.md
+  technology: gitlab
+  module: Module 5 · Deploy and Capstone
+  order: 17
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/protected-environments-and-approvals
+  next:
+  - gitlab/kubernetes-deploys-from-ci
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/kubernetes-deploys-from-ci
+  slug: kubernetes-deploys-from-ci
+  title: Kubernetes Deploys from CI
+  path: gitlab/kubernetes-deploys-from-ci.md
+  technology: gitlab
+  module: Module 5 · Deploy and Capstone
+  order: 18
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/gitlab-deployment-patterns
+  next:
+  - gitlab/gitlab-ci-production-patterns
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/gitlab-ci-production-patterns
+  slug: gitlab-ci-production-patterns
+  title: GitLab CI Production Patterns
+  path: gitlab/gitlab-ci-production-patterns.md
+  technology: gitlab
+  module: Module 5 · Deploy and Capstone
+  order: 19
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/kubernetes-deploys-from-ci
+  next:
+  - gitlab/cicd-capstone-and-terraform-handoff
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gitlab/cicd-capstone-and-terraform-handoff
+  slug: cicd-capstone-and-terraform-handoff
+  title: CI/CD Capstone and Terraform Handoff
+  path: gitlab/cicd-capstone-and-terraform-handoff.md
+  technology: gitlab
+  module: Module 5 · Deploy and Capstone
+  order: 20
+  status: ready
+  career_paths:
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - gitlab/gitlab-ci-production-patterns
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/introduction-to-containers-and-docker
+  slug: introduction-to-containers-and-docker
+  title: Introduction To Containers And Docker
+  path: docker/introduction-to-containers-and-docker.md
+  technology: docker
+  module: Foundations
+  order: 1
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - docker/docker-installation-and-setup
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-installation-and-setup
+  slug: docker-installation-and-setup
+  title: Docker Installation And Setup
+  path: docker/docker-installation-and-setup.md
+  technology: docker
+  module: Foundations
+  order: 2
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/introduction-to-containers-and-docker
+  next:
+  - docker/docker-architecture-and-components
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-architecture-and-components
+  slug: docker-architecture-and-components
+  title: Docker Architecture And Components
+  path: docker/docker-architecture-and-components.md
+  technology: docker
+  module: Foundations
+  order: 3
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/docker-installation-and-setup
+  next:
+  - docker/running-your-first-container
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/running-your-first-container
+  slug: running-your-first-container
+  title: Running Your First Container
+  path: docker/running-your-first-container.md
+  technology: docker
+  module: Images & Dockerfile
+  order: 4
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/docker-architecture-and-components
+  next:
+  - docker/working-with-docker-images
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/working-with-docker-images
+  slug: working-with-docker-images
+  title: Working With Docker Images
+  path: docker/working-with-docker-images.md
+  technology: docker
+  module: Images & Dockerfile
+  order: 5
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/running-your-first-container
+  next:
+  - docker/building-images-with-dockerfile
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/building-images-with-dockerfile
+  slug: building-images-with-dockerfile
+  title: Building Images With Dockerfile
+  path: docker/building-images-with-dockerfile.md
+  technology: docker
+  module: Images & Dockerfile
+  order: 6
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/working-with-docker-images
+  next:
+  - docker/dockerfile-best-practices-and-multi-stage-builds
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/dockerfile-best-practices-and-multi-stage-builds
+  slug: dockerfile-best-practices-and-multi-stage-builds
+  title: Dockerfile Best Practices And Multi Stage Builds
+  path: docker/dockerfile-best-practices-and-multi-stage-builds.md
+  technology: docker
+  module: Storage & Compose
+  order: 7
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/building-images-with-dockerfile
+  next:
+  - docker/volumes-and-persistent-storage
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/volumes-and-persistent-storage
+  slug: volumes-and-persistent-storage
+  title: Volumes And Persistent Storage
+  path: docker/volumes-and-persistent-storage.md
+  technology: docker
+  module: Storage & Compose
+  order: 8
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/dockerfile-best-practices-and-multi-stage-builds
+  next:
+  - docker/docker-compose-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-compose-fundamentals
+  slug: docker-compose-fundamentals
+  title: Docker Compose Fundamentals
+  path: docker/docker-compose-fundamentals.md
+  technology: docker
+  module: Storage & Compose
+  order: 9
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/volumes-and-persistent-storage
+  next:
+  - docker/docker-networking-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-networking-fundamentals
+  slug: docker-networking-fundamentals
+  title: Docker Networking Fundamentals
+  path: docker/docker-networking-fundamentals.md
+  technology: docker
+  module: Networking & Registry
+  order: 10
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/docker-compose-fundamentals
+  next:
+  - docker/container-registries-and-distribution
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/container-registries-and-distribution
+  slug: container-registries-and-distribution
+  title: Container Registries And Distribution
+  path: docker/container-registries-and-distribution.md
+  technology: docker
+  module: Networking & Registry
+  order: 11
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/docker-networking-fundamentals
+  next:
+  - docker/environment-variables-and-secrets
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/environment-variables-and-secrets
+  slug: environment-variables-and-secrets
+  title: Environment Variables And Secrets
+  path: docker/environment-variables-and-secrets.md
+  technology: docker
+  module: Networking & Registry
+  order: 12
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/container-registries-and-distribution
+  next:
+  - docker/container-logging-and-monitoring
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/container-logging-and-monitoring
+  slug: container-logging-and-monitoring
+  title: Container Logging And Monitoring
+  path: docker/container-logging-and-monitoring.md
+  technology: docker
+  module: Operations
+  order: 13
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/environment-variables-and-secrets
+  next:
+  - docker/docker-security-hardening
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-security-hardening
+  slug: docker-security-hardening
+  title: Docker Security Hardening
+  path: docker/docker-security-hardening.md
+  technology: docker
+  module: Operations
+  order: 14
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/container-logging-and-monitoring
+  next:
+  - docker/troubleshooting-docker-containers
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/troubleshooting-docker-containers
+  slug: troubleshooting-docker-containers
+  title: Troubleshooting Docker Containers
+  path: docker/troubleshooting-docker-containers.md
+  technology: docker
+  module: Operations
+  order: 15
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/docker-security-hardening
+  next:
+  - docker/docker-in-ci-cd-pipelines
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-in-ci-cd-pipelines
+  slug: docker-in-ci-cd-pipelines
+  title: Docker In Ci Cd Pipelines
+  path: docker/docker-in-ci-cd-pipelines.md
+  technology: docker
+  module: Production & Beyond
+  order: 16
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/troubleshooting-docker-containers
+  next:
+  - docker/production-docker-patterns
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/production-docker-patterns
+  slug: production-docker-patterns
+  title: Production Docker Patterns
+  path: docker/production-docker-patterns.md
+  technology: docker
+  module: Production & Beyond
+  order: 17
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/docker-in-ci-cd-pipelines
+  next:
+  - docker/docker-swarm-orchestration-basics
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-swarm-orchestration-basics
+  slug: docker-swarm-orchestration-basics
+  title: Docker Swarm Orchestration Basics
+  path: docker/docker-swarm-orchestration-basics.md
+  technology: docker
+  module: Production & Beyond
+  order: 18
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/production-docker-patterns
+  next:
+  - docker/from-docker-to-kubernetes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/from-docker-to-kubernetes
+  slug: from-docker-to-kubernetes
+  title: From Docker To Kubernetes
+  path: docker/from-docker-to-kubernetes.md
+  technology: docker
+  module: Production & Beyond
+  order: 19
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/docker-swarm-orchestration-basics
+  next:
+  - docker/docker-capstone-and-next-steps
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: docker/docker-capstone-and-next-steps
+  slug: docker-capstone-and-next-steps
+  title: Docker Capstone And Next Steps
+  path: docker/docker-capstone-and-next-steps.md
+  technology: docker
+  module: Production & Beyond
+  order: 20
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - docker/from-docker-to-kubernetes
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/introduction-to-kubernetes-and-orchestration
+  slug: introduction-to-kubernetes-and-orchestration
+  title: Introduction To Kubernetes And Orchestration
+  path: kubernetes/introduction-to-kubernetes-and-orchestration.md
+  technology: kubernetes
+  module: Foundations
+  order: 1
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - kubernetes/kubernetes-architecture-and-components
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/kubernetes-architecture-and-components
+  slug: kubernetes-architecture-and-components
+  title: Kubernetes Architecture And Components
+  path: kubernetes/kubernetes-architecture-and-components.md
+  technology: kubernetes
+  module: Foundations
+  order: 2
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/introduction-to-kubernetes-and-orchestration
+  next:
+  - kubernetes/installing-kubernetes-and-kubectl
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/installing-kubernetes-and-kubectl
+  slug: installing-kubernetes-and-kubectl
+  title: Installing Kubernetes And Kubectl
+  path: kubernetes/installing-kubernetes-and-kubectl.md
+  technology: kubernetes
+  module: Foundations
+  order: 3
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/kubernetes-architecture-and-components
+  next:
+  - kubernetes/kubectl-essentials-and-workflows
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/kubectl-essentials-and-workflows
+  slug: kubectl-essentials-and-workflows
+  title: Kubectl Essentials And Workflows
+  path: kubernetes/kubectl-essentials-and-workflows.md
+  technology: kubernetes
+  module: Workloads
+  order: 4
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/installing-kubernetes-and-kubectl
+  next:
+  - kubernetes/pods-the-atomic-unit
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/pods-the-atomic-unit
+  slug: pods-the-atomic-unit
+  title: Pods The Atomic Unit
+  path: kubernetes/pods-the-atomic-unit.md
+  technology: kubernetes
+  module: Workloads
+  order: 5
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/kubectl-essentials-and-workflows
+  next:
+  - kubernetes/deployments-managing-replicated-pods
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/deployments-managing-replicated-pods
+  slug: deployments-managing-replicated-pods
+  title: Deployments Managing Replicated Pods
+  path: kubernetes/deployments-managing-replicated-pods.md
+  technology: kubernetes
+  module: Workloads
+  order: 6
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/pods-the-atomic-unit
+  next:
+  - kubernetes/services-and-cluster-networking
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/services-and-cluster-networking
+  slug: services-and-cluster-networking
+  title: Services And Cluster Networking
+  path: kubernetes/services-and-cluster-networking.md
+  technology: kubernetes
+  module: Configuration & Storage
+  order: 7
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/deployments-managing-replicated-pods
+  next:
+  - kubernetes/configmaps-and-secrets
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/configmaps-and-secrets
+  slug: configmaps-and-secrets
+  title: Configmaps And Secrets
+  path: kubernetes/configmaps-and-secrets.md
+  technology: kubernetes
+  module: Configuration & Storage
+  order: 8
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/services-and-cluster-networking
+  next:
+  - kubernetes/persistent-volumes-and-storage
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/persistent-volumes-and-storage
+  slug: persistent-volumes-and-storage
+  title: Persistent Volumes And Storage
+  path: kubernetes/persistent-volumes-and-storage.md
+  technology: kubernetes
+  module: Configuration & Storage
+  order: 9
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/configmaps-and-secrets
+  next:
+  - kubernetes/ingress-and-external-access
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/ingress-and-external-access
+  slug: ingress-and-external-access
+  title: Ingress And External Access
+  path: kubernetes/ingress-and-external-access.md
+  technology: kubernetes
+  module: Networking & Operations
+  order: 10
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/persistent-volumes-and-storage
+  next:
+  - kubernetes/namespaces-and-resource-management
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/namespaces-and-resource-management
+  slug: namespaces-and-resource-management
+  title: Namespaces And Resource Management
+  path: kubernetes/namespaces-and-resource-management.md
+  technology: kubernetes
+  module: Networking & Operations
+  order: 11
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/ingress-and-external-access
+  next:
+  - kubernetes/health-checks-probes-and-self-healing
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/health-checks-probes-and-self-healing
+  slug: health-checks-probes-and-self-healing
+  title: Health Checks Probes And Self Healing
+  path: kubernetes/health-checks-probes-and-self-healing.md
+  technology: kubernetes
+  module: Networking & Operations
+  order: 12
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/namespaces-and-resource-management
+  next:
+  - kubernetes/rbac-and-kubernetes-security-basics
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/rbac-and-kubernetes-security-basics
+  slug: rbac-and-kubernetes-security-basics
+  title: Rbac And Kubernetes Security Basics
+  path: kubernetes/rbac-and-kubernetes-security-basics.md
+  technology: kubernetes
+  module: Security & Tooling
+  order: 13
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/health-checks-probes-and-self-healing
+  next:
+  - kubernetes/troubleshooting-kubernetes-workloads
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/troubleshooting-kubernetes-workloads
+  slug: troubleshooting-kubernetes-workloads
+  title: Troubleshooting Kubernetes Workloads
+  path: kubernetes/troubleshooting-kubernetes-workloads.md
+  technology: kubernetes
+  module: Security & Tooling
+  order: 14
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/rbac-and-kubernetes-security-basics
+  next:
+  - kubernetes/helm-package-management
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/helm-package-management
+  slug: helm-package-management
+  title: Helm Package Management
+  path: kubernetes/helm-package-management.md
+  technology: kubernetes
+  module: Security & Tooling
+  order: 15
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/troubleshooting-kubernetes-workloads
+  next:
+  - kubernetes/gitops-and-cicd-with-kubernetes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/gitops-and-cicd-with-kubernetes
+  slug: gitops-and-cicd-with-kubernetes
+  title: Gitops And Cicd With Kubernetes
+  path: kubernetes/gitops-and-cicd-with-kubernetes.md
+  technology: kubernetes
+  module: Production
+  order: 16
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/helm-package-management
+  next:
+  - kubernetes/production-patterns-hpa-pdb-and-affinity
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/production-patterns-hpa-pdb-and-affinity
+  slug: production-patterns-hpa-pdb-and-affinity
+  title: Production Patterns Hpa Pdb And Affinity
+  path: kubernetes/production-patterns-hpa-pdb-and-affinity.md
+  technology: kubernetes
+  module: Production
+  order: 17
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/gitops-and-cicd-with-kubernetes
+  next:
+  - kubernetes/monitoring-and-logging-in-kubernetes
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/monitoring-and-logging-in-kubernetes
+  slug: monitoring-and-logging-in-kubernetes
+  title: Monitoring And Logging In Kubernetes
+  path: kubernetes/monitoring-and-logging-in-kubernetes.md
+  technology: kubernetes
+  module: Production
+  order: 18
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/production-patterns-hpa-pdb-and-affinity
+  next:
+  - kubernetes/kubernetes-security-hardening
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/kubernetes-security-hardening
+  slug: kubernetes-security-hardening
+  title: Kubernetes Security Hardening
+  path: kubernetes/kubernetes-security-hardening.md
+  technology: kubernetes
+  module: Production
+  order: 19
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/monitoring-and-logging-in-kubernetes
+  next:
+  - kubernetes/kubernetes-capstone-and-next-steps
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: kubernetes/kubernetes-capstone-and-next-steps
+  slug: kubernetes-capstone-and-next-steps
+  title: Kubernetes Capstone And Next Steps
+  path: kubernetes/kubernetes-capstone-and-next-steps.md
+  technology: kubernetes
+  module: Production
+  order: 20
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - cloud-architect
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - kubernetes/kubernetes-security-hardening
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/introduction-to-terraform-and-iac
+  slug: introduction-to-terraform-and-iac
+  title: Introduction to Terraform and IaC
+  path: terraform/introduction-to-terraform-and-iac.md
+  technology: terraform
+  module: General
+  order: 1
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - terraform/installing-terraform-and-the-cli-workflow
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/installing-terraform-and-the-cli-workflow
+  slug: installing-terraform-and-the-cli-workflow
+  title: Installing Terraform and the CLI Workflow
+  path: terraform/installing-terraform-and-the-cli-workflow.md
+  technology: terraform
+  module: General
+  order: 2
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/introduction-to-terraform-and-iac
+  next:
+  - terraform/hcl-fundamentals-blocks-arguments-and-expressions
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/hcl-fundamentals-blocks-arguments-and-expressions
+  slug: hcl-fundamentals-blocks-arguments-and-expressions
+  title: HCL Fundamentals
+  path: terraform/hcl-fundamentals-blocks-arguments-and-expressions.md
+  technology: terraform
+  module: General
+  order: 3
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/installing-terraform-and-the-cli-workflow
+  next:
+  - terraform/providers-and-the-terraform-plugin-model
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/providers-and-the-terraform-plugin-model
+  slug: providers-and-the-terraform-plugin-model
+  title: Providers and the Plugin Model
+  path: terraform/providers-and-the-terraform-plugin-model.md
+  technology: terraform
+  module: General
+  order: 4
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/hcl-fundamentals-blocks-arguments-and-expressions
+  next:
+  - terraform/variables-locals-and-outputs
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/variables-locals-and-outputs
+  slug: variables-locals-and-outputs
+  title: Variables, Locals, and Outputs
+  path: terraform/variables-locals-and-outputs.md
+  technology: terraform
+  module: General
+  order: 5
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/providers-and-the-terraform-plugin-model
+  next:
+  - terraform/resources-and-data-sources
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/resources-and-data-sources
+  slug: resources-and-data-sources
+  title: Resources and Data Sources
+  path: terraform/resources-and-data-sources.md
+  technology: terraform
+  module: General
+  order: 6
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/variables-locals-and-outputs
+  next:
+  - terraform/dependencies-and-the-resource-graph
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/dependencies-and-the-resource-graph
+  slug: dependencies-and-the-resource-graph
+  title: Dependencies and the Resource Graph
+  path: terraform/dependencies-and-the-resource-graph.md
+  technology: terraform
+  module: General
+  order: 7
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/resources-and-data-sources
+  next:
+  - terraform/terraform-state-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/terraform-state-fundamentals
+  slug: terraform-state-fundamentals
+  title: Terraform State Fundamentals
+  path: terraform/terraform-state-fundamentals.md
+  technology: terraform
+  module: General
+  order: 8
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/dependencies-and-the-resource-graph
+  next:
+  - terraform/remote-state-and-backends
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/remote-state-and-backends
+  slug: remote-state-and-backends
+  title: Remote State and Backends
+  path: terraform/remote-state-and-backends.md
+  technology: terraform
+  module: General
+  order: 9
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/terraform-state-fundamentals
+  next:
+  - terraform/workspaces-and-environment-strategies
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/workspaces-and-environment-strategies
+  slug: workspaces-and-environment-strategies
+  title: Workspaces and Environments
+  path: terraform/workspaces-and-environment-strategies.md
+  technology: terraform
+  module: General
+  order: 10
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/remote-state-and-backends
+  next:
+  - terraform/modules-creating-reusable-infrastructure
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/modules-creating-reusable-infrastructure
+  slug: modules-creating-reusable-infrastructure
+  title: Modules — Reusable Infrastructure
+  path: terraform/modules-creating-reusable-infrastructure.md
+  technology: terraform
+  module: General
+  order: 11
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/workspaces-and-environment-strategies
+  next:
+  - terraform/registry-modules-and-composition
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/registry-modules-and-composition
+  slug: registry-modules-and-composition
+  title: Registry Modules and Composition
+  path: terraform/registry-modules-and-composition.md
+  technology: terraform
+  module: General
+  order: 12
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/modules-creating-reusable-infrastructure
+  next:
+  - terraform/meta-arguments-count-for-each-and-lifecycle
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/meta-arguments-count-for-each-and-lifecycle
+  slug: meta-arguments-count-for-each-and-lifecycle
+  title: Meta-Arguments
+  path: terraform/meta-arguments-count-for-each-and-lifecycle.md
+  technology: terraform
+  module: General
+  order: 13
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/registry-modules-and-composition
+  next:
+  - terraform/functions-templates-and-dynamic-blocks
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/functions-templates-and-dynamic-blocks
+  slug: functions-templates-and-dynamic-blocks
+  title: Functions, Templates, Dynamic Blocks
+  path: terraform/functions-templates-and-dynamic-blocks.md
+  technology: terraform
+  module: General
+  order: 14
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/meta-arguments-count-for-each-and-lifecycle
+  next:
+  - terraform/import-moved-and-safe-refactors
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/import-moved-and-safe-refactors
+  slug: import-moved-and-safe-refactors
+  title: Import, Moved, and Safe Refactors
+  path: terraform/import-moved-and-safe-refactors.md
+  technology: terraform
+  module: General
+  order: 15
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/functions-templates-and-dynamic-blocks
+  next:
+  - terraform/format-validate-and-terraform-test
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/format-validate-and-terraform-test
+  slug: format-validate-and-terraform-test
+  title: Format, Validate, and Terraform Test
+  path: terraform/format-validate-and-terraform-test.md
+  technology: terraform
+  module: General
+  order: 16
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/import-moved-and-safe-refactors
+  next:
+  - terraform/secrets-and-sensitive-values
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/secrets-and-sensitive-values
+  slug: secrets-and-sensitive-values
+  title: Secrets and Sensitive Values
+  path: terraform/secrets-and-sensitive-values.md
+  technology: terraform
+  module: General
+  order: 17
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/format-validate-and-terraform-test
+  next:
+  - terraform/policy-as-code-overview
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/policy-as-code-overview
+  slug: policy-as-code-overview
+  title: Policy as Code Overview
+  path: terraform/policy-as-code-overview.md
+  technology: terraform
+  module: General
+  order: 18
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/secrets-and-sensitive-values
+  next:
+  - terraform/terraform-in-ci-cd-pipelines
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/terraform-in-ci-cd-pipelines
+  slug: terraform-in-ci-cd-pipelines
+  title: Terraform in CI/CD Pipelines
+  path: terraform/terraform-in-ci-cd-pipelines.md
+  technology: terraform
+  module: General
+  order: 19
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/policy-as-code-overview
+  next:
+  - terraform/production-patterns-and-capstone
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: terraform/production-patterns-and-capstone
+  slug: production-patterns-and-capstone
+  title: Production Patterns and Capstone
+  path: terraform/production-patterns-and-capstone.md
+  technology: terraform
+  module: General
+  order: 20
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - devsecops-engineer
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - terraform/terraform-in-ci-cd-pipelines
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+labs:
+- id: labs/linux-install-and-first-boot
+  title: Install Linux and First Boot
+  path: labs/linux-install-and-first-boot.md
+  status: ready
+- id: labs/linux-ssh-secure-access
+  title: Configure SSH Secure Access
+  path: labs/linux-ssh-secure-access.md
+  status: ready
+- id: labs/linux-users-permissions-lab
+  title: Users, Groups, and Permissions
+  path: labs/linux-users-permissions-lab.md
+  status: ready
+- id: labs/linux-storage-lab
+  title: Configure Linux Storage
+  path: labs/linux-storage-lab.md
+  status: ready
+- id: labs/linux-services-and-logs-lab
+  title: Manage Services and Analyse Logs
+  path: labs/linux-services-and-logs-lab.md
+  status: ready
+- id: labs/linux-firewall-hardening-lab
+  title: Firewall and Server Hardening
+  path: labs/linux-firewall-hardening-lab.md
+  status: ready
+- id: labs/linux-performance-troubleshooting-lab
+  title: Performance Troubleshooting and Service Recovery
+  path: labs/linux-performance-troubleshooting-lab.md
+  status: ready
+- id: labs/linux-ops-toolkit-lab
+  title: Linux Ops Toolkit
+  path: labs/linux-ops-toolkit-lab.md
+  status: ready
+- id: labs/linux-production-incident-triage
+  title: Linux Production Incident Triage
+  path: labs/linux-production-incident-triage.md
+  status: ready
+- id: labs/linux-app-server-from-zero
+  title: Linux App Server from Zero
+  path: labs/linux-app-server-from-zero.md
+  status: ready
+- id: labs/shell-first-script
+  title: Create Your First Script
+  path: labs/shell-first-script.md
+  status: ready
+- id: labs/shell-user-management-script
+  title: Build a User Management Script
+  path: labs/shell-user-management-script.md
+  status: ready
+- id: labs/shell-automate-software-installation
+  title: Automate Software Installation
+  path: labs/shell-automate-software-installation.md
+  status: ready
+- id: labs/shell-backup-utility
+  title: Build a Backup Utility
+  path: labs/shell-backup-utility.md
+  status: ready
+- id: labs/shell-rotate-logs
+  title: Rotate Logs
+  path: labs/shell-rotate-logs.md
+  status: ready
+- id: labs/shell-monitor-disk-usage
+  title: Monitor Disk Usage
+  path: labs/shell-monitor-disk-usage.md
+  status: ready
+- id: labs/shell-monitor-cpu-memory
+  title: Monitor CPU & Memory
+  path: labs/shell-monitor-cpu-memory.md
+  status: ready
+- id: labs/shell-service-health-checker
+  title: Build a Service Health Checker
+  path: labs/shell-service-health-checker.md
+  status: ready
+- id: labs/shell-ssl-certificate-monitor
+  title: Build an SSL Certificate Monitor
+  path: labs/shell-ssl-certificate-monitor.md
+  status: ready
+- id: labs/shell-parse-json-jq
+  title: Parse JSON with jq
+  path: labs/shell-parse-json-jq.md
+  status: ready
+- id: labs/shell-parse-yaml-yq
+  title: Parse YAML with yq
+  path: labs/shell-parse-yaml-yq.md
+  status: ready
+- id: labs/shell-automate-ssh-tasks
+  title: Automate SSH Tasks
+  path: labs/shell-automate-ssh-tasks.md
+  status: ready
+- id: labs/shell-deployment-script
+  title: Build a Deployment Script
+  path: labs/shell-deployment-script.md
+  status: ready
+- id: labs/shell-linux-operations-toolkit
+  title: Create a Linux Operations Toolkit
+  path: labs/shell-linux-operations-toolkit.md
+  status: ready
+- id: labs/shell-ops-script-hardening
+  title: Shell Ops Script Hardening
+  path: labs/shell-ops-script-hardening.md
+  status: ready
+- id: labs/python-log-analyser
+  title: Python Log Analyser
+  path: labs/python-log-analyser.md
+  status: ready
+- id: labs/python-linux-health-checker
+  title: Python Linux Health Checker
+  path: labs/python-linux-health-checker.md
+  status: ready
+- id: labs/python-yaml-config-validator
+  title: Python YAML Config Validator
+  path: labs/python-yaml-config-validator.md
+  status: ready
+- id: labs/python-json-validator
+  title: Python JSON Validator
+  path: labs/python-json-validator.md
+  status: ready
+- id: labs/python-github-repository-auditor
+  title: Python GitHub Repository Auditor
+  path: labs/python-github-repository-auditor.md
+  status: ready
+- id: labs/python-docker-cleanup-tool
+  title: Python Docker Cleanup Tool
+  path: labs/python-docker-cleanup-tool.md
+  status: ready
+- id: labs/python-kubernetes-health-checker
+  title: Python Kubernetes Health Checker
+  path: labs/python-kubernetes-health-checker.md
+  status: ready
+- id: labs/python-kubernetes-deployment-validator
+  title: Python Kubernetes Deployment Validator
+  path: labs/python-kubernetes-deployment-validator.md
+  status: ready
+- id: labs/python-terraform-wrapper
+  title: Python Terraform Wrapper
+  path: labs/python-terraform-wrapper.md
+  status: ready
+- id: labs/python-aws-ec2-inventory
+  title: Python AWS EC2 Inventory
+  path: labs/python-aws-ec2-inventory.md
+  status: ready
+- id: labs/python-azure-resource-inventory
+  title: Python Azure Resource Inventory
+  path: labs/python-azure-resource-inventory.md
+  status: ready
+- id: labs/python-gcp-inventory
+  title: Python GCP Inventory
+  path: labs/python-gcp-inventory.md
+  status: ready
+- id: labs/python-certificate-expiry-monitor
+  title: Python Certificate Expiry Monitor
+  path: labs/python-certificate-expiry-monitor.md
+  status: ready
+- id: labs/python-slack-notification-bot
+  title: Python Slack Notification Bot
+  path: labs/python-slack-notification-bot.md
+  status: ready
+- id: labs/python-rest-api-monitoring-service
+  title: Python REST API Monitoring Service
+  path: labs/python-rest-api-monitoring-service.md
+  status: ready
+- id: labs/python-secrets-scanner
+  title: Python Secrets Scanner
+  path: labs/python-secrets-scanner.md
+  status: ready
+- id: labs/python-cicd-automation-tool
+  title: Python CI/CD Automation Tool
+  path: labs/python-cicd-automation-tool.md
+  status: ready
+- id: labs/networking-dns-firewall-triage
+  title: DNS and Firewall Site-Down Triage
+  path: labs/networking-dns-firewall-triage.md
+  status: ready
+- id: labs/networking-edge-failover
+  title: Networking Edge Failover
+  path: labs/networking-edge-failover.md
+  status: ready
+- id: labs/aws-iam-vpc-triage
+  title: AWS IAM and VPC Reachability Triage
+  path: labs/aws-iam-vpc-triage.md
+  status: ready
+- id: labs/aws-ssm-s3
+  title: Secure EC2 via SSM and S3
+  path: labs/aws-ssm-s3.md
+  status: ready
+- id: labs/git-history-pr-recovery
+  title: Git History and PR Recovery
+  path: labs/git-history-pr-recovery.md
+  status: ready
+- id: labs/cicd-pipeline-triage
+  title: CI/CD Pipeline Failure Triage
+  path: labs/cicd-pipeline-triage.md
+  status: ready
+- id: labs/cicd-docker-secure-gate
+  title: Docker Build, Scan, and Deploy Gate
+  path: labs/cicd-docker-secure-gate.md
+  status: ready
+- id: labs/docker-compose-stack-recovery
+  title: Docker Compose Stack Recovery
+  path: labs/docker-compose-stack-recovery.md
+  status: ready
+- id: labs/kubernetes-deployment-triage
+  title: Kubernetes Deployment Triage
+  path: labs/kubernetes-deployment-triage.md
+  status: ready
+- id: labs/terraform-plan-review-workflow
+  title: Terraform Plan Review Workflow
+  path: labs/terraform-plan-review-workflow.md
+  status: ready
+projects: []
+capstones:
+- id: status-api-portfolio
+  title: Status API Portfolio
+  path: projects/status-api-portfolio.md
+  career_paths:
+  - devops-engineer
+  - kubernetes-engineer
+- id: python-devops-automation-framework
+  title: Python DevOps Automation Framework
+  path: projects/python-devops-automation-framework.md
+  career_paths:
+  - devops-engineer
+  - ai-for-devops
+nav_order:
+- career-paths
+- technologies
+- labs
+- projects
+- cheatsheets
+- interview
+- certifications
+- architecture
+- ai

@@ -29,7 +29,7 @@ comments: false
 
 Load balancers are the traffic directors of production — they spread connections across healthy backends, shed failed nodes, and enable zero-downtime deploys. **Operations** differs from **design**: you live with algorithm choice, health-check tuning, connection draining, failover behaviour, and sticky-session trade-offs every deploy window.
 
-This tutorial focuses on **L4 vs L7 operations**, health probes, graceful drain, and proving failover by killing a Python backend behind **HAProxy on loopback**. Conceptual foundations live in [Load Balancing Fundamentals](load-balancing-fundamentals.md). Per-host nginx upstream and TLS termination detail is in [nginx Web Server and Reverse Proxy](../linux/nginx-web-server-and-reverse-proxy.md) — not duplicated here.
+This tutorial focuses on **L4 vs L7 operations**, health probes, graceful drain, and proving failover by killing a Python backend behind **HAProxy on loopback**. Conceptual foundations live in [Load Balancing Fundamentals](load-balancing-fundamentals.md). Per-host nginx upstream and TLS termination detail is in [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md) — not duplicated here.
 
 This is **Tutorial 23** in **Module 7: Production Network Operations** of the REBASH Academy Networking series.
 
@@ -280,7 +280,7 @@ Confirm the lab before moving on:
 ## Security Considerations
 
 - Bind admin stats and sockets to localhost or mgmt network only
-- Terminate TLS at edge with modern ciphers — configure on Linux host per [TLS Certificates on Linux Servers](../linux/tls-certificates-on-linux-servers.md)
+- Terminate TLS at edge with modern ciphers — configure on Linux host per [SSH Hardening and Firewalls](../linux/ssh-hardening-and-firewalls.md)
 - Do not expose backend ports publicly when LB is the intended entry point
 - Log LB decisions for audit; rate-limit health-check endpoints
 - Validate `X-Forwarded-For` handling when trusting client IP at app layer
@@ -358,7 +358,7 @@ Confirm the lab before moving on:
 - Next: [Firewall Change Control and Production ACLs](firewall-change-control-and-production-acls.md) *(Module 7)*
 - [Load Balancing Fundamentals](load-balancing-fundamentals.md)
 - [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md)
-- [nginx Web Server and Reverse Proxy](../linux/nginx-web-server-and-reverse-proxy.md) *(Linux Module 7 — reverse proxy host detail)*
+- [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md) *(Linux Module 7 — reverse proxy host detail)*
 - [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)

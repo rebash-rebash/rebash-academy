@@ -4,7 +4,7 @@ description: REBASH Academy development roadmap — what is published, what is i
 difficulty: beginner
 estimated_time: "5 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-29"
 category: about
 tags:
   - roadmap
@@ -28,8 +28,10 @@ This page tracks what is published on REBASH Academy and what comes next.
 ## Phase 2 – Core Content :material-check-circle:{ .lg .middle style="colour: green" }
 
 - [x] Getting Started onboarding page
-- [x] Linux fundamentals path (20 tutorials)
-- [x] Linux Advanced Servers module (tutorials 21–25: baseline, nginx, TLS, LVM, backups)
+- [x] Linux for Cloud & DevOps Engineers (16 modules · 25 tutorials)
+- [x] Linux labs, course quiz, cheat sheet, interview, and projects
+- [x] Shell Scripting for DevOps Engineers (18 modules · 18 tutorials under `/shell/`)
+- [x] Shell labs, course quiz, cheat sheet, interview, and projects
 - [x] Networking fundamentals path (20 tutorials)
 - [x] Networking Production Network Operations module (tutorials 21–25: segmentation, DNS ops, LB health checks, firewall change control, IR)
 - [x] AWS fundamentals path (20 tutorials — Free Tier + LocalStack-friendly labs)
@@ -39,7 +41,7 @@ This page tracks what is published on REBASH Academy and what comes next.
 - [x] Kubernetes orchestration path (20 tutorials)
 - [x] Terraform Infrastructure as Code path (20 tutorials)
 
-**Ready today:** [Linux](linux/index.md) → [Networking](networking/index.md) → [AWS](aws/index.md) → [Git](git/index.md) → [CI/CD](gitlab/index.md) → [Docker](docker/index.md) → [Kubernetes](kubernetes/index.md) → [Terraform](terraform/index.md)
+**Ready today:** [Linux](linux/index.md) → [Shell Scripting](shell/index.md) → [Networking](networking/index.md) → [AWS](aws/index.md) → [Git](git/index.md) → [CI/CD](gitlab/index.md) → [Docker](docker/index.md) → [Kubernetes](kubernetes/index.md) → [Terraform](terraform/index.md)
 
 ## Phase 3 – Cloud & CI/CD (Next)
 
@@ -55,7 +57,7 @@ These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/moni
 
 - [ ] DevSecOps pipeline integration
 - [ ] Cloud security best practices
-- [ ] Python automation scripts library
+- [x] Python for DevOps Engineers (27 modules · 27 tutorials + labs/quiz/cheatsheet/interview/projects)
 - [ ] AI for DevOps use cases
 - [ ] Architecture reference guides
 
@@ -63,11 +65,11 @@ These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/moni
 
 - [x] Interview guides for ready tracks (plus interview questions inside each tutorial)
 - [x] Cheat sheets for ready tracks
-- [x] Hands-on lab catalog (Linux, Networking, Git, Docker, Kubernetes, Terraform — including advanced Linux and Networking labs)
+- [x] Hands-on lab catalog (Linux, Shell, Networking, Git, Docker, Kubernetes, Terraform — including advanced Linux and Networking labs)
 - [x] Labs section promoted in primary navigation
 - [x] DevOps Engineer learning path page
 - [x] First portfolio project (Status API — Git/Docker/Kubernetes/Terraform)
-- [x] Assessment quizzes (Linux fundamentals + Linux servers, Networking production, AWS fundamentals, CI/CD fundamentals, Docker, Kubernetes)
+- [x] Assessment quizzes (Linux for Cloud & DevOps fundamentals, Linux fundamentals + servers, Shell Scripting for DevOps fundamentals, Python for DevOps fundamentals, Networking production, AWS fundamentals, CI/CD fundamentals, Docker, Kubernetes)
 - [x] Quizzes section promoted in primary navigation (peer to Labs)
 - [x] Advanced Linux app-server lab (from zero)
 - [x] Advanced Networking edge failover lab

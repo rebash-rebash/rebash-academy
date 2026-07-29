@@ -1,0 +1,59 @@
+direction: down
+
+Technology: Technology {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E3F2FD"
+    stroke: "#1976D2"
+  }
+}
+
+Modules: Modules {
+  shape: rectangle
+  style: {
+    fill: "#E8F5E9"
+    stroke: "#2E7D32"
+  }
+}
+
+Tutorials: Tutorials {
+  shape: rectangle
+}
+
+Quizzes: Quizzes {
+  shape: rectangle
+}
+
+Labs: Hands-on Labs {
+  shape: rectangle
+}
+
+Projects: Projects {
+  shape: rectangle
+}
+
+Capstones: Capstones {
+  shape: rectangle
+  style: {
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+  }
+}
+
+CareerPaths: Career Paths {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#FFF3E0"
+    stroke: "#EF6C00"
+  }
+}
+
+Technology -> Modules: structured course
+Modules -> Tutorials: learn
+Tutorials -> Quizzes: check understanding
+Quizzes -> Labs: practise
+Labs -> Projects: build portfolio
+Projects -> Capstones: prove end to end
+Capstones -> CareerPaths: apply in role roadmaps

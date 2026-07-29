@@ -531,7 +531,7 @@ Usage: `chmod +x subnet-plan.sh && ./subnet-plan.sh 10.0.0.0/24 10.0.1.0/24 10.0
 - [Networking – Category Overview](index.md)
 - [OSI and TCP/IP Models](osi-and-tcp-ip-models.md) *(previous in Module 1)*
 - [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) *(next — Module 2)*
-- [Introduction to Linux](../linux/introduction-to-linux.md)
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)

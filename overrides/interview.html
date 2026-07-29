@@ -1,0 +1,307 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  {% set categories = [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "lead": "Core interview banks for Linux, automation, networking, and version control — essential for every DevOps role.",
+      "tracks": [
+        {"id": "linux", "title": "Linux", "url": "interview/linux/", "icon": "linux", "theme": "linux", "status": "ready", "badge": "~28 questions", "meta": "Mid-level", "summary": "Fundamentals, administration, troubleshooting, performance, networking, security, and production scenarios."},
+        {"id": "shell", "title": "Shell Scripting", "url": "interview/shell/", "icon": "bash", "theme": "linux", "status": "ready", "badge": "~25 questions", "meta": "Mid-level", "summary": "Bash fundamentals, automation, processes, text processing, debugging, and production scripts."},
+        {"id": "python", "title": "Python for DevOps", "url": "interview/python/", "icon": "language-python", "theme": "docker", "status": "ready", "badge": "~25 questions", "meta": "Mid-level", "summary": "Python fundamentals, APIs, automation, Kubernetes, Docker, Terraform, cloud SDKs, and production patterns."},
+        {"id": "networking", "title": "Networking", "url": "interview/networking/", "icon": "lan", "theme": "devops", "status": "ready", "badge": "Live", "meta": "Mid-level", "summary": "DNS, TCP/UDP, HTTP, load balancing, firewalls, and production triage interview themes."},
+        {"id": "git", "title": "Git", "url": "interview/git/", "icon": "git", "theme": "devops", "status": "ready", "badge": "Live", "meta": "Junior", "summary": "Branching, merge, rebase, remotes, recovery, and collaboration workflows."},
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Cloud platforms",
+      "lead": "Cloud service, IAM, and architecture questions for cloud engineering roles.",
+      "tracks": [
+        {"id": "aws", "title": "AWS", "url": "interview/aws/", "icon": "aws", "theme": "aws", "status": "ready", "badge": "Live", "meta": "Mid-level", "summary": "IAM, VPC, EC2, S3, and production AWS operations interview themes."},
+        {"id": "azure", "title": "Azure", "url": "azure/", "icon": "microsoft-azure", "theme": "azure", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Azure identity, compute, and networking interview bank — on the roadmap."},
+        {"id": "gcp", "title": "Google Cloud", "url": "gcp/", "icon": "google-cloud", "theme": "gcp", "status": "planned", "badge": "Planned", "meta": "—", "summary": "GCP core services and GKE interview themes — planned."},
+      ]
+    },
+    {
+      "id": "containers",
+      "title": "Containers",
+      "lead": "Docker, Kubernetes, and Helm interview preparation for platform and DevOps roles.",
+      "tracks": [
+        {"id": "docker", "title": "Docker", "url": "interview/docker/", "icon": "docker", "theme": "docker", "status": "ready", "badge": "Live", "meta": "Mid-level", "summary": "Images, networking, storage, Compose, and production container patterns."},
+        {"id": "kubernetes", "title": "Kubernetes", "url": "interview/kubernetes/", "icon": "kubernetes", "theme": "k8s", "status": "ready", "badge": "Live", "meta": "Mid-level", "summary": "Workloads, networking, storage, RBAC, troubleshooting, and cluster operations."},
+        {"id": "helm", "title": "Helm", "url": "helm/", "icon": "ship-wheel", "theme": "k8s", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Charts, releases, and package management interview bank — planned."},
+      ]
+    },
+    {
+      "id": "iac",
+      "title": "Infrastructure as Code",
+      "lead": "Terraform, Ansible, and OpenTofu questions for cloud and DevOps interviews.",
+      "tracks": [
+        {"id": "terraform", "title": "Terraform", "url": "interview/terraform/", "icon": "terraform", "theme": "terraform", "status": "ready", "badge": "Live", "meta": "Mid-level", "summary": "State, modules, providers, plan/apply workflow, and IaC production patterns."},
+        {"id": "ansible", "title": "Ansible", "url": "ansible/", "icon": "ansible", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Playbooks, roles, and idempotency interview themes — planned."},
+        {"id": "opentofu", "title": "OpenTofu", "url": "opentofu/", "icon": "terraform", "theme": "terraform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "OpenTofu workflow and migration interview bank — planned."},
+      ]
+    },
+    {
+      "id": "cicd",
+      "title": "CI/CD &amp; GitOps",
+      "lead": "Pipeline design, delivery gates, and GitOps interview preparation.",
+      "tracks": [
+        {"id": "cicd", "title": "CI/CD (GitLab)", "url": "interview/cicd/", "icon": "gitlab", "theme": "devops", "status": "ready", "badge": "Live", "meta": "Mid-level", "summary": "Stages, jobs, rules, runners, variables, artefacts, security gates, and deploy approvals."},
+        {"id": "github-actions", "title": "GitHub Actions", "url": "github-actions/", "icon": "github", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Workflow design and reusable actions interview bank — planned."},
+        {"id": "jenkins", "title": "Jenkins", "url": "jenkins/", "icon": "cog", "theme": "devops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Pipeline DSL and agent management interview themes — planned."},
+        {"id": "argocd", "title": "Argo CD", "url": "argocd/", "icon": "sync", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "GitOps sync, drift, and progressive delivery interview bank — planned."},
+        {"id": "flux", "title": "Flux", "url": "flux/", "icon": "sync", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Flux reconciliation and GitOps interview themes — planned."},
+      ]
+    },
+    {
+      "id": "observability",
+      "title": "Observability",
+      "lead": "Metrics, logs, traces, and on-call interview questions for SRE roles.",
+      "tracks": [
+        {"id": "prometheus", "title": "Prometheus", "url": "prometheus/", "icon": "chart-line", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "PromQL, alerting, and SRE signal interview bank — planned."},
+        {"id": "grafana", "title": "Grafana", "url": "grafana/", "icon": "monitor", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Dashboard and datasource interview themes — planned."},
+        {"id": "loki", "title": "Loki", "url": "loki/", "icon": "text-box-search", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Log aggregation and query interview bank — planned."},
+        {"id": "opentelemetry", "title": "OpenTelemetry", "url": "opentelemetry/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Instrumentation and collector pipeline interview themes — planned."},
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "lead": "DevSecOps, pipeline security, and compliance interview preparation.",
+      "tracks": [
+        {"id": "devsecops", "title": "DevSecOps", "url": "devsecops/", "icon": "shield-lock", "theme": "secops", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Shift-left security, scanning, secrets, and compliance interview bank — planned."},
+      ]
+    },
+    {
+      "id": "platform",
+      "title": "Platform &amp; architecture",
+      "lead": "Platform engineering, SRE, system design, and AI ops interview preparation.",
+      "tracks": [
+        {"id": "platform-engineering", "title": "Platform Engineering", "url": "platform-engineering/", "icon": "layers", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "IDP, golden paths, and developer experience interview themes — planned."},
+        {"id": "sre", "title": "Site Reliability Engineering", "url": "sre/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "SLOs, error budgets, incidents, and reliability interview bank — planned."},
+        {"id": "architecture", "title": "Cloud Architecture", "url": "architecture/", "icon": "sitemap", "theme": "architect", "status": "planned", "badge": "Planned", "meta": "Architect", "summary": "Landing zones, multi-cloud, HA, DR, and cost design prompts — planned."},
+        {"id": "ai", "title": "AI for DevOps", "url": "ai/", "icon": "brain", "theme": "platform", "status": "planned", "badge": "Planned", "meta": "—", "summary": "Practical AI workflow and triage interview themes — planned."},
+      ]
+    },
+    {
+      "id": "formats",
+      "title": "Mock interviews &amp; system design",
+      "lead": "Timed mock interviews and architecture prompts — practice end-to-end before real interviews.",
+      "tracks": [
+        {"id": "mock-devops", "title": "DevOps Mock Interview", "url": "career-paths/devops-engineer/", "icon": "source-branch", "theme": "devops", "status": "planned", "badge": "60–90 min", "meta": "Mid-level", "summary": "Linux, CI/CD, containers, and IaC combined — timed mock format on the roadmap."},
+        {"id": "mock-sre", "title": "SRE Mock Interview", "url": "career-paths/site-reliability-engineer/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "60–90 min", "meta": "Senior", "summary": "Observability, incidents, SLOs, and scaling scenarios — planned."},
+        {"id": "mock-platform", "title": "Platform Engineer Mock", "url": "career-paths/platform-engineer/", "icon": "layers", "theme": "platform", "status": "planned", "badge": "60–90 min", "meta": "Senior", "summary": "Kubernetes, GitOps, IDP, and developer experience — planned."},
+        {"id": "mock-architect", "title": "Cloud Architect Mock", "url": "career-paths/cloud-architect/", "icon": "sitemap", "theme": "architect", "status": "planned", "badge": "90 min", "meta": "Architect", "summary": "Landing zones, multi-cloud, HA, DR, and cost optimisation design — planned."},
+        {"id": "sd-kubernetes", "title": "Kubernetes Platform Design", "url": "career-paths/kubernetes-engineer/", "icon": "kubernetes", "theme": "k8s", "status": "planned", "badge": "System design", "meta": "Senior", "summary": "Design a production Kubernetes platform — architecture prompt bank planned."},
+        {"id": "sd-observability", "title": "Observability Design", "url": "career-paths/site-reliability-engineer/", "icon": "monitor", "theme": "platform", "status": "planned", "badge": "System design", "meta": "Senior", "summary": "Metrics, logs, traces, and alerting at scale — design prompts planned."},
+      ]
+    },
+  ] %}
+
+  {% set featured = [
+    {"title": "Linux Interview Prep", "url": "interview/linux/", "icon": "linux", "theme": "linux", "badge": "~28 questions", "summary": "Fundamentals through production scenarios — answer out loud in two minutes per question."},
+    {"title": "Kubernetes Interview Prep", "url": "interview/kubernetes/", "icon": "kubernetes", "theme": "k8s", "badge": "Containers", "summary": "Workloads, networking, storage, RBAC, and cluster troubleshooting for platform roles."},
+    {"title": "Docker Interview Prep", "url": "interview/docker/", "icon": "docker", "theme": "docker", "badge": "Containers", "summary": "Images, networking, storage, Compose, and production container interview themes."},
+    {"title": "AWS Interview Prep", "url": "interview/aws/", "icon": "aws", "theme": "aws", "badge": "Cloud", "summary": "IAM, VPC, EC2, S3, and core AWS operations for cloud engineering interviews."},
+    {"title": "Terraform Interview Prep", "url": "interview/terraform/", "icon": "terraform", "theme": "terraform", "badge": "IaC", "summary": "State, modules, providers, and IaC workflow questions for DevOps and cloud roles."},
+    {"title": "Python for DevOps Interview Prep", "url": "interview/python/", "icon": "language-python", "theme": "docker", "badge": "~25 questions", "summary": "APIs, automation, cloud SDKs, Kubernetes clients, and production Python patterns."},
+  ] %}
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Interview preparation</p>
+      <h1 class="rebash-page-hero__title">Interview Prep</h1>
+      <p class="rebash-page-hero__lead">
+        Technical interview banks for freshers through architects — theory, scenarios, troubleshooting,
+        and system design. Practise after tutorials and labs, then drill with mock interviews before you apply.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-stats md-grid" aria-label="Interview prep catalog highlights">
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10</span>
+      <span class="rebash-stats__label">Published interview guides</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10</span>
+      <span class="rebash-stats__label">Live technology areas</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Beginner → Architect</span>
+      <span class="rebash-stats__label">Five experience levels</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Scenarios</span>
+      <span class="rebash-stats__label">Production &amp; system design</span>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Browse by technology</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Open an interview guide from the sidebar or jump in from a technology card below.
+      </p>
+    </div>
+
+    <div class="rebash-tech-filter rebash-reveal" role="toolbar" aria-label="Filter interview tracks">
+      <button type="button" class="rebash-tech-filter__btn is-active" data-filter="all">All</button>
+      {% for category in categories %}
+      <button type="button" class="rebash-tech-filter__btn" data-filter="{{ category.id }}">{{ category.title | replace(" &amp; ", " & ") }}</button>
+      {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div class="rebash-tech-category rebash-reveal" data-category="{{ category.id }}">
+      <div class="rebash-tech-category__header">
+        <h3 class="rebash-tech-category__title">{{ category.title | replace(" &amp; ", " & ") }}</h3>
+        <p class="rebash-tech-category__lead">{{ category.lead }}</p>
+      </div>
+      <div class="rebash-feature-grid rebash-feature-grid--3">
+        {% for track in category.tracks %}
+        <a
+          href="{{ track.url | url }}"
+          class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ track.theme }} rebash-tech-card rebash-tech-card--{{ track.status }}"
+          data-category="{{ category.id }}"
+          data-status="{{ track.status }}"
+        >
+          <div class="rebash-path-card__banner">
+            <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(track.icon) }}</div>
+            <span class="rebash-path-card__badge">{{ track.badge }}</span>
+          </div>
+          <div class="rebash-path-card__body">
+            <h4 class="rebash-path-card__title">{{ track.title }}</h4>
+            <p class="rebash-path-card__summary">{{ track.summary }}</p>
+            <div class="rebash-path-card__topics">
+              <span class="rebash-path-card__topic">{{ track.meta }}</span>
+              <span class="rebash-path-card__topic rebash-tech-card__status">{{ track.status | replace("ready", "Live") | replace("planned", "Planned") }}</span>
+            </div>
+            <span class="rebash-path-card__link">{% if track.status == "ready" %}Open guide{% else %}View path{% endif %}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Featured interview guides</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        High-demand banks — start here after completing the related tutorials and labs.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--3 rebash-reveal">
+      {% for guide in featured %}
+      <a href="{{ guide.url | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ guide.theme }}">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(guide.icon) }}</div>
+          <span class="rebash-path-card__badge">{{ guide.badge }}</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">{{ guide.title }}</h3>
+          <p class="rebash-path-card__summary">{{ guide.summary }}</p>
+          <span class="rebash-path-card__link">Open guide</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Validate before you drill</span>
+        <h2 class="rebash-panel__title">Quizzes and cheat sheets</h2>
+        <p class="rebash-panel__lead">
+          Use quizzes to find gaps, cheat sheets for command recall, then return here for timed spoken answers and scenarios.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'quizzes/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Take a quiz</a>
+          <a href="{{ 'cheatsheets/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Cheat sheets</a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Align prep with your target role</span>
+        <h2 class="rebash-panel__title">Career paths and certifications</h2>
+        <p class="rebash-panel__lead">
+          Follow a career path to know which interview banks matter most, then map prep to certification exam domains.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'career-paths/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Career paths</a>
+          <a href="{{ 'certifications/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Certifications</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var filterBar = document.querySelector(".rebash-tech-filter");
+      if (!filterBar) return;
+      var buttons = filterBar.querySelectorAll(".rebash-tech-filter__btn");
+      var categories = document.querySelectorAll(".rebash-tech-category");
+
+      function applyFilter(id) {
+        buttons.forEach(function (btn) {
+          btn.classList.toggle("is-active", btn.dataset.filter === id);
+        });
+        categories.forEach(function (section) {
+          var show = id === "all" || section.dataset.category === id;
+          section.hidden = !show;
+        });
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          applyFilter(btn.dataset.filter);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var nodes = document.querySelectorAll(".rebash-reveal");
+      if (!nodes.length) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      nodes.forEach(function (n) { io.observe(n); });
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{{ super() }}{% endblock %}

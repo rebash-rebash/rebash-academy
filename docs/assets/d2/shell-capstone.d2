@@ -1,0 +1,11 @@
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+direction: right
+Bin: "bin/* CLIs" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Lib: "lib/common.sh" { style.fill: "#f3e8ff"; style.stroke: "#9333ea" }
+Health: "healthcheck" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+Backup: "backup" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+Pre: "preflight" { style.fill: "#fef9c3"; style.stroke: "#ca8a04" }
+Bin -> Lib
+Lib -> Health
+Lib -> Backup
+Lib -> Pre

@@ -28,7 +28,7 @@ comments: false
 
 Firewall rules look simple — allow TCP 443 from the load balancer — until a typo locks out SSH, drops database replication, or opens admin ports to the internet. **Production ACL operations** require the same discipline as schema migrations: **change request**, **blast-radius review**, **canary application**, **validation with ss and curl**, and a **documented rollback**.
 
-This tutorial teaches safe host firewall workflows with **ufw** or **nftables** on a dedicated lab port. Cloud security group IaC patterns appear in [Network Automation and Monitoring](network-automation-and-monitoring.md). Per-host nginx and TLS listener setup stays in [Linux Module 7](../linux/nginx-web-server-and-reverse-proxy.md).
+This tutorial teaches safe host firewall workflows with **ufw** or **nftables** on a dedicated lab port. Cloud security group IaC patterns appear in [Network Automation and Monitoring](network-automation-and-monitoring.md). Per-host nginx and TLS listener setup stays in [Linux Module 7](../linux/production-linux-hardening-and-performance.md).
 
 This is **Tutorial 24** in **Module 7: Production Network Operations** of the REBASH Academy Networking series.
 
@@ -338,7 +338,7 @@ Confirm the lab before moving on:
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md)
 - [Network Automation and Monitoring](network-automation-and-monitoring.md)
-- [nginx Web Server and Reverse Proxy](../linux/nginx-web-server-and-reverse-proxy.md) *(Linux Module 7)*
+- [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md) *(Linux Module 7)*
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

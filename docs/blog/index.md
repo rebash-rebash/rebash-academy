@@ -1,15 +1,11 @@
 ---
 title: Blog
-description: Articles, updates, and community highlights.
+description: "Engineering journal — industry insights, architecture discussions, lessons learned, release notes, and community updates from REBASH Academy."
 template: blog.html
-difficulty: beginner
-estimated_time: "Varies"
-author: Shaik Basha
-last_updated: "2026-07-28"
-category: blog
-tags:
-  - blog
-comments: false
+hide:
+  - toc
 ---
 
-<!-- Visual layout rendered by overrides/blog.html -->
+# Blog
+
+Visual engineering journal catalog — rendered by the site theme. Articles will appear in the sidebar as they are published.

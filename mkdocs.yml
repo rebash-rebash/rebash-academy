@@ -1,12 +1,13 @@
 # REBASH Academy – MkDocs Configuration
 
 site_name: REBASH Academy
-site_description: Learn by Building. Production-grade DevOps, Cloud, and Security knowledge base.
+site_description: Learn by Building. Career paths and hands-on tutorials for Cloud, DevOps, Kubernetes, and Platform Engineering.
 site_author: Shaik Basha
 site_url: https://academy.rebash.in/
 
 exclude_docs: |
   includes/*
+  _curriculum/**
 
 copyright: Copyright &copy; 2026 Shaik Basha
 

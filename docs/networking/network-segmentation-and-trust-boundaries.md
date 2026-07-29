@@ -28,7 +28,7 @@ comments: false
 
 Production networks are not flat address spaces where every host can reach every port. **Trust zones** — internet, edge, application, data, and management — define who may talk to whom and what happens when one tier is compromised. **Blast radius** is the damage spread from that compromise: a breached web tier should not expose the database subnet or admin jump hosts without explicit, audited paths.
 
-This tutorial teaches how operators map **host firewalls** (nftables, ufw) to the **cloud security group mental model**, document tier allow matrices, and enforce least privilege on localhost demo ports. You will not reconfigure nginx or TLS on hosts here — those belong in [Linux Module 7](../linux/nginx-web-server-and-reverse-proxy.md) and [TLS Certificates on Linux Servers](../linux/tls-certificates-on-linux-servers.md).
+This tutorial teaches how operators map **host firewalls** (nftables, ufw) to the **cloud security group mental model**, document tier allow matrices, and enforce least privilege on localhost demo ports. You will not reconfigure nginx or TLS on hosts here — those belong in [Linux Module 7](../linux/production-linux-hardening-and-performance.md) and [SSH Hardening and Firewalls](../linux/ssh-hardening-and-firewalls.md).
 
 This is **Tutorial 21** in **Module 7: Production Network Operations** of the REBASH Academy Networking series.
 
@@ -221,7 +221,7 @@ curl -s http://127.0.0.1:9080/ && echo "(edge reachable)"
 # Document: production edge uses LB/reverse proxy — see Linux nginx tutorial
 ```
 
-**Expected output:** Edge tier responds; you record in notes that [nginx Web Server and Reverse Proxy](../linux/nginx-web-server-and-reverse-proxy.md) terminates TLS and forwards upstream.
+**Expected output:** Edge tier responds; you record in notes that [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md) terminates TLS and forwards upstream.
 
 ### Step 7 – Cleanup
 
@@ -343,7 +343,7 @@ Confirm the lab before moving on:
 - [Network Security Hardening](network-security-hardening.md)
 - [Firewalls and Access Control](firewalls-and-access-control.md)
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
-- [nginx Web Server and Reverse Proxy](../linux/nginx-web-server-and-reverse-proxy.md) *(Linux Module 7 — host edge config)*
+- [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md) *(Linux Module 7 — host edge config)*
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

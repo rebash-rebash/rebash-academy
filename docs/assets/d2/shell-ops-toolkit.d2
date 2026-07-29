@@ -1,0 +1,22 @@
+*: { style: { border-radius: 14; font-size: 14; bold: true; shadow: true; stroke-width: 2 } }
+direction: right
+
+CLI: "rebash-shell\nentrypoint" { style.fill: "#dbeafe"; style.stroke: "#2563eb" }
+Lib: "lib/common.sh\nlog · die · paths" { style.fill: "#fef9c3"; style.stroke: "#ca8a04" }
+
+cmds: {
+  style.fill: "#f8fafc"
+  Disk: "cmd/disk.sh" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+  Backup: "cmd/backup.sh" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+  Health: "cmd/health.sh" { style.fill: "#ffedd5"; style.stroke: "#ea580c" }
+}
+
+Out: "reports/ + logs/\nRESULT lines" { style.fill: "#dcfce7"; style.stroke: "#16a34a" }
+
+CLI -> Lib
+CLI -> cmds.Disk
+CLI -> cmds.Backup
+CLI -> cmds.Health
+cmds.Disk -> Out
+cmds.Backup -> Out
+cmds.Health -> Out

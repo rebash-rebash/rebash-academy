@@ -449,7 +449,7 @@ Confirm the lab before moving on:
 - [Network Troubleshooting Methodology](network-troubleshooting-methodology.md) *(previous in Module 5)*
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md) *(next — Module 6)*
 - [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md)
-- [Linux Networking Essentials](../linux/linux-networking-essentials.md)
+- [Linux Networking Tools](../linux/linux-networking-tools.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)

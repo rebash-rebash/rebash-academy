@@ -1,5 +1,20 @@
 title: Projects
 icon: material/rocket-launch
 nav:
-  - index.md
+  - Overview: index.md
   - status-api-portfolio.md
+  - linux-system-information-utility.md
+  - linux-server-health-dashboard.md
+  - linux-operations-toolkit.md
+  - linux-production-operations-platform.md
+  - shell-linux-automation-scripts.md
+  - shell-linux-administration-toolkit.md
+  - shell-production-operations-toolkit.md
+  - shell-production-automation-framework.md
+  - python-log-analysis-tool.md
+  - python-infra-inventory-cli.md
+  - python-cloud-operations-toolkit.md
+  - python-platform-engineering-framework.md
+  - python-devops-automation-framework.md
+  - python-log-parser.md
+  - python-k8s-ops-toolkit.md

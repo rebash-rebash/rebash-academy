@@ -1,0 +1,41 @@
+title: Shell Scripting
+icon: material/bash
+
+nav:
+  - Overview: index.md
+  - "Module 1 · Shell Fundamentals":
+    - Shell Fundamentals — Bash vs sh and Execution: shell-fundamentals-bash-vs-sh-and-execution.md
+  - "Module 2 · First Script":
+    - Writing Your First Script: writing-your-first-script.md
+  - "Module 3 · Variables":
+    - Variables, Quoting, and Arithmetic: variables-quoting-and-arithmetic.md
+  - "Module 4 · Input & Output":
+    - Input, Output, Redirection, and Pipes: input-output-redirection-and-pipes.md
+  - "Module 5 · Control Flow":
+    - Control Flow — Conditionals: control-flow-conditionals.md
+  - "Module 6 · Loops":
+    - Loops — for, while, until: loops-for-while-until.md
+  - "Module 7 · Functions":
+    - Functions, Parameters, and Locals: functions-parameters-and-locals.md
+  - "Module 8 · Arrays & Strings":
+    - Arrays and String Manipulation: arrays-and-string-manipulation.md
+  - "Module 9 · File Operations":
+    - File Operations in Shell: file-operations-in-shell.md
+  - "Module 10 · Text Processing":
+    - Text Processing in Shell Scripts: text-processing-in-shell-scripts.md
+  - "Module 11 · Process Automation":
+    - Process Automation — Signals and Traps: process-automation-signals-and-traps.md
+  - "Module 12 · Linux Administration":
+    - Linux Admin Automation: linux-admin-automation.md
+  - "Module 13 · Networking Automation":
+    - Networking Automation with Shell: networking-automation-with-shell.md
+  - "Module 14 · JSON & YAML":
+    - JSON and YAML with jq and yq: json-and-yaml-with-jq-yq.md
+  - "Module 15 · Scheduling":
+    - Scheduling — cron, at, and Timers: scheduling-cron-at-and-timers.md
+  - "Module 16 · Error Handling":
+    - Error Handling, Logging, and Debugging: error-handling-logging-and-debugging.md
+  - "Module 17 · Production Shell":
+    - Production Shell Scripting: production-shell-scripting.md
+  - "Module 18 · Troubleshooting":
+    - Troubleshooting Shell Scripts: troubleshooting-shell-scripts.md

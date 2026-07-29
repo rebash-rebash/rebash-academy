@@ -1,0 +1,83 @@
+direction: down
+
+Beginner: Beginner {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E3F2FD"
+    stroke: "#1976D2"
+  }
+}
+
+CareerPath: Career Path {
+  shape: rectangle
+  style: {
+    fill: "#E8F5E9"
+    stroke: "#2E7D32"
+  }
+}
+
+Technology: Technology {
+  shape: rectangle
+  style: {
+    fill: "#FFF3E0"
+    stroke: "#EF6C00"
+  }
+}
+
+Course: Course {
+  shape: rectangle
+}
+
+Module: Module {
+  shape: rectangle
+}
+
+Tutorial: Tutorial {
+  shape: rectangle
+}
+
+Lab: Hands-on Lab {
+  shape: rectangle
+}
+
+Project: Project {
+  shape: rectangle
+}
+
+Capstone: Capstone {
+  shape: rectangle
+  style: {
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+  }
+}
+
+Interview: Interview Preparation {
+  shape: rectangle
+}
+
+Certification: Certification {
+  shape: rectangle
+}
+
+JobReady: Job Ready {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E8F5E9"
+    stroke: "#1B5E20"
+  }
+}
+
+Beginner -> CareerPath: choose goal
+CareerPath -> Technology: follow roadmap
+Technology -> Course: open track
+Course -> Module: study in order
+Module -> Tutorial: learn
+Tutorial -> Lab: practise
+Lab -> Project: build
+Project -> Capstone: prove skills
+Capstone -> Interview: prepare
+Interview -> Certification: optional exams
+Certification -> JobReady: apply skills

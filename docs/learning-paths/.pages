@@ -3,3 +3,5 @@ icon: material/map-marker-path
 nav:
   - index.md
   - devops-engineer.md
+  - linux-for-cloud-devops.md
+  - python-for-devops.md

@@ -1,11 +1,17 @@
 title: Quizzes
 icon: material/help-circle
+
 nav:
-  - index.md
-  - linux-fundamentals.md
-  - linux-servers.md
-  - networking-production.md
-  - aws-fundamentals.md
-  - cicd-fundamentals.md
-  - docker-fundamentals.md
-  - kubernetes-fundamentals.md
+  - Overview: index.md
+  - Linux for Cloud & DevOps Fundamentals: linux-for-cloud-devops-fundamentals.md
+  - Linux Fundamentals: linux-fundamentals.md
+  - Linux Servers: linux-servers.md
+  - Shell Scripting for DevOps Fundamentals: shell-scripting-for-devops-fundamentals.md
+  - Shell Scripting Fundamentals: shell-scripting-fundamentals.md
+  - Python for DevOps Engineers Fundamentals: python-for-devops-engineers-fundamentals.md
+  - Python for DevOps Fundamentals: python-for-devops-fundamentals.md
+  - Networking Production: networking-production.md
+  - AWS Fundamentals: aws-fundamentals.md
+  - CI/CD Fundamentals: cicd-fundamentals.md
+  - Docker Fundamentals: docker-fundamentals.md
+  - Kubernetes Fundamentals: kubernetes-fundamentals.md

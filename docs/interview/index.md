@@ -1,36 +1,11 @@
 ---
 title: Interview Prep
-description: "Interview preparation guides for Linux, Networking, AWS, Git, CI/CD, Docker, Kubernetes, and Terraform."
-difficulty: intermediate
-estimated_time: "Varies"
-author: Shaik Basha
-last_updated: "2026-07-28"
-category: interview
-tags:
-  - interview
-comments: false
+description: "Interview preparation for Linux, Shell, Python, Networking, AWS, Git, CI/CD, Docker, Kubernetes, and Terraform — theory, scenarios, and system design."
+template: interview.html
+hide:
+  - toc
 ---
 
 # Interview Prep
 
-Revision maps for the published tracks. Each tutorial also includes its own interview questions — use both.
-
-## Available now
-
-| Guide | Track |
-|-------|--------|
-| [Linux](linux.md) | [Linux tutorials](../linux/index.md) |
-| [Networking](networking.md) | [Networking tutorials](../networking/index.md) |
-| [AWS](aws.md) | [AWS tutorials](../aws/index.md) |
-| [Git](git.md) | [Git tutorials](../git/index.md) |
-| [CI/CD](cicd.md) | [CI/CD tutorials](../gitlab/index.md) |
-| [Docker](docker.md) | [Docker tutorials](../docker/index.md) |
-| [Kubernetes](kubernetes.md) | [Kubernetes tutorials](../kubernetes/index.md) |
-| [Terraform](terraform.md) | [Terraform tutorials](../terraform/index.md) |
-
-## Related
-
-- [Cheat Sheets](../cheatsheets/index.md)
-- [Quizzes](../quizzes/index.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
-- [Getting Started](../getting-started/index.md)
+Visual interview preparation catalog — rendered by the site theme. Browse individual guides from the sidebar.

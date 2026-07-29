@@ -1,0 +1,352 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+  </style>
+
+  {% set categories = [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "lead": "Start here — OS, automation, networking, and version control.",
+      "techs": [
+        {"id": "linux", "title": "Linux", "url": "linux/", "icon": "linux", "theme": "linux", "status": "ready", "badge": "25 tutorials", "difficulty": "Beginner", "summary": "Command line, systemd, storage, security, and production troubleshooting."},
+        {"id": "shell", "title": "Shell Scripting", "url": "shell/", "icon": "bash", "theme": "linux", "status": "ready", "badge": "18 tutorials", "difficulty": "Beginner", "summary": "Bash automation, pipelines, functions, and production shell patterns."},
+        {"id": "python", "title": "Python for DevOps", "url": "python/", "icon": "language-python", "theme": "docker", "status": "ready", "badge": "27 tutorials", "difficulty": "Intermediate", "summary": "CLI tools, APIs, cloud SDKs, Kubernetes clients, and packaging."},
+        {"id": "networking", "title": "Networking", "url": "networking/", "icon": "lan", "theme": "devops", "status": "ready", "badge": "25 tutorials", "difficulty": "Intermediate", "summary": "TCP/IP, DNS, HTTP, load balancing, and production network ops."},
+        {"id": "git", "title": "Git", "url": "git/", "icon": "git", "theme": "devops", "status": "ready", "badge": "20 tutorials", "difficulty": "Beginner", "summary": "Branching, remotes, pull requests, and Git workflows for teams."},
+      ]
+    },
+    {
+      "id": "containers",
+      "title": "Containers",
+      "lead": "Images, orchestration, and package management for cloud-native workloads.",
+      "techs": [
+        {"id": "docker", "title": "Docker", "url": "docker/", "icon": "docker", "theme": "docker", "status": "ready", "badge": "20 tutorials", "difficulty": "Intermediate", "summary": "Images, Compose, networking, storage, and production container patterns."},
+        {"id": "kubernetes", "title": "Kubernetes", "url": "kubernetes/", "icon": "kubernetes", "theme": "k8s", "status": "ready", "badge": "20 tutorials", "difficulty": "Intermediate", "summary": "Workloads, networking, storage, Helm, security, and cluster operations."},
+        {"id": "helm", "title": "Helm", "url": "helm/", "icon": "ship-wheel", "theme": "k8s", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Charts, releases, and package management for Kubernetes applications."},
+      ]
+    },
+    {
+      "id": "iac",
+      "title": "Infrastructure as Code",
+      "lead": "Reproducible infrastructure and configuration management.",
+      "techs": [
+        {"id": "terraform", "title": "Terraform", "url": "terraform/", "icon": "terraform", "theme": "terraform", "status": "ready", "badge": "20 tutorials", "difficulty": "Intermediate", "summary": "Providers, state, modules, and IaC patterns for cloud platforms."},
+        {"id": "ansible", "title": "Ansible", "url": "ansible/", "icon": "ansible", "theme": "devops", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Playbooks, roles, inventory, and idempotent configuration management."},
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Cloud platforms",
+      "lead": "Build and operate infrastructure on major cloud providers.",
+      "techs": [
+        {"id": "aws", "title": "AWS", "url": "aws/", "icon": "aws", "theme": "aws", "status": "ready", "badge": "20 tutorials", "difficulty": "Intermediate", "summary": "IAM, VPC, EC2, S3, load balancing, and production AWS operations."},
+        {"id": "azure", "title": "Azure", "url": "azure/", "icon": "microsoft-azure", "theme": "azure", "status": "stub", "badge": "Coming soon", "difficulty": "Intermediate", "summary": "Azure fundamentals, compute, networking, and identity — track expanding."},
+        {"id": "gcp", "title": "Google Cloud", "url": "gcp/", "icon": "google-cloud", "theme": "gcp", "status": "stub", "badge": "Coming soon", "difficulty": "Intermediate", "summary": "GCP core services, IAM, networking, and GKE foundations."},
+      ]
+    },
+    {
+      "id": "cicd",
+      "title": "CI/CD",
+      "lead": "Pipelines, GitOps, and continuous delivery tooling.",
+      "techs": [
+        {"id": "gitlab", "title": "GitLab CI/CD", "url": "gitlab/", "icon": "gitlab", "theme": "devops", "status": "ready", "badge": "20 tutorials", "difficulty": "Intermediate", "summary": "Pipelines, runners, environments, and enterprise delivery patterns."},
+        {"id": "github-actions", "title": "GitHub Actions", "url": "github-actions/", "icon": "github", "theme": "devops", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Workflows, reusable actions, and repository automation."},
+        {"id": "jenkins", "title": "Jenkins", "url": "jenkins/", "icon": "cog", "theme": "devops", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Jobs, pipelines, agents, and plugin-based CI/CD."},
+        {"id": "argocd", "title": "Argo CD", "url": "argocd/", "icon": "sync", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "GitOps continuous delivery for Kubernetes workloads."},
+      ]
+    },
+    {
+      "id": "observability",
+      "title": "Observability",
+      "lead": "Metrics, logs, traces, and production monitoring stacks.",
+      "techs": [
+        {"id": "prometheus", "title": "Prometheus", "url": "prometheus/", "icon": "chart-line", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Metrics collection, PromQL, alerting, and SRE signals."},
+        {"id": "grafana", "title": "Grafana", "url": "grafana/", "icon": "monitor", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Dashboards, datasources, and visualisation for ops teams."},
+        {"id": "loki", "title": "Loki", "url": "loki/", "icon": "text-box-search", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Log aggregation aligned with Prometheus and Grafana."},
+        {"id": "tempo", "title": "Tempo", "url": "tempo/", "icon": "timeline-clock", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Distributed tracing backend for microservices."},
+        {"id": "opentelemetry", "title": "OpenTelemetry", "url": "opentelemetry/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Intermediate", "summary": "Vendor-neutral instrumentation for metrics, logs, and traces."},
+        {"id": "monitoring", "title": "Monitoring", "url": "monitoring/", "icon": "monitor", "theme": "platform", "status": "stub", "badge": "Coming soon", "difficulty": "Intermediate", "summary": "Cross-cutting monitoring patterns and operational dashboards."},
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "lead": "DevSecOps practices and security engineering for cloud-native systems.",
+      "techs": [
+        {"id": "devsecops", "title": "DevSecOps", "url": "devsecops/", "icon": "shield-lock", "theme": "secops", "status": "stub", "badge": "Coming soon", "difficulty": "Advanced", "summary": "Shift-left security across pipelines, containers, and cloud."},
+        {"id": "security", "title": "Security", "url": "security/", "icon": "lock", "theme": "secops", "status": "stub", "badge": "Coming soon", "difficulty": "Intermediate", "summary": "Security fundamentals for infrastructure and platform teams."},
+      ]
+    },
+    {
+      "id": "platform",
+      "title": "Platform engineering",
+      "lead": "Internal platforms, developer experience, and self-service infrastructure.",
+      "techs": [
+        {"id": "platform-engineering", "title": "Platform Engineering", "url": "platform-engineering/", "icon": "layers", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Advanced", "summary": "IDP patterns, golden paths, and platform team practices."},
+      ]
+    },
+    {
+      "id": "reliability",
+      "title": "Reliability",
+      "lead": "Site reliability engineering and production operations at scale.",
+      "techs": [
+        {"id": "sre", "title": "Site Reliability Engineering", "url": "sre/", "icon": "pulse", "theme": "platform", "status": "planned", "badge": "Planned", "difficulty": "Advanced", "summary": "SLOs, error budgets, incident response, and reliability culture."},
+      ]
+    },
+    {
+      "id": "architecture",
+      "title": "Architecture",
+      "lead": "Cloud architecture patterns and multi-cloud design.",
+      "techs": [
+        {"id": "architecture", "title": "Cloud Architecture", "url": "architecture/", "icon": "sitemap", "theme": "architect", "status": "stub", "badge": "Coming soon", "difficulty": "Expert", "summary": "Landing zones, network design, and production cloud patterns."},
+      ]
+    },
+    {
+      "id": "ai",
+      "title": "Artificial intelligence",
+      "lead": "AI for DevOps — automation, agents, and practical tooling on a solid ops base.",
+      "techs": [
+        {"id": "ai", "title": "AI for DevOps", "url": "ai/", "icon": "brain", "theme": "platform", "status": "stub", "badge": "Coming soon", "difficulty": "Intermediate", "summary": "Practical AI workflows for Cloud and DevOps engineers."},
+      ]
+    },
+  ] %}
+
+  <section class="rebash-page-hero">
+    <div class="rebash-page-hero__inner md-grid">
+      <p class="rebash-page-hero__eyebrow">Knowledge library</p>
+      <h1 class="rebash-page-hero__title">Technologies</h1>
+      <p class="rebash-page-hero__lead">
+        Browse by technology instead of career path. Every track follows the same structure —
+        modules, tutorials, labs, quizzes, projects, and interview prep — so you always know where you are.
+      </p>
+    </div>
+  </section>
+
+  <section class="rebash-stats md-grid" aria-label="Technology catalog highlights">
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">10</span>
+      <span class="rebash-stats__label">Ready tracks</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">29</span>
+      <span class="rebash-stats__label">Technologies catalogued</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">215+</span>
+      <span class="rebash-stats__label">Published tutorials</span>
+    </div>
+    <div class="rebash-stats__item">
+      <span class="rebash-stats__value">Same shape</span>
+      <span class="rebash-stats__label">Every technology page</span>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Browse by category</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Filter the catalog, or scroll to explore every track.
+      </p>
+    </div>
+
+    <div class="rebash-tech-filter rebash-reveal" role="toolbar" aria-label="Filter technologies">
+      <button type="button" class="rebash-tech-filter__btn is-active" data-filter="all">All</button>
+      {% for category in categories %}
+      <button type="button" class="rebash-tech-filter__btn" data-filter="{{ category.id }}">{{ category.title }}</button>
+      {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div class="rebash-tech-category rebash-reveal" data-category="{{ category.id }}">
+      <div class="rebash-tech-category__header">
+        <h3 class="rebash-tech-category__title">{{ category.title }}</h3>
+        <p class="rebash-tech-category__lead">{{ category.lead }}</p>
+      </div>
+      <div class="rebash-feature-grid rebash-feature-grid--3">
+        {% for tech in category.techs %}
+        <a
+          href="{{ tech.url | url }}"
+          class="rebash-path-card rebash-path-card--compact rebash-path-card--{{ tech.theme }} rebash-tech-card rebash-tech-card--{{ tech.status }}"
+          data-category="{{ category.id }}"
+          data-status="{{ tech.status }}"
+        >
+          <div class="rebash-path-card__banner">
+            <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi(tech.icon) }}</div>
+            <span class="rebash-path-card__badge">{{ tech.badge }}</span>
+          </div>
+          <div class="rebash-path-card__body">
+            <h4 class="rebash-path-card__title">{{ tech.title }}</h4>
+            <p class="rebash-path-card__summary">{{ tech.summary }}</p>
+            <div class="rebash-path-card__topics">
+              <span class="rebash-path-card__topic">{{ tech.difficulty }}</span>
+              <span class="rebash-path-card__topic rebash-tech-card__status">{{ tech.status | replace("ready", "Ready") | replace("planned", "Planned") | replace("stub", "Coming soon") }}</span>
+            </div>
+            <span class="rebash-path-card__link">Open track</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="rebash-section md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">Ready to start now</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Ten full tutorial series are live — begin with foundations or jump to your gap.
+      </p>
+    </div>
+    <div class="rebash-feature-grid rebash-feature-grid--4 rebash-reveal">
+      <a href="{{ 'linux/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--linux">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("linux") }}</div>
+          <span class="rebash-path-card__badge">Start here</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Linux</h3>
+          <p class="rebash-path-card__summary">The foundation for every Cloud and DevOps role.</p>
+          <span class="rebash-path-card__link">Open track</span>
+        </div>
+      </a>
+      <a href="{{ 'docker/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--docker">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("docker") }}</div>
+          <span class="rebash-path-card__badge">Containers</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Docker</h3>
+          <p class="rebash-path-card__summary">Images, Compose, and production container workflows.</p>
+          <span class="rebash-path-card__link">Open track</span>
+        </div>
+      </a>
+      <a href="{{ 'kubernetes/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--k8s">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("kubernetes") }}</div>
+          <span class="rebash-path-card__badge">Orchestration</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Kubernetes</h3>
+          <p class="rebash-path-card__summary">Deploy and operate workloads at cluster scale.</p>
+          <span class="rebash-path-card__link">Open track</span>
+        </div>
+      </a>
+      <a href="{{ 'terraform/' | url }}" class="rebash-path-card rebash-path-card--compact rebash-path-card--terraform">
+        <div class="rebash-path-card__banner">
+          <div class="rebash-path-card__icon" aria-hidden="true">{{ mdi("terraform") }}</div>
+          <span class="rebash-path-card__badge">IaC</span>
+        </div>
+        <div class="rebash-path-card__body">
+          <h3 class="rebash-path-card__title">Terraform</h3>
+          <p class="rebash-path-card__summary">Infrastructure as Code for reproducible cloud.</p>
+          <span class="rebash-path-card__link">Open track</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--alt md-grid">
+    <div class="rebash-section__header rebash-reveal">
+      <h2 class="rebash-section__title">What every technology page includes</h2>
+      <p class="rebash-section__lead rebash-section__lead--inline">
+        Mature tracks ship the full framework; planned tracks show the same outline with a clear status.
+      </p>
+    </div>
+    <div class="rebash-standards-grid rebash-reveal">
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">1</span><span class="rebash-standards-item__title">Overview</span><span class="rebash-standards-item__desc">Why the technology matters in production</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">2</span><span class="rebash-standards-item__title">Modules</span><span class="rebash-standards-item__desc">Ordered course structure with objectives</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">3</span><span class="rebash-standards-item__title">Tutorials</span><span class="rebash-standards-item__desc">Concept + lab lessons you can run yourself</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">4</span><span class="rebash-standards-item__title">Labs &amp; quizzes</span><span class="rebash-standards-item__desc">Practise and self-check after modules</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">5</span><span class="rebash-standards-item__title">Projects</span><span class="rebash-standards-item__desc">Portfolio builds mapped to the track</span></div>
+      <div class="rebash-standards-item"><span class="rebash-standards-item__num">6</span><span class="rebash-standards-item__title">Interview &amp; certs</span><span class="rebash-standards-item__desc">Role prep and exam mapping where relevant</span></div>
+    </div>
+  </section>
+
+  <section class="rebash-section rebash-section--panels md-grid">
+    <div class="rebash-panel rebash-panel--community">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Prefer a job roadmap?</span>
+        <h2 class="rebash-panel__title">Browse career paths</h2>
+        <p class="rebash-panel__lead">
+          Technologies are shared across paths — pick DevOps Engineer, Cloud Engineer, or SRE and follow the winding track.
+        </p>
+        <div class="rebash-hero__actions">
+          <a href="{{ 'career-paths/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Career paths</a>
+          <a href="{{ 'getting-started/' | url }}" class="rebash-cta rebash-cta--secondary rebash-cta--on-light">Getting started</a>
+        </div>
+      </div>
+    </div>
+    <div class="rebash-panel rebash-panel--updates">
+      <div class="rebash-panel__content">
+        <span class="rebash-panel__eyebrow">Hands-on next</span>
+        <h2 class="rebash-panel__title">Labs, projects, capstones</h2>
+        <p class="rebash-panel__lead">
+          Apply tutorials in scenario labs, then ship portfolio projects and multi-tool capstones.
+        </p>
+        <a href="{{ 'labs/' | url }}" class="rebash-cta rebash-cta--primary rebash-cta--on-light">Browse labs</a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var filterBar = document.querySelector(".rebash-tech-filter");
+      if (!filterBar) return;
+      var buttons = filterBar.querySelectorAll(".rebash-tech-filter__btn");
+      var categories = document.querySelectorAll(".rebash-tech-category");
+
+      function applyFilter(id) {
+        buttons.forEach(function (btn) {
+          btn.classList.toggle("is-active", btn.dataset.filter === id);
+        });
+        categories.forEach(function (section) {
+          var show = id === "all" || section.dataset.category === id;
+          section.hidden = !show;
+        });
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          applyFilter(btn.dataset.filter);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var nodes = document.querySelectorAll(".rebash-reveal");
+      if (!nodes.length) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        nodes.forEach(function (n) { n.classList.add("is-visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      nodes.forEach(function (n) { io.observe(n); });
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{{ super() }}{% endblock %}

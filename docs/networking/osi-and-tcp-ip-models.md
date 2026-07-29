@@ -31,7 +31,7 @@ This is **Tutorial 2** in **Module 1: Foundations** of the REBASH Academy Networ
 ## Prerequisites
 
 - [Introduction to Networking](introduction-to-networking.md) — nodes, links, bandwidth, latency, and basic Linux network commands
-- [Introduction to Linux](../linux/introduction-to-linux.md) — comfortable running terminal commands
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md) — comfortable running terminal commands
 - A Linux lab environment with `curl`, `ping`, and network utilities installed
 
 ## Learning Objectives
@@ -408,7 +408,7 @@ HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://${HOST
 - [Networking – Category Overview](index.md)
 - [Introduction to Networking](introduction-to-networking.md) *(previous in Module 1)*
 - [IP Addressing and Subnetting](ip-addressing-and-subnetting.md) *(next in Module 1)*
-- [Introduction to Linux](../linux/introduction-to-linux.md)
+- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md)
 - [Learning Paths – DevOps Engineer](../learning-paths/index.md)
 - Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
 - Interview prep: [Networking Interview Prep](../interview/networking.md)

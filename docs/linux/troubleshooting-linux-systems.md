@@ -1,19 +1,19 @@
 ---
-title: Troubleshooting Linux Systems
-description: Systematic debugging for boot, disk, network, and performance issues using the USE method.
+title: "Troubleshooting Linux Systems"
+description: "Systematically debug boot failures, high CPU/memory, disk full, permissions, network, service failures, logs, and bottlenecks."
 difficulty: advanced
 estimated_time: "60 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-29"
 category: linux
 tags:
   - linux
   - troubleshooting
-  - debugging
+  - incidents
   - performance
 prerequisites:
-  - Completion of Modules 1–5 Linux tutorials
-  - Familiarity with systemd, networking, and disk management
+  - Containers — Namespaces, cgroups, OverlayFS, and OCI
+  - Terminal access with a regular user account (sudo where noted)
 comments: false
 ---
 
@@ -21,536 +21,203 @@ comments: false
 
 ## Overview
 
-Production Linux failures rarely announce their root cause. A web app returns 502, SSH hangs, cron silently stops, or the server reboots overnight — and you must determine whether the problem is disk, memory, network, configuration, or application code. Effective administrators follow a **systematic approach** rather than random command execution.
+Incidents reward a checklist over panic. Build a repeatable troubleshooting path.
 
-This tutorial teaches the **USE method** (Utilization, Saturation, Errors) for performance debugging, structured workflows for **boot failures**, **full disks**, **network outages**, and **resource exhaustion**, and habits that turn firefighting into repeatable diagnosis.
-
-This tutorial is part of **Module 6: Storage, Logs, Networking & Operations** in the REBASH Academy Linux series — the capstone operations tutorial.
+This is **Tutorial 23** in **Module 15: Troubleshooting** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — written for administrators, DevOps engineers, SREs, and platform engineers operating production Linux.
 
 ## Prerequisites
 
-- Complete Modules 1–5 including [systemd Service Management](systemd-service-management.md), [Log Management with journalctl](log-management-journalctl.md), and [Linux Networking Essentials](linux-networking-essentials.md)
-- A Linux VM where you can safely simulate issues (disk fill, failed service)
-- `sudo` privileges for system-level diagnostics
-- Comfort reading logs and command output under pressure
+- Containers — Namespaces, cgroups, OverlayFS, and OCI
+- Terminal access with a regular user account (sudo where noted)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply a systematic troubleshooting workflow: reproduce, isolate, collect, hypothesize, fix, document
-- [ ] Use the USE method to diagnose CPU, memory, disk, and network bottlenecks
-- [ ] Diagnose boot failures using journalctl, systemd targets, and rescue mode concepts
-- [ ] Resolve full-disk emergencies without data loss
-- [ ] Triage network and performance issues with a layered diagnostic model
+- [ ] Apply the core ideas of “Troubleshooting Linux Systems” on a real Linux host
+- [ ] Use modern tools (`ip`/`ss`, `systemctl`/`journalctl`) where they apply
+- [ ] Complete the lab under `~/rebash-linux/` with clear outputs
+- [ ] Relate this topic to Cloud, DevOps, and production operations
+- [ ] Explain the failure modes you would check first in an incident
 
 ## Architecture
 
-Effective troubleshooting narrows the fault domain: symptoms to subsystem checks to a verified fix.
+Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Troubleshooting Linux Systems](../assets/images/troubleshooting-linux-systems.svg)
+![Architecture diagram for Troubleshooting Linux Systems](../assets/images/linux-troubleshooting.svg)
 
 ## Theory
 
-### The systematic troubleshooting workflow
+### Method
 
-1. **Reproduce** — Confirm the symptom. Intermittent issues need triggers identified.
-2. **Isolate** — One host or all? One service or entire stack? Recent changes?
-3. **Collect evidence** — Logs, metrics, configs, timelines. Do not change state yet.
-4. **Hypothesize** — Form ranked theories based on evidence.
-5. **Test fix** — Change one variable at a time; verify resolution.
-6. **Document** — Postmortem, runbook update, monitoring gap closed.
+1. Define blast radius and recent changes
+2. Check urgency signals: `uptime`, `free`, `df`, `systemctl --failed`
+3. Narrow domain: boot / CPU / memory / disk / perms / net / service
+4. Confirm with logs (`journalctl`, app logs)
+5. Change one variable; write down what you tried
 
-Ask: **What changed?** Deployments, patches, config edits, traffic spikes, and certificate expiry cause most incidents.
+### Boot failures
 
-### The USE method
+GRUB → rescue → `journalctl -b -p err`, `systemctl list-units --failed`, filesystem checks, fstab `nofail`, cloud-init status.
 
-From Brendan Gregg's performance methodology — for each resource, check:
+### High CPU
 
-| Letter | Question | Example tools |
-|--------|----------|---------------|
-| **U**tilization | How busy is it? | `mpstat`, `free`, `df`, `ip -s` |
-| **S**aturation | Is work queued/waiting? | load average, `iostat`, swap usage, NIC drops |
-| **E**rrors | Are errors occurring? | `dmesg`, `journalctl -p err`, `netstat -s`, SMART |
+`top`/`ps` → identify PID → `perf`/`strace` sparingly → restart or scale → fix root cause (loop, noisy neighbour).
 
-Apply USE to: CPU, memory, disk I/O, network interfaces, and application-specific queues.
+### High memory
 
-### Boot troubleshooting
+`free -h`, `ps --sort=-%mem`, OOM killer (`dmesg`/`journalctl -k`), leak vs undersized VM.
 
-Boot failures often stem from:
+### Disk full
 
-- Filesystem errors (dirty unmount, full disk)
-- Failed systemd units blocking target (`default.target`)
-- Incorrect `/etc/fstab` entries
-- Broken initramfs or kernel updates
-- Network dependencies for remote mounts (NFS, iSCSI)
+`df -h` + `df -i` → `du` → deleted-open files (`lsof +L1`) → logrotate → expand volume/LVM.
 
-Diagnostic commands (when system is up):
+### Permission issues
 
-```bash
-systemctl --failed
-journalctl -b -p err
-journalctl -b -1   # previous boot
-```
+`namei -l path`, `id`, ACLs (`getfacl`), MAC denials (`ausearch`/`journalctl` for SELinux).
 
-Recovery concepts: **single-user mode**, **rescue.target**, boot with previous kernel from GRUB, init=/bin/bash for emergency shell (advanced).
+### Network problems
 
-### Full / full disk issues
+`ip route`, `ss`, DNS (`dig`), security groups/firewalls, `curl -v`, `tcpdump`.
 
-When disk fills:
+### Service failures
 
-- Writes fail (`No space left on device`)
-- Services crash (databases, logs, temp files)
-- SSH may fail (cannot write utmp, session files)
+`systemctl status -l`, `journalctl -u`, config test (`nginx -t`, `sshd -t`), dependency targets.
 
-Find consumers:
+### Log analysis
 
-```bash
-df -h
-du -sh /* 2>/dev/null | sort -hr | head
-journalctl --disk-usage
-lsof +L1   # deleted files still held open
-```
+Time-box: since deploy / since alert. Correlate host journal + app + load balancer.
 
-Common culprits: `/var/log`, journal, `/tmp`, core dumps, unrotated logs, Docker overlay2.
+### Performance bottlenecks
 
-### Network troubleshooting
-
-Use the layered model from [Linux Networking Essentials](linux-networking-essentials.md):
-
-1. Link up? (`ip link`)
-2. IP assigned? (`ip addr`)
-3. Route to destination? (`ip route get`)
-4. DNS resolves? (`dig`)
-5. Port reachable? (`ss`, `nc`, `curl`)
-6. Firewall blocking? (local + cloud SG)
-
-### Performance troubleshooting
-
-High load is not always CPU — check **I/O wait** (`top`, `wa` column), swap thrashing, and blocked processes.
-
-| Symptom | Likely cause | First checks |
-|---------|--------------|--------------|
-| Slow SSH login | DNS reverse lookup, PAM, disk full | `sshd -ddd`, `df -h`, `/etc/nsswitch.conf` |
-| High load, low CPU | Disk I/O saturation | `iostat -x 1`, `iotop` |
-| OOM kills | Memory exhaustion | `dmesg \| grep -i oom`, `journalctl -k` |
-| Service timeouts | Network, DB, thread pool | `ss -s`, app logs, connection counts |
-
-### Web-tier failures on a Linux app server
-
-When users report “the site is down”, separate **edge**, **proxy**, **app**, and **firewall**:
-
-| Symptom | Likely layer | First checks |
-|---------|--------------|--------------|
-| Connection timeout | Firewall / SG / wrong IP | `curl -v`, `ufw status`, cloud SG, `ss -tuln` |
-| Connection refused | Nothing listening / wrong bind | `ss -tuln`, `systemctl status` |
-| HTTP 502 / 504 from nginx | Upstream app down or wrong proxy_pass | `nginx -t`, `journalctl -u nginx`, curl upstream on `127.0.0.1` |
-| HTTP 200 on localhost, fail remotely | Bind address or firewall | Compare `curl 127.0.0.1` vs public IP |
-| Sudden TLS errors | Certificate expiry / clock skew | `openssl x509 -enddate`, `timedatectl`, browser error |
-| Disk-related 5xx | Full `/var` or inode exhaustion | `df -h`, `df -i`, nginx/app error logs |
-
-Decision tree:
-
-1. Does `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1/` work on the host?
-2. Does the upstream app answer on its private port?
-3. Is nginx `active` and config valid (`nginx -t`)?
-4. Do listeners match the intended bind matrix?
-5. Did certificates or disk fill recently?
-
-### What not to do
-
-- Restart services randomly without collecting logs
-- Delete files in `/var/log` without identifying cause
-- Run `kill -9` on processes without understanding state
-- Apply multiple fixes simultaneously — you won't know what worked
+USE method (utilisation, saturation, errors) with `vmstat`, `iostat`, `sar`, application metrics.
 
 ## Hands-on Lab
 
-### Step 1 – System health snapshot
-
-Build a baseline "health card" you can run on any server:
+Create a workspace for this tutorial.
 
 ```bash
-echo "=== Uptime & Load ==="
-uptime
-echo "=== Memory ==="
-free -h
-echo "=== Disk ==="
-df -h /
-echo "=== Failed units ==="
-systemctl --failed --no-pager
-echo "=== Recent errors ==="
-journalctl -b -p err --no-pager | tail -5
+mkdir -p ~/rebash-linux/lab23 && cd ~/rebash-linux/lab23
 ```
 
-**Expected output:** Load averages, memory available, root filesystem usage under 80%, ideally no failed units, recent errors if any.
+**Focus:** build a troubleshooting toolkit script; run failed-unit and df/cpu checks
 
-### Step 2 – Apply USE to CPU and memory
-
-```bash
-echo "=== CPU utilization ==="
-mpstat 1 3 2>/dev/null || top -bn1 | head -5
-echo "=== Memory USE ==="
-free -h
-vmstat 1 3
-```
-
-**Expected output:** CPU idle percentage, swap usage (should be 0 or minimal on healthy server), vmstat si/so columns near zero (no swap thrashing).
-
-### Step 3 – Investigate failed services
+### Step 1 – Skeleton
 
 ```bash
-systemctl --failed --no-pager
-# If a test unit exists, inspect; otherwise review ssh status as example:
-systemctl status ssh 2>/dev/null || systemctl status sshd --no-pager | head -15
-journalctl -u ssh -u sshd -b -n 10 --no-pager 2>/dev/null | tail -5
-```
-
-**Expected output:** Failed unit list (empty on healthy system); status shows active (running) with recent log lines.
-
-### Step 4 – Simulate and diagnose disk pressure
-
-```bash
-mkdir -p /tmp/disk-lab
-df -h /tmp
-# Create a large file (adjust size if needed)
-dd if=/dev/zero of=/tmp/disk-lab/fillfile bs=1M count=50 2>/dev/null
-du -sh /tmp/disk-lab
-df -h /
-rm /tmp/disk-lab/fillfile
-echo "Cleaned up lab file"
-```
-
-**Expected output:** `du` shows ~50M; after cleanup, disk usage returns to prior level.
-
-Find largest directories on a real system:
-
-```bash
-sudo du -xh /var 2>/dev/null | sort -hr | head -10
-journalctl --disk-usage
-```
-
-### Step 5 – Find deleted files still consuming space
-
-```bash
-sudo lsof +L1 2>/dev/null | head -5 || echo "No deleted open files (good)"
-```
-
-**Expected output:** Empty or list of processes holding deleted log files — restart those services to reclaim space.
-
-### Step 6 – Network layered check
-
-```bash
-GW=$(ip route | awk '/default/ {print $3}')
-ping -c 2 "$GW" && echo "L3 gateway OK" || echo "Gateway FAIL"
-ping -c 2 8.8.8.8 && echo "External IP OK" || echo "Routing FAIL"
-getent hosts google.com && echo "DNS OK" || echo "DNS FAIL"
-ss -s
-```
-
-**Expected output:** All OK lines on healthy network; `ss -s` summary of TCP/UDP socket counts.
-
-### Step 7 – Identify resource-heavy processes
-
-```bash
-ps aux --sort=-%mem | head -6
-ps aux --sort=-%cpu | head -6
-```
-
-**Expected output:** Top memory and CPU consumers with PID, user, and command — useful during performance incidents.
-
-### Step 8 – Boot and kernel message review
-
-```bash
-journalctl --list-boots | tail -3
-dmesg -T 2>/dev/null | tail -10 || sudo dmesg | tail -10
-journalctl -k -b -p warning..emerg --no-pager | tail -10
-```
-
-**Expected output:** Recent boot sessions; kernel messages without critical hardware errors on healthy VM.
-
-### Step 9 – Document a mock incident
-
-Create a minimal incident note template:
-
-```bash
-cat > /tmp/incident-template.md << 'EOF'
-# Incident: [title]
-- **Start:** 
-- **Impact:** 
-- **Symptoms:** 
-- **Timeline:** 
-- **Root cause:** 
-- **Fix:** 
-- **Follow-up:** monitoring / runbook / patch
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab23 troubleshooting-linux-systems on $(hostname -s)"
 EOF
-cat /tmp/incident-template.md
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Expected output:** Template ready for post-incident documentation practice.
-
-### Step 10 – Web-tier triage drill (no nginx required)
-
-Simulate the decision tree with a localhost listener:
+### Step 2 – Troubleshooting toolkit
 
 ```bash
-# Start a tiny listener on 127.0.0.1:18080
-python3 - <<'PY' >/tmp/rebash-triage-web.log 2>&1 &
-from http.server import BaseHTTPRequestHandler, HTTPServer
-class H(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(b'ok\n')
-    def log_message(self, *a): pass
-HTTPServer(('127.0.0.1', 18080), H).serve_forever()
-PY
-echo $! > /tmp/rebash-triage-web.pid
-sleep 1
-curl -sS -o /dev/null -w "local:%{http_code}\n" http://127.0.0.1:18080/
-# Remote-style check against a non-listening public bind (expect fail/refuse)
-curl -sS -o /dev/null -w "all_ifaces:%{http_code}\n" --connect-timeout 2 http://0.0.0.0:18080/ || echo "all_ifaces:unreachable_or_refused_as_expected"
-ss -tln | grep 18080
-kill "$(cat /tmp/rebash-triage-web.pid)" 2>/dev/null || true
-rm -f /tmp/rebash-triage-web.pid /tmp/rebash-triage-web.log
+cat > toolkit.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "== failed units =="; systemctl --failed --no-pager || true
+echo "== load/mem/disk =="; uptime; free -h; df -h
+echo "== top cpu =="; ps aux --sort=-%cpu | head -n 6
+echo "== journal err =="; journalctl -b -p err -n 15 --no-pager 2>/dev/null || true
+echo "== listeners =="; ss -tulpn | head
+EOF
+chmod +x toolkit.sh
+./toolkit.sh | tee toolkit-out.txt
 ```
 
-**Expected output:** Local curl returns `200`; the process shows `127.0.0.1:18080` in `ss`. This is the same pattern as “app healthy locally, not exposed publicly” behind a reverse proxy.
+### Final step – Cleanup note
+
+```bash
+./lab.sh
+# keep ~/rebash-linux for later labs
+```
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Triage order | You followed CPU → memory → disk → network → logs as appropriate |
-| Evidence | Commands captured process, disk, and journal clues for the injected fault |
-| Fix | Lab fault resolved and service/health check passes |
-| Cleanup | Fault injection artefacts removed |
+- [ ] Lab commands run under `~/rebash-linux/lab23/`
+- [ ] You can explain each Theory bullet in your own words
+- [ ] You used modern tooling where applicable (`ip`/`ss`, `systemctl`/`journalctl`)
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description |
-|---------|-------------|
-| `uptime` | Load averages and uptime |
-| `free -h` | Memory and swap usage |
-| `df -h` | Filesystem disk usage |
-| `du -sh PATH` | Directory size summary |
-| `du -xh / \| sort -hr \| head` | Find large directories |
-| `systemctl --failed` | List failed systemd units |
-| `journalctl -b -p err` | Errors since boot |
-| `journalctl -b -1` | Previous boot logs |
-| `journalctl -u UNIT -n 50` | Service-specific logs |
-| `dmesg -T` | Kernel ring buffer with timestamps |
-| `lsof +L1` | Deleted files still open |
-| `vmstat 1 5` | Virtual memory statistics |
-| `mpstat -P ALL 1 3` | Per-CPU utilization |
-| `iostat -x 1 3` | Disk I/O statistics |
-| `top` / `htop` | Interactive process monitor |
-| `ps aux --sort=-%mem` | Processes by memory |
-| `ss -s` | Socket summary statistics |
-| `strace -p PID` | Trace system calls (advanced) |
-| `systemd-analyse blame` | Boot time per unit |
-| `systemd-analyse critical-chain` | Boot dependency chain |
+Production Linux practice for **Troubleshooting Linux Systems** always combines:
 
-## Code Examples
+1. Inspect before you change (`status`, `df`, `ip`, logs)
+2. Prefer reversible, documented changes (config management, drop-ins)
+3. Capture evidence (command output, journal snippets) for handovers
+4. Prefer `systemctl`/`journalctl` and `ip`/`ss` over legacy tools
+5. Least privilege — escalate with `sudo` only when required
 
-### One-liner health check script
-
-```bash
-#!/bin/bash
-# health-check.sh — run during incidents for quick triage
-set -euo pipefail
-
-warn() { echo "[WARN] $*"; }
-ok()   { echo "[OK]   $*"; }
-
-load=$(awk '{print $1}' /proc/loadavg)
-cpus=$(nproc)
-awk -v l="$load" -v c="$cpus" 'BEGIN { exit (l > c * 2) ? 0 : 1 }' \
-  && warn "Load high: $load (${cpus} CPUs)" || ok "Load: $load"
-
-avail=$(free -m | awk '/Mem:/ {print $7}')
-[ "$avail" -lt 256 ] && warn "Low memory: ${avail}MB avail" || ok "Memory avail: ${avail}MB"
-
-use=$(df -h / | awk 'NR==2 {gsub(/%/,""); print $5}')
-[ "$use" -gt 90 ] && warn "Disk / at ${use}%" || ok "Disk / at ${use}%"
-
-failed=$(systemctl --failed --no-legend | wc -l)
-[ "$failed" -gt 0 ] && warn "$failed failed units" || ok "No failed units"
-```
-
-### Disk emergency cleanup (use with care)
-
-```bash
-#!/bin/bash
-# disk-emergency.sh — identify top consumers, vacuum journal
-set -euo pipefail
-echo "=== Top /var consumers ==="
-sudo du -xh /var 2>/dev/null | sort -hr | head -15
-echo "=== Journal usage ==="
-journalctl --disk-usage
-echo "=== Vacuum journal to 200M ==="
-sudo journalctl --vacuum-size=200M
-echo "=== After cleanup ==="
-df -h /
-```
-
-### Boot failure investigation
-
-```bash
-#!/bin/bash
-echo "=== Failed units ==="
-systemctl --failed --no-pager
-echo "=== Boot errors ==="
-journalctl -b -p err --no-pager | tail -30
-echo "=== Boot time analysis ==="
-systemd-analyze blame | head -15
-echo "=== Critical chain ==="
-systemd-analyze critical-chain default.target | head -20
-```
+Keep runbooks short enough to follow at 03:00. Automate the boring checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Collect evidence before reboot when safe — volatile data (process lists, network sockets) disappears on restart
-- Avoid posting full logs containing secrets into public tickets or chat
-- Use read-only forensic mounts when investigating suspected compromise
-- Limit live debugging tools that can alter state (`kill`, `iptables -F`) until you understand impact
-- Document every invasive action during an incident for the postmortem
+- Treat host access and sudo as privileged — audit who can do what
+- Never paste secrets into shell history, tickets, or screenshots
+- Validate device names and paths before destructive disk or `rm` operations
+- Prefer key-based SSH and deny password auth on internet-facing hosts
+- Collect logs centrally; restrict who can read authentication and audit trails
 
 ## Common Mistakes
 
-!!! warning "Rebooting as the first action"
-    Reboot clears ephemeral evidence (memory state, some logs). Collect logs and metrics first unless the system is truly hung.
+!!! warning "Using legacy networking tools by default"
+    `ifconfig`/`netstat` are missing or incomplete on modern images. **Fix:** use `ip` and `ss`.
 
-!!! warning "Deleting logs to free space without fixing the cause"
-    Log rotation and journal limits address recurrence. Deleting alone guarantees the problem returns.
+!!! warning "Editing vendor unit files in place"
+    Package upgrades overwrite `/lib/systemd/system`. **Fix:** `systemctl edit` drop-ins under `/etc`.
 
-!!! warning "Ignoring swap and I/O wait"
-    High load with idle CPU often means disk bottleneck — not a CPU problem. Check `iostat` and `wa` in top.
-
-!!! warning "Multiple simultaneous changes"
-    Change one variable at a time so you know what fixed the issue and what to rollback if needed.
-
-!!! warning "Skipping the what-changed question"
-    Most incidents correlate with recent deploys, config edits, or certificate expiry — check change history first.
+!!! warning "Trusting df without checking inodes and mounts"
+    A full `/var` or exhausted inodes looks different from root. **Fix:** `df -h`, `df -i`, and `findmnt`.
 
 ## Best Practices
 
-!!! tip "Maintain a standard triage runbook"
-    First 5 minutes: uptime, df, free, systemctl --failed, journalctl -p err. Same script on every incident.
-
-!!! tip "Set proactive alerts"
-    Alert on disk > 80%, memory pressure, failed systemd units, and elevated error log rates before users notice.
-
-!!! tip "Practice break-fix in staging"
-    Simulate full disk, killed services, and DNS failures in non-prod to build muscle memory.
-
-!!! tip "Use USE method consistently"
-    Prevents tunnel vision on CPU when the real problem is disk saturation or network errors.
-
-!!! tip "Write postmortems blamelessly"
-    Document timeline, root cause, and preventive actions — the best troubleshooting improves future systems.
+- Golden images + config as code over snowflake hosts
+- Alert on symptoms (failed units, disk, load) with runbooks attached
+- Time-sync (chrony) everywhere — logs and TLS depend on it
+- Separate OS and data volumes on Cloud VMs
+- Practise restore and rescue paths before you need them
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `No space left on device` | Full filesystem | `df -h`; find with `du`; vacuum journal; rotate logs; extend volume |
-| System won't boot | fstab error, failed unit | Boot rescue; check `journalctl -b -1`; comment bad fstab line |
-| SSH extremely slow | DNS reverse lookup timeout | Set `UseDNS no` in sshd_config; fix DNS or `/etc/hosts` |
-| OOM killer invoked | Memory exhaustion | Identify process with `dmesg`; add swap short-term; fix leak/limit |
-| Load average >> CPU count | I/O wait or uninterruptible sleep | `iostat`, `iotop`; check storage and NFS mounts |
-| Service active but not responding | App hung, port not bound | `ss -tlnp`; check app logs; restart with journal capture |
-| Intermittent failures | Resource limits, timeouts | Check `ulimit -a`, connection pools, cron overlap |
-| High journal disk usage | No retention limits | `journalctl --vacuum-size`; configure `SystemMaxUse` |
-| Deleted files still using space | Process holds open fd | `lsof +L1`; restart service or send HUP to release |
-| After kernel update, boot fails | Incompatible module/driver | Boot previous kernel from GRUB; investigate dkms/modules |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Permission denied | Mode/owner/ACL/MAC | `namei -l`, `id`, `getfacl`, SELinux/AppArmor logs |
+| No route / timeout | Routing, DNS, firewall | `ip route`, `dig`, `ss`, security groups |
+| Service won’t start | Unit/config/deps | `systemctl status`, `journalctl -u`, config `-t` |
+| Disk full | Logs, containers, deleted-open | `df`/`du`, `lsof +L1`, rotate/expand |
+| High load | CPU, I/O wait, thrash | `vmstat`, `iostat`, `ps` |
 
 ## Summary
 
-- Follow reproduce → isolate → collect → hypothesize → fix → document for every incident.
-- USE method (Utilization, Saturation, Errors) applies to CPU, memory, disk, and network resources.
-- Boot issues: check `systemctl --failed`, `journalctl -b`, previous boot logs, and fstab.
-- Full disk: `df`, `du`, journal vacuum, log rotation, and `lsof +L1` for deleted open files.
-- Network and performance problems yield to layered checks — never skip "what changed?" and always collect evidence before rebooting.
+**Troubleshooting Linux Systems** is essential for Cloud and DevOps engineers operating Linux hosts. Practise the lab until the inspection path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-**1. Describe your systematic approach to troubleshooting a down production server.**
+1. How does this topic show up when operating Cloud VMs or Kubernetes nodes?
+2. What would you check first if this area misbehaves in production?
+3. Which modern Linux tools replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI or a cron/timer job?
 
-*Sample answer:* Confirm scope and reproduce. Collect uptime, disk, memory, failed units, and error logs without changing state. Form hypotheses ranked by likelihood and recent changes. Test one fix at a time. Verify recovery and document.
-
-**2. What is the USE method?**
-
-*Sample answer:* For each resource, check Utilization (how busy), Saturation (queueing/waiting), and Errors. Applied to CPU, memory, disk, and network to quickly narrow performance bottlenecks.
-
-**3. A server has load average of 50 but CPU shows 95% idle. What do you investigate?**
-
-*Sample answer:* Likely I/O wait or processes in uninterruptible sleep (D state). Check `top` wa column, `iostat -x`, NFS/storage mounts, and `ps aux` for D state processes.
-
-**4. How do you troubleshoot a full root filesystem?**
-
-*Sample answer:* `df -h` confirms; `du -xh` finds large dirs; check journal with `journalctl --disk-usage`; look for deleted open files with `lsof +L1`; rotate or vacuum logs; extend volume if needed.
-
-**5. How do you investigate why a service failed to start at boot?**
-
-*Sample answer:* `systemctl status UNIT`, `journalctl -u UNIT -b`, check dependencies with `systemctl list-dependencies`, verify config syntax, and review `/etc/fstab` if mount-related.
-
-**6. What commands give you a quick health snapshot?**
-
-*Sample answer:* `uptime`, `free -h`, `df -h`, `systemctl --failed`, `journalctl -b -p err -n 20`, `ss -s`.
-
-**7. Why should you avoid rebooting immediately?**
-
-*Sample answer:* Reboot destroys in-memory state and may rotate logs. Collect evidence first unless the system is unresponsive and reboot is the only recovery option.
-
-**8. How do you view logs from the boot before a crash?**
-
-*Sample answer:* `journalctl --list-boots` then `journalctl -b -1`. Requires persistent journaling enabled in journald.conf.
-
-**9. SSH login takes 30 seconds. What are common causes?**
-
-*Sample answer:* DNS reverse lookup timeout (UseDNS), GSSAPI auth delays, PAM modules, or disk full preventing session file creation. Test with `ssh -vvv`.
-
-**10. What is the first question you ask during any incident?**
-
-*Sample answer:* "What changed?" — recent deployments, config changes, patches, traffic spikes, or certificate expirations usually explain sudden failures.
-
-1. How would you explain troubleshooting linux systems to a junior engineer in two minutes?
-2. What production failure mode appears when teams ignore troubleshooting linux systems?
-3. Which metrics or logs would you check first when troubleshooting linux systems misbehaves?
-4. What is a secure default related to troubleshooting linux systems?
-5. How would you validate a change involving troubleshooting linux systems in CI or a staging environment?
-6. What trade-off would you accept to simplify operations around troubleshooting linux systems?
-7. Describe a common anti-pattern with troubleshooting linux systems and how you fix it.
-8. How does troubleshooting linux systems interact with networking, identity, or storage in a real system?
-9. What would you put on a runbook checklist for troubleshooting linux systems?
-10. When would you intentionally not follow the default approach taught here?
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, then gather host signals (`systemctl --failed`, `df`, `ip`/`ss`, `journalctl`) before making changes. Fix forward with evidence, not guesswork.
 
 ## Related Tutorials
 
-- [Linux – Category Overview](index.md)
-- [Linux Security Hardening Basics](linux-security-hardening-basics.md) *(previous)*
-- [Log Management with journalctl](log-management-journalctl.md)
-- [Linux Networking Essentials](linux-networking-essentials.md)
-- [Disk and Filesystem Management](disk-and-filesystem-management.md)
-- [systemd Service Management](systemd-service-management.md)
-- [Process Management](process-management.md)
-- [Learning Paths – DevOps Engineer](../learning-paths/index.md)
-- Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
-- Interview prep: [Linux Interview Prep](../interview/linux.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
-
-- Module 7: [nginx Web Server and Reverse Proxy](nginx-web-server-and-reverse-proxy.md)
+- [Linux for Cloud & DevOps – Category Overview](index.md)
+- [Containers — Namespaces, cgroups, OverlayFS, and OCI](containers-namespaces-cgroups-and-oci.md) *(previous)*
+- [Production Linux — Hardening and Performance](production-linux-hardening-and-performance.md) *(next)*
+- [Learning Paths](../learning-paths/index.md)
 
 ## References
 
-- [Systems Performance – USE Method (Brendan Gregg)](https://www.brendangregg.com/usemethod.html)
-- [systemd troubleshooting](https://www.freedesktop.org/software/systemd/man/systemd.debug-shell.html)
-- [journalctl man page](https://www.freedesktop.org/software/systemd/man/journalctl.html)
-- [Linux Performance Analysis (Red Hat)](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/monitoring_and_managing_system_status_and_performance/index)
-- [SRE Workbook – Managing Incidents](https://sre.google/sre-book/managing-incidents/)
-- [REBASH Academy – Linux Overview](index.md)
+- [Linux man-pages project](https://www.kernel.org/doc/man-pages/)
+- [systemd documentation](https://systemd.io/)
+- [Filesystem Hierarchy Standard](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
+- Track index: [Linux for Cloud & DevOps Engineers](index.md)
