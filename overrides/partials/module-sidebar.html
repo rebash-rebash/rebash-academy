@@ -1,0 +1,60 @@
+{# Module page left sidebar — module-scoped navigation. #}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% set prefix = c.path_prefix | default('') %}
+{% set nav_items = module_nav if module_nav is defined and module_nav else [] %}
+{% set start_url = module_start_url | default(module.first_tutorial_url if module is defined else prefix) %}
+{% set cta_title = module_sidebar_cta_title | default("Start your journey!") %}
+{% set cta_text = module_sidebar_cta_text | default("Begin with the first lesson in this module.") %}
+{% set cta_label = module_sidebar_cta_label | default("Start Learning") %}
+{% set back_url = module_back_url | default(prefix ~ 'modules/') %}
+{% set back_label = module_back_label | default('Back to Modules') %}
+
+<aside class="ra-sidebar ra-sidebar--module" aria-label="Module navigation" data-mod-sidebar>
+  {% if module_show_back is not defined or module_show_back %}
+  {% if back_url %}
+  <a href="{{ back_url | url }}" class="ra-sidebar__back">
+    <span aria-hidden="true">{{ mdi("arrow-left") }}</span>
+    {{ back_label }}
+  </a>
+  {% endif %}
+  {% endif %}
+
+  <div class="ra-sidebar__brand">
+    <span class="ra-sidebar__logo rebash-brand rebash-brand--{{ c.icon }}" aria-hidden="true">{{ mdi(c.icon) }}</span>
+    <span class="ra-sidebar__title">{{ c.title }}</span>
+  </div>
+
+  <p class="ra-sidebar__section">Module navigation</p>
+  <nav class="ra-sidebar__nav" aria-label="Module navigation">
+    {% for item in nav_items %}
+    {% set raw_href = item.href if item.href is defined else ('#tab-' ~ item.hash) %}
+    {% if '#' in raw_href and not raw_href.startswith('#') %}
+      {% set nav_href = (raw_href.split('#')[0] | url) ~ '#' ~ raw_href.split('#')[1] %}
+    {% elif raw_href.startswith('#') %}
+      {% set nav_href = raw_href %}
+    {% else %}
+      {% set nav_href = raw_href | url %}
+    {% endif %}
+    <a
+      href="{{ nav_href }}"
+      class="ra-sidebar__link{% if item.active %} is-active{% endif %}"
+      {% if item.same_page is not defined or item.same_page %}
+      data-mod-tab-link
+      data-mod-tab="{{ item.hash }}"
+      {% endif %}
+    >
+      <span class="ra-sidebar__icon" aria-hidden="true">{{ mdi(item.icon) }}</span>
+      <span>{{ item.label }}</span>
+    </a>
+    {% endfor %}
+  </nav>
+
+  <div class="ra-sidebar__cta" data-mod-cta>
+    <p class="ra-sidebar__cta-title">{{ cta_title }}</p>
+    <p class="ra-sidebar__cta-text">{{ cta_text }}</p>
+    {% if start_url %}
+    <a href="{{ start_url | url }}" class="ra-btn ra-btn--primary ra-sidebar__cta-btn">{{ cta_label }} →</a>
+    {% endif %}
+  </div>
+</aside>

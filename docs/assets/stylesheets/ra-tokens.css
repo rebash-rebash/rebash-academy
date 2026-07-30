@@ -1,0 +1,126 @@
+/* REBASH Academy — Design tokens (ra-*)
+   Premium engineering education platform. Light-first. */
+
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+
+:root {
+  /* Brand */
+  --ra-accent: #0e7c86;
+  --ra-accent-hover: #0a636b;
+  --ra-accent-soft: #d7f3f5;
+  --ra-accent-ink: #083f44;
+
+  /* Surfaces — light */
+  --ra-bg: #f4f6f8;
+  --ra-surface: #ffffff;
+  --ra-surface-2: #eef2f6;
+  --ra-ink: #0b1220;
+  --ra-ink-muted: #5b6b7c;
+  --ra-border: #d7dee7;
+  --ra-border-strong: #b8c3d0;
+
+  /* Semantic */
+  --ra-success: #15803d;
+  --ra-success-soft: #dcfce7;
+  --ra-warn: #b45309;
+  --ra-warn-soft: #ffedd5;
+  --ra-danger: #b91c1c;
+  --ra-danger-soft: #fee2e2;
+  --ra-info: #1d4ed8;
+  --ra-info-soft: #dbeafe;
+
+  /* Hero / ink plane */
+  --ra-hero-bg: #0b1220;
+  --ra-hero-ink: #e8eef6;
+  --ra-hero-muted: #9aa8b8;
+  --ra-hero-line: rgba(232, 238, 246, 0.12);
+
+  /* Type */
+  --ra-font-display: "Sora", "Source Sans 3", system-ui, sans-serif;
+  --ra-font-body: "Source Sans 3", system-ui, sans-serif;
+  --ra-font-code: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Type scale */
+  --ra-text-xs: 0.75rem;
+  --ra-text-sm: 0.875rem;
+  --ra-text-md: 1rem;
+  --ra-text-lg: 1.125rem;
+  --ra-text-xl: 1.375rem;
+  --ra-text-2xl: 1.75rem;
+  --ra-text-3xl: 2.25rem;
+  --ra-text-4xl: 3rem;
+
+  /* Space */
+  --ra-space-1: 0.25rem;
+  --ra-space-2: 0.5rem;
+  --ra-space-3: 0.75rem;
+  --ra-space-4: 1rem;
+  --ra-space-5: 1.5rem;
+  --ra-space-6: 2rem;
+  --ra-space-7: 3rem;
+  --ra-space-8: 4.5rem;
+
+  /* Layout */
+  --ra-max: 72rem;
+  --ra-read: 48rem;
+  --ra-radius-sm: 0.5rem;
+  --ra-radius-md: 0.75rem;
+  --ra-radius-lg: 1rem;
+  --ra-shadow: 0 1px 2px rgba(11, 18, 32, 0.04), 0 8px 24px rgba(11, 18, 32, 0.06);
+  --ra-header-h: 3.5rem;
+  --ra-ease: 160ms ease;
+
+  /* Bridge Material primary to brand accent */
+  --md-primary-fg-color: var(--ra-accent);
+  --md-primary-fg-color--light: #2ec4ce;
+  --md-primary-fg-color--dark: var(--ra-accent-hover);
+  --md-accent-fg-color: var(--ra-accent);
+  --md-typeset-a-color: var(--ra-accent);
+}
+
+[data-md-color-scheme="slate"] {
+  --ra-bg: #0b0f14;
+  --ra-surface: #121821;
+  --ra-surface-2: #1a222d;
+  --ra-ink: #e8eef6;
+  --ra-ink-muted: #9aa8b8;
+  --ra-border: #2a3442;
+  --ra-border-strong: #3d4a5c;
+  --ra-accent: #2ec4ce;
+  --ra-accent-hover: #5fd4db;
+  --ra-accent-soft: #12353a;
+  --ra-accent-ink: #d7f3f5;
+  --ra-success-soft: #14532d;
+  --ra-warn-soft: #7c2d12;
+  --ra-danger-soft: #7f1d1d;
+  --ra-info-soft: #1e3a8a;
+  --ra-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --md-primary-fg-color: var(--ra-accent);
+  --md-accent-fg-color: var(--ra-accent);
+  --md-typeset-a-color: var(--ra-accent);
+}
+
+html {
+  font-family: var(--ra-font-body);
+  background: var(--ra-bg);
+  color: var(--ra-ink);
+}
+
+body {
+  font-family: var(--ra-font-body);
+  font-size: var(--ra-text-md);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4,
+.ra-display {
+  font-family: var(--ra-font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ra-ink);
+}
+
+code, pre, .md-typeset code {
+  font-family: var(--ra-font-code);
+}

@@ -1,0 +1,6 @@
+nav:
+  - index.md
+  - multi-cloud-landing-zone-patterns.md
+  - kubernetes-production-topology.md
+  - secure-software-delivery-architecture.md
+  - ai-engineering-platform-blueprint.md

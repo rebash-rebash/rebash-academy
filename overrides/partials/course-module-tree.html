@@ -1,0 +1,50 @@
+{# Expandable module tree — each module reveals Overview + its tutorials (lessons). #}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% set active_mod = course_active_module | default(none) %}
+{% set active_lesson = course_active_lesson | default('') %}
+{% set prefix = c.path_prefix | default('') %}
+
+<div class="ch-mod-tree" data-ch-mod-tree role="tree" aria-label="Course modules">
+  {% for module in c.modules %}
+  {% set is_open = active_mod == module.number %}
+  <div
+    class="ch-mod-tree__group{% if is_open %} is-open{% endif %}"
+    role="treeitem"
+    aria-expanded="{{ 'true' if is_open else 'false' }}"
+    data-ch-mod-group
+  >
+    <button
+      type="button"
+      class="ch-mod-tree__toggle{% if is_open %} is-active{% endif %}"
+      data-ch-mod-toggle
+      aria-controls="ch-mod-lessons-{{ module.number }}"
+      aria-expanded="{{ 'true' if is_open else 'false' }}"
+    >
+      <span class="ch-mod-tree__label">Module {{ module.number }} · {{ module.short_title }}</span>
+      <span class="ch-mod-tree__chev" aria-hidden="true">{{ mdi("chevron-right") }}</span>
+    </button>
+    <div
+      class="ch-mod-tree__lessons"
+      id="ch-mod-lessons-{{ module.number }}"
+      role="group"
+      {% if not is_open %}hidden{% endif %}
+    >
+      <a
+        href="{{ (prefix ~ module.url) | url }}"
+        class="ch-mod-tree__lesson{% if is_open and active_lesson == 'overview' %} is-active{% endif %}"
+      >
+        Overview
+      </a>
+      {% for tutorial in module.tutorials %}
+      <a
+        href="{{ tutorial.url | url }}"
+        class="ch-mod-tree__lesson{% if active_lesson == tutorial.url or active_lesson == tutorial.id %} is-active{% endif %}"
+      >
+        {{ tutorial.title }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>

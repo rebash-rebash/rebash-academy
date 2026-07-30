@@ -1,0 +1,183 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+  <style>
+    body.ls-active .md-sidebar,
+    body.ls-active .md-sidebar--primary,
+    body.ls-active .md-sidebar--secondary,
+    body.ls-active .md-nav--primary,
+    body.ls-active .md-path,
+    body.ls-active .md-footer,
+    body:has(.ls-page) .md-sidebar,
+    body:has(.ls-page) .md-sidebar--primary,
+    body:has(.ls-page) .md-sidebar--secondary,
+    body:has(.ls-page) .md-nav--primary,
+    body:has(.ls-page) .md-path,
+    body:has(.ls-page) .md-footer,
+    body:has(.ls-page) .md-dialog,
+    body:has(.ls-page) label[for="__drawer"],
+    body:has(.ls-page) .md-header__button.md-icon[for="__drawer"] {
+      display: none !important;
+      width: 0 !important;
+      min-width: 0 !important;
+      max-width: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    body.ls-active .md-main__inner,
+    body:has(.ls-page) .md-main__inner {
+      display: block !important;
+      margin: 0 !important;
+      max-width: none !important;
+      grid-template-columns: none !important;
+    }
+    body.ls-active .md-grid,
+    body:has(.ls-page) .md-grid { max-width: none !important; }
+    body.ls-active .md-content,
+    body.ls-active .md-content__inner,
+    body:has(.ls-page) .md-content,
+    body:has(.ls-page) .md-content__inner {
+      margin: 0 !important;
+      padding: 0 !important;
+      max-width: none !important;
+      width: 100% !important;
+    }
+    body.ls-active .md-typeset,
+    body:has(.ls-page) .md-typeset { font-size: 0.9375rem; }
+  </style>
+{% endblock %}
+
+{% block content %}
+  {% set c = course if course is defined else none %}
+  {% set m = module if module is defined else none %}
+  {% set lesson = lesson if lesson is defined else none %}
+  {% set idx = lesson_index if lesson_index is defined else 1 %}
+  {% set total = lesson_total if lesson_total is defined else 1 %}
+  {% set prev = lesson_prev if lesson_prev is defined else none %}
+  {% set nxt = lesson_next if lesson_next is defined else none %}
+
+  {% if c and m and lesson %}
+  {% set description = page.meta.get("description", "") %}
+  {% set difficulty = page.meta.get("difficulty", m.difficulty_label | default("Beginner")) %}
+  {% set read_time = page.meta.get("estimated_time", lesson.estimated_time | default("~30 min")) %}
+  {% set tags = page.meta.get("tags", []) %}
+
+  <div class="ra-shell ls-page">
+    {% include "partials/module-sidebar.html" %}
+
+    <div class="ra-shell__main">
+      <nav class="ra-crumbs" aria-label="Breadcrumb">
+        <a href="{{ 'technologies/' | url }}">Courses</a>
+        <span aria-hidden="true">›</span>
+        <a href="{{ c.path_prefix | url }}">{{ c.title }}</a>
+        <span aria-hidden="true">›</span>
+        <a href="{{ (c.path_prefix ~ 'modules/') | url }}">Modules</a>
+        <span aria-hidden="true">›</span>
+        <a href="{{ (c.path_prefix ~ m.url) | url }}">{{ m.number_label }}. {{ m.short_title }}</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">{{ idx }}. {{ lesson.title }}</span>
+      </nav>
+
+      <header class="ra-lesson-hero">
+        <div class="ra-lesson-hero__top">
+          <div>
+            <p class="ra-page-hero__eyebrow">Lesson {{ idx }} of {{ total }} · Module {{ m.number_label }}</p>
+            <h1 class="ra-course-hero__title">{{ idx }}. {{ lesson.title }}</h1>
+            {% if description %}
+            <p class="ra-course-hero__lead">{{ description }}</p>
+            {% endif %}
+          </div>
+          {% if nxt %}
+          <a href="{{ nxt.url | url }}" class="ra-btn ra-btn--primary">Next lesson →</a>
+          {% elif m.number < c.modules | length %}
+          {% set next_mod = c.modules[m.number] %}
+          <a href="{{ (c.path_prefix ~ next_mod.url) | url }}" class="ra-btn ra-btn--primary">Next module →</a>
+          {% endif %}
+        </div>
+        <ul class="ra-meta-row" aria-label="Lesson details">
+          <li>{{ read_time }}</li>
+          <li><span class="ra-level">{{ difficulty | title }}</span></li>
+          {% for tag in tags[:4] %}
+          <li class="ra-chip">{{ tag }}</li>
+          {% endfor %}
+        </ul>
+      </header>
+
+      <div class="ra-lesson-layout">
+        <article class="ra-lesson__content ls-content md-typeset ra-prose">
+          {{ page.content }}
+        </article>
+
+        <aside class="ra-lesson-aside" aria-label="Lesson tools">
+          <div class="ra-aside-card">
+            <h2 class="ra-aside-card__title">Tutorial structure</h2>
+            <p class="ra-aside-card__lead">Production tutorials aim to cover these sections:</p>
+            <ol class="ra-structure" data-ls-structure>
+              {% set structure = [
+                {"id": "introduction", "label": "Introduction"},
+                {"id": "concepts", "label": "Concepts"},
+                {"id": "architecture", "label": "Architecture"},
+                {"id": "diagrams", "label": "Diagrams"},
+                {"id": "hands-on", "label": "Hands-on"},
+                {"id": "production", "label": "Production scenarios"},
+                {"id": "troubleshooting", "label": "Troubleshooting"},
+                {"id": "best-practices", "label": "Best practices"},
+                {"id": "interview", "label": "Interview prep"},
+              ] %}
+              {% for item in structure %}
+              <li class="ra-structure__item" data-structure="{{ item.id }}">{{ item.label }}</li>
+              {% endfor %}
+            </ol>
+          </div>
+          {% if page.toc %}
+          <div class="ra-aside-card">
+            <h2 class="ra-aside-card__title">On this lesson</h2>
+            <nav class="ra-toc ls-toc" aria-label="On this lesson">
+              {% for toc_item in page.toc %}
+              <a href="{{ toc_item.url }}">{{ toc_item.title }}</a>
+              {% for child in toc_item.children %}
+              <a href="{{ child.url }}" class="ra-toc__child">{{ child.title }}</a>
+              {% endfor %}
+              {% endfor %}
+            </nav>
+          </div>
+          {% endif %}
+        </aside>
+      </div>
+
+      <footer class="ra-pager-nav">
+        {% if prev %}
+        <a class="ra-pager-nav__link" href="{{ prev.url | url }}">
+          <span>← Previous lesson</span>
+          <strong>{{ prev.title }}</strong>
+        </a>
+        {% else %}
+        <a class="ra-pager-nav__link" href="{{ (c.path_prefix ~ m.url) | url }}">
+          <span>← Module overview</span>
+          <strong>{{ m.short_title }}</strong>
+        </a>
+        {% endif %}
+
+        {% if nxt %}
+        <a class="ra-pager-nav__link ra-pager-nav__link--next" href="{{ nxt.url | url }}">
+          <span>Next lesson →</span>
+          <strong>{{ idx + 1 }}. {{ nxt.title }}</strong>
+        </a>
+        {% elif m.number < c.modules | length %}
+        {% set next_mod = c.modules[m.number] %}
+        <a class="ra-pager-nav__link ra-pager-nav__link--next" href="{{ (c.path_prefix ~ next_mod.url) | url }}">
+          <span>Next module →</span>
+          <strong>{{ next_mod.short_title }}</strong>
+        </a>
+        {% endif %}
+      </footer>
+    </div>
+  </div>
+  {% else %}
+    {{ page.content }}
+  {% endif %}
+{% endblock %}
+
+{% block footer %}{% endblock %}

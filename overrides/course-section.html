@@ -1,0 +1,101 @@
+{% extends "main.html" %}
+{% from "partials/rebash-icons.html" import mdi %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin: 0; max-width: none; }
+    .md-content { display: none; }
+    .md-footer { display: none; }
+    .md-sidebar--primary { display: none; }
+    @media screen and (min-width: 60em) { .md-sidebar--secondary { display: none; } }
+  </style>
+
+  {% set c = course if course is defined else none %}
+  {% set meta = course_section_meta if course_section_meta is defined else {} %}
+  {% set items = course_section_items if course_section_items is defined else [] %}
+  {% set count = course_section_count if course_section_count is defined else (items | length) %}
+
+  {% if c %}
+  <div class="ra-shell ch-page">
+    {% include "partials/course-sidebar.html" %}
+
+    <div class="ra-shell__main">
+      <nav class="ra-crumbs" aria-label="Breadcrumb">
+        <a href="{{ 'technologies/' | url }}">Courses</a>
+        <span aria-hidden="true">›</span>
+        <a href="{{ c.path_prefix | url }}">{{ c.title }}</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">{{ meta.title | default("Section") }}</span>
+      </nav>
+
+      <header class="ra-course-hero ra-course-hero--compact">
+        <span class="ra-course-hero__logo" aria-hidden="true">{{ mdi(meta.icon | default("book-open-variant")) }}</span>
+        <div>
+          <h1 class="ra-course-hero__title">{{ meta.title | default("Section") }}</h1>
+          <p class="ra-course-hero__lead">
+            {{ meta.title | default("Resources") }} for the {{ c.title }} course —
+            listed from published academy content for this track.
+          </p>
+          <ul class="ra-meta-row">
+            <li>{{ count }} published</li>
+            <li class="ra-level ra-level--{{ c.difficulty | default('intermediate') }}">{{ c.difficulty_label }}</li>
+          </ul>
+        </div>
+      </header>
+
+      {% if items %}
+      <div class="ra-table-wrap">
+        <table class="ra-table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Title</th>
+              <th scope="col">Description</th>
+              <th scope="col">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.number_label | default(loop.index) }}</td>
+              <td>
+                <a href="{{ item.url | url }}" class="ra-table__title">{{ item.title }}</a>
+              </td>
+              <td>{{ item.description }}</td>
+              <td>{{ item.meta | default(item.status | default("")) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="ra-callout">
+        <p>{{ meta.empty | default("Content for this section is being prepared.") }}</p>
+      </div>
+      {% endif %}
+
+      <p class="ra-course-block__lead" style="margin-top:1.25rem">
+        Browse the wider
+        <a href="{{ (meta.catalog | default('technologies/')) | url }}">{{ meta.catalog_label | default("academy catalog") }}</a>
+        for related material.
+      </p>
+
+      <footer class="ra-pager-nav">
+        <a class="ra-pager-nav__link" href="{{ (c.path_prefix ~ 'modules/') | url }}">
+          <span>← Previous</span>
+          <strong>Modules</strong>
+        </a>
+        <a class="ra-pager-nav__link ra-pager-nav__link--next" href="{{ (c.path_prefix ~ 'labs/') | url }}">
+          <span>Next →</span>
+          <strong>Labs</strong>
+        </a>
+      </footer>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}
