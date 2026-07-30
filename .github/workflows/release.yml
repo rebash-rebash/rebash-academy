@@ -26,7 +26,7 @@ jobs:
 
       - name: Install D2
         run: |
-          curl -fsSL https://d2lang.com/install.sh | sh -s --
+          curl -fsSL https://d2lang.com/install.sh | sh -s -- --prefix "$HOME/.local"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
