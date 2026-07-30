@@ -11,13 +11,15 @@ tags:
 
 # AI for DevOps Engineer
 
+**Duration:** 10–14 weeks · **Difficulty:** intermediate · **Badge:** AI
+{ .ra-facts }
+
 Practical AI for automation — APIs, agents, and DevOps tooling on a solid Python base.
 
-| | |
-|--|--|
-| **Duration** | 10–14 weeks |
-| **Difficulty** | intermediate |
-| **Badge** | AI |
+
+## Complete roadmap
+
+{{ roadmap(["linux", "shell", "python", "git", "ai", "docker", "kubernetes"]) }}
 
 ## Target audience
 
@@ -39,64 +41,6 @@ Emerging automation / AI-ops roles — treat as directional guidance only.
 - Complete earlier phases before later ones when marked ready
 - Prefer the [Getting Started](../../getting-started/index.md) overview if you are new to the academy
 
-## Complete roadmap
-
-<div class="rebash-roadmap-wrap" markdown="0">
-  <nav class="rebash-roadmap" aria-label="Career path roadmap">
-    <div class="rebash-roadmap__canvas">
-      <svg class="rebash-roadmap__path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="rebash-roadmap__stroke" d=""></path>
-        <path class="rebash-roadmap__dash" d=""></path>
-      </svg>
-      <ol class="rebash-roadmap__stops">
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--start"><span>Start</span></li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../linux/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--linux" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Linux</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../shell/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--shell" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Shell Scripting</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../python/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--python" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Python for DevOps</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../git/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--git" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Git</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../ai/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--python" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">AI for DevOps</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../docker/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--docker" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Docker</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../kubernetes/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--k8s" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Kubernetes</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--finish"><span>Finish</span></li>
-      </ol>
-    </div>
-  </nav>
-</div>
 
 
 ## Phases

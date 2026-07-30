@@ -1,47 +1,51 @@
 nav:
   - Home: index.md
-  - Career Paths: career-paths
-  - Technologies:
-    - technologies
+  - Get Started:
     - getting-started
+    - career-paths
+  - DevOps:
     - linux
     - shell
-    - python
     - networking
-    - aws
-    - azure
-    - gcp
+    - python
     - git
-    - gitlab
     - docker
     - kubernetes
     - helm
-    - terraform
-    - ansible
+    - gitlab
     - github-actions
     - jenkins
     - argocd
+    - terraform
+    - ansible
+  - Cloud:
+    - aws
+    - gcp
+    - azure
+  - Security:
+    - devsecops
+    - security
+  - SRE & Observability:
+    - sre
+    - monitoring
     - prometheus
     - grafana
     - loki
     - tempo
     - opentelemetry
-    - monitoring
-    - security
-    - devsecops
+  - Platform & AI:
     - platform-engineering
-    - sre
     - architecture
     - ai
-  - Labs: labs
-  - Quizzes: quizzes
-  - Projects: projects
-  - Capstones: capstones
-  - Cheat Sheets: cheatsheets
-  - Interview Guides: interview
-  - Certifications: certifications
-  - Blog: blog
-  - About:
+  - Practice:
+    - labs
+    - quizzes
+    - projects
+    - capstones
+    - interview
+    - certifications
+  - Extras:
+    - cheatsheets
+    - technologies
+    - blog
     - about
-    - roadmap.md
-    - Learning Paths (legacy): learning-paths

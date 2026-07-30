@@ -11,13 +11,15 @@ tags:
 
 # Site Reliability Engineer
 
+**Duration:** 16–24 weeks · **Difficulty:** advanced · **Badge:** SRE
+{ .ra-facts }
+
 Reliability, observability, incident response, and production operations at scale.
 
-| | |
-|--|--|
-| **Duration** | 16–24 weeks |
-| **Difficulty** | advanced |
-| **Badge** | SRE |
+
+## Complete roadmap
+
+{{ roadmap(["linux", "networking", "python", "git", "kubernetes", "terraform", "gitlab", "prometheus", "grafana", "loki", "tempo", "opentelemetry", "sre"]) }}
 
 ## Target audience
 
@@ -39,100 +41,6 @@ Mid to senior SRE roles — treat as directional guidance only.
 - Complete earlier phases before later ones when marked ready
 - Prefer the [Getting Started](../../getting-started/index.md) overview if you are new to the academy
 
-## Complete roadmap
-
-<div class="rebash-roadmap-wrap" markdown="0">
-  <nav class="rebash-roadmap" aria-label="Career path roadmap">
-    <div class="rebash-roadmap__canvas">
-      <svg class="rebash-roadmap__path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="rebash-roadmap__stroke" d=""></path>
-        <path class="rebash-roadmap__dash" d=""></path>
-      </svg>
-      <ol class="rebash-roadmap__stops">
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--start"><span>Start</span></li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../linux/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--linux" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Linux</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../networking/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--net" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Networking</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../python/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--python" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Python for DevOps</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../git/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--git" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Git</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../kubernetes/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--k8s" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Kubernetes</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../terraform/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--tf" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Terraform</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../gitlab/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--cicd" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">GitLab CI/CD</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../prometheus/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Prometheus</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../grafana/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Grafana</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../loki/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Loki</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../tempo/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Tempo</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../opentelemetry/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">OpenTelemetry</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../sre/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Site Reliability Engineering</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--finish"><span>Finish</span></li>
-      </ol>
-    </div>
-  </nav>
-</div>
 
 
 ## Phases

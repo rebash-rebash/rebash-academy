@@ -18,7 +18,7 @@ Amazon Web Services — compute, storage, networking, IAM, and operations for De
 
 ## Overview
 
-The REBASH Academy **AWS** track is a structured, 20-tutorial curriculum. It sits **immediately after [Networking](../networking/index.md)** in the [DevOps Engineer path](../learning-paths/devops-engineer.md). Labs support a real **Free Tier** account and, where CLI-shaped, **LocalStack / dry-run** alternatives. Every resource you create should be destroyed; create a billing alarm before you launch EC2 or RDS.
+The REBASH Academy **AWS** track is a structured, 20-tutorial curriculum. It sits **immediately after [Networking](../networking/index.md)** in the [DevOps Engineer path](../career-paths/devops-engineer/index.md). Labs support a real **Free Tier** account and, where CLI-shaped, **LocalStack / dry-run** alternatives. Every resource you create should be destroyed; create a billing alarm before you launch EC2 or RDS.
 
 !!! tip "Prerequisites"
     Finish [Linux](../linux/index.md) and [Networking](../networking/index.md) first. [Terraform](../terraform/index.md) is the recommended follow-on to automate what you learn here — it is not required for Module 1.
@@ -26,53 +26,7 @@ The REBASH Academy **AWS** track is a structured, 20-tutorial curriculum. It sit
 !!! warning "Cost hygiene"
     Free Tier has limits. **NAT Gateways**, idle **ALBs**, and **RDS** are common bill surprises. Prefer SSM Session Manager over public SSH, avoid NAT in mandatory labs, and destroy resources at the end of every session.
 
-## Curriculum Plan
-
-<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
-
-<p class="rebash-tree-title">AWS Track</p>
-
-<ul class="rebash-tree">
-  <li>1 · Foundations
-<ul>
-  <li>Introduction to AWS and Global Infrastructure</li>
-  <li>Accounts, Free Tier, Billing, and Cost Hygiene</li>
-  <li>IAM Fundamentals</li>
-  <li>AWS CLI, Credentials, and Profiles</li>
-</ul></li>
-  <li>2 · VPC Networking
-<ul>
-  <li>VPC, Subnets, and Multi-AZ Design</li>
-  <li>Internet Gateways, Routes, and Egress</li>
-  <li>Security Groups and NACLs</li>
-  <li>VPC Endpoints and Private AWS Access</li>
-</ul></li>
-  <li>3 · Compute
-<ul>
-  <li>EC2 Fundamentals</li>
-  <li>User Data, IMDS, and SSM Session Manager</li>
-  <li>EBS Volumes, Snapshots, and Encryption</li>
-</ul></li>
-  <li>4 · Storage
-<ul>
-  <li>S3 Fundamentals</li>
-  <li>S3 Security and Static Hosting</li>
-</ul></li>
-  <li>5 · Edge and Data
-<ul>
-  <li>Elastic Load Balancing (ALB and NLB)</li>
-  <li>Route 53 DNS and Health Checks</li>
-  <li>RDS Fundamentals</li>
-  <li>Auto Scaling Groups and Launch Templates</li>
-</ul></li>
-  <li>6 · Ops and Capstone
-<ul>
-  <li>CloudWatch Metrics, Logs, and Alarms</li>
-  <li>CloudTrail, Config, and Account Guardrails</li>
-  <li>Lambda and Three-Tier Capstone</li>
-</ul></li>
-</ul>
-</figure>
+## Modules and tutorials
 
 ### Module 1 – Foundations
 
@@ -157,4 +111,4 @@ After completing this track, you will be able to:
 - [AWS Interview Prep](../interview/aws.md)
 - [AWS Fundamentals Quiz](../quizzes/aws-fundamentals.md)
 - Labs: [IAM + VPC Triage](../labs/aws-iam-vpc-triage.md) · [SSM + S3](../labs/aws-ssm-s3.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)

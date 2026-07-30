@@ -11,13 +11,15 @@ tags:
 
 # DevSecOps Engineer
 
+**Duration:** 14–20 weeks · **Difficulty:** advanced · **Badge:** Security
+{ .ra-facts }
+
 Shift-left security across containers, Kubernetes, pipelines, and cloud.
 
-| | |
-|--|--|
-| **Duration** | 14–20 weeks |
-| **Difficulty** | advanced |
-| **Badge** | Security |
+
+## Complete roadmap
+
+{{ roadmap(["linux", "docker", "kubernetes", "git", "gitlab", "devsecops", "security", "aws", "terraform"]) }}
 
 ## Target audience
 
@@ -39,76 +41,6 @@ Mid to senior security engineering roles — treat as directional guidance only.
 - Complete earlier phases before later ones when marked ready
 - Prefer the [Getting Started](../../getting-started/index.md) overview if you are new to the academy
 
-## Complete roadmap
-
-<div class="rebash-roadmap-wrap" markdown="0">
-  <nav class="rebash-roadmap" aria-label="Career path roadmap">
-    <div class="rebash-roadmap__canvas">
-      <svg class="rebash-roadmap__path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="rebash-roadmap__stroke" d=""></path>
-        <path class="rebash-roadmap__dash" d=""></path>
-      </svg>
-      <ol class="rebash-roadmap__stops">
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--start"><span>Start</span></li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../linux/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--linux" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Linux</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../docker/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--docker" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Docker</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../kubernetes/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--k8s" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Kubernetes</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../git/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--git" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Git</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../gitlab/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--cicd" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">GitLab CI/CD</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../devsecops/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--sec" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">DevSecOps</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../security/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--sec" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Security</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../aws/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--aws" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">AWS</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../terraform/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--tf" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Terraform</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--finish"><span>Finish</span></li>
-      </ol>
-    </div>
-  </nav>
-</div>
 
 
 ## Phases

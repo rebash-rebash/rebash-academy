@@ -20,62 +20,7 @@ Define, plan, and apply cloud infrastructure as code — from your first `.tf` f
 
 The REBASH Academy **Terraform** track is a structured, 20-tutorial curriculum for DevOps engineers, SREs, and platform teams. Terraform is the industry standard for multi-cloud Infrastructure as Code. Each tutorial includes theory, hands-on labs, HCL walkthroughs, best practices, and interview questions.
 
-!!! tip "Learning Path"
-    Complete [Linux](../linux/index.md) and [Git](../git/index.md) first. [Docker](../docker/index.md) and [Kubernetes](../kubernetes/index.md) help later when you provision clusters and registries with Terraform.
-
-## Curriculum Plan
-
-Modules and tutorials in order. Use the tables below for links, level, and time estimates.
-
-<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
-<p class="rebash-tree-title">Terraform Track</p>
-<ul class="rebash-tree">
-  <li>1 · Foundations
-    <ul>
-      <li>Introduction to Terraform and IaC</li>
-      <li>Installing Terraform and the CLI Workflow</li>
-      <li>HCL Fundamentals — Blocks and Expressions</li>
-      <li>Providers and the Plugin Model</li>
-    </ul>
-  </li>
-  <li>2 · Core Building Blocks
-    <ul>
-      <li>Variables, Locals, and Outputs</li>
-      <li>Resources and Data Sources</li>
-      <li>Dependencies and the Resource Graph</li>
-      <li>Terraform State Fundamentals</li>
-    </ul>
-  </li>
-  <li>3 · Collaboration and Scale
-    <ul>
-      <li>Remote State and Backends</li>
-      <li>Workspaces and Environment Strategies</li>
-      <li>Modules — Creating Reusable Infrastructure</li>
-      <li>Registry Modules and Composition</li>
-    </ul>
-  </li>
-  <li>4 · Language Power Tools
-    <ul>
-      <li>Meta-Arguments — count, for_each, lifecycle</li>
-      <li>Functions, Templates, and Dynamic Blocks</li>
-      <li>Import, Moved, and Safe Refactors</li>
-    </ul>
-  </li>
-  <li>5 · Quality and Security
-    <ul>
-      <li>Format, Validate, and Terraform Test</li>
-      <li>Secrets and Sensitive Values</li>
-      <li>Policy as Code Overview</li>
-    </ul>
-  </li>
-  <li>6 · Production
-    <ul>
-      <li>Terraform in CI/CD Pipelines</li>
-      <li>Production Patterns and Capstone</li>
-    </ul>
-  </li>
-</ul>
-</figure>
+## Modules and tutorials
 
 ### Module 1 – Foundations
 
@@ -155,8 +100,8 @@ After completing this track, you will be able to:
 - [Git](../git/index.md) — version modules and review plans in PRs
 - [Docker](../docker/index.md) — images and registries you may provision
 - [Kubernetes](../kubernetes/index.md) — clusters often managed with Terraform
-- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Career Paths](../career-paths/index.md) — career-shaped roadmaps
 
 - [Terraform Cheat Sheet](../cheatsheets/terraform.md)
 - [Terraform Interview Prep](../interview/terraform.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)

@@ -19,68 +19,7 @@ Understand how data moves across the internet and inside your infrastructure —
 
 The REBASH Academy **Networking** track is a structured, 25-tutorial curriculum for DevOps engineers, SREs, and cloud administrators. Modules 1–6 build fundamentals through cloud networking; **Module 7: Production Network Operations** adds segmentation, DNS change control, load-balancer health checks, firewall canaries, and incident response. Each tutorial includes theory, step-by-step labs, commands, best practices, and interview questions.
 
-!!! tip "Learning Path"
-    Complete the [Linux](../linux/index.md) track first (including Module 7 servers when you can), then continue here as step 2 in the [DevOps Engineer learning path](../learning-paths/index.md).
-
-## Curriculum Plan
-
-Modules and tutorials in order. Use the tables below for links, level, and time estimates.
-
-<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
-
-<p class="rebash-tree-title">Networking Track</p>
-
-<ul class="rebash-tree">
-  <li>1 · Foundations
-<ul>
-  <li>Introduction to Networking</li>
-  <li>OSI and TCP/IP Models</li>
-  <li>IP Addressing and Subnetting</li>
-</ul></li>
-  <li>2 · Data Link &amp; Routing
-<ul>
-  <li>Ethernet, Switching, and VLANs</li>
-  <li>Routing Fundamentals</li>
-  <li>ICMP, ARP, DHCP, and Network Services</li>
-</ul></li>
-  <li>3 · Transport &amp; DNS
-<ul>
-  <li>TCP and UDP Deep Dive</li>
-  <li>DNS Fundamentals</li>
-  <li>DNS Records and Troubleshooting</li>
-</ul></li>
-  <li>4 · Application Layer
-<ul>
-  <li>HTTP, HTTPS, and the Application Layer</li>
-  <li>Firewalls and Access Control</li>
-  <li>Load Balancing Fundamentals</li>
-  <li>Reverse Proxy and Ingress Basics</li>
-</ul></li>
-  <li>5 · Troubleshooting
-<ul>
-  <li>Network Troubleshooting Methodology</li>
-  <li>Packet Analysis (tcpdump / Wireshark)</li>
-</ul></li>
-  <li>6 · Cloud &amp; Advanced
-<ul>
-  <li>Cloud Networking — VPCs and Subnets</li>
-  <li>NAT and Port Forwarding</li>
-  <li>VPN and Tunneling Basics</li>
-  <li>Network Security Hardening</li>
-  <li>Network Automation and Monitoring</li>
-</ul></li>
-  <li>7 · Production Network Operations
-<ul>
-  <li>Network Segmentation and Trust Boundaries</li>
-  <li>Production DNS Operations</li>
-  <li>Load Balancer Operations and Health Checks</li>
-  <li>Firewall Change Control and Production ACLs</li>
-  <li>Network Incident Response and Observability</li>
-</ul></li>
-</ul>
-</figure>
-
-
+## Modules and tutorials
 
 ### Module 1 – Foundations
 
@@ -176,4 +115,4 @@ After completing this track, you will be able to:
 
 - [Networking Cheat Sheet](../cheatsheets/networking.md)
 - [Networking Interview Prep](../interview/networking.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)

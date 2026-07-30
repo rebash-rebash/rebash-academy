@@ -82,13 +82,11 @@ theme:
     - content.tabs.link
     - content.tooltips
     - header.autohide
-    - navigation.footer
     - navigation.instant
     - navigation.instant.progress
     - navigation.path
     - navigation.indexes
-    - navigation.tabs
-    - navigation.tabs.sticky
+    - navigation.sections
     - navigation.top
     - navigation.tracking
     - search.highlight

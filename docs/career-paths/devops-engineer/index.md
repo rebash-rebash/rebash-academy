@@ -11,13 +11,15 @@ tags:
 
 # DevOps Engineer
 
+**Duration:** 20–28 weeks · **Difficulty:** intermediate · **Badge:** Recommended
+{ .ra-facts }
+
 Full-stack platform skills from Linux through CI/CD, containers, Kubernetes, and IaC.
 
-| | |
-|--|--|
-| **Duration** | 20–28 weeks |
-| **Difficulty** | intermediate |
-| **Badge** | Recommended |
+
+## Complete roadmap
+
+{{ roadmap(["linux", "shell", "python", "networking", "git", "docker", "kubernetes", "helm", "terraform", "ansible", "aws", "azure", "gcp", "gitlab", "github-actions", "jenkins", "argocd", "prometheus", "grafana", "loki", "tempo", "opentelemetry", "devsecops", "security", "platform-engineering", "sre", "architecture"]) }}
 
 ## Target audience
 
@@ -39,184 +41,6 @@ Mid to senior DevOps roles — treat as directional guidance only.
 - Complete earlier phases before later ones when marked ready
 - Prefer the [Getting Started](../../getting-started/index.md) overview if you are new to the academy
 
-## Complete roadmap
-
-<div class="rebash-roadmap-wrap" markdown="0">
-  <nav class="rebash-roadmap" aria-label="Career path roadmap">
-    <div class="rebash-roadmap__canvas">
-      <svg class="rebash-roadmap__path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="rebash-roadmap__stroke" d=""></path>
-        <path class="rebash-roadmap__dash" d=""></path>
-      </svg>
-      <ol class="rebash-roadmap__stops">
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--start"><span>Start</span></li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../linux/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--linux" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Linux</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../shell/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--shell" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Shell Scripting</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../python/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--python" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Python for DevOps</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../networking/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--net" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Networking</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../git/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--git" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Git</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../docker/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--docker" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Docker</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../kubernetes/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--k8s" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Kubernetes</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../helm/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--k8s" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Helm</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../terraform/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--tf" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Terraform</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../ansible/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--tf" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Ansible</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../aws/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--aws" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">AWS</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../azure/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--az" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Azure</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../gcp/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--gcp" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Google Cloud</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../gitlab/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--cicd" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">GitLab CI/CD</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../github-actions/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--cicd" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">GitHub Actions</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../jenkins/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--cicd" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Jenkins</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../argocd/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--k8s" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Argo CD</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../prometheus/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Prometheus</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../grafana/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Grafana</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../loki/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Loki</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../tempo/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Tempo</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../opentelemetry/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">OpenTelemetry</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../devsecops/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--sec" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">DevSecOps</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../security/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--sec" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Security</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../platform-engineering/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--prj" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Platform Engineering</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--right">
-          <a class="rebash-roadmap__card" href="../../sre/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--mon" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Site Reliability Engineering</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__stop rebash-roadmap__stop--left">
-          <a class="rebash-roadmap__card" href="../../architecture/">
-            <span class="rebash-roadmap__icon rebash-roadmap__icon--arch" aria-hidden="true"></span>
-            <span class="rebash-roadmap__title">Cloud Architecture</span>
-          </a>
-        </li>
-        <li class="rebash-roadmap__marker rebash-roadmap__marker--finish"><span>Finish</span></li>
-      </ol>
-    </div>
-  </nav>
-</div>
 
 
 ## Phases

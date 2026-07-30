@@ -31,50 +31,7 @@ this curriculum.
     Complete the [Git](../git/index.md) track first — branching, merge requests, and branch protection
     underpin every pipeline trigger. [Docker](../docker/index.md) becomes essential from Module 3 onward.
 
-## Curriculum Plan
-
-<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
-
-<p class="rebash-tree-title">GitLab CI/CD Track</p>
-
-<ul class="rebash-tree">
-  <li>1 · Foundations
-<ul>
-  <li>Introduction to CI/CD and Delivery Models</li>
-  <li>Pipeline Anatomy — Stages, Jobs, and Artifacts</li>
-  <li>GitLab CI Fundamentals</li>
-  <li>GitLab Merge Requests and Pipeline Triggers</li>
-</ul></li>
-  <li>2 · Runners and Configuration
-<ul>
-  <li>GitLab Runners and Executors</li>
-  <li>GitLab Runner Tags and Scaling</li>
-  <li>Variables, Secrets, and Credentials</li>
-  <li>Triggers, Rules, and Branch Protection</li>
-</ul></li>
-  <li>3 · Build and Quality
-<ul>
-  <li>Building Docker Images in CI</li>
-  <li>Testing, Reports, and Quality Gates</li>
-  <li>Artifacts, Caches, and Dependencies</li>
-  <li>Parallelism, Matrix, and Pipeline DAGs</li>
-</ul></li>
-  <li>4 · Secure Pipelines
-<ul>
-  <li>Least-Privilege CI Identities</li>
-  <li>Security Scanning in Pipelines</li>
-  <li>Secret Detection and Supply Chain Basics</li>
-  <li>Protected Environments and Approvals</li>
-</ul></li>
-  <li>5 · Deploy and Capstone
-<ul>
-  <li>GitLab Deployment Patterns</li>
-  <li>Kubernetes Deploys from CI</li>
-  <li>GitLab CI Production Patterns</li>
-  <li>CI/CD Capstone and Terraform Handoff</li>
-</ul></li>
-</ul>
-</figure>
+## Modules and tutorials
 
 ### Module 1 – Foundations
 
@@ -153,7 +110,7 @@ After completing this track, you will be able to:
 - [Kubernetes](../kubernetes/index.md) — deploy targets from Module 5
 - [Terraform](../terraform/index.md) — [Terraform in CI/CD Pipelines](../terraform/terraform-in-ci-cd-pipelines.md) after the capstone
 - [AWS](../aws/index.md) — cloud OIDC roles and deployment targets
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
 
 ## Labs, Quiz, and Cheatsheet
 

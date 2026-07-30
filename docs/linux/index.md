@@ -16,13 +16,13 @@ comments: false
 
 # Linux for Cloud & DevOps Engineers
 
+**Duration:** 8–10 weeks (≈ 45–60 hours contact time at a professional pace)
+{ .ra-facts }
+
 A production-focused Linux course for administering, troubleshooting, automating, and operating Linux systems used in Cloud, DevOps, Platform Engineering, and SRE — practical engineering, not certification-only knowledge.
 
 !!! tip "Course status"
     **Track ready** — **16 modules · 25 tutorials**, labs, quiz, cheat sheet, interview prep, and projects. Start with [Linux Fundamentals — Distributions and Architecture](linux-fundamentals-distributions-and-architecture.md).
-
-!!! tip "Learning path"
-    Linux is step 1 on the [DevOps Engineer path](../learning-paths/devops-engineer.md). Next: [Shell Scripting](../shell/index.md) → [Python for DevOps](../python/index.md) → Networking. Dedicated path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md).
 
 ---
 
@@ -49,10 +49,6 @@ None beyond basic computer knowledge. A disposable Ubuntu 22.04/24.04 (or Rocky/
 | `sudo` user | Not daily root |
 | Snapshots | Before storage/security labs |
 
-### Duration
-
-**8–10 weeks** (≈ 45–60 hours contact time at a professional pace).
-
 ### Capstone outcomes
 
 Administer servers · troubleshoot production · secure environments · optimise performance · support Kubernetes nodes · operate cloud VMs · automate admin tasks · prepare hosts for DevOps/Platform work.
@@ -71,23 +67,7 @@ Administer servers · troubleshoot production · secure environments · optimise
 
 ---
 
-## 2. Learning path
-
-```text
-M1 Fundamentals → M2 CLI → M3 Filesystem → M4 Users/Permissions
-        ↓
-M5 Text → M6 Processes → M7 Services/Boot → M8 Storage
-        ↓
-M9 Networking → M10 Packages → M11 Scheduling → M12 Logging/Monitoring
-        ↓
-M13 Security → M14 Containers/Cloud → M15 Troubleshooting → M16 Production
-        ↓
-Projects → Capstone → Shell Scripting track
-```
-
----
-
-## 3. Modules and tutorials
+## 2. Modules and tutorials
 
 ### Module 1 — Linux Fundamentals
 
@@ -228,7 +208,7 @@ Projects → Capstone → Shell Scripting track
 
 ---
 
-## 4. Practice
+## 3. Practice
 
 ### Labs
 
@@ -262,12 +242,6 @@ Projects → Capstone → Shell Scripting track
 
 ---
 
-## 5. D2 diagrams
-
-Architecture · Boot process · Filesystem / links · Permission model · Process lifecycle · Storage layout · Networking stack · systemd · Container internals — under `docs/assets/d2/linux-*.d2`.
-
----
-
 ## Start here
 
 1. [Linux Fundamentals — Distributions and Architecture](linux-fundamentals-distributions-and-architecture.md)
@@ -276,7 +250,6 @@ Architecture · Boot process · Filesystem / links · Permission model · Proces
 
 ## Related
 
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
 - Next: [Shell Scripting](../shell/index.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
 - [Getting Started](../getting-started/index.md)

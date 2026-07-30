@@ -16,13 +16,13 @@ comments: false
 
 # Shell Scripting for DevOps Engineers
 
+**Duration:** 6–8 weeks (≈ 30–45 hours contact time)
+{ .ra-facts }
+
 Practical Bash for Linux administration, cloud automation, DevOps, and Platform Engineering — real-world automation, not academic scripting.
 
 !!! tip "Course status"
     **Track ready** — **18 modules · 18 tutorials**, labs, quiz, cheat sheet, interview prep, and projects. Start with [Shell Fundamentals — Bash vs sh and Execution](shell-fundamentals-bash-vs-sh-and-execution.md).
-
-!!! tip "Learning path"
-    Take this course **after** [Linux](../linux/index.md), then continue to [Python for DevOps](../python/index.md). Shell remains the launcher; Python owns structured apps and SDKs.
 
 ---
 
@@ -40,10 +40,6 @@ Linux Administrator · DevOps · Cloud · Platform · SRE · DevSecOps · Infras
 
 - [Linux Fundamentals](../linux/index.md) (Modules 1–4 recommended)
 - Bash 4.2+ on Linux (WSL2/VM/cloud)
-
-### Duration
-
-**6–8 weeks** (≈ 30–45 hours contact time).
 
 ### Capstone outcomes
 
@@ -250,12 +246,6 @@ Browse **Labs → Shell Scripting** in the sidebar, or:
 
 ---
 
-## 4. D2 diagrams
-
-Shell Execution Flow · Script Lifecycle · I/O Redirection · Process Pipeline · Cron Execution · Automation Workflow — under `docs/assets/d2/shell-*.d2`.
-
----
-
 ## Start here
 
 1. [Shell Fundamentals — Bash vs sh and Execution](shell-fundamentals-bash-vs-sh-and-execution.md)
@@ -266,6 +256,6 @@ Shell Execution Flow · Script Lifecycle · I/O Redirection · Process Pipeline 
 
 - Prerequisite: [Linux](../linux/index.md)
 - Next: [Python for DevOps](../python/index.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
 - [Getting Started](../getting-started/index.md)
 - [Labs](../labs/index.md)

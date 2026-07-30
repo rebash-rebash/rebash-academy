@@ -7,17 +7,29 @@ category: home
 tags:
   - home
   - academy
-template: home.html
-hide:
-  - navigation
-  - toc
 ---
+
+<div class="ra-hero" markdown>
+
+<img src="assets/images/logo.svg" alt="" class="ra-hero__logo" width="96" height="96">
+
+<div class="ra-hero__body" markdown>
 
 # REBASH Academy
 
-Master Cloud, DevOps, Kubernetes, and Platform Engineering through structured, hands-on learning.
+**Master Cloud, DevOps, Kubernetes, and Platform Engineering** through structured, hands-on learning.
 
-REBASH Academy is an open learning platform for practical cloud engineering. Follow a career path or browse by technology — then learn with production-focused tutorials, labs, and projects you can show in an interview.
+Follow a career path or browse by technology — production-focused tutorials, labs, and projects you can show in an interview. Free and open source.
+
+<div class="ra-cta" markdown>
+[Start learning](getting-started/index.md){ .md-button .md-button--primary }
+[Browse career paths](career-paths/index.md){ .md-button }
+[Browse technologies](linux/index.md){ .md-button }
+</div>
+
+</div>
+
+</div>
 
 | You get | |
 |---------|--|
@@ -28,11 +40,11 @@ REBASH Academy is an open learning platform for practical cloud engineering. Fol
 | Interview preparation | Themes per technology |
 | Certification support | Practical study mapped to common exams |
 
-<p class="rebash-home-cta" markdown="0">
-  <a class="rebash-cta rebash-cta--primary" href="getting-started/">Start learning</a>
-  <a class="rebash-cta rebash-cta--secondary" href="career-paths/">Browse career paths</a>
-  <a class="rebash-cta rebash-cta--secondary" href="linux/">Browse technologies</a>
-</p>
+!!! note
+
+    REBASH Academy is a free, open-source learning platform. Tutorials, labs, and projects are
+    production-focused — you learn the way real platform teams work. Pick a career path from the
+    menu on the left, or jump straight into a technology track.
 
 ## Who this is for
 
@@ -225,12 +237,11 @@ REBASH Academy is **open source**. You can report issues, request features, impr
 
 ## Ready to start your Cloud and DevOps journey?
 
-<p class="rebash-home-cta" markdown="0">
-  <a class="rebash-cta rebash-cta--primary" href="getting-started/">Start learning</a>
-  <a class="rebash-cta rebash-cta--secondary" href="career-paths/">Browse career paths</a>
-  <a class="rebash-cta rebash-cta--secondary" href="linux/">Browse technologies</a>
-  <a class="rebash-cta rebash-cta--secondary" href="labs/">Explore labs</a>
-  <a class="rebash-cta rebash-cta--secondary" href="projects/">View projects</a>
-</p>
+<div class="ra-cta" markdown>
+[Start learning](getting-started/index.md){ .md-button .md-button--primary }
+[Browse career paths](career-paths/index.md){ .md-button }
+[Explore labs](labs/index.md){ .md-button }
+[View projects](projects/index.md){ .md-button }
+</div>
 
 New here? Read **[Getting Started](getting-started/index.md)** first, then pick the [Beginner](career-paths/beginner/index.md) or [DevOps Engineer](career-paths/devops-engineer/index.md) path.

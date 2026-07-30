@@ -7,18 +7,604 @@
   --rebash-grey-light: #f5f5f5;
 }
 
-/* Sidebar sections: collapsed by default, chevron indicates expand */
+/* Typography — bold dark page title, large regular section headings
+   (kubernetes.io-style hierarchy) */
+.md-typeset h1 {
+  color: var(--md-default-fg-color);
+  font-weight: 700;
+  font-size: 2.2em;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.2em;
+}
+
+.md-typeset h2 {
+  color: var(--md-default-fg-color);
+  font-weight: 400;
+  font-size: 1.75em;
+  letter-spacing: -0.01em;
+}
+
+.md-typeset h3 {
+  color: var(--md-default-fg-color);
+  font-weight: 600;
+  font-size: 1.25em;
+}
+
+.md-typeset h4 {
+  font-weight: 700;
+}
+
+/* Code blocks — minimal light panel (GitHub-like) */
+[data-md-color-scheme="default"] {
+  --md-code-bg-color: #f6f8fa;
+  --md-code-fg-color: #1f2328;
+}
+
+.md-typeset pre > code {
+  border: 1px solid #e1e4e8;
+  border-radius: 0.25rem;
+  padding: 1em 1.2em;
+}
+
+[data-md-color-scheme="slate"] .md-typeset pre > code {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+/* Inline code: same soft panel, no border */
+.md-typeset code {
+  border-radius: 0.2rem;
+}
+
+/* Admonitions — flat panel with solid left bar (kubernetes.io-like).
+   Per-type accent colours come from Material's own border-color rules. */
+.md-typeset .admonition,
+.md-typeset details {
+  border-width: 0;
+  border-left-width: 0.2rem;
+  border-left-style: solid;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: #f2f6f9;
+  padding: 0.7rem 1rem;
+  font-size: 0.75rem;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition,
+[data-md-color-scheme="slate"] .md-typeset details {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  background-color: transparent !important;
+  margin: 0;
+  margin-inline: 0;
+  padding: 0;
+  padding-block: 0;
+  padding-inline: 0;
+  font-weight: 700;
+  border: none;
+}
+
+[dir="ltr"] .md-typeset .admonition-title,
+[dir="rtl"] .md-typeset .admonition-title {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+[dir="ltr"] .md-typeset summary {
+  padding-left: 0;
+  padding-right: 1.8rem;
+}
+
+[dir="rtl"] .md-typeset summary {
+  padding-right: 0;
+  padding-left: 1.8rem;
+}
+
+.md-typeset .admonition-title + * {
+  margin-top: 0.3em;
+}
+
+/* Hide the admonition icon; keep the chevron on collapsible blocks */
+.md-typeset .admonition-title::before,
+.md-typeset summary::before {
+  display: none;
+}
+
+.md-typeset summary {
+  padding-right: 1.8rem;
+}
+
+.md-typeset .admonition > :last-child,
+.md-typeset details > :last-child {
+  margin-bottom: 0;
+}
+
+/* Serpentine career-path roadmap (3-column snake with brand-icon nodes) */
+.ra-roadmap {
+  margin: 1.5rem 0;
+}
+
+.ra-roadmap .rebash-roadmap__canvas {
+  position: relative;
+  width: 100%;
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 0.75rem 0;
+}
+
+.md-typeset .ra-roadmap ol.rebash-roadmap__stops {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: dense;
+  gap: 2.4rem 0.75rem;
+}
+
+.ra-roadmap .rebash-roadmap__stops > li:nth-child(6n + 1) { grid-column: 1; }
+.ra-roadmap .rebash-roadmap__stops > li:nth-child(6n + 2) { grid-column: 2; }
+.ra-roadmap .rebash-roadmap__stops > li:nth-child(6n + 3) { grid-column: 3; }
+.ra-roadmap .rebash-roadmap__stops > li:nth-child(6n + 4) { grid-column: 3; }
+.ra-roadmap .rebash-roadmap__stops > li:nth-child(6n + 5) { grid-column: 2; }
+.ra-roadmap .rebash-roadmap__stops > li:nth-child(6n)     { grid-column: 1; }
+
+.md-typeset a.ra-roadmap__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--md-default-fg-color);
+  text-decoration: none !important;
+}
+
+.ra-roadmap .ra-roadmap__circle {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.md-typeset a.ra-roadmap__node:hover .ra-roadmap__circle,
+.md-typeset a.ra-roadmap__node:focus-visible .ra-roadmap__circle {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
+
+.ra-roadmap .ra-roadmap__circle svg {
+  width: 1.8rem;
+  height: 1.8rem;
+  fill: currentColor;
+}
+
+.ra-roadmap__label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  max-width: 8rem;
+}
+
+/* Connector: single thin line instead of the old band + dashes */
+.ra-roadmap .rebash-roadmap__stroke {
+  stroke: color-mix(in srgb, var(--md-default-fg-color) 25%, transparent);
+  stroke-width: 1.5;
+}
+
+.ra-roadmap .rebash-roadmap__dash {
+  display: none;
+}
+
+[data-md-color-scheme="slate"] .ra-roadmap .ra-roadmap__circle {
+  background: var(--md-default-bg-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Course flow — vertical stepper with a stage badge and topic chips */
+.ra-flow {
+  margin: 1rem 0 1.5rem;
+}
+
+.md-typeset .ra-flow ol.ra-flow__stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.md-typeset .ra-flow .ra-flow__stage {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0 0 1rem;
+}
+
+.ra-flow .ra-flow__stage:last-child {
+  padding-bottom: 0;
+}
+
+/* Rail connecting the stage badges */
+.ra-flow .ra-flow__stage::before {
+  content: "";
+  position: absolute;
+  left: 1.9rem;
+  top: 0.6rem;
+  bottom: -0.6rem;
+  width: 2px;
+  background: var(--md-default-fg-color--lightest);
+}
+
+.ra-flow .ra-flow__stage:last-child::before {
+  display: none;
+}
+
+.ra-flow__badge {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 3.8rem;
+  text-align: center;
+  padding: 0.2rem 0.3rem;
+  border-radius: 0.9rem;
+  background: #1976d2;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.ra-flow__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.25rem;
+  padding-top: 0.05rem;
+}
+
+.ra-flow__chip {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 1rem;
+  background: var(--md-code-bg-color);
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ra-flow__arrow {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.7rem;
+  font-weight: 700;
+  user-select: none;
+}
+
+[data-md-color-scheme="slate"] .ra-flow__badge {
+  background: #42a5f5;
+  color: #0d1b2a;
+}
+
+/* Tables — full-width, soft header band, rounded frame, zebra + hover rows */
+.md-typeset .md-typeset__table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.md-typeset .md-typeset__table table:not([class]) {
+  display: table;
+  width: 100%;
+  margin: 0;
+  font-size: 0.7rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.4rem;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: #f2f6f9;
+  color: var(--md-default-fg-color);
+  font-weight: 700;
+  padding: 0.7em 1em;
+}
+
+.md-typeset table:not([class]) td {
+  padding: 0.6em 1em;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  vertical-align: middle;
+}
+
+.md-typeset table:not([class]) tbody tr:nth-child(even) {
+  background-color: color-mix(in srgb, var(--md-default-fg-color) 2%, transparent);
+}
+
+.md-typeset table:not([class]) tbody tr:hover {
+  background-color: color-mix(in srgb, #1976d2 6%, transparent);
+  box-shadow: none;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) tbody tr:hover {
+  background-color: rgba(66, 165, 245, 0.08);
+}
+
+/* Facts line (Duration · Difficulty · Badge) tight under the page title */
+.md-typeset h1 + .ra-facts {
+  margin-top: -1.6em;
+  font-size: 0.7rem;
+  color: var(--md-default-fg-color--light);
+}
+
+/* Header — slightly taller bar with quick links (About / Blog / Contact) */
+.md-header__inner {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.rebash-header-links {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-right: 0.5rem;
+}
+
+.rebash-header-links a {
+  color: var(--md-primary-bg-color);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.2rem;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.rebash-header-links a:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* On small screens the drawer menu covers navigation — hide quick links */
+@media screen and (max-width: 44.9375em) {
+  .rebash-header-links {
+    display: none;
+  }
+}
+
+/* Breadcrumbs — ancestor links highlighted, current page muted */
+.md-path .md-path__link {
+  color: #1976d2;
+}
+
+.md-path .md-path__link:hover {
+  color: #1259a5;
+  text-decoration: underline;
+}
+
+.md-path .md-path__item:last-child .md-path__link {
+  color: var(--md-default-fg-color--light);
+  pointer-events: none;
+}
+
+[data-md-color-scheme="slate"] .md-path .md-path__link {
+  color: #64b5f6;
+}
+
+[data-md-color-scheme="slate"] .md-path .md-path__item:last-child .md-path__link {
+  color: var(--md-default-fg-color--light);
+}
+
+/* Ambient cloud-AI background — faint fixed glows behind every page.
+   Content surfaces (code, tables, admonitions) stay solid for readability. */
+body {
+  background-color: var(--md-default-bg-color);
+  background-image:
+    radial-gradient(42rem 30rem at 10% -6%, rgba(25, 118, 210, 0.07), transparent 62%),
+    radial-gradient(38rem 28rem at 96% 4%, rgba(0, 172, 193, 0.06), transparent 62%),
+    radial-gradient(46rem 34rem at 52% 112%, rgba(124, 77, 255, 0.05), transparent 62%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+body[data-md-color-scheme="slate"] {
+  background-image:
+    radial-gradient(42rem 30rem at 10% -6%, rgba(66, 165, 245, 0.1), transparent 62%),
+    radial-gradient(38rem 28rem at 96% 4%, rgba(0, 188, 212, 0.07), transparent 62%),
+    radial-gradient(46rem 34rem at 52% 112%, rgba(149, 117, 205, 0.08), transparent 62%);
+}
+
+/* Home hero — logo beside title on a soft branded gradient panel */
+.md-typeset .ra-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  margin: 0.4rem 0 1.6rem;
+  padding: 1.5rem 1.7rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.6rem;
+  background:
+    radial-gradient(ellipse at top right, rgba(25, 118, 210, 0.1), transparent 55%),
+    linear-gradient(135deg, rgba(25, 118, 210, 0.06), rgba(0, 172, 193, 0.04) 60%, transparent);
+}
+
+.md-typeset .ra-hero__logo {
+  flex: 0 0 auto;
+  width: 5.2rem;
+  height: auto;
+  filter: drop-shadow(0 6px 14px rgba(25, 118, 210, 0.3));
+}
+
+.md-typeset .ra-hero__body > h1 {
+  margin: 0 0 0.45em;
+}
+
+.md-typeset .ra-hero__body > p {
+  margin: 0.35em 0;
+}
+
+.md-typeset .ra-hero__body > p:first-of-type {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.md-typeset .ra-hero__body .ra-cta {
+  margin: 0.9rem 0 0;
+}
+
+.md-typeset .ra-hero .md-button {
+  padding: 0.45em 1.2em;
+  font-size: 0.64rem;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .md-typeset .ra-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
+}
+
+[data-md-color-scheme="slate"] .md-typeset .ra-hero {
+  background:
+    radial-gradient(ellipse at top right, rgba(66, 165, 245, 0.12), transparent 55%),
+    linear-gradient(135deg, rgba(66, 165, 245, 0.08), transparent 65%);
+}
+
+/* Call-to-action button row (home page ending) */
+.md-typeset .ra-cta {
+  margin: 1rem 0;
+}
+
+.md-typeset .ra-cta p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.md-typeset .ra-cta .md-button {
+  margin: 0;
+}
+
+/* Sidebar sections: collapsed by default, solid expander triangle on the
+   left of the label (kubernetes.io-style) instead of a right chevron */
 .md-nav__item--nested > .md-nav__toggle ~ label.md-nav__link {
   cursor: pointer;
   font-weight: 600;
+  justify-content: flex-start;
+  gap: 0.35rem;
 }
 
-.md-nav__item--nested > .md-nav__toggle ~ label.md-nav__link .md-nav__icon {
+.md-nav__item--nested > .md-nav__toggle ~ label.md-nav__link .md-nav__icon,
+.md-nav__item--nested > .md-nav__toggle ~ .md-nav__container label.md-nav__link .md-nav__icon {
+  order: -1;
+  float: none;
+  flex: 0 0 auto;
+  width: 0;
+  height: 0;
+  margin: 0;
+  margin-inline: 0;
+  border-left: 0.3rem solid currentColor;
+  border-top: 0.24rem solid transparent;
+  border-bottom: 0.24rem solid transparent;
+  border-right: 0;
   transition: transform 0.15s ease;
 }
 
-.md-nav__item--nested > .md-nav__toggle:checked ~ label.md-nav__link .md-nav__icon {
+.md-nav__item--nested > .md-nav__toggle ~ label.md-nav__link .md-nav__icon::after,
+.md-nav__item--nested > .md-nav__toggle ~ .md-nav__container label.md-nav__link .md-nav__icon::after {
+  display: none;
+}
+
+.md-nav__item--nested > .md-nav__toggle:checked ~ label.md-nav__link .md-nav__icon,
+.md-nav__item--nested > .md-nav__toggle:checked ~ .md-nav__container label.md-nav__link .md-nav__icon {
   transform: rotate(90deg);
+}
+
+/* Index-page items: toggle label moves to the left of the title link */
+.md-nav__item--nested > .md-nav__toggle ~ .md-nav__container {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.md-nav__item--nested > .md-nav__toggle ~ .md-nav__container > label.md-nav__link {
+  order: -1;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+}
+
+/* Sidebar section headers: bigger, bold, coloured, with a colourful icon
+   hanging slightly into the left gutter so titles align with menu items */
+.md-nav--primary .md-nav__item--section > label.md-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #283593;
+}
+
+[data-md-color-scheme="slate"] .md-nav--primary .md-nav__item--section > label.md-nav__link {
+  color: #9fa8da;
+}
+
+.rebash-nav-section-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  margin-left: -0.7rem;
+}
+
+/* Room for the hanging section icons so they never clip at the edge */
+.md-sidebar--primary .md-nav--primary > .md-nav__list {
+  padding-left: 0.8rem;
+}
+
+.rebash-nav-section-icon svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+/* Align all sidebar titles at the same column: plain links get padding
+   equal to the expander triangle (0.3rem) plus its gap (0.35rem) */
+.md-nav--primary a.md-nav__link {
+  padding-left: 0.65rem;
+}
+
+/* Links that already sit after a reordered toggle label need no extra pad */
+.md-nav--primary .md-nav__container > a.md-nav__link {
+  padding-left: 0;
+}
+
+/* Keep sidebar scrollbars neutral grey (no blue accent while scrolling) */
+.md-sidebar__scrollwrap:hover,
+.md-sidebar__scrollwrap:focus-within {
+  scrollbar-color: var(--md-default-fg-color--lighter) #0000;
+}
+
+.md-sidebar__scrollwrap::-webkit-scrollbar-thumb:hover,
+.md-sidebar__scrollwrap:hover::-webkit-scrollbar-thumb,
+.md-sidebar__scrollwrap:focus-within::-webkit-scrollbar-thumb {
+  background-color: var(--md-default-fg-color--lighter);
+}
+
+/* Divider lines between the sidebars and the page body */
+@media screen and (min-width: 76.25em) {
+  .md-content {
+    border-left: 1px solid var(--md-default-fg-color--lightest);
+    border-right: 1px solid var(--md-default-fg-color--lightest);
+  }
 }
 
 /* Hero Section */

@@ -16,7 +16,7 @@ log = logging.getLogger("mkdocs.hooks.render_d2_svg")
 ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / ".cache" / "d2"
 # Bump when render settings change so stale cache is ignored.
-CACHE_VERSION = "v7-svg-intrinsic-size"
+CACHE_VERSION = "v8-sketch"
 D2_FENCE = re.compile(r"```d2\s*\n(.*?)```", re.DOTALL)
 
 # Flagship theme; dagre with wider node/edge separation for clean arrows.
@@ -202,6 +202,7 @@ def _render_svg(source: str, salt: str) -> str | None:
         for layout_flags in attempts:
             command = [
                 d2_bin,
+                "--sketch",
                 f"--theme={D2_THEME}",
                 f"--dark-theme={D2_DARK_THEME}",
                 *layout_flags,

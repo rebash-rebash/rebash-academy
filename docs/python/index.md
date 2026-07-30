@@ -16,13 +16,13 @@ comments: false
 
 # Python for DevOps Engineers
 
+**Duration:** 8–10 weeks (≈ 55–75 hours contact time)
+{ .ra-facts }
+
 Practical Python for Cloud, DevOps, Platform Engineering, and SRE — **not** a general programming degree. Build production-ready automation for Linux, APIs, cloud, containers, Kubernetes, Terraform, and CI/CD.
 
 !!! tip "Course status"
     **Track ready** — **27 modules · 27 tutorials**, 17 labs, quiz, cheat sheet, interview prep, and projects (beginner → expert → capstone). Start with [Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md).
-
-!!! tip "Learning path"
-    Take this course **after** [Linux](../linux/index.md) and [Shell Scripting](../shell/index.md). Dedicated path: [Python for DevOps Engineers](../learning-paths/python-for-devops.md).
 
 ---
 
@@ -51,10 +51,6 @@ DevOps · Cloud · Platform · SRE · DevSecOps · Infrastructure · Automation 
 | Docker / kubectl / Terraform CLI | Platform labs (fixtures if unavailable) |
 | Optional cloud Free Tier | AWS/Azure/GCP inventory labs |
 
-### Duration
-
-**8–10 weeks** (≈ 55–75 hours contact time).
-
 ### Capstone outcomes
 
 Develop production automation · build CLIs · automate Linux · drive cloud/K8s/Docker · CI utilities · package apps · reusable frameworks · software-engineering practices for infra.
@@ -71,19 +67,15 @@ Develop production automation · build CLIs · automate Linux · drive cloud/K8s
 
 ---
 
-## 2. Learning path
+## 2. Course flow
 
-```text
-M1–6 Language & packaging basics
-        ↓
-M7–12 Files, errors, OOP, logging, config, CLIs
-        ↓
-M13–20 Linux, APIs, cloud, Git, Docker, K8s, Terraform, SSH
-        ↓
-M21–27 Concurrency, tests, packaging, production, security, AI, troubleshooting
-        ↓
-Projects → Capstone platform
-```
+{{ course_flow([
+  ["M1–M6", ["Language basics", "Packaging"]],
+  ["M7–M12", ["Files", "Errors", "OOP", "Logging", "Config", "CLIs"]],
+  ["M13–M20", ["Linux", "APIs", "Cloud", "Git", "Docker", "Kubernetes", "Terraform", "SSH"]],
+  ["M21–M27", ["Concurrency", "Tests", "Packaging", "Production", "Security", "AI", "Troubleshooting"]],
+  ["Finish", ["Projects", "Capstone platform"]]
+]) }}
 
 **Academy path:** Linux → Shell Scripting → **Python for DevOps** → Networking → …
 
@@ -274,71 +266,8 @@ Per-tutorial interview banks (5 Q) live inside each tutorial.
 | Production / security | M24–25 | Capstone | M25 | ✓ |
 | AI for ops | M26 | Optional | — | optional |
 
----
-
-## 12. Repository structure
-
-```text
-docs/python/                 # 27 tutorials + index + .pages
-docs/learning-paths/python-for-devops.md
-docs/labs/python-*.md        # 17 labs
-docs/quizzes/python-for-devops-engineers-fundamentals.md
-docs/cheatsheets/python.md
-docs/interview/python.md
-docs/projects/python-*.md
-docs/assets/d2/python-*.d2
-docs/assets/images/python-*.svg
-scripts/generate-python-*.py # generators (if present)
-```
-
----
-
-## 13. MkDocs navigation
-
-`docs/python/.pages` — Modules 1–27 in learning order (see sidebar). Primary nav: Tutorials → Python (after Shell).
-
----
-
-## 14. D2 diagrams
-
-Required: Python Execution Flow · Virtual Environment · Package Architecture · REST API Flow · Kubernetes Client · Docker SDK · Automation Pipeline · Plugin Architecture — under `docs/assets/d2/python-*.d2`.
-
----
-
-## 15. Production engineering themes
-
-Covered across M24–27 and labs: security, automation, monitoring, logging, observability, performance, operational excellence. HA/DR/cost where relevant to automation blast radius (dry-run, least privilege).
-
----
-
-## 16. Implementation backlog
-
-1. [x] Course overview + learning path (course_template § Output)
-2. [x] All 27 module tutorials + D2/SVG
-3. [x] Labs from technology definition
-4. [x] Course fundamentals quiz (40 Q, balanced A–D)
-5. [x] Cheat sheet + interview guide
-6. [x] Projects (beginner → expert → capstone)
-7. [x] Wire `.pages`, Labs sidebar by course, Getting Started / DevOps path
-
-### Next for learners
-
-Start: [Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md)
-
----
-
-## Quality checklist
-
-- [x] Logical progression M1→M27
-- [x] Prerequisites: Linux + Shell
-- [x] Hands-on labs + projects + capstone
-- [x] Interview prep + production/security/automation
-- [x] MkDocs + D2 (no Mermaid)
-- [x] All technology-definition module topics present
-
 ## Related
 
 - Start: [Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md)
-- Path: [Python for DevOps Engineers](../learning-paths/python-for-devops.md)
 - Prerequisites: [Linux](../linux/index.md) · [Shell Scripting](../shell/index.md)
-- [Labs](../labs/index.md) · [DevOps Engineer path](../learning-paths/devops-engineer.md) · [Getting Started](../getting-started/index.md)
+- [Labs](../labs/index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md) · [Getting Started](../getting-started/index.md)

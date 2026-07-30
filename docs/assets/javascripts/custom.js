@@ -42,12 +42,11 @@ function redrawRoadmapCanvas(canvas) {
 
   var points = [];
   stops.forEach(function (stop) {
-    var stopRect = stop.getBoundingClientRect();
     var card = stop.querySelector(".rebash-roadmap__card") || stop;
     var cardRect = card.getBoundingClientRect();
     points.push({
       x: ((cardRect.left + cardRect.width / 2 - rect.left) / rect.width) * 100,
-      y: ((stopRect.top + stopRect.height / 2 - rect.top) / rect.height) * 100
+      y: ((cardRect.top + cardRect.height / 2 - rect.top) / rect.height) * 100
     });
   });
 

@@ -1,11 +1,14 @@
 ---
 title: Blog
 description: "Engineering journal — industry insights, architecture discussions, lessons learned, release notes, and community updates from REBASH Academy."
-template: blog.html
-hide:
-  - toc
 ---
 
 # Blog
 
-Visual engineering journal catalog — rendered by the site theme. Articles will appear in the sidebar as they are published.
+The REBASH Academy engineering journal: industry insights, architecture discussions,
+lessons learned, and release notes.
+
+!!! note
+
+    No articles are published yet. Posts will appear here — in the meantime, the
+    [Architecture Guides](../architecture-guides/index.md) cover design deep dives.

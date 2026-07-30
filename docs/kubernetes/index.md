@@ -20,60 +20,7 @@ Deploy, scale, and operate containerized workloads at cluster scale — from you
 
 The REBASH Academy **Kubernetes** track is a structured, 20-tutorial curriculum for DevOps engineers, SREs, and platform teams. Kubernetes is the standard orchestration layer for containers in production. Each tutorial includes theory, hands-on labs, YAML manifests, best practices, and interview questions.
 
-!!! tip "Learning Path"
-    Complete the [Docker track](../docker/index.md) first — especially [From Docker to Kubernetes](../docker/from-docker-to-kubernetes.md). Linux and networking fundamentals from the [DevOps learning path](../learning-paths/index.md) are strongly recommended.
-
-## Curriculum Plan
-
-Modules and tutorials in order. Use the tables below for links, level, and time estimates.
-
-<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
-
-<p class="rebash-tree-title">Kubernetes Track</p>
-
-<ul class="rebash-tree">
-  <li>1 · Foundations
-<ul>
-  <li>Introduction to Kubernetes &amp; Orchestration</li>
-  <li>Kubernetes Architecture and Components</li>
-  <li>Installing Kubernetes and kubectl</li>
-</ul></li>
-  <li>2 · Workloads
-<ul>
-  <li>kubectl Essentials and Workflows</li>
-  <li>Pods — The Atomic Unit</li>
-  <li>Deployments — Managing Replicated Pods</li>
-</ul></li>
-  <li>3 · Config &amp; Storage
-<ul>
-  <li>Services and Cluster Networking</li>
-  <li>ConfigMaps and Secrets</li>
-  <li>Persistent Volumes and Storage</li>
-</ul></li>
-  <li>4 · Networking
-<ul>
-  <li>Ingress and External Access</li>
-  <li>Namespaces and Resource Management</li>
-  <li>Health Checks — Probes &amp; Self-Healing</li>
-</ul></li>
-  <li>5 · Security
-<ul>
-  <li>RBAC and Kubernetes Security Basics</li>
-  <li>Troubleshooting Kubernetes Workloads</li>
-  <li>Helm — Package Management</li>
-</ul></li>
-  <li>6 · Production
-<ul>
-  <li>GitOps and CI/CD with Kubernetes</li>
-  <li>Production Patterns — HPA, PDB, Affinity</li>
-  <li>Monitoring and Logging in Kubernetes</li>
-  <li>Kubernetes Security Hardening</li>
-  <li>Kubernetes Capstone and Next Steps</li>
-</ul></li>
-</ul>
-</figure>
-
-
+## Modules and tutorials
 
 ### Module 1 – Foundations
 
@@ -138,9 +85,9 @@ By completing this track, you will be able to:
 
 ## Related Sections
 
-Continue to [Terraform](../terraform/index.md) for infrastructure as code, [GitLab CI/CD](../gitlab/index.md) for pipelines, or browse [Learning Paths](../learning-paths/index.md).
+Continue to [Terraform](../terraform/index.md) for infrastructure as code, [GitLab CI/CD](../gitlab/index.md) for pipelines, or browse [Career Paths](../career-paths/index.md).
 
 - [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
 - [Kubernetes Interview Prep](../interview/kubernetes.md)
 - [Kubernetes Fundamentals Quiz](../quizzes/kubernetes-fundamentals.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)

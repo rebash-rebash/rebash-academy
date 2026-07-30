@@ -20,60 +20,7 @@ Build, ship, and run applications in containers — from your first `docker run`
 
 The REBASH Academy **Docker** track is a structured, 20-tutorial curriculum for developers and DevOps engineers. Containers power modern delivery: local dev parity, CI pipelines, and the foundation of Kubernetes. Each tutorial includes theory, hands-on labs, commands, best practices, and interview questions.
 
-!!! tip "Learning Path"
-    Complete [Linux](../linux/index.md), [Networking](../networking/index.md), and [Git](../git/index.md) first — Docker builds directly on those skills.
-
-## Curriculum Plan
-
-Modules and tutorials in order. Use the tables below for links, level, and time estimates.
-
-<figure class="rebash-diagram rebash-tree-diagram" markdown="0">
-
-<p class="rebash-tree-title">Docker Track</p>
-
-<ul class="rebash-tree">
-  <li>1 · Foundations
-<ul>
-  <li>Introduction to Containers and Docker</li>
-  <li>Docker Installation and Setup</li>
-  <li>Docker Architecture and Components</li>
-</ul></li>
-  <li>2 · Images &amp; Dockerfile
-<ul>
-  <li>Running Your First Container</li>
-  <li>Working with Docker Images</li>
-  <li>Building Images with Dockerfile</li>
-</ul></li>
-  <li>3 · Storage &amp; Compose
-<ul>
-  <li>Dockerfile Best Practices &amp; Multi-Stage</li>
-  <li>Volumes and Persistent Storage</li>
-  <li>Docker Compose Fundamentals</li>
-</ul></li>
-  <li>4 · Networking &amp; Registry
-<ul>
-  <li>Docker Networking Fundamentals</li>
-  <li>Container Registries and Distribution</li>
-  <li>Environment Variables and Secrets</li>
-</ul></li>
-  <li>5 · Operations
-<ul>
-  <li>Container Logging and Monitoring</li>
-  <li>Docker Security Hardening</li>
-  <li>Troubleshooting Docker Containers</li>
-</ul></li>
-  <li>6 · Production
-<ul>
-  <li>Docker in CI/CD Pipelines</li>
-  <li>Production Docker Patterns</li>
-  <li>Docker Swarm Orchestration Basics</li>
-  <li>From Docker to Kubernetes</li>
-  <li>Docker Capstone and Next Steps</li>
-</ul></li>
-</ul>
-</figure>
-
-
+## Modules and tutorials
 
 ### Module 1 – Foundations
 
@@ -157,4 +104,4 @@ After completing this track, you will be able to:
 - [Docker Cheat Sheet](../cheatsheets/docker.md)
 - [Docker Interview Prep](../interview/docker.md)
 - [Docker Fundamentals Quiz](../quizzes/docker-fundamentals.md)
-- [DevOps Engineer path](../learning-paths/devops-engineer.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)

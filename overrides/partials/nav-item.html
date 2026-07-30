@@ -2,6 +2,16 @@
   REBASH Academy override: keep tutorial titles clean in the left sidebar.
   Page TOC stays in the right sidebar only — not nested under the active nav item.
 -#}
+{% set section_icons = {
+  "Get Started": ["material/rocket-launch", "#fb8c00"],
+  "DevOps": ["material/infinity", "#1976d2"],
+  "Cloud": ["material/cloud", "#00acc1"],
+  "Security": ["material/security", "#e53935"],
+  "SRE & Observability": ["material/chart-line", "#43a047"],
+  "Platform & AI": ["material/robot", "#8e24aa"],
+  "Practice": ["material/dumbbell", "#f9a825"],
+  "Extras": ["material/bookshelf", "#6d4c41"]
+} %}
 {% macro render_status(nav_item, type) %}
   {% set class = "md-status md-status--" ~ type %}
   {% if config.extra.status and config.extra.status[type] %}
@@ -126,6 +136,11 @@
         {% if not index %}
           {% set tabindex = "0" if not is_section %}
           <label class="md-nav__link" for="{{ path }}" id="{{ path }}_label" tabindex="{{ tabindex }}">
+            {% if is_section and nav_item.title in section_icons %}
+              <span class="rebash-nav-section-icon" style="color: {{ section_icons[nav_item.title][1] }}" aria-hidden="true">
+                {% include ".icons/" ~ section_icons[nav_item.title][0] ~ ".svg" %}
+              </span>
+            {% endif %}
             {{ render_content(nav_item) }}
             <span class="md-nav__icon md-icon"></span>
           </label>

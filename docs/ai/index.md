@@ -32,5 +32,5 @@ AI-assisted operations, automation, and intelligent tooling.
 ## Related
 
 - [Getting Started](../getting-started/index.md) — recommended order for ready content
-- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
+- [Career Paths](../career-paths/index.md) — career-shaped roadmaps
 - [Roadmap](../roadmap.md) — publication plan
