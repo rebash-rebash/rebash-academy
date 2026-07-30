@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Cloud Architecture course."
 technology_id: architecture
 hide:
   - toc
+author: Shaik Basha
+category: architecture
+tags:
+  - architecture
 ---
 
 # Cloud Architecture — FAQ

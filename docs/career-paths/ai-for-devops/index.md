@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - ai-for-devops
+author: Shaik Basha
 ---
 
 # AI for DevOps Engineer

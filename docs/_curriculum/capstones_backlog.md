@@ -1,6 +1,10 @@
 ---
 title: Capstones backlog
 description: Associate through architect capstone backlog for REBASH Academy — ordered by level and career path.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Capstones backlog

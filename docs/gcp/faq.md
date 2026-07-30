@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Google Cloud course."
 technology_id: gcp
 hide:
   - toc
+author: Shaik Basha
+category: gcp
+tags:
+  - gcp
 ---
 
 # Google Cloud — FAQ

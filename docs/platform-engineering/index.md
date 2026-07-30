@@ -1,6 +1,10 @@
 ---
 title: "Platform Engineering"
 description: "Platform Engineering track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: platform-engineering
+tags:
+  - platform-engineering
 ---
 
 # Platform Engineering

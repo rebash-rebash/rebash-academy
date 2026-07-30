@@ -4,6 +4,10 @@ description: "Quizzes for the Networking course — links to the Academy quizzes
 technology_id: networking
 hide:
   - toc
+author: Shaik Basha
+category: networking
+tags:
+  - networking
 ---
 
 # Quizzes

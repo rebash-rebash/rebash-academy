@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Site Reliability Engineering 
 technology_id: sre
 hide:
   - toc
+author: Shaik Basha
+category: sre
+tags:
+  - sre
 ---
 
 # Site Reliability Engineering — FAQ

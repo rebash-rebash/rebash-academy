@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Cloud Architecture course — links to the Ac
 technology_id: architecture
 hide:
   - toc
+author: Shaik Basha
+category: architecture
+tags:
+  - architecture
 ---
 
 # Cheat Sheets

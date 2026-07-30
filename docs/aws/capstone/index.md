@@ -4,6 +4,10 @@ description: "Capstone for the AWS course — links to the Academy capstones cat
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # Capstone

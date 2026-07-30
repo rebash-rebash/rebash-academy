@@ -1,6 +1,10 @@
 ---
 title: Certifications
 description: "Map REBASH Academy tutorials, labs, quizzes, and projects to industry certifications — CKA, Terraform Associate, AWS, RHCSA, and more."
+author: Shaik Basha
+category: certifications
+tags:
+  - certifications
 ---
 
 # Certifications

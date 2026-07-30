@@ -4,6 +4,10 @@ description: "Certification Mapping for the Site Reliability Engineering course 
 technology_id: sre
 hide:
   - toc
+author: Shaik Basha
+category: sre
+tags:
+  - sre
 ---
 
 # Certification Mapping

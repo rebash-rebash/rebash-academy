@@ -4,6 +4,10 @@ description: "Interview Preparation for the OpenTelemetry course — links to th
 technology_id: opentelemetry
 hide:
   - toc
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # Interview Preparation

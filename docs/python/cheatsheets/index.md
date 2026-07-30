@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Python for DevOps course — links to the Aca
 technology_id: python
 hide:
   - toc
+author: Shaik Basha
+category: python
+tags:
+  - python
 ---
 
 # Cheat Sheets

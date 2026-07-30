@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Argo CD course."
 technology_id: argocd
 hide:
   - toc
+author: Shaik Basha
+category: argocd
+tags:
+  - argocd
 ---
 
 # Argo CD — FAQ

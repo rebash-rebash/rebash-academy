@@ -4,6 +4,10 @@ description: "Certification Mapping for the Kubernetes course — links to the A
 technology_id: kubernetes
 hide:
   - toc
+author: Shaik Basha
+category: kubernetes
+tags:
+  - kubernetes
 ---
 
 # Certification Mapping

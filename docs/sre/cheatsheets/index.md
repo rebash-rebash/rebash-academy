@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Site Reliability Engineering course — links
 technology_id: sre
 hide:
   - toc
+author: Shaik Basha
+category: sre
+tags:
+  - sre
 ---
 
 # Cheat Sheets

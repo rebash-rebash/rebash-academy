@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Security course — links to the Academy chea
 technology_id: security
 hide:
   - toc
+author: Shaik Basha
+category: security
+tags:
+  - security
 ---
 
 # Cheat Sheets

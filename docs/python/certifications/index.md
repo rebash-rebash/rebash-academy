@@ -4,6 +4,10 @@ description: "Certification Mapping for the Python for DevOps course — links t
 technology_id: python
 hide:
   - toc
+author: Shaik Basha
+category: python
+tags:
+  - python
 ---
 
 # Certification Mapping

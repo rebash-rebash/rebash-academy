@@ -4,6 +4,10 @@ description: "Capstone for the GitHub Actions course — links to the Academy ca
 technology_id: github-actions
 hide:
   - toc
+author: Shaik Basha
+category: github-actions
+tags:
+  - github-actions
 ---
 
 # Capstone

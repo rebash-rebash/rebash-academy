@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Monitoring course."
 technology_id: monitoring
 hide:
   - toc
+author: Shaik Basha
+category: monitoring
+tags:
+  - monitoring
 ---
 
 # Monitoring — Learning Roadmap

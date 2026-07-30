@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Linux course — links to the Academy cheatsh
 technology_id: linux
 hide:
   - toc
+author: Shaik Basha
+category: linux
+tags:
+  - linux
 ---
 
 # Cheat Sheets

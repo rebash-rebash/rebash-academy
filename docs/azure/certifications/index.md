@@ -4,6 +4,10 @@ description: "Certification Mapping for the Azure course — links to the Academ
 technology_id: azure
 hide:
   - toc
+author: Shaik Basha
+category: azure
+tags:
+  - azure
 ---
 
 # Certification Mapping

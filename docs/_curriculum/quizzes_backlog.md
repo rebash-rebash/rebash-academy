@@ -1,6 +1,10 @@
 ---
 title: Quizzes backlog
 description: Quiz delivery backlog — ordered from beginner foundations to expert assessments.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Quizzes backlog

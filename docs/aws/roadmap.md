@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the AWS course."
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # AWS — Learning Roadmap

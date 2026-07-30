@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Cloud Architecture course."
 technology_id: architecture
 hide:
   - toc
+author: Shaik Basha
+category: architecture
+tags:
+  - architecture
 ---
 
 # Cloud Architecture — Learning Roadmap

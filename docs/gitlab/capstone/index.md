@@ -4,6 +4,10 @@ description: "Capstone for the GitLab CI/CD course — links to the Academy caps
 technology_id: gitlab
 hide:
   - toc
+author: Shaik Basha
+category: gitlab
+tags:
+  - gitlab
 ---
 
 # Capstone

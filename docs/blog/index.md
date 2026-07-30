@@ -1,6 +1,10 @@
 ---
 title: Blog
 description: "Engineering journal — industry insights, architecture discussions, lessons learned, release notes, and community updates from REBASH Academy."
+author: Shaik Basha
+category: blog
+tags:
+  - blog
 ---
 
 # Blog

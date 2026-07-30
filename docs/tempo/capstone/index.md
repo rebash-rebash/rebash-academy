@@ -4,6 +4,10 @@ description: "Capstone for the Tempo course — links to the Academy capstones c
 technology_id: tempo
 hide:
   - toc
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Capstone

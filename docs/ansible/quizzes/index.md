@@ -4,6 +4,10 @@ description: "Quizzes for the Ansible course — links to the Academy quizzes ca
 technology_id: ansible
 hide:
   - toc
+author: Shaik Basha
+category: ansible
+tags:
+  - ansible
 ---
 
 # Quizzes

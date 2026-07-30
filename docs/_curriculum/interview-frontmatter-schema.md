@@ -1,6 +1,10 @@
 ---
 title: Interview frontmatter schema
 description: Required YAML frontmatter and body sections for every REBASH Academy interview guide and question bank.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Interview frontmatter schema

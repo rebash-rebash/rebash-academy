@@ -4,6 +4,10 @@ description: "Capstone for the Cloud Architecture course — links to the Academ
 technology_id: architecture
 hide:
   - toc
+author: Shaik Basha
+category: architecture
+tags:
+  - architecture
 ---
 
 # Capstone

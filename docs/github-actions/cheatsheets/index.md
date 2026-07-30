@@ -4,6 +4,10 @@ description: "Cheat Sheets for the GitHub Actions course — links to the Academ
 technology_id: github-actions
 hide:
   - toc
+author: Shaik Basha
+category: github-actions
+tags:
+  - github-actions
 ---
 
 # Cheat Sheets

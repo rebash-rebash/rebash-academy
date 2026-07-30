@@ -4,6 +4,10 @@ description: "Cheat Sheets for the AWS course — links to the Academy cheatshee
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # Cheat Sheets

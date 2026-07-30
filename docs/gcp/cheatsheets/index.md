@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Google Cloud course — links to the Academy 
 technology_id: gcp
 hide:
   - toc
+author: Shaik Basha
+category: gcp
+tags:
+  - gcp
 ---
 
 # Cheat Sheets

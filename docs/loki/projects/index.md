@@ -4,6 +4,10 @@ description: "Projects for the Loki course — links to the Academy projects cat
 technology_id: loki
 hide:
   - toc
+author: Shaik Basha
+category: loki
+tags:
+  - loki
 ---
 
 # Projects

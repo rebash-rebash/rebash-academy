@@ -1,6 +1,10 @@
 ---
 title: Technologies backlog
 description: Technology tracks, module counts, and delivery status from curriculum.yaml.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Technologies backlog

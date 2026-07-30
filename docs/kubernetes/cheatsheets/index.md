@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Kubernetes course — links to the Academy ch
 technology_id: kubernetes
 hide:
   - toc
+author: Shaik Basha
+category: kubernetes
+tags:
+  - kubernetes
 ---
 
 # Cheat Sheets

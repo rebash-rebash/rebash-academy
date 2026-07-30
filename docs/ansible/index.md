@@ -1,6 +1,10 @@
 ---
 title: "Ansible"
 description: "Ansible track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: ansible
+tags:
+  - ansible
 ---
 
 # Ansible

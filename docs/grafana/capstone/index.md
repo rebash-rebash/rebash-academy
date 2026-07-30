@@ -4,6 +4,10 @@ description: "Capstone for the Grafana course — links to the Academy capstones
 technology_id: grafana
 hide:
   - toc
+author: Shaik Basha
+category: grafana
+tags:
+  - grafana
 ---
 
 # Capstone

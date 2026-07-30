@@ -4,6 +4,10 @@ description: "Quizzes for the Azure course — links to the Academy quizzes cata
 technology_id: azure
 hide:
   - toc
+author: Shaik Basha
+category: azure
+tags:
+  - azure
 ---
 
 # Quizzes

@@ -4,6 +4,10 @@ description: "Projects for the Azure course — links to the Academy projects ca
 technology_id: azure
 hide:
   - toc
+author: Shaik Basha
+category: azure
+tags:
+  - azure
 ---
 
 # Projects

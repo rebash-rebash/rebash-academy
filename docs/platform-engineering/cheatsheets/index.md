@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Platform Engineering course — links to the 
 technology_id: platform-engineering
 hide:
   - toc
+author: Shaik Basha
+category: platform-engineering
+tags:
+  - platform-engineering
 ---
 
 # Cheat Sheets

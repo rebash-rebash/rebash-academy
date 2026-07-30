@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - kubernetes-engineer
+author: Shaik Basha
 ---
 
 # Kubernetes Engineer

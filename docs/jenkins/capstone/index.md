@@ -4,6 +4,10 @@ description: "Capstone for the Jenkins course — links to the Academy capstones
 technology_id: jenkins
 hide:
   - toc
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Capstone

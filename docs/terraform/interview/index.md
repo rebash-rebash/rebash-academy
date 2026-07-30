@@ -4,6 +4,10 @@ description: "Interview Preparation for the Terraform course — links to the Ac
 technology_id: terraform
 hide:
   - toc
+author: Shaik Basha
+category: terraform
+tags:
+  - terraform
 ---
 
 # Interview Preparation

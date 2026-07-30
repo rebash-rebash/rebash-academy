@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Prometheus course."
 technology_id: prometheus
 hide:
   - toc
+author: Shaik Basha
+category: prometheus
+tags:
+  - prometheus
 ---
 
 # Prometheus — FAQ

@@ -4,6 +4,10 @@ description: "Capstone for the Kubernetes course — links to the Academy capsto
 technology_id: kubernetes
 hide:
   - toc
+author: Shaik Basha
+category: kubernetes
+tags:
+  - kubernetes
 ---
 
 # Capstone

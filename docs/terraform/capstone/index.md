@@ -4,6 +4,10 @@ description: "Capstone for the Terraform course — links to the Academy capston
 technology_id: terraform
 hide:
   - toc
+author: Shaik Basha
+category: terraform
+tags:
+  - terraform
 ---
 
 # Capstone

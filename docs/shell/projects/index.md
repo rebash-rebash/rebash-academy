@@ -4,6 +4,10 @@ description: "Projects for the Shell Scripting course — links to the Academy p
 technology_id: shell
 hide:
   - toc
+author: Shaik Basha
+category: shell
+tags:
+  - shell
 ---
 
 # Projects

@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Networking course."
 technology_id: networking
 hide:
   - toc
+author: Shaik Basha
+category: networking
+tags:
+  - networking
 ---
 
 # Networking — Learning Roadmap

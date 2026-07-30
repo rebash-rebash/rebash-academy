@@ -4,6 +4,10 @@ description: "Projects for the GitLab CI/CD course — links to the Academy proj
 technology_id: gitlab
 hide:
   - toc
+author: Shaik Basha
+category: gitlab
+tags:
+  - gitlab
 ---
 
 # Projects

@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Security course."
 technology_id: security
 hide:
   - toc
+author: Shaik Basha
+category: security
+tags:
+  - security
 ---
 
 # Security — FAQ

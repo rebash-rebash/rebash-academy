@@ -4,6 +4,10 @@ description: "Interview Preparation for the Google Cloud course — links to the
 technology_id: gcp
 hide:
   - toc
+author: Shaik Basha
+category: gcp
+tags:
+  - gcp
 ---
 
 # Interview Preparation

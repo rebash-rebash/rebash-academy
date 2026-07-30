@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Google Cloud course."
 technology_id: gcp
 hide:
   - toc
+author: Shaik Basha
+category: gcp
+tags:
+  - gcp
 ---
 
 # Google Cloud — Learning Roadmap

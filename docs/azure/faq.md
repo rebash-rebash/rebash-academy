@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Azure course."
 technology_id: azure
 hide:
   - toc
+author: Shaik Basha
+category: azure
+tags:
+  - azure
 ---
 
 # Azure — FAQ

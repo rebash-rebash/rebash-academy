@@ -4,6 +4,10 @@ description: "Projects for the Linux course — links to the Academy projects ca
 technology_id: linux
 hide:
   - toc
+author: Shaik Basha
+category: linux
+tags:
+  - linux
 ---
 
 # Projects

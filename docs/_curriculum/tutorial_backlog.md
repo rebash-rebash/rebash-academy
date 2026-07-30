@@ -1,6 +1,10 @@
 ---
 title: Tutorial backlog
 description: Master tutorial implementation order for REBASH Academy.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Tutorial backlog

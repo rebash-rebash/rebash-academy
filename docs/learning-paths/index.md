@@ -1,6 +1,10 @@
 ---
 title: Learning Paths
 description: Legacy learning-paths URL — use Career Paths instead.
+author: Shaik Basha
+category: learning-paths
+tags:
+  - learning-paths
 ---
 
 # Learning Paths

@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Tempo course — links to the Academy cheatsh
 technology_id: tempo
 hide:
   - toc
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Cheat Sheets

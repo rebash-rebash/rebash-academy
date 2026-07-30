@@ -4,6 +4,10 @@ description: "Projects for the Kubernetes course — links to the Academy projec
 technology_id: kubernetes
 hide:
   - toc
+author: Shaik Basha
+category: kubernetes
+tags:
+  - kubernetes
 ---
 
 # Projects

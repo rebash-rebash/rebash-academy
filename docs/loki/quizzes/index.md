@@ -4,6 +4,10 @@ description: "Quizzes for the Loki course — links to the Academy quizzes catal
 technology_id: loki
 hide:
   - toc
+author: Shaik Basha
+category: loki
+tags:
+  - loki
 ---
 
 # Quizzes

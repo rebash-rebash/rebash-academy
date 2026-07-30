@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Monitoring course — links to the Academy ch
 technology_id: monitoring
 hide:
   - toc
+author: Shaik Basha
+category: monitoring
+tags:
+  - monitoring
 ---
 
 # Cheat Sheets

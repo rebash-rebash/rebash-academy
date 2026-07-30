@@ -4,6 +4,10 @@ description: "Quizzes for the Grafana course — links to the Academy quizzes ca
 technology_id: grafana
 hide:
   - toc
+author: Shaik Basha
+category: grafana
+tags:
+  - grafana
 ---
 
 # Quizzes

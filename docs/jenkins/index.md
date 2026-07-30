@@ -1,6 +1,10 @@
 ---
 title: "Jenkins"
 description: "Jenkins track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Jenkins

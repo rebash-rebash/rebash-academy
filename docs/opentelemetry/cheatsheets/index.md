@@ -4,6 +4,10 @@ description: "Cheat Sheets for the OpenTelemetry course — links to the Academy
 technology_id: opentelemetry
 hide:
   - toc
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # Cheat Sheets

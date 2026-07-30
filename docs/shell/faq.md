@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Shell Scripting course."
 technology_id: shell
 hide:
   - toc
+author: Shaik Basha
+category: shell
+tags:
+  - shell
 ---
 
 # Shell Scripting — FAQ

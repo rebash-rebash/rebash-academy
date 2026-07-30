@@ -4,6 +4,10 @@ description: "Interview Preparation for the GitHub Actions course — links to t
 technology_id: github-actions
 hide:
   - toc
+author: Shaik Basha
+category: github-actions
+tags:
+  - github-actions
 ---
 
 # Interview Preparation

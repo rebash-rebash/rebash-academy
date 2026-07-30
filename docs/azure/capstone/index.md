@@ -4,6 +4,10 @@ description: "Capstone for the Azure course — links to the Academy capstones c
 technology_id: azure
 hide:
   - toc
+author: Shaik Basha
+category: azure
+tags:
+  - azure
 ---
 
 # Capstone

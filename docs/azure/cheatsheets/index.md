@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Azure course — links to the Academy cheatsh
 technology_id: azure
 hide:
   - toc
+author: Shaik Basha
+category: azure
+tags:
+  - azure
 ---
 
 # Cheat Sheets

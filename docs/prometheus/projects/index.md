@@ -4,6 +4,10 @@ description: "Projects for the Prometheus course — links to the Academy projec
 technology_id: prometheus
 hide:
   - toc
+author: Shaik Basha
+category: prometheus
+tags:
+  - prometheus
 ---
 
 # Projects

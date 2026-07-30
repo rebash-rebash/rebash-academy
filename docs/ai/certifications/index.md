@@ -4,6 +4,10 @@ description: "Certification Mapping for the AI for DevOps course — links to th
 technology_id: ai
 hide:
   - toc
+author: Shaik Basha
+category: ai
+tags:
+  - ai
 ---
 
 # Certification Mapping

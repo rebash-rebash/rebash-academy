@@ -4,6 +4,10 @@ description: "Projects for the Git course — links to the Academy projects cata
 technology_id: git
 hide:
   - toc
+author: Shaik Basha
+category: git
+tags:
+  - git
 ---
 
 # Projects

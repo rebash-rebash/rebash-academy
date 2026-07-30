@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Azure course."
 technology_id: azure
 hide:
   - toc
+author: Shaik Basha
+category: azure
+tags:
+  - azure
 ---
 
 # Azure — Learning Roadmap

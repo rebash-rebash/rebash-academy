@@ -4,6 +4,10 @@ description: "Interview Preparation for the Loki course — links to the Academy
 technology_id: loki
 hide:
   - toc
+author: Shaik Basha
+category: loki
+tags:
+  - loki
 ---
 
 # Interview Preparation

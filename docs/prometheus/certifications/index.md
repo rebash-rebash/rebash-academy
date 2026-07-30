@@ -4,6 +4,10 @@ description: "Certification Mapping for the Prometheus course — links to the A
 technology_id: prometheus
 hide:
   - toc
+author: Shaik Basha
+category: prometheus
+tags:
+  - prometheus
 ---
 
 # Certification Mapping

@@ -4,6 +4,10 @@ description: "Capstone for the Git course — links to the Academy capstones cat
 technology_id: git
 hide:
   - toc
+author: Shaik Basha
+category: git
+tags:
+  - git
 ---
 
 # Capstone

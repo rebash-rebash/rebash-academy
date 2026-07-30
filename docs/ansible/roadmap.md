@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Ansible course."
 technology_id: ansible
 hide:
   - toc
+author: Shaik Basha
+category: ansible
+tags:
+  - ansible
 ---
 
 # Ansible — Learning Roadmap

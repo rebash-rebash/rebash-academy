@@ -4,6 +4,10 @@ description: "Projects for the Jenkins course — links to the Academy projects 
 technology_id: jenkins
 hide:
   - toc
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Projects

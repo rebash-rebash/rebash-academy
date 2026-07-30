@@ -4,6 +4,10 @@ description: "Projects for the Networking course — links to the Academy projec
 technology_id: networking
 hide:
   - toc
+author: Shaik Basha
+category: networking
+tags:
+  - networking
 ---
 
 # Projects

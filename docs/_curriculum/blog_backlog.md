@@ -1,6 +1,10 @@
 ---
 title: Blog backlog
 description: Engineering journal article backlog for REBASH Academy — ordered by priority and audience.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Blog backlog

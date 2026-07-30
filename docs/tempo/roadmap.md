@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Tempo course."
 technology_id: tempo
 hide:
   - toc
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Tempo — Learning Roadmap

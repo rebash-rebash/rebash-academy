@@ -4,6 +4,10 @@ description: "Certification Mapping for the Cloud Architecture course — links 
 technology_id: architecture
 hide:
   - toc
+author: Shaik Basha
+category: architecture
+tags:
+  - architecture
 ---
 
 # Certification Mapping

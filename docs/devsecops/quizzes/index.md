@@ -4,6 +4,10 @@ description: "Quizzes for the DevSecOps course — links to the Academy quizzes 
 technology_id: devsecops
 hide:
   - toc
+author: Shaik Basha
+category: devsecops
+tags:
+  - devsecops
 ---
 
 # Quizzes

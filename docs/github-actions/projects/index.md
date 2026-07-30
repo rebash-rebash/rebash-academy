@@ -4,6 +4,10 @@ description: "Projects for the GitHub Actions course — links to the Academy pr
 technology_id: github-actions
 hide:
   - toc
+author: Shaik Basha
+category: github-actions
+tags:
+  - github-actions
 ---
 
 # Projects

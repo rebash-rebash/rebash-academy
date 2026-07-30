@@ -1,6 +1,10 @@
 ---
 title: Projects
 description: "Portfolio-ready DevOps projects — mini builds through capstones you can showcase on GitHub."
+author: Shaik Basha
+category: projects
+tags:
+  - projects
 ---
 
 # Projects

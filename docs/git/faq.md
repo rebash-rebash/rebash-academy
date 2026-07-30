@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Git course."
 technology_id: git
 hide:
   - toc
+author: Shaik Basha
+category: git
+tags:
+  - git
 ---
 
 # Git — FAQ

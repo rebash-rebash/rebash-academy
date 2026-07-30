@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - cloud-engineer
+author: Shaik Basha
 ---
 
 # Cloud Engineer

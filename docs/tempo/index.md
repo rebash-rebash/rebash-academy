@@ -1,6 +1,10 @@
 ---
 title: "Tempo"
 description: "Tempo track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Tempo

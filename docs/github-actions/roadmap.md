@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the GitHub Actions course."
 technology_id: github-actions
 hide:
   - toc
+author: Shaik Basha
+category: github-actions
+tags:
+  - github-actions
 ---
 
 # GitHub Actions — Learning Roadmap

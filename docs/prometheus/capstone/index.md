@@ -4,6 +4,10 @@ description: "Capstone for the Prometheus course — links to the Academy capsto
 technology_id: prometheus
 hide:
   - toc
+author: Shaik Basha
+category: prometheus
+tags:
+  - prometheus
 ---
 
 # Capstone

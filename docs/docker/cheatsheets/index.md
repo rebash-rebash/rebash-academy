@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Docker course — links to the Academy cheats
 technology_id: docker
 hide:
   - toc
+author: Shaik Basha
+category: docker
+tags:
+  - docker
 ---
 
 # Cheat Sheets

@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Networking course — links to the Academy ch
 technology_id: networking
 hide:
   - toc
+author: Shaik Basha
+category: networking
+tags:
+  - networking
 ---
 
 # Cheat Sheets

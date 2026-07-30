@@ -4,6 +4,10 @@ description: "Certification Mapping for the Jenkins course — links to the Acad
 technology_id: jenkins
 hide:
   - toc
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Certification Mapping

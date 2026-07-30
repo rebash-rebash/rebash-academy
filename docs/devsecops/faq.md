@@ -4,6 +4,10 @@ description: "Frequently asked questions about the DevSecOps course."
 technology_id: devsecops
 hide:
   - toc
+author: Shaik Basha
+category: devsecops
+tags:
+  - devsecops
 ---
 
 # DevSecOps — FAQ

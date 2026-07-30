@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Helm course — links to the Academy cheatshe
 technology_id: helm
 hide:
   - toc
+author: Shaik Basha
+category: helm
+tags:
+  - helm
 ---
 
 # Cheat Sheets

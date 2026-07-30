@@ -4,6 +4,10 @@ description: "Certification Mapping for the AWS course — links to the Academy 
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # Certification Mapping

@@ -8,6 +8,7 @@ tags:
   - security
   - cicd
   - devsecops
+author: Shaik Basha
 ---
 
 # Secure Software Delivery Architecture

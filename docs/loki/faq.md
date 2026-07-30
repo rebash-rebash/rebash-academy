@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Loki course."
 technology_id: loki
 hide:
   - toc
+author: Shaik Basha
+category: loki
+tags:
+  - loki
 ---
 
 # Loki — FAQ

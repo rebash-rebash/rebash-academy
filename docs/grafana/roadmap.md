@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Grafana course."
 technology_id: grafana
 hide:
   - toc
+author: Shaik Basha
+category: grafana
+tags:
+  - grafana
 ---
 
 # Grafana — Learning Roadmap

@@ -2,6 +2,10 @@
 title: Contact
 description: "Get in touch with REBASH Academy — feedback, corrections, collaboration, and community links."
 comments: false
+author: Shaik Basha
+category: contact
+tags:
+  - contact
 ---
 
 # Contact

@@ -4,6 +4,10 @@ description: "Quizzes for the Monitoring course — links to the Academy quizzes
 technology_id: monitoring
 hide:
   - toc
+author: Shaik Basha
+category: monitoring
+tags:
+  - monitoring
 ---
 
 # Quizzes

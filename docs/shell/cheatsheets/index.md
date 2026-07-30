@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Shell Scripting course — links to the Acade
 technology_id: shell
 hide:
   - toc
+author: Shaik Basha
+category: shell
+tags:
+  - shell
 ---
 
 # Cheat Sheets

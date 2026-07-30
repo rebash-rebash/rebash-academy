@@ -4,6 +4,10 @@ description: "Cheat Sheets for the GitLab CI/CD course — links to the Academy 
 technology_id: gitlab
 hide:
   - toc
+author: Shaik Basha
+category: gitlab
+tags:
+  - gitlab
 ---
 
 # Cheat Sheets

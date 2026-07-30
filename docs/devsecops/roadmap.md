@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the DevSecOps course."
 technology_id: devsecops
 hide:
   - toc
+author: Shaik Basha
+category: devsecops
+tags:
+  - devsecops
 ---
 
 # DevSecOps — Learning Roadmap

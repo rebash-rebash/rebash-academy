@@ -4,6 +4,10 @@ description: "Certification Mapping for the Shell Scripting course — links to 
 technology_id: shell
 hide:
   - toc
+author: Shaik Basha
+category: shell
+tags:
+  - shell
 ---
 
 # Certification Mapping

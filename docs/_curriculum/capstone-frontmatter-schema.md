@@ -1,6 +1,10 @@
 ---
 title: Capstone frontmatter schema
 description: Required YAML frontmatter and body sections for every REBASH Academy capstone.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Capstone frontmatter schema

@@ -4,6 +4,10 @@ description: "Capstone for the Google Cloud course — links to the Academy caps
 technology_id: gcp
 hide:
   - toc
+author: Shaik Basha
+category: gcp
+tags:
+  - gcp
 ---
 
 # Capstone

@@ -4,6 +4,10 @@ description: "Capstone for the Loki course — links to the Academy capstones ca
 technology_id: loki
 hide:
   - toc
+author: Shaik Basha
+category: loki
+tags:
+  - loki
 ---
 
 # Capstone

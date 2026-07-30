@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Python for DevOps course."
 technology_id: python
 hide:
   - toc
+author: Shaik Basha
+category: python
+tags:
+  - python
 ---
 
 # Python for DevOps — Learning Roadmap

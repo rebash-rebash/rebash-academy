@@ -1,6 +1,10 @@
 ---
 title: "GitHub Actions"
 description: "GitHub Actions track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: github-actions
+tags:
+  - github-actions
 ---
 
 # GitHub Actions

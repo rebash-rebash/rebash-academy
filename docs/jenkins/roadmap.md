@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Jenkins course."
 technology_id: jenkins
 hide:
   - toc
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Jenkins — Learning Roadmap

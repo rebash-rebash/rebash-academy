@@ -1,6 +1,10 @@
 ---
 title: Labs backlog
 description: Lab delivery backlog — ordered from beginner foundations to expert production scenarios.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Labs backlog

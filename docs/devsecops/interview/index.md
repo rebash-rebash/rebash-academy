@@ -4,6 +4,10 @@ description: "Interview Preparation for the DevSecOps course — links to the Ac
 technology_id: devsecops
 hide:
   - toc
+author: Shaik Basha
+category: devsecops
+tags:
+  - devsecops
 ---
 
 # Interview Preparation

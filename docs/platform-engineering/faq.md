@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Platform Engineering course."
 technology_id: platform-engineering
 hide:
   - toc
+author: Shaik Basha
+category: platform-engineering
+tags:
+  - platform-engineering
 ---
 
 # Platform Engineering — FAQ

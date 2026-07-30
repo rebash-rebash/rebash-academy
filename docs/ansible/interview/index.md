@@ -4,6 +4,10 @@ description: "Interview Preparation for the Ansible course — links to the Acad
 technology_id: ansible
 hide:
   - toc
+author: Shaik Basha
+category: ansible
+tags:
+  - ansible
 ---
 
 # Interview Preparation

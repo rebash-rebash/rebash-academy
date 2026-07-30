@@ -1,6 +1,10 @@
 ---
 title: "Prometheus"
 description: "Prometheus track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: prometheus
+tags:
+  - prometheus
 ---
 
 # Prometheus

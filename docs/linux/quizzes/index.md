@@ -4,6 +4,10 @@ description: "Quizzes for the Linux course — links to the Academy quizzes cata
 technology_id: linux
 hide:
   - toc
+author: Shaik Basha
+category: linux
+tags:
+  - linux
 ---
 
 # Quizzes

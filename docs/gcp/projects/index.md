@@ -4,6 +4,10 @@ description: "Projects for the Google Cloud course — links to the Academy proj
 technology_id: gcp
 hide:
   - toc
+author: Shaik Basha
+category: gcp
+tags:
+  - gcp
 ---
 
 # Projects

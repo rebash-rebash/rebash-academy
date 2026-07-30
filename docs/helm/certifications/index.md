@@ -4,6 +4,10 @@ description: "Certification Mapping for the Helm course — links to the Academy
 technology_id: helm
 hide:
   - toc
+author: Shaik Basha
+category: helm
+tags:
+  - helm
 ---
 
 # Certification Mapping

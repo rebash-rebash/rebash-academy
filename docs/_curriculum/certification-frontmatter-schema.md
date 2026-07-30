@@ -1,6 +1,10 @@
 ---
 title: Certification frontmatter schema
 description: Required YAML frontmatter and body sections for every REBASH Academy certification mapping page.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Certification frontmatter schema

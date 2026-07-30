@@ -4,6 +4,10 @@ description: "Interview Preparation for the Monitoring course — links to the A
 technology_id: monitoring
 hide:
   - toc
+author: Shaik Basha
+category: monitoring
+tags:
+  - monitoring
 ---
 
 # Interview Preparation

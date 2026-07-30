@@ -4,6 +4,10 @@ description: "Capstone for the Site Reliability Engineering course — links to 
 technology_id: sre
 hide:
   - toc
+author: Shaik Basha
+category: sre
+tags:
+  - sre
 ---
 
 # Capstone

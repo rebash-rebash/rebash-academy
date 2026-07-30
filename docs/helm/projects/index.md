@@ -4,6 +4,10 @@ description: "Projects for the Helm course — links to the Academy projects cat
 technology_id: helm
 hide:
   - toc
+author: Shaik Basha
+category: helm
+tags:
+  - helm
 ---
 
 # Projects

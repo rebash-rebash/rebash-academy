@@ -4,6 +4,10 @@ description: "Certification Mapping for the Networking course — links to the A
 technology_id: networking
 hide:
   - toc
+author: Shaik Basha
+category: networking
+tags:
+  - networking
 ---
 
 # Certification Mapping

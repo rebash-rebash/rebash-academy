@@ -4,6 +4,10 @@ description: "Capstone for the Argo CD course — links to the Academy capstones
 technology_id: argocd
 hide:
   - toc
+author: Shaik Basha
+category: argocd
+tags:
+  - argocd
 ---
 
 # Capstone

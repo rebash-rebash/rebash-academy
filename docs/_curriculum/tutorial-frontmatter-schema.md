@@ -1,6 +1,10 @@
 ---
 title: Tutorial frontmatter schema
 description: Required YAML frontmatter for every REBASH Academy tutorial.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Tutorial frontmatter schema

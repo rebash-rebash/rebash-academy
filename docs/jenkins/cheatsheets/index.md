@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Jenkins course — links to the Academy cheat
 technology_id: jenkins
 hide:
   - toc
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Cheat Sheets

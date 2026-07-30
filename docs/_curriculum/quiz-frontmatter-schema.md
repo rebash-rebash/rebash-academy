@@ -1,6 +1,10 @@
 ---
 title: Quiz frontmatter schema
 description: Required YAML frontmatter and body sections for every REBASH Academy quiz.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Quiz frontmatter schema

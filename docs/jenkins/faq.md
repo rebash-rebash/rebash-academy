@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Jenkins course."
 technology_id: jenkins
 hide:
   - toc
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Jenkins — FAQ

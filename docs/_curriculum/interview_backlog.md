@@ -1,6 +1,10 @@
 ---
 title: Interview backlog
 description: Interview preparation backlog for REBASH Academy — ordered beginner to architect.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Interview backlog

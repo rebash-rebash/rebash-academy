@@ -1,3 +1,12 @@
+---
+title: Curriculum artifacts
+description: "Internal design and backlog files for REBASH Academy authors."
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
+---
+
 # Curriculum artifacts
 
 Internal design and backlog files for REBASH Academy.

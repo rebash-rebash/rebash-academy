@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Linux course."
 technology_id: linux
 hide:
   - toc
+author: Shaik Basha
+category: linux
+tags:
+  - linux
 ---
 
 # Linux — Learning Roadmap

@@ -1,6 +1,10 @@
 ---
 title: Project frontmatter schema
 description: Required YAML frontmatter and body sections for every REBASH Academy project.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Project frontmatter schema

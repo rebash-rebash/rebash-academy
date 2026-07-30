@@ -4,6 +4,10 @@ description: "Quizzes for the Tempo course — links to the Academy quizzes cata
 technology_id: tempo
 hide:
   - toc
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Quizzes

@@ -4,6 +4,10 @@ description: "Quizzes for the GitLab CI/CD course — links to the Academy quizz
 technology_id: gitlab
 hide:
   - toc
+author: Shaik Basha
+category: gitlab
+tags:
+  - gitlab
 ---
 
 # Quizzes

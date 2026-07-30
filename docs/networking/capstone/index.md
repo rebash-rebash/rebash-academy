@@ -4,6 +4,10 @@ description: "Capstone for the Networking course — links to the Academy capsto
 technology_id: networking
 hide:
   - toc
+author: Shaik Basha
+category: networking
+tags:
+  - networking
 ---
 
 # Capstone

@@ -1,6 +1,10 @@
 ---
 title: "Argo CD"
 description: "Argo CD track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: argocd
+tags:
+  - argocd
 ---
 
 # Argo CD

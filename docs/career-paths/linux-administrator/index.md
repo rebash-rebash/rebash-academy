@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - linux-administrator
+author: Shaik Basha
 ---
 
 # Linux Administrator

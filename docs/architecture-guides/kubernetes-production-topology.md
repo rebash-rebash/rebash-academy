@@ -7,6 +7,7 @@ tags:
   - architecture
   - kubernetes
   - platform-engineering
+author: Shaik Basha
 ---
 
 # Kubernetes Production Topology

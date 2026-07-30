@@ -1,6 +1,10 @@
 ---
 title: "OpenTelemetry"
 description: "OpenTelemetry track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # OpenTelemetry

@@ -1,6 +1,10 @@
 ---
 title: Lab frontmatter schema
 description: Required YAML frontmatter and body sections for every REBASH Academy lab.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Lab frontmatter schema

@@ -4,6 +4,10 @@ description: "Capstone for the OpenTelemetry course — links to the Academy cap
 technology_id: opentelemetry
 hide:
   - toc
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # Capstone

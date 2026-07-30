@@ -4,6 +4,10 @@ description: "Certification Mapping for the Argo CD course — links to the Acad
 technology_id: argocd
 hide:
   - toc
+author: Shaik Basha
+category: argocd
+tags:
+  - argocd
 ---
 
 # Certification Mapping

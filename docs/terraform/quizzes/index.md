@@ -4,6 +4,10 @@ description: "Quizzes for the Terraform course — links to the Academy quizzes 
 technology_id: terraform
 hide:
   - toc
+author: Shaik Basha
+category: terraform
+tags:
+  - terraform
 ---
 
 # Quizzes

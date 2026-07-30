@@ -4,6 +4,10 @@ description: "Quizzes for the Jenkins course — links to the Academy quizzes ca
 technology_id: jenkins
 hide:
   - toc
+author: Shaik Basha
+category: jenkins
+tags:
+  - jenkins
 ---
 
 # Quizzes

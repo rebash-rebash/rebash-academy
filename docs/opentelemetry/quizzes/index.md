@@ -4,6 +4,10 @@ description: "Quizzes for the OpenTelemetry course — links to the Academy quiz
 technology_id: opentelemetry
 hide:
   - toc
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # Quizzes

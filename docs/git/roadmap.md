@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Git course."
 technology_id: git
 hide:
   - toc
+author: Shaik Basha
+category: git
+tags:
+  - git
 ---
 
 # Git — Learning Roadmap

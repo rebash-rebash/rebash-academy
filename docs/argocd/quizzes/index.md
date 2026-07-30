@@ -4,6 +4,10 @@ description: "Quizzes for the Argo CD course — links to the Academy quizzes ca
 technology_id: argocd
 hide:
   - toc
+author: Shaik Basha
+category: argocd
+tags:
+  - argocd
 ---
 
 # Quizzes

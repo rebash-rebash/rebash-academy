@@ -4,6 +4,10 @@ description: "Certification Mapping for the Security course — links to the Aca
 technology_id: security
 hide:
   - toc
+author: Shaik Basha
+category: security
+tags:
+  - security
 ---
 
 # Certification Mapping

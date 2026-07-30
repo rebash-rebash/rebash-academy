@@ -4,6 +4,10 @@ description: "Quizzes for the Kubernetes course — links to the Academy quizzes
 technology_id: kubernetes
 hide:
   - toc
+author: Shaik Basha
+category: kubernetes
+tags:
+  - kubernetes
 ---
 
 # Quizzes

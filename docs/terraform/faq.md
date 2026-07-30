@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Terraform course."
 technology_id: terraform
 hide:
   - toc
+author: Shaik Basha
+category: terraform
+tags:
+  - terraform
 ---
 
 # Terraform — FAQ

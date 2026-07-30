@@ -4,6 +4,10 @@ description: "Projects for the AI for DevOps course — links to the Academy pro
 technology_id: ai
 hide:
   - toc
+author: Shaik Basha
+category: ai
+tags:
+  - ai
 ---
 
 # Projects

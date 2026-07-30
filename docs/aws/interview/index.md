@@ -4,6 +4,10 @@ description: "Interview Preparation for the AWS course — links to the Academy 
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # Interview Preparation

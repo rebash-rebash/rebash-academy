@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - platform-engineer
+author: Shaik Basha
 ---
 
 # Platform Engineer

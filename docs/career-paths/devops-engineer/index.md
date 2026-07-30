@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - devops-engineer
+author: Shaik Basha
 ---
 
 # DevOps Engineer

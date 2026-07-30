@@ -4,6 +4,10 @@ description: "Certification Mapping for the Tempo course — links to the Academ
 technology_id: tempo
 hide:
   - toc
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Certification Mapping

@@ -4,6 +4,10 @@ description: "Cheat Sheets for the AI for DevOps course — links to the Academy
 technology_id: ai
 hide:
   - toc
+author: Shaik Basha
+category: ai
+tags:
+  - ai
 ---
 
 # Cheat Sheets

@@ -4,6 +4,10 @@ description: "Interview Preparation for the Security course — links to the Aca
 technology_id: security
 hide:
   - toc
+author: Shaik Basha
+category: security
+tags:
+  - security
 ---
 
 # Interview Preparation

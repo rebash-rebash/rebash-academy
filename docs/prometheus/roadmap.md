@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Prometheus course."
 technology_id: prometheus
 hide:
   - toc
+author: Shaik Basha
+category: prometheus
+tags:
+  - prometheus
 ---
 
 # Prometheus — Learning Roadmap

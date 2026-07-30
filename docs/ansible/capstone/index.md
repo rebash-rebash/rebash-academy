@@ -4,6 +4,10 @@ description: "Capstone for the Ansible course — links to the Academy capstones
 technology_id: ansible
 hide:
   - toc
+author: Shaik Basha
+category: ansible
+tags:
+  - ansible
 ---
 
 # Capstone

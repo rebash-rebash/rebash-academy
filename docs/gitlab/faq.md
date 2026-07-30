@@ -4,6 +4,10 @@ description: "Frequently asked questions about the GitLab CI/CD course."
 technology_id: gitlab
 hide:
   - toc
+author: Shaik Basha
+category: gitlab
+tags:
+  - gitlab
 ---
 
 # GitLab CI/CD — FAQ

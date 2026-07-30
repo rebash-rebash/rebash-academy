@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - devsecops-engineer
+author: Shaik Basha
 ---
 
 # DevSecOps Engineer

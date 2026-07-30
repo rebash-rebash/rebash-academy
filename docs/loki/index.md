@@ -1,6 +1,10 @@
 ---
 title: "Loki"
 description: "Loki track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: loki
+tags:
+  - loki
 ---
 
 # Loki

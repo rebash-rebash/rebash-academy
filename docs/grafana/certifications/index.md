@@ -4,6 +4,10 @@ description: "Certification Mapping for the Grafana course — links to the Acad
 technology_id: grafana
 hide:
   - toc
+author: Shaik Basha
+category: grafana
+tags:
+  - grafana
 ---
 
 # Certification Mapping

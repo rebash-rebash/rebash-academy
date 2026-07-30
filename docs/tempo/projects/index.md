@@ -4,6 +4,10 @@ description: "Projects for the Tempo course — links to the Academy projects ca
 technology_id: tempo
 hide:
   - toc
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Projects

@@ -4,6 +4,10 @@ description: "Interview Preparation for the GitLab CI/CD course — links to the
 technology_id: gitlab
 hide:
   - toc
+author: Shaik Basha
+category: gitlab
+tags:
+  - gitlab
 ---
 
 # Interview Preparation

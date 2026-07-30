@@ -4,6 +4,10 @@ description: "Projects for the OpenTelemetry course — links to the Academy pro
 technology_id: opentelemetry
 hide:
   - toc
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # Projects

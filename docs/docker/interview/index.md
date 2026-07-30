@@ -4,6 +4,10 @@ description: "Interview Preparation for the Docker course — links to the Acade
 technology_id: docker
 hide:
   - toc
+author: Shaik Basha
+category: docker
+tags:
+  - docker
 ---
 
 # Interview Preparation

@@ -4,6 +4,10 @@ description: "Quizzes for the Platform Engineering course — links to the Acade
 technology_id: platform-engineering
 hide:
   - toc
+author: Shaik Basha
+category: platform-engineering
+tags:
+  - platform-engineering
 ---
 
 # Quizzes

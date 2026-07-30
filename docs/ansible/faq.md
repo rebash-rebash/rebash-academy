@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Ansible course."
 technology_id: ansible
 hide:
   - toc
+author: Shaik Basha
+category: ansible
+tags:
+  - ansible
 ---
 
 # Ansible — FAQ

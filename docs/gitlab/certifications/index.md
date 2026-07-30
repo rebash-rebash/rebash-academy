@@ -4,6 +4,10 @@ description: "Certification Mapping for the GitLab CI/CD course — links to the
 technology_id: gitlab
 hide:
   - toc
+author: Shaik Basha
+category: gitlab
+tags:
+  - gitlab
 ---
 
 # Certification Mapping

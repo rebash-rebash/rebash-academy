@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the OpenTelemetry course."
 technology_id: opentelemetry
 hide:
   - toc
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # OpenTelemetry — Learning Roadmap

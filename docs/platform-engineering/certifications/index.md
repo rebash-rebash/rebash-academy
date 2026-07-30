@@ -4,6 +4,10 @@ description: "Certification Mapping for the Platform Engineering course — link
 technology_id: platform-engineering
 hide:
   - toc
+author: Shaik Basha
+category: platform-engineering
+tags:
+  - platform-engineering
 ---
 
 # Certification Mapping

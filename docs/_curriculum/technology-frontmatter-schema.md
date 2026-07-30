@@ -1,6 +1,10 @@
 ---
 title: Technology page schema
 description: Reusable metadata for every REBASH Academy technology index page.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Technology page schema

@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Python for DevOps course."
 technology_id: python
 hide:
   - toc
+author: Shaik Basha
+category: python
+tags:
+  - python
 ---
 
 # Python for DevOps — FAQ

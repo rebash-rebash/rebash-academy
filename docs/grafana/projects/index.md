@@ -4,6 +4,10 @@ description: "Projects for the Grafana course — links to the Academy projects 
 technology_id: grafana
 hide:
   - toc
+author: Shaik Basha
+category: grafana
+tags:
+  - grafana
 ---
 
 # Projects

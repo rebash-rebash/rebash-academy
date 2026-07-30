@@ -4,6 +4,10 @@ description: "Capstone for the DevSecOps course — links to the Academy capston
 technology_id: devsecops
 hide:
   - toc
+author: Shaik Basha
+category: devsecops
+tags:
+  - devsecops
 ---
 
 # Capstone

@@ -4,6 +4,10 @@ description: "Projects for the Terraform course — links to the Academy project
 technology_id: terraform
 hide:
   - toc
+author: Shaik Basha
+category: terraform
+tags:
+  - terraform
 ---
 
 # Projects

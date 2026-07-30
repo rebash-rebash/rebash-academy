@@ -4,6 +4,10 @@ description: "Capstone for the Docker course — links to the Academy capstones 
 technology_id: docker
 hide:
   - toc
+author: Shaik Basha
+category: docker
+tags:
+  - docker
 ---
 
 # Capstone

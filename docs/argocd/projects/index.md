@@ -4,6 +4,10 @@ description: "Projects for the Argo CD course — links to the Academy projects 
 technology_id: argocd
 hide:
   - toc
+author: Shaik Basha
+category: argocd
+tags:
+  - argocd
 ---
 
 # Projects

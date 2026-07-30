@@ -1,6 +1,10 @@
 ---
 title: Architecture Guides
 description: "Production architecture patterns for Cloud, Kubernetes, Platform Engineering, Security, and AI systems — designed for engineers and technology leaders."
+author: Shaik Basha
+category: architecture-guides
+tags:
+  - architecture-guides
 ---
 
 # Architecture Guides

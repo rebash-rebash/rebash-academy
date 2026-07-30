@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Terraform course — links to the Academy che
 technology_id: terraform
 hide:
   - toc
+author: Shaik Basha
+category: terraform
+tags:
+  - terraform
 ---
 
 # Cheat Sheets

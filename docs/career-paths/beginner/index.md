@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - beginner
+author: Shaik Basha
 ---
 
 # Beginner

@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Grafana course — links to the Academy cheat
 technology_id: grafana
 hide:
   - toc
+author: Shaik Basha
+category: grafana
+tags:
+  - grafana
 ---
 
 # Cheat Sheets

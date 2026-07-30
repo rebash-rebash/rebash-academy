@@ -1,6 +1,10 @@
 ---
 title: "Grafana"
 description: "Grafana track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: grafana
+tags:
+  - grafana
 ---
 
 # Grafana

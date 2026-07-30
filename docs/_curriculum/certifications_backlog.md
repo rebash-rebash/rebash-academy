@@ -1,6 +1,10 @@
 ---
 title: Certifications backlog
 description: Certification mapping backlog for REBASH Academy — ordered foundational to expert.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Certifications backlog

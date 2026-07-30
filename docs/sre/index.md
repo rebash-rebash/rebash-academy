@@ -1,6 +1,10 @@
 ---
 title: "Site Reliability Engineering"
 description: "Site Reliability Engineering track on REBASH Academy — curriculum planned."
+author: Shaik Basha
+category: sre
+tags:
+  - sre
 ---
 
 # Site Reliability Engineering

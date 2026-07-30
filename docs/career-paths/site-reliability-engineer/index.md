@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - site-reliability-engineer
+author: Shaik Basha
 ---
 
 # Site Reliability Engineer

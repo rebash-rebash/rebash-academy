@@ -1,6 +1,10 @@
 ---
 title: Capstones
 description: "Career-path capstone projects — enterprise-grade, portfolio-ready builds that prove end-to-end mastery."
+author: Shaik Basha
+category: capstones
+tags:
+  - capstones
 ---
 
 # Capstones

@@ -4,6 +4,10 @@ description: "Quizzes for the Shell Scripting course — links to the Academy qu
 technology_id: shell
 hide:
   - toc
+author: Shaik Basha
+category: shell
+tags:
+  - shell
 ---
 
 # Quizzes

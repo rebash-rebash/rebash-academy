@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Shell Scripting course."
 technology_id: shell
 hide:
   - toc
+author: Shaik Basha
+category: shell
+tags:
+  - shell
 ---
 
 # Shell Scripting — Learning Roadmap

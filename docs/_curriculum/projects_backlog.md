@@ -1,6 +1,10 @@
 ---
 title: Projects backlog
 description: Mini through capstone project backlog for REBASH Academy — ordered beginner to expert.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Projects backlog

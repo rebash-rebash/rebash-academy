@@ -4,6 +4,10 @@ description: "Quizzes for the AWS course — links to the Academy quizzes catalo
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # Quizzes

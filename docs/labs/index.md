@@ -1,6 +1,10 @@
 ---
 title: Labs
 description: "Hands-on labs for Cloud and DevOps — scenario practice, validation, troubleshooting, and cleanup across Linux, Python, AWS, CI/CD, Docker, Kubernetes, and Terraform."
+author: Shaik Basha
+category: labs
+tags:
+  - labs
 ---
 
 # Labs

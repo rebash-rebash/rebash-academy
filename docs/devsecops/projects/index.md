@@ -4,6 +4,10 @@ description: "Projects for the DevSecOps course — links to the Academy project
 technology_id: devsecops
 hide:
   - toc
+author: Shaik Basha
+category: devsecops
+tags:
+  - devsecops
 ---
 
 # Projects

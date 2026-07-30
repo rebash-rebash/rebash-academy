@@ -7,6 +7,7 @@ tags:
   - architecture
   - cloud
   - landing-zone
+author: Shaik Basha
 ---
 
 # Multi-Cloud Landing Zone Patterns

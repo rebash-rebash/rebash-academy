@@ -4,6 +4,10 @@ description: "Certification Mapping for the Docker course — links to the Acade
 technology_id: docker
 hide:
   - toc
+author: Shaik Basha
+category: docker
+tags:
+  - docker
 ---
 
 # Certification Mapping

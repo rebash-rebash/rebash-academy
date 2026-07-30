@@ -1,6 +1,10 @@
 ---
 title: Cheat sheets backlog
 description: Cheat sheet backlog for REBASH Academy — ordered beginner to expert by technology.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Cheat sheets backlog

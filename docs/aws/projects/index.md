@@ -4,6 +4,10 @@ description: "Projects for the AWS course — links to the Academy projects cata
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # Projects

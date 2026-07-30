@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Monitoring course."
 technology_id: monitoring
 hide:
   - toc
+author: Shaik Basha
+category: monitoring
+tags:
+  - monitoring
 ---
 
 # Monitoring — FAQ

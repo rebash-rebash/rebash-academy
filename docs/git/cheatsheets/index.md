@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Git course — links to the Academy cheatshee
 technology_id: git
 hide:
   - toc
+author: Shaik Basha
+category: git
+tags:
+  - git
 ---
 
 # Cheat Sheets

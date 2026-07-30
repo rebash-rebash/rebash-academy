@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Docker course."
 technology_id: docker
 hide:
   - toc
+author: Shaik Basha
+category: docker
+tags:
+  - docker
 ---
 
 # Docker — Learning Roadmap

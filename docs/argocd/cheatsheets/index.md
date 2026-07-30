@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Argo CD course — links to the Academy cheat
 technology_id: argocd
 hide:
   - toc
+author: Shaik Basha
+category: argocd
+tags:
+  - argocd
 ---
 
 # Cheat Sheets

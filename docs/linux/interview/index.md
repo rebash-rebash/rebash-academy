@@ -4,6 +4,10 @@ description: "Interview Preparation for the Linux course — links to the Academ
 technology_id: linux
 hide:
   - toc
+author: Shaik Basha
+category: linux
+tags:
+  - linux
 ---
 
 # Interview Preparation

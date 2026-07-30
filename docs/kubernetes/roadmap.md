@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Kubernetes course."
 technology_id: kubernetes
 hide:
   - toc
+author: Shaik Basha
+category: kubernetes
+tags:
+  - kubernetes
 ---
 
 # Kubernetes — Learning Roadmap

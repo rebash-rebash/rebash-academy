@@ -1,6 +1,10 @@
 ---
 title: Quizzes
 description: "Self-assessment quizzes for Linux, Shell Scripting, Python, Networking, AWS, CI/CD, Docker, and Kubernetes — with explanations and a 70% pass mark."
+author: Shaik Basha
+category: quizzes
+tags:
+  - quizzes
 ---
 
 # Quizzes

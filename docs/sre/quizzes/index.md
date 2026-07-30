@@ -4,6 +4,10 @@ description: "Quizzes for the Site Reliability Engineering course — links to t
 technology_id: sre
 hide:
   - toc
+author: Shaik Basha
+category: sre
+tags:
+  - sre
 ---
 
 # Quizzes

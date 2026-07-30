@@ -4,6 +4,10 @@ description: "Projects for the Python for DevOps course — links to the Academy
 technology_id: python
 hide:
   - toc
+author: Shaik Basha
+category: python
+tags:
+  - python
 ---
 
 # Projects

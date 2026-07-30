@@ -4,6 +4,7 @@ description: Structured Cloud and DevOps career paths — Beginner through Cloud
 category: career-paths
 tags:
   - career-paths
+author: Shaik Basha
 ---
 
 # Career Paths

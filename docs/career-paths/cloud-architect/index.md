@@ -7,6 +7,7 @@ category: career-paths
 tags:
   - career-paths
   - cloud-architect
+author: Shaik Basha
 ---
 
 # Cloud Architect

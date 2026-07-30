@@ -4,6 +4,10 @@ description: "Cheat Sheets for the Loki course — links to the Academy cheatshe
 technology_id: loki
 hide:
   - toc
+author: Shaik Basha
+category: loki
+tags:
+  - loki
 ---
 
 # Cheat Sheets

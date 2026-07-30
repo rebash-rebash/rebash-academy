@@ -4,6 +4,10 @@ description: "Frequently asked questions about the AWS course."
 technology_id: aws
 hide:
   - toc
+author: Shaik Basha
+category: aws
+tags:
+  - aws
 ---
 
 # AWS — FAQ

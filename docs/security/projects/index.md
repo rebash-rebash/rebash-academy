@@ -4,6 +4,10 @@ description: "Projects for the Security course — links to the Academy projects
 technology_id: security
 hide:
   - toc
+author: Shaik Basha
+category: security
+tags:
+  - security
 ---
 
 # Projects

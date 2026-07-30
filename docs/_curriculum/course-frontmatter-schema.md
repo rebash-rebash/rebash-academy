@@ -1,6 +1,10 @@
 ---
 title: Course homepage schema
 description: Reusable metadata and repository layout for every REBASH Academy technology course.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Course homepage schema

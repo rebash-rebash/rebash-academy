@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Terraform course."
 technology_id: terraform
 hide:
   - toc
+author: Shaik Basha
+category: terraform
+tags:
+  - terraform
 ---
 
 # Terraform — Learning Roadmap

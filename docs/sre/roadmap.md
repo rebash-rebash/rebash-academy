@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the Site Reliability Engineering c
 technology_id: sre
 hide:
   - toc
+author: Shaik Basha
+category: sre
+tags:
+  - sre
 ---
 
 # Site Reliability Engineering — Learning Roadmap

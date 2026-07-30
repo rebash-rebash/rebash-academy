@@ -4,6 +4,10 @@ description: "Structured learning roadmap for the AI for DevOps course."
 technology_id: ai
 hide:
   - toc
+author: Shaik Basha
+category: ai
+tags:
+  - ai
 ---
 
 # AI for DevOps — Learning Roadmap

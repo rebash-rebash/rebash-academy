@@ -4,6 +4,10 @@ description: "Interview Preparation for the Cloud Architecture course — links 
 technology_id: architecture
 hide:
   - toc
+author: Shaik Basha
+category: architecture
+tags:
+  - architecture
 ---
 
 # Interview Preparation

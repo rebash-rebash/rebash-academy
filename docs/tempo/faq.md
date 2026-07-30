@@ -4,6 +4,10 @@ description: "Frequently asked questions about the Tempo course."
 technology_id: tempo
 hide:
   - toc
+author: Shaik Basha
+category: tempo
+tags:
+  - tempo
 ---
 
 # Tempo — FAQ

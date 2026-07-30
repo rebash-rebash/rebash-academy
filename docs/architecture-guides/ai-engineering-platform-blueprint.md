@@ -7,6 +7,7 @@ tags:
   - architecture
   - ai
   - platform-engineering
+author: Shaik Basha
 ---
 
 # AI Engineering Platform Blueprint

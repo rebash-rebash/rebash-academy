@@ -4,6 +4,10 @@ description: "Frequently asked questions about the OpenTelemetry course."
 technology_id: opentelemetry
 hide:
   - toc
+author: Shaik Basha
+category: opentelemetry
+tags:
+  - opentelemetry
 ---
 
 # OpenTelemetry — FAQ

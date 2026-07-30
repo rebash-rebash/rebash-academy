@@ -4,6 +4,10 @@ description: "Frequently asked questions about the AI for DevOps course."
 technology_id: ai
 hide:
   - toc
+author: Shaik Basha
+category: ai
+tags:
+  - ai
 ---
 
 # AI for DevOps — FAQ

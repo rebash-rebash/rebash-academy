@@ -1,6 +1,10 @@
 ---
 title: Certification mapping
 description: Map technologies and tutorials to industry certifications.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Certification mapping

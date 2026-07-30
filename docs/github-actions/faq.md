@@ -4,6 +4,10 @@ description: "Frequently asked questions about the GitHub Actions course."
 technology_id: github-actions
 hide:
   - toc
+author: Shaik Basha
+category: github-actions
+tags:
+  - github-actions
 ---
 
 # GitHub Actions — FAQ

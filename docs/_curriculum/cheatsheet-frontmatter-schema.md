@@ -1,6 +1,10 @@
 ---
 title: Cheat sheet frontmatter schema
 description: Required YAML frontmatter and body sections for every REBASH Academy cheat sheet.
+author: Shaik Basha
+category: curriculum
+tags:
+  - curriculum
 ---
 
 # Cheat sheet frontmatter schema
