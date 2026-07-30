@@ -1,0 +1,59 @@
+direction: down
+
+Course: Course {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#E3F2FD"
+    stroke: "#1976D2"
+  }
+}
+
+Overview: Course Overview {
+  shape: rectangle
+  style: {
+    fill: "#E8F5E9"
+    stroke: "#2E7D32"
+  }
+}
+
+Modules: Modules {
+  shape: rectangle
+}
+
+Tutorials: Tutorials {
+  shape: rectangle
+}
+
+Labs: Labs {
+  shape: rectangle
+}
+
+Projects: Projects {
+  shape: rectangle
+}
+
+Capstone: Capstone {
+  shape: rectangle
+  style: {
+    fill: "#F3E5F5"
+    stroke: "#7B1FA2"
+  }
+}
+
+CareerReady: Career Ready {
+  shape: rectangle
+  style: {
+    bold: true
+    fill: "#FFF3E0"
+    stroke: "#EF6C00"
+  }
+}
+
+Course -> Overview: start here
+Overview -> Modules: choose a module
+Modules -> Tutorials: learn concepts
+Tutorials -> Labs: hands-on practice
+Labs -> Projects: build portfolio
+Projects -> Capstone: prove end to end
+Capstone -> CareerReady: interview and certification ready
