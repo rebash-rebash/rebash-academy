@@ -14,7 +14,7 @@ tags:
   - compute
 prerequisites:
   - Completed Module 2 VPC tutorials
-  - [Linux essentials](../linux/index.md) for SSH/SSM shell comfort
+  - "[Linux essentials](../linux/index.md) for SSH/SSM shell comfort"
 comments: false
 ---
 

@@ -28,6 +28,6 @@ Production Kubernetes is less about YAML and more about failure domains, tenancy
 
 ## Related courses
 
-- [Kubernetes](../kubernetes/)
-- [Platform Engineering](../platform-engineering/)
-- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/)
+- [Kubernetes](../kubernetes/index.md)
+- [Platform Engineering](../platform-engineering/index.md)
+- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
