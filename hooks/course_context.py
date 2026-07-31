@@ -1362,7 +1362,7 @@ def inject_course_layout(context: dict, course: dict, active: str = "overview", 
 
 
 def _site_origin(config) -> str:
-    url = (config.get("site_url") or "https://academy.rebash.in/").rstrip("/") + "/"
+    url = (config.get("site_url") or "https://rebash.in/").rstrip("/") + "/"
     return url
 
 

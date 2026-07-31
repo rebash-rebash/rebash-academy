@@ -168,7 +168,7 @@ See the public **[Roadmap](../roadmap.md)** for what is published versus planned
 | **Focus** | Hands-on platform skills — Linux, Kubernetes, Terraform, CI/CD, and cloud operations |
 | **LinkedIn** | [shaikkhadarbasha](https://www.linkedin.com/in/shaikkhadarbasha/) |
 | **GitHub** | [rebash-rebash/rebash-academy](https://github.com/rebash-rebash/rebash-academy) |
-| **Website** | [academy.rebash.in](https://academy.rebash.in/) |
+| **Website** | [rebash.in](https://rebash.in/) |
 
 REBASH Academy is built and maintained to document real engineering work so others can learn by building.
 

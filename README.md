@@ -84,15 +84,22 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
 
 Documentation deploys automatically to GitHub Pages when changes are merged to `main`.
 
-**Live site:** [https://academy.rebash.in](https://academy.rebash.in)
+**Live site:** [https://rebash.in](https://rebash.in)
 
-### Custom domain (academy.rebash.in)
+### Custom domain (rebash.in)
 
-DNS at your registrar:
+DNS at Hostinger (or your registrar) for GitHub Pages:
 
 | Type | Name | Value |
 |------|------|-------|
-| CNAME | `academy` | `rebash-rebash.github.io` |
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| CNAME | `www` | `rebash-rebash.github.io` |
+| CNAME | `academy` (optional redirect host) | `rebash-rebash.github.io` |
+
+Remove any Hostinger AAAA / parking A records on `@` or `www` that do not point at GitHub Pages — leftover IPv6 can break HTTPS.
 
 After DNS propagates, GitHub Pages issues an HTTPS certificate automatically (can take up to 24 hours). Enable **Enforce HTTPS** under **Settings → Pages** once available.
 
@@ -109,7 +116,7 @@ Set environment variables to enable analytics:
 ```bash
 export GOOGLE_ANALYTICS_KEY="G-XXXXXXXXXX"
 # or
-export PLAUSIBLE_DOMAIN="academy.rebash.in"
+export PLAUSIBLE_DOMAIN="rebash.in"
 ```
 
 ## Documentation Categories

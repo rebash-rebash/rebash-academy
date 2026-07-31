@@ -3,7 +3,7 @@
 site_name: REBASH Academy
 site_description: Learn by Building. Career paths and hands-on tutorials for Cloud, DevOps, Kubernetes, and Platform Engineering.
 site_author: Shaik Basha
-site_url: https://academy.rebash.in/
+site_url: https://rebash.in/
 
 exclude_docs: |
   includes/*
@@ -47,7 +47,7 @@ extra:
   robots: |
     User-agent: *
     Allow: /
-    Sitemap: https://academy.rebash.in/sitemap.xml
+    Sitemap: https://rebash.in/sitemap.xml
 
 extra_css:
   - assets/stylesheets/custom.css
