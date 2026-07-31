@@ -25,6 +25,8 @@ extra:
   analytics:
     provider: google
     property: G-L7FRG33XFH
+  adsense:
+    client: ca-pub-8933118209357814
   consent:
     title: Cookie consent
     description: >-

@@ -19,6 +19,10 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ page.title | striptags }}">
   <meta name="twitter:description" content="{{ page.meta.description if page.meta and page.meta.description else config.site_description }}">
+  {% if config.extra.adsense and config.extra.adsense.client %}
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config.extra.adsense.client }}"
+     crossorigin="anonymous"></script>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
