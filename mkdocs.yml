@@ -24,7 +24,7 @@ extra:
       link: "#"
   analytics:
     provider: google
-    property: ""
+    property: G-L7FRG33XFH
   consent:
     title: Cookie consent
     description: >-
