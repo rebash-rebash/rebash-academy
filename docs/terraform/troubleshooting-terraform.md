@@ -41,17 +41,27 @@ comments: false
 
 ## Overview
 
+
+
 Diagnose common Terraform failures with a fixed order: auth → init/providers → validate/plan → state/lock → drift → graph/performance — using `import`, `state rm`, and `moved` only as deliberate recovery tools.
 
 Most “Terraform is broken” tickets are credentials, provider version skew, state lock contention, or drift from console edits. Separate **configuration** failures from **state** failures from **provider API** failures before changing random flags.
 
 This is a core tutorial in **Module 20 · Troubleshooting** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Production Terraform Patterns](production-terraform-patterns.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -61,13 +71,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `import`, `state rm`, and `moved` as recovery — not routine hacks  
 - [ ] Spot dependency cycles and slow plans
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform troubleshooting](../assets/excalidraw/terraform-troubleshooting.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -131,7 +149,10 @@ Separate questions: Does config parse? Does state match reality? Did the API rej
 - Assuming `-refresh=false` “fixes” drift — it only hides it temporarily.  
 - Expanding one root until plans take thirty minutes instead of splitting state.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -139,71 +160,71 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-20 && cd ~/rebash-terraform/module-20
 ```
 
-**Focus:** hands-on practice for Troubleshooting Terraform
+**Focus:** Reproduce and diagnose a common apply failure, then fix it
 
-### Step 1 – Core exercise
+### Step 1 – Create a configuration with a deliberate error
 
 ```bash
-mkdir -p ~/rebash-terraform/module-20 && cd ~/rebash-terraform/module-20
-
-cat > main.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
   required_providers {
     local = { source = "hashicorp/local", version = "~> 2.5" }
   }
 }
-
-resource "local_file" "alpha" {
-  filename = "${path.module}/alpha.txt"
-  content  = "alpha\n"
-}
-
-resource "local_file" "beta" {
-  filename = "${path.module}/beta.txt"
-  content  = "beta depends on ${local_file.alpha.id}\n"
+resource "local_file" "broken" {
+  filename = "${path.module}/out.txt"
+  content  = local.missing
 }
 EOF
-
 terraform init
-terraform apply -auto-approve
+terraform validate 2>&1 || true
+```
 
-# Simulate drift: edit a managed file out of band
-echo "tampered" > alpha.txt
-terraform plan -input=false | head -n 50
+### Step 2 – Fix, apply, and use diagnostics habitually
 
-cat > playbook.md << 'EOF'
-1. Auth / account / OIDC
-2. terraform init (provider versions)
-3. terraform validate && terraform plan
-4. State lock: wait or force-unlock only if abandoned
-5. Drift: align config or re-apply desired state
-6. Cycles: remove mutual depends_on / fix refs
-7. Backup: terraform state pull > backup.tfstate
-8. Recovery: import | state rm | moved (plan first)
-9. Performance: split roots, pin versions, shrink refresh
+```bash
+cat > main.tf <<'EOF'
+terraform {
+  required_providers {
+    local = { source = "hashicorp/local", version = "~> 2.5" }
+  }
+}
+locals {
+  message = "fixed"
+}
+resource "local_file" "broken" {
+  filename = "${path.module}/out.txt"
+  content  = local.message
+}
 EOF
-
-# Recovery tools (read-only practice notes — do not rm casually in prod)
-terraform state list
-# terraform import local_file.gamma /abs/path  # when adopting
-# terraform state rm local_file.beta          # stop managing; object may remain
-# moved { from = ... to = ... }               # in *.tf for renames
+terraform validate
+TF_LOG=INFO terraform apply -auto-approve 2>&1 | tail -n 20
+cat out.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-20/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Troubleshooting Terraform** always combines:
 
@@ -215,7 +236,11 @@ Production practice for **Troubleshooting Terraform** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -223,7 +248,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Jumping to `force-unlock` while another apply is healthy.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -234,7 +263,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Troubleshooting Terraform changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -242,7 +275,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -252,26 +289,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 You can test, secure, automate, multi-cloud, Kubernetes-bootstrap, and operate production Terraform — and troubleshoot failures by layer.
 
+
+
 ## Interview Questions
 
-1. How does **Troubleshooting Terraform** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What are common causes of provider authentication errors?
+2. How do you interpret a resource that must be replaced?
+3. What does state inconsistency look like after a partial failure?
+4. How can TF_LOG help, and what must you avoid when sharing logs?
+5. When is `terraform refresh` / plan with refresh useful versus dangerous?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Replacement means Terraform cannot update in place—often from force-new arguments. Expect delete/create and plan for downtime or recreation side effects.
+
+!!! tip "Sample answer — question 4"
+    Debug logs may include secrets and tokens. Redact before sharing, and prefer targeted provider logs over dumping full environment variables.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Course overview](index.md) · [Production Terraform Patterns](production-terraform-patterns.md) · [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
+- [Course overview](index.md) · [Production Terraform Patterns](production-terraform-patterns.md) · [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
+
+
 
 ## References
+
+
 
 - [Debugging Terraform](https://developer.hashicorp.com/terraform/cli/commands#debugging-terraform) · [State CLI](https://developer.hashicorp.com/terraform/cli/commands/state) · [Import](https://developer.hashicorp.com/terraform/cli/import)

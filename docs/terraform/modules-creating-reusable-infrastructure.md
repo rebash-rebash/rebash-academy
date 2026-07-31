@@ -40,18 +40,28 @@ comments: false
 
 ## Overview
 
+
+
 Create a child module with typed variables and outputs, call it twice from a root, and apply a clear input/output contract without leaking internals.
 
 **Modules** package reusable infrastructure patterns behind a typed API. Platform teams publish child modules; application roots call them without copying raw resource blocks. Local `source = "./modules/..."` is the composition skill before Registry modules.
 
 This is a core tutorial in **Module 9 · Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Remote State and Backends](remote-state-and-backends.md)
 - Terraform CLI 1.9+
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `path.module` correctly inside children  
 - [ ] Design small modules with stable contracts
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform modules](../assets/excalidraw/terraform-modules.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -110,7 +128,10 @@ Child module when reused; inline resources for one-offs; wrapper modules to soft
 - Using relative `../` paths as the public API instead of input variables.
 - Forgetting `required_providers` or a README with examples.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -118,84 +139,68 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated} && cd ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}
 ```
 
-**Focus:** hands-on practice for Modules — Creating Reusable Infrastructure
+**Focus:** Build and call a local module
 
-### Step 1 – Core exercise
+### Step 1 – Author a module and root module
 
 ```bash
-mkdir -p ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}
-cd ~/rebash-terraform/module-09/create-modules
-
-cat > modules/greeting/variables.tf << 'EOF'
-variable "project" {
-  type = string
-  validation {
-    condition     = length(var.project) > 0 && length(var.project) < 32
-    error_message = "project must be non-empty and under 32 characters."
-  }
+mkdir -p modules/label
+cat > modules/label/main.tf <<'EOF'
+variable "name" { type = string }
+resource "local_file" "out" {
+  filename = "${path.root}/${var.name}.label"
+  content  = "module-built:${var.name}
+"
 }
-variable "message" { type = string }
+output "path" { value = local_file.out.filename }
 EOF
-
-cat > modules/greeting/main.tf << 'EOF'
-resource "local_file" "this" {
-  filename        = "${path.module}/../../generated/${var.project}.txt"
-  content         = "${var.message}\n"
-  file_permission = "0644"
-}
-EOF
-
-cat > modules/greeting/outputs.tf << 'EOF'
-output "path" { value = local_file.this.filename }
-output "md5"  { value = local_file.this.content_md5 }
-EOF
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.9.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.9" }
+    local = { source = "hashicorp/local", version = "~> 2.5" }
   }
 }
-EOF
-
-cat > main.tf << 'EOF'
-module "greeting" {
-  source  = "./modules/greeting"
-  project = "rebash"
-  message = "module-lab"
+module "app" {
+  source = "./modules/label"
+  name   = "checkout"
 }
-
-module "greeting_alt" {
-  source  = "./modules/greeting"
-  project = "rebash-alt"
-  message = "second-instance"
-}
-
-output "greeting_path" { value = module.greeting.path }
+output "label_path" { value = module.app.path }
 EOF
+terraform init
+```
 
-terraform init -input=false
-terraform apply -input=false -auto-approve
-cat generated/rebash.txt generated/rebash-alt.txt
-terraform state list | head
-terraform destroy -input=false -auto-approve
+### Step 2 – Apply and inspect module address in state
+
+```bash
+terraform apply -auto-approve
+terraform state list
+cat checkout.label
+terraform output
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Modules — Creating Reusable Infrastructure** always combines:
 
@@ -207,7 +212,11 @@ Production practice for **Modules — Creating Reusable Infrastructure** always 
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -215,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Mega-modules with unreviewable blast radius."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -226,7 +239,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Modules — Creating Reusable Infrastructure changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -234,7 +251,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -244,27 +265,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Modules — Creating Reusable Infrastructure** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Modules — Creating Reusable Infrastructure** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What problem do modules solve?
+2. How do module inputs and outputs define a contract?
+3. What should you avoid putting inside a general-purpose module?
+4. How can a poorly versioned module create blast radius across many stacks?
+5. What is the difference between a root module and a child module?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Variables declare required inputs; outputs expose selected results. A clear contract lets callers compose modules without reading every resource inside.
+
+!!! tip "Sample answer — question 4"
+    One module change can alter hundreds of workspaces. Version modules, changelog breaking changes, and roll out upgrades gradually with plans reviewed per environment.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Registry Modules and Composition](registry-modules-and-composition.md)
+- [Registry Modules and Composition](registry-modules-and-composition.md)
+
+
 
 ## References
+
+
 
 - [Modules Overview](https://developer.hashicorp.com/terraform/language/modules)  
 - [Module Blocks](https://developer.hashicorp.com/terraform/language/modules/syntax)  

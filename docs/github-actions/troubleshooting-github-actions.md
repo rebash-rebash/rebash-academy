@@ -46,18 +46,28 @@ comments: false
 
 ## Overview
 
+
+
 Diagnose failed jobs, runner problems, authentication errors, cache misses, deploy failures, and slow workflows with a fixed order: trigger → permissions → runner → credentials → cache → deploy target → performance.
 
 Most “Actions is broken” tickets are skipped jobs, missing permissions, offline self-hosted runners, expired OIDC trust, or poisoned caches — not mysterious GitHub bugs. Separate **definition** failures (workflow never ran the job you expected) from **execution** failures before changing production secrets.
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
 - Runner, secrets/OIDC, and cache modules completed (or equivalent)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -66,13 +76,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Recover from queued jobs and self-hosted executor errors  
 - [ ] Apply a performance triage for slow workflows
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Troubleshooting ladder](../assets/excalidraw/gha-troubleshooting.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -122,7 +140,10 @@ Prefer root-cause fixes over retry-as-strategy. Reproduce with a minimal workflo
 - `continue-on-error: true` as a permanent broken gate.  
 - Re-running while an Environment still awaits approval.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -130,74 +151,59 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-16/.github/workflows && cd ~/rebash-github-actions/module-16/.github/workflows
 ```
 
-**Focus:** hands-on practice for Troubleshooting GitHub Actions
+**Focus:** introduce a failing step locally and fix the workflow
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-github-actions/module-16/.github/workflows
-cd ~/rebash-github-actions/module-16
-```
+### Step 1 – Fail then fix
 
 {% raw %}
 ```bash
-cat > .github/workflows/debug.yml << 'EOF'
-name: Debug playbook demo
-on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-
+mkdir -p .github/workflows
+cat > .github/workflows/bad.yml << 'EOF'
+name: bad
+on: workflow_dispatch
 jobs:
-  broken_label_example:
-    if: false   # set true only to demo queueing without a gpu-lab runner
-    runs-on: [self-hosted, gpu-lab]
-    steps:
-      - run: echo "Queued without matching runner"
-
-  auth_and_cache:
+  j:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: .cache
-          key: ${{ runner.os }}-demo-${{ hashFiles('**/lockfile.txt') }}
-      - run: |
-          echo "Check permissions, OIDC id-token, environment reviewers, registry login"
-          mkdir -p .cache && echo ok > .cache/marker
+      - run: exit 1
 EOF
+# Local analogue of a failing step:
+(false) 2>&1 | tee fail.txt || true
+cat > .github/workflows/bad.yml << 'EOF'
+name: bad
+on: workflow_dispatch
+jobs:
+  j:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo fixed && exit 0
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/bad.yml')); print('fixed')"
 ```
 {% endraw %}
-
-```bash
-cat > playbook.md << 'EOF'
-1. Trigger — on:/paths match?
-2. Skipped vs failed vs queued — if, needs, runners
-3. permissions — contents, id-token, packages
-4. Log — failing step from the bottom
-5. Auth / cache / deploy / performance
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/debug.yml')); print('YAML parse OK')"
-```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-16/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Troubleshooting GitHub Actions** always combines:
 
@@ -209,7 +215,11 @@ Production practice for **Troubleshooting GitHub Actions** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -217,7 +227,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Blaming GitHub.com when no runner matches `runs-on` labels.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -228,7 +242,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Troubleshooting GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -236,7 +254,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -246,27 +268,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 You can design, secure, promote, and troubleshoot production GitHub Actions pipelines end to end.
 
+
+
 ## Interview Questions
 
-1. How does **Troubleshooting GitHub Actions** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Troubleshooting GitHub Actions** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Course overview](index.md) · [GitLab CI/CD](../gitlab/index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [Course overview](index.md) · [GitLab CI/CD](../gitlab/index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+
+
 
 ## References
+
+
 
 - [About monitoring and troubleshooting](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/about-monitoring-and-troubleshooting)  
 - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)  

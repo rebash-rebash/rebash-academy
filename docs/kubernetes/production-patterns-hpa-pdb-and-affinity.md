@@ -19,9 +19,12 @@ prerequisites:
 comments: false
 ---
 
+
 # Production Patterns — HPA, PDB, and Affinity
 
 ## Overview
+
+
 
 Running two replicas is not production-ready. Real clusters face traffic spikes, node maintenance, and hardware failures simultaneously. **Horizontal Pod Autoscaler (HPA)** scales replicas on metrics. **Pod Disruption Budgets (PDB)** ensure voluntary disruptions (drains, upgrades) never take down too many pods at once. **Affinity and topology spread** place workloads on the right nodes and spread them across failure domains.
 
@@ -29,7 +32,11 @@ This tutorial teaches the production control loop: scale out under load, scale i
 
 This is **Tutorial 17** in **Module 6: Production** of the REBASH Academy Kubernetes series.
 
+
+
 ## Prerequisites
+
+
 
 - [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md)
 - [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md)
@@ -38,7 +45,11 @@ This is **Tutorial 17** in **Module 6: Production** of the REBASH Academy Kubern
 - Cluster with **metrics-server** installed (required for CPU/memory HPA)
 - Optional: Prometheus Adapter for custom metrics HPA
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -49,11 +60,19 @@ By the end of this tutorial, you will be able to:
 - [ ] Combine resource requests with autoscaling for stable scheduling
 - [ ] Validate scaling and disruption behaviour before production cutover
 
+
+
 ## Architecture
+
+
 
 ![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### Horizontal Pod Autoscaler
 
@@ -140,238 +159,91 @@ When a teammate asks “is this ready?”, answer with evidence from this tutori
 
 Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
+
+
 ## Hands-on Lab
 
-Labs extend the **VoteStack api** Deployment from [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md).
 
-### Lab 1 — Verify metrics-server
-
-```bash
-kubectl get deployment metrics-server -n kube-system
-kubectl top nodes
-kubectl top pods -n votestack
-```
-
-If missing on kind/minikube:
+Create a workspace for this tutorial.
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-# kind may need --kubelet-insecure-tls flag in metrics-server args
+mkdir -p ~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity && cd ~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
+**Focus:** Combine PDB and pod anti-affinity for resilient scheduling
 
+### Step 1 – Deploy with anti-affinity and PDB
 
-### Lab 2 — Baseline Deployment with resource requests
-
-Ensure the api Deployment sets requests (HPA prerequisite):
-
-```yaml
+```bash
+kubectl create namespace rebash-lab
+cat > patterns.yaml <<'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: votestack-api
-  namespace: votestack
+  name: resilient
+  namespace: rebash-lab
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: votestack-api
+      app: resilient
   template:
     metadata:
       labels:
-        app: votestack-api
+app: resilient
     spec:
+      affinity:
+podAntiAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+  - weight: 100
+    podAffinityTerm:
+      labelSelector:
+matchLabels:
+  app: resilient
+      topologyKey: kubernetes.io/hostname
       containers:
-        - name: api
-          image: ghcr.io/org/votestack-api:abc1234
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: 8080
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            periodSeconds: 10
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Apply and confirm: `kubectl get deploy votestack-api -n votestack`
-
-### Lab 3 — Create Horizontal Pod Autoscaler
-
-```yaml
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: votestack-api
-  namespace: votestack
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: votestack-api
-  minReplicas: 2
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 300
-      policies:
-        - type: Percent
-          value: 50
-          periodSeconds: 60
-    scaleUp:
-      stabilizationWindowSeconds: 0
-      policies:
-        - type: Percent
-          value: 100
-          periodSeconds: 15
-```
-
-```bash
-kubectl apply -f hpa-api.yaml
-kubectl get hpa -n votestack
-kubectl describe hpa votestack-api -n votestack
-```
-
-Load test to trigger scale-up:
-
-```bash
-kubectl run -it loadgen --rm --image=busybox --restart=Never -- \
-  sh -c "while true; do wget -q -O- http://votestack-api.votestack.svc:8080/api/polls; done"
-# Watch replicas in another terminal
-kubectl get hpa,pods -n votestack -w
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 4 — Pod Disruption Budget
-
-```yaml
+      - name: nginx
+image: nginx:1.27-alpine
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: votestack-api
-  namespace: votestack
+  name: resilient
+  namespace: rebash-lab
 spec:
   minAvailable: 1
   selector:
     matchLabels:
-      app: votestack-api
+      app: resilient
+EOF
+kubectl apply -f patterns.yaml
+kubectl -n rebash-lab rollout status deploy/resilient
 ```
+
+### Step 2 – Inspect placement and disruption budget
 
 ```bash
-kubectl apply -f pdb-api.yaml
-kubectl get pdb -n votestack
+kubectl -n rebash-lab get pods -l app=resilient -o wide
+kubectl -n rebash-lab get pdb resilient -o yaml | head -n 30
+kubectl -n rebash-lab describe deploy resilient | sed -n '/Affinity:/,/Containers:/p'
 ```
 
-Simulate drain with PDB active:
+### Final step – Cleanup note
 
 ```bash
-NODE=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
-kubectl drain "$NODE" --ignore-daemonsets --delete-emptydir-data --dry-run=client
-# Real drain respects PDB — may block if minAvailable would be violated
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
 
-
-### Lab 5 — Topology spread across zones
-
-Label nodes (cloud clusters often have zone labels pre-set):
-
-```yaml
-# Add to Deployment pod template spec
-spec:
-  topologySpreadConstraints:
-    - maxSkew: 1
-      topologyKey: topology.kubernetes.io/zone
-      whenUnsatisfiable: ScheduleAnyway
-      labelSelector:
-        matchLabels:
-          app: votestack-api
-    - maxSkew: 1
-      topologyKey: kubernetes.io/hostname
-      whenUnsatisfiable: DoNotSchedule
-      labelSelector:
-        matchLabels:
-          app: votestack-api
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchLabels:
-                app: votestack-api
-            topologyKey: kubernetes.io/hostname
-```
-
-Verify distribution:
-
-```bash
-kubectl get pods -n votestack -o wide -l app=votestack-api
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 6 — Worker queue-depth HPA (custom metrics)
-
-For the VoteStack **worker**, scale on Redis queue length via Prometheus Adapter:
-
-```yaml
-# prometheus-adapter config snippet — queue depth metric
-rules:
-  - seriesQuery: 'redis_list_length{list="votes"}'
-    resources:
-      overrides:
-        namespace: { resource: "namespace" }
-        pod: { resource: "pod" }
-    name:
-      matches: "redis_list_length"
-      as: "redis_votes_queue_depth"
-    metricsQuery: 'redis_list_length{list="votes",<<.LabelMatchers>>}'
-```
-
-HPA referencing custom metric:
-
-```yaml
-metrics:
-  - type: Pods
-    pods:
-      metric:
-        name: redis_votes_queue_depth
-      target:
-        type: AverageValue
-        averageValue: "30"
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Document in GitOps values; validate in staging before prod.
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -386,7 +258,11 @@ Confirm the lab before moving on:
 | Affinity | Scheduling rules affect Pod placement as documented |
 | Cleanup | HPA/PDB/demo workloads removed |
 
+
+
 ## Code Walkthrough
+
+
 
 ```bash
 # HPA inspection
@@ -412,7 +288,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 | PDB | `policy/v1` | Namespaced |
 | VPA | `autoscaling.k8s.io/v1` | Namespaced (optional add-on) |
 
+
+
 ## Security Considerations
+
+
 
 - Cap HPA max replicas to protect downstream dependencies and your cloud bill
 - Pair PodDisruptionBudgets with enough replicas — a PDB of minAvailable=1 on a single replica blocks drains forever or forces unsafe bypasses
@@ -422,7 +302,10 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - Test drain/eviction behaviour in staging before relying on PDBs in production
 
 
+
 ## Common Mistakes
+
+
 
 !!! warning "HPA without resource requests"
     HPA cannot compute CPU utilization percentage if requests are unset — pods show `<unknown>` metrics.
@@ -439,7 +322,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 !!! warning "Ignoring scale-down stabilization"
     Immediate scale-down after a spike causes thrashing — tune `stabilizationWindowSeconds`.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Set requests from production profiling"
     Use VPA recommender or load-test data — HPA and scheduler depend on accurate requests.
@@ -456,7 +343,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 !!! tip "Document min/max replica rationale"
     `maxReplicas` prevents runaway scaling costs; `minReplicas` ensures HA baseline — record both in runbooks.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -467,7 +358,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 | Flapping replicas | Target too aggressive | Raise target CPU%; add scale-down delay |
 | Custom metric missing | Prometheus Adapter misconfigured | Check adapter logs and metric discovery |
 
+
+
 ## Summary
+
+
 
 - **HPA** scales replica count on CPU, memory, or custom metrics — requires resource requests and metrics-server
 - **PDB** protects availability during voluntary disruptions like node drains and upgrades
@@ -476,28 +371,28 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - Tune scale-down behaviour to prevent flapping; validate with load tests and drain simulations
 - Next: [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md)
 
+
+
 ## Interview Questions
 
-1. How does HPA calculate desired replica count for CPU utilization?
-2. Why must containers define resource requests for CPU-based HPA?
-3. What is the difference between voluntary and involuntary pod disruption?
-4. When would you use `minAvailable` vs `maxUnavailable` in a PDB?
-5. Explain hard vs soft pod anti-affinity.
-6. What problem do topology spread constraints solve?
-7. How would you autoscale a worker based on queue depth?
-8. Why does HPA scale-down have a stabilization window?
-9. What happens if PDB blocks a node drain during a security patch?
-10. How do HPA and Cluster Autoscaler interact?
 
-??? tip "Sample Answers (Questions 1, 4, and 10)"
+1. How do HPA and PDB interact during scale-down and node drains?
+2. What is preferred versus required pod anti-affinity?
+3. When is topology spread constraints a better fit than anti-affinity?
+4. What failure mode appears if minAvailable is higher than current Ready replicas?
+5. How would you place replicas across zones for a critical Service?
 
-    **Q1 — HPA CPU formula:** HPA reads current average CPU utilization across pods (as percentage of configured requests). `desiredReplicas = ceil(currentReplicas × (currentUtilization / targetUtilization))`. Example: 4 pods at 140% average with 70% target → ceil(4 × 2) = 8 replicas.
+!!! tip "Sample answer — question 2"
+    Preferred anti-affinity soft-scores placement; required rules block scheduling if unsatisfied. Preferred is safer when node count is small.
 
-    **Q4 — minAvailable vs maxUnavailable:** `minAvailable: 3` guarantees at least 3 pods stay up during disruption — good when you think in terms of absolute HA floor. `maxUnavailable: 1` allows only one pod down at a time — intuitive for rolling maintenance on small deployments. Use percentages at scale.
+!!! tip "Sample answer — question 4"
+    If minAvailable exceeds Ready Pods, voluntary disruptions are blocked and drains can stall. Keep PDB aligned with actual replica counts and readiness.
 
-    **Q10 — HPA + Cluster Autoscaler:** HPA adds pods when metrics exceed targets. If no node has capacity, pods stay Pending. Cluster Autoscaler detects Pending pods and provisions new nodes (on supported cloud providers). Without Cluster Autoscaler, HPA hits scheduling ceiling.
+
 
 ## Related Tutorials
+
+
 
 - [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md) *(previous)*
 - [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md) *(next)*
@@ -509,7 +404,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Kubernetes – Horizontal Pod Autoscaling](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
 - [Kubernetes – Pod Disruption Budgets](https://kubernetes.io/docs/tasks/run-application/configure-pdb/)

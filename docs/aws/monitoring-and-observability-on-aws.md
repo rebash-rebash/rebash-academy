@@ -50,19 +50,29 @@ comments: false
 
 ## Overview
 
+
+
 Wire the AWS observability spine — Amazon CloudWatch, AWS CloudTrail, AWS Config, AWS X-Ray, AWS Health Dashboard, and AWS Systems Manager — so you can detect, investigate, and act without drowning in alarms or log ingestion cost.
 
 **Observability** answers: is the system healthy, what changed, and why? On AWS, **CloudWatch** holds metrics, logs, alarms, and dashboards. **CloudTrail** records API activity (who did what). **Config** records resource configuration and compliance over time. **X-Ray** traces requests across services. **Health Dashboard** surfaces AWS service events affecting your accounts. **Systems Manager (SSM)** provides operational actions — Session Manager, Parameter Store (ops config), Run Command, Patch Manager, and Inventory. Together they support SRE-style detect → diagnose → remediate loops.
 
 This is a core tutorial in **Module 9 · Monitoring & Observability** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Serverless on AWS](serverless-on-aws.md)
 - AWS CLI access to a sandbox account
 - Familiarity with IAM and basic EC2 or Lambda resources
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -72,13 +82,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use Systems Manager Session Manager, Run Command, Parameter Store (ops), and Patch Manager without bastion hosts  
 - [ ] Place the AWS Health Dashboard in an incident triage sequence
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Observability on AWS](../assets/excalidraw/aws-monitoring.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -144,47 +162,54 @@ Site Reliability Engineering (SRE) and DevOps need golden signals, change correl
 - Bastions on port 22 instead of Session Manager (and missing VPC endpoints).
 - Treating Parameter Store as a database.
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-09 && cd ~/rebash-aws/module-09
 ```
 
-**Focus:** read-only AWS CLI checks for Monitoring and Observability on AWS (no create unless you intend to pay)
+**Focus:** list CloudWatch alarm names and recent metrics availability
 
-### Step 1 – Identity and region hygiene
-
-```bash
-aws sts get-caller-identity
-aws configure get region || true
-echo "Use a sandbox account. Prefer --dry-run / read-only APIs first."
-```
-
-### Step 2 – Topic inspection
+### Step 1 – CloudWatch signals
 
 ```bash
-# Adapt to the service in this tutorial — examples:
-aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head
-aws s3api list-buckets --query 'Buckets[].Name' --output table 2>/dev/null | head || true
-# Document which API maps to the Theory section for: Monitoring and Observability on AWS
+aws cloudwatch describe-alarms --query 'MetricAlarms[].{Name:AlarmName,State:StateValue}' --output table 2>/dev/null | head -n 40 | tee alarms.txt || true
+aws logs describe-log-groups --query 'logGroups[].logGroupName' --output text 2>/dev/null | tr '\t' '\n' | head -n 20 | tee log-groups.txt || true
+tee o11y-notes.txt << 'EOF'
+Alarms need runbooks. Prefer metrics that track user symptoms (latency/errors) over only host CPU.
+EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Destroy anything you created; leave IAM/roles tagged and time-boxed
-# Keep ~/rebash-aws/ notes for later tutorials
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-09/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Monitoring and Observability on AWS** always combines:
 
@@ -196,7 +221,11 @@ Production practice for **Monitoring and Observability on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -204,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Alarming only on CPU while ignoring errors and latency."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -215,7 +248,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Monitoring and Observability on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -223,7 +260,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -233,27 +274,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Monitoring and Observability on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Monitoring and Observability on AWS** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Monitoring and Observability on AWS** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [AWS Security Services](aws-security-services.md)
+- [AWS Security Services](aws-security-services.md)
+
+
 
 ## References
+
+
 
 - [Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)  
 - [AWS CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html)  

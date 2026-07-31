@@ -44,18 +44,28 @@ comments: false
 
 ## Overview
 
+
+
 Create annotated git tags, publish GitHub Releases with notes and assets, and apply Semantic Versioning (SemVer) with changelog discipline from GitHub Actions.
 
 A **release** is more than a green workflow: it is an immutable Git reference, human-readable notes, and optional binaries or package links. GitHub ties **tags**, **Releases**, and Actions so the same SHA you tested becomes the version you promote through environments.
 
 This is a core tutorial in **Module 13 · Release Management** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Testing in GitHub Actions](testing-in-github-actions.md)
 - Comfortable with protected branches and `contents` / `packages` permissions
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -64,13 +74,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Create a GitHub Release with notes and asset links  
 - [ ] Generate or attach a changelog for operators
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Release pipeline](../assets/excalidraw/gha-release-pipeline.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -123,7 +141,10 @@ Prefer **annotated tags** over lightweight tags for release history. Keep change
 - Creating Releases without a matching successful tag workflow — notes without artefacts.  
 - Granting broad `contents: write` on every pull-request workflow — scope write permissions to release jobs only.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -131,31 +152,54 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-13/.github/workflows && cd ~/rebash-github-actions/module-13/.github/workflows
 ```
 
-**Focus:** hands-on practice for Release Management and Versioning
+**Focus:** tag-driven release workflow stub
 
-### Step 1 – Core exercise
+### Step 1 – Release workflow
 
+{% raw %}
 ```bash
-mkdir -p ~/rebash-github-actions/module-13/.github/workflows
-cd ~/rebash-github-actions/module-13
-
-cat > CHANGELOG.md << 'EOF'
-# Changelog
+mkdir -p .github/workflows
+echo '0.1.0' > VERSION
+cat > .github/workflows/release.yml << 'EOF'
+name: release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Build and publish artefacts for ${{ github.ref_name }}"
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml')); print('OK')"
+```
+{% endraw %}
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-13/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Release Management and Versioning** always combines:
 
@@ -167,7 +211,11 @@ Production practice for **Release Management and Versioning** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -175,7 +223,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Moving or retagging `v1.2.0` after publish — consumers and digests diverge; always cut a n"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -186,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Release Management and Versioning changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -194,7 +250,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -204,27 +264,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Release Management and Versioning** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Release Management and Versioning** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Release Management and Versioning** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md)
+- [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md)
+
+
 
 ## References
+
+
 
 - [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)  
 - [softprops/action-gh-release](https://github.com/softprops/action-gh-release)  

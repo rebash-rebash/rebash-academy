@@ -37,17 +37,27 @@ comments: false
 
 ## Overview
 
+
+
 Deploy a Pod with resource requests, understand lifecycle phases, and know why bare Pods are rare in production.
 
 A **Pod** is one or more containers sharing network/storage namespaces. Controllers (Deployments) recreate Pods; bare Pods do not self-heal on node loss.
 
 This is a core tutorial in **Module 3 · Kubernetes Objects** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [kubectl Essentials](kubectl-essentials-and-workflows.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -56,13 +66,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Set requests/limits  
 - [ ] Prefer Deployments for apps
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -105,7 +123,10 @@ Resource **requests** influence scheduling; **limits** cap usage. Probes (livene
 - Putting tightly coupled processes in separate Pods when they need shared volumes or localhost.
 - Ignoring `describe` Events when stuck in Pending (image pull, taints, PVC).
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -113,53 +134,72 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-03 && cd ~/rebash-k8s/module-03
 ```
 
-**Focus:** hands-on practice for Pods — The Atomic Unit
+**Focus:** Understand Pod lifecycle, multi-container patterns, and IP identity
 
-### Step 1 – Core exercise
+### Step 1 – Create a multi-container Pod sharing a volume
 
 ```bash
-mkdir -p ~/rebash-k8s/module-03 && cd ~/rebash-k8s/module-03
-cat > pod.yaml << 'EOF'
+kubectl create namespace rebash-lab
+cat > pod.yaml <<'EOF'
 apiVersion: v1
 kind: Pod
 metadata:
-  name: rebash-pod
-  labels:
-    app: rebash
+  name: atomic
+  namespace: rebash-lab
 spec:
   containers:
-    - name: web
-      image: nginx:alpine
-      ports:
-        - containerPort: 80
-      resources:
-        requests:
-          cpu: 50m
-          memory: 64Mi
-        limits:
-          memory: 128Mi
+  - name: writer
+    image: busybox:1.36
+    command: ["sh", "-c", "echo from-writer > /shared/note; sleep 3600"]
+    volumeMounts:
+    - name: shared
+      mountPath: /shared
+  - name: reader
+    image: busybox:1.36
+    command: ["sh", "-c", "sleep 2; cat /shared/note; sleep 3600"]
+    volumeMounts:
+    - name: shared
+      mountPath: /shared
+  volumes:
+  - name: shared
+    emptyDir: {}
 EOF
 kubectl apply -f pod.yaml
-kubectl get pod rebash-pod -w &
-sleep 3; kill %1 2>/dev/null || true
-kubectl describe pod rebash-pod | sed -n '/Events/,$p' | head -n 20
-kubectl delete -f pod.yaml
+kubectl -n rebash-lab wait --for=condition=Ready pod/atomic --timeout=60s
+```
+
+### Step 2 – Inspect shared network and volume
+
+```bash
+kubectl -n rebash-lab logs atomic -c reader
+kubectl -n rebash-lab get pod atomic -o jsonpath='PodIP={.status.podIP}{"
+"}'
+kubectl -n rebash-lab exec atomic -c writer -- ls -l /shared
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-03/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Pods — The Atomic Unit** always combines:
 
@@ -171,7 +211,11 @@ Production practice for **Pods — The Atomic Unit** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -179,7 +223,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Running production apps as bare Pods — no replica repair on node failure."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -190,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Pods — The Atomic Unit changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -198,7 +250,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -208,26 +264,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Pods — The Atomic Unit** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Pods — The Atomic Unit** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Why can containers in a Pod share localhost and volumes?
+2. When should you use multiple containers in one Pod versus separate Pods?
+3. What happens to a Pod IP when the Pod is recreated?
+4. What security implication follows from containers sharing a network namespace?
+5. What is an init container used for?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Sidecars suit tightly coupled helpers (proxy, log shipper) that must share lifecycle and network. Independent scaling or failure domains belong in separate Pods behind Services.
+
+!!! tip "Sample answer — question 4"
+    Shared network namespaces mean any container can bind ports and talk over localhost; a compromised sidecar can reach the app. Keep images minimal and apply strict securityContext settings.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Labels, Selectors, and Namespaces](kubernetes-objects-labels-and-namespaces.md)
+- [Labels, Selectors, and Namespaces](kubernetes-objects-labels-and-namespaces.md)
+
+
 
 ## References
+
+
 
 - [Pods](https://kubernetes.io/docs/concepts/workloads/pods/)

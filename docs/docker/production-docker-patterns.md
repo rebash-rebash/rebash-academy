@@ -41,18 +41,28 @@ comments: false
 
 ## Overview
 
+
+
 Assemble a production checklist: immutable tags, hardened images, registry retention, volume backup, health/resources, and a path to orchestrators.
 
 Production Docker is a set of defaults: small scanned images, non-root, limits, health checks, CI promotion, and documented rollback. Compose may run small fleets; Kubernetes owns large scale.
 
 This is a core tutorial in **Module 17 · Production Docker** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - Modules 9–16 (Compose through troubleshooting)
 - [Docker Security Hardening](docker-security-hardening.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] List scaling limits of single-host Docker  
 - [ ] Complete an operational excellence checklist
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Production platform](../assets/excalidraw/docker-production-platform.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -103,7 +121,10 @@ Codify these patterns in a platform template repository so every new service inh
 - No resource limits “because the VM is big enough”  
 - Rollback plans that require a developer laptop
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -111,58 +132,48 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
 ```
 
-**Focus:** hands-on practice for Production Docker Patterns
+**Focus:** production-minded image: non-root, healthcheck, pinned tag
 
-### Step 1 – Core exercise
+### Step 1 – Prod-shaped Dockerfile
 
 ```bash
-mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
-cat > production-checklist.md << 'EOF'
-- [ ] Multi-stage, non-root image
-- [ ] Immutable tags (sha + semver)
-- [ ] Registry + retention
-- [ ] Trivy gate in CI
-- [ ] Healthcheck + resource limits
-- [ ] Logging driver / aggregation
-- [ ] Volume backup tested
-- [ ] Runbook: rollback digest
-- [ ] Secrets via runtime, not layers
+cat > Dockerfile << 'EOF'
+FROM nginx:1.27-alpine
+RUN adduser -D -u 10001 appuser || true
+HEALTHCHECK CMD wget -qO- http://127.0.0.1/ || exit 1
 EOF
-
-cat > compose.yaml << 'EOF'
-services:
-  web:
-    image: nginx:alpine  # replace with registry/app:sha in real use
-    ports: ["8083:80"]
-    read_only: true
-    tmpfs: ["/var/cache/nginx", "/var/run", "/tmp"]
-    mem_limit: 128m
-    cpus: "0.50"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
-      interval: 10s
-      retries: 3
-EOF
-
-docker compose up -d
-curl -sI http://127.0.0.1:8083 | head -n 3
-docker compose down
+docker build -t rebash-lab:local .
+docker run -d --name rebash-lab -p 18080:80 rebash-lab:local
+sleep 2
+curl -sI http://127.0.0.1:18080 | head -n 3
+docker inspect rebash-lab --format '{{ "{{" }}json .State.Health{{ "}}" }}' | tee health.json || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
+docker network rm rebash-net 2>/dev/null || true
+docker volume rm rebash-vol 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-17/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production Docker Patterns** always combines:
 
@@ -174,7 +185,11 @@ Production practice for **Production Docker Patterns** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -182,7 +197,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Different images per environment with untested prod-only Dockerfiles  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -193,7 +212,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production Docker Patterns changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -201,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -211,26 +238,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 You can ship and operate containers with production discipline and hand off cleanly to Kubernetes.
 
+
+
 ## Interview Questions
 
-1. How does **Production Docker Patterns** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Production Docker Patterns** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [From Docker to Kubernetes](from-docker-to-kubernetes.md) · [Capstone and next steps](docker-capstone-and-next-steps.md)
+- [From Docker to Kubernetes](from-docker-to-kubernetes.md) · [Capstone and next steps](docker-capstone-and-next-steps.md)
+
+
 
 ## References
+
+
 
 - [Docker production best practices](https://docs.docker.com/develop/security-best-practices/)

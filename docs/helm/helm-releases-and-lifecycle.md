@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Install a release, upgrade it, inspect history, roll back, and know when to use `--atomic` and `--wait`.
 
 A **release** is a named installation. Each upgrade creates a revision. Rollback restores a prior revision’s manifests.
 
 This is a core tutorial in **Module 7 · Releases** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - Working cluster + [Chart basics](working-with-helm-charts.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `--atomic` and `--wait`  
 - [ ] Outline `helm diff` plugin use
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Release lifecycle](../assets/excalidraw/helm-release-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -112,7 +130,10 @@ Releases are **namespaced** by default (Helm 3). The same release name can exist
 - Omitting `--wait` and assuming the release is healthy because the CLI exited zero.
 - Losing history by deleting the namespace or release Secrets/ConfigMaps carelessly.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -120,37 +141,51 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-07 && cd ~/rebash-helm/module-07
 ```
 
-**Focus:** hands-on practice for Helm Releases and Lifecycle
+**Focus:** Practise install, upgrade, history, rollback, and uninstall
 
-### Step 1 – Core exercise
+### Step 1 – Install and upgrade a release
 
 ```bash
-mkdir -p ~/rebash-helm/module-07 && cd ~/rebash-helm/module-07
-helm create rebash-rel
-kubectl create ns rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-helm upgrade --install demo ./rebash-rel -n rebash-helm --wait --timeout 2m
-helm list -n rebash-helm
-helm upgrade demo ./rebash-rel -n rebash-helm --set replicaCount=2 --wait
-helm history demo -n rebash-helm
-helm rollback demo 1 -n rebash-helm --wait
-helm uninstall demo -n rebash-helm
-kubectl delete ns rebash-helm
+kubectl create namespace rebash-helm
+helm create life-demo
+helm upgrade --install demo ./life-demo -n rebash-helm --set replicaCount=1
+helm upgrade demo ./life-demo -n rebash-helm --set replicaCount=2
+helm -n rebash-helm history demo
+```
+
+### Step 2 – Rollback and confirm revision
+
+```bash
+helm -n rebash-helm rollback demo 1
+helm -n rebash-helm history demo
+helm -n rebash-helm status demo
+kubectl -n rebash-helm get deploy -o wide
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-07/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Helm Releases and Lifecycle** always combines:
 
@@ -162,7 +197,11 @@ Production practice for **Helm Releases and Lifecycle** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -170,7 +209,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Running `kubectl apply` on the same objects Helm manages — ownership conflicts and surpris"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -181,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Helm Releases and Lifecycle changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -189,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -199,26 +250,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Helm Releases and Lifecycle** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Helm Releases and Lifecycle** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does a release revision represent?
+2. When would you `helm rollback` versus fix-forward with another upgrade?
+3. What does `helm uninstall` remove, and what might remain?
+4. How can hooks complicate upgrades and rollbacks?
+5. Why is `--atomic` useful on production upgrades?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Rollback restores a previous revision’s manifest set. Fix-forward is better when rollback would reintroduce a known bug or when data migrations only go one way.
+
+!!! tip "Sample answer — question 4"
+    Hooks can create Jobs that are not fully reverted by rollback, leaving incomplete migrations. Design hooks carefully and document manual cleanup steps.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Helm Testing and Validation](helm-testing-and-validation.md)
+- [Helm Testing and Validation](helm-testing-and-validation.md)
+
+
 
 ## References
+
+
 
 - [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) · [helm rollback](https://helm.sh/docs/helm/helm_rollback/)

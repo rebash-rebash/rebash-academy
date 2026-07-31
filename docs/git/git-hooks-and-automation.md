@@ -17,21 +17,32 @@ prerequisites:
 comments: false
 ---
 
+
 # Git Hooks and Automation
 
 ## Overview
+
+
 
 Git hooks are scripts Git runs automatically at lifecycle events — before commit, after merge, before push. They enforce team standards locally (format, lint, secrets scan) and on the server (reject non-compliant pushes). For DevOps teams, hooks are the first line of defense before CI minutes are spent.
 
 This is **Tutorial 16** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
 
+
+
 ## Prerequisites
+
+
 
 - [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
 - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
 - Shell scripting basics from the Linux track
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -43,13 +54,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Bypass hooks safely when necessary (`--no-verify`)
 - [ ] Integrate hooks with Terraform, YAML, and secret scanning
 
+
+
 ## Architecture
+
+
 
 Hooks run scripts around Git events so teams can enforce policy locally and on the server before history is accepted.
 
 ![Git workflow and hooks around commit](../assets/excalidraw/git-workflow.svg)
 
+
+
 ## Theory
+
+
 
 ### Hook Basics
 
@@ -191,97 +210,56 @@ chmod +x .githooks/*
 
 Committed to repo — works without pre-commit framework.
 
+
+
 ## Hands-on Lab
 
-### Step 1 – Create repo and sample pre-commit hook
 
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-hooks-lab && cd /tmp/git-hooks-lab
+mkdir -p ~/rebash-git/git-hooks-and-automation && cd ~/rebash-git/git-hooks-and-automation
+```
+
+**Focus:** practise Git skills for: Git Hooks and Automation
+
+### Step 1 – Init repository
+
+```bash
 git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
+```
+
+### Step 2 – Client hook
+
+```bash
+mkdir -p .git/hooks
 cat > .git/hooks/pre-commit << 'EOF'
 #!/usr/bin/env bash
-if grep -r "AKIA" --include='*.tf' --include='*.env' . 2>/dev/null; then
-  echo "ERROR: Possible AWS key detected"
-  exit 1
-fi
-echo "pre-commit: secret scan passed"
+set -euo pipefail
+! grep -RniE 'AKIA[0-9A-Z]{16}' --exclude-dir=.git . || { echo 'Blocked potential AWS key'; exit 1; }
 EOF
 chmod +x .git/hooks/pre-commit
+echo 'safe' > ok.txt && git add ok.txt && git commit -m 'hook ok'
+echo 'Hook installed for this lab repo only.'
 ```
 
-**Expected result:** Hook script is executable under `.git/hooks` (or managed hooks path).
-
-### Step 2 – Test hook blocks bad commit
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-echo 'key = "AKIAFAKEKEY123456789"' > bad.tf
-git add bad.tf
-git commit -m "test: should fail" && echo "UNEXPECTED PASS" || echo "Hook blocked commit"
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
-**Expected result:** Commit or push is blocked/messaged when the hook condition fails.
-
-### Step 3 – Test hook allows good commit
-
-**Command:**
-
-```bash
-echo 'region = "us-east-1"' > good.tf
-git add good.tf
-git commit -m "feat: add good terraform"
-git log --oneline -1
-```
-
-**Expected result:** Successful path allows the commit when inputs are valid.
-
-### Step 4 – commit-msg hook
-
-**Command:**
-
-```bash
-cat > .git/hooks/commit-msg << 'EOF'
-#!/usr/bin/env bash
-grep -qE '^(feat|fix|docs|chore): ' "$1" || {
-  echo "Bad commit message format"
-  exit 1
-}
-EOF
-chmod +x .git/hooks/commit-msg
-echo "bad message" > /tmp/msg.txt
-.git/hooks/commit-msg /tmp/msg.txt && echo pass || echo blocked
-```
-
-**Expected result:** Sample secret or message lint hook matches the tutorial’s expectation.
-
-### Step 5 – core.hooksPath approach
-
-**Command:**
-
-```bash
-mkdir -p .githooks
-cp .git/hooks/pre-commit .githooks/
-git config core.hooksPath .githooks
-git config core.hooksPath
-```
-
-**Expected result:** You can explain why `--no-verify` is dangerous in shared repos.
-
-### Step 6 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-hooks-lab
-```
-
-**Expected result:** Lab hooks removed or disabled.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -296,7 +274,11 @@ Confirm the lab before moving on:
 | Sample script | Hook script is executable and path is correct |
 | Cleanup | Lab hooks removed or disabled |
 
+
+
 ## Code Walkthrough
+
+
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -325,7 +307,11 @@ repos:
       - id: yamllint
 ```
 
+
+
 ## Security Considerations
+
+
 
 - Never install hooks from untrusted repos without reading them — hooks run as your user
 - Prefer managed hook frameworks (pre-commit) with pinned versions over ad-hoc curl installs
@@ -333,7 +319,11 @@ repos:
 - Server-side hooks must validate, not silently mutate, pushed content
 - Fail closed on secret detection — do not allow `--no-verify` in CI
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Hooks not executable"
     Git silently skips non-executable hooks. Always `chmod +x`.
@@ -347,7 +337,11 @@ repos:
 !!! warning "Not versioning shared hook config"
     `.git/hooks` isn't cloned. Use pre-commit or core.hooksPath in repo.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Fast pre-commit, thorough CI"
     Pre-commit: format + secrets. CI: full test suite + plan.
@@ -361,7 +355,11 @@ repos:
 !!! tip "Mirror pre-commit in CI"
     `pre-commit run --all-files` in pipeline catches hook-skipping.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -372,7 +370,11 @@ repos:
 | Server hook not firing | SaaS platform limitation | Use CI push rules |
 | --no-verify abused | No policy | Audit; server-side checks |
 
+
+
 ## Summary
+
+
 
 - **Git hooks** automate validation at commit, push, and receive events
 - **Client hooks** enforce local quality; **server hooks** enforce org policy
@@ -380,26 +382,28 @@ repos:
 - Exit non-zero to abort; use **--no-verify** only in emergencies
 - Combine hooks with CI — never trust client-side alone for security
 
+
+
 ## Interview Questions
 
-1. What are Git hooks, and where do they live?
-2. What is the difference between pre-commit and pre-push hooks?
-3. How do you share hooks across a team?
-4. What does exit code 1 do in a hook script?
-5. What is the pre-commit framework?
-6. Why aren't .git/hooks copied on clone?
-7. What server-side hooks exist on bare repositories?
-8. When is git commit --no-verify appropriate?
-9. What hooks would you add for a Terraform repository?
-10. How do GitHub Actions relate to server-side hooks?
 
-??? tip "Sample Answers (Questions 3 and 9)"
+1. Explain **Git Hooks and Automation** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
-    **Q3 — Sharing hooks:** Options: (1) pre-commit framework with `.pre-commit-config.yaml` in repo — developers run `pre-commit install`; (2) `git config core.hooksPath .githooks` pointing to committed executable scripts; (3) documentation + installer script. Never rely on manual `.git/hooks` copy.
+!!! tip "Sample answer — question 2"
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
 
-    **Q9 — Terraform hooks:** terraform_fmt for formatting, terraform_validate for syntax, tflint or checkov for policy, detect-private-key for credentials, check-merge-conflict for markers. Run fmt/validate pre-commit; full plan/checkov in CI.
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
+
+
 
 - [Git Bisect and Debugging History](git-bisect-and-debugging-history.md) *(previous — Module 5)*
 - [Advanced Git Workflows](advanced-git-workflows.md) *(next)*
@@ -410,7 +414,11 @@ repos:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Pro Git Book – Git Hooks](https://git-scm.com/docs/githooks)
 - [pre-commit framework](https://pre-commit.com/)

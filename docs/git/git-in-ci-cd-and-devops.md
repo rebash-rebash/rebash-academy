@@ -19,22 +19,33 @@ prerequisites:
 comments: false
 ---
 
+
 # Git in CI/CD and DevOps
 
 ## Overview
+
+
 
 Git is the trigger, transport, and source of truth for modern DevOps delivery. Every push fires webhooks; every merge runs pipelines; every tag deploys to production. GitOps operators reconcile Kubernetes clusters against Git branches. This finale tutorial connects everything you've learned — workflow, hooks, signing, remotes — to the CI/CD and GitOps patterns used in production.
 
 This is **Tutorial 20** in **Module 6: Advanced & DevOps** — the finale of the REBASH Academy Git series.
 
+
+
 ## Prerequisites
+
+
 
 - [Signed Commits and Git Security](signed-commits-and-git-security.md)
 - [Git Hooks and Automation](git-hooks-and-automation.md)
 - [Working with Remotes](working-with-remotes.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -46,13 +57,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Integrate Git with Terraform Cloud, GitHub Actions, and GitLab CI
 - [ ] Apply complete Git hygiene across the DevOps lifecycle
 
+
+
 ## Architecture
+
+
 
 CI/CD watches remotes for new commits, runs automated verification, and deploys only when policy checks pass.
 
 ![GitHub Actions](../assets/excalidraw/git-github-actions.svg)
 
+
+
 ## Theory
+
+
 
 ### Git as the System of Record
 
@@ -284,108 +303,59 @@ Link deployments to commits in:
 - **Incident tools** — "what commit is prod?" query
 - **Changelog automation** — conventional commits → release notes
 
+
+
 ## Hands-on Lab
 
-### Step 1 – Simulate CI checkout
 
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-cicd-lab && cd /tmp/git-cicd-lab
+mkdir -p ~/rebash-git/git-in-ci-cd-and-devops && cd ~/rebash-git/git-in-ci-cd-and-devops
+```
+
+**Focus:** practise Git skills for: Git in CI/CD and DevOps
+
+### Step 1 – Init repository
+
+```bash
 git init -b main
-echo "app_version=1.0" > app.env
-git add . && git commit -m "feat: initial release"
-git init --bare /tmp/cicd-remote.git
-git remote add origin /tmp/cicd-remote.git
-git push -u origin main
-SHA=$(git rev-parse HEAD)
-echo "Deploy identity: myapp@$SHA"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
 ```
 
-**Expected result:** CI config file is present and syntactically valid for the platform.
-
-### Step 2 – Tag production release
-
-**Command:**
+### Step 2 – CI trigger layout
 
 ```bash
-git tag -a v1.0.0 -m "Production release 1.0.0"
-git push origin v1.0.0
-git show v1.0.0 --no-patch --format="Tag %D points to %H"
-```
-
-**Expected result:** Documented trigger (push/PR) would run the pipeline.
-
-### Step 3 – Simulate PR merge workflow
-
-**Command:**
-
-```bash
-git switch -c feature/ci-demo
-echo "app_version=1.1" > app.env
-git commit -am "feat: bump version for CI demo"
-git push -u origin feature/ci-demo
-git switch main
-git merge --no-ff feature/ci-demo -m "Merge PR #42: CI demo"
-git push origin main
-git log --oneline --graph -5
-```
-
-**Expected result:** Jobs demonstrate build/test separation as in the lab.
-
-### Step 4 – Simulate GitOps manifest update
-
-**Command:**
-
-```bash
-mkdir -p k8s/overlays/prod
-cat > k8s/overlays/prod/kustomization.yaml << EOF
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - deployment.yaml
-images:
-  - name: myapp
-    newTag: ${SHA:0:7}
+mkdir -p .github/workflows
+cat > .github/workflows/ci.yml << 'EOF'
+name: ci
+on: [push, pull_request]
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ok
 EOF
-echo "apiVersion: apps/v1" > k8s/overlays/prod/deployment.yaml
-git add k8s/ && git commit -m "deploy: pin image to ${SHA:0:7}"
-git log -1 --format="GitOps commit %h — image tag %s"
+git add .github && git commit -m 'Add CI workflow stub'
+git log --oneline | tee commits.txt
 ```
 
-**Expected result:** No plaintext secrets remain in committed workflow files.
-
-### Step 5 – Pipeline preflight script
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-cat > ci-preflight.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "Commit: $(git rev-parse HEAD)"
-echo "Branch: $(git rev-parse --abbrev-ref HEAD)"
-echo "Signed: $(git log -1 --format='%G?')"
-test -f app.env && echo "Config: $(cat app.env)"
-EOF
-chmod +x ci-preflight.sh
-./ci-preflight.sh
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
-**Expected result:** OIDC or masked secret pattern is identified in the example.
-
-### Step 6 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-cicd-lab cicd-remote.git
-```
-
-**Expected result:** Lab repository cleaned; any personal tokens revoked.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -400,7 +370,11 @@ Confirm the lab before moving on:
 | Secrets | No plaintext secrets remain in the committed workflow |
 | Cleanup | Lab repo cleaned; tokens revoked if created |
 
+
+
 ## Code Walkthrough
+
+
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -414,21 +388,34 @@ Confirm the lab before moving on:
 ### Complete DevOps Git checklist
 
 ```markdown
+
+
+
 ## Repository Setup
+
+
 - [ ] main protected; PR required
 - [ ] Signed commits enforced
 - [ ] .gitignore for stack
 - [ ] pre-commit hooks configured
 - [ ] CODEOWNERS defined
 
+
+
 ## CI Pipeline
+
+
 - [ ] Trigger on PR and main push
 - [ ] Pin checkout to event SHA
 - [ ] terraform plan / k8s validate
 - [ ] Secret and IaC policy scan
 - [ ] Post plan to PR comment
 
+
+
 ## CD / GitOps
+
+
 - [ ] Deploy staging on main merge
 - [ ] Deploy prod on signed tag
 - [ ] GitOps operator watches prod path
@@ -436,7 +423,11 @@ Confirm the lab before moving on:
 - [ ] Deployment annotated with commit SHA
 ```
 
+
+
 ## Security Considerations
+
+
 
 - Grant CI identities least privilege to cloud and forge APIs; prefer OIDC over static keys
 - Mask secrets in pipeline logs and forbid echo-debugging of tokens
@@ -444,7 +435,11 @@ Confirm the lab before moving on:
 - Separate build, staging, and production deployment roles
 - Fail pipelines on secret scanning and signature verification errors
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "CI always cloning main instead of event SHA"
     Tests wrong code on PR. Use `$GITHUB_SHA` or `$CI_COMMIT_SHA`.
@@ -458,7 +453,11 @@ Confirm the lab before moving on:
 !!! warning "Mutable tags (latest) in production"
     Use immutable SHA or semver tags — not floating `latest`.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Treat main as always deployable"
     Feature flags hide incomplete work; CI keeps main green.
@@ -472,7 +471,11 @@ Confirm the lab before moving on:
 !!! tip "Practice rollback drills"
     Revert commit in Git; verify GitOps syncs; document RTO.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -483,7 +486,11 @@ Confirm the lab before moving on:
 | Plan differs CI vs local | Different vars/backend | Align env; remote backend |
 | Deploy before CI pass | Missing branch protection | Require status checks |
 
+
+
 ## Summary
+
+
 
 - **Git events** (push, PR, tag) trigger **CI/CD pipelines** via webhooks
 - **Commit SHA** and **signed tags** provide immutable deployment identity
@@ -492,26 +499,28 @@ Confirm the lab before moving on:
 - Complete Git track skills — workflow, hooks, signing, remotes — integrate here
 - Git is step 3 in the DevOps learning path; apply it with [GitLab CI/CD](../gitlab/index.md), [Terraform](../terraform/index.md), and platform tooling
 
+
+
 ## Interview Questions
 
-1. How do Git push events trigger CI pipelines?
-2. What is GitOps, and how does it differ from traditional CI/CD push deploy?
-3. Why pin deployments to commit SHA rather than branch name?
-4. What Git events should trigger terraform plan vs apply?
-5. Describe the app repo → GitOps repo → cluster flow.
-6. What belongs in Git vs artifact registry vs state backend?
-7. How do you roll back a GitOps deployment?
-8. What security controls should protect the production Git branch?
-9. How do signed tags integrate with release pipelines?
-10. What is the complete Git hygiene checklist for a DevOps team?
 
-??? tip "Sample Answers (Questions 2 and 5)"
+1. Explain **Git in CI/CD and DevOps** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
-    **Q2 — GitOps vs push CD:** Traditional CD pushes changes from CI runner to infrastructure (kubectl apply, terraform apply from pipeline). GitOps installs an operator in the cluster that continuously pulls desired state from Git and reconciles. CI updates Git; cluster pulls — reducing CI credentials exposure and enabling drift detection.
+!!! tip "Sample answer — question 2"
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
 
-    **Q5 — App to cluster flow:** Developer merges to app repo main. CI builds container image tagged with commit SHA, pushes to registry. CI (or bot) commits updated image tag to GitOps repo manifest. Argo CD/Flux detects Git change, pulls manifest, deploys new image to cluster. Full traceability: prod pod → GitOps commit → app SHA → PR → author.
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
+
+
 
 - [Signed Commits and Git Security](signed-commits-and-git-security.md) *(previous)*
 - [Git Hooks and Automation](git-hooks-and-automation.md)
@@ -525,7 +534,11 @@ Confirm the lab before moving on:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [CNCF GitOps Working Group](https://opengitops.dev/)
 - [Argo CD Documentation](https://argo-cd.readthedocs.io/)
@@ -536,6 +549,10 @@ Confirm the lab before moving on:
 - [Pro Git Book – entire book](https://git-scm.com/book/en/v2)
 - [REBASH Academy – Git Overview](index.md)
 
+
+
 ## Congratulations
+
+
 
 You have completed all **20 tutorials** in the REBASH Academy Git track — from version control fundamentals through CI/CD and GitOps integration. Return to the [Git Overview](index.md) to review the curriculum or continue to [GitLab CI/CD](../gitlab/index.md) and [Terraform](../terraform/index.md) in the DevOps learning path.

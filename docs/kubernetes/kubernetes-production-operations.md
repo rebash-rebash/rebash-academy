@@ -41,17 +41,27 @@ comments: false
 
 ## Overview
 
+
+
 Plan control-plane upgrades, document etcd backup/restore, and define HA and maintenance practices for self-managed or managed clusters.
 
 Day-2 ops: version skew policy, drain/cordon workers, etcd snapshots (self-managed), and DR runbooks. Managed services shift etcd ownership to the cloud — still test restore of **workloads and data**.
 
 This is a core tutorial in **Module 17 · Production Operations** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Platform Engineering on Kubernetes](platform-engineering-on-kubernetes.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline etcd snapshot (kubeadm)  
 - [ ] Write a DR checklist
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Production cluster](../assets/excalidraw/k8s-production-cluster.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -108,7 +126,10 @@ Controllers keep reconciling during maintenance if capacity remains; drains are 
 - Assuming managed control-plane backup restores your PVCs and databases.
 - Running ancient add-ons (CNI, Ingress) incompatible with the new Kubernetes version.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -116,34 +137,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-17 && cd ~/rebash-k8s/module-17
 ```
 
-**Focus:** hands-on practice for Kubernetes Production Operations
+**Focus:** Practise operational hygiene: rollouts, events, and resource snapshots
 
-### Step 1 – Core exercise
+### Step 1 – Deploy and capture operational baseline
 
 ```bash
-mkdir -p ~/rebash-k8s/module-17 && cd ~/rebash-k8s/module-17
-kubectl get nodes
-NODE=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
-kubectl cordon "$NODE"
-kubectl get node "$NODE"
-# drain (lab): kubectl drain "$NODE" --ignore-daemonsets --delete-emptydir-data
-kubectl uncordon "$NODE"
-cat > ops-runbook.md << 'EOF'
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab create deployment ops --image=nginx:1.27-alpine --replicas=2
+kubectl -n rebash-lab rollout status deploy/ops
+kubectl -n rebash-lab get events --sort-by=.lastTimestamp | tail -n 15
+```
+
+### Step 2 – Perform a controlled change and inspect history
+
+```bash
+kubectl -n rebash-lab set resources deploy/ops -c=nginx --requests=cpu=50m,memory=64Mi
+kubectl -n rebash-lab rollout status deploy/ops
+kubectl -n rebash-lab rollout history deploy/ops
+kubectl -n rebash-lab get deploy ops -o jsonpath='{.spec.template.spec.containers[0].resources}{"
+"}'
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-17/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Production Operations** always combines:
 
@@ -155,7 +192,11 @@ Production practice for **Kubernetes Production Operations** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -163,7 +204,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Draining without PDBs — simultaneous replica loss."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -174,7 +219,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Kubernetes Production Operations changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -182,7 +231,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -192,26 +245,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Kubernetes Production Operations** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Kubernetes Production Operations** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What operational signals do you check first when a Deployment misbehaves?
+2. How do you perform a safe configuration change in production?
+3. What is the value of recording rollout history?
+4. How do you balance change velocity with change safety in a shared cluster?
+5. Which cluster upgrades are typically your responsibility on a managed service?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Prefer declarative apply, staged environments, rollouts with probes, and quick rollback via rollout undo. Avoid unreviewed imperative edits on live production objects.
+
+!!! tip "Sample answer — question 4"
+    Use progressive delivery, RBAC separation, quotas, PDBs, and change windows for risky work. Automate checks so velocity does not skip validation.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md)
+- [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md)
+
+
 
 ## References
+
+
 
 - [Cluster upgrades](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/) · [etcd backup](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/)

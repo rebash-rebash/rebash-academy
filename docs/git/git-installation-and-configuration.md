@@ -42,6 +42,8 @@ comments: false
 
 ## Overview
 
+
+
 Install a current Git, set global identity and defaults, and prepare SSH or HTTPS auth for GitHub/GitLab without committing secrets.
 
 Wrong `user.name`/`user.email` pollutes audit trails. Broken SSH blocks every clone in CI. Configure once, verify, then never commit tokens.
@@ -50,12 +52,20 @@ Diagrams: [git-workflow](../assets/excalidraw/git-workflow.svg).
 
 This is a core tutorial in **Module 2 · Installing Git** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - Linux/macOS/WSL with package install rights  
 - [Object model](understanding-the-git-object-model.md) recommended
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Configure SSH keys for hosting  
 - [ ] Know when HTTPS + credential helper / PAT applies
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Git Installation and Configuration](../assets/excalidraw/git-workflow.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -112,46 +130,52 @@ SSH checklist: `ssh-keygen -t ed25519`, add the public key to GitHub/GitLab, the
 - Skipping logout/login after adding an SSH key to the agent  
 - Leaving `pull` behaviour undefined so juniors get inconsistent histories
 
+
+
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Git Installation and Configuration
+
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-git/module-02
-cd ~/rebash-git/module-02
+mkdir -p ~/rebash-git/module-02 && cd ~/rebash-git/module-02
 ```
 
-### Step 1 – Verify install
+**Focus:** verify Git install and set safe lab identity
+
+### Step 1 – Config
 
 ```bash
-git --version
-git config --list --show-origin | head -40
+git --version | tee version.txt
+git config --global --get user.name || true
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+git config --list --local | egrep 'user.|init.defaultBranch' | tee local-config.txt
 ```
 
-### Step 2 – Set lab identity (local to lab dir)
+### Final step – Cleanup note
 
 ```bash
-cd ~/rebash-git/module-02
-mkdir cfg && cd cfg && git init -b main
-git config user.name "REBASH Lab"
-git config user.email "lab@rebash.local"
-git config --list --local
+# Local config only inside lab repo
 ```
 
-### Step 3 – SSH check (optional)
 
-```bash
-ssh -T git@github.com 2>&1 | head -5 || echo "Configure keys when ready"
-```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-02/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Git Installation and Configuration** always combines:
 
@@ -163,7 +187,11 @@ Production practice for **Git Installation and Configuration** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -171,7 +199,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Embedding PATs in `https://user:token@…` remotes that leak via `git remote -v`  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -182,7 +214,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Git Installation and Configuration changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -190,7 +226,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -200,29 +240,47 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 - Install Git; set identity correctly  
 - SSH keys for daily work; short-lived tokens for CI  
 - Document team defaults (`pull.rebase`, default branch)
 
+
+
 ## Interview Questions
 
-1. How does **Git Installation and Configuration** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Git Installation and Configuration** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
+- [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
+
+
 
 ## References
+
+
 
 - [git-config](https://git-scm.com/docs/git-config)  
 - [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)

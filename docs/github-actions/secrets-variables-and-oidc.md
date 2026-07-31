@@ -43,18 +43,28 @@ comments: false
 
 ## Overview
 
+
+
 Place non-secret configuration in variables, scope secrets correctly (repository, environment, organisation), and outline OpenID Connect (OIDC) so jobs obtain short-lived cloud credentials without long-lived access keys.
 
 Pipelines need configuration and credentials. GitHub provides **configuration variables** (`vars.*`) and **secrets** (`secrets.*`) at repository, organisation, and **environment** scopes. Production Cloud and DevOps teams prefer **OIDC federation** to AWS, Azure, or Google Cloud: GitHub mints a JWT for the job; the cloud trusts that JWT and returns temporary credentials. That removes static keys from the Actions UI.
 
 This is a core tutorial in **Module 5 · Secrets & Variables** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
 - Optional: an AWS, Azure, or Google Cloud sandbox for a live OIDC exchange later
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -64,13 +74,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe OIDC trust (issuer, subject, audience) to a cloud role  
 - [ ] Request `id-token: write` only when federating
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Secrets and OIDC](../assets/excalidraw/gha-secrets-oidc.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -127,7 +145,10 @@ You can author the workflow without a live cloud account — the OIDC job demons
 - Organisation secrets available to all repositories including forks of public templates without review.
 - Storing entire `.env` files as one secret with no rotation owner.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -135,94 +156,58 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-05/.github/workflows && cd ~/rebash-github-actions/module-05/.github/workflows
 ```
 
-**Focus:** hands-on practice for Secrets, Variables, and OIDC
+**Focus:** OIDC permissions workflow without embedding cloud keys
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-github-actions/module-05/.github/workflows
-cd ~/rebash-github-actions/module-05
-```
-
-Set optional repository variables/secrets in the GitHub UI (`DEMO_REGION` as a variable). Do not put real production credentials in learning repos.
-
-```bash
-cd ~/rebash-github-actions/module-05
-cat > oidc-checklist.md << 'EOF'
-- [ ] vars for non-secrets
-- [ ] environment: staging|production for deploy secrets
-- [ ] permissions: contents: read, id-token: write (OIDC jobs)
-- [ ] cloud trust on sub claim (repo + ref + environment)
-EOF
-```
+### Step 1 – OIDC workflow
 
 {% raw %}
-```yaml
-# .github/workflows/secrets-and-oidc.yml
-name: Module 5 secrets and OIDC
-
+```bash
+mkdir -p .github/workflows
+cat > .github/workflows/oidc.yml << 'EOF'
+name: oidc-deploy
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
-
 permissions:
+  id-token: write
   contents: read
-
 jobs:
-  show-config:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Non-secret configuration
-        env:
-          DEMO_REGION: ${{ vars.DEMO_REGION }}
-        run: |
-          test -f oidc-checklist.md
-          echo "DEMO_REGION=${DEMO_REGION:-unset-set-vars.DEMO_REGION-in-UI}"
-          echo "Do not print secrets"
-
-  staging-shape:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment: staging
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: OIDC-ready placeholder
-        run: |
-          echo "Add aws-actions/configure-aws-credentials (or Azure/GCP equivalent) here"
-          echo "Job has id-token: write for federation"
-          # Example (enable when cloud trust exists):
-          # - uses: aws-actions/configure-aws-credentials@v4
-          #   with:
-          #     role-to-assume: arn:aws:iam::123456789012:role/gha-staging
-          #     aws-region: eu-west-1
+      - name: Configure cloud creds via OIDC
+        run: echo "Use cloud-specific OIDC action; never echo secrets"
+EOF
+tee oidc-notes.txt << 'EOF'
+permissions.id-token: write is required for OIDC. Bind GitHub subject claims to a least-privilege cloud role.
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/oidc.yml')); print('OK')"
+cat oidc-notes.txt
 ```
 {% endraw %}
-
-```bash
-# Create GitHub Environment named "staging" (Settings → Environments)
-# Optional: gh secret set — never commit secret values
-# gh variable set DEMO_REGION --body "eu-west-1"
-```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# No cloud resources
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-05/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Secrets, Variables, and OIDC** always combines:
 
@@ -234,7 +219,11 @@ Production practice for **Secrets, Variables, and OIDC** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -242,7 +231,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Believing redaction means secrets cannot leave the job — malicious steps can still exfiltr"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -253,7 +246,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Secrets, Variables, and OIDC changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -261,7 +258,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -271,27 +272,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Secrets, Variables, and OIDC** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Secrets, Variables, and OIDC** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Secrets, Variables, and OIDC** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Artifacts and Caching](artifacts-and-caching.md)
+- [Artifacts and Caching](artifacts-and-caching.md)
+
+
 
 ## References
+
+
 
 - [Using secrets in GitHub Actions](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions)  
 - [Variables](https://docs.github.com/en/actions/learn-github-actions/variables)  

@@ -50,6 +50,8 @@ comments: false
 
 ## Overview
 
+
+
 Design a secure delivery path on Amazon Web Services (AWS): source → build → test → deploy, using native Code* services and/or GitHub Actions / GitLab CI with OpenID Connect (OIDC), including a blue/green promotion pattern.
 
 Continuous Integration and Continuous Delivery (CI/CD) turns every merge into a reviewed, automated path to an environment. On AWS you can stay native (**CodePipeline**, **CodeBuild**, **CodeDeploy**) or keep the pipeline in GitHub/GitLab and assume temporary AWS roles via **OIDC** — preferred over long-lived access keys. Deployments should be reversible: rolling, canary, or **blue/green**.
@@ -59,13 +61,21 @@ Continuous Integration and Continuous Delivery (CI/CD) turns every merge into a 
 
 This is a core tutorial in **Module 12 · CI/CD** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md)
 - Comfort with Git branches, pull/merge requests, and Docker image builds
 - Optional: [GitHub Actions](../github-actions/index.md) or [GitLab CI](../gitlab/index.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -75,13 +85,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Prefer OIDC from GitHub/GitLab over static AWS keys  
 - [ ] Sketch a promotion path that is auditable and reversible
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![CI/CD pipeline on AWS](../assets/excalidraw/aws-cicd-pipeline.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -151,7 +169,13 @@ Platform and SRE teams own change failure rate and recovery time. Manual deploy 
 - OIDC trust for `*` repos or all branches.
 - Assuming CodePipeline is mandatory — GitHub/GitLab + OIDC is valid.
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -159,74 +183,41 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-12 && cd ~/rebash-aws/module-12
 ```
 
-**Focus:** hands-on practice for CI/CD on AWS
+**Focus:** list CodePipeline/CodeBuild if present; otherwise document OIDC deploy pattern
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-12
-cd ~/rebash-aws/module-12
-# Optional: aws sts get-caller-identity
-```
-
-Sketch a pipeline contract (no paid resources required). Optionally create a CodeBuild project later in a sandbox account.
+### Step 1 – CI/CD inventory
 
 ```bash
-cd ~/rebash-aws/module-12
-
-cat > buildspec.yml << 'EOF'
-version: 0.2
-phases:
-  install:
-    runtime-versions:
-      python: 3.12
-  pre_build:
-    commands:
-      - echo "Lint and unit tests would run here"
-  build:
-    commands:
-      - echo "Build artefact / image"
-  post_build:
-    commands:
-      - echo "Push digest and write imagedefinitions.json if ECS"
-artifacts:
-  files:
-    - '**/*'
+aws codepipeline list-pipelines --query 'pipelines[].name' --output text 2>/dev/null | tr '\t' '\n' | head | tee pipelines.txt || true
+aws codebuild list-projects --output text 2>/dev/null | tr '\t' '\n' | head | tee builds.txt || true
+tee cicd-notes.txt << 'EOF'
+GitHub Actions / GitLab OIDC to IAM roles beats static AKIA keys in CI.
 EOF
-
-cat > pipeline-notes.md << 'EOF'
-# Module 12 — CI/CD on AWS
-- Stages: Source → Build (CodeBuild) → Deploy (CodeDeploy / IaC)
-- Prefer OIDC from GitHub Actions / GitLab to IAM roles
-- Promote by digest; blue/green for reversible cutover
-- Least privilege: separate build role vs deploy role vs prod approve
-EOF
-
-cat > oidc-checklist.md << 'EOF'
-- [ ] IAM OIDC provider for GitHub or GitLab
-- [ ] Role trust limited to org/repo/ref
-- [ ] Deploy role scoped to target resources only
-- [ ] No long-lived access keys in CI
-EOF
+cat cicd-notes.txt
 ```
-
-!!! tip "GitHub Actions / GitLab"
-    Use `aws-actions/configure-aws-credentials` (GitHub) or GitLab’s OIDC JWT → IAM role. Pin action versions; request only the permissions the job needs.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-12/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **CI/CD on AWS** always combines:
 
@@ -238,7 +229,11 @@ Production practice for **CI/CD on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -246,7 +241,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Long-lived AWS keys in CI instead of OIDC."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -257,7 +256,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode CI/CD on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -265,7 +268,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -275,27 +282,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **CI/CD on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **CI/CD on AWS** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **CI/CD on AWS** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Cost Optimisation on AWS](cost-optimisation-on-aws.md)
+- [Cost Optimisation on AWS](cost-optimisation-on-aws.md)
+
+
 
 ## References
+
+
 
 - [AWS CodePipeline](https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html)  
 - [AWS CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/welcome.html)  

@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Follow container logs, configure a logging mindset for production, add HEALTHCHECK, and know how metrics reach Prometheus/Grafana.
 
 Stdout/stderr is the default log stream. Drivers ship logs to journald, Fluentd, cloud sinks. Health checks and metrics tell you when to restart or scale.
 
 This is a core tutorial in **Module 13 · Logging & Monitoring** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Container Scanning and SBOM](container-scanning-and-sbom.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Add Dockerfile/`compose` health checks  
 - [ ] Outline cAdvisor / Prometheus scrape path
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Production observability](../assets/excalidraw/docker-production-platform.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -102,7 +120,10 @@ Define a minimum dashboard per service: restart rate, CPU/memory against limits,
 - Logging passwords or tokens  
 - Alerting solely on container “running” without app metrics
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -110,42 +131,42 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
 ```
 
-**Focus:** hands-on practice for Container Logging and Monitoring
+**Focus:** inspect container logs and docker events
 
-### Step 1 – Core exercise
+### Step 1 – Logs
 
 ```bash
-mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
-docker run -d --name rebash-log nginx:alpine
-docker logs rebash-log --tail 20
-docker inspect --format '{{ "{{" }}.State.Health{{ "}}" }}' rebash-log || true
-
-cat > Dockerfile << 'EOF'
-FROM nginx:alpine
-HEALTHCHECK --interval=5s --timeout=3s --retries=3 \
-  CMD wget -qO- http://127.0.0.1/ || exit 1
-EOF
-docker build -t rebash-hc:0.1.0 .
-docker run -d --name rebash-hc rebash-hc:0.1.0
-sleep 6
-docker inspect --format '{{ "{{" }}.State.Health.Status{{ "}}" }}' rebash-hc
-docker rm -f rebash-log rebash-hc
+docker run -d --name rebash-lab nginx:alpine
+docker logs rebash-lab 2>&1 | head -n 20 | tee logs.txt
+docker inspect rebash-lab --format '{{ "{{" }}.HostConfig.LogConfig.Type{{ "}}" }}'
+docker events --since 1m --until 0s --filter container=rebash-lab | head || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
+docker network rm rebash-net 2>/dev/null || true
+docker volume rm rebash-vol 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-13/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Container Logging and Monitoring** always combines:
 
@@ -157,7 +178,11 @@ Production practice for **Container Logging and Monitoring** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -165,7 +190,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Writing logs only inside the container filesystem  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -176,7 +205,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Container Logging and Monitoring changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -184,7 +217,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -194,26 +231,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Container Logging and Monitoring** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Container Logging and Monitoring** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Container Logging and Monitoring** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Docker Performance and Resource Limits](docker-performance-and-resource-limits.md)
+- [Docker Performance and Resource Limits](docker-performance-and-resource-limits.md)
+
+
 
 ## References
+
+
 
 - [Configure logging drivers](https://docs.docker.com/engine/logging/) · [HEALTHCHECK](https://docs.docker.com/reference/dockerfile/#healthcheck)

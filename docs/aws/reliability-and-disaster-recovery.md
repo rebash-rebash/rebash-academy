@@ -50,6 +50,8 @@ comments: false
 
 ## Overview
 
+
+
 Design for failure on Amazon Web Services (AWS): high availability (HA) with Multi-AZ, decide when Multi-Region is justified, pick a disaster recovery (DR) strategy with clear Recovery Time Objective (RTO) and Recovery Point Objective (RPO), and use AWS Backup plus Well-Architected reviews.
 
 Reliability means the workload performs its intended function correctly and consistently. **Availability Zones (AZs)** are your first failure domain; **Regions** are for rare but severe events and data residency. DR is not “we have backups” — it is a tested runbook with measured RTO/RPO. The AWS **Well-Architected Framework** Reliability pillar turns these ideas into design questions you can audit.
@@ -59,13 +61,21 @@ Reliability means the workload performs its intended function correctly and cons
 
 This is a core tutorial in **Module 14 · Reliability** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Cost Optimisation on AWS](cost-optimisation-on-aws.md)
 - [VPC Networking on AWS](vpc-networking-on-aws.md) and [Databases on AWS](databases-on-aws.md)
 - Basic CloudWatch alarms from Module 9
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -75,13 +85,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline an AWS Backup plan for EBS, RDS, and S3 (including restore testing)  
 - [ ] Name the six Well-Architected pillars and how Reliability fits the set
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Disaster recovery strategies](../assets/excalidraw/aws-disaster-recovery.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -144,7 +162,13 @@ SRE owns error budgets; platforms own HA defaults. An untested restore is not a 
 - Multi-site when backup/restore meets RTO.
 - Well-Architected as paperwork with no owners.
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -152,57 +176,40 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-14 && cd ~/rebash-aws/module-14
 ```
 
-**Focus:** hands-on practice for Reliability and Disaster Recovery
+**Focus:** inventory backup vaults / AMI snapshots signals read-only
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-14
-cd ~/rebash-aws/module-14
-```
-
-Document RTO/RPO and a DR strategy. Optional: list Backup plans in an account that has AWS Backup enabled.
+### Step 1 – DR signals
 
 ```bash
-cd ~/rebash-aws/module-14
-
-cat > rto-rpo.md << 'EOF'
-# Workload: sample three-tier API
-- Business impact if down 1 hour: <fill>
-- RTO target: e.g. 60 minutes
-- RPO target: e.g. 15 minutes
-- HA: Multi-AZ ALB + ASG + Multi-AZ RDS
-- DR strategy: backup and restore | pilot light | warm standby | multi-site
-- Failover trigger: health checks / manual decision
-- Last restore test date: <fill>
+aws backup list-backup-vaults --query 'BackupVaultList[].BackupVaultName' --output text 2>/dev/null | tr '\t' '\n' | head | tee vaults.txt || true
+aws ec2 describe-snapshots --owner-ids self --query 'Snapshots[:5].[SnapshotId,VolumeSize,StartTime]' --output table 2>/dev/null | tee snaps.txt || true
+tee dr-notes.txt << 'EOF'
+Define RTO/RPO per service. Test restore paths; backups that are never restored are fiction.
 EOF
-
-cat > backup-checklist.md << 'EOF'
-- [ ] AWS Backup plan for EBS / RDS / EFS as applicable
-- [ ] Cross-Region or cross-account copy for critical vaults
-- [ ] S3 versioning + replication if object store is source of truth
-- [ ] Restore test ticket in the ops calendar (quarterly)
-- [ ] Runbook: who declares DR, DNS cutover, comms
-EOF
-
-aws backup list-backup-plans --output table 2>/dev/null \
-  || echo "Skip if AWS Backup not enabled / no permissions"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-14/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Reliability and Disaster Recovery** always combines:
 
@@ -214,7 +221,11 @@ Production practice for **Reliability and Disaster Recovery** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -222,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Single-AZ “production” databases."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -233,7 +248,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Reliability and Disaster Recovery changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -241,7 +260,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -251,27 +274,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Reliability and Disaster Recovery** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Reliability and Disaster Recovery** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Reliability and Disaster Recovery** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Production AWS Landing Zones](production-aws-landing-zones.md)
+- [Production AWS Landing Zones](production-aws-landing-zones.md)
+
+
 
 ## References
+
+
 
 - [Disaster Recovery of Workloads on AWS](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html)  
 - [AWS Backup](https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html)  

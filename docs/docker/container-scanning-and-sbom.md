@@ -42,17 +42,27 @@ comments: false
 
 ## Overview
 
+
+
 Scan an image for CVEs, produce a Software Bill of Materials (SBOM), and decide fix vs accept risk for a release gate.
 
 **Trivy**, **Docker Scout**, and registry scanners find known vulnerabilities. An **SBOM** inventories packages for compliance and incident response. Scanning without a triage process becomes noise.
 
 This is a core tutorial in **Module 12 · Container Scanning** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Docker Security Hardening](docker-security-hardening.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -61,13 +71,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Generate an SBOM (Syft/Trivy)  
 - [ ] List hardening moves that reduce findings
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![CI/CD pipeline with scan](../assets/excalidraw/docker-cicd-pipeline.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -104,7 +122,10 @@ Wire scanners into both pull-request and main-branch pipelines so developers see
 - Treating SBOM generation as paperwork without storing it  
 - Scanning only the final stage while shipping a fat single-stage image
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -112,43 +133,42 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-12 && cd ~/rebash-docker/module-12
 ```
 
-**Focus:** hands-on practice for Container Scanning and SBOM
+**Focus:** build an image and produce a simple SBOM-ish inventory
 
-### Step 1 – Core exercise
+### Step 1 – Inventory
 
 ```bash
-mkdir -p ~/rebash-docker/module-12 && cd ~/rebash-docker/module-12
-docker pull alpine:3.20
-# Install Trivy if needed: https://aquasecurity.github.io/trivy/
-if command -v trivy >/dev/null; then
-  trivy image --severity CRITICAL,HIGH alpine:3.20 | head -n 40
-  trivy image --format cyclonedx -o sbom.json alpine:3.20
-  head -n 20 sbom.json
-else
-  echo "Install Trivy, then re-run scan. Using docker scout if available:"
-  docker scout quickview alpine:3.20 2>/dev/null || true
-fi
-cat > triage.md << 'EOF'
-Image:
-Critical count:
-Action: rebuild base / waive / block
+cat > Dockerfile << 'EOF'
+FROM alpine:3.20
+RUN apk add --no-cache curl
 EOF
+docker build -t rebash-lab:local .
+docker run --rm rebash-lab:local sh -c 'apk info -v' | head -n 20 | tee pkgs.txt
+echo 'In CI: run trivy/grype + attach SBOM (spdx/cyclonedx).' | tee scan-notes.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-12/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Container Scanning and SBOM** always combines:
 
@@ -160,7 +180,11 @@ Production practice for **Container Scanning and SBOM** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -168,7 +192,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Scanning once at project start and never again  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -179,7 +207,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Container Scanning and SBOM changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -187,7 +219,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -197,26 +233,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Container Scanning and SBOM** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Container Scanning and SBOM** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Container Scanning and SBOM** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Container Logging and Monitoring](container-logging-and-monitoring.md)
+- [Container Logging and Monitoring](container-logging-and-monitoring.md)
+
+
 
 ## References
+
+
 
 - [Trivy](https://trivy.dev/) · [Docker Scout](https://docs.docker.com/scout/)

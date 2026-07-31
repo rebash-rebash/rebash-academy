@@ -41,18 +41,28 @@ comments: false
 
 ## Overview
 
+
+
 Open a PR with a clear description, understand required reviews and CODEOWNERS, and review changes with an ops risk lens (secrets, blast radius, rollback).
 
 PRs are the change-control gate for `main`. Branch protection + required checks beat informal “just push.”
 
 This is a core tutorial in **Module 10 · Collaboration** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [GitHub Fundamentals](github-fundamentals.md)
 - [Branching](branching-fundamentals.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Add a CODEOWNERS file  
 - [ ] Review for security and operability
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -105,7 +123,10 @@ Write PR descriptions that state risk, test evidence, and rollback steps — esp
 - Merging with failing optional checks that were actually important  
 - Rewriting PR history mid-review without warning reviewers
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -113,40 +134,56 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-10 && cd ~/rebash-git/module-10
 ```
 
-**Focus:** hands-on practice for Pull Requests and Code Review
+**Focus:** practise Git skills for: Pull Requests and Code Review
 
-### Step 1 – Core exercise
+### Step 1 – Init repository
 
 ```bash
-mkdir -p ~/rebash-git/module-10 && cd ~/rebash-git/module-10
 git init -b main
-git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
-echo '# app' > README.md && git add README.md && git commit -m "chore: init"
-mkdir -p .github
-cat > .github/CODEOWNERS << 'EOF'
-* @your-org/platform
-/terraform/ @your-org/infra
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
+```
+
+### Step 2 – Review-ready branch
+
+```bash
+git switch -c pr/demo
+echo 'change' > feature.txt
+git add feature.txt
+git commit -m 'feat: demo change'
+git log main..HEAD --oneline
+tee REVIEW.txt << 'EOF'
+Open a pull/merge request with a clear summary, test plan, and small diff.
 EOF
-git add .github/CODEOWNERS && git commit -m "chore: add CODEOWNERS"
-git switch -c feature/docs
-echo 'note' >> README.md && git commit -am "docs: add note"
-# Push and open PR on GitHub when remote exists
-cat > pr-body.md << 'EOF'
+cat REVIEW.txt
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-10/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Pull Requests and Code Review** always combines:
 
@@ -158,7 +195,11 @@ Production practice for **Pull Requests and Code Review** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -166,7 +207,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Rubber-stamp approvals without reading IaC blast radius  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -177,7 +222,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Pull Requests and Code Review changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -185,7 +234,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -195,26 +248,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 - Demo doc change
 
+
+
 ## Interview Questions
 
-1. How does **Pull Requests and Code Review** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Pull Requests and Code Review** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [GitHub Actions for DevOps](github-actions-for-devops.md)
+- [GitHub Actions for DevOps](github-actions-for-devops.md)
+
+
 
 ## References
+
+
 
 - [About pull requests](https://docs.github.com/en/pull-requests) · [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)

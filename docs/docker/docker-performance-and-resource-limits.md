@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply CPU and memory limits, observe container stats, and relate storage drivers and lifecycle to performance.
 
 Unlimited containers can starve the host. Set `--memory` / `--cpus` (or Compose `deploy.resources`) so noisy neighbours fail safely. Know your storage driver (`overlay2`) and prune policy.
 
 This is a core tutorial in **Module 14 · Performance** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Container Logging and Monitoring](container-logging-and-monitoring.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Name storage driver implications  
 - [ ] Prune safely for disk
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -102,7 +120,10 @@ Load-test with realistic concurrency before you copy limits from a tutorial. Lan
 - Never pruning build cache on busy runners  
 - Blaming “Docker slowness” when the image is multi-gigabytes
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -110,35 +131,41 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
 ```
 
-**Focus:** hands-on practice for Docker Performance and Resource Limits
+**Focus:** apply CPU/memory limits and observe docker stats
 
-### Step 1 – Core exercise
+### Step 1 – Resource limits
 
 ```bash
-mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
-docker run -d --name rebash-lim \
-  --memory=64m --cpus=0.50 \
-  nginx:alpine
-docker stats rebash-lim --no-stream
-docker inspect rebash-lim --format 'mem={{ "{{" }}.HostConfig.Memory{{ "}}" }} cpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}'
-docker system df
-docker rm -f rebash-lim
+docker run -d --name rebash-lab --memory=64m --cpus=0.5 nginx:alpine
+docker stats rebash-lab --no-stream | tee stats.txt
+docker inspect rebash-lab --format 'mem={{ "{{" }}.HostConfig.Memory{{ "}}" }} cpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
+docker network rm rebash-net 2>/dev/null || true
+docker volume rm rebash-vol 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-14/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Docker Performance and Resource Limits** always combines:
 
@@ -150,7 +177,11 @@ Production practice for **Docker Performance and Resource Limits** always combin
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -158,7 +189,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Unlimited containers on shared CI hosts  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -169,7 +204,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Docker Performance and Resource Limits changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -177,7 +216,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -187,26 +230,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Docker Performance and Resource Limits** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Docker Performance and Resource Limits** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Docker Performance and Resource Limits** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md)
+- [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md)
+
+
 
 ## References
+
+
 
 - [Runtime resource constraints](https://docs.docker.com/engine/containers/resource_constraints/)

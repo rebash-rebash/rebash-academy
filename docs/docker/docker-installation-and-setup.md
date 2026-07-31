@@ -38,18 +38,28 @@ comments: false
 
 ## Overview
 
+
+
 Install a working Docker Engine (or Desktop), verify with `docker version` / `hello-world`, and know when rootless Docker and contexts matter.
 
 **Docker Engine** on Linux is the production-like path. **Docker Desktop** bundles Engine + UI on macOS/Windows. **Rootless** reduces privilege; **contexts** point the CLI at remote engines.
 
 This is a core tutorial in **Module 2 · Installing Docker** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Docker Architecture and Components](docker-architecture-and-components.md)
 - Admin rights on your machine (or a cloud VM)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] List Docker contexts  
 - [ ] State rootless trade-offs
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Docker architecture](../assets/excalidraw/docker-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -100,7 +118,10 @@ On Linux servers and CI runners, install Engine from the vendor repository, star
 - Assuming Desktop file mounts behave like Linux bind mounts in production  
 - Skipping `docker info` after install and missing cgroup or storage-driver issues
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -108,38 +129,38 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-02 && cd ~/rebash-docker/module-02
 ```
 
-**Focus:** hands-on practice for Docker Installation and Setup
+**Focus:** verify Docker Engine install and permissions
 
-### Step 1 – Core exercise
+### Step 1 – Doctor
 
 ```bash
-mkdir -p ~/rebash-docker/module-02 && cd ~/rebash-docker/module-02
-
-# macOS (example): brew install --cask docker
-# Ubuntu: follow https://docs.docker.com/engine/install/ubuntu/
-
-docker version
-docker info | head -n 40
-docker context ls
-docker run --rm hello-world
+docker version | tee version.txt
+docker info | egrep 'Server Version|Cgroup|Logging Driver|Swarm' | tee info.txt
+docker run --rm hello-world | tee hello.txt
 ```
-
-Record engine version and OS in `install-notes.md`.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rmi hello-world 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-02/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Docker Installation and Setup** always combines:
 
@@ -151,7 +172,11 @@ Production practice for **Docker Installation and Setup** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -159,7 +184,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Using `sudo docker` forever instead of fixing group membership (or vice versa, granting it"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -170,7 +199,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Docker Installation and Setup changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -178,7 +211,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -188,26 +225,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Docker Installation and Setup** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Docker Installation and Setup** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Docker Installation and Setup** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Running Your First Container](running-your-first-container.md)
+- [Running Your First Container](running-your-first-container.md)
+
+
 
 ## References
+
+
 
 - [Install Docker Engine](https://docs.docker.com/engine/install/) · [Rootless mode](https://docs.docker.com/engine/security/rootless/)

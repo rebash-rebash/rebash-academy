@@ -41,20 +41,30 @@ comments: false
 
 ## Overview
 
+
+
 Explain why version control is the system of record for DevOps, compare VCS models, and use Git vocabulary (repo, commit, branch, remote) correctly before installing tools.
 
 Incidents ask “what changed?” Compliance asks “who approved?” Git answers both. This course is **Git & GitHub for Cloud & DevOps Engineers** — workflows for IaC, GitOps, and CI/CD, not Git as trivia.
 
 This is a core tutorial in **Module 1 · Version Control Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 ### Required
 
 - [Linux Fundamentals](../linux/index.md)
 - Comfort with a terminal
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -64,13 +74,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Define repository, commit, branch, remote, working tree  
 - [ ] Sketch the working → staging → commit → remote flow
 
+
+
 ## Architecture
+
+
 
 Daily Git flow from edits to remotes and pipelines:
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -111,45 +129,64 @@ Terraform modules, Kubernetes manifests, GitHub Actions workflows, and policy al
 - Confusing the working tree with the repository (`.git`)  
 - Assuming a clone without a remote is “not real Git” — remotes are optional until you collaborate
 
+
+
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Introduction to Git and Version Control
+
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-git/module-01
-cd ~/rebash-git/module-01
+mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 ```
 
-No Git install required for this theory lab — Module 2 covers install.
+**Focus:** practise Git skills for: Introduction to Git and Version Control
 
-### Step 1 – Mental model worksheet
+### Step 1 – Init repository
 
 ```bash
-cd ~/rebash-git/module-01
-cat > vcs-notes.md << 'EOF'
-Problems VCS solves: history, collaboration, rollback, audit
-Distributed means: every clone has full history
-DevOps uses Git for: app code, IaC, pipelines, GitOps desired state
-EOF
-cat vcs-notes.md
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
 ```
 
-### Step 2 – Map a real change
+### Step 2 – Add commit cycle
 
-Pick a recent deploy/change at work (or imagine one). Write four lines: what file changed, who reviewed, how it rolled back, where CI ran.
+```bash
+echo 'hello' > app.txt
+git status
+git add app.txt
+git commit -m 'Add app.txt'
+git status
+git log -1 --stat
+```
 
-### Step 3 – Flow checklist
+### Final step – Cleanup note
 
-Without running Git yet, order these: edit file → `git add` → `git commit` → `git push` → CI.
+```bash
+# Safe local repo under the lab directory; delete the folder when finished
+```
+
+
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Introduction to Git and Version Control** always combines:
 
@@ -161,7 +198,11 @@ Production practice for **Introduction to Git and Version Control** always combi
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -169,7 +210,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Treating Git as “backup only” and skipping meaningful commit messages  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -180,7 +225,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Introduction to Git and Version Control changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -188,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -198,29 +251,47 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 - Git is the DevOps system of record  
 - Distributed clones enable offline work and collaboration  
 - Next: object model, then install
 
+
+
 ## Interview Questions
 
-1. How does **Introduction to Git and Version Control** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Introduction to Git and Version Control** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Understanding the Git Object Model](understanding-the-git-object-model.md)  
+- [Understanding the Git Object Model](understanding-the-git-object-model.md)  
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 
+
+
 ## References
+
+
 
 - [Pro Git — Getting Started](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control)

@@ -41,17 +41,27 @@ comments: false
 
 ## Overview
 
+
+
 Use Metrics Server for `kubectl top`, explain the Prometheus/Grafana path, and debug with Events and container logs.
 
 **Metrics Server** → HPA resource metrics. **Prometheus** + **kube-state-metrics** → deep metrics. Logs: node agents (Fluent Bit) or cloud logging. Always start with `kubectl describe` Events.
 
 This is a core tutorial in **Module 12 · Observability** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes Networking Deep Dive](kubernetes-networking-deep-dive.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use Events for failures  
 - [ ] Stream Pod logs
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Production observability](../assets/excalidraw/k8s-production-cluster.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -110,7 +128,10 @@ Control loops still reconcile without Prometheus; observability tells *you* when
 - Cardinality explosions from high-unique label values in Prometheus.
 - Treating Events as long-term audit — they are retained briefly; use audit logs for compliance.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -118,33 +139,53 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
 ```
 
-**Focus:** hands-on practice for Monitoring and Logging in Kubernetes
+**Focus:** Collect Pod logs and basic resource signals for observability practice
 
-### Step 1 – Core exercise
+### Step 1 – Generate log output from a Deployment
 
 ```bash
-mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
-kubectl create deploy obs --image=nginx:alpine
-kubectl get events --sort-by=.lastTimestamp | tail -n 15
-kubectl logs deploy/obs --tail=20
-kubectl top pods 2>/dev/null || echo "Install metrics-server for kubectl top"
-kubectl delete deploy/obs
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab create deployment logger --image=busybox:1.36 --replicas=1 -- sleep 3600
+kubectl -n rebash-lab wait --for=condition=Available deploy/logger --timeout=60s
+POD=$(kubectl -n rebash-lab get pod -l app=logger -o jsonpath='{.items[0].metadata.name}')
+kubectl -n rebash-lab exec "$POD" -- sh -c 'echo "$(date -Iseconds) lab-event" >> /tmp/app.log; cat /tmp/app.log'
+# Container stdout is the usual log path — write a short message:
+kubectl -n rebash-lab delete pod "$POD" --force --grace-period=0 2>/dev/null || true
+kubectl -n rebash-lab set command deploy/logger -- sh -c 'while true; do echo "$(date -Iseconds) heartbeat"; sleep 5; done'
+kubectl -n rebash-lab rollout status deploy/logger
+```
+
+### Step 2 – Tail logs and check metrics endpoints if present
+
+```bash
+kubectl -n rebash-lab logs deploy/logger --tail=20
+kubectl top pods -n rebash-lab 2>/dev/null || echo "metrics-server not installed; logs still available via kubectl logs"
+kubectl -n rebash-lab get events --field-selector involvedObject.kind=Pod --sort-by=.lastTimestamp | tail -n 10
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-12/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Monitoring and Logging in Kubernetes** always combines:
 
@@ -156,7 +197,11 @@ Production practice for **Monitoring and Logging in Kubernetes** always combines
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -164,7 +209,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Expecting `kubectl top` without Metrics Server installed."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -175,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Monitoring and Logging in Kubernetes changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -183,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -193,26 +250,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Monitoring and Logging in Kubernetes** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Monitoring and Logging in Kubernetes** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Where do container logs go by default on a node?
+2. How does `kubectl logs` retrieve application output?
+3. What cluster components are needed for `kubectl top` to work?
+4. What privacy and security concerns apply to centralised log pipelines?
+5. How would you alert on CrashLoopBackOff versus high latency?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    kubectl logs reads the container runtime log stream for a Pod/container via the API server and kubelet. It shows stdout/stderr, not arbitrary files inside the filesystem unless you exec.
+
+!!! tip "Sample answer — question 4"
+    Logs may contain secrets, personal data, or tokens. Scrub sensitive fields, encrypt in transit and at rest, restrict access, and set retention aligned with compliance.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Kubernetes Autoscaling](kubernetes-autoscaling.md)
+- [Kubernetes Autoscaling](kubernetes-autoscaling.md)
+
+
 
 ## References
+
+
 
 - [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) · [Prometheus on K8s](https://prometheus.io/docs/prometheus/latest/getting_started/)

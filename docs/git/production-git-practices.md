@@ -45,18 +45,28 @@ comments: false
 
 ## Overview
 
+
+
 Define a team-ready Git operating model: branching strategy, protected `main`, PR quality bar, release tags, and GitOps-friendly repo layout.
 
 Production Git is less about clever commands and more about **defaults that keep delivery safe**: short-lived branches, required checks, signed commits where policy demands, and IaC/GitOps paths owned by the right teams.
 
 This is a core tutorial in **Module 17 · Production Git Practices** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - Modules 9–16 (GitHub through troubleshooting)
 - [GitOps Fundamentals](gitops-fundamentals.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -66,13 +76,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Assemble a production readiness checklist for a repo  
 - [ ] Know when not to rewrite shared history
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -104,7 +122,10 @@ Most product teams keep **`main` always deployable**, use short-lived feature br
 - Equating green CI on a stale branch with safe merge to a moved `main`  
 - Using personal forks as the production source of truth
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -112,49 +133,59 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
 ```
 
-**Focus:** hands-on practice for Production Git Practices
+**Focus:** practise Git skills for: Production Git Practices
 
-### Step 1 – Core exercise
+### Step 1 – Init repository
 
 ```bash
-mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
 git init -b main
-git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
+```
 
-mkdir -p .github/workflows docs
-cat > README.md << 'EOF'
-# production-git-lab
-Standards for REBASH module 17.
+### Step 2 – Protected-branch habits
+
+```bash
+tee production-git.txt << 'EOF'
+- trunk-based or short-lived branches
+- required reviews + CI
+- signed commits where mandated
+- no force-push to main
 EOF
-
-cat > CONTRIBUTING.md << 'EOF'
-# Contributing
-- Branch from main: feature/*, fix/*
-- Open a PR; squash merge preferred
-- Conventional commits: feat|fix|chore|docs|ci
-- Never commit secrets or *.tfstate
-EOF
-
-cat > .github/CODEOWNERS << 'EOF'
-* @your-org/platform
-EOF
-
-cat > .github/pull_request_template.md << 'EOF'
+git switch -c hotfix/typo
+echo 'fix' >> README.md
+git commit -am 'fix: typo'
+git switch main
+git merge hotfix/typo
+cat production-git.txt
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-17/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production Git Practices** always combines:
 
@@ -166,7 +197,11 @@ Production practice for **Production Git Practices** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -174,7 +209,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "“We will add branch protection later” on repos that already deploy  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -185,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production Git Practices changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -193,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -203,28 +250,46 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 You can stand up a repository that matches how Cloud and DevOps teams ship: protected trunk, automated checks, clear ownership, and GitOps-friendly history.
 
+
+
 ## Interview Questions
 
-1. How does **Production Git Practices** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Production Git Practices** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
+
+
 
 - [Course overview](index.md)
 - - Related depth: [Advanced Git Workflows](advanced-git-workflows.md) · [Git Hooks](git-hooks-and-automation.md)  
 - Capstone ideas on the [course overview](index.md)
 
+
+
 ## References
+
+
 
 - [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow)  
 - [Conventional Commits](https://www.conventionalcommits.org/)

@@ -47,6 +47,8 @@ comments: false
 
 ## Overview
 
+
+
 Provision and scale Amazon Elastic Compute Cloud (EC2) safely: Amazon Machine Images (AMIs), launch templates, Auto Scaling groups (ASGs), placement, Elastic IP (EIP) awareness, and Elastic Load Balancing with Application Load Balancer (ALB) and Network Load Balancer (NLB).
 
 EC2 is virtual servers in your Virtual Private Cloud (VPC). Production systems rarely run a single instance: you use **launch templates**, **ASGs** across Availability Zones (AZs), and a **load balancer** for health checks and traffic distribution. This module connects compute to the networking patterns from Module 3.
@@ -56,12 +58,20 @@ EC2 is virtual servers in your Virtual Private Cloud (VPC). Production systems r
 
 This is a core tutorial in **Module 4 · Compute** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [VPC Networking on AWS](vpc-networking-on-aws.md)
 - IAM rights to describe (and optionally run) EC2 / ELB APIs
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -71,13 +81,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose Application, Network, or Gateway Load Balancer for a traffic pattern  
 - [ ] Sketch ALB → target group → ASG with safe lab teardown
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![AWS compute](../assets/excalidraw/aws-compute.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -129,7 +147,13 @@ Keep user data short and idempotent; prefer baked images for production.
 - Elastic IPs left unassociated or glued to every ASG member  
 - Choosing GWLB when you only needed an ALB for HTTP routing
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -137,73 +161,38 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-04 && cd ~/rebash-aws/module-04
 ```
 
-**Focus:** hands-on practice for Compute: EC2, ASG, and Load Balancing
+**Focus:** describe EC2/ASG/ELB inventory without launching instances
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-04
-cd ~/rebash-aws/module-04
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-aws ec2 describe-instance-type-offerings --location-type availability-zone \
-  --filters Name=instance-type,Values=t3.micro \
-  --query 'InstanceTypeOfferings[].Location' --output text | tr '\t' '\n' | sort -u
-```
-
-Prefer dry-run and inventory. Only launch an instance if you will terminate it in-session.
+### Step 1 – Compute inventory
 
 ```bash
-cd ~/rebash-aws/module-04
-
-# Latest Amazon Linux 2023 AMI (Region-specific)
-AMI_ID=$(aws ssm get-parameters-by-path \
-  --path /aws/service/ami-amazon-linux-latest \
-  --query "Parameters[?contains(Name, 'al2023-ami-kernel-default-x86_64')].Value | [0]" \
-  --output text)
-echo "AMI=$AMI_ID"
-
-# Dry-run launch (safe)
-SUBNET_ID=$(aws ec2 describe-subnets --filters Name=default-for-az,Values=true \
-  --query 'Subnets[0].SubnetId' --output text)
-aws ec2 run-instances \
-  --image-id "$AMI_ID" \
-  --instance-type t3.micro \
-  --subnet-id "$SUBNET_ID" \
-  --count 1 \
-  --dry-run 2>&1 | head -8 || true
-
-cat > compute-notes.md << 'EOF'
-# Module 4 compute pattern
-- Launch template versions AMI + SG + IAM profile + user data
-- ASG min=2 across 2 AZs behind ALB target group
-- Health check: /healthz on app port
-- No EIP on ASG members; EIP only for rare fixed needs
-- Terminate: aws ec2 terminate-instances --instance-ids ...
-- Delete ALB + target group + launch template versions after labs
-EOF
-
-# If you DID start an instance, terminate it:
-# aws ec2 describe-instances --filters Name=tag:project,Values=rebash-aws \
-#   --query 'Reservations[].Instances[].InstanceId' --output text
-# aws ec2 terminate-instances --instance-ids i-xxxx
+aws ec2 describe-instances --query 'Reservations[].Instances[].{Id:InstanceId,Type:InstanceType,State:State.Name}' --output table | tee instances.txt
+aws elbv2 describe-load-balancers --query 'LoadBalancers[].{Name:LoadBalancerName,Type:Type,DNS:DNSName}' --output table 2>/dev/null | tee elbs.txt || true
+aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[].{Name:AutoScalingGroupName,Desired:DesiredCapacity}' --output table 2>/dev/null | tee asg.txt || true
 ```
-
-Optional LocalStack: practise `run-instances` / describe shapes without cloud billing.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only — do not leave lab instances running
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-04/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Compute: EC2, ASG, and Load Balancing** always combines:
 
@@ -215,7 +204,11 @@ Production practice for **Compute: EC2, ASG, and Load Balancing** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -223,7 +216,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Calling a single instance in one AZ “production”  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -234,7 +231,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Compute: EC2, ASG, and Load Balancing changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -242,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -252,27 +257,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Compute: EC2, ASG, and Load Balancing** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Compute: EC2, ASG, and Load Balancing** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Compute: EC2, ASG, and Load Balancing** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Storage: S3, EBS, and EFS](storage-s3-ebs-efs.md)
+- [Storage: S3, EBS, and EFS](storage-s3-ebs-efs.md)
+
+
 
 ## References
+
+
 
 - [Amazon EC2 User Guide](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)  
 - [Launch templates](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html)  

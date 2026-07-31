@@ -45,18 +45,28 @@ comments: false
 
 ## Overview
 
+
+
 Design environment promotion (dev → staging → production) with protected environments, manual approvals, rollback paths, progressive delivery, and feature-flag controls.
 
 Production CI/CD is controlled promotion of an **immutable artefact** through named **environments**, not “run deploy on every push to main”. GitLab environments, protection rules, and `when: manual` jobs encode who may promote and how you recover.
 
 This is a core tutorial in **Module 15 · Production Pipelines** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Release Management and Versioning](release-management-and-versioning.md)
 - Deploy awareness from [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md) or equivalent
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Document rollback (previous version / previous release)  
 - [ ] Outline progressive delivery and feature-flag separation
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitLab production](../assets/excalidraw/gitlab-production.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -121,7 +139,10 @@ Keep production variables and runners scoped; production jobs should not share b
 - Rollback untested until an outage — practice in staging.
 - Using feature flags as a substitute for broken deploy pipelines — flags hide, they do not fix bad artefacts.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -129,89 +150,51 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-15 && cd ~/rebash-gitlab/module-15
 ```
 
-**Focus:** hands-on practice for Production Pipelines and Environments
+**Focus:** environments, manual gates, and protected-branch style rules
 
-### Step 1 – Core exercise
+### Step 1 – Prod gate pipeline
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-15 && cd ~/rebash-gitlab/module-15
 cat > .gitlab-ci.yml << 'EOF'
-stages:
-  - deploy
-
-variables:
-  IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-
-.deploy_template:
-  image: alpine:3.20
-  script:
-    - echo "Deploying $IMAGE to $CI_ENVIRONMENT_NAME"
-    - echo "Record rollback target: previous successful deploy of this environment"
-
-deploy_staging:
-  extends: .deploy_template
+stages: [deploy]
+deploy_lab:
   stage: deploy
-  environment:
-    name: staging
-    url: https://staging.example.com
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-deploy_production:
-  extends: .deploy_template
+  script: ["echo deploy lab"]
+  environment: lab
+deploy_prod:
   stage: deploy
-  needs: ["deploy_staging"]
+  script: ["echo deploy prod"]
   environment:
     name: production
-    url: https://www.example.com
+  when: manual
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-  # On Premium/Ultimate: protect "production" and require approvers in project settings
-
-rollback_production:
-  stage: deploy
-  image: alpine:3.20
-  needs: ["deploy_production"]
-  environment:
-    name: production
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-  script:
-    - echo "Redeploy previous IMAGE digest / helm rollback / shift traffic"
+    - if: $CI_COMMIT_BRANCH == "main"
 EOF
-
-python3 - << 'PY'
-import yaml
-cfg = yaml.safe_load(open(".gitlab-ci.yml"))
-assert cfg["deploy_production"]["rules"][0]["when"] == "manual"
-print("Manual production gate OK")
-PY
-
-cat > promotion-checklist.md << 'EOF'
-- [ ] Same IMAGE digest staging → production
-- [ ] Production environment protected
-- [ ] Manual / approval gate documented
-- [ ] Rollback job or runbook tested in staging
-- [ ] Feature flags for risky behaviour (optional)
-EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['deploy_prod']['when']=='manual'; print('manual prod gate OK')"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-15/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production Pipelines and Environments** always combines:
 
@@ -223,7 +206,11 @@ Production practice for **Production Pipelines and Environments** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -231,7 +218,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Rebuilding the image in the production job — digests diverge from what staging tested."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -242,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production Pipelines and Environments changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -250,7 +245,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -260,27 +259,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Production Pipelines and Environments** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Production Pipelines and Environments** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Production Pipelines and Environments** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Pipeline Monitoring and Observability](pipeline-monitoring-and-observability.md)
+- [Pipeline Monitoring and Observability](pipeline-monitoring-and-observability.md)
+
+
 
 ## References
+
+
 
 - [Environments and deployments](https://docs.gitlab.com/ee/ci/environments/)  
 - [Protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)  

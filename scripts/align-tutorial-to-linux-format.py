@@ -192,19 +192,57 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 """,
         "Summary": f"""**{title}** is essential for Cloud and DevOps engineers working with {tech}. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 """,
-        "Interview Questions": f"""1. How does **{title}** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
-
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
-""",
+        # Do not inject generic interview boilerplate here.
+        # Topic-specific questions come from enrich-labs-and-interviews.py or existing page content.
+        "Interview Questions": "",
         "Related Tutorials": f"""- [Course overview]({index_link})
 - {next_link}
 """,
     }
+
+
+GENERIC_IQ_RE = re.compile(
+    r"How does \*\*[^*]+\*\* show up when operating Cloud or production platforms\?",
+    re.M,
+)
+
+
+def resolve_interview_questions(title: str, tech: str, path: Path, existing: str) -> str:
+    """Prefer non-generic existing IQ; otherwise use enrichment banks; never emit boilerplate."""
+    existing = (existing or "").strip()
+    if existing and not GENERIC_IQ_RE.search(existing) and existing.count("\n") >= 4:
+        return existing + "\n"
+
+    slug = path.stem
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from enrichment import banks_cicd_git_docker_aws as banks_b
+        from enrichment import banks_k8s_tf_helm as banks_a
+
+        for mod in (banks_a, banks_b):
+            if tech in mod.supported_techs():
+                iq = mod.interview_for(tech, slug, title)
+                if iq:
+                    return iq.strip() + "\n"
+    except Exception:
+        pass
+
+    if existing and not GENERIC_IQ_RE.search(existing):
+        return existing + "\n"
+
+    # Topic-shaped stub (not the old five-question boilerplate). Enrich for priority courses.
+    return f"""1. What problem does **{title}** solve for teams working with {tech}?
+2. What would you check first if this area misbehaves in production?
+3. Which trade-offs should engineers understand when adopting **{title}**?
+4. What security control should accompany **{title}** in production?
+5. How would you verify **{title}** automatically in CI?
+
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence specific to {tech}, then fix forward with a known rollback path.
+
+!!! tip "Note"
+    Prefer topic-specific banks via `python3 scripts/enrich-labs-and-interviews.py --course {tech}`.
+"""
 
 
 def convert(path: Path, dry_run: bool = False) -> str:
@@ -375,7 +413,7 @@ def convert(path: Path, dry_run: bool = False) -> str:
 
 ## Interview Questions
 
-{tail['Interview Questions'].strip()}
+{resolve_interview_questions(title, tech, path, sections.get('Interview Questions', '')).strip()}
 
 ## Related Tutorials
 

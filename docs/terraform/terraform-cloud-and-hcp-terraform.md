@@ -43,19 +43,29 @@ comments: false
 
 ## Overview
 
+
+
 Explain HCP Terraform (formerly Terraform Cloud) workspaces, remote runs, team access, and policy hooks — and sketch a `cloud` block workflow you can adopt when an organisation is ready.
 
 **HCP Terraform** (HashiCorp Cloud Platform Terraform; historically **Terraform Cloud**) hosts state, runs plans/applies remotely, and adds collaboration features: teams, variable sets, VCS-driven runs, and policy enforcement. You trade operating your own state bucket for a managed control plane. Enterprise tiers add deeper governance; the mental model starts the same.
 
 This is a core tutorial in **Module 13 · Terraform Cloud & Enterprise** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md)
 - [Remote State and Backends](remote-state-and-backends.md)
 - HashiCorp account optional for the conceptual lab (no paid org required)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -64,13 +74,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Map teams, variable sets, and policy stages  
 - [ ] Contrast `cloud` block vs self-managed backends
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![HCP Terraform](../assets/excalidraw/terraform-cloud.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -108,61 +126,93 @@ Workspace = state + runs + variables; run = remote plan/apply; variable sets sha
 - Secrets in Git *and* variable sets — pick one controlled path.
 - Local execution while assuming credentials never touch laptops.
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-13/hcp-terraform && cd ~/rebash-terraform/module-13/hcp-terraform
 ```
 
-**Focus:** local Terraform workflow for Terraform Cloud and HCP Terraform (no cloud spend)
+**Focus:** Model remote-run concepts locally without requiring HCP Terraform login
 
-### Step 1 – Minimal configuration
+### Step 1 – Document run stages with a local dry-run script
 
 ```bash
-cat > main.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
   required_version = ">= 1.5.0"
+  required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
+  }
 }
 
 resource "null_resource" "lab" {
   triggers = {
-    topic = "Terraform Cloud and HCP Terraform"
+    note = "rebash-lab"
   }
-  provisioner "local-exec" {
-    command = "echo lab-ok"
-  }
+}
+
+resource "local_file" "marker" {
+  content  = "managed-by-terraform
+"
+  filename = "${path.module}/marker.txt"
 }
 EOF
 terraform init
-terraform validate
+cat > simulate-remote-run.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "1) queue plan"
 terraform plan -out=tfplan
+echo "2) policy checks (placeholder)"
+echo "3) apply after approval"
+terraform apply tfplan
+EOF
+chmod +x simulate-remote-run.sh
 ```
 
-### Step 2 – Apply, inspect state, destroy
+### Step 2 – Execute the simulated remote run
 
 ```bash
-terraform apply -auto-approve tfplan
+./simulate-remote-run.sh
 terraform state list
-terraform show | sed -n '1,40p'
-terraform destroy -auto-approve
+echo "HCP Terraform adds remote execution, state, and policy — this lab mirrors the stages"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-rm -f tfplan
-# Keep ~/rebash-terraform/ for later tutorials; never leave remote state unlocked
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-13/hcp-terraform/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Terraform Cloud and HCP Terraform** always combines:
 
@@ -174,7 +224,11 @@ Production practice for **Terraform Cloud and HCP Terraform** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -182,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Treating HCP workspaces as a substitute for separate cloud accounts."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -193,7 +251,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Terraform Cloud and HCP Terraform changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -201,7 +263,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -211,27 +277,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Terraform Cloud and HCP Terraform** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Terraform Cloud and HCP Terraform** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What capabilities does HCP Terraform add beyond open-source CLI alone?
+2. What is a remote run versus local run?
+3. How do policy-as-code checks fit into a remote run?
+4. What organisational trade-offs exist when centralising runs in HCP Terraform?
+5. How should VCS-driven workflows map to workspaces?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Remote runs execute plan/apply on managed workers with central state and optional policy gates. Local runs use your machine’s credentials and plugins.
+
+!!! tip "Sample answer — question 4"
+    Centralisation improves governance but creates platform dependency and needs clear workspace permissions so teams cannot apply each other’s prod stacks.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
+- [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
+
+
 
 ## References
+
+
 
 - [HCP Terraform](https://developer.hashicorp.com/terraform/cloud-docs)  
 - [Cloud block](https://developer.hashicorp.com/terraform/cli/cloud/settings)  

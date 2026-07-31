@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Trace a request from `kubectl` through the API server to etcd, scheduling, and the kubelet — and name every major control-plane piece.
 
 The **control plane** stores and reconciles desired state. **Workers** run Pods. Everything goes through the **Kubernetes API**.
 
 This is a core tutorial in **Module 1 · Kubernetes Fundamentals** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Introduction to Kubernetes and Orchestration](introduction-to-kubernetes-and-orchestration.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe cloud-controller-manager (when present)  
 - [ ] Relate CNI to Pod networking
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Control plane](../assets/excalidraw/k8s-control-plane.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -111,7 +129,10 @@ Reconciliation never stops: controllers and kubelets continuously compare desire
 - Expecting `kubectl get componentstatuses` to be the modern health check — prefer node Ready, API reachability, and control-plane Pods in `kube-system`.
 - Confusing CNI (Pod networking) with kube-proxy (Service VIP distribution).
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -119,35 +140,51 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-01-arch && cd ~/rebash-k8s/module-01-arch
 ```
 
-**Focus:** hands-on practice for Kubernetes Architecture and Components
+**Focus:** Map control plane and node components from a live cluster
 
-### Step 1 – Core exercise
+### Step 1 – Inspect nodes and system Pods
 
 ```bash
-mkdir -p ~/rebash-k8s/module-01-arch && cd ~/rebash-k8s/module-01-arch
-cat > components.md << 'EOF'
-kubectl → apiserver → etcd
-scheduler binds Pod → kubelet pulls & runs
-EOF
-# With a cluster (Module 2+):
-kubectl get componentstatuses 2>/dev/null || true
-kubectl get nodes -o wide 2>/dev/null || echo "Cluster in Module 2"
+kubectl create namespace rebash-lab
+kubectl get nodes -o custom-columns=NAME:.metadata.name,ROLES:.metadata.labels.node-role\.kubernetes\.io/control-plane,VERSION:.status.nodeInfo.kubeletVersion
+kubectl get pods -n kube-system -o wide
+kubectl get --raw /readyz?verbose | head -n 20 || true
+```
+
+### Step 2 – Identify API server and scheduling signals
+
+```bash
+kubectl cluster-info
+kubectl get componentstatuses 2>/dev/null || kubectl get --raw /livez | head -c 200; echo
+kubectl explain pod.spec.nodeName
+kubectl -n rebash-lab run arch-probe --image=busybox:1.36 --restart=Never --command -- sleep 30
+kubectl -n rebash-lab get pod arch-probe -o jsonpath='Node={.spec.nodeName} Phase={.status.phase}{"
+"}'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-01-arch/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Architecture and Components** always combines:
 
@@ -159,7 +196,11 @@ Production practice for **Kubernetes Architecture and Components** always combin
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -167,7 +208,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Assuming etcd is “just a database” — corrupting or starving etcd takes the cluster down."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -178,7 +223,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Kubernetes Architecture and Components changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -186,7 +235,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -196,26 +249,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Kubernetes Architecture and Components** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Kubernetes Architecture and Components** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What are the main control plane components of Kubernetes?
+2. What is the role of kubelet versus kube-proxy on a node?
+3. Where does etcd fit, and why is its health critical?
+4. How does a highly available control plane change failure domains compared with a single API server?
+5. What is the scheduler responsible for?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    kubelet ensures Pod specs assigned to the node are running and reports status. kube-proxy programmes Service networking rules (or relies on equivalent dataplane) so ClusterIP traffic reaches Pods.
+
+!!! tip "Sample answer — question 4"
+    Multiple API server and etcd members reduce single points of failure, but you must still plan for quorum, load balancing, and zone-aware placement so correlated failures do not take the whole control plane down.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Installing Kubernetes and kubectl](installing-kubernetes-and-kubectl.md)
+- [Installing Kubernetes and kubectl](installing-kubernetes-and-kubectl.md)
+
+
 
 ## References
+
+
 
 - [Cluster architecture](https://kubernetes.io/docs/concepts/architecture/)

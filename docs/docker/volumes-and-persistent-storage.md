@@ -38,17 +38,27 @@ comments: false
 
 ## Overview
 
+
+
 Persist data with named volumes, use bind mounts for live code, know when `tmpfs` fits, and back up a volume.
 
 Container filesystems are ephemeral. **Volumes** survive container removal; **bind mounts** map host paths; **tmpfs** keeps data in memory.
 
 This is a core tutorial in **Module 7 · Volumes & Storage** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,13 +67,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `tmpfs` for scratch data  
 - [ ] Backup/restore a volume with a helper container
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Volume architecture](../assets/excalidraw/docker-volume-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -97,7 +115,10 @@ Declare mounts with `docker run -v` / `--mount` or Compose `volumes:`. Named vol
 - Permission denied after switching `USER` in the image  
 - Deleting volumes with `docker volume prune` without checking labels
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -105,40 +126,39 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07/host-data
 ```
 
-**Focus:** hands-on practice for Volumes and Persistent Storage
+**Focus:** persist data with a named volume
 
-### Step 1 – Core exercise
+### Step 1 – Volume round-trip
 
 ```bash
-mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07
-docker volume create rebash-data
-docker run --rm -v rebash-data:/data alpine sh -c 'echo hello > /data/note.txt'
-docker run --rm -v rebash-data:/data alpine cat /data/note.txt
-# backup
-docker run --rm -v rebash-data:/data -v "$(pwd)":/backup alpine \
-  tar czf /backup/rebash-data.tgz -C /data .
-# bind mount
-echo host > host-data/file.txt
-docker run --rm -v "$(pwd)/host-data":/data alpine cat /data/file.txt
-# tmpfs
-docker run --rm --tmpfs /scratch:size=16m alpine sh -c 'echo x > /scratch/x && ls /scratch'
-ls -la rebash-data.tgz
+docker volume create rebash-vol
+docker run --rm -v rebash-vol:/data alpine:3.20 sh -c 'echo persist > /data/note.txt'
+docker run --rm -v rebash-vol:/data alpine:3.20 cat /data/note.txt | tee note.txt
+docker volume inspect rebash-vol | tee vol.json
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker volume rm rebash-vol 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-07/host-data/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Volumes and Persistent Storage** always combines:
 
@@ -150,7 +170,11 @@ Production practice for **Volumes and Persistent Storage** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -158,7 +182,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Storing production data only in the container writable layer  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -169,7 +197,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Volumes and Persistent Storage changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -177,7 +209,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -187,26 +223,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Volumes and Persistent Storage** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Volumes and Persistent Storage** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Volumes and Persistent Storage** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
+- [Docker Networking Fundamentals](docker-networking-fundamentals.md)
+
+
 
 ## References
+
+
 
 - [Manage data in Docker](https://docs.docker.com/storage/)

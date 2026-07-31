@@ -43,17 +43,27 @@ comments: false
 
 ## Overview
 
+
+
 Assemble a production excellence checklist: multi-cluster posture, policy, cost controls, observability SLOs, and scaling — ready for a platform review.
 
 Excellence is boring consistency: GitOps everywhere, PSA/NetworkPolicy defaults, scanned images, HPA + PDB, backup tested, and cost visibility (requests right-sizing).
 
 This is a core tutorial in **Module 20 · Production Kubernetes** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - Modules 15–19 complete
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Name FinOps levers (requests, bin-pack, spot)  
 - [ ] Complete an ops excellence checklist
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Production cluster](../assets/excalidraw/k8s-production-cluster.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -111,7 +129,10 @@ Review the checklist regularly; excellence decays without ownership.
 - Backups never restored; DR untested.
 - Calling the platform done when observability still lacks actionable alerts.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -119,43 +140,92 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-20 && cd ~/rebash-k8s/module-20
 ```
 
-**Focus:** hands-on practice for Production Kubernetes Excellence
+**Focus:** Apply production defaults: requests, probes, and disruption-aware replica count
 
-### Step 1 – Core exercise
+### Step 1 – Deploy with production-minded fields
 
 ```bash
-mkdir -p ~/rebash-k8s/module-20 && cd ~/rebash-k8s/module-20
-cat > excellence-checklist.md << 'EOF'
-- [ ] GitOps for all envs
-- [ ] PSA + NetworkPolicy defaults
-- [ ] Image scan + immutable tags
-- [ ] RBAC least privilege / no cluster-admin for apps
-- [ ] HPA + PDB on critical Deployments
-- [ ] Ingress TLS + cert automation
-- [ ] Metrics, logs, traces wired
-- [ ] etcd/workload backup tested quarterly
-- [ ] Upgrade cadence documented
-- [ ] Cost: requests ≈ usage; idle namespaces reviewed
-- [ ] Multi-cluster: DR / region strategy written
+kubectl create namespace rebash-lab
+cat > prod.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prod-web
+  namespace: rebash-lab
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: prod-web
+  template:
+    metadata:
+      labels:
+app: prod-web
+    spec:
+      containers:
+      - name: nginx
+image: nginx:1.27-alpine
+ports:
+- containerPort: 80
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+readinessProbe:
+  httpGet: {path: /, port: 80}
+  periodSeconds: 5
+livenessProbe:
+  httpGet: {path: /, port: 80}
+  periodSeconds: 10
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: prod-web
+  namespace: rebash-lab
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: prod-web
 EOF
-kubectl get ns
-kubectl get deploy -A | head
+kubectl apply -f prod.yaml
+kubectl -n rebash-lab rollout status deploy/prod-web
+```
+
+### Step 2 – Validate excellence checklist
+
+```bash
+kubectl -n rebash-lab get deploy,pdb
+kubectl -n rebash-lab get pods -l app=prod-web -o wide
+kubectl -n rebash-lab describe pdb prod-web | head -n 25
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-20/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production Kubernetes Excellence** always combines:
 
@@ -167,7 +237,11 @@ Production practice for **Production Kubernetes Excellence** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -175,7 +249,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Multi-cluster sprawl without a platform story — N snowflake clusters."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -186,7 +264,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production Kubernetes Excellence changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -194,7 +276,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -204,27 +290,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 You can design and operate production Kubernetes platforms end to end — from first Pod to multi-cluster GitOps with security and DR.
 
+
+
 ## Interview Questions
 
-1. How does **Production Kubernetes Excellence** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. List five controls you expect on a production Deployment.
+2. How do PodDisruptionBudgets protect availability during node drains?
+3. Why are resource requests required for reliable scheduling and HPA?
+4. What trade-off exists between many small clusters and one large multi-tenant cluster?
+5. How do you validate excellence continuously after the first go-live?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    PDBs limit voluntary disruptions so drains and upgrades cannot take too many Pods down at once, preserving minAvailable or maxUnavailable guarantees.
+
+!!! tip "Sample answer — question 4"
+    Multi-tenant clusters improve density but need stronger isolation and governance. Many clusters improve blast-radius isolation at higher operational and cost overhead.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Kubernetes Capstone and Next Steps](kubernetes-capstone-and-next-steps.md)
+- [Kubernetes Capstone and Next Steps](kubernetes-capstone-and-next-steps.md)
 - [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
 
+
+
 ## References
+
+
 
 - [Production environment checklist](https://kubernetes.io/docs/setup/best-practices/)

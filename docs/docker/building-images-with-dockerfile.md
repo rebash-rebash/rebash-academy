@@ -38,17 +38,27 @@ comments: false
 
 ## Overview
 
+
+
 Author a clear Dockerfile for a small app: choose a base image, install deps, copy code, set `USER`, and define `CMD`/`ENTRYPOINT`.
 
 A **Dockerfile** is a build recipe. Each instruction can create a layer — order matters for cache and size (optimisation is Module 6).
 
 This is a core tutorial in **Module 5 · Dockerfile** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Working with Docker Images](working-with-docker-images.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,13 +67,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Set `ENV` / `ARG`, `EXPOSE`, `LABEL`, `USER`  
 - [ ] Build and run a local image
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Image layers](../assets/excalidraw/docker-image-layers.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -102,7 +120,10 @@ Each instruction creates a layer (conceptually). `FROM` selects a base. `RUN` ex
 - Confusing `ARG` (build) with runtime configuration  
 - Using `latest` bases that break builds unexpectedly
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -110,53 +131,45 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
 ```
 
-**Focus:** hands-on practice for Building Images with Dockerfile
+**Focus:** write a Dockerfile, build, run, and verify output
 
-### Step 1 – Core exercise
+### Step 1 – Build and run
 
 ```bash
-mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05
-cat > app/server.py << 'EOF'
-from http.server import BaseHTTPRequestHandler, HTTPServer
-class H(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"rebash docker ok\n")
-HTTPServer(("0.0.0.0", 8080), H).serve_forever()
-EOF
-
 cat > Dockerfile << 'EOF'
-FROM python:3.12-alpine
-LABEL org.opencontainers.image.source="rebash-academy"
+FROM alpine:3.20
 WORKDIR /app
-COPY app/server.py .
-RUN adduser -D appuser
-USER appuser
-EXPOSE 8080
-CMD ["python", "server.py"]
+COPY message.txt .
+CMD ["cat", "message.txt"]
 EOF
-
-docker build -t rebash-hello:0.1.0 .
-docker run --rm -d --name rebash-hello -p 8080:8080 rebash-hello:0.1.0
-curl -s http://127.0.0.1:8080
-docker stop rebash-hello
+echo 'hello from dockerfile' > message.txt
+docker build -t rebash-lab:local .
+docker run --rm rebash-lab:local | tee out.txt
+test "$(cat out.txt)" = 'hello from dockerfile'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-05/app/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Building Images with Dockerfile** always combines:
 
@@ -168,7 +181,11 @@ Production practice for **Building Images with Dockerfile** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -176,7 +193,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "`COPY . .` without a `.dockerignore` (secrets, `.git`, node_modules)  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -187,7 +208,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Building Images with Dockerfile changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -195,7 +220,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -205,26 +234,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Building Images with Dockerfile** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Building Images with Dockerfile** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Building Images with Dockerfile** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
+- [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
+
+
 
 ## References
+
+
 
 - [Dockerfile reference](https://docs.docker.com/reference/dockerfile/)

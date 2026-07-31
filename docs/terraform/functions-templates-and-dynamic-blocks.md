@@ -42,18 +42,28 @@ comments: false
 
 ## Overview
 
+
+
 Apply conditionals, `for` expressions, common built-in functions, `templatefile`, and a controlled `dynamic` block — keeping transforms in `locals` for reviewability.
 
 Terraform expressions include a rich **function library**, collection transforms (`for`), and **`dynamic` blocks** for nested provider schema. Large multi-line artefacts belong in **`templatefile`** so HCL stays readable. Prefer clarity over clever one-liners.
 
 This is a core tutorial in **Module 10 · Expressions & Functions** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Registry Modules and Composition](registry-modules-and-composition.md)
 - Terraform CLI 1.9+
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Generate nested blocks with `dynamic` when needed  
 - [ ] Keep complex transforms in `locals`
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Expressions and functions](../assets/excalidraw/terraform-expressions.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -108,7 +126,10 @@ Prefer named locals over nested in-resource pipelines; static blocks when N is t
 - Template variable names in `.tftpl` not matching the vars map keys.
 - Confusing `for` expressions with the `for_each` meta-argument.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -116,90 +137,68 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-10/expressions/out && cd ~/rebash-terraform/module-10/expressions/out
 ```
 
-**Focus:** hands-on practice for Functions, Templates, and Dynamic Blocks
+**Focus:** Use functions, templatestring/templatefile patterns, and dynamic blocks
 
-### Step 1 – Core exercise
+### Step 1 – Build dynamic content
 
 ```bash
-mkdir -p ~/rebash-terraform/module-10/expressions/out
-cd ~/rebash-terraform/module-10/expressions
-
-cat > app.tftpl << 'EOF'
-# app=${name} env=${env}
-owners=${owners_csv}
+cat > greeting.tftpl <<'EOF'
+Hello, ${name}!
 EOF
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.9.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.9" }
+    local = { source = "hashicorp/local", version = "~> 2.5" }
   }
 }
-EOF
-
-cat > main.tf << 'EOF'
-variable "env" {
-  type    = string
-  default = "dev"
-}
-variable "owners" {
+variable "names" {
   type    = list(string)
-  default = ["alice", "bob"]
+  default = ["alpha", "beta"]
 }
-variable "extra_tags" {
-  type    = map(string)
-  default = { team = "platform" }
+resource "local_file" "greetings" {
+  for_each = toset(var.names)
+  filename = "${path.module}/hi-${each.key}.txt"
+  content  = templatefile("${path.module}/greeting.tftpl", { name = each.key })
 }
-
 locals {
-  is_prod     = var.env == "prod"
-  base_tags   = merge({ env = var.env, managed = "terraform" }, var.extra_tags)
-  owners_csv  = join(",", [for o in var.owners : upper(o)])
-  rendered    = templatefile("${path.module}/app.tftpl", {
-    name       = "demo"
-    env        = var.env
-    owners_csv = local.owners_csv
-  })
-  markers = { for o in var.owners : o => "owner-${o}" }
+  upper_names = [for n in var.names : upper(n)]
 }
-
-resource "local_file" "config" {
-  filename = "${path.module}/out/app.conf"
-  content  = local.rendered
-}
-
-resource "terraform_data" "owner" {
-  for_each = local.markers
-  input    = each.value
-}
-
-output "tags"       { value = local.base_tags }
-output "owners_csv" { value = local.owners_csv }
-output "is_prod"    { value = local.is_prod }
+output "upper_names" { value = local.upper_names }
 EOF
+terraform init
+```
 
-terraform init -input=false
-terraform apply -input=false -auto-approve
-cat out/app.conf
+### Step 2 – Apply and verify rendered files
+
+```bash
+terraform apply -auto-approve
+cat hi-alpha.txt hi-beta.txt
 terraform output
-terraform destroy -input=false -auto-approve
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-10/expressions/out/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Functions, Templates, and Dynamic Blocks** always combines:
 
@@ -211,7 +210,11 @@ Production practice for **Functions, Templates, and Dynamic Blocks** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -219,7 +222,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Treating `dynamic` as the default for every optional setting."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -230,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Functions, Templates, and Dynamic Blocks changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -238,7 +249,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -248,27 +263,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Functions, Templates, and Dynamic Blocks** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Functions, Templates, and Dynamic Blocks** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is `templatefile` useful for?
+2. How does `for_each` differ from `dynamic` blocks?
+3. When should you prefer explicit resources over dynamic blocks?
+4. What readability trade-offs do nested functions create in reviews?
+5. Give an example of a safe use of `tonumber` or `try`.
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    `for_each` creates multiple resource instances; `dynamic` generates nested blocks inside one resource. Use dynamic for repeated nested arguments like ingress rules.
+
+!!! tip "Sample answer — question 4"
+    Heavy nesting hides intent. Prefer locals with names, smaller templates, and tests so security-relevant values stay reviewable.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Data Sources and Existing Infrastructure](data-sources-and-existing-infrastructure.md)
+- [Data Sources and Existing Infrastructure](data-sources-and-existing-infrastructure.md)
+
+
 
 ## References
+
+
 
 - [Functions](https://developer.hashicorp.com/terraform/language/functions)  
 - [for Expressions](https://developer.hashicorp.com/terraform/language/expressions/for)  

@@ -41,6 +41,8 @@ comments: false
 
 ## Overview
 
+
+
 Create a Horizontal Pod Autoscaler (HPA) on CPU and explain VPA, Cluster Autoscaler, and KEDA event-driven scaling.
 
 | Scaler | Scales |
@@ -54,11 +56,19 @@ Requests must be set for resource-based HPA. Pair with PodDisruptionBudgets in p
 
 This is a core tutorial in **Module 13 · Autoscaling** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Observability](monitoring-and-logging-in-kubernetes.md) (Metrics Server for resource HPA)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -67,13 +77,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast HPA, VPA, Cluster Autoscaler, and KEDA  
 - [ ] Note PDB pairing for production scale-down
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -118,7 +136,10 @@ Avoid running VPA auto mode and HPA on CPU/memory against the same container wit
 - Cluster Autoscaler disabled while HPA creates unschedulable Pods.
 - Aggressive scale-down without PDBs during deploys — accidental outages.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -126,34 +147,74 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-13 && cd ~/rebash-k8s/module-13
 ```
 
-**Focus:** hands-on practice for Kubernetes Autoscaling
+**Focus:** Configure Horizontal Pod Autoscaler metrics wiring (metrics-server dependent)
 
-### Step 1 – Core exercise
+### Step 1 – Deploy a CPU-requesting workload
 
 ```bash
-mkdir -p ~/rebash-k8s/module-13 && cd ~/rebash-k8s/module-13
-kubectl create deploy hpa-demo --image=nginx:alpine
-kubectl set resources deploy/hpa-demo --requests=cpu=100m,memory=64Mi
-kubectl autoscale deploy/hpa-demo --cpu-percent=50 --min=1 --max=5
-kubectl get hpa
-kubectl describe hpa hpa-demo | head -n 30
-kubectl delete hpa hpa-demo deploy/hpa-demo
+kubectl create namespace rebash-lab
+cat > hpa-app.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpa-demo
+  namespace: rebash-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hpa-demo
+  template:
+    metadata:
+      labels:
+app: hpa-demo
+    spec:
+      containers:
+      - name: php-apache
+image: registry.k8s.io/hpa-example
+ports:
+- containerPort: 80
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+EOF
+kubectl apply -f hpa-app.yaml
+kubectl -n rebash-lab expose deploy/hpa-demo --port=80
+```
+
+### Step 2 – Create an HPA and inspect status
+
+```bash
+kubectl -n rebash-lab autoscale deployment hpa-demo --cpu-percent=50 --min=1 --max=3
+kubectl -n rebash-lab get hpa
+kubectl -n rebash-lab describe hpa hpa-demo | head -n 40
+# Without metrics-server, TARGETS may show <unknown>; install metrics-server for live CPU ratios
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-13/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Autoscaling** always combines:
 
@@ -165,7 +226,11 @@ Production practice for **Kubernetes Autoscaling** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -173,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "HPA with no requests — utilisation is undefined or useless."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -184,7 +253,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Kubernetes Autoscaling changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -192,7 +265,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -202,26 +279,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Kubernetes Autoscaling** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Kubernetes Autoscaling** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does the Horizontal Pod Autoscaler adjust?
+2. Why do resource requests matter for CPU-based HPA?
+3. What is the difference between HPA and Cluster Autoscaler?
+4. What risks arise from autoscaling without PodDisruptionBudgets and readiness probes?
+5. When would you choose custom metrics over CPU utilisation?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    HPA scales Pod replica counts from metrics. Requests define the baseline for utilisation percentages; without requests, CPU targets are unreliable or unavailable.
+
+!!! tip "Sample answer — question 4"
+    Rapid scale-down can terminate Pods mid-request if PDBs and readiness are weak. Scale-up can overwhelm dependencies. Pair HPA with sensible limits, PDBs, and dependency capacity planning.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Helm Package Management](helm-package-management.md)
+- [Helm Package Management](helm-package-management.md)
+
+
 
 ## References
+
+
 
 - [Horizontal Pod Autoscaling](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) · [KEDA](https://keda.sh/)

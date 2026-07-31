@@ -44,18 +44,28 @@ comments: false
 
 ## Overview
 
+
+
 Write a working workflow that checks out code, uses an action, sets a variable, evaluates an expression, and prints useful run context — the building blocks of every later module.
 
 Workflow files live in **`.github/workflows/`**. Each file defines **`on:`** (when it runs), **`jobs:`** (what runs where), and under each job a list of **`steps:`**. Steps are either **`run:`** shell commands or **`uses:`** references to actions. **Expressions** ({% raw %}`${{ … }}`{% endraw %}) and **contexts** (`github`, `env`, `vars`, `secrets`) parameterise behaviour without hard-coding every branch name.
 
 This is a core tutorial in **Module 2 · GitHub Actions Basics** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [CI/CD Fundamentals and GitHub Actions](cicd-fundamentals-and-github-actions.md)
 - A GitHub repository you can push to (public is fine for learning)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Read `github` / `env` contexts and write a simple expression  
 - [ ] Distinguish workflow `env`, job `env`, and step `env`
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitHub Actions basics](../assets/excalidraw/gha-basics.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -130,7 +148,10 @@ For local authoring without burning minutes, write YAML first, validate structur
 - Treating `@v4` as immutable forever — tags can move; production often pins SHAs.
 - Confusing job-level failure with workflow cancellation of sibling jobs (default: other jobs still run).
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -138,93 +159,54 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-02/.github/workflows && cd ~/rebash-github-actions/module-02/.github/workflows
 ```
 
-**Focus:** hands-on practice for GitHub Actions Basics: Workflows, Jobs, and Steps
+**Focus:** author a workflow with jobs/steps and validate YAML structure
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-github-actions/module-02/.github/workflows
-cd ~/rebash-github-actions/module-02
-```
-
-Create a first real workflow. Push to a GitHub remote when ready.
-
-```bash
-cd ~/rebash-github-actions/module-02
-printf 'ok\n' > app.txt
-```
+### Step 1 – First workflow
 
 {% raw %}
-```yaml
-# .github/workflows/basics.yml
-name: Module 2 basics
-
+```bash
+mkdir -p .github/workflows
+cat > .github/workflows/ci.yml << 'EOF'
+name: ci
 on:
   push:
-    branches: [main, master]
   pull_request:
-  workflow_dispatch:
-
-env:
-  APP_NAME: rebash-demo
-
 jobs:
-  build-and-verify:
+  build:
     runs-on: ubuntu-latest
-    env:
-      STAGE: ci
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Show GitHub context
+      - uses: actions/checkout@v4
+      - name: Compile check
         run: |
-          echo "Repository=${{ github.repository }}"
-          echo "Event=${{ github.event_name }}"
-          echo "Actor=${{ github.actor }}"
-          echo "SHA=${{ github.sha }}"
-
-      - name: Use env scopes
-        env:
-          STEP_NOTE: "step-local"
-        run: |
-          echo "APP_NAME=${APP_NAME}"
-          echo "STAGE=${STAGE}"
-          echo "STEP_NOTE=${STEP_NOTE}"
-
-      - name: Conditional on default branch tip
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        run: echo "Running on default-branch tip"
-
-      - name: Validate workspace file
-        run: |
-          test -f app.txt
-          echo "Module 2 workflow OK for ${{ env.APP_NAME }}"
+          echo ok > out.txt
+          test -s out.txt
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('workflow OK')"
 ```
 {% endraw %}
-
-```bash
-# Copy the YAML into .github/workflows/basics.yml, then:
-# git init && git add . && git commit -m "Module 2 basics workflow"
-# gh repo create rebash-gha-module-02 --private --source=. --remote=origin --push
-# gh run list
-actionlint .github/workflows/basics.yml 2>/dev/null || echo "Install actionlint later; YAML is ready to push"
-```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only; push to GitHub to execute on hosted runners
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-02/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **GitHub Actions Basics: Workflows, Jobs, and Steps** always combines:
 
@@ -236,7 +218,11 @@ Production practice for **GitHub Actions Basics: Workflows, Jobs, and Steps** al
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -244,7 +230,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Putting workflow files outside `.github/workflows/` — GitHub will ignore them."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -255,7 +245,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode GitHub Actions Basics: Workflows, Jobs, and Steps changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -263,7 +257,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -273,27 +271,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **GitHub Actions Basics: Workflows, Jobs, and Steps** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **GitHub Actions Basics: Workflows, Jobs, and Steps** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **GitHub Actions Basics: Workflows, Jobs, and Steps** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [GitHub-Hosted and Self-Hosted Runners](github-hosted-and-self-hosted-runners.md)
+- [GitHub-Hosted and Self-Hosted Runners](github-hosted-and-self-hosted-runners.md)
+
+
 
 ## References
+
+
 
 - [Workflow syntax for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)  
 - [Contexts and expressions](https://docs.github.com/en/actions/learn-github-actions/contexts)  

@@ -38,17 +38,27 @@ comments: false
 
 ## Overview
 
+
+
 Merge chart defaults with environment files and CLI overrides, and keep secrets out of Git-committed values.
 
 Later sources win. Production teams keep `values.yaml` safe defaults, then `values-<env>.yaml` per environment, and inject secrets at deploy time (sealed secrets, SOPS, external secrets — not plaintext in Git).
 
 This is a core tutorial in **Module 5 · Values** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Helm Templates](helm-templates-and-go-templating.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,13 +67,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Structure env-specific files  
 - [ ] Avoid committing secrets
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Values override order](../assets/excalidraw/helm-values-override.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -106,7 +124,10 @@ Mental model for teams: **safe defaults in the chart → env files in Git → se
 - Overusing `--set` in tribal wiki commands instead of checked-in env files.
 - Forgetting that subcharts read values under their chart name key unless aliases/`global` are designed intentionally.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -114,39 +135,54 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-05 && cd ~/rebash-helm/module-05
 ```
 
-**Focus:** hands-on practice for Helm Values and Overrides
+**Focus:** Override chart values via flags and values files
 
-### Step 1 – Core exercise
+### Step 1 – Create a chart and environment values file
 
 ```bash
-mkdir -p ~/rebash-helm/module-05 && cd ~/rebash-helm/module-05
-helm create rebash-vals
-cat > values-prod.yaml << 'EOF'
-replicaCount: 3
-image:
-  tag: "1.26.0"
+kubectl create namespace rebash-helm
+helm create values-demo
+cat > lab-values.yaml <<'EOF'
+replicaCount: 2
 service:
   type: ClusterIP
 EOF
-helm template demo ./rebash-vals -f values-prod.yaml --set replicaCount=2 \
-  | grep -A2 'replicas:' | head -n 5
-# Effective replicaCount is 2 (--set wins over -f)
+helm template demo ./values-demo -n rebash-helm -f lab-values.yaml | grep -A2 'replicas:'
+```
+
+### Step 2 – Install with layered overrides
+
+```bash
+helm upgrade --install demo ./values-demo -n rebash-helm -f lab-values.yaml --set image.tag=1.27-alpine
+helm -n rebash-helm get values demo
+kubectl -n rebash-helm get deploy demo-values-demo -o jsonpath='{.spec.replicas}{"
+"}' 2>/dev/null || kubectl -n rebash-helm get deploy -o wide
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-05/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Helm Values and Overrides** always combines:
 
@@ -158,7 +194,11 @@ Production practice for **Helm Values and Overrides** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -166,7 +206,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Believing list values deep-merge — they usually replace entirely."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -177,7 +221,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Helm Values and Overrides changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -185,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -195,26 +247,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Helm Values and Overrides** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Helm Values and Overrides** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. In what order do default values, values files, and --set flags combine?
+2. When should you prefer values files over long --set chains?
+3. How do you see the values a release is currently using?
+4. What security issue appears when secrets are placed in values files?
+5. How do you manage values across staging and production?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Later sources override earlier ones: chart defaults, then -f files in order, then --set. Knowing precedence prevents surprise configuration.
+
+!!! tip "Sample answer — question 4"
+    Values files in Git often leak credentials. Keep secrets in sealed/external secret systems and reference them; treat values repos as sensitive if they contain any secrets.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Helm Chart Dependencies](helm-chart-dependencies.md)
+- [Helm Chart Dependencies](helm-chart-dependencies.md)
+
+
 
 ## References
+
+
 
 - [Values files](https://helm.sh/docs/chart_template_guide/values_files/)

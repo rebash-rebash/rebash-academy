@@ -40,18 +40,28 @@ comments: false
 
 ## Overview
 
+
+
 Install Terraform 1.x, pin a version with tfenv or asdf, verify the binary, and understand how providers arrive from the Terraform Registry on `init`.
 
 Install via package manager, HashiCorp packages, or a version manager. Pin the CLI version for every root module with `required_version`. Providers download from the **Terraform Registry** on first `terraform init` — not at install time.
 
 This is a core tutorial in **Module 2 · Installing Terraform** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Introduction to Terraform and IaC](introduction-to-terraform-and-iac.md)
 - Network access to download the CLI and (later) providers
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain when providers download (init + Registry)  
 - [ ] List core CLI verbs you will use daily
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform CLI commands](../assets/excalidraw/terraform-cli-commands.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -112,7 +130,10 @@ You do not install AWS or Azure providers with a separate package manager for da
 - Committing `.terraform/` (plugins cache) — commit `.terraform.lock.hcl`, not the plugin directory.
 - Using a personal laptop binary for production applies — prefer CI with a pinned image.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -120,51 +141,79 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-02 && cd ~/rebash-terraform/module-02
 ```
 
-**Focus:** hands-on practice for Installing Terraform and the CLI Workflow
+**Focus:** Practise the core CLI workflow: init, validate, plan, apply, destroy
 
-### Step 1 – Core exercise
+### Step 1 – Initialise and validate
 
 ```bash
-mkdir -p ~/rebash-terraform/module-02 && cd ~/rebash-terraform/module-02
-
-# macOS (example): brew install terraform
-# Or tfenv: tfenv install 1.9.8 && tfenv use 1.9.8
-# Or asdf: asdf install terraform 1.9.8 && asdf local terraform 1.9.8
-
-terraform version
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
   required_version = ">= 1.5.0"
-
   required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
     local = {
       source  = "hashicorp/local"
       version = "~> 2.5"
     }
   }
 }
-EOF
 
-terraform init
+resource "null_resource" "lab" {
+  triggers = {
+    note = "rebash-lab"
+  }
+}
+
+resource "local_file" "marker" {
+  content  = "managed-by-terraform
+"
+  filename = "${path.module}/marker.txt"
+}
+EOF
 terraform version
-ls -la .terraform/providers 2>/dev/null | head
+terraform init
+terraform validate
+terraform fmt -check || terraform fmt
+```
+
+### Step 2 – Plan, apply, then prove destroy works
+
+```bash
+terraform plan -out=tfplan
+terraform apply tfplan
+ls -la marker.txt
+terraform destroy -auto-approve
+test ! -f marker.txt && echo "destroyed OK"
+# Recreate for the cleanup step below
+terraform apply -auto-approve
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-02/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Installing Terraform and the CLI Workflow** always combines:
 
@@ -176,7 +225,11 @@ Production practice for **Installing Terraform and the CLI Workflow** always com
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -184,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Installing Terraform once and never pinning — plans diverge across machines."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -195,7 +252,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Installing Terraform and the CLI Workflow changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -203,7 +264,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -213,27 +278,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Installing Terraform and the CLI Workflow** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Installing Terraform and the CLI Workflow** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does `terraform init` download and create?
+2. Why separate plan and apply in team workflows?
+3. What does `terraform validate` check versus `terraform plan`?
+4. Why must destroy be treated as carefully as apply in shared environments?
+5. What files should normally be committed versus ignored?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Plan shows the proposed changeset without mutating (unless using certain targets). Applying a saved plan ensures CI applies exactly what was reviewed, reducing surprise drift between plan and apply.
+
+!!! tip "Sample answer — question 4"
+    Destroy removes managed resources and can delete data. In shared environments it needs the same approvals, state locking awareness, and backups as any production change.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Terraform Workflow: Init, Plan, Apply](terraform-workflow-init-plan-apply.md)
+- [Terraform Workflow: Init, Plan, Apply](terraform-workflow-init-plan-apply.md)
+
+
 
 ## References
+
+
 
 - [Install Terraform](https://developer.hashicorp.com/terraform/install)  
 - [Terraform Registry](https://registry.terraform.io/)

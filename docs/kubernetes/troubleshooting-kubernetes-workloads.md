@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply a fixed playbook: Events → describe → logs → previous logs → exec → node/network — for the common Pending / CrashLoop / ImagePull failures.
 
 Most “cluster down” tickets are workload config. Read **Events** before changing YAML randomly.
 
 This is a core tutorial in **Module 18 · Troubleshooting** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Production Operations](kubernetes-production-operations.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain Pending (resources/affinity/PVC)  
 - [ ] Debug Service/DNS connectivity
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -109,7 +127,10 @@ Controllers reconcile desired state — if desired state is wrong, they will fai
 - Assuming NetworkPolicy cannot be the cause of “DNS broken”.
 - Changing three things at once — lose the causal link.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -117,38 +138,63 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
 ```
 
-**Focus:** hands-on practice for Troubleshooting Kubernetes Workloads
+**Focus:** Diagnose a failing Pod using describe, logs, and events
 
-### Step 1 – Core exercise
+### Step 1 – Create a broken Pod on purpose
 
 ```bash
-mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
-kubectl run boom --image=busybox:1.36 --restart=Always -- /bin/false
+kubectl create namespace rebash-lab
+cat > broken.yaml <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: broken
+  namespace: rebash-lab
+spec:
+  containers:
+  - name: app
+    image: nginx:1.27-alpine
+    command: ["/bin/false"]
+EOF
+kubectl apply -f broken.yaml
 sleep 5
-kubectl get pod boom
-kubectl describe pod boom | sed -n '/Events/,$p'
-kubectl logs boom --previous 2>/dev/null || kubectl logs boom
-kubectl delete pod boom
-kubectl run badpull --image=ghcr.io/rebash/does-not-exist:latest --restart=Never || true
-sleep 3
-kubectl describe pod badpull 2>/dev/null | sed -n '/Events/,$p' | head -n 20
-kubectl delete pod badpull --ignore-not-found
+kubectl -n rebash-lab get pod broken
+```
+
+### Step 2 – Trace the failure and fix it
+
+```bash
+kubectl -n rebash-lab describe pod broken | sed -n '/Events:/,$p'
+kubectl -n rebash-lab logs broken || true
+kubectl -n rebash-lab delete pod broken
+kubectl -n rebash-lab run fixed --image=nginx:1.27-alpine
+kubectl -n rebash-lab wait --for=condition=Ready pod/fixed --timeout=60s
+kubectl -n rebash-lab get pod fixed
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-18/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Troubleshooting Kubernetes Workloads** always combines:
 
@@ -160,7 +206,11 @@ Production practice for **Troubleshooting Kubernetes Workloads** always combines
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -168,7 +218,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Deleting Pods before capturing Events and previous logs."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -179,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Troubleshooting Kubernetes Workloads changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -187,7 +245,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -197,26 +259,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Troubleshooting Kubernetes Workloads** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Troubleshooting Kubernetes Workloads** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is a sensible first triage order for a failing Pod?
+2. How do you distinguish ImagePullBackOff from CrashLoopBackOff?
+3. Which kubectl commands help most during an incident?
+4. How can excessive logging or exec debugging create security risk during outages?
+5. What cluster-level checks do you add if many Pods fail at once?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    ImagePullBackOff means the image cannot be fetched; CrashLoopBackOff means the container starts then exits. describe events and logs separate registry issues from application failures.
+
+!!! tip "Sample answer — question 4"
+    Incident shells and dumped env may expose secrets. Prefer controlled debug containers, redacted logs, and audited break-glass access rather than unrestricted exec everywhere.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Managed Kubernetes — EKS, AKS, GKE](managed-kubernetes-eks-aks-gke.md)
+- [Managed Kubernetes — EKS, AKS, GKE](managed-kubernetes-eks-aks-gke.md)
+
+
 
 ## References
+
+
 
 - [Debug Pods](https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/)

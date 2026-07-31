@@ -40,6 +40,8 @@ comments: false
 
 ## Overview
 
+
+
 Explain blobs, trees, commits, and tags, and use `git cat-file` / `rev-parse` to inspect how history is stored — so reset, rebase, and recovery later make sense.
 
 Git is a **content-addressed** object database. Commands move pointers; objects are rarely rewritten in place. That mental model unlocks reflog recovery and “detached HEAD” incidents.
@@ -48,14 +50,22 @@ Complete [Introduction](introduction-to-git-and-version-control.md) first. Diagr
 
 This is a core tutorial in **Module 1 · Version Control Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 ### Required
 
 - [Introduction to Git and Version Control](introduction-to-git-and-version-control.md)
 - Git installed (Module 2 can be done in parallel if needed)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Inspect objects with plumbing commands  
 - [ ] Connect branches to commit pointers
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Git object model](../assets/excalidraw/git-object-model.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -108,62 +126,65 @@ Plumbing tools such as `git cat-file` and `git rev-parse` let you inspect these 
 - Hand-editing files under `.git/objects`  
 - Ignoring detached HEAD when checking out a tag or SHA for inspection
 
+
+
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Understanding the Git Object Model
+
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-git/module-01
-cd ~/rebash-git/module-01
-
-git --version
+mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 ```
 
-### Step 1 – Tiny repo
+**Focus:** practise Git skills for: Understanding the Git Object Model
+
+### Step 1 – Init repository
 
 ```bash
-cd ~/rebash-git/module-01
-rm -rf object-lab && mkdir object-lab && cd object-lab
 git init -b main
-echo 'hello' > app.txt
-git add app.txt
-git config user.email "lab@rebash.local"
-git config user.name "REBASH Lab"
-git commit -m "feat: add app.txt"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
 ```
 
-### Step 2 – Inspect commit and tree
+### Step 2 – Inspect objects
 
 ```bash
+echo 'payload' > blob.txt
+git add blob.txt
+git commit -m 'blob'
 git rev-parse HEAD
 git cat-file -t HEAD
-git cat-file -p HEAD
-TREE=$(git rev-parse HEAD^{tree})
-git cat-file -p "$TREE"
+git cat-file -p HEAD | tee commit-obj.txt
+git rev-list --objects --all | head
 ```
 
-### Step 3 – Blob contents
+### Final step – Cleanup note
 
 ```bash
-BLOB=$(git rev-parse HEAD:app.txt)
-git cat-file -p "$BLOB"
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
-### Step 4 – Show refs
 
-```bash
-git show-ref
-cat .git/HEAD
-```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Understanding the Git Object Model** always combines:
 
@@ -175,7 +196,11 @@ Production practice for **Understanding the Git Object Model** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -183,7 +208,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Equating a branch name with a permanent identity — only the commit ID is durable  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -194,7 +223,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Understanding the Git Object Model changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -202,35 +235,57 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | What to do |
 |---------|--------------|------------|
 | `cat-file` fails | Wrong ID | Use `git rev-parse` |
 | Empty repo | No commit yet | Create initial commit |
 
+
+
 ## Summary
+
+
 
 - Objects are immutable and hashed  
 - Branches are pointers; commits are snapshots  
 - Plumbing commands reveal the real model
 
+
+
 ## Interview Questions
 
-1. How does **Understanding the Git Object Model** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Understanding the Git Object Model** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Git Installation and Configuration](git-installation-and-configuration.md)
+- [Git Installation and Configuration](git-installation-and-configuration.md)
+
+
 
 ## References
+
+
 
 - [Pro Git — Git Internals](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects)

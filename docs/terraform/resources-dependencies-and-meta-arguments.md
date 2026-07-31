@@ -41,17 +41,27 @@ comments: false
 
 ## Overview
 
+
+
 Declare managed resources, understand the dependency graph, and use `count`, `for_each`, `lifecycle`, and `depends_on` correctly.
 
 A **resource** is something Terraform creates and updates through a provider. Addresses look like `local_file.readme`. Terraform builds a **graph** from references between resources; **meta-arguments** change how many instances exist and how replace/destroy behaves.
 
 This is a core tutorial in **Module 6 · Resources** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose `for_each` over `count` for named instances  
 - [ ] Apply a `lifecycle` rule intentionally
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform resources](../assets/excalidraw/terraform-resources.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -122,7 +140,10 @@ Wrong dependencies cause apply-time races (subnet before VPC, DNS before load ba
 - Setting `ignore_changes = all` to “fix” drift — you stop managing the resource.
 - Assuming `prevent_destroy` blocks `terraform destroy` of the whole root without care — it blocks plans that would destroy that resource; design env teardown deliberately.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -130,65 +151,69 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-06 && cd ~/rebash-terraform/module-06
 ```
 
-**Focus:** hands-on practice for Resources, Dependencies, and Meta-Arguments
+**Focus:** Explore implicit dependencies, count, and depends_on
 
-### Step 1 – Core exercise
+### Step 1 – Create chained resources
 
 ```bash
-mkdir -p ~/rebash-terraform/module-06 && cd ~/rebash-terraform/module-06
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.5.0"
   required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
-    }
+    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null  = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-EOF
-
-cat > main.tf << 'EOF'
-resource "local_file" "index" {
-  filename = "${path.module}/index.txt"
-  content  = "index\n"
-
-  lifecycle {
-    create_before_destroy = true
-  }
+resource "local_file" "base" {
+  filename = "${path.module}/base.txt"
+  content  = "base
+"
 }
-
-resource "local_file" "env" {
-  for_each = toset(["dev", "stage"])
-
-  filename = "${path.module}/${each.key}.txt"
-  content  = "env=${each.key}\n depends_on_index=${local_file.index.filename}\n"
+resource "local_file" "child" {
+  count    = 2
+  filename = "${path.module}/child-${count.index}.txt"
+  content  = "depends on ${local_file.base.filename}
+"
+}
+resource "null_resource" "after" {
+  depends_on = [local_file.child]
+  triggers   = { stamp = timestamp() }
 }
 EOF
-
 terraform init
-terraform plan
+```
+
+### Step 2 – Apply and inspect graph order
+
+```bash
 terraform apply -auto-approve
-ls -1 *.txt
 terraform state list
-terraform destroy -auto-approve
+ls -1 child-*.txt base.txt
+terraform graph | head -n 30
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-06/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Resources, Dependencies, and Meta-Arguments** always combines:
 
@@ -200,7 +225,11 @@ Production practice for **Resources, Dependencies, and Meta-Arguments** always c
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -208,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Using `count` with a list that reorders — instance indexes shift and force replacements."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -219,7 +252,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Resources, Dependencies, and Meta-Arguments changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -227,7 +264,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -237,27 +278,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Resources, Dependencies, and Meta-Arguments** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Resources, Dependencies, and Meta-Arguments** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does Terraform infer dependencies between resources?
+2. When do you need explicit `depends_on`?
+3. What is the difference between `count` and `for_each`?
+4. What operational risk does `count` index shifting introduce?
+5. What does `lifecycle { prevent_destroy = true }` protect against?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Implicit dependencies come from references. `depends_on` is for hidden ordering (for example, API readiness) that references cannot express.
+
+!!! tip "Sample answer — question 4"
+    Removing an element from a `count` list can force replacement of later indexes. `for_each` with stable keys usually produces safer updates.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
+- [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
+
+
 
 ## References
+
+
 
 - [Resources](https://developer.hashicorp.com/terraform/language/resources)  
 - [Meta-arguments](https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on)

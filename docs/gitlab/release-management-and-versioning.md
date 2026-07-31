@@ -45,18 +45,28 @@ comments: false
 
 ## Overview
 
+
+
 Create annotated Git tags, publish GitLab Releases with notes and assets, and apply Semantic Versioning (SemVer) with changelog discipline from CI.
 
 A **release** is more than a green pipeline: it is an immutable Git reference, human-readable notes, and optional binaries or package links. GitLab ties **tags**, **Releases**, and CI so the same SHA you tested becomes the version you promote.
 
 This is a core tutorial in **Module 14 · Release Management** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md)
 - [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md) (or equivalent awareness)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Create a GitLab Release with description and links  
 - [ ] Generate or attach a changelog for operators
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitLab release](../assets/excalidraw/gitlab-release.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -123,7 +141,10 @@ Prefer **annotated tags** over lightweight tags for release history. Keep change
 - Changelog that lists every chore commit — operators need impact, not noise.
 - Creating Releases without a matching successful tag pipeline — notes without artefacts.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -131,29 +152,74 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-14 && cd ~/rebash-gitlab/module-14
 ```
 
-**Focus:** hands-on practice for Release Management and Versioning
+**Focus:** model release/version jobs with a changelog stub
 
-### Step 1 – Core exercise
+### Step 1 – Release metadata
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-14 && cd ~/rebash-gitlab/module-14
-cat > CHANGELOG.md << 'EOF'
-# Changelog
+echo '# Changelog
+
+## 0.1.0
+- Lab release' > CHANGELOG.md
+cat > .gitlab-ci.yml << 'EOF'
+release:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Create GitLab Release for $CI_COMMIT_TAG"
+  rules:
+    - if: $CI_COMMIT_TAG
+EOF
+cat CHANGELOG.md
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
+## 0.1.0
+
+- Lab release' > CHANGELOG.md
+cat > .gitlab-ci.yml << 'EOF'
+release:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Create GitLab Release for $CI_COMMIT_TAG"
+  rules:
+    - if: $CI_COMMIT_TAG
+EOF
+cat CHANGELOG.md
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
+```
+
+### Final step – Cleanup note
+
+```bash
+# File-only
+```
+
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-14/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Release Management and Versioning** always combines:
 
@@ -165,7 +231,11 @@ Production practice for **Release Management and Versioning** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -173,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Moving or retagging `v1.2.0` after publish — consumers and digests diverge; always cut a n"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -184,7 +258,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Release Management and Versioning changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -192,7 +270,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -202,27 +284,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Release Management and Versioning** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Release Management and Versioning** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Release Management and Versioning** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Production Pipelines and Environments](production-pipelines-and-environments.md)
+- [Production Pipelines and Environments](production-pipelines-and-environments.md)
+
+
 
 ## References
+
+
 
 - [GitLab Releases](https://docs.gitlab.com/ee/user/project/releases/)  
 - [CI `release` keyword](https://docs.gitlab.com/ee/ci/yaml/#release)  

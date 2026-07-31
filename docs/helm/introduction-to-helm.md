@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Explain what Helm solves for Kubernetes teams and define chart, release, and repository in ops language.
 
 **Helm** is the package manager for Kubernetes. A **chart** is a versioned bundle of templates and defaults; a **release** is an installed instance. This course is **Helm for Kubernetes Engineers** — production charts, not toy demos.
 
 This is a core tutorial in **Module 1 · Helm Fundamentals** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes](../kubernetes/index.md) — Deployments, Services, kubectl apply basics
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast imperative apply vs packaged releases  
 - [ ] Name when *not* to use Helm
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Helm architecture](../assets/excalidraw/helm-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -104,7 +122,10 @@ You (or CI/GitOps) run the Helm CLI against a cluster kubeconfig. Helm fetches t
 - Helm does not replace GitOps; production teams usually let a controller run Helm, not laptops.
 - Over-templating every field makes charts unreadable — keep defaults sensible and overrides intentional.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -112,39 +133,49 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-01 && cd ~/rebash-helm/module-01
 ```
 
-**Focus:** hands-on practice for Introduction to Helm
+**Focus:** Create a chart and install it into namespace rebash-helm
 
-### Step 1 – Core exercise
+### Step 1 – Scaffold and lint a chart
 
 ```bash
-mkdir -p ~/rebash-helm/module-01
-cd ~/rebash-helm/module-01
+kubectl create namespace rebash-helm
+helm create hello-helm
+helm lint hello-helm
+helm template demo ./hello-helm -n rebash-helm | head -n 40
 ```
 
+### Step 2 – Install and verify the release
+
 ```bash
-cd ~/rebash-helm/module-01
-cat > why-helm.md << 'EOF'
-- Parameterised installs
-- Release history / rollback
-- Shared platform charts
-EOF
-helm version 2>/dev/null || echo "Install Helm in Module 2"
+helm upgrade --install demo ./hello-helm -n rebash-helm
+helm -n rebash-helm list
+kubectl -n rebash-helm get deploy,svc
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Introduction to Helm** always combines:
 
@@ -156,7 +187,11 @@ Production practice for **Introduction to Helm** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -164,7 +199,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Helm is not a second control plane — Kubernetes still owns Pods and Deployments after appl"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -175,7 +214,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Introduction to Helm changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -183,7 +226,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -193,26 +240,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Introduction to Helm** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Introduction to Helm** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What problem does Helm solve for Kubernetes packaging?
+2. What is a release in Helm 3?
+3. How do charts differ from raw manifests?
+4. What risks come from installing untrusted charts?
+5. What is the difference between `helm template` and `helm install`?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    A release is a named instance of a chart running in a cluster (with revision history). Helm tracks it via release metadata stored as Secrets (or ConfigMaps) in the namespace.
+
+!!! tip "Sample answer — question 4"
+    Untrusted charts can create privileged workloads, ClusterRoles, or exfiltrate secrets. Always render and review, pin versions, and install into least-privilege namespaces.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Helm Architecture and Components](helm-architecture-and-components.md)
+- [Helm Architecture and Components](helm-architecture-and-components.md)
+
+
 
 ## References
+
+
 
 - [Helm docs — introduction](https://helm.sh/docs/intro/using_helm/)

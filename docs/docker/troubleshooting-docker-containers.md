@@ -38,17 +38,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply a systematic playbook: status → logs → inspect → exec → host resources — for the common Docker failure modes.
 
 Most incidents are config or resource issues, not “Docker is broken.” Reproduce locally with the same image digest when possible.
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Spot permission / volume UID problems  
 - [ ] Free disk with informed prune
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -101,7 +119,10 @@ If a container will not stay up, `docker logs` and `docker inspect` (ExitCode, E
 - Ignoring registry rate limits and “random” pull failures  
 - Restarting endlessly without a health/backoff strategy
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -109,40 +130,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-16 && cd ~/rebash-docker/module-16
 ```
 
-**Focus:** hands-on practice for Troubleshooting Docker Containers
+**Focus:** debug a failing container with logs and inspect
 
-### Step 1 – Core exercise
+### Step 1 – Broken CMD
 
 ```bash
-mkdir -p ~/rebash-docker/module-16 && cd ~/rebash-docker/module-16
-# Broken CMD on purpose
-docker run --name rebash-boom alpine /bin/false || true
-docker inspect rebash-boom --format 'exit={{ "{{" }}.State.ExitCode{{ "}}" }} error={{ "{{" }}.State.Error{{ "}}" }}'
-docker logs rebash-boom
-docker rm rebash-boom
-
-# Debug with shell override
-docker run --rm -it alpine sh -c 'echo debug-ok; ls /'
-
-# Disk snapshot
-docker system df
-docker network ls
+docker run --name rebash-lab alpine:3.20 /bin/does-not-exist || true
+docker ps -a --filter name=rebash-lab
+docker logs rebash-lab 2>&1 | tee boom.log || true
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.State.ExitCode{{ "}}" }} {{ "{{" }}.State.Error{{ "}}" }}'
+docker rm rebash-lab
+docker run --rm --name rebash-lab alpine:3.20 echo recovered
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
+docker network rm rebash-net 2>/dev/null || true
+docker volume rm rebash-vol 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-16/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Troubleshooting Docker Containers** always combines:
 
@@ -154,7 +179,11 @@ Production practice for **Troubleshooting Docker Containers** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -162,7 +191,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Deleting the failed container before reading logs  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -173,7 +206,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Troubleshooting Docker Containers changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -181,7 +218,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -191,26 +232,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Troubleshooting Docker Containers** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Troubleshooting Docker Containers** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Troubleshooting Docker Containers** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Production Docker Patterns](production-docker-patterns.md)
+- [Production Docker Patterns](production-docker-patterns.md)
+
+
 
 ## References
+
+
 
 - [Docker debug](https://docs.docker.com/reference/cli/docker/debug/)

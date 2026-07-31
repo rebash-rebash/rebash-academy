@@ -41,17 +41,27 @@ comments: false
 
 ## Overview
 
+
+
 Create a ClusterIP Service that load-balances to Deployment Pods and explain NodePort, LoadBalancer, ExternalName, and headless modes.
 
 A **Service** gives a stable virtual IP and DNS name. Selectors bind to Pod labels; **EndpointSlices** track backends. **kube-proxy** (or eBPF dataplanes) implement distribution.
 
 This is a core tutorial in **Module 5 · Services & Networking** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Workload Controllers](workload-controllers-statefulset-daemonset-jobs.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use DNS `svc.namespace.svc.cluster.local`  
 - [ ] Inspect endpoints / EndpointSlices
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Service networking](../assets/excalidraw/k8s-service-networking.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -110,7 +128,10 @@ Pods are mortal — their IPs change on every reschedule. Applications and other
 - Testing with `curl` to a Pod IP from outside the cluster network — use Service DNS from a debug Pod.
 - Ignoring readiness: not-ready Pods should drop from endpoints; missing probes keep bad Pods in the pool.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -118,35 +139,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-05 && cd ~/rebash-k8s/module-05
 ```
 
-**Focus:** hands-on practice for Services and Cluster Networking
+**Focus:** Expose Pods via ClusterIP and exercise Service selectors
 
-### Step 1 – Core exercise
+### Step 1 – Create Deployment and Service
 
 ```bash
-mkdir -p ~/rebash-k8s/module-05 && cd ~/rebash-k8s/module-05
-kubectl create deploy rebash-svc --image=nginx:alpine
-kubectl expose deploy/rebash-svc --port=80 --target-port=80 --name=rebash-svc
-kubectl get svc rebash-svc -o wide
-kubectl get endpointslices -l kubernetes.io/service-name=rebash-svc
-kubectl run curl --rm -it --restart=Never --image=curlimages/curl -- \
-  curl -sI http://rebash-svc.default.svc.cluster.local/ | head -n 5
-kubectl delete deploy/rebash-svc svc/rebash-svc
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab create deployment svc-demo --image=nginx:1.27-alpine --replicas=2
+kubectl -n rebash-lab expose deployment svc-demo --port=80 --target-port=80 --name=svc-demo
+kubectl -n rebash-lab get svc svc-demo -o wide
+kubectl -n rebash-lab get endpoints svc-demo
+```
+
+### Step 2 – Test Service DNS from another Pod
+
+```bash
+kubectl -n rebash-lab run curl --image=busybox:1.36 --restart=Never --command -- sleep 3600
+kubectl -n rebash-lab wait --for=condition=Ready pod/curl --timeout=60s
+kubectl -n rebash-lab exec curl -- wget -qO- http://svc-demo/ | head -n 3
+kubectl -n rebash-lab describe svc svc-demo | sed -n '/Selector:/,/Session Affinity:/p'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-05/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Services and Cluster Networking** always combines:
 
@@ -158,7 +194,11 @@ Production practice for **Services and Cluster Networking** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -166,7 +206,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Selector labels that do not match the Pod template — empty endpoints, silent failures."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -177,7 +221,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Services and Cluster Networking changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -185,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -195,26 +247,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Services and Cluster Networking** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Services and Cluster Networking** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does a ClusterIP Service provide to clients?
+2. How do Service selectors relate to Pod labels?
+3. What are Endpoints or EndpointSlices used for?
+4. What happens if no Pods match a Service selector?
+5. When would you use a headless Service?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Selectors must match Pod labels for Endpoints to populate. Mismatched labels are a common reason Services exist but receive no backends.
+
+!!! tip "Sample answer — question 4"
+    With no matching Ready Pods, the Service still has a ClusterIP but no backends, so connections fail. Check selectors, readiness, and EndpointSlices when debugging.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Ingress and External Access](ingress-and-external-access.md)
+- [Ingress and External Access](ingress-and-external-access.md)
+
+
 
 ## References
+
+
 
 - [Service](https://kubernetes.io/docs/concepts/services-networking/service/)

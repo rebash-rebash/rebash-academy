@@ -44,18 +44,28 @@ comments: false
 
 ## Overview
 
+
+
 Design a test pyramid in GitHub Actions with unit, integration, smoke, and end-to-end (e2e) jobs, parallel matrix execution, and quality gates that fail the workflow when thresholds are missed.
 
 Tests are the cheapest production incident you never ship. GitHub Actions runs **unit**, **integration**, **smoke**, and selective **e2e** jobs on pull requests; publishes reports as artefacts; and enforces **quality gates** so red tests block merge. A **matrix** fans the same job across runtimes or shards so feedback stays fast as the suite grows.
 
 This is a core tutorial in **Module 12 · Testing** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Security Scanning and Supply Chain](security-scanning-and-supply-chain.md)
 - Comfortable with jobs, `needs`, and artefacts from earlier modules
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -64,13 +74,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Upload test reports and coverage artefacts  
 - [ ] Fail the workflow on failed tests or coverage floors
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Testing in Actions](../assets/excalidraw/gha-testing.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -117,7 +135,10 @@ Unit proves logic; integration proves wiring; smoke proves “it is up”; e2e p
 - Uploading artefacts only on success — failed suites never leave XML for debugging.  
 - Matrix explosion without a deliberate `fail-fast` policy.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -125,89 +146,53 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-12/{.github/workflows,tests} && cd ~/rebash-github-actions/module-12/{.github/workflows,tests}
 ```
 
-**Focus:** hands-on practice for Testing in GitHub Actions
+**Focus:** test job with pytest locally and matching workflow
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-github-actions/module-12/{.github/workflows,tests}
-cd ~/rebash-github-actions/module-12
-
-cat > tests/test_app.py << 'EOF'
-def test_health():
-    assert True
-
-def test_version_shape():
-    version = "1.0.0"
-    assert version.count(".") == 2
-EOF
-```
+### Step 1 – Tests
 
 {% raw %}
 ```bash
+mkdir -p tests .github/workflows
+echo 'def test_ok(): assert 1==1' > tests/test_ok.py
+python3 -m pip install -q pytest && python3 -m pytest tests
 cat > .github/workflows/test.yml << 'EOF'
-name: Tests and quality gates
-on:
-  push:
-    branches: [main]
-  pull_request:
-
-permissions:
-  contents: read
-
+name: test
+on: [push, pull_request]
 jobs:
   unit:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11", "3.12"]
-        shard: [0, 1]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install and test
-        run: |
-          pip install pytest pytest-cov
-          pytest tests/ -q \
-            --junitxml=report-${{ matrix.python-version }}-${{ matrix.shard }}.xml \
-            --cov=. --cov-fail-under=0
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: junit-${{ matrix.python-version }}-${{ matrix.shard }}
-          path: report-*.xml
-
-  quality_gate:
-    needs: [unit]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "All matrix shards must pass before release jobs run"
+          python-version: "3.12"
+      - run: pip install pytest && pytest
 EOF
 ```
 {% endraw %}
 
-```bash
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/test.yml')); print('YAML parse OK')"
-python3 -m pytest tests/ -q 2>/dev/null || pip install pytest -q && python3 -m pytest tests/ -q
-```
-
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-12/{.github/workflows,tests}/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Testing in GitHub Actions** always combines:
 
@@ -219,7 +204,11 @@ Production practice for **Testing in GitHub Actions** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -227,7 +216,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Publishing reports while `continue-on-error: true` keeps the check green.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -238,7 +231,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Testing in GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -246,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -256,27 +257,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Testing in GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Testing in GitHub Actions** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Testing in GitHub Actions** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Release Management and Versioning](release-management-and-versioning.md)
+- [Release Management and Versioning](release-management-and-versioning.md)
+
+
 
 ## References
+
+
 
 - [Workflow commands / exit codes](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions)  
 - [Matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)  

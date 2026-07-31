@@ -41,17 +41,27 @@ comments: false
 
 ## Overview
 
+
+
 Claim storage with a PVC against a StorageClass, mount it in a Pod, and explain PV vs PVC vs CSI.
 
 **PVC** is the app’s request; **PV** is the provisioned volume; **StorageClass** selects a provisioner (CSI). Dynamic provisioning creates PVs automatically on most clouds and kind (local-path / rancher).
 
 This is a core tutorial in **Module 7 · Storage** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Ingress and External Access](ingress-and-external-access.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast access modes (RWO/RWX)  
 - [ ] Outline CSI role
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Storage architecture](../assets/excalidraw/k8s-storage-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -110,7 +128,10 @@ Databases, queues, and ML artefacts need data that survives Pod restarts and res
 - Using emptyDir for data you thought was persistent.
 - Assuming every cluster has RWX — many cloud disks are RWO only.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -118,18 +139,19 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-07 && cd ~/rebash-k8s/module-07
 ```
 
-**Focus:** hands-on practice for Persistent Volumes and Storage
+**Focus:** Claim storage with a PersistentVolumeClaim using the default StorageClass
 
-### Step 1 – Core exercise
+### Step 1 – Create a PVC and mount it
 
 ```bash
-mkdir -p ~/rebash-k8s/module-07 && cd ~/rebash-k8s/module-07
-kubectl get sc
-cat > pvc-pod.yaml << 'EOF'
+kubectl create namespace rebash-lab
+kubectl get storageclass
+cat > pvc.yaml <<'EOF'
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: rebash-pvc
+  name: data
+  namespace: rebash-lab
 spec:
   accessModes: ["ReadWriteOnce"]
   resources:
@@ -139,40 +161,57 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: rebash-vol
+  name: writer
+  namespace: rebash-lab
 spec:
   containers:
-    - name: app
-      image: busybox:1.36
-      command: ["sh", "-c", "echo hi > /data/note.txt && sleep 3600"]
-      volumeMounts:
-        - name: data
-          mountPath: /data
-  volumes:
+  - name: app
+    image: busybox:1.36
+    command: ["sh", "-c", "echo hello-storage > /data/msg.txt; sleep 3600"]
+    volumeMounts:
     - name: data
-      persistentVolumeClaim:
-        claimName: rebash-pvc
+      mountPath: /data
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: data
 EOF
-kubectl apply -f pvc-pod.yaml
-kubectl wait --for=condition=Ready pod/rebash-vol --timeout=120s || kubectl describe pvc rebash-pvc
-kubectl exec rebash-vol -- cat /data/note.txt
-kubectl delete -f pvc-pod.yaml
+kubectl apply -f pvc.yaml
+```
+
+### Step 2 – Wait for Bound and read the file
+
+```bash
+kubectl -n rebash-lab get pvc data -w &
+WPID=$!; sleep 8; kill $WPID 2>/dev/null || true
+kubectl -n rebash-lab get pvc,pv
+kubectl -n rebash-lab wait --for=condition=Ready pod/writer --timeout=120s || kubectl -n rebash-lab describe pod writer
+kubectl -n rebash-lab exec writer -- cat /data/msg.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-07/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Persistent Volumes and Storage** always combines:
 
@@ -184,7 +223,11 @@ Production practice for **Persistent Volumes and Storage** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -192,7 +235,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Pending PVC because no default StorageClass or provisioner is broken."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -203,7 +250,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Persistent Volumes and Storage changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -211,7 +262,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -221,26 +276,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Persistent Volumes and Storage** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Persistent Volumes and Storage** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is the relationship between PersistentVolume, PersistentVolumeClaim, and StorageClass?
+2. What does the Bound phase on a PVC mean?
+3. What is the difference between ReadWriteOnce and ReadWriteMany?
+4. What data-loss risks exist when deleting PVCs, and how do reclaim policies affect them?
+5. Why are StatefulSets often paired with volumeClaimTemplates?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Bound means a PV has been allocated to the claim and is ready to mount. Until Bound, Pods needing the volume may stay Pending.
+
+!!! tip "Sample answer — question 4"
+    Deleting a PVC can delete underlying storage depending on reclaim policy (Delete vs Retain). Snapshot and backup strategies matter before destructive cleanup in production.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [ConfigMaps and Secrets](configmaps-and-secrets.md)
+- [ConfigMaps and Secrets](configmaps-and-secrets.md)
+
+
 
 ## References
+
+
 
 - [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)

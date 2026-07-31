@@ -45,17 +45,27 @@ comments: false
 
 ## Overview
 
+
+
 Design a GitHub Actions pipeline that runs `init` → `validate` → `plan` on pull requests (with a plan artefact) and a protected `apply` on `main` — with remote state outside the runner workspace and clear notes on destroy.
 
 Terraform in Actions automates Infrastructure as Code (IaC): every change is planned in review, then applied under gates. Store **remote state** with locking (for example Amazon Simple Storage Service (S3) + DynamoDB, Azure Storage, or Google Cloud Storage). Upload the binary **plan** as a workflow artefact so apply executes what reviewers saw. Never leave state only on the runner disk. Prefer OpenID Connect (OIDC) cloud roles (Modules 5 and 10) over static access keys.
 
 This is a core tutorial in **Module 9 · Terraform Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes Deployments with GitHub Actions](kubernetes-deployments-with-github-actions.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain remote state + locking in CI  
 - [ ] Use `TF_IN_AUTOMATION` and non-interactive flags
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform pipeline](../assets/excalidraw/gha-terraform-pipeline.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -114,57 +132,73 @@ Prefer apply-of-saved-plan for production. If you must re-plan at apply time, do
 - One shared state key for all environments.  
 - Fork pull requests with write-level cloud roles (use `pull_request_target` carefully — prefer OIDC subject conditions that exclude forks).
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-09/.github/workflows && cd ~/rebash-github-actions/module-09/.github/workflows
-git init -q
 ```
 
-**Focus:** author and validate CI config for Terraform Pipelines with GitHub Actions
+**Focus:** Terraform plan workflow + local validate
 
-### Step 1 – Write a minimal pipeline
+### Step 1 – TF plan workflow
 
+{% raw %}
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
-on: workflow_dispatch
+mkdir -p infra .github/workflows
+cat > infra/main.tf << 'EOF'
+terraform {
+  required_providers {
+    null = { source = "hashicorp/null", version = "~> 3.2" }
+  }
+}
+resource "null_resource" "x" {}
+EOF
+cat > .github/workflows/terraform.yml << 'EOF'
+name: terraform
+on: pull_request
 jobs:
-  validate:
+  plan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "workflow ok"
+      - uses: hashicorp/setup-terraform@v3
+      - run: |
+          cd infra
+          terraform init -input=false
+          terraform plan -input=false
 EOF
-ls -la
-sed -n '1,80p' .github/workflows/lab.yml
+cd infra && terraform init -backend=false && terraform validate && cd ..
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform.yml')); print('OK')"
 ```
-
-### Step 2 – Static checks before push
-
-```bash
-# Syntax / structure sanity (no runner required)
-test -s .github/workflows/lab.yml
-grep -E 'script:|runs-on:|steps:' .github/workflows/lab.yml
-# When a runner is available, push a branch and confirm the job is green
-```
+{% endraw %}
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; delete remote test branches when finished
+rm -rf infra/.terraform
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-09/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Terraform Pipelines with GitHub Actions** always combines:
 
@@ -176,7 +210,11 @@ Production practice for **Terraform Pipelines with GitHub Actions** always combi
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -184,7 +222,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Committing `.terraform/` or `terraform.tfstate` to Git.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -195,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Terraform Pipelines with GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -203,7 +249,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -213,26 +263,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Terraform Pipelines with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Terraform Pipelines with GitHub Actions** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Terraform Pipelines with GitHub Actions** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
+- [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
+
+
 
 ## References
+
+
 
 - [Terraform GitHub Actions](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions) · [setup-terraform](https://github.com/hashicorp/setup-terraform) · [Automating Terraform](https://developer.hashicorp.com/terraform/cli/run/automating-terraform) · [GitHub Environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)

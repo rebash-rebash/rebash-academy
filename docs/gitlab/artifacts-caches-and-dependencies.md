@@ -43,17 +43,27 @@ comments: false
 
 ## Overview
 
+
+
 Configure `artifacts:` and `cache:` so a build job produces a shareable package, a test job consumes it, and dependency installs reuse a keyed cache without treating cache as a correctness guarantee.
 
 **Artefacts** are job outputs GitLab stores and can pass to later jobs or attach to merge requests (packages, JUnit reports, coverage). **Cache** speeds installs by restoring files between pipelines; it is best-effort and must not replace pinned lockfiles. Reports (`junit`, `coverage_report`, and similar) surface quality signals in the MR UI.
 
 This is a core tutorial in **Module 7 · Artifacts & Cache** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Variables, Secrets, and OIDC](variables-secrets-and-oidc.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -63,13 +73,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Distinguish artefacts from cache and from container images  
 - [ ] Attach a simple report artefact for the MR widget
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitLab artefacts and cache](../assets/excalidraw/gitlab-artifacts-cache.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -114,55 +132,66 @@ Prefer short retention for intermediate binaries; keep release artefacts on tags
 - Expecting artefacts without listing paths or after a failed job (`when: on_success` default).  
 - Confusing job artefacts with Container Registry images.
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-07 && cd ~/rebash-gitlab/module-07
-git init -q
 ```
 
-**Focus:** author and validate CI config for Artifacts, Caches, and Dependencies
+**Focus:** define artefacts/caches and simulate an artefact consumer locally
 
-### Step 1 – Write a minimal pipeline
+### Step 1 – Artefacts pipeline
 
 ```bash
 cat > .gitlab-ci.yml << 'EOF'
-stages: [validate]
-validate:
-  stage: validate
-  image: alpine:3.20
+stages: [build, use]
+build:
+  stage: build
   script:
-    - echo "pipeline ok"
-    - uname -a
+    - mkdir -p dist && echo v1 > dist/app.txt
+  artifacts:
+    paths: [dist/]
+  cache:
+    key: lib
+    paths: [.cache/]
+use:
+  stage: use
+  needs: [build]
+  script:
+    - cat dist/app.txt
 EOF
-ls -la
-sed -n '1,80p' .gitlab-ci.yml
-```
-
-### Step 2 – Static checks before push
-
-```bash
-# Syntax / structure sanity (no runner required)
-test -s .gitlab-ci.yml
-grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
-# When a runner is available, push a branch and confirm the job is green
+mkdir -p dist .cache && echo v1 > dist/app.txt
+cat dist/app.txt
+python3 -c "import yaml; print(yaml.safe_load(open('.gitlab-ci.yml'))['build']['artifacts'])"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
+rm -rf dist .cache
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-07/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Artifacts, Caches, and Dependencies** always combines:
 
@@ -174,7 +203,11 @@ Production practice for **Artifacts, Caches, and Dependencies** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -182,7 +215,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Treating cache as a substitute for committing lockfiles.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -193,7 +230,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Artifacts, Caches, and Dependencies changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -201,7 +242,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -211,26 +256,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Artifacts, Caches, and Dependencies** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Artifacts, Caches, and Dependencies** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Artifacts, Caches, and Dependencies** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Building Docker Images in CI](building-docker-images-in-ci.md)
+- [Building Docker Images in CI](building-docker-images-in-ci.md)
+
+
 
 ## References
+
+
 
 - [Job artefacts](https://docs.gitlab.com/ee/ci/yaml/#artifacts) · [Caching](https://docs.gitlab.com/ee/ci/caching/) · [Reports](https://docs.gitlab.com/ee/ci/yaml/artifacts_reports.html)

@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Place Pods intentionally using nodeSelector, affinity/anti-affinity, taints/tolerations, and topology spread — and diagnose Pending schedule failures.
 
 The **scheduler** binds Pods to nodes that satisfy predicates (resources, affinity, taints). Pending + `FailedScheduling` events mean constraints or capacity.
 
 This is a core tutorial in **Module 9 · Scheduling** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Resource Quotas and LimitRanges](resource-quotas-and-limit-ranges.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Taint a node and tolerate it  
 - [ ] Read scheduling events
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -108,7 +126,10 @@ Taints repel Pods unless they **tolerate** the taint. Affinity attracts Pods to 
 - Ignoring PVC zone constraints when using regional disks.
 - Overusing affinity until the scheduler has no legal packing — always check Events.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -116,55 +137,66 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
 ```
 
-**Focus:** hands-on practice for Kubernetes Scheduling
+**Focus:** Influence placement with nodeSelector and observe the scheduler
 
-### Step 1 – Core exercise
+### Step 1 – Inspect node labels and schedule a constrained Pod
 
 ```bash
-mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
+kubectl create namespace rebash-lab
+kubectl get nodes --show-labels | head -n 5
 NODE=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
-kubectl label node "$NODE" disk=ssd --overwrite
-cat > affinity.yaml << 'EOF'
-apiVersion: apps/v1
-kind: Deployment
+kubectl label node "$NODE" lab-role=demo --overwrite
+cat > scheduled.yaml <<EOF
+apiVersion: v1
+kind: Pod
 metadata:
-  name: rebash-sched
+  name: pinned
+  namespace: rebash-lab
 spec:
-  replicas: 2
-  selector:
-    matchLabels: { app: rebash-sched }
-  template:
-    metadata:
-      labels: { app: rebash-sched }
-    spec:
-      nodeSelector: { disk: ssd }
-      containers:
-        - name: app
-          image: nginx:alpine
-          resources:
-            requests: { cpu: 50m, memory: 64Mi }
+  nodeSelector:
+    lab-role: demo
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause:3.10
 EOF
-kubectl apply -f affinity.yaml
-kubectl get pods -l app=rebash-sched -o wide
-kubectl describe pod -l app=rebash-sched | sed -n '/Events/,$p' | head -n 15
-kubectl delete -f affinity.yaml
-kubectl label node "$NODE" disk-
+kubectl apply -f scheduled.yaml
+kubectl -n rebash-lab wait --for=condition=Ready pod/pinned --timeout=60s
+```
+
+### Step 2 – Confirm placement and clean node label later
+
+```bash
+kubectl -n rebash-lab get pod pinned -o wide
+kubectl -n rebash-lab describe pod pinned | sed -n '/Node-Selectors:/,/Tolerations:/p'
+NODE=$(kubectl get nodes -l lab-role=demo -o jsonpath='{.items[0].metadata.name}')
+echo "Scheduled on: $NODE"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+NODE=$(kubectl get nodes -l lab-role=demo -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+if [ -n "$NODE" ]; then kubectl label node "$NODE" lab-role-; fi
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-09/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Scheduling** always combines:
 
@@ -176,7 +208,11 @@ Production practice for **Kubernetes Scheduling** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -184,7 +220,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Required anti-affinity on a single-node lab — permanent Pending."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -195,7 +235,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Kubernetes Scheduling changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -203,7 +247,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -213,26 +261,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Kubernetes Scheduling** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Kubernetes Scheduling** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What inputs does the kube-scheduler consider when placing a Pod?
+2. What is the difference between nodeSelector and node affinity?
+3. When would you use taints and tolerations?
+4. How can poor affinity rules reduce utilisation or availability?
+5. What does Pending with FailedScheduling usually indicate?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    nodeSelector is a simple required label match. Node affinity supports required/preferred rules and richer operators, giving more expressive placement control.
+
+!!! tip "Sample answer — question 4"
+    Overly strict anti-affinity or scarce node labels can leave Pods Pending or pack unevenly. Preferred rules soften constraints; required rules must match capacity planning.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
+- [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
+
+
 
 ## References
+
+
 
 - [Assigning Pods to nodes](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/)

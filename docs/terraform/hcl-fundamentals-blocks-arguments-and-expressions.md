@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Read and write clear HCL: blocks and labels, arguments, expressions, a first variable and output, locals, and common built-in functions.
 
 **HashiCorp Configuration Language (HCL)** is Terraform’s configuration language. Almost everything is a **block** with **arguments**. Values come from literals, references, and **expressions** — including functions such as `join` and `format`.
 
 This is a core tutorial in **Module 4 · HCL Fundamentals** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Terraform Workflow: Init, Plan, and Apply](terraform-workflow-init-plan-apply.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use a variable, local, and output together  
 - [ ] Apply a simple function in an expression
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform HCL blocks](../assets/excalidraw/terraform-hcl-blocks.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -120,7 +138,10 @@ Readable HCL is operational safety. Dense one-liners and unexplained magic local
 - Putting secrets in plain locals committed to Git.
 - Using string templates where a direct reference is clearer (`var.x` vs `"${var.x}"`).
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -128,70 +149,65 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-04 && cd ~/rebash-terraform/module-04
 ```
 
-**Focus:** hands-on practice for HCL Fundamentals: Blocks, Arguments, and Expressions
+**Focus:** Practise HCL blocks, arguments, and simple expressions
 
-### Step 1 – Core exercise
+### Step 1 – Author blocks with expressions
 
 ```bash
-mkdir -p ~/rebash-terraform/module-04 && cd ~/rebash-terraform/module-04
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.5.0"
   required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
-    }
+    local = { source = "hashicorp/local", version = "~> 2.5" }
   }
 }
-EOF
 
-cat > variables.tf << 'EOF'
-variable "project" {
-  type        = string
-  description = "Short project name for file content"
-  default     = "rebash"
-}
-EOF
-
-cat > main.tf << 'EOF'
 locals {
-  greeting = upper("hello ${var.project}")
+  project = "rebash"
+  env     = "lab"
+  name    = "${local.project}-${local.env}"
 }
 
-resource "local_file" "note" {
-  filename = "${path.module}/note.txt"
-  content  = "${local.greeting}\n"
-}
-
-output "note_path" {
-  value = local_file.note.filename
+resource "local_file" "readme" {
+  filename = "${path.module}/${local.name}.txt"
+  content  = join("
+", ["name=${local.name}", "env=${local.env}"])
 }
 EOF
-
-terraform fmt
 terraform init
+terraform validate
+```
+
+### Step 2 – Apply and read interpolated output
+
+```bash
 terraform apply -auto-approve
-cat note.txt
-terraform output
-terraform destroy -auto-approve
+cat rebash-lab.txt
+terraform console <<<'local.name'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-04/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **HCL Fundamentals: Blocks, Arguments, and Expressions** always combines:
 
@@ -203,7 +219,11 @@ Production practice for **HCL Fundamentals: Blocks, Arguments, and Expressions**
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -211,7 +231,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Treating HCL like a general-purpose programming language — prefer data and composition ove"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -222,7 +246,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode HCL Fundamentals: Blocks, Arguments, and Expressions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -230,7 +258,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -240,27 +272,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **HCL Fundamentals: Blocks, Arguments, and Expressions** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **HCL Fundamentals: Blocks, Arguments, and Expressions** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is the difference between an argument and a nested block in HCL?
+2. How do string interpolation and the `join` function help build values?
+3. What are locals used for?
+4. Why avoid overly clever expressions that hide important business logic?
+5. What does `path.module` refer to?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Interpolation and functions build strings and collections from parts. Prefer readable expressions and locals so outputs stay clear in reviews.
+
+!!! tip "Sample answer — question 4"
+    Dense one-liners make reviews and incidents harder. Extract locals, name things clearly, and keep security-sensitive logic obvious.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
+- [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
+
+
 
 ## References
+
+
 
 - [Configuration language](https://developer.hashicorp.com/terraform/language)  
 - [Functions](https://developer.hashicorp.com/terraform/language/functions)

@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Use labels/selectors to group objects, separate workloads with namespaces, and understand ReplicaSets as the replication layer under Deployments.
 
 **Labels** are queryable key/value metadata. **Selectors** bind Services and controllers to Pods. **Namespaces** partition names and often tenancy. **Annotations** hold non-identifying metadata (tooling, checksums).
 
 This is a core tutorial in **Module 3 · Kubernetes Objects** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Pods — The Atomic Unit](pods-the-atomic-unit.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Create and use a namespace  
 - [ ] Relate ReplicaSet to Deployment
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -105,7 +123,10 @@ Labels identify; annotations annotate. Do not put large config in labels — use
 - Operating without `-n` and wondering why “nothing exists”.
 - Treating namespaces as hard security isolation — you still need RBAC, NetworkPolicy, and quotas.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -113,35 +134,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-03-labels && cd ~/rebash-k8s/module-03-labels
 ```
 
-**Focus:** hands-on practice for Labels, Selectors, and Namespaces
+**Focus:** Organise objects with namespaces, labels, and selectors
 
-### Step 1 – Core exercise
+### Step 1 – Create labelled resources
 
 ```bash
-mkdir -p ~/rebash-k8s/module-03-labels && cd ~/rebash-k8s/module-03-labels
-kubectl create ns rebash-lab
-kubectl create deployment web --image=nginx:alpine -n rebash-lab
-kubectl label deploy/web tier=frontend -n rebash-lab --overwrite
-kubectl get deploy -n rebash-lab -l tier=frontend
-kubectl get rs -n rebash-lab
-kubectl get pods -n rebash-lab --show-labels
-kubectl delete ns rebash-lab
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab run api --image=nginx:1.27-alpine --labels=tier=frontend,env=lab
+kubectl -n rebash-lab run worker --image=busybox:1.36 --labels=tier=backend,env=lab --command -- sleep 3600
+kubectl -n rebash-lab label pod api owner=rebash --overwrite
+kubectl -n rebash-lab get pods --show-labels
+```
+
+### Step 2 – Query with selectors and namespace scope
+
+```bash
+kubectl -n rebash-lab get pods -l tier=frontend
+kubectl -n rebash-lab get pods -l 'env in (lab),tier!=frontend'
+kubectl get ns rebash-lab -o yaml | head -n 20
+kubectl -n rebash-lab get all
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-03-labels/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Labels, Selectors, and Namespaces** always combines:
 
@@ -153,7 +189,11 @@ Production practice for **Labels, Selectors, and Namespaces** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -161,7 +201,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Changing Deployment selector labels after creation — selectors are mostly immutable."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -172,7 +216,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Labels, Selectors, and Namespaces changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -180,7 +228,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -190,26 +242,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Labels, Selectors, and Namespaces** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Labels, Selectors, and Namespaces** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is a Kubernetes namespace used for?
+2. How do labels differ from annotations?
+3. How do selectors use labels to group Pods for Services and Deployments?
+4. What security benefit do namespaces provide, and what do they not isolate by themselves?
+5. Give an example of a useful label taxonomy for multi-team clusters.
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Labels are identifying metadata for selection; annotations hold non-identifying tool or descriptive data. Controllers and Services select on labels, not annotations.
+
+!!! tip "Sample answer — question 4"
+    Namespaces scope names and RBAC subjects, but they do not provide network or node isolation alone. Combine with NetworkPolicy, quotas, and Pod security controls for stronger tenancy.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
+- [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
+
+
 
 ## References
+
+
 
 - [Labels and selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) · [Namespaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)

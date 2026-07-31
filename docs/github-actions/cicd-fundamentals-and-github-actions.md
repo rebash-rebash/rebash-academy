@@ -43,6 +43,8 @@ comments: false
 
 ## Overview
 
+
+
 Explain what Continuous Integration (CI) and Continuous Delivery / Deployment (CD) solve, place GitHub Actions in that model, and describe the workflow lifecycle from event to completion.
 
 **Continuous Integration (CI)** builds and tests every meaningful change in Git so defects surface in minutes, not at release time. **Continuous Delivery** keeps every successful build *ready* to ship with human or automated gates. **Continuous Deployment** goes further and promotes to production automatically when those gates pass. **GitHub Actions** implements that automation as YAML workflows under `.github/workflows/`, so review, history, and pull requests share one system with your code.
@@ -51,12 +53,20 @@ This course is **GitHub Actions for Cloud & DevOps Engineers** — production pi
 
 This is a core tutorial in **Module 1 · CI/CD Fundamentals** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Git](../git/index.md) — commits, branches, and pull requests
 - Comfortable editing YAML in a terminal editor
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Sketch the workflow lifecycle from trigger to conclusion  
 - [ ] Name when Actions is enough vs when you need dedicated runners or another CI product
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitHub Actions architecture](../assets/excalidraw/gha-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -129,7 +147,10 @@ You do **not** need a paid GitHub plan for early labs: public repositories and f
 - Free-tier minutes are finite on private repos — lint locally and cache dependencies later to save quota.
 - Copy-pasting random marketplace actions without pinning versions is a supply-chain risk (covered in security modules).
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -137,77 +158,53 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-01 && cd ~/rebash-github-actions/module-01
 ```
 
-**Focus:** hands-on practice for CI/CD Fundamentals and GitHub Actions
+**Focus:** end-to-end CI workflow: checkout, test, artefact
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-github-actions/module-01
-cd ~/rebash-github-actions/module-01
-```
-
-Document the mental model and a minimal workflow skeleton. Pushing to GitHub is optional in this module.
-
-```bash
-cd ~/rebash-github-actions/module-01
-mkdir -p .github/workflows
-cat > cicd-notes.md << 'EOF'
-CI = build + test every change
-Continuous Delivery = releasable + gated promote
-Continuous Deployment = auto-promote when gates pass
-Lifecycle: event → workflow → jobs → runner steps → status
-EOF
-```
+### Step 1 – CI path
 
 {% raw %}
-```yaml
-# .github/workflows/ci-fundamentals.yml
-name: CI fundamentals
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-  workflow_dispatch:
-
+```bash
+mkdir -p .github/workflows src
+echo 'print("ci")' > src/app.py
+cat > .github/workflows/cicd.yml << 'EOF'
+name: cicd
+on: [push, pull_request]
 jobs:
-  smoke:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Show context
-        run: |
-          echo "Event=${{ github.event_name }}"
-          echo "Ref=${{ github.ref }}"
-          echo "SHA=${{ github.sha }}"
-      - name: Prove workspace
-        run: |
-          test -f cicd-notes.md
-          echo "Module 1 OK"
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python src/app.py
+EOF
+python src/app.py
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/cicd.yml')); print('OK')"
 ```
 {% endraw %}
-
-```bash
-# Copy the YAML above into .github/workflows/ci-fundamentals.yml, then optionally:
-# gh workflow list
-# git add . && git commit -m "Add Module 1 CI skeleton" && git push
-test -f cicd-notes.md && echo "Lifecycle notes OK"
-```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **CI/CD Fundamentals and GitHub Actions** always combines:
 
@@ -219,7 +216,11 @@ Production practice for **CI/CD Fundamentals and GitHub Actions** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -227,7 +228,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "CI is not “the runner” — GitHub schedules; runners execute."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -238,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode CI/CD Fundamentals and GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -246,7 +255,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -256,27 +269,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **CI/CD Fundamentals and GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **CI/CD Fundamentals and GitHub Actions** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **CI/CD Fundamentals and GitHub Actions** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [GitHub Actions Basics: Workflows, Jobs, and Steps](github-actions-basics-workflows-jobs-steps.md)
+- [GitHub Actions Basics: Workflows, Jobs, and Steps](github-actions-basics-workflows-jobs-steps.md)
+
+
 
 ## References
+
+
 
 - [Understanding GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions)  
 - [Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)  

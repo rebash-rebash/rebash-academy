@@ -40,17 +40,30 @@ comments: false
 
 ## Overview
 
+
+
+
 Mount ConfigMaps and Secrets into a Pod (env and volume) and use Downward API for pod metadata — without baking config into images.
 
 **ConfigMap** = non-sensitive config. **Secret** = sensitive data (still base64 in etcd — enable encryption at rest and prefer external secret stores in production).
 
 This is a core tutorial in **Module 8 · Configuration** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
+
 
 - [Persistent Volumes and Storage](persistent-volumes-and-storage.md)
 
+
+
 ## Learning Objectives
+
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +72,23 @@ By the end of this tutorial, you will be able to:
 - [ ] Use Downward API fields  
 - [ ] State Secret limitations
 
+
+
 ## Architecture
+
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
+
 
 ### What it is
 
@@ -106,7 +129,10 @@ Prefer external secret managers (cloud SM, Vault, ESO) for production credential
 - Committing Secret YAML with real credentials into Git.
 - Expecting env-injected values to hot-reload after ConfigMap edits.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -114,54 +140,67 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-08 && cd ~/rebash-k8s/module-08
 ```
 
-**Focus:** hands-on practice for ConfigMaps and Secrets
+**Focus:** Inject configuration and secrets into Pods without baking them into images
 
-### Step 1 – Core exercise
+### Step 1 – Create ConfigMap and Secret
 
 ```bash
-mkdir -p ~/rebash-k8s/module-08 && cd ~/rebash-k8s/module-08
-kubectl create configmap rebash-cfg --from-literal=APP_ENV=lab
-kubectl create secret generic rebash-secret --from-literal=token=demo-token
-cat > pod.yaml << 'EOF'
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab create configmap app-config --from-literal=APP_ENV=lab --from-literal=LOG_LEVEL=info
+kubectl -n rebash-lab create secret generic app-secret --from-literal=DB_PASSWORD='s3cret-lab'
+kubectl -n rebash-lab get configmap,secret
+```
+
+### Step 2 – Mount them into a Pod and verify
+
+```bash
+cat > pod-config.yaml <<'EOF'
 apiVersion: v1
 kind: Pod
 metadata:
-  name: rebash-cfg
+  name: cfg-demo
+  namespace: rebash-lab
 spec:
   containers:
-    - name: app
-      image: busybox:1.36
-      command: ["sh", "-c", "env | grep -E 'APP_|TOKEN|POD_' ; sleep 3600"]
-      envFrom:
-        - configMapRef: { name: rebash-cfg }
-      env:
-        - name: TOKEN
-          valueFrom:
-            secretKeyRef: { name: rebash-secret, key: token }
-        - name: POD_NAME
-          valueFrom:
-            fieldRef: { fieldPath: metadata.name }
+  - name: demo
+    image: busybox:1.36
+    command: ["sh", "-c", "env | grep -E 'APP_|DB_|LOG_'; sleep 3600"]
+    envFrom:
+    - configMapRef:
+        name: app-config
+    - secretRef:
+        name: app-secret
 EOF
-kubectl apply -f pod.yaml
-kubectl wait --for=condition=Ready pod/rebash-cfg --timeout=60s
-kubectl logs rebash-cfg
-kubectl delete -f pod.yaml configmap/rebash-cfg secret/rebash-secret
+kubectl apply -f pod-config.yaml
+kubectl -n rebash-lab wait --for=condition=Ready pod/cfg-demo --timeout=60s
+kubectl -n rebash-lab exec cfg-demo -- sh -c 'env | grep -E "APP_|DB_|LOG_"'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-08/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
+
 
 Production practice for **ConfigMaps and Secrets** always combines:
 
@@ -173,7 +212,12 @@ Production practice for **ConfigMaps and Secrets** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -181,7 +225,12 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
+
 
 !!! warning "Believing Secrets are encrypted by default — they are base64-encoded, not ciphertext, unle"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -192,7 +241,12 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
+
 
 - Encode ConfigMaps and Secrets changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -200,7 +254,12 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -210,26 +269,47 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
+
 
 **ConfigMaps and Secrets** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **ConfigMaps and Secrets** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is the difference between a ConfigMap and a Secret in Kubernetes?
+2. How can applications consume ConfigMap and Secret data at runtime?
+3. What happens to running Pods when you update a ConfigMap that is mounted as a volume?
+4. Why should Secrets not be treated as strong encryption at rest by default, and what controls improve their security?
+5. When would you prefer environment variables versus volume mounts for configuration?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Applications can inject keys as environment variables, mount them as files via volumes, or use the Kubernetes API. Environment variables suit simple scalars; volume mounts suit files and live updates for many volume-mounted ConfigMaps.
+
+!!! tip "Sample answer — question 4"
+    etcd may store Secrets only base64-encoded unless encryption at rest is enabled. Improve security with encryption providers, least-privilege RBAC, external secret managers, short-lived credentials, and avoiding logging Secret values.
+
+
 
 ## Related Tutorials
 
+
+
+
 - [Course overview](index.md)
-- - [Resource Quotas and LimitRanges](resource-quotas-and-limit-ranges.md)
+- [Resource Quotas and LimitRanges](resource-quotas-and-limit-ranges.md)
+
+
 
 ## References
+
+
+
 
 - [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/) · [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)

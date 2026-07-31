@@ -19,15 +19,22 @@ prerequisites:
 comments: false
 ---
 
+
 # From Docker to Kubernetes
 
 ## Overview
+
+
 
 If you understand Docker, you already know half of Kubernetes. Containers become **Pods**, `docker run` flags become **Pod specs**, Compose services become **Deployments** and **Services**, and Swarm overlay networks become **ClusterIP** routing. This tutorial builds a explicit concept map so you can read Kubernetes manifests confidently and migrate workloads incrementally.
 
 This is **Tutorial 19** in **Module 6: Production & Beyond** of the REBASH Academy Docker track.
 
+
+
 ## Prerequisites
+
+
 
 - [Docker Swarm Orchestration Basics](docker-swarm-orchestration-basics.md)
 - [Docker Compose Fundamentals](docker-compose-fundamentals.md)
@@ -35,7 +42,11 @@ This is **Tutorial 19** in **Module 6: Production & Beyond** of the REBASH Acade
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 - Optional: local cluster via [minikube](https://minikube.sigs.k8s.io/) or [kind](https://kind.sigs.k8s.io/)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -46,11 +57,19 @@ By the end of this tutorial, you will be able to:
 - [ ] Plan an incremental migration path from Docker Compose to Kubernetes
 - [ ] Know when to continue with the [Kubernetes track](../kubernetes/index.md)
 
+
+
 ## Architecture
+
+
 
 ![Production container platform](../assets/excalidraw/docker-production-platform.svg)
 
+
+
 ## Theory
+
+
 
 ### The big picture
 
@@ -262,121 +281,50 @@ Get into the habit of watching state while commands run: `docker events` / `kube
 
 Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
 
+
+
 ## Hands-on Lab
 
-### Lab 1 — Compose to Kubernetes translation
 
-Start with `compose.yml`:
+Create a workspace for this tutorial.
 
-```yaml
+```bash
+mkdir -p ~/rebash-docker/from-docker-to-kubernetes && cd ~/rebash-docker/from-docker-to-kubernetes
+```
+
+**Focus:** export a Compose-like app and note the Kubernetes mapping
+
+### Step 1 – From Compose thinking to k8s
+
+```bash
+cat > compose.yaml << 'EOF'
 services:
-  api:
-    image: myapi:1.2.0
-    ports:
-      - "3000:3000"
-    environment:
-      REDIS_URL: redis://redis:6379
-    depends_on:
-      - redis
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3000/health"]
-      interval: 15s
-
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis-data:/data
-
-volumes:
-  redis-data:
+  web:
+    image: nginx:alpine
+    ports: ["18080:80"]
+EOF
+docker compose config | tee compose-config.txt
+tee map.txt << 'EOF'
+Compose service -> Deployment+Service
+Compose volume -> PVC
+Compose env/files -> ConfigMap/Secret
+EOF
+docker compose up -d
+curl -sI http://127.0.0.1:18080 | head -n 3
+docker compose down
 ```
 
-Equivalent Kubernetes resources (minimal):
-
-**deployment-api.yaml**
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: api
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: api
-  template:
-    metadata:
-      labels:
-        app: api
-    spec:
-      containers:
-        - name: api
-          image: myapi:1.2.0
-          ports:
-            - containerPort: 3000
-          env:
-            - name: REDIS_URL
-              value: redis://redis:6379
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 3000
-            periodSeconds: 15
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: api
-spec:
-  selector:
-    app: api
-  ports:
-    - port: 3000
-      targetPort: 3000
-  type: NodePort
-```
-
-**deployment-redis.yaml** — Deployment + Service + PVC (abbreviated; use StatefulSet for production Redis).
-
-Apply:
+### Final step – Cleanup note
 
 ```bash
-kubectl apply -f deployment-redis.yaml
-kubectl apply -f deployment-api.yaml
-kubectl get pods,svc
-kubectl port-forward svc/api 3000:3000
-curl localhost:3000/health
+docker compose down -v 2>/dev/null || true
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 2 — Imperative vs declarative
-
-```bash
-# Docker imperative
-docker run -d --name web -p 8080:80 nginx:1.27-alpine
-
-# Kubernetes declarative equivalent
-kubectl create deployment web --image=nginx:1.27-alpine --replicas=2
-kubectl expose deployment web --port=80 --type=NodePort
-kubectl get deployments,pods,services
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Commit YAML to Git for GitOps — avoid kubectl from laptops to production.
-
-### Lab 3 — Migration checklist
-
-For each Compose service, document the target Deployment, Service type, storage, and secrets. Migrate **stateless services first** (api, web, worker); plan StatefulSet or managed DB for postgres and redis.
-
-**Expected result:** You complete this step and can explain the outcome.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -391,7 +339,11 @@ Confirm the lab before moving on:
 | Config/secret | Env/volume concerns mapped to ConfigMap/Secret/Volume patterns |
 | Review | You listed at least two security differences Compose→Kubernetes |
 
+
+
 ## Code Walkthrough
+
+
 
 ### kubectl ↔ docker cheat sheet
 
@@ -409,7 +361,11 @@ Confirm the lab before moving on:
 
 Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes track](../kubernetes/index.md).
 
+
+
 ## Security Considerations
+
+
 
 - Do not translate Compose `privileged: true` or host mounts into Kubernetes without a security review
 - Map Compose secrets to Kubernetes Secrets or an external secret store — not plain ConfigMaps
@@ -419,7 +375,10 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - Limit kubeconfig privileges used during migration labs to a dedicated namespace
 
 
+
 ## Common Mistakes
+
+
 
 !!! warning "Running one Pod per deployment without probes"
     Silent failures stay in load rotation. Port Docker HEALTHCHECK to liveness and readiness probes.
@@ -436,7 +395,11 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 !!! warning "Ignoring resource requests"
     Without requests, scheduler overcommits nodes — worse than missing Docker `--memory` limits.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Migrate stateless services first"
     API, workers, frontends — then tackle databases with proper operators.
@@ -453,7 +416,11 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 !!! tip "Continue on the Kubernetes track"
     This tutorial maps concepts — [Kubernetes](../kubernetes/index.md) tutorials go deep on operations.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -464,7 +431,11 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 | Probe failures | Wrong port/path | Align with HEALTHCHECK from Docker image |
 | PVC pending | No storage class | Define StorageClass or use hostPath in lab only |
 
+
+
 ## Summary
+
+
 
 - **Pods** wrap containers; **Deployments** manage replica count and rollouts (like Swarm services)
 - **Services** provide stable DNS and load balancing (like overlay service names + VIP)
@@ -473,26 +444,28 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - Continue learning on the [Kubernetes track](../kubernetes/index.md)
 - Finish the Docker series with [Docker Capstone and Next Steps](docker-capstone-and-next-steps.md)
 
+
+
 ## Interview Questions
 
-1. What is a Pod, and how does it relate to a Docker container?
-2. What Kubernetes object replaces a Docker Compose web service with 3 replicas?
-3. How do liveness and readiness probes differ from a single Docker HEALTHCHECK?
-4. What problem does a Kubernetes Service solve that container names on one host do not?
-5. How would you migrate a Compose volume to Kubernetes?
-6. What is the difference between a Deployment and a StatefulSet?
-7. Name three docker CLI commands and their kubectl equivalents.
-8. Why should production databases not run as standard Deployments?
-9. What is an Ingress, and what Docker pattern does it replace?
-10. When is Docker Swarm enough, and when should you adopt Kubernetes?
 
-??? tip "Sample Answers (Questions 2 and 4)"
+1. What production problem does **From Docker to Kubernetes** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
-    **Q2 — Compose to K8s:** A Compose service with replicas maps to a **Deployment** (manages Pod replicas and rolling updates) plus a **Service** (stable network endpoint). External access adds **Ingress** or LoadBalancer Service. Config and secrets become ConfigMap and Secret objects referenced in the Pod template.
+!!! tip "Sample answer — question 2"
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
 
-    **Q4 — Why Services:** Containers (Pods) get ephemeral IPs when restarted or rescheduled. A Service selects Pods by label and provides a stable virtual IP and DNS name, load-balancing traffic to healthy endpoints — essential in a cluster where Pods move across nodes, unlike a single Docker host where you might publish ports directly.
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
+
+
 
 - [Docker Swarm Orchestration Basics](docker-swarm-orchestration-basics.md) *(previous)*
 - [Docker Capstone and Next Steps](docker-capstone-and-next-steps.md) *(next)*
@@ -504,7 +477,11 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Kubernetes – Concepts](https://kubernetes.io/docs/concepts/)
 - [Kubernetes – Pods](https://kubernetes.io/docs/concepts/workloads/pods/)

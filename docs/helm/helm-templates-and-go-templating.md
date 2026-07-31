@@ -37,17 +37,27 @@ comments: false
 
 ## Overview
 
+
+
 Author templates that use values, `if`/`range`, and named helpers — then render with `helm template` to verify output.
 
 Helm uses the **Go template** language plus Sprig-like functions. Keep logic thin; push complexity into values schema and helpers.
 
 This is a core tutorial in **Module 4 · Templates** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Working with Helm Charts](working-with-helm-charts.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -56,13 +66,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Write `if` / `range`  
 - [ ] Define and `include` named templates
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Template rendering](../assets/excalidraw/helm-template-rendering.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -114,7 +132,10 @@ Always render locally with `helm template` (and lint) before installing. Whitesp
 - Incorrect `nindent` levels after `toYaml`, producing invalid YAML.
 - Putting executable business logic in templates that belongs in the application or in values schema validation.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -122,59 +143,61 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-04 && cd ~/rebash-helm/module-04
 ```
 
-**Focus:** hands-on practice for Helm Templates and Go Templating
+**Focus:** Edit templates safely and render with helm template
 
-### Step 1 – Core exercise
+### Step 1 – Customise a ConfigMap template
 
 ```bash
-mkdir -p ~/rebash-helm/module-04 && cd ~/rebash-helm/module-04
-helm create rebash-tpl
-```
-
-{% raw %}
-Edit `rebash-tpl/templates/configmap.yaml`:
-
-```yaml
-apiVersion: v1
+kubectl create namespace rebash-helm
+helm create tmpl-demo
+python3 - <<'PY'
+from pathlib import Path
+Path('tmpl-demo/templates/configmap.yaml').write_text('''apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "rebash-tpl.fullname" . }}
+  name: {{ include "tmpl-demo.fullname" . }}-config
   labels:
-    {{- include "rebash-tpl.labels" . | nindent 4 }}
+    {{- include "tmpl-demo.labels" . | nindent 4 }}
 data:
-  APP_ENV: {{ .Values.appEnv | quote }}
-  {{- if .Values.extraEnv }}
-  EXTRA: {{ .Values.extraEnv | quote }}
-  {{- end }}
+  APP_ENV: {{ .Values.env | default "lab" | quote }}
+''')
+print(Path('tmpl-demo/templates/configmap.yaml').read_text())
+PY
 ```
 
-Set defaults in `values.yaml`:
-
-```yaml
-appEnv: lab
-extraEnv: ""
-```
-{% endraw %}
+### Step 2 – Lint, template, and install
 
 ```bash
-helm template demo ./rebash-tpl --set appEnv=staging | sed -n '/kind: ConfigMap/,/^---/p' | head -n 30
-helm lint ./rebash-tpl
+helm lint tmpl-demo
+helm template demo ./tmpl-demo -n rebash-helm --set env=lab | grep -A5 'kind: ConfigMap'
+helm upgrade --install demo ./tmpl-demo -n rebash-helm --set env=lab
+kubectl -n rebash-helm get configmap
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-04/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Helm Templates and Go Templating** always combines:
 
@@ -186,7 +209,11 @@ Production practice for **Helm Templates and Go Templating** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -194,7 +221,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Forgetting to `quote` values that become labels or annotation strings."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -205,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Helm Templates and Go Templating changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -213,7 +248,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -223,26 +262,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Helm Templates and Go Templating** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Helm Templates and Go Templating** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What engine does Helm use for templates?
+2. Why use `include` with helpers instead of duplicating labels?
+3. How do `required` and `default` functions improve chart safety?
+4. What dangers exist with `| safe` / unescaped HTML-like injection into manifests?
+5. How do you debug a failing template render?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Helpers keep names and labels consistent across templates, which Services and selectors rely on. Duplication invites subtle mismatches that break traffic.
+
+!!! tip "Sample answer — question 4"
+    Careless sprig usage or piping untrusted values into YAML can break structure or inject unexpected fields. Validate inputs, quote carefully, and render in CI before apply.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Helm Values and Overrides](helm-values-and-overrides.md)
+- [Helm Values and Overrides](helm-values-and-overrides.md)
+
+
 
 ## References
+
+
 
 - [Chart template guide](https://helm.sh/docs/chart_template_guide/)

@@ -17,21 +17,32 @@ prerequisites:
 comments: false
 ---
 
+
 # Git Submodules and Subtrees
 
 ## Overview
+
+
 
 Platform teams reuse Terraform modules, Helm charts, and shared libraries across repositories. **Submodules** pin exact commits of nested repos; **subtrees** merge external history into a subdirectory. Both solve dependency management — with different tradeoffs in complexity, clone experience, and update workflows.
 
 This is **Tutorial 18** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
 
+
+
 ## Prerequisites
+
+
 
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Working with Remotes](working-with-remotes.md)
 - Understanding of commit SHAs and remotes
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -43,13 +54,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose embedding strategy for shared Terraform modules
 - [ ] Remove submodules cleanly
 
+
+
 ## Architecture
+
+
 
 Submodules pin an external repository at a commit; subtrees vendor history into a subdirectory of the parent project.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### Why Embed Repositories?
 
@@ -201,96 +220,54 @@ Manual cleanup required — submodules leave artifacts if removed incorrectly.
 
 Submodules are often a last resort when registry isn't available.
 
+
+
 ## Hands-on Lab
 
-### Step 1 – Create child and parent repos
 
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/sub-child && cd /tmp/sub-child
+mkdir -p ~/rebash-git/git-submodules-and-subtrees && cd ~/rebash-git/git-submodules-and-subtrees
+```
+
+**Focus:** practise Git skills for: Git Submodules and Subtrees
+
+### Step 1 – Init repository
+
+```bash
 git init -b main
-echo 'output = "vpc-id"' > main.tf && git add . && git commit -m "feat: vpc module v1"
-git init --bare /tmp/sub-child.git
-git remote add origin /tmp/sub-child.git && git push -u origin main
-
-mkdir -p /tmp/sub-parent && cd /tmp/sub-parent
-git init -b main
-echo "# Infra" > README.md && git add . && git commit -m "feat: parent repo"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
 ```
 
-**Expected result:** Parent repo records a submodule gitlink (160000 mode) at a pinned commit.
-
-### Step 2 – Add submodule
-
-**Command:**
+### Step 2 – Subtree alternative demo
 
 ```bash
-git submodule add /tmp/sub-child.git modules/vpc
-cat .gitmodules
-git commit -m "chore: add vpc submodule"
-ls -la modules/vpc/
+mkdir -p vendor/lib
+echo 'lib' > vendor/lib/README.md
+git add vendor && git commit -m 'Vendor lib (subtree-style folder)'
+tee submodule-notes.txt << 'EOF'
+Submodules pin external Git SHAs; subtrees vendor history. Prefer package managers when possible.
+EOF
+cat submodule-notes.txt
 ```
 
-**Expected result:** `git submodule update --init` populates the working tree files.
-
-### Step 3 – Clone parent with submodules
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-cd /tmp
-git clone /tmp/sub-parent.git sub-clone
-ls sub-clone/modules/vpc/main.tf 2>/dev/null || echo "submodule not initialized"
-git clone --recurse-submodules /tmp/sub-parent.git sub-clone-full
-cat sub-clone-full/modules/vpc/main.tf
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
-**Expected result:** Updating the submodule and committing the parent advances the pin.
-
-### Step 4 – Update submodule
-
-**Command:**
-
-```bash
-cd /tmp/sub-child
-echo 'version = "2.0"' >> main.tf && git commit -am "feat: v2"
-git push origin main
-cd /tmp/sub-parent
-git submodule update --remote modules/vpc
-git add modules/vpc && git commit -m "chore: bump vpc to v2"
-```
-
-**Expected result:** Subtree (if used) copies history into the prefix path as shown.
-
-### Step 5 – Subtree alternative (separate demo)
-
-**Command:**
-
-```bash
-mkdir -p /tmp/subtree-demo && cd /tmp/subtree-demo
-git init -b main
-echo "parent" > README.md && git add . && git commit -m "init"
-git subtree add --prefix=vendor/vpc /tmp/sub-child.git main --squash
-ls vendor/vpc/
-git log --oneline -3
-```
-
-**Expected result:** Fresh clone instructions you documented would include submodule init.
-
-### Step 6 – Clean up
-
-**Command:**
-
-```bash
-rm -rf /tmp/sub-child /tmp/sub-child.git /tmp/sub-parent /tmp/sub-clone \
-  /tmp/sub-clone-full /tmp/subtree-demo
-```
-
-**Expected result:** Lab repos removed.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -305,7 +282,11 @@ Confirm the lab before moving on:
 | Subtree | Subtree add/pull (if practised) updates the vendored path |
 | Cleanup | Lab parent and submodule repos removed |
 
+
+
 ## Code Walkthrough
+
+
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -317,7 +298,11 @@ Confirm the lab before moving on:
 | `git subtree pull --prefix=P URL branch` | Update subtree | Pull upstream changes |
 | `git submodule status` | Show submodule SHAs | Verify pinned versions |
 
+
+
 ## Security Considerations
+
+
 
 - Pin submodule commits; floating `main` tips invite supply-chain surprises
 - Verify remote URLs for submodules — typosquatting is a real risk
@@ -325,7 +310,11 @@ Confirm the lab before moving on:
 - Prefer subtree or vendoring when you need full control of third-party history
 - Audit submodule changes in PRs as carefully as first-party code
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Clone without --recurse-submodules"
     Empty submodule directories break builds. Document in README; use CI init.
@@ -339,7 +328,11 @@ Confirm the lab before moving on:
 !!! warning "Subtree push overwriting upstream"
     `git subtree push` can force complex history. Coordinate with module owners.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Prefer module registry over submodules for Terraform"
     `source = "app.terraform.io/org/vpc/aws"` with version constraint.
@@ -353,7 +346,11 @@ Confirm the lab before moving on:
 !!! tip "Document clone command in README"
     `git clone --recurse-submodules` prominently at top.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -364,7 +361,11 @@ Confirm the lab before moving on:
 | Subtree merge conflicts | Diverged histories | Resolve; consider squash |
 | Cannot remove submodule | Incomplete removal | deinit + rm + clean .git/modules |
 
+
+
 ## Summary
+
+
 
 - **Submodules** pin external repos at specific commits — separate clone, explicit updates
 - **Subtrees** merge external code into a subdirectory — simpler clone, complex push-back
@@ -372,26 +373,28 @@ Confirm the lab before moving on:
 - Clone with **`--recurse-submodules`**; CI must initialize submodules
 - For DevOps dependencies, prefer **registries** (Terraform, Helm) when available
 
+
+
 ## Interview Questions
 
-1. What is a Git submodule?
-2. How do submodules differ from subtrees?
-3. What is stored in .gitmodules?
-4. How do you clone a repo with submodules?
-5. How do you update a submodule to a newer commit?
-6. Why do submodules confuse CI pipelines?
-7. When would you choose subtree over submodule?
-8. What alternatives exist to submodules for Terraform modules?
-9. How do you remove a submodule completely?
-10. What is a gitlink?
 
-??? tip "Sample Answers (Questions 1 and 2)"
+1. Explain **Git Submodules and Subtrees** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
-    **Q1 — Submodule:** A reference from a parent repository to a specific commit in another Git repository, stored as a gitlink at a path. The parent records the exact SHA; the child maintains independent history. Requires explicit init/update on clone.
+!!! tip "Sample answer — question 2"
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
 
-    **Q2 — Submodule vs subtree:** Submodule keeps child as separate repo linked by SHA — two repos, explicit pinning. Subtree merges external content into parent's tree at a prefix — single repo, simpler clone, but version tracking is less explicit and pushing changes upstream is harder.
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
+
+
 
 - [Advanced Git Workflows](advanced-git-workflows.md) *(previous)*
 - [Signed Commits and Git Security](signed-commits-and-git-security.md) *(next)*
@@ -402,7 +405,11 @@ Confirm the lab before moving on:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Pro Git Book – Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 - [git submodule documentation](https://git-scm.com/docs/git-submodule)

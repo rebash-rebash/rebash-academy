@@ -49,17 +49,27 @@ comments: false
 
 ## Overview
 
+
+
 Assemble a security stage that runs secret scanning and Dependency Review early, CodeQL for Static Application Security Testing (SAST), Trivy on container images, publishes a Software Bill of Materials (SBOM), and hardens the supply chain by pinning third-party Actions to commit SHAs.
 
 **DevSecOps** embeds scanners into the same workflows that build and deploy. GitHub provides secret scanning, Dependency Review (for pull requests), CodeQL, and ecosystem tooling for container scanning (for example Trivy) and SBOM export (CycloneDX / SPDX). Fail the pipeline on policy severity — do not treat scanners as optional decoration. Pin marketplace Actions by full commit SHA so a tagged release cannot silently change under you.
 
 This is a core tutorial in **Module 11 · Security** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -69,13 +79,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Pin Actions by commit SHA and explain why  
 - [ ] Gate merges on severity thresholds
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Security and supply chain](../assets/excalidraw/gha-security.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -126,57 +144,67 @@ Treat false positives with tracked allowlists — not by disabling scanners glob
 - Generating an SBOM not attached to the released digest.  
 - Broad `permissions: write-all` on every workflow.
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-11/.github/workflows && cd ~/rebash-github-actions/module-11/.github/workflows
-git init -q
 ```
 
-**Focus:** author and validate CI config for Security Scanning and Supply Chain
+**Focus:** pin actions and add a checkout-safe pull_request workflow
 
-### Step 1 – Write a minimal pipeline
+### Step 1 – Supply-chain hygiene
 
+{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
-on: workflow_dispatch
+cat > .github/workflows/secure.yml << 'EOF'
+name: secure
+on:
+  pull_request:
+permissions:
+  contents: read
 jobs:
-  validate:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "workflow ok"
+      - name: Guard
+        run: echo "Pin actions; least privileges; no secrets on fork PRs"
 EOF
-ls -la
-sed -n '1,80p' .github/workflows/lab.yml
+tee supply-chain.txt << 'EOF'
+Pin actions by SHA for high assurance. Limit permissions: {}. Use environments for prod secrets.
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/secure.yml')); print('OK')"
 ```
-
-### Step 2 – Static checks before push
-
-```bash
-# Syntax / structure sanity (no runner required)
-test -s .github/workflows/lab.yml
-grep -E 'script:|runs-on:|steps:' .github/workflows/lab.yml
-# When a runner is available, push a branch and confirm the job is green
-```
+{% endraw %}
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; delete remote test branches when finished
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-11/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Security Scanning and Supply Chain** always combines:
 
@@ -188,7 +216,11 @@ Production practice for **Security Scanning and Supply Chain** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -196,7 +228,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Enabling scanners but never failing on Critical/High.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -207,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Security Scanning and Supply Chain changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -215,7 +255,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -225,26 +269,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Security Scanning and Supply Chain** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Security Scanning and Supply Chain** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Security Scanning and Supply Chain** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Testing in GitHub Actions](testing-in-github-actions.md)
+- [Testing in GitHub Actions](testing-in-github-actions.md)
+
+
 
 ## References
+
+
 
 - [Secure use of Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) · [CodeQL](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql) · [Dependency review](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review) · [Secret scanning](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning) · [Trivy](https://aquasecurity.github.io/trivy/)

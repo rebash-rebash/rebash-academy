@@ -41,6 +41,8 @@ comments: false
 
 ## Overview
 
+
+
 Explain what Infrastructure as Code (IaC) solves, contrast imperative and declarative models, and outline Terraform’s write → plan → apply workflow and architecture mental model.
 
 **Infrastructure as Code** treats infrastructure the same way we treat application code: versioned files, peer review, and repeatable applies. **Terraform** is a declarative IaC tool — you describe the desired end state in HashiCorp Configuration Language (HCL); Terraform computes a plan and calls provider APIs to create, update, or destroy real resources.
@@ -49,12 +51,20 @@ This course is **Terraform for Cloud & DevOps Engineers** — production IaC, no
 
 This is a core tutorial in **Module 1 · IaC Fundamentals** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Linux](../linux/index.md) — comfortable terminal and file editing
 - [Git](../git/index.md) — commits and pull requests (helpful)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -63,13 +73,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Name why teams choose Terraform for multi-cloud ops  
 - [ ] Sketch write → init → plan → apply → state
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform workflow](../assets/excalidraw/terraform-workflow.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -113,7 +131,10 @@ You will install the CLI and run this loop in the next modules. For now, own the
 - A plan is not a guarantee forever — state drift and out-of-band console edits still matter.
 - “Declarative” does not mean “no order”; Terraform’s graph still sequences dependent creates.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -121,40 +142,74 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-01 && cd ~/rebash-terraform/module-01
 ```
 
-**Focus:** hands-on practice for Introduction to Terraform and Infrastructure as Code
+**Focus:** Apply your first Terraform configuration with local and null providers
 
-### Step 1 – Core exercise
+### Step 1 – Write a minimal configuration
 
 ```bash
-mkdir -p ~/rebash-terraform/module-01
-cd ~/rebash-terraform/module-01
+cat > main.tf <<'EOF'
+terraform {
+  required_version = ">= 1.5.0"
+  required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
+  }
+}
+
+resource "null_resource" "lab" {
+  triggers = {
+    note = "rebash-lab"
+  }
+}
+
+resource "local_file" "marker" {
+  content  = "managed-by-terraform
+"
+  filename = "${path.module}/marker.txt"
+}
+EOF
+terraform init
+terraform plan
 ```
 
+### Step 2 – Apply and inspect state
+
 ```bash
-cd ~/rebash-terraform/module-01
-cat > why-iac.md << 'EOF'
-- Desired state in Git (declarative)
-- Plan before apply (reviewable change)
-- State maps config → real objects
-- Providers call cloud / local APIs
-EOF
-terraform version 2>/dev/null || echo "Install Terraform in Module 2"
+terraform apply -auto-approve
+terraform state list
+cat marker.txt
+terraform show | head -n 40
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Introduction to Terraform and Infrastructure as Code** always combines:
 
@@ -166,7 +221,11 @@ Production practice for **Introduction to Terraform and Infrastructure as Code**
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -174,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "IaC does not remove architecture skill — it makes architecture reviewable."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -185,7 +248,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Introduction to Terraform and Infrastructure as Code changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -193,7 +260,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -203,27 +274,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Introduction to Terraform and Infrastructure as Code** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Introduction to Terraform and Infrastructure as Code** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What problem does Infrastructure as Code solve compared with ClickOps?
+2. What does Terraform’s desired-state model mean in practice?
+3. What is the role of providers in Terraform?
+4. What risks remain even when infrastructure is coded?
+5. How does Terraform differ conceptually from a pure configuration management tool?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    You declare the end state; Terraform plans creates/updates/deletes to converge. Re-running apply should move reality toward the configuration rather than blindly re-running imperative scripts.
+
+!!! tip "Sample answer — question 4"
+    IaC can still destroy production if plans are unreviewed, state is corrupt, or credentials are overly broad. Code review, policy checks, and least-privilege credentials remain essential.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
+- [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
+
+
 
 ## References
+
+
 
 - [What is Terraform?](https://developer.hashicorp.com/terraform/intro)  
 - [Infrastructure as Code](https://developer.hashicorp.com/terraform/intro#infrastructure-as-code)

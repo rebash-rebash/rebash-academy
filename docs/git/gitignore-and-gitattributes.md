@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Keep secrets, caches, and build outputs out of Git with `.gitignore`, understand `.git/` layout at a practical level, and set useful `.gitattributes`.
 
 Tracked `.env` files and `node_modules` are classic incidents. Ignore early; use secret scanning in CI (Module 15).
 
 This is a core tutorial in **Module 4 · Working with Repositories** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Viewing History and Diffs](viewing-history-and-diffs.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `.gitattributes` for line endings / export  
 - [ ] Know key `.git/` directories
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -113,7 +131,10 @@ For Infrastructure as Code (IaC) repositories, ignore rules are a security contr
 - Fighting line endings without a committed `.gitattributes`  
 - Committing `.terraform/` or provider plugins and bloating clones
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -121,42 +142,55 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-04 && cd ~/rebash-git/module-04
 ```
 
-**Focus:** hands-on practice for Working with Repositories — gitignore and gitattributes
+**Focus:** practise Git skills for: Working with Repositories — gitignore and gitattributes
 
-### Step 1 – Core exercise
+### Step 1 – Init repository
 
 ```bash
-mkdir -p ~/rebash-git/module-04 && cd ~/rebash-git/module-04
 git init -b main
-git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
+```
 
+### Step 2 – gitignore
+
+```bash
 cat > .gitignore << 'EOF'
-.env
-*.tfstate
-.terraform/
+*.env
+__pycache__/
+.DS_Store
 EOF
-echo 'SECRET=1' > .env
-echo 'resource "x" {}' > main.tf
-git add .
-git status
-git check-ignore -v .env
-git commit -m "chore: ignore secrets and state"
+echo SECRET=1 > local.env
+git status --ignored | tee status.txt
+git check-ignore -v local.env
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-04/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Working with Repositories — gitignore and gitattributes** always combines:
 
@@ -168,7 +202,11 @@ Production practice for **Working with Repositories — gitignore and gitattribu
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -176,7 +214,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Adding `.env` to ignore *after* committing it — secret remains in history  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -187,7 +229,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Working with Repositories — gitignore and gitattributes changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -195,7 +241,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -205,26 +255,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Working with Repositories — gitignore and gitattributes** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Working with Repositories — gitignore and gitattributes** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Working with Repositories — gitignore and gitattributes** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Branching Fundamentals](branching-fundamentals.md)
+- [Branching Fundamentals](branching-fundamentals.md)
+
+
 
 ## References
+
+
 
 - [gitignore](https://git-scm.com/docs/gitignore) · [gitattributes](https://git-scm.com/docs/gitattributes)

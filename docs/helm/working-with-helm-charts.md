@@ -37,17 +37,27 @@ comments: false
 
 ## Overview
 
+
+
 Scaffold a chart with `helm create`, walk the directory layout, and edit `Chart.yaml` metadata correctly.
 
 A chart is a directory (or packaged `.tgz`) with a fixed layout. Know what belongs in `templates/` vs `values.yaml` vs `charts/`.
 
 This is a core tutorial in **Module 3 · Working with Charts** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Installing Helm and Repositories](installing-helm-and-repositories.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -56,13 +66,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Locate values, templates, helpers  
 - [ ] List files safely with `helm show`
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Chart structure](../assets/excalidraw/helm-chart-structure.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -101,7 +119,10 @@ Think of a chart like a software package: metadata (`Chart.yaml`), configuration
 - Editing files inside `charts/` by hand instead of declaring dependencies and running `helm dependency update`.
 - Shipping huge non-template assets because `.helmignore` was never configured.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -109,33 +130,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-03 && cd ~/rebash-helm/module-03
 ```
 
-**Focus:** hands-on practice for Working with Helm Charts
+**Focus:** Create, package, and install a local chart
 
-### Step 1 – Core exercise
+### Step 1 – Build and package
 
 ```bash
-mkdir -p ~/rebash-helm/module-03 && cd ~/rebash-helm/module-03
-helm create rebash-app
-find rebash-app -type f | sort
-head -n 20 rebash-app/Chart.yaml
-helm show chart ./rebash-app
-helm lint ./rebash-app
+kubectl create namespace rebash-helm
+helm create work-chart
+helm lint work-chart
+helm package work-chart
+ls -la work-chart-*.tgz
+```
+
+### Step 2 – Install from the package and show values
+
+```bash
+helm upgrade --install demo ./work-chart-*.tgz -n rebash-helm
+helm -n rebash-helm get values demo --all | head -n 40
+kubectl -n rebash-helm get all
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-03/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Working with Helm Charts** always combines:
 
@@ -147,7 +185,11 @@ Production practice for **Working with Helm Charts** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -155,7 +197,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Treating `appVersion` as the image tag — image tags usually live under `values.yaml` (`ima"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -166,7 +212,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Working with Helm Charts changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -174,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -184,26 +238,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Working with Helm Charts** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Working with Helm Charts** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does `helm package` produce?
+2. How do you inspect default values before installing?
+3. What is the purpose of Chart.yaml versus values.yaml?
+4. Why lint charts before sharing them with other teams?
+5. How do semantic versions on charts help consumers?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    `helm show values` or reading values.yaml reveals defaults. Always review before production installs so replica counts, images, and service types are intentional.
+
+!!! tip "Sample answer — question 4"
+    Lint catches template and metadata mistakes early. Sharing broken charts wastes cluster time and can leave failed releases that need cleanup.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Helm Templates and Go Templating](helm-templates-and-go-templating.md)
+- [Helm Templates and Go Templating](helm-templates-and-go-templating.md)
+
+
 
 ## References
+
+
 
 - [Charts](https://helm.sh/docs/topics/charts/)

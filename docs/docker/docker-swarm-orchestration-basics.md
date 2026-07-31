@@ -18,15 +18,22 @@ prerequisites:
 comments: false
 ---
 
+
 # Docker Swarm Orchestration Basics
 
 ## Overview
+
+
 
 **Docker Swarm** turns a pool of Docker engines into a single virtual cluster. You declare desired state — which image, how many replicas, which network — and Swarm schedules tasks, restarts failures, and rolling-updates services. Swarm is built into Docker Engine, simpler than Kubernetes, and ideal for small-to-medium deployments or edge clusters.
 
 This is **Tutorial 18** in **Module 6: Production & Beyond** of the REBASH Academy Docker track.
 
+
+
 ## Prerequisites
+
+
 
 - [Production Docker Patterns](production-docker-patterns.md)
 - [Docker Compose Fundamentals](docker-compose-fundamentals.md)
@@ -34,7 +41,11 @@ This is **Tutorial 18** in **Module 6: Production & Beyond** of the REBASH Acade
 - Three Linux VMs or local machines with Docker Engine 24+ (one manager, two workers minimum for lab)
 - Open ports: TCP 2377 (cluster management), 7946 TCP/UDP (node communication), 4789 UDP (overlay network)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -45,11 +56,19 @@ By the end of this tutorial, you will be able to:
 - [ ] Manage secrets and configs in Swarm
 - [ ] Deploy a multi-service stack from a Compose file with `docker stack deploy`
 
+
+
 ## Architecture
+
+
 
 ![Docker networking / multi-host](../assets/excalidraw/docker-networking.svg)
 
+
+
 ## Theory
+
+
 
 ### Swarm vs single-host Docker
 
@@ -162,208 +181,41 @@ After finishing **docker swarm orchestration basics**, skim the Related Links on
 
 Keep a short note of the exact commands that proved the happy path and the failure path. Interviewers and future incident responders both benefit when you can show *how you knew* the system was healthy — not only that you followed a script.
 
+
+
 ## Hands-on Lab
 
-### Lab 1 — Bootstrap a Swarm cluster
 
-On the first manager node:
-
-```bash
-# Initialize Swarm — note the join token output
-docker swarm init --advertise-addr 192.168.1.10
-
-# Save tokens
-docker swarm join-token worker
-docker swarm join-token manager
-```
-
-On each worker:
+Create a workspace for this tutorial.
 
 ```bash
-docker swarm join --token SWMTKN-1-xxx... 192.168.1.10:2377
+mkdir -p ~/rebash-docker/docker-swarm-orchestration-basics && cd ~/rebash-docker/docker-swarm-orchestration-basics
 ```
 
-Verify from manager:
+**Focus:** inspect Swarm mode availability without leaving a manager up
+
+### Step 1 – Swarm awareness
 
 ```bash
-docker node ls
+docker info --format 'swarm={{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}'
+tee swarm-notes.txt << 'EOF'
+Prefer Kubernetes for most new orchestration. If you init Swarm in a lab, leave with: docker swarm leave --force
+EOF
+cat swarm-notes.txt
+docker run --rm alpine:3.20 echo 'orchestration-agnostic container still runs'
 ```
 
-Expected columns: HOSTNAME, STATUS, AVAILABILITY, MANAGER STATUS, ENGINE VERSION.
-
-Label a node for placement:
+### Final step – Cleanup note
 
 ```bash
-docker node update --label-add role=db node-worker-1
+# Do not leave Swarm enabled on shared machines
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 2 — Deploy a replicated service
-
-```bash
-docker service create \
-  --name web \
-  --replicas 3 \
-  --publish published=8080,target=80 \
-  --network webnet \
-  nginx:1.27-alpine
-
-docker network create -d overlay webnet   # if not exists
-
-docker service ls
-docker service ps web
-curl http://192.168.1.10:8080   # any manager/worker IP with published port
-```
-
-Scale:
-
-```bash
-docker service scale web=5
-docker service ps web --no-trunc
-```
-
-Inspect service spec:
-
-```bash
-docker service inspect web --pretty
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 3 — Rolling update and rollback
-
-Deploy versioned service:
-
-```bash
-docker service create --name api --replicas 4 --publish 3000:3000 myapi:1.0.0
-
-# Update image with controlled rollout
-docker service update \
-  --image myapi:1.1.0 \
-  --update-parallelism 1 \
-  --update-delay 10s \
-  --update-failure-action rollback \
-  api
-
-# Monitor update progress
-docker service ps api
-
-# Manual rollback if needed
-docker service rollback api
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-| Update flag | Purpose |
-|-------------|---------|
-| `--update-parallelism` | Tasks updated at once |
-| `--update-delay` | Pause between batches |
-| `--update-failure-action rollback` | Auto rollback on failure |
-
-### Lab 4 — Secrets and configs
-
-```bash
-echo "supersecret-db-pass" | docker secret create db_password -
-echo "server { listen 80; location / { return 200 'ok'; } }" | docker config create nginx_cfg -
-
-docker service create \
-  --name secure-api \
-  --secret db_password \
-  --config source=nginx_cfg,target=/etc/nginx/conf.d/default.conf \
-  --replicas 2 \
-  myapi:1.1.0
-
-# Verify secret mount inside task
-TASK_ID=$(docker ps -q --filter name=secure-api | head -1)
-docker exec "$TASK_ID" ls -la /run/secrets/
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Secrets are only available to services granted access at create/update time.
-
-### Lab 5 — Stack deploy from Compose
-
-`stack-api.yml`:
-
-```yaml
-services:
-  api:
-    image: myapi:1.1.0
-    ports:
-      - "3000:3000"
-    networks:
-      - backend
-    deploy:
-      replicas: 3
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: rollback
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          cpus: "0.50"
-          memory: 256M
-    secrets:
-      - db_password
-    environment:
-      DB_HOST: db
-
-  db:
-    image: postgres:16-alpine
-    networks:
-      - backend
-    deploy:
-      placement:
-        constraints:
-          - node.labels.role == db
-      replicas: 1
-    environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    secrets:
-      - db_password
-    volumes:
-      - db-data:/var/lib/postgresql/data
-
-networks:
-  backend:
-    driver: overlay
-
-secrets:
-  db_password:
-    external: true
-
-volumes:
-  db-data:
-```
-
-Deploy:
-
-```bash
-docker stack deploy -c stack-api.yml myapp
-docker stack services myapp
-docker stack ps myapp
-```
-
-Remove stack:
-
-```bash
-docker stack rm myapp
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -378,7 +230,11 @@ Confirm the lab before moving on:
 | Update/rollback | Rolling update or rollback path demonstrated |
 | Cleanup | Services removed; leave Swarm only if you intend to keep it |
 
+
+
 ## Code Walkthrough
+
+
 
 ### Essential Swarm commands
 
@@ -421,7 +277,11 @@ wget -qO- http://api:3000/health
 
 Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
+
+
 ## Security Considerations
+
+
 
 - Enable Swarm with TLS mutual authentication between managers and workers
 - Store Swarm secrets in Docker secrets — not as service environment variables
@@ -431,7 +291,10 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 - Limit published ports on ingress and remove unused services promptly
 
 
+
 ## Common Mistakes
+
+
 
 !!! warning "Single manager in production"
     Manager loss means no orchestration. Run 3 managers across failure domains.
@@ -448,7 +311,11 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 !!! warning "Ignoring placement constraints"
     Stateful workloads (DB) on random nodes lose data on reschedule. Use labels and volumes with backup strategy.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Odd number of managers"
     Maintain raft quorum — 3 managers for most production Swarm clusters.
@@ -465,7 +332,11 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 !!! tip "Plan exit strategy"
     Swarm maintenance mode is real — know when to migrate to [Kubernetes](from-docker-to-kubernetes.md).
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -476,7 +347,11 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 | Secret not mounted | Service not updated after secret create | Recreate service with `--secret` |
 | Quorum lost | Too many managers down | Restore from backup or rebuild cluster |
 
+
+
 ## Summary
+
+
 
 - **Docker Swarm** provides native clustering with services, tasks, and overlay networking
 - **Managers** run Raft consensus; use **3 or 5** for production quorum
@@ -485,26 +360,28 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 - **`docker stack deploy`** maps Compose files to Swarm with `deploy:` semantics
 - Swarm bridges single-host Docker and full orchestration — next step: [From Docker to Kubernetes](from-docker-to-kubernetes.md)
 
+
+
 ## Interview Questions
 
-1. What is the difference between a Docker service and a container?
-2. How does Swarm achieve multi-host networking?
-3. Why should production Swarm clusters have an odd number of managers?
-4. What happens during a rolling update with `--update-failure-action rollback`?
-5. How are Swarm secrets delivered to containers?
-6. What is the difference between `docker compose up` and `docker stack deploy`?
-7. When would you choose Swarm over Kubernetes?
-8. How do you safely drain a node for maintenance?
-9. What ports must be open between Swarm nodes?
-10. How does service discovery work for Swarm services?
 
-??? tip "Sample Answers (Questions 1 and 7)"
+1. What production problem does **Docker Swarm Orchestration Basics** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
-    **Q1 — Service vs container:** A container is a single running instance on one host. A Swarm **service** is the desired state (image, replicas, networks, update policy). Swarm schedules **tasks** — each task runs one container on a chosen node. Scaling a service to 5 means 5 tasks across the cluster, managed as a unit.
+!!! tip "Sample answer — question 2"
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
 
-    **Q7 — Swarm vs Kubernetes:** Choose Swarm when teams already know Docker, cluster size is modest (tens of nodes), requirements fit built-in primitives, and operational simplicity matters. Choose Kubernetes when you need a rich ecosystem (CRDs, operators, service mesh), massive scale, multi-cloud portability, or long-term vendor-neutral skills demand.
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
+
+
 
 - [Production Docker Patterns](production-docker-patterns.md) *(previous)*
 - [From Docker to Kubernetes](from-docker-to-kubernetes.md) *(next)*
@@ -516,7 +393,11 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Docker – Swarm mode overview](https://docs.docker.com/engine/swarm/)
 - [Docker – Create a service](https://docs.docker.com/engine/swarm/services/)

@@ -51,19 +51,29 @@ comments: false
 
 ## Overview
 
+
+
 Map Amazon Elastic Container Registry (ECR), Elastic Container Service (ECS), Elastic Kubernetes Service (EKS), AWS Fargate, and AWS App Runner so you can pick a platform, sketch a deploy path, and avoid leaving expensive clusters running after a lab.
 
 AWS offers several ways to run containers. **ECR** stores images. **ECS** is AWS-native orchestration (tasks and services). **EKS** is managed Kubernetes. **Fargate** runs tasks or pods without you managing EC2 capacity. **App Runner** is a higher-level PaaS for HTTP services from a source or image. Production designs usually pair a registry, an orchestrator, IAM task/pod roles, private networking, and observability — not a single “container button”.
 
 This is a core tutorial in **Module 7 · Containers** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Databases on AWS](databases-on-aws.md) (or equivalent VPC and IAM comfort)
 - Docker fundamentals and a working AWS CLI profile
 - Optional: kubectl experience for the EKS mental model
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -73,13 +83,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Sketch task/pod IAM roles and private pull from ECR  
 - [ ] Apply cost hygiene: no long-lived lab EKS/ECS clusters
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![EKS / ECS container platform](../assets/excalidraw/aws-eks-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -131,47 +149,55 @@ Prefer **task roles** (ECS) and **IAM Roles for Service Accounts (IRSA) / pod id
 - Equating ECS services with Kubernetes Deployments without learning the networking differences  
 - Granting cluster-admin to every CI identity
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-07 && cd ~/rebash-aws/module-07
 ```
 
-**Focus:** read-only AWS CLI checks for Containers on AWS — ECS, EKS, ECR, and App Runner (no create unless you intend to pay)
+**Focus:** describe ECR/ECS/EKS read-only inventory
 
-### Step 1 – Identity and region hygiene
-
-```bash
-aws sts get-caller-identity
-aws configure get region || true
-echo "Use a sandbox account. Prefer --dry-run / read-only APIs first."
-```
-
-### Step 2 – Topic inspection
+### Step 1 – Containers inventory
 
 ```bash
-# Adapt to the service in this tutorial — examples:
-aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head
-aws s3api list-buckets --query 'Buckets[].Name' --output table 2>/dev/null | head || true
-# Document which API maps to the Theory section for: Containers on AWS — ECS, EKS, ECR, and App Runner
+aws ecr describe-repositories --query 'repositories[].repositoryName' --output text 2>/dev/null | tr '\t' '\n' | head | tee ecr.txt || true
+aws ecs list-clusters --output text 2>/dev/null | tee ecs.txt || true
+aws eks list-clusters --output text 2>/dev/null | tee eks.txt || true
+tee containers-notes.txt << 'EOF'
+Prefer private ECR, least-privilege task roles, and controlled cluster endpoint access.
+EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Destroy anything you created; leave IAM/roles tagged and time-boxed
-# Keep ~/rebash-aws/ notes for later tutorials
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-07/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Containers on AWS — ECS, EKS, ECR, and App Runner** always combines:
 
@@ -183,7 +209,11 @@ Production practice for **Containers on AWS — ECS, EKS, ECR, and App Runner** 
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -191,7 +221,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Leaving EKS/ECS capacity running overnight — control planes and nodes bill continuously  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -202,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Containers on AWS — ECS, EKS, ECR, and App Runner changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -210,7 +248,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -220,27 +262,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Containers on AWS — ECS, EKS, ECR, and App Runner** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Containers on AWS — ECS, EKS, ECR, and App Runner** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Containers on AWS — ECS, EKS, ECR, and App Runner** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Serverless on AWS](serverless-on-aws.md)
+- [Serverless on AWS](serverless-on-aws.md)
+
+
 
 ## References
+
+
 
 - [Amazon ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html)  
 - [Amazon ECS Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)  

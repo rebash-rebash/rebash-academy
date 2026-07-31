@@ -44,18 +44,28 @@ comments: false
 
 ## Overview
 
+
+
 Diagnose failed jobs, runner problems, auth errors, cache misses, and slow pipelines with a fixed order: lint → config → runner → credentials → cache → performance.
 
 Most “CI is broken” tickets are YAML `rules`, missing tags, expired tokens, or poisoned caches — not mysterious GitLab bugs. Separate **definition** failures from **execution** failures before changing production variables.
 
 This is a core tutorial in **Module 17 · Troubleshooting** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Pipeline Monitoring and Observability](pipeline-monitoring-and-observability.md)
 - Runner and variables modules completed (or equivalent)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -64,13 +74,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Recover from stuck/pending jobs and executor errors  
 - [ ] Apply a performance triage for slow pipelines
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitLab troubleshooting](../assets/excalidraw/gitlab-troubleshooting.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -119,7 +137,10 @@ Reproduce with a minimal job when possible. Prefer fixing root cause over `retry
 - Putting secrets in logs “just to debug” on shared runners.
 - Using `allow_failure: true` to silence a broken gate permanently.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -127,77 +148,45 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-17 && cd ~/rebash-gitlab/module-17
 ```
 
-**Focus:** hands-on practice for Troubleshooting GitLab CI
+**Focus:** break YAML syntax and practise CI lint recovery
 
-### Step 1 – Core exercise
+### Step 1 – Broken then fixed
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-17 && cd ~/rebash-gitlab/module-17
 cat > .gitlab-ci.yml << 'EOF'
-stages:
-  - debug
-
-# Intentional mismatch demo: tag "gpu" with no such runner in most labs
-broken_tag_example:
-  stage: debug
-  tags: ["gpu"]
-  script:
-    - echo "This stays pending without a gpu runner"
-  rules:
-    - when: never   # disabled by default — set when: always to demo pending
-
-auth_checklist:
-  stage: debug
-  image: alpine:3.20
-  script:
-    - echo "Check CI_JOB_TOKEN, registry login, protected variables"
-    - echo "Protected branch? Variables protected? Runner privileged?"
-
-cache_key_demo:
-  stage: debug
-  image: alpine:3.20
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-demo"
-    paths:
-      - .cache/
-  script:
-    - mkdir -p .cache
-    - echo "ok" > .cache/marker
-    - test -f .cache/marker
+test
+  script: ["echo broken"]
 EOF
-
-cat > playbook.md << 'EOF'
-1. Lint / YAML parse — does the job exist for this ref?
-2. Pending vs failed — tags, runners, protection
-3. Read job log from the bottom
-4. Auth — tokens, OIDC, protected vars, registry
-5. Cache/artefacts — keys, needs, dependencies
-6. Runner host — disk, executor, privileges
-7. Performance — slowest jobs, pulls, serial stages
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))" 2>&1 | tee err.txt || true
+cat > .gitlab-ci.yml << 'EOF'
+test:
+  script: ["echo fixed"]
 EOF
-
-python3 - << 'PY'
-import yaml
-yaml.safe_load(open(".gitlab-ci.yml"))
-print("YAML parse OK")
-print("Playbook:", open("playbook.md").read().count("\n"), "lines")
-PY
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('fixed OK')"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-17/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Troubleshooting GitLab CI** always combines:
 
@@ -209,7 +198,11 @@ Production practice for **Troubleshooting GitLab CI** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -217,7 +210,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Blaming GitLab.com when the job never matched a runner tag."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -228,7 +225,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Troubleshooting GitLab CI changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -236,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -246,27 +251,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Troubleshooting GitLab CI** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Troubleshooting GitLab CI** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Troubleshooting GitLab CI** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Enterprise GitLab](enterprise-gitlab.md)
+- [Enterprise GitLab](enterprise-gitlab.md)
+
+
 
 ## References
+
+
 
 - [Debugging CI/CD jobs](https://docs.gitlab.com/ee/ci/debugging.html)  
 - [Job log](https://docs.gitlab.com/ee/ci/jobs/job_logs.html)  

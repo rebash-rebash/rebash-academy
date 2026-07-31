@@ -40,18 +40,28 @@ comments: false
 
 ## Overview
 
+
+
 Structure an Infrastructure as Code (IaC) repository for safe Git reviews: clear modules, `.gitignore` for state/secrets, and plan-on-PR as the change process.
 
 IaC without Git discipline is risky. Treat Terraform/Ansible like production code: small PRs, CODEOWNERS on `prod/`, never commit `.tfstate` or secrets.
 
 This is a core tutorial in **Module 13 · Git for IaC** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [GitOps Fundamentals](gitops-fundamentals.md)
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Require review for production paths  
 - [ ] Pair Git with CI plan (no apply from laptop as policy)
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -101,7 +119,10 @@ Keep declarative definitions, modules, tests, and runbooks in Git. Run `terrafor
 - Applying unreviewed local changes that never land in Git  
 - One giant root module with no ownership boundaries
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -109,61 +130,57 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-13/{modules/network,envs/dev} && cd ~/rebash-git/module-13/{modules/network,envs/dev}
 ```
 
-**Focus:** hands-on practice for Git for Infrastructure as Code
+**Focus:** practise Git skills for: Git for Infrastructure as Code
 
-### Step 1 – Core exercise
+### Step 1 – Init repository
 
 ```bash
-mkdir -p ~/rebash-git/module-13/{modules/network,envs/dev}
-cd ~/rebash-git/module-13
 git init -b main
-git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
+```
 
+### Step 2 – IaC repo hygiene
+
+```bash
+mkdir -p infra
+echo 'resource "null_resource" "x" {}' > infra/main.tf
 cat > .gitignore << 'EOF'
 .terraform/
-*.tfstate
-*.tfstate.*
+*.tfstate*
 .terraform.lock.hcl
-*.pem
-.env
-crash.log
 EOF
-
-cat > modules/network/main.tf << 'EOF'
-# Lab stub — not applied
-variable "cidr" { type = string }
-EOF
-
-cat > envs/dev/main.tf << 'EOF'
-module "network" {
-  source = "../../modules/network"
-  cidr   = "10.0.0.0/16"
-}
-EOF
-
-mkdir -p .github
-cat > .github/CODEOWNERS << 'EOF'
-/envs/prod/ @your-org/platform
-EOF
-
-git add . && git commit -m "chore: iac lab skeleton"
-git check-ignore -v fake.tfstate || echo "*.tfstate" >> .gitignore
+git add infra .gitignore
+git commit -m 'Add infra scaffold'
+git status --ignored | tee ignored.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-13/{modules/network,envs/dev}/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Git for Infrastructure as Code** always combines:
 
@@ -175,7 +192,11 @@ Production practice for **Git for Infrastructure as Code** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -183,7 +204,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Committing state “just once” for convenience  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -194,7 +219,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Git for Infrastructure as Code changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -202,7 +231,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -212,26 +245,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Git for Infrastructure as Code** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Git for Infrastructure as Code** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Git for Infrastructure as Code** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Repository Management and Releases](repository-management-and-releases.md)
+- [Repository Management and Releases](repository-management-and-releases.md)
+
+
 
 ## References
+
+
 
 - [Terraform style / VCS](https://developer.hashicorp.com/terraform/language/style)

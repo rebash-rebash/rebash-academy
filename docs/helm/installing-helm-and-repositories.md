@@ -38,18 +38,28 @@ comments: false
 
 ## Overview
 
+
+
 Install Helm 3, point it at your kubeconfig cluster, add a chart repository, and search/pull a chart.
 
 Install via package manager or the official script. Configure **repos** (`helm repo add`) or use **OCI** registries (`oci://…`). Plugins extend the CLI (for example `helm-diff`).
 
 This is a core tutorial in **Module 2 · Installing Helm** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Helm Architecture](helm-architecture-and-components.md)
 - Working `kubectl` cluster (kind/minikube/cloud)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] List plugins concept  
 - [ ] Confirm cluster context
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Helm architecture](../assets/excalidraw/helm-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -112,7 +130,10 @@ Helm does not need a special server component in the cluster. If `kubectl` can r
 - Assuming plugins are required for core install/upgrade — they are optional helpers.
 - Pointing Helm at the wrong kubecontext and installing into the wrong cluster.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -120,36 +141,52 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-02 && cd ~/rebash-helm/module-02
 ```
 
-**Focus:** hands-on practice for Installing Helm and Repositories
+**Focus:** Verify Helm client and practise repository add/update/search
 
-### Step 1 – Core exercise
+### Step 1 – Check Helm and add a repository
 
 ```bash
-mkdir -p ~/rebash-helm/module-02 && cd ~/rebash-helm/module-02
-# macOS: brew install helm
-# Or: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
-kubectl config current-context
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm search repo nginx | head -n 5
-helm plugin list
+helm search repo bitnami/nginx --versions | head -n 5
+```
+
+### Step 2 – Pull a chart locally and inspect without installing from remote blindly
+
+```bash
+helm pull bitnami/nginx --version $(helm search repo bitnami/nginx --versions -o json | python3 -c 'import sys,json; print(json.load(sys.stdin)[0]["version"])') --untar
+ls -la nginx
+helm template inspect-nginx ./nginx -n rebash-helm | head -n 30
+kubectl create namespace rebash-helm
+helm lint ./nginx
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+rm -rf nginx nginx-*.tgz 2>/dev/null || true
+helm repo remove bitnami 2>/dev/null || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-02/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Installing Helm and Repositories** always combines:
 
@@ -161,7 +198,11 @@ Production practice for **Installing Helm and Repositories** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -169,7 +210,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Installing Helm 2 tooling by accident — always verify major version 3."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -180,7 +225,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Installing Helm and Repositories changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -188,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -198,26 +251,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Installing Helm and Repositories** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Installing Helm and Repositories** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does `helm repo add` store on your machine?
+2. Why run `helm repo update` before installing?
+3. What is the difference between searching a repo and pulling a chart?
+4. How can a compromised chart repository harm you?
+5. When should you vendor charts instead of installing straight from the internet?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Repositories are indexes of chart locations. update refreshes local cache so you see current chart versions rather than stale index data.
+
+!!! tip "Sample answer — question 4"
+    A malicious repo can serve charts that escalate privileges. Prefer HTTPS repos you trust, pin versions, verify provenance when available, and review rendered YAML.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Working with Helm Charts](working-with-helm-charts.md)
+- [Working with Helm Charts](working-with-helm-charts.md)
+
+
 
 ## References
+
+
 
 - [Installing Helm](https://helm.sh/docs/intro/install/)

@@ -37,17 +37,27 @@ comments: false
 
 ## Overview
 
+
+
 Trace CLI → chart/repo → template render → release → Kubernetes API, and name the main Helm components.
 
 Helm 3 is a **client-only** tool (no Tiller). It talks to the Kubernetes API, stores release metadata as Secrets/ConfigMaps in the cluster, and renders Go templates with values.
 
 This is a core tutorial in **Module 1 · Helm Fundamentals** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Introduction to Helm](introduction-to-helm.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -56,13 +66,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe where release history lives  
 - [ ] Outline HTTP vs OCI chart sources
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Helm architecture](../assets/excalidraw/helm-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -106,7 +124,10 @@ Mental model: **CLI → fetch chart → merge values → render templates → ap
 - Expecting `helm template` to catch every cluster error — admission webhooks and quotas only appear on apply.
 - Forgetting that hooks and CRDs have special lifecycle rules compared with ordinary templates.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -114,31 +135,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-01-arch && cd ~/rebash-helm/module-01-arch
 ```
 
-**Focus:** hands-on practice for Helm Architecture and Components
+**Focus:** Map chart layout to rendered Kubernetes objects
 
-### Step 1 – Core exercise
+### Step 1 – Inspect chart structure and render
 
 ```bash
-mkdir -p ~/rebash-helm/module-01-arch && cd ~/rebash-helm/module-01-arch
-cat > components.md << 'EOF'
-CLI → fetch chart → merge values → render → apply → store release
-EOF
+kubectl create namespace rebash-helm
+helm create arch-demo
+find arch-demo -type f | sort
+helm template demo ./arch-demo -n rebash-helm --debug 2>&1 | head -n 50
+```
+
+### Step 2 – Install and inspect release secret metadata (Helm 3)
+
+```bash
+helm upgrade --install demo ./arch-demo -n rebash-helm
+kubectl -n rebash-helm get secrets -l owner=helm
+helm -n rebash-helm get manifest demo | head -n 40
+helm -n rebash-helm status demo
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-01-arch/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Helm Architecture and Components** always combines:
 
@@ -150,7 +190,11 @@ Production practice for **Helm Architecture and Components** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -158,7 +202,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Assuming Helm stores charts in etcd forever — it stores **release records**; charts are fe"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -169,7 +217,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Helm Architecture and Components changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -177,7 +229,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -187,26 +243,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Helm Architecture and Components** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Helm Architecture and Components** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What are the main directories inside a chart?
+2. Where does Helm 3 store release metadata?
+3. What role do helpers (_helpers.tpl) play?
+4. Why was Tiller removed, and what security benefit followed?
+5. How does the chart version relate to appVersion?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Release metadata lives in the cluster namespace as Secrets labelled for Helm, not in a central Tiller. That design keeps RBAC scoped to the namespace where you install.
+
+!!! tip "Sample answer — question 4"
+    Removing Tiller eliminated a powerful in-cluster shared server. Helm 3 uses your kubeconfig credentials directly, so RBAC of the caller matters.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Installing Helm and Repositories](installing-helm-and-repositories.md)
+- [Installing Helm and Repositories](installing-helm-and-repositories.md)
+
+
 
 ## References
+
+
 
 - [Helm architecture](https://helm.sh/docs/topics/architecture/)

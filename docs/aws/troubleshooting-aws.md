@@ -54,6 +54,8 @@ comments: false
 
 ## Overview
 
+
+
 Diagnose Amazon Web Services (AWS) production failures with a fixed order: confirm identity and blast radius, then walk the **EC2 → IAM → VPC → DNS → storage → Lambda → EKS → cost** ladder without random console clicking.
 
 Most “AWS is down” tickets are permission denials, security group / route mistakes, DNS mispoints, or exhausted quotas — not Region-wide outages. Separate **control-plane errors** (API denied, wrong Region) from **data-plane symptoms** (timeouts, 5xx, CrashLoop). Capture evidence before you change anything.
@@ -63,13 +65,21 @@ Most “AWS is down” tickets are permission denials, security group / route mi
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Production AWS Landing Zones](production-aws-landing-zones.md)
 - Working knowledge of Modules 2–11 (IAM, VPC, compute, storage, containers, serverless, observability)
 - AWS CLI v2 and read access to the affected account
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -81,13 +91,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Debug Lambda and EKS with logs, events, and auth  
 - [ ] Use cost spikes as a signal (runaway resources)
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Troubleshooting ladder](../assets/excalidraw/aws-troubleshooting.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -166,7 +184,13 @@ Method per layer: symptom → evidence → decide → next action.
 - Calling every timeout an app bug before Flow Logs/Health.
 - Mutating before capturing evidence.
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -174,56 +198,42 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-16 && cd ~/rebash-aws/module-16
 ```
 
-**Focus:** hands-on practice for Troubleshooting AWS
+**Focus:** practise an AWS auth/network triage loop with read-only calls
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-16
-cd ~/rebash-aws/module-16
-aws sts get-caller-identity
-echo "Region=${AWS_DEFAULT_REGION:-eu-west-1}"
-```
+### Step 1 – Triage loop
 
 ```bash
-cd ~/rebash-aws/module-16
-
-cat > ladder.md << 'EOF'
-# AWS troubleshooting ladder
-0. sts get-caller-identity · Region · Health Dashboard
-1. EC2: describe-instance-status · console output · SSM
-2. IAM: CloudTrail AccessDenied · policy simulator · SCP
-3. VPC: SG · routes · NAT · endpoints · Flow Logs
-4. DNS: dig + Route 53 · health checks
-5. Storage: volume state · S3 403 vs NoSuchKey
-6. Lambda: logs · duration · concurrency · ENI
-7. EKS: events · nodes · aws-auth/access · CNI
-8. Cost: Cost Explorer spike · runaway resources
+aws sts get-caller-identity | tee identity.json
+aws ec2 describe-vpcs --output table | tee vpcs.txt
+aws ec2 describe-security-groups --query 'SecurityGroups[:5].{Id:GroupId,Name:GroupName,Vpc:VpcId}' --output table | tee sgs.txt
+tee triage.txt << 'EOF'
+Auth -> Region -> Network path (SG/NACL/route) -> Service quotas -> CloudTrail recent denials
 EOF
-
-aws sts get-caller-identity
-aws ec2 describe-instances \
-  --query 'Reservations[].Instances[].{Id:InstanceId,State:State.Name}' \
-  --output table 2>/dev/null || true
+cat triage.txt
 ```
-
-!!! tip "Interview cue"
-    Narrate: confirm identity and Region, then separate IAM denials from network timeouts with CloudTrail and Flow Logs.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-16/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Troubleshooting AWS** always combines:
 
@@ -235,7 +245,11 @@ Production practice for **Troubleshooting AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -243,7 +257,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Changing SGs before listener/target health."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -254,7 +272,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Troubleshooting AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -262,7 +284,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -272,27 +298,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 Sixteen modules cover design, security, automation, cost, recovery — and on-call debugging with a shared playbook.
 
+
+
 ## Interview Questions
 
-1. How does **Troubleshooting AWS** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Troubleshooting AWS** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Course overview](index.md) · [AWS interview prep](../interview/aws.md) · [Cheat sheet](../cheatsheets/aws.md)
+- [Course overview](index.md) · [AWS interview prep](../interview/aws.md) · [Cheat sheet](../cheatsheets/aws.md)
+
+
 
 ## References
+
+
 
 - [AWS Health Dashboard](https://health.aws.amazon.com/health/status)  
 - [VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html)  

@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply a Helm security baseline: no secrets in charts, least-privilege deploy identity, pinned images/charts, and OCI provenance where available.
 
 Charts often tempt teams to bake passwords into `values.yaml`. Prefer external secret stores. Restrict who can create releases. Prefer signed/verified OCI charts in regulated environments.
 
 This is a core tutorial in **Module 9 · Security** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Testing and Validation](helm-testing-and-validation.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Pin image digests or immutable tags in values  
 - [ ] Describe OCI + provenance / signing options
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![OCI registry](../assets/excalidraw/helm-oci-registry.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -109,7 +127,10 @@ Security is layered: a signed chart that still embeds a default admin password i
 - Trusting chart provenance while ignoring the image the chart deploys.
 - Disabling admission controls so a chart “just installs” — fix the chart or request an exception with review.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -117,39 +138,57 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-09 && cd ~/rebash-helm/module-09
 ```
 
-**Focus:** hands-on practice for Helm Security
+**Focus:** Review rendered RBAC/service account settings before install
 
-### Step 1 – Core exercise
+### Step 1 – Render and audit privileged-looking defaults
 
 ```bash
-mkdir -p ~/rebash-helm/module-09 && cd ~/rebash-helm/module-09
-cat > security-checklist.md << 'EOF'
-- [ ] No plaintext secrets in values committed to Git
-- [ ] CI uses least-privilege ServiceAccount / kubeconfig
-- [ ] Charts pulled from approved OCI/HTTP repos only
-- [ ] Image tags pinned (no floating latest in prod values)
-- [ ] helm lint + template in CI
-- [ ] Consider chart signing / cosign for OCI artefacts
+kubectl create namespace rebash-helm
+helm create secure-demo
+helm template demo ./secure-demo -n rebash-helm   --set serviceAccount.create=true   --set podSecurityContext.runAsNonRoot=true   --set podSecurityContext.runAsUser=1000 | tee rendered.yaml | head -n 60
+grep -nE 'ServiceAccount|runAsNonRoot|allowPrivilegeEscalation|ClusterRole' rendered.yaml || true
+```
+
+### Step 2 – Install hardened values and verify objects
+
+```bash
+cat > secure-values.yaml <<'EOF'
+serviceAccount:
+  create: true
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
 EOF
-helm create rebash-sec
-# Ensure default values do not invent fake passwords
-grep -n -i 'password\|secret\|token' rebash-sec/values.yaml || echo "No obvious secrets in scaffold"
+helm upgrade --install demo ./secure-demo -n rebash-helm -f secure-values.yaml
+kubectl -n rebash-helm get sa,deploy
+kubectl -n rebash-helm get deploy -o jsonpath='{.items[0].spec.template.spec.securityContext}{"
+"}'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-09/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Helm Security** always combines:
 
@@ -161,7 +200,11 @@ Production practice for **Helm Security** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -169,7 +212,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Believing `helm package` encrypts secrets — it does not."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -180,7 +227,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Helm Security changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -188,7 +239,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -198,26 +253,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Helm Security** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Helm Security** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What chart features should you audit before install?
+2. How do ServiceAccounts and RBAC in charts expand cluster rights?
+3. Why pin image digests or immutable tags in production values?
+4. What is chart provenance, and when does it help?
+5. How should secrets be supplied to Helm releases?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Charts may create ClusterRoles, privileged pods, or hostPath mounts. Rendering and reviewing these objects prevents accidental cluster-admin paths.
+
+!!! tip "Sample answer — question 4"
+    Mutable tags like latest can change under you. Pin versions/digests so rollbacks and audits know exactly what ran, reducing supply-chain surprise.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Helm GitOps Integration](helm-gitops-integration.md)
+- [Helm GitOps Integration](helm-gitops-integration.md)
+
+
 
 ## References
+
+
 
 - [Helm security](https://helm.sh/docs/topics/security/) · [OCI registries](https://helm.sh/docs/topics/registries/)

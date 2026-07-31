@@ -42,17 +42,27 @@ comments: false
 
 ## Overview
 
+
+
 Connect repositories, branches, merge requests, protected branches, tags, and releases to how pipelines start and what they are allowed to change.
 
 GitLab CI/CD is useless without a clear **project** model. A project owns the Git repository, CI settings, protected branches, variables, and release records. Merge requests (MRs) are the review surface; tags and **Releases** mark shippable versions.
 
 This is a core tutorial in **Module 2 · GitLab Projects** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [GitLab CI/CD Fundamentals](gitlab-ci-fundamentals.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -61,13 +71,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Configure protected branches and protected tags mentally  
 - [ ] Relate Git tags to GitLab Releases
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Projects and merge requests](../assets/excalidraw/gitlab-projects-mr.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -114,7 +132,10 @@ Predefined variables such as `$CI_MERGE_REQUEST_IID`, `$CI_COMMIT_BRANCH`, `$CI_
 - Leaving `main` unprotected on shared projects.
 - Treating GitLab Releases as a replacement for artefact registries — Releases point at assets; registries store images/packages.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -122,73 +143,74 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-02 && cd ~/rebash-gitlab/module-02
 ```
 
-**Focus:** hands-on practice for GitLab Projects, Merge Requests, and Releases
+**Focus:** model release/version jobs with a changelog stub
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-gitlab/module-02
-cd ~/rebash-gitlab/module-02
-```
+### Step 1 – Release metadata
 
 ```bash
-cd ~/rebash-gitlab/module-02
+echo '# Changelog
+
+## 0.1.0
+- Lab release' > CHANGELOG.md
 cat > .gitlab-ci.yml << 'EOF'
-workflow:
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
-
-stages: [validate, release]
-
-mr_checks:
-  stage: validate
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+release:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
-    - echo "MR !$CI_MERGE_REQUEST_IID → $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    - echo "Source SHA $CI_COMMIT_SHA"
-
-default_branch_build:
-  stage: validate
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  script:
-    - echo "Default branch build on $CI_COMMIT_SHORT_SHA"
-
-tag_release_notes:
-  stage: release
+    - echo "Create GitLab Release for $CI_COMMIT_TAG"
   rules:
     - if: $CI_COMMIT_TAG
-  script:
-    - echo "Tag $CI_COMMIT_TAG — create GitLab Release in UI or via release: keyword"
-    - echo "Protected ref? $CI_COMMIT_REF_PROTECTED"
 EOF
-
-python3 - << 'PY'
-import yaml
-yaml.safe_load(open(".gitlab-ci.yml"))
-print("YAML parse OK — optional: glab ci lint .gitlab-ci.yml")
-PY
+cat CHANGELOG.md
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
 ```
-
-Push this file to a free-tier GitLab.com project when ready; early learning does not require a paid instance.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
+## 0.1.0
+
+- Lab release' > CHANGELOG.md
+cat > .gitlab-ci.yml << 'EOF'
+release:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Create GitLab Release for $CI_COMMIT_TAG"
+  rules:
+    - if: $CI_COMMIT_TAG
+EOF
+cat CHANGELOG.md
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
+```
+
+### Final step – Cleanup note
+
+```bash
+# File-only
+```
+
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-02/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **GitLab Projects, Merge Requests, and Releases** always combines:
 
@@ -200,7 +222,11 @@ Production practice for **GitLab Projects, Merge Requests, and Releases** always
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -208,7 +234,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Assuming “pipeline on push” equals “pipeline on MR” — configure `rules` explicitly."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -219,7 +249,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode GitLab Projects, Merge Requests, and Releases changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -227,7 +261,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -237,27 +275,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **GitLab Projects, Merge Requests, and Releases** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **GitLab Projects, Merge Requests, and Releases** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **GitLab Projects, Merge Requests, and Releases** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [GitLab Runners and Executors](gitlab-runners-and-executors.md)
+- [GitLab Runners and Executors](gitlab-runners-and-executors.md)
+
+
 
 ## References
+
+
 
 - [Merge request pipelines](https://docs.gitlab.com/ee/ci/pipelines/merge_request_pipelines.html)  
 - [Releases](https://docs.gitlab.com/ee/user/project/releases/)

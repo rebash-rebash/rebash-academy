@@ -38,18 +38,28 @@ comments: false
 
 ## Overview
 
+
+
 Use GitHub as the collaboration hub: repos, settings, Issues, Releases — and know where security and Actions settings live.
 
 Git is the tool; **GitHub** (or GitLab) is where teams review, track work, and ship. DevOps owns templates, permissions, and release artefacts.
 
 This is a core tutorial in **Module 9 · GitHub Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Working with Remotes](working-with-remotes.md)
 - GitHub account (free tier OK)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Publish a Release from a tag  
 - [ ] Use Wikis carefully (prefer docs-as-code in-repo)
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -101,45 +119,67 @@ Repositories live under a user or organisation. The **default branch** (usually 
 - Leaving Actions enabled on repos that should not run untrusted workflows  
 - Ignoring organisation-required two-factor authentication (2FA)
 
+
+
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for GitHub Fundamentals
 
-### Step 1 – Local prep for a new GitHub repo
+Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-git/module-09 && cd ~/rebash-git/module-09
-git init -b main
-git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
-cat > README.md << 'EOF'
-# rebash-git-lab
-Module 9 GitHub fundamentals lab.
-EOF
-git add README.md && git commit -m "chore: init"
 ```
 
-### Step 2 – Create on GitHub
+**Focus:** practise Git skills for: GitHub Fundamentals
 
-In the UI (or `gh repo create`): private/public, add README offline already done, then:
+### Step 1 – Init repository
 
 ```bash
-# gh auth login   # once
-# gh repo create rebash-git-lab --private --source=. --remote=origin --push
-echo "Create empty GitHub repo and: git remote add origin <url> && git push -u origin main"
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
 ```
 
-### Step 3 – Settings tour checklist
+### Step 2 – GitHub collaboration notes
 
-Write `github-settings.md`: Branch protection, Actions permissions, Secrets, Collaborators, Pages off unless needed.
+```bash
+tee github-notes.txt << 'EOF'
+Issues + PRs + Actions form the collaboration loop.
+Protect default branch; use CODEOWNERS for critical paths.
+EOF
+mkdir -p .github
+echo '* @platform-team' > .github/CODEOWNERS
+git add .github github-notes.txt
+git commit -m 'Add CODEOWNERS scaffold'
+cat github-notes.txt
+```
+
+### Final step – Cleanup note
+
+```bash
+# Safe local repo under the lab directory; delete the folder when finished
+```
+
+
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-09/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **GitHub Fundamentals** always combines:
 
@@ -151,7 +191,11 @@ Production practice for **GitHub Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -159,7 +203,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Personal forks as the only copy of production IaC  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -170,7 +218,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode GitHub Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -178,7 +230,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -188,26 +244,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **GitHub Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **GitHub Fundamentals** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **GitHub Fundamentals** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Pull Requests and Code Review](pull-requests-and-code-review.md)
+- [Pull Requests and Code Review](pull-requests-and-code-review.md)
+
+
 
 ## References
+
+
 
 - [GitHub Docs — Repositories](https://docs.github.com/en/repositories)

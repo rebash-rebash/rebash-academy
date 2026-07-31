@@ -49,6 +49,8 @@ comments: false
 
 ## Overview
 
+
+
 Choose and operate the right managed database on AWS: Relational Database Service (RDS), Amazon Aurora, DynamoDB, ElastiCache, and DocumentDB — with clear decision criteria for Cloud, DevOps, and platform work.
 
 Self-managing databases on Amazon Elastic Compute Cloud (EC2) is rarely the first choice: patching, failover, and backups dominate toil. AWS managed services trade some control for Multi-AZ resilience and automation. Picking the wrong engine (or leaving a large RDS instance running) is expensive; this module focuses on **fit** and **safe labs**.
@@ -58,13 +60,21 @@ Self-managing databases on Amazon Elastic Compute Cloud (EC2) is rarely the firs
 
 This is a core tutorial in **Module 6 · Databases** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Storage: S3, EBS, and EFS](storage-s3-ebs-efs.md)
 - [VPC Networking on AWS](vpc-networking-on-aws.md) — private subnets and security groups
 - Basic Structured Query Language (SQL) or NoSQL awareness
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -74,13 +84,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Place databases in private subnets with least-privilege security groups  
 - [ ] Avoid common cost and connectivity pitfalls
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![AWS databases](../assets/excalidraw/aws-databases.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -134,7 +152,13 @@ Pipelines need test databases; production needs encryption, parameter groups, an
 - Forgetting to delete lab instances (24×7 billing)  
 - Choosing DocumentDB “because Mongo” when DynamoDB fits greenfield
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -142,72 +166,40 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-06 && cd ~/rebash-aws/module-06
 ```
 
-**Focus:** hands-on practice for Databases on AWS
+**Focus:** describe RDS/DynamoDB inventory read-only
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-06
-cd ~/rebash-aws/module-06
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-aws rds describe-db-instances --query 'DBInstances[].{Id:DBInstanceIdentifier,Eng:Engine,Class:DBInstanceClass,Status:DBInstanceStatus}' --output table
-aws dynamodb list-tables
-```
-
-Prefer inventory + DynamoDB on-demand (usually cheapest lab). Skip creating RDS unless you will delete it within the hour.
+### Step 1 – Data stores
 
 ```bash
-cd ~/rebash-aws/module-06
-TABLE="rebash-lab-m6-$(date +%s)"
-
-aws dynamodb create-table \
-  --table-name "$TABLE" \
-  --attribute-definitions AttributeName=pk,AttributeType=S \
-  --key-schema AttributeName=pk,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST
-
-aws dynamodb wait table-exists --table-name "$TABLE"
-
-aws dynamodb put-item --table-name "$TABLE" \
-  --item '{"pk":{"S":"module-06"},"topic":{"S":"databases"}}'
-aws dynamodb get-item --table-name "$TABLE" \
-  --key '{"pk":{"S":"module-06"}}'
-
-# Cleanup — always
-aws dynamodb delete-table --table-name "$TABLE"
-echo "Deleted table $TABLE"
-
-cat > db-chooser.md << 'EOF'
-# Database chooser
-SQL + ops simplicity → RDS
-SQL + cloud-native scale/failover → Aurora
-Key-value / event scale / serverless → DynamoDB
-Hot cache / sessions → ElastiCache
-MongoDB-compatible managed → DocumentDB
-Always: private subnets, SG from app tier, encryption, destroy labs
+aws rds describe-db-instances --query 'DBInstances[].{Id:DBInstanceIdentifier,Engine:Engine,Class:DBInstanceClass}' --output table 2>/dev/null | tee rds.txt || true
+aws dynamodb list-tables --output text 2>/dev/null | tr '\t' '\n' | head | tee dynamo.txt || true
+tee db-notes.txt << 'EOF'
+Backups, Multi-AZ, encryption, and least-privilege app roles are non-negotiable.
 EOF
-
-# RDS dry-run awareness (do not leave running)
-aws rds describe-orderable-db-instance-options \
-  --engine postgres --db-instance-class db.t3.micro \
-  --query 'OrderableDBInstanceOptions[0].{Engine:Engine,Class:DBInstanceClass}' \
-  --output table 2>/dev/null || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-06/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Databases on AWS** always combines:
 
@@ -219,7 +211,11 @@ Production practice for **Databases on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -227,7 +223,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Leaving `PubliclyAccessible=true` on RDS  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -238,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Databases on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -246,7 +250,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -256,27 +264,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Databases on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Databases on AWS** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Databases on AWS** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Containers: ECS, EKS, and ECR](containers-ecs-eks-ecr.md)
+- [Containers: ECS, EKS, and ECR](containers-ecs-eks-ecr.md)
+
+
 
 ## References
+
+
 
 - [Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html)  
 - [Amazon Aurora](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)  

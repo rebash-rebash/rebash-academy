@@ -44,17 +44,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply a Terraform security baseline: no secrets in Git, marked sensitive outputs, Vault/SSM injection patterns, least-privilege IAM for runners, encrypted remote state, and policy-as-code gates.
 
 Terraform configs often tempt teams to bake passwords into `terraform.tfvars`. Prefer external secret stores. Restrict who can plan and apply. Encrypt state at rest and treat plan artefacts as sensitive. Policy engines (Open Policy Agent / Sentinel) block unsafe changes before apply.
 
 This is a core tutorial in **Module 15 · Security** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain state encryption and plan artefact handling  
 - [ ] Summarise OPA vs Sentinel policy-as-code
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform security](../assets/excalidraw/terraform-security.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -125,7 +143,10 @@ Security is layered: a green policy check that still commits an API key in Git i
 - Trusting module provenance while ignoring the IAM policy the module creates.  
 - Disabling policy fail-closed so a change “just applies” — fix the config or request a reviewed exception.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -133,73 +154,67 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-15 && cd ~/rebash-terraform/module-15
 ```
 
-**Focus:** hands-on practice for Terraform Security and Secrets
+**Focus:** Keep secrets out of state-friendly patterns using sensitive variables
 
-### Step 1 – Core exercise
+### Step 1 – Mark sensitive inputs and avoid writing them to local files casually
 
 ```bash
-mkdir -p ~/rebash-terraform/module-15 && cd ~/rebash-terraform/module-15
-
-cat > variables.tf << 'EOF'
-variable "db_password" {
+cat > main.tf <<'EOF'
+terraform {
+  required_providers {
+    local = { source = "hashicorp/local", version = "~> 2.5" }
+  }
+}
+variable "api_token" {
   type      = string
   sensitive = true
 }
-
-variable "environment" {
-  type = string
+resource "local_file" "safe_marker" {
+  filename = "${path.module}/safe.txt"
+  content  = "token-configured=${var.api_token != ""}
+"
 }
-EOF
-
-cat > outputs.tf << 'EOF'
-output "environment" {
-  value = var.environment
-}
-
-output "db_password" {
-  value     = var.db_password
+output "token_set" {
+  value     = var.api_token != ""
   sensitive = true
 }
 EOF
-
-cat > main.tf << 'EOF'
-resource "local_file" "env" {
-  filename = "${path.module}/env.txt"
-  content  = "env=${var.environment}\n"
-}
-EOF
-
-cat > security-checklist.md << 'EOF'
-- [ ] No plaintext secrets in Git (tfvars, backend configs)
-- [ ] sensitive = true on secret variables and outputs
-- [ ] Secrets from Vault / SSM / Secrets Manager (or CI OIDC)
-- [ ] Remote state encrypted; backend IAM least privilege
-- [ ] CI uses short-lived credentials (OIDC), not static keys
-- [ ] Policy as code (OPA/Sentinel) on plan before apply
-- [ ] Plan artefacts treated as sensitive in CI
-EOF
-
 terraform init
-TF_VAR_db_password='not-a-real-secret' TF_VAR_environment=lab \
-  terraform apply -auto-approve
+```
+
+### Step 2 – Apply with an env-based variable and inspect redaction
+
+```bash
+export TF_VAR_api_token='lab-not-a-real-secret'
+terraform apply -auto-approve
 terraform output
-# db_password should be redacted in CLI output
+cat safe.txt
+echo "Note: sensitive values can still appear in state — protect state files"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-15/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Terraform Security and Secrets** always combines:
 
@@ -211,7 +226,11 @@ Production practice for **Terraform Security and Secrets** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -219,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Believing `sensitive = true` keeps values out of state — it does not.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -230,7 +253,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Terraform Security and Secrets changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -238,7 +265,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -248,26 +279,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Terraform Security and Secrets** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Terraform Security and Secrets** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does the sensitive flag on variables help?
+2. Why can secrets still appear in state despite sensitive outputs?
+3. What is a better pattern than hard-coding cloud keys in provider blocks?
+4. How should you handle secret rotation with Terraform-managed resources?
+5. What policies reduce accidental secret leakage in plans?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Sensitive flags redact CLI UI output but do not encrypt values in state. Protect backends and minimise secret material stored as resource attributes.
+
+!!! tip "Sample answer — question 4"
+    Prefer short-lived credentials via OIDC/IAM roles over static keys in env files. Static keys in CI variables still need rotation and scoped permissions.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Terraform in CI/CD Pipelines](terraform-in-ci-cd-pipelines.md)
+- [Terraform in CI/CD Pipelines](terraform-in-ci-cd-pipelines.md)
+
+
 
 ## References
+
+
 
 - [Sensitive values](https://developer.hashicorp.com/terraform/language/values/variables#suppressing-values-in-cli-output) · [OPA](https://www.openpolicyagent.org/) · [Sentinel](https://developer.hashicorp.com/sentinel)

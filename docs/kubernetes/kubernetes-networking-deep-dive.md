@@ -42,17 +42,27 @@ comments: false
 
 ## Overview
 
+
+
 Explain the Pod network (CNI), CoreDNS service discovery, kube-proxy modes, and how NetworkPolicies enforce east-west rules.
 
 Every Pod gets an IP via **CNI** (Calico, Cilium, kindnet…). **CoreDNS** answers `svc.ns.svc.cluster.local`. **NetworkPolicies** are enforced by the CNI plugin — not by kube-apiserver alone.
 
 This is a core tutorial in **Module 11 · Networking Deep Dive** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Services](services-and-cluster-networking.md) · [Security Hardening](kubernetes-security-hardening.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -61,13 +71,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline iptables vs IPVS vs eBPF  
 - [ ] Write a simple NetworkPolicy
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Service networking](../assets/excalidraw/k8s-service-networking.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -110,7 +128,10 @@ Flat Pod network + Services + DNS is the mental model; overlays and cloud routin
 - Overlapping NetworkPolicies that unintentionally isolate CoreDNS (egress to DNS must remain).
 - Confusing NodePort exposure with Pod network reachability from outside.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -118,35 +139,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
 ```
 
-**Focus:** hands-on practice for Kubernetes Networking Deep Dive
+**Focus:** Trace ClusterIP Service DNS and Pod-to-Pod connectivity
 
-### Step 1 – Core exercise
+### Step 1 – Create two Pods and a Service
 
 ```bash
-mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
-kubectl -n kube-system get pods -o wide | head
-kubectl -n kube-system get deploy coredns -o yaml | head -n 5
-kubectl create deploy dns-demo --image=nginx:alpine
-kubectl expose deploy/dns-demo --port=80
-kubectl run dnstest --rm -it --restart=Never --image=busybox:1.36 -- \
-  nslookup dns-demo.default.svc.cluster.local
-kubectl delete deploy/dns-demo svc/dns-demo
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab run server --image=nginx:1.27-alpine --port=80 --labels=app=server
+kubectl -n rebash-lab expose pod server --port=80 --name=server
+kubectl -n rebash-lab run client --image=busybox:1.36 --restart=Never --command -- sleep 3600
+kubectl -n rebash-lab wait --for=condition=Ready pod/server pod/client --timeout=90s
+```
+
+### Step 2 – Resolve DNS and curl across the Service
+
+```bash
+kubectl -n rebash-lab get svc server -o wide
+kubectl -n rebash-lab exec client -- nslookup server.rebash-lab.svc.cluster.local
+kubectl -n rebash-lab exec client -- wget -qO- http://server.rebash-lab.svc.cluster.local/ | head -n 5
+kubectl -n rebash-lab get endpoints server -o yaml | head -n 30
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-11/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Networking Deep Dive** always combines:
 
@@ -158,7 +194,11 @@ Production practice for **Kubernetes Networking Deep Dive** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -166,7 +206,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Assuming NetworkPolicies work without a supporting CNI — they become no-ops."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -177,7 +221,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Kubernetes Networking Deep Dive changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -185,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -195,26 +247,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Kubernetes Networking Deep Dive** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Kubernetes Networking Deep Dive** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does Pod networking typically work regarding IP addresses?
+2. How does CoreDNS resolve a Service name inside a cluster?
+3. What is the difference between ClusterIP, NodePort, and LoadBalancer?
+4. How can NetworkPolicy restrict east-west traffic, and what must the CNI support?
+5. What symptoms suggest a CNI or kube-proxy problem rather than an application bug?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Services get a stable DNS name like `name.namespace.svc.cluster.local` that resolves to the ClusterIP. kube-dns/CoreDNS answers these queries for in-cluster clients.
+
+!!! tip "Sample answer — question 4"
+    NetworkPolicy only enforces if the CNI implements it. Policies default-deny unused paths, allow needed namespaces/pods/ports, and should be tested so you do not lock out DNS or probes accidentally.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md)
+- [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md)
+
+
 
 ## References
+
+
 
 - [Cluster networking](https://kubernetes.io/docs/concepts/cluster-administration/networking/) · [DNS for Services](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)

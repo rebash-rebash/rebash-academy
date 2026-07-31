@@ -19,15 +19,22 @@ prerequisites:
 comments: false
 ---
 
+
 # Kubernetes Capstone and Next Steps
 
 ## Overview
+
+
 
 You have progressed from your first Pod to GitOps delivery, autoscaling, observability, and cluster hardening. This capstone deploys **VoteStack** — the multi-service poll application from the [Docker capstone](../docker/docker-capstone-and-next-steps.md) — on a production-style Kubernetes cluster. You will wire every layer from the Module 6 tutorials into one cohesive project and document a roadmap to [Terraform](../terraform/index.md) for infrastructure and [GitLab CI/CD](../gitlab/index.md) for enterprise pipelines.
 
 This is **Tutorial 20** — the finale of **Module 6: Production** and the complete REBASH Academy **Kubernetes track**.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes Security Hardening](kubernetes-security-hardening.md)
 - [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md)
@@ -39,7 +46,11 @@ This is **Tutorial 20** — the finale of **Module 6: Production** and the compl
 - Cluster with ingress controller, metrics-server, and Helm 3
 - Container images from Docker track or GitOps CI pipeline
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this capstone, you will be able to:
 
@@ -50,11 +61,19 @@ By the end of this capstone, you will be able to:
 - [ ] Apply Pod Security Standards and Kyverno policies to the stack
 - [ ] Document operational runbooks and a learning path to Terraform and GitLab
 
+
+
 ## Architecture
+
+
 
 ![Production cluster](../assets/excalidraw/k8s-production-cluster.svg)
 
+
+
 ## Project Overview — VoteStack on Kubernetes
+
+
 
 VoteStack mirrors the Docker capstone with Kubernetes-native primitives:
 
@@ -69,7 +88,11 @@ VoteStack mirrors the Docker capstone with Kubernetes-native primitives:
 
 Same container images built in the Docker track — only deployment manifests change.
 
+
+
 ## Project Structure
+
+
 
 ```text
 votestack-gitops/
@@ -102,7 +125,11 @@ votestack-gitops/
 └── README.md
 ```
 
+
+
 ## Theory
+
+
 
 Core ideas for this tutorial appear inline in the lab steps and Code Walkthrough. Read each step explanation before running commands.
 
@@ -138,253 +165,94 @@ Get into the habit of watching state while commands run: `docker events` / `kube
 
 Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
 
+
+
 ## Hands-on Lab
 
-### Lab 1 — Bootstrap GitOps (App of Apps)
 
-`apps/root-app.yaml`:
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: votestack-root
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/org/votestack-gitops.git
-    targetRevision: main
-    path: charts/votestack
-    helm:
-      valueFiles:
-        - values-dev.yaml
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: votestack
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-```
+Create a workspace for this tutorial.
 
 ```bash
-kubectl apply -f apps/root-app.yaml
-argocd app sync votestack-root
-kubectl get all -n votestack
+mkdir -p ~/rebash-kubernetes/kubernetes-capstone-and-next-steps && cd ~/rebash-kubernetes/kubernetes-capstone-and-next-steps
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
+**Focus:** Assemble a miniature production-shaped stack: Deploy, Service, probes, and resources
 
+### Step 1 – Apply a multi-resource application bundle
 
-### Lab 2 — Stateful data tier
-
-Postgres StatefulSet excerpt (`templates/postgres/statefulset.yaml`):
-
-```yaml
+```bash
+kubectl create namespace rebash-lab
+cat > capstone.yaml <<'EOF'
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: postgres
-  namespace: votestack
+  name: shop
+  namespace: rebash-lab
 spec:
-  serviceName: postgres
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: postgres
+      app: shop
   template:
     metadata:
       labels:
-        app: postgres
+app: shop
     spec:
-      securityContext:
-        fsGroup: 999
       containers:
-        - name: postgres
-          image: postgres:16-alpine
-          envFrom:
-            - secretRef:
-                name: postgres-credentials
-          ports:
-            - containerPort: 5432
-          volumeMounts:
-            - name: data
-              mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates:
-    - metadata:
-        name: data
-      spec:
-        accessModes: [ReadWriteOnce]
-        resources:
-          requests:
-            storage: 10Gi
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Apply SealedSecret for credentials (see [Kubernetes Security Hardening](kubernetes-security-hardening.md)).
-
-Verify: `kubectl get pvc -n votestack`
-
-### Lab 3 — Ingress with TLS
-
-Install cert-manager (once per cluster):
-
-```bash
-helm repo add jetstack https://charts.jetstack.io
-helm install cert-manager jetstack/cert-manager \
-  -n cert-manager --create-namespace \
-  --set crds.enabled=true
-```
-
-Ingress template:
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+      - name: web
+image: nginx:1.27-alpine
+ports:
+- containerPort: 80
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+---
+apiVersion: v1
+kind: Service
 metadata:
-  name: votestack
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+  name: shop
+  namespace: rebash-lab
 spec:
-  ingressClassName: nginx
-  tls:
-    - hosts: [votestack.example.com]
-      secretName: votestack-tls
-  rules:
-    - host: votestack.example.com
-      http:
-        paths:
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: votestack-api
-                port:
-                  number: 8080
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: votestack-web
-                port:
-                  number: 3000
+  selector:
+    app: shop
+  ports:
+  - port: 80
+EOF
+kubectl apply -f capstone.yaml
+kubectl -n rebash-lab rollout status deploy/shop
 ```
 
-Smoke test:
+### Step 2 – Validate and document readiness for next learning
 
 ```bash
-curl -sf https://votestack.example.com/api/health
-curl -sf https://votestack.example.com/ -o /dev/null
+kubectl -n rebash-lab get deploy,svc,pods -o wide
+kubectl -n rebash-lab get endpoints shop
+cat > NOTES.md <<'EOF'
+Capstone checklist: replicas ready, Service endpoints populated, probes green.
+Next: GitOps, HPA, network policies, and managed Kubernetes offerings.
+EOF
+cat NOTES.md
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 4 — HPA, PDB, and spread (production patterns)
-
-Enable in `values-dev.yaml`:
-
-```yaml
-api:
-  replicas: 2
-  autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 8
-    targetCPUUtilization: 70
-  pdb:
-    minAvailable: 1
-  topologySpread:
-    enabled: true
-
-worker:
-  autoscaling:
-    enabled: true
-    minReplicas: 1
-    maxReplicas: 5
-```
-
-Sync and validate:
+### Final step – Cleanup note
 
 ```bash
-kubectl get hpa,pdb -n votestack
-kubectl get pods -n votestack -o wide
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
 
-
-### Lab 5 — Observability stack integration
-
-Add ServiceMonitor to Helm chart (see [Monitoring and Logging](monitoring-and-logging-in-kubernetes.md)). Import VoteStack Grafana dashboard. Confirm alerts:
-
-```bash
-kubectl port-forward svc/kube-prometheus-grafana -n monitoring 3000:80
-# Dashboard: error rate, p99 latency, pod restarts
-```
-
-Log query in Loki:
-
-```logql
-{namespace="votestack"} | json | level="error"
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 6 — Security hardening checklist
-
-Apply the full security stack from Tutorial 19:
-
-```bash
-# Pod Security
-kubectl label namespace votestack \
-  pod-security.kubernetes.io/enforce=restricted --overwrite
-
-# NetworkPolicies
-kubectl apply -f charts/votestack/templates/networkpolicy.yaml
-
-# Kyverno policies
-kubectl apply -f policies/kyverno/
-
-# Verify
-kubectl run bad --rm -it --image=nginx:latest -n votestack
-# Expected: blocked by admission policy
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 7 — Operations runbook
-
-```bash
-# Backup postgres
-kubectl exec -n votestack postgres-0 -- \
-  pg_dump -U voteapp votes > "backups/votes-$(date +%Y%m%d).sql"
-
-# Rollback via GitOps
-cd votestack-gitops
-git revert HEAD && git push
-argocd app sync votestack-root
-
-# Scale manually (temporary — prefer HPA)
-kubectl scale deployment votestack-api -n votestack --replicas=5
-
-# Node drain simulation (respects PDB)
-kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Document results in `README.md` — architecture diagram, deploy steps, rollback procedure.
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -431,7 +299,11 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 4. Optional: [GitLab CI/CD Overview](../gitlab/index.md) — enterprise pipeline patterns
 5. Follow [DevOps Engineer Learning Path](../learning-paths/index.md) for role certification goals
 
+
+
 ## Code Walkthrough
+
+
 
 ```bash
 # End-to-end status
@@ -448,7 +320,11 @@ kubectl describe pod -n votestack -l app=votestack-api
 kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 ```
 
+
+
 ## Security Considerations
+
+
 
 - Apply restricted Pod Security, NetworkPolicies, and resource quotas on the capstone namespace
 - Keep registry credentials and DB passwords in Secrets/ESO — not in Helm values committed to Git
@@ -458,7 +334,10 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 - Tear down or lock the lab namespace when finished so demos do not remain internet-facing
 
 
+
 ## Common Mistakes
+
+
 
 !!! warning "Running postgres/redis in prod without backups"
     StatefulSets need backup automation and tested restore — or use managed databases.
@@ -475,7 +354,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 !!! warning "No resource requests on any tier"
     HPA and scheduling break — every container needs requests.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Portfolio README"
     Include architecture diagram, tech stack, and `kubectl get` screenshot — strong interview artifact.
@@ -492,7 +375,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 !!! tip "Continue the platform path"
     Kubernetes completes orchestration — [Terraform](../terraform/index.md) provisions the cluster itself.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -503,7 +390,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 | NetworkPolicy blocks traffic | Missing DNS/ingress rule | Add egress UDP 53; allow ingress namespace |
 | PVC Pending | No StorageClass | `kubectl get sc`; set default class |
 
+
+
 ## Summary
+
+
 
 - The **VoteStack Kubernetes capstone** combines Helm, GitOps, Ingress, StatefulSets, HPA, PDB, observability, and security hardening
 - **Same images** from the Docker track — Kubernetes adds scheduling, scaling, segmentation, and declarative delivery
@@ -511,28 +402,28 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 - **Production reality** swaps in-cluster databases for managed services and clusters for Terraform-provisioned infrastructure
 - You have finished all **20 Kubernetes tutorials** — continue to [Terraform](../terraform/index.md), [GitLab CI/CD](../gitlab/index.md), and [Learning Paths](../learning-paths/index.md)
 
+
+
 ## Interview Questions
 
-1. Walk through VoteStack architecture on Kubernetes — from Ingress to postgres.
-2. Why use StatefulSet for postgres instead of Deployment?
-3. How does GitOps rollback differ from `kubectl rollout undo`?
-4. What would you change moving from dev cluster to production AWS EKS?
-5. Explain how HPA, PDB, and topology spread work together during a node upgrade.
-6. How do NetworkPolicies map to the Docker Compose internal network model?
-7. What metrics and alerts would you define for VoteStack in production?
-8. Why seal secrets instead of using Kubernetes Secrets directly in Git?
-9. How does this capstone demonstrate the full Kubernetes track skills?
-10. What is the natural next skill after completing Kubernetes?
 
-??? tip "Sample Answers (Questions 1, 4, and 10)"
+1. Which Kubernetes primitives form a minimal production-ready web service?
+2. How would you decide the next skills to learn after core workloads?
+3. What evidence shows a Deployment is healthy beyond Pods being Running?
+4. What security baseline would you require before calling a cluster production-ready?
+5. How do managed Kubernetes services change what you operate versus what the vendor operates?
 
-    **Q1 — K8s VoteStack flow:** Browser resolves `votestack.example.com` → Ingress (TLS) routes `/api` to api Service → api pods (HPA-scaled, PDB-protected) validate and enqueue votes to redis. worker pods consume queue, write to postgres StatefulSet. web pods serve UI. NetworkPolicies restrict api to redis/postgres only. Prometheus scrapes `/metrics`; logs flow to Loki. Argo CD syncs all resources from Git.
+!!! tip "Sample answer — question 2"
+    Ready replicas, passing probes, populated Endpoints, and recent events without CrashLoopBackOff are stronger signals than phase Running alone.
 
-    **Q4 — Dev to EKS prod:** Provision EKS with Terraform (VPC, node groups, IRSA). Replace in-cluster postgres/redis with RDS and ElastiCache. Use ALB Ingress Controller and ACM certs. External Secrets for credentials. Multi-AZ node groups; Cluster Autoscaler. Centralized observability (AMP/Grafana or Datadog). GitOps with prod approval gates; separate AWS accounts for envs.
+!!! tip "Sample answer — question 4"
+    Production readiness needs RBAC least privilege, network policy, secret hygiene, resource requests, observability, backup/upgrade plans, and restricted privileged workloads—not only green Deployments.
 
-    **Q10 — After Kubernetes:** **Terraform** for infrastructure-as-code — VPC, EKS/GKE, IAM, RDS. **GitLab CI/CD** for enterprise pipeline patterns. **Service mesh** (Istio/Linkerd) for advanced traffic management. **Platform engineering** — Internal Developer Platforms (Backstage, Crossplane). Return to [Learning Paths](../learning-paths/index.md) for role-specific roadmaps.
+
 
 ## Next Steps — Terraform and GitLab
+
+
 
 ### Terraform track
 
@@ -577,7 +468,11 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 4. Optional: [GitLab CI/CD Overview](../gitlab/index.md) — enterprise pipeline patterns
 5. Follow [DevOps Engineer Learning Path](../learning-paths/index.md) for role certification goals
 
+
+
 ## Related Tutorials
+
+
 
 - [Kubernetes Security Hardening](kubernetes-security-hardening.md) *(previous)*
 - [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md)
@@ -593,7 +488,11 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Kubernetes – Production Best Practices](https://kubernetes.io/docs/setup/best-practices/)
 - [CNCF – Trail Map](https://github.com/cncf/trail-map)
@@ -603,6 +502,10 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 - [REBASH Academy – GitLab Overview](../gitlab/index.md)
 - [REBASH Academy – Roadmap](../roadmap.md)
 
+
+
 ## Congratulations
+
+
 
 You have completed all **20 tutorials** in the REBASH Academy Kubernetes track — from orchestration fundamentals through GitOps delivery, autoscaling, observability, security hardening, and the VoteStack capstone. Return to the [Kubernetes Overview](index.md) to review the curriculum, publish VoteStack as a portfolio project, and begin the [Terraform track](../terraform/index.md) when you are ready to provision cloud infrastructure that runs your clusters.

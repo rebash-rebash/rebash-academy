@@ -42,18 +42,28 @@ comments: false
 
 ## Overview
 
+
+
 Design a GitOps layout where Argo CD or Flux renders a Helm chart from Git (or OCI) with per-environment values — CI builds images, GitOps upgrades values.
 
 GitOps controllers can install Helm charts as first-class releases. Keep chart source and env values in Git; avoid `helm upgrade` from laptops for production.
 
 This is a core tutorial in **Module 10 · GitOps Integration** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Helm Security](helm-security.md)
 - [GitOps fundamentals](../git/gitops-fundamentals.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Lay out multi-env values  
 - [ ] Explain progressive delivery options
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Helm + GitOps](../assets/excalidraw/helm-gitops-workflow.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -113,7 +131,10 @@ Prefer controller-managed upgrades for production; reserve direct Helm CLI for b
 - Putting secrets in Git “because GitOps needs them” — use sealed/SOPS/external secrets patterns.
 - Path mistakes in Argo CD `valueFiles` (relative paths are easy to get wrong).
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -121,58 +142,55 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod} && cd ~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}
 ```
 
-**Focus:** hands-on practice for Helm GitOps Integration
+**Focus:** Render Helm to plain YAML for a GitOps-friendly commit layout
 
-### Step 1 – Core exercise
+### Step 1 – Template a chart into a manifests directory
 
 ```bash
-mkdir -p ~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}
-cd ~/rebash-helm/module-10
-helm create charts/rebash-app
-cat > envs/dev/values.yaml << 'EOF'
-replicaCount: 1
-image:
-  tag: "dev"
-EOF
-cat > envs/prod/values.yaml << 'EOF'
-replicaCount: 3
-image:
-  tag: "1.0.0"
-EOF
-cat > envs/dev/application-example.yaml << 'EOF'
-# Illustrative Argo CD Application (Helm)
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: rebash-app-dev
-spec:
-  source:
-    repoURL: https://git.example.com/platform/helm-gitops.git
-    path: charts/rebash-app
-    helm:
-      valueFiles:
-        - ../../envs/dev/values.yaml
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: rebash-dev
-EOF
-helm template gitops ./charts/rebash-app -f envs/dev/values.yaml | head -n 20
+kubectl create namespace rebash-helm
+helm create gitops-demo
+mkdir -p gitops/lab
+helm template demo ./gitops-demo -n rebash-helm --set replicaCount=2 > gitops/lab/all.yaml
+head -n 40 gitops/lab/all.yaml
+git init -b main
+git add gitops
+git -c user.email=lab@rebash.local -c user.name=Lab commit -m "Render Helm manifests for GitOps"
+```
+
+### Step 2 – Apply rendered manifests and compare with a Helm release approach
+
+```bash
+kubectl apply -f gitops/lab/all.yaml
+kubectl -n rebash-helm get deploy
+echo "GitOps tools often render Helm in CI or use helm-controller — avoid double-managing the same objects"
+# Optional: same chart via Helm for comparison
+helm upgrade --install demo ./gitops-demo -n rebash-helm --set replicaCount=2 || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Helm GitOps Integration** always combines:
 
@@ -184,7 +202,11 @@ Production practice for **Helm GitOps Integration** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -192,7 +214,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Embedding environment URLs inside the chart templates instead of values."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -203,7 +229,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Helm GitOps Integration changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -211,7 +241,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -221,26 +255,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Helm GitOps Integration** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Helm GitOps Integration** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How can Helm fit a GitOps workflow?
+2. What is the risk of managing the same object with both Helm and kubectl/GitOps?
+3. Why render charts to YAML in CI for some platforms?
+4. How do you handle secrets when Helm is used with GitOps?
+5. What drift symptoms appear when two controllers fight?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Double management causes thrashing updates and confusing rollbacks. Choose Helm releases or rendered manifests in Git as the single writer for each object.
+
+!!! tip "Sample answer — question 4"
+    Secrets should not live in plain values committed to Git. Use sealed secrets, external operators, or SOPS so GitOps can sync without exposing credentials.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Production Helm Practices](production-helm-practices.md)
+- [Production Helm Practices](production-helm-practices.md)
+
+
 
 ## References
+
+
 
 - [Argo CD Helm](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/) · [Flux HelmRelease](https://fluxcd.io/flux/components/helm/helmreleases/)

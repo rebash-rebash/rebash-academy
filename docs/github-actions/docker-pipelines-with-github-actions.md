@@ -47,17 +47,27 @@ comments: false
 
 ## Overview
 
+
+
 Author a GitHub Actions workflow that builds a multi-stage Dockerfile with Buildx, produces multi-architecture images, and pushes immutable SHA tags to GitHub Container Registry (GHCR) — ready for later Kubernetes or cloud promotion.
 
 CI builds containers so every merge produces a **reproducible Open Container Initiative (OCI) image**. Prefer **Docker Buildx** over ad-hoc `docker build` on a laptop. Tag with the commit SHA (and optionally a digest); promote that same image through staging and production. **GHCR** (`ghcr.io/<owner>/<image>`) is the natural home for GitHub-native pipelines; the same pattern works for Docker Hub, Amazon Elastic Container Registry (ECR), and others with different login steps.
 
 This is a core tutorial in **Module 7 · Docker Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Artifacts and Caching](artifacts-and-caching.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -67,13 +77,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain SHA tags vs floating `latest`  
 - [ ] Describe image promotion without rebuild
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Docker build pipeline](../assets/excalidraw/gha-docker-pipeline.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -117,69 +135,68 @@ Pin base images by digest in production Dockerfiles. Cache accelerates rebuilds;
 - Forgetting `packages: write` / package visibility so GHCR push fails.  
 - Rebuilding for production instead of promoting the tested digest.
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-github-actions/docker-lab && cd ~/rebash-github-actions/docker-lab
 ```
 
-**Focus:** Dockerfile + GitHub Actions build workflow for this module
+**Focus:** Dockerfile + Actions job that builds locally first
 
-### Step 1 – App and Dockerfile
+### Step 1 – Local build + workflow
 
+{% raw %}
 ```bash
-mkdir -p app
-echo 'hello from rebash gha docker lab' > app/hello.txt
-cat > app/Dockerfile << 'EOF'
+cat > Dockerfile << 'EOF'
 FROM alpine:3.20
-COPY hello.txt /hello.txt
-CMD ["cat", "/hello.txt"]
+COPY hi.txt /hi.txt
+CMD ["cat","/hi.txt"]
 EOF
-docker build -t rebash/gha-lab:dev ./app
-docker run --rm rebash/gha-lab:dev
-```
-
-### Step 2 – Workflow that builds on push
-
-```bash
+echo hi > hi.txt
+docker build -t rebash-gha-lab:local .
+docker run --rm rebash-gha-lab:local
 mkdir -p .github/workflows
 cat > .github/workflows/docker.yml << 'EOF'
-name: docker-lab
-on:
-  push:
-    paths: ['app/**', '.github/workflows/docker.yml']
-  workflow_dispatch:
+name: docker
+on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
-        with:
-          context: ./app
-          push: false
-          tags: rebash/gha-lab:ci
+      - run: docker build -t demo:${{ github.sha }} .
 EOF
-sed -n '1,80p' .github/workflows/docker.yml
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/docker.yml')); print('OK')"
 ```
+{% endraw %}
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi rebash/gha-lab:dev 2>/dev/null || true
-# Keep ~/rebash-github-actions/ for later tutorials
+docker rmi rebash-gha-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-07/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Docker Pipelines with GitHub Actions** always combines:
 
@@ -191,7 +208,11 @@ Production practice for **Docker Pipelines with GitHub Actions** always combines
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -199,7 +220,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Pushing `latest` from every pull request.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -210,7 +235,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Docker Pipelines with GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -218,7 +247,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -228,26 +261,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Docker Pipelines with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Docker Pipelines with GitHub Actions** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Docker Pipelines with GitHub Actions** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Kubernetes Deployments with GitHub Actions](kubernetes-deployments-with-github-actions.md)
+- [Kubernetes Deployments with GitHub Actions](kubernetes-deployments-with-github-actions.md)
+
+
 
 ## References
+
+
 
 - [Publishing Docker images](https://docs.github.com/en/actions/publishing-packages/publishing-docker-images) · [GHCR](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) · [Buildx](https://docs.docker.com/build/buildx/) · [build-push-action](https://github.com/docker/build-push-action)

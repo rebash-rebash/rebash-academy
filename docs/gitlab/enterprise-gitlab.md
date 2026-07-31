@@ -45,18 +45,28 @@ comments: false
 
 ## Overview
 
+
+
 Structure groups and permissions, enforce compliance pipelines and governance, and outline self-managed operations including backup and restore.
 
 Enterprise GitLab is a **platform**: org hierarchy, least-privilege access, mandatory CI templates, auditability, and operable self-managed (or SaaS) control planes. CI YAML alone is not enough — governance decides what every project inherits.
 
 This is a core tutorial in **Module 18 · Enterprise GitLab** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Troubleshooting GitLab CI](troubleshooting-gitlab-ci.md)
 - Comfort with groups, protected branches, and security scanning from earlier modules
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast SaaS vs self-managed operational duties  
 - [ ] List backup & restore essentials for GitLab data
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitLab enterprise platform](../assets/excalidraw/gitlab-enterprise-platform.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -122,7 +140,10 @@ Document RPO/RTO for GitLab itself — application DR is useless if you cannot r
 - Backups without restore tests — unproven RTO.
 - One shared privileged runner for all groups — lateral movement risk.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -130,75 +151,48 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-18 && cd ~/rebash-gitlab/module-18
 ```
 
-**Focus:** hands-on practice for Enterprise GitLab
+**Focus:** document group/project compliance controls for enterprise GitLab
 
-### Step 1 – Core exercise
+### Step 1 – Enterprise checklist
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-18 && cd ~/rebash-gitlab/module-18
-mkdir -p ci
-cat > ci/compliance.yml << 'EOF'
-# Example include enforced at group level (conceptually)
-stages:
-  - compliance
-
- compulsory_secret_check:
-  stage: compliance
-  image: alpine:3.20
-  script:
-    - echo "Organisation-required secret detection placeholder"
-    - echo "Wire real scanner via GitLab templates / Semgrep / etc."
-  rules:
-    - when: always
+tee enterprise-checklist.txt << 'EOF'
+- SSO/SAML + SCIM for identity
+- Protected branches + required approvals
+- Push rules / file denylist for secrets
+- Separate runners for untrusted vs prod
+- Audit events exported to SIEM
 EOF
-
 cat > .gitlab-ci.yml << 'EOF'
-include:
-  - local: ci/compliance.yml
-
-stages:
-  - compliance
-  - build
-
-build:
-  stage: build
-  image: alpine:3.20
+compliance_echo:
   script:
-    - echo "Product job runs after inherited compliance stage"
+    - echo "Enterprise policies enforced outside YAML too"
 EOF
-
-cat > enterprise-checklist.md << 'EOF'
-- [ ] Group hierarchy documented (org → product → project)
-- [ ] Role matrix: who merges / who deploys production
-- [ ] SSO/SAML (or equivalent) for humans
-- [ ] Required CI / compliance include path agreed
-- [ ] Shared runner tags and network zones documented
-- [ ] Backup schedule + last successful restore drill date
-- [ ] RPO/RTO for GitLab control plane written down
-EOF
-
-python3 - << 'PY'
-import yaml
-yaml.safe_load(open(".gitlab-ci.yml"))
-yaml.safe_load(open("ci/compliance.yml"))
-print("Enterprise skeleton OK")
-PY
+cat enterprise-checklist.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-18/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Enterprise GitLab** always combines:
 
@@ -210,7 +204,11 @@ Production practice for **Enterprise GitLab** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -218,7 +216,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Granting Owner widely “for convenience” — breaks least privilege and audit stories."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -229,7 +231,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Enterprise GitLab changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -237,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -247,27 +257,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Enterprise GitLab** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Enterprise GitLab** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Enterprise GitLab** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Course overview](index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [Course overview](index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+
+
 
 ## References
+
+
 
 - [Groups](https://docs.gitlab.com/ee/user/group/)  
 - [Compliance pipelines](https://docs.gitlab.com/ee/user/group/compliance_pipelines.html)  

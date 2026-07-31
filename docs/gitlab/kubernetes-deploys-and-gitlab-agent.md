@@ -47,17 +47,27 @@ comments: false
 
 ## Overview
 
+
+
 Describe how the GitLab Agent connects CI to a cluster, sketch a Helm or kubectl deploy job, and contrast push deploys with GitOps pull controllers — including canary, blue-green, and rollback.
 
 Pipelines that **push** manifests with `kubectl` or **Helm** need a secure path into the cluster. The **GitLab Agent for Kubernetes** (`agentk`) establishes a reverse tunnel so runners never hold long-lived kubeconfigs in CI variables. Progressive delivery (canary, blue-green) and rollbacks sit on top of Deployments or Helm releases. **GitOps** (Flux/Argo CD) inverts the model: the cluster pulls desired state from Git (conceptual flow in `gitlab-gitops.svg`).
 
 This is a core tutorial in **Module 9 · Kubernetes Deployments** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Building Docker Images in CI](building-docker-images-in-ci.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -67,13 +77,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline rollback (Helm revision / prior image digest)  
 - [ ] State when push CI ends and GitOps begins
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Kubernetes deploy from GitLab](../assets/excalidraw/gitlab-kubernetes-deploy.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -116,55 +134,77 @@ Keep production behind protected environments and manual or approval gates.
 - Both CI and Argo CD applying the same Deployment (duelling controllers).  
 - Skipping `helm history` / revision notes so rollback targets are unclear.
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09/manifests
-git init -q
 ```
 
-**Focus:** author and validate CI config for Kubernetes Deploys and GitLab Agent
+**Focus:** produce manifests + a GitLab deploy job outline for the agent
 
-### Step 1 – Write a minimal pipeline
+### Step 1 – Manifests and deploy job
 
 ```bash
-cat > .gitlab-ci.yml << 'EOF'
-stages: [validate]
-validate:
-  stage: validate
-  image: alpine:3.20
-  script:
-    - echo "pipeline ok"
-    - uname -a
+mkdir -p k8s
+cat > k8s/deploy.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  namespace: rebash-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: demo }
+  template:
+    metadata:
+      labels: { app: demo }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
 EOF
-ls -la
-sed -n '1,80p' .gitlab-ci.yml
-```
-
-### Step 2 – Static checks before push
-
-```bash
-# Syntax / structure sanity (no runner required)
-test -s .gitlab-ci.yml
-grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
-# When a runner is available, push a branch and confirm the job is green
+cat > .gitlab-ci.yml << 'EOF'
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl apply -f k8s/deploy.yaml
+  environment:
+    name: lab
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+EOF
+kubectl apply --dry-run=client -f k8s/deploy.yaml | tee dryrun.txt || echo 'Install kubectl to dry-run; YAML written'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
+# No cluster changes required for dry-run-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-09/manifests/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Deploys and GitLab Agent** always combines:
 
@@ -176,7 +216,11 @@ Production practice for **Kubernetes Deploys and GitLab Agent** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -184,7 +228,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Cluster-admin credentials in unprotected CI variables.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -195,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Kubernetes Deploys and GitLab Agent changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -203,7 +255,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -213,26 +269,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Kubernetes Deploys and GitLab Agent** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Kubernetes Deploys and GitLab Agent** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Kubernetes Deploys and GitLab Agent** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Terraform Pipelines in GitLab](terraform-pipelines-in-gitlab.md)
+- [Terraform Pipelines in GitLab](terraform-pipelines-in-gitlab.md)
+
+
 
 ## References
+
+
 
 - [GitLab Agent for Kubernetes](https://docs.gitlab.com/ee/user/clusters/agent/) · [CI/CD with agent](https://docs.gitlab.com/ee/user/clusters/agent/ci_cd_workflow.html) · [Environments](https://docs.gitlab.com/ee/ci/environments/)

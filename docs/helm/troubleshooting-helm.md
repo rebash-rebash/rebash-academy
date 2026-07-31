@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Diagnose common Helm failures with a fixed order: lint → template → dry-run → release status → Kubernetes events.
 
 Most “Helm is broken” tickets are template nil pointers, values typos, or cluster admission errors. Separate **render** failures from **apply** failures.
 
 This is a core tutorial in **Module 12 · Troubleshooting** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Production Helm Practices](production-helm-practices.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Recover failed upgrades (`--atomic`, rollback)  
 - [ ] Debug dependency / repo fetch issues
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Release lifecycle](../assets/excalidraw/helm-release-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -112,7 +130,10 @@ Separate questions: Did YAML render? Did the API accept it? Did Pods become Read
 - Fixing production with `kubectl edit` on Helm-owned objects (drift returns on next reconcile).
 - Assuming `--force` or deleting release Secrets is a routine fix — both are last resorts with data-loss risk.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -120,55 +141,53 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-12 && cd ~/rebash-helm/module-12
 ```
 
-**Focus:** hands-on practice for Troubleshooting Helm
+**Focus:** Diagnose a failed release using status, hooks, and kubectl
 
-### Step 1 – Core exercise
+### Step 1 – Install a chart then break an upgrade on purpose
 
 ```bash
-mkdir -p ~/rebash-helm/module-12 && cd ~/rebash-helm/module-12
-helm create rebash-broke
+kubectl create namespace rebash-helm
+helm create trouble
+helm upgrade --install demo ./trouble -n rebash-helm
+# Force a bad image tag to provoke ImagePullBackOff
+helm upgrade demo ./trouble -n rebash-helm --set image.repository=nginx --set image.tag=not-a-real-tag-xyz --wait --timeout 45s || true
+helm -n rebash-helm status demo || true
 ```
 
-{% raw %}
-Break a template on purpose — in `templates/deployment.yaml` change a value reference to a missing key, then:
+### Step 2 – Collect evidence and roll back
 
 ```bash
-helm template x ./rebash-broke --set bogus=1 2>&1 | head -n 40 || true
-```
-
-Restore from git or `helm create` fresh if needed. Practice the happy path:
-
-```bash
-helm lint ./rebash-broke
-helm template x ./rebash-broke >/dev/null && echo "render ok"
-```
-{% endraw %}
-
-```bash
-cat > playbook.md << 'EOF'
-1. helm lint
-2. helm template -f values-<env>.yaml
-3. kubectl auth can-i ...
-4. helm upgrade --install --atomic --wait
-5. kubectl describe / events on failing objects
-6. helm history && helm rollback
-EOF
+kubectl -n rebash-helm get pods
+kubectl -n rebash-helm describe pod -l app.kubernetes.io/instance=demo | sed -n '/Events:/,$p' | head -n 30
+helm -n rebash-helm history demo
+helm -n rebash-helm rollback demo 1
+kubectl -n rebash-helm rollout status deploy -l app.kubernetes.io/instance=demo --timeout=90s || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-12/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Troubleshooting Helm** always combines:
 
@@ -180,7 +199,11 @@ Production practice for **Troubleshooting Helm** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -188,7 +211,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Jumping to `helm rollback` when the chart never rendered — there may be nothing valid to r"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -199,7 +226,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Troubleshooting Helm changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -207,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -217,26 +252,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 You can create, release, secure, GitOps-deploy, and troubleshoot production Helm charts end to end.
 
+
+
 ## Interview Questions
 
-1. How does **Troubleshooting Helm** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What commands start Helm release triage?
+2. How do you distinguish a template failure from a Kubernetes runtime failure?
+3. What does a pending-install/pending-upgrade state often indicate?
+4. How can resources with `helm.sh/resource-policy: keep` surprise you during uninstall?
+5. When should you use `helm rollback` during an incident?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Template failures happen at render time; runtime failures show after objects apply (ImagePullBackOff, CrashLoop). Use `helm status`, history, and kubectl describe/logs together.
+
+!!! tip "Sample answer — question 4"
+    Resources marked to keep remain after uninstall and can block reinstalls or leave credentials behind. Know which objects persist and delete them deliberately when appropriate.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Course overview](index.md) · [Kubernetes Helm module](../kubernetes/helm-package-management.md) · [Argo CD](../argocd/index.md)
+- [Course overview](index.md) · [Kubernetes Helm module](../kubernetes/helm-package-management.md) · [Argo CD](../argocd/index.md)
+
+
 
 ## References
+
+
 
 - [Debugging templates](https://helm.sh/docs/chart_template_guide/debugging/)

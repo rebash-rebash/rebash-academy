@@ -20,9 +20,12 @@ prerequisites:
 comments: false
 ---
 
+
 # Namespaces and Resource Management
 
 ## Overview
+
+
 
 A production Kubernetes cluster rarely runs a single application in isolation. Platform teams host dozens of teams — each with staging, production, and experimental workloads — on shared infrastructure. **Namespaces** are Kubernetes' primary mechanism for partitioning a cluster: they scope object names, enable RBAC boundaries, and anchor resource policies. Without namespaces, every Service name must be globally unique and a runaway batch job in one team can exhaust cluster memory for everyone.
 
@@ -30,7 +33,11 @@ This tutorial covers namespace design, **ResourceQuota** and **LimitRange** enfo
 
 This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Ingress and External Access](ingress-and-external-access.md) first — external routing and namespace-scoped Ingress rules go hand in hand.
 
+
+
 ## Prerequisites
+
+
 
 - Completed [Ingress and External Access](ingress-and-external-access.md) — understand Services, Ingress, and how traffic reaches pods
 - A running Kubernetes cluster with `kubectl` configured (minikube, kind, k3s, or managed EKS/GKE/AKS)
@@ -38,7 +45,11 @@ This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH A
 - Basic understanding of CPU and memory units (`100m`, `256Mi`, `1Gi`)
 - Comfort reading `kubectl get` and `kubectl describe` output
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -50,13 +61,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose pod scheduling failures caused by quota exhaustion
 - [ ] Apply labels and annotations for cost allocation and governance
 
+
+
 ## Architecture
+
+
 
 Namespaces sit logically above workloads. The API server enforces quotas at admission time; the scheduler respects requests and limits on each node.
 
 ![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What Is a Namespace?
 
@@ -179,193 +198,75 @@ Services are reachable as:
 
 NetworkPolicies (covered in later security tutorials) restrict cross-namespace traffic. Ingress rules reference Services in their own namespace unless using ExternalName or multi-namespace controllers.
 
+
+
 ## Hands-on Lab
 
-Use a local cluster or cloud sandbox. Commands assume you can create namespaces freely.
 
-### Step 1 – Inspect existing namespaces
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-kubectl get namespaces
-kubectl get all -n kube-system | head -10
-kubectl config view --minify | grep namespace
+mkdir -p ~/rebash-kubernetes/namespaces-and-resource-management && cd ~/rebash-kubernetes/namespaces-and-resource-management
 ```
 
-**Explanation:** Observe system namespaces and your current default namespace in kubeconfig. Most tutorials use `default`; production workflows set a namespace per context.
+**Focus:** Isolate workloads and set namespace-level resource budgets
 
-**Expected output:**
-
-```text
-NAME              STATUS   AGE
-default           Active   7d
-kube-node-lease   Active   7d
-kube-public       Active   7d
-kube-system       Active   7d
-```
-
-### Step 2 – Create team namespaces
-
-**Command:**
+### Step 1 – Create namespace with ResourceQuota and LimitRange
 
 ```bash
-kubectl create namespace payments-dev
-kubectl create namespace payments-prod
-kubectl label namespace payments-dev team=payments environment=dev
-kubectl label namespace payments-prod team=payments environment=prod cost-center=CC-1042
-kubectl get ns --show-labels | grep payments
-```
-
-**Explanation:** Namespaces are first-class API objects. Labels enable cost allocation queries and GitOps selectors without changing DNS names.
-
-**Expected output:**
-
-```text
-payments-dev    Active   5s   environment=dev,team=payments
-payments-prod   Active   3s   cost-center=CC-1042,environment=prod,team=payments
-```
-
-### Step 3 – Deploy a sample app in dev
-
-**Command:**
-
-```bash
-kubectl create deployment web \
-  --image=nginx:1.25-alpine \
-  --replicas=2 \
-  -n payments-dev
-kubectl expose deployment web \
-  --port=80 \
-  --name=web-svc \
-  -n payments-dev
-kubectl get pods,svc -n payments-dev
-```
-
-**Explanation:** The same Deployment name `web` can exist in both namespaces independently. Service DNS inside `payments-dev` resolves `web-svc` to dev pods only.
-
-**Expected output:**
-
-```text
-NAME                       READY   STATUS    RESTARTS   AGE
-web-7d4b8c9f6-xxxxx        1/1     Running   0          20s
-web-7d4b8c9f6-yyyyy        1/1     Running   0          20s
-
-NAME      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-web-svc   ClusterIP   10.96.45.123   <none>        80/TCP    10s
-```
-
-### Step 4 – Apply LimitRange defaults
-
-**Command:**
-
-```bash
-cat <<'EOF' | kubectl apply -f -
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: default-limits
-  namespace: payments-dev
-spec:
-  limits:
-    - type: Container
-      default:
-        cpu: "200m"
-        memory: "256Mi"
-      defaultRequest:
-        cpu: "100m"
-        memory: "128Mi"
-      max:
-        cpu: "1"
-        memory: 1Gi
-EOF
-
-kubectl describe limitrange default-limits -n payments-dev
-```
-
-**Explanation:** New containers without resource fields inherit defaults. Pods exceeding `max` are rejected at creation.
-
-**Expected output:**
-
-```text
-Type        Resource  Min   Max  Default Request  Default Limit
-Container   cpu       50m   1    100m             200m
-Container   memory    64Mi  1Gi  128Mi            256Mi
-```
-
-### Step 5 – Apply ResourceQuota and test enforcement
-
-**Command:**
-
-```bash
-cat <<'EOF' | kubectl apply -f -
+kubectl create namespace rebash-lab
+cat > budget.yaml <<'EOF'
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-  name: dev-quota
-  namespace: payments-dev
+  name: lab-quota
+  namespace: rebash-lab
 spec:
   hard:
-    pods: "5"
-    requests.cpu: "500m"
-    requests.memory: 512Mi
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    pods: "10"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: lab-limits
+  namespace: rebash-lab
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: 100m
+      memory: 128Mi
+    defaultRequest:
+      cpu: 50m
+      memory: 64Mi
 EOF
-
-kubectl describe resourcequota dev-quota -n payments-dev
-kubectl run quota-test --image=nginx:1.25-alpine \
-  --requests=cpu=400m,memory=400Mi \
-  -n payments-dev --dry-run=server -o yaml | head -20
+kubectl apply -f budget.yaml
+kubectl -n rebash-lab describe resourcequota lab-quota
 ```
 
-**Explanation:** `dry-run=server` asks the API server to validate admission without persisting. Exceeding quota returns `Forbidden` with quota details.
-
-**Expected output:**
-
-```text
-Name:       dev-quota
-Namespace:  payments-dev
-Resource    Used  Hard
---------    ----  ----
-pods        2     5
-requests.cpu 200m 500m
-```
-
-### Step 6 – Configure kubectl namespace context
-
-**Command:**
+### Step 2 – Schedule a Pod and observe quota usage
 
 ```bash
-kubectl config set-context --current --namespace=payments-dev
-kubectl config get-contexts
-kubectl get deploy
-kubectl config set-context --current --namespace=default
+kubectl -n rebash-lab run quota-pod --image=nginx:1.27-alpine
+kubectl -n rebash-lab get pod quota-pod -o jsonpath='{.spec.containers[0].resources}{"
+"}'
+kubectl -n rebash-lab describe resourcequota lab-quota
 ```
 
-**Explanation:** Setting namespace on the context avoids typing `-n` on every command. CI pipelines and humans use separate contexts per environment.
-
-**Expected output:**
-
-```text
-CURRENT   NAME             CLUSTER    AUTHINFO   NAMESPACE
-*         minikube         minikube   minikube   payments-dev
-NAME   READY   UP-TO-DATE   AVAILABLE   AGE
-web    2/2     2            2           3m
-```
-
-### Step 7 – Clean up lab resources
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-kubectl delete namespace payments-dev payments-prod --wait=false
-kubectl get ns | grep payments || echo "Namespaces terminating"
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
-**Explanation:** Deleting a namespace cascades to all objects inside it. Termination can take minutes if finalizers exist — normal in production teardown workflows.
 
-**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -380,7 +281,11 @@ Confirm the lab before moving on:
 | Isolation | Resources in one namespace do not appear in another without `-A` |
 | Cleanup | Lab namespace deleted |
 
+
+
 ## Code Walkthrough
+
+
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -433,7 +338,11 @@ spec:
 
 Apply: `kubectl apply -f namespace-bootstrap.yaml`
 
+
+
 ## Security Considerations
+
+
 
 - Use namespaces as security and quota boundaries, not only organisational labels
 - Apply ResourceQuotas and LimitRanges so tenants cannot exhaust the cluster
@@ -443,7 +352,10 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - Delete unused namespaces — leftover RBAC and Secrets accumulate risk
 
 
+
 ## Common Mistakes
+
+
 
 !!! warning "Running production workloads in default"
     The `default` namespace has no quota guardrails and confusing RBAC. Every production Deployment should live in a named namespace with quotas and LimitRange applied.
@@ -457,7 +369,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 !!! warning "Deleting kube-system or kube-public"
     System namespaces host critical cluster components. Restrict namespace deletion to platform admins via RBAC.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "One namespace per environment minimum"
     Even small teams benefit from separating `dev`, `staging`, and `prod` namespaces. Pair with RBAC so developers cannot deploy to production accidentally.
@@ -471,7 +387,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 !!! tip "Monitor quota utilization"
     Alert when namespace quota usage exceeds 80%. Proactive quota increases prevent deployment failures during releases.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -482,7 +402,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 | Namespace stuck Terminating | Finalizers on resources inside namespace | Identify blocking objects; remove finalizers only with care |
 | Quota shows zero used but pods exist | Pods lack requests/limits | Update Deployments; ensure LimitRange injects defaults |
 
+
+
 ## Summary
+
+
 
 - **Namespaces** partition a cluster for tenancy, RBAC, DNS, and policy enforcement without separate physical clusters
 - **ResourceQuota** caps aggregate namespace consumption; **LimitRange** sets per-container defaults and bounds
@@ -491,28 +415,28 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - Configure kubectl **context namespace** to reduce operator error during multi-namespace work
 - Pair quotas with monitoring and documented sizing so teams understand capacity boundaries before incidents
 
+
+
 ## Interview Questions
 
-1. What problem do Kubernetes namespaces solve, and how do they differ from labels?
-2. Explain the difference between resource requests and limits. Which component consumes each?
-3. What happens when a Pod creation would exceed a ResourceQuota?
-4. Why should LimitRange be applied before or alongside ResourceQuota?
-5. Describe the three QoS classes and which pods the kubelet evicts first under memory pressure.
-6. How does DNS resolution differ for a Service in the same namespace vs a different namespace?
-7. Name three resources commonly limited in a ResourceQuota besides CPU and memory.
-8. What are the risks of deploying production workloads to the `default` namespace?
-9. How would you structure namespaces for three teams each with dev and prod environments?
-10. What is `kubectl --dry-run=server` and why is it useful for quota validation?
 
-??? tip "Sample Answers (Questions 2, 4, and 7)"
+1. How do ResourceQuota and LimitRange differ?
+2. What happens when a new Pod would exceed a ResourceQuota?
+3. Why set default requests via LimitRange?
+4. How can quotas be abused or misconfigured to cause denial of service for a team?
+5. When would you use multiple namespaces per team versus one shared namespace?
 
-    **Q2 — Requests vs limits:** Requests declare the minimum guaranteed resources a container needs. The scheduler sums requests across pods to find a node with enough allocatable capacity. Limits cap maximum usage at runtime — the kubelet enforces them via cgroups. A container can burst above its request up to its limit (for CPU, it may be throttled rather than killed).
+!!! tip "Sample answer — question 2"
+    Admission rejects Pods that would break the quota. Teams see create failures until they free capacity or request a quota increase.
 
-    **Q4 — LimitRange before quota:** ResourceQuota tracks aggregate requests and limits. If pods omit resource fields, admission behaviour is inconsistent — some quotas reject them, others count zero usage allowing unbounded pods. LimitRange injects defaults so every pod has predictable resource declarations before quota enforcement is meaningful.
+!!! tip "Sample answer — question 4"
+    Quotas that are too tight block legitimate work; quotas that are too loose allow noisy neighbours. Review usage, set fair shares, and separate critical platforms into their own namespaces.
 
-    **Q7 — Other quota resources:** Common hard limits include `pods`, `persistentvolumeclaims`, `services.loadbalancers`, `services.nodeports`, `count/deployments.apps`, and `requests.storage` for total PVC storage claims.
+
 
 ## Related Tutorials
+
+
 
 - [Kubernetes – Category Overview](index.md)
 - [Ingress and External Access](ingress-and-external-access.md) *(previous — Module 4)*
@@ -523,7 +447,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Kubernetes Namespaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
 - [Resource Quotas](https://kubernetes.io/docs/concepts/policy/resource-quotas/)

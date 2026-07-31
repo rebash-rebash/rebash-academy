@@ -48,6 +48,8 @@ comments: false
 
 ## Overview
 
+
+
 Design a production-shaped Amazon Virtual Private Cloud (VPC): Classless Inter-Domain Routing (CIDR) plan, public and private subnets across Availability Zones (AZs), routing, Internet Gateway (IGW), Network Address Translation (NAT), security groups, network access control lists (NACLs), and when to use peering, Transit Gateway (TGW), endpoints, and Amazon Route 53.
 
 Almost every AWS workload sits in a **VPC** — your isolated network in a Region. Poor CIDR planning and “open to `0.0.0.0/0`” security groups cause outages and breaches. This module builds the mental model Cloud, DevOps, and platform engineers use daily.
@@ -57,12 +59,20 @@ Almost every AWS workload sits in a **VPC** — your isolated network in a Regio
 
 This is a core tutorial in **Module 3 · Networking** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
 - [Networking Fundamentals](../networking/index.md) — CIDR, routing, TCP/UDP
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -72,13 +82,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose VPC peering vs Transit Gateway vs VPC endpoints  
 - [ ] Place Amazon Route 53 public/private zones and health checks in the design
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![AWS VPC architecture](../assets/excalidraw/aws-vpc-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -137,7 +155,13 @@ Path: client → Route 53 → public LB → private app → DB SG; egress via NA
 - Leaving lab NAT Gateways running overnight  
 - Treating Route 53 health checks as a substitute for multi-AZ application design
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -145,65 +169,39 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-03 && cd ~/rebash-aws/module-03
 ```
 
-**Focus:** hands-on practice for VPC Networking on AWS
+**Focus:** describe VPCs/subnets/route tables (read-only)
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-03
-cd ~/rebash-aws/module-03
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-aws ec2 describe-vpcs --query 'Vpcs[].{VpcId:VpcId,Cidr:CidrBlock,IsDefault:IsDefault}' --output table
-```
-
-Inventory and design — create a **lab VPC only if** you will destroy it in the same session. Default VPC inspection is Free Tier friendly.
+### Step 1 – Network inventory
 
 ```bash
-cd ~/rebash-aws/module-03
-
-# Inventory (safe)
-aws ec2 describe-subnets \
-  --query 'Subnets[].{Id:SubnetId,Az:AvailabilityZone,Cidr:CidrBlock,Pub:MapPublicIpOnLaunch}' \
-  --output table
-
-cat > vpc-design.md << 'EOF'
-# Module 3 VPC design (lab Region)
-VPC CIDR: 10.40.0.0/16
-AZ-a public:  10.40.0.0/24
-AZ-b public:  10.40.1.0/24
-AZ-a private: 10.40.10.0/24
-AZ-b private: 10.40.11.0/24
-AZ-a data:    10.40.20.0/24
-AZ-b data:    10.40.21.0/24
-Routes: public → IGW; private → NAT (per AZ); data → local only + endpoints
-SGs: alb:443 from 0.0.0.0/0; app:8080 from alb-sg; db:5432 from app-sg
-EOF
-
-# Optional create (DESTROY before logout) — uncomment consciously
-# VPC_ID=$(aws ec2 create-vpc --cidr-block 10.40.0.0/16 --query Vpc.VpcId --output text)
-# aws ec2 create-tags --resources "$VPC_ID" --tags Key=Name,Value=rebash-lab-m3 Key=project,Value=rebash-aws
-# echo "Created $VPC_ID — delete with: aws ec2 delete-vpc --vpc-id $VPC_ID (after subnets/IGW/NAT gone)"
-
-# Dry-run example
-aws ec2 create-vpc --cidr-block 10.40.0.0/16 --dry-run 2>&1 | head -5 || true
+aws sts get-caller-identity >/dev/null
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock,IsDefault:IsDefault}' --output table | tee vpcs.txt
+aws ec2 describe-subnets --query 'Subnets[].{Id:SubnetId,Vpc:VpcId,Cidr:CidrBlock,Az:AvailabilityZone}' --output table | head -n 40 | tee subnets.txt
+aws ec2 describe-route-tables --query 'RouteTables[0].Routes' --output table 2>/dev/null | head | tee routes.txt || true
 ```
-
-LocalStack optional: same CLI shapes against `http://localhost:4566` for subnet/routing drills without cloud cost.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-03/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **VPC Networking on AWS** always combines:
 
@@ -215,7 +213,11 @@ Production practice for **VPC Networking on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -223,7 +225,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Exhausting a `/16` because teams carved huge `/20`s without a plan  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -234,7 +240,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode VPC Networking on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -242,7 +252,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -252,27 +266,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **VPC Networking on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **VPC Networking on AWS** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **VPC Networking on AWS** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
+- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
+
+
 
 ## References
+
+
 
 - [Amazon VPC User Guide](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)  
 - [Security groups vs NACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-comparison.html)  

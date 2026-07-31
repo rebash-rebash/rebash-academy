@@ -45,18 +45,28 @@ comments: false
 
 ## Overview
 
+
+
 Design environment promotion (dev → staging → production) with protected environments, required reviewers, rollback paths, and progressive delivery patterns (blue/green and canary).
 
 Production CI/CD is controlled promotion of an **immutable artefact** through named **environments**, not “deploy on every push to main”. GitHub **Environments** encode wait timers, required reviewers, and environment secrets so only approved identities promote to production.
 
 This is a core tutorial in **Module 15 · Production Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md)
 - Deploy awareness from Kubernetes or multi-cloud modules (or equivalent)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Document rollback to a previous digest / release  
 - [ ] Outline blue/green and canary versus all-at-once
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Production pipelines](../assets/excalidraw/gha-production.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -119,7 +137,10 @@ Keep production secrets on the Environment — not in repository secrets shared 
 - Rollback untested until an outage — practice in staging.  
 - Canary without abort metrics (error rate, latency).
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -127,89 +148,54 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-15/.github/workflows && cd ~/rebash-github-actions/module-15/.github/workflows
 ```
 
-**Focus:** hands-on practice for Production Pipelines and Environments
+**Focus:** environment protection pattern in workflow YAML
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-github-actions/module-15/.github/workflows
-cd ~/rebash-github-actions/module-15
-```
+### Step 1 – Environments
 
 {% raw %}
 ```bash
-cat > .github/workflows/promote.yml << 'EOF'
-name: Promote
+mkdir -p .github/workflows
+cat > .github/workflows/prod.yml << 'EOF'
+name: prod
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
-    inputs:
-      image_digest:
-        description: "Immutable image digest already tested in staging"
-        required: false
-
-permissions:
-  contents: read
-
-env:
-  IMAGE: ghcr.io/example/app
-
 jobs:
-  deploy_staging:
-    runs-on: ubuntu-latest
-    environment:
-      name: staging
-      url: https://staging.example.com
-    steps:
-      - name: Deploy staging
-        run: |
-          DIGEST="${{ github.event.inputs.image_digest || github.sha }}"
-          echo "Deploying $IMAGE@$DIGEST to staging"
-          echo "Run smoke tests against staging URL"
-
-  deploy_production:
-    needs: [deploy_staging]
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://www.example.com
-    steps:
-      - name: Deploy production (same digest)
-        run: |
-          DIGEST="${{ github.event.inputs.image_digest || github.sha }}"
-          echo "Promote $IMAGE@$DIGEST to production"
-          echo "Configure required reviewers on Environment 'production' in repo settings"
-
-  rollback_production:
-    if: github.event_name == 'workflow_dispatch'
+  deploy:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - run: echo "Redeploy previous digest / shift traffic / helm rollback"
+      - uses: actions/checkout@v4
+      - run: echo "Requires environment approvals/secrets in GitHub settings"
 EOF
+tee env-notes.txt << 'EOF'
+Use GitHub Environments for required reviewers, wait timers, and scoped secrets.
+EOF
+cat env-notes.txt
 ```
 {% endraw %}
-
-```bash
-printf '%s\n' '- [ ] Same digest staging → production' '- [ ] production Environment: required reviewers' '- [ ] Rollback tested in staging' > promotion-checklist.md
-python3 -c "import yaml; cfg=yaml.safe_load(open('.github/workflows/promote.yml')); assert cfg['jobs']['deploy_production']['environment']['name']=='production'; print('Production environment gate OK')"
-```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-15/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production Pipelines and Environments** always combines:
 
@@ -221,7 +207,11 @@ Production practice for **Production Pipelines and Environments** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -229,7 +219,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Rebuilding the image in production — digests diverge from staging.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -240,7 +234,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production Pipelines and Environments changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -248,7 +246,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -258,27 +260,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Production Pipelines and Environments** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Production Pipelines and Environments** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Production Pipelines and Environments** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Troubleshooting GitHub Actions](troubleshooting-github-actions.md)
+- [Troubleshooting GitHub Actions](troubleshooting-github-actions.md)
+
+
 
 ## References
+
+
 
 - [Using environments for deployment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)  
 - [Protected environments / reviewers](https://docs.github.com/en/actions/deployment/targeting-different-environments/managing-environments-for-deployment)  

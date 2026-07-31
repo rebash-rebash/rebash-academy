@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Run `git bisect` to binary-search history for the first bad commit, and use `blame` / pickaxe (`-S`) when you know the change shape.
 
 When “it worked last week,” bisect beats scrolling `git log`. Mark a known good and known bad commit; Git checks out midpoints until the culprit is found.
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Git Troubleshooting](git-troubleshooting.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `git blame` for line ownership  
 - [ ] Search history with `git log -S`
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Object model / history](../assets/excalidraw/git-object-model.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -97,7 +115,10 @@ Prepare a script that builds or configures just enough to reproduce the failure 
 - Forgetting `bisect reset` and staying on a detached midpoint  
 - Marking the newest commit good by mistake and getting nonsense ranges
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -105,43 +126,55 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-16-bisect && cd ~/rebash-git/module-16-bisect
 ```
 
-**Focus:** hands-on practice for Git Bisect and Debugging History
+**Focus:** practise Git skills for: Git Bisect and Debugging History
 
-### Step 1 – Core exercise
+### Step 1 – Init repository
 
 ```bash
-mkdir -p ~/rebash-git/module-16-bisect && cd ~/rebash-git/module-16-bisect
 git init -b main
-git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
+```
 
-for i in 1 2 3 4 5 6 7 8; do
-  echo "v$i" > app.txt
-  if [ "$i" -ge 5 ]; then echo BROKEN > app.txt; fi
-  git add app.txt
-  git commit -m "chore: version $i"
-done
+### Step 2 – Bisect demo
 
-git bisect start HEAD HEAD~7
-git bisect run bash -c 'grep -q BROKEN app.txt && exit 1 || exit 0'
+```bash
+for i in 1 2 3 4 5; do echo $i > n.txt; git add n.txt; git commit -m "n$i"; done
+echo 'broken' > n.txt; git add n.txt; git commit -m 'broken'
+git bisect start
+git bisect bad
+git bisect good HEAD~5
+git bisect run sh -c 'grep -q broken n.txt && exit 1 || exit 0' || true
 git bisect reset
-git blame -L 1,1 app.txt | head
-git log -S BROKEN --oneline
+git log --oneline | head
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-16-bisect/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Git Bisect and Debugging History** always combines:
 
@@ -153,7 +186,11 @@ Production practice for **Git Bisect and Debugging History** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -161,7 +198,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Using flaky tests that randomly mark good/bad  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -172,7 +213,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Git Bisect and Debugging History changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -180,7 +225,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -190,26 +239,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Git Bisect and Debugging History** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Git Bisect and Debugging History** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Git Bisect and Debugging History** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Production Git Practices](production-git-practices.md)
+- [Production Git Practices](production-git-practices.md)
+
+
 
 ## References
+
+
 
 - [git-bisect](https://git-scm.com/docs/git-bisect)

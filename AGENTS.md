@@ -109,10 +109,21 @@ Required sections in order: Overview → Prerequisites → Learning Objectives �
 
 Do **not** use the short skeleton (`## Goal`, `{ .ra-facts }`, stop after `## Next`). Diagrams must be Excalidraw under `docs/assets/excalidraw/`.
 
-Align existing tutorials with:
+**Hands-on Lab quality bar:** `**Focus:**` plus 2–3 topic-relevant steps with runnable commands, observable success, and real cleanup. No Skeleton/echo placeholders. Linux/Shell are the de facto examples (`docs/linux/ssh-and-remote-access.md`).
+
+**Interview Questions quality bar:** 5 topic-specific questions and 1–2 `!!! tip` sample answers for this module — not generic Cloud/platform boilerplate.
+
+Align structure with:
 
 ```bash
 python3 scripts/align-tutorial-to-linux-format.py --course <technology>
+```
+
+Enrich labs and interview banks (priority tracks) with:
+
+```bash
+python3 scripts/enrich-labs-and-interviews.py --course <technology>
+# or: --course all-priority
 ```
 
 ---

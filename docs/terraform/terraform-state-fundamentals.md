@@ -40,18 +40,28 @@ comments: false
 
 ## Overview
 
+
+
 Explain what Terraform state stores, inspect it with `state list` / `show` / `pull`, treat state as sensitive, and recognise basic drift in a plan.
 
 **State** is Terraform’s memory: a mapping from configuration addresses to real-world IDs and attributes. Cloud APIs do not know you called something `local_file.tracked` — state binds that address to the object Terraform manages. Local state is fine for labs; teams need remote backends next.
 
 This is a core tutorial in **Module 8 · State Management** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
 - Terraform CLI 1.9+ (1.15.x recommended)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain refresh and how drift appears in a plan  
 - [ ] Never commit `*.tfstate*` to Git
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform state](../assets/excalidraw/terraform-state.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -117,7 +135,10 @@ If you edit a managed file by hand, the next plan shows an update to restore des
 - Deleting state to “start clean” in shared envs — orphans in the cloud.
 - Assuming local labs are harmless for Git — file content still sits in state.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -125,74 +146,75 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-08/state-basics/out && cd ~/rebash-terraform/module-08/state-basics/out
 ```
 
-**Focus:** hands-on practice for Terraform State Fundamentals
+**Focus:** Inspect and safely query Terraform state
 
-### Step 1 – Core exercise
+### Step 1 – Apply resources and explore state subcommands
 
 ```bash
-mkdir -p ~/rebash-terraform/module-08/state-basics/out
-cd ~/rebash-terraform/module-08/state-basics
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.9.0"
+  required_version = ">= 1.5.0"
   required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.9"
+      version = "~> 2.5"
     }
   }
 }
-EOF
 
-cat > main.tf << 'EOF'
-variable "payload" {
-  type    = string
-  default = "state-lab"
+resource "null_resource" "lab" {
+  triggers = {
+    note = "rebash-lab"
+  }
 }
 
-resource "local_file" "tracked" {
-  filename        = "${path.module}/out/tracked.txt"
-  content         = "${var.payload}\n"
-  file_permission = "0644"
-}
-
-output "tracked_path" {
-  value = local_file.tracked.filename
+resource "local_file" "marker" {
+  content  = "managed-by-terraform
+"
+  filename = "${path.module}/marker.txt"
 }
 EOF
-
-cat > .gitignore << 'EOF'
-.terraform/
-*.tfstate
-*.tfstate.*
-out/
-EOF
-
-terraform init -input=false
-terraform apply -input=false -auto-approve
+terraform init
+terraform apply -auto-approve
 terraform state list
-terraform state show local_file.tracked
-echo "drifted-by-hand" > out/tracked.txt
-terraform plan -input=false
-terraform apply -input=false -auto-approve
-terraform destroy -input=false -auto-approve
+terraform state show local_file.marker | head -n 30
+```
+
+### Step 2 – Pull state and understand remote implications
+
+```bash
+terraform state pull | head -n 40
+ls -la terraform.tfstate*
+echo "Local state is a file — remote backends store this centrally with locking"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-08/state-basics/out/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Terraform State Fundamentals** always combines:
 
@@ -204,7 +226,11 @@ Production practice for **Terraform State Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -212,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Committing `*.tfstate*` — secret leak and merge conflicts."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -223,7 +253,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Terraform State Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -231,7 +265,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -241,27 +279,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Terraform State Fundamentals** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Terraform State Fundamentals** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What information does Terraform state store?
+2. Why is state required for Terraform to update infrastructure safely?
+3. What is state drift?
+4. Why must state files be treated as sensitive?
+5. What does `terraform state mv` help with?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    State maps configuration addresses to real remote object IDs and attributes so plans know what already exists. Without state, Terraform may try to recreate everything.
+
+!!! tip "Sample answer — question 4"
+    State can contain secrets and resource identifiers. Encrypt remote state, restrict IAM, enable locking, and never commit state with secrets to public Git.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Remote State and Backends](remote-state-and-backends.md)
+- [Remote State and Backends](remote-state-and-backends.md)
+
+
 
 ## References
+
+
 
 - [State](https://developer.hashicorp.com/terraform/language/state)  
 - [State Command](https://developer.hashicorp.com/terraform/cli/commands/state)  

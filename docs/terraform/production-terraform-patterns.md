@@ -42,17 +42,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply production patterns for repository structure, environment blast radius, module strategy, provider/module versioning, upgrades, cost awareness, disaster recovery (DR), and brief import/`moved` discipline.
 
 Production Terraform is boring on purpose: clear repo layout, one state per environment (or tighter), version-pinned modules, CI gates, encrypted remote state, and rehearsed recovery. Treat root modules as release units. Cost and DR are design inputs, not afterthoughts. Use `import` and `moved` for controlled refactors — not as daily firefighting.
 
 This is a core tutorial in **Module 19 · Production Terraform** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes Infrastructure with Terraform](kubernetes-infrastructure-with-terraform.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline upgrade, cost, and DR habits  
 - [ ] Recall when `import` / `moved` are appropriate
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Repository structure](../assets/excalidraw/terraform-repo-structure.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -126,7 +144,10 @@ Upgrade strategy: bump in non-prod first, watch for forced replacements, keep Te
 - Using `import` casually without documenting the object lifecycle.  
 - Treating DR as “we have S3 versioning” without a restore rehearsal.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -134,72 +155,73 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-19/{modules/greeting,live/dev} && cd ~/rebash-terraform/module-19/{modules/greeting,live/dev}
 ```
 
-**Focus:** hands-on practice for Production Terraform Patterns
+**Focus:** Apply production habits: pinning, naming, tagging outputs, and safe plan review
 
-### Step 1 – Core exercise
+### Step 1 – Create a structured configuration
 
 ```bash
-mkdir -p ~/rebash-terraform/module-19/{modules/greeting,live/dev}
-cd ~/rebash-terraform/module-19
-
-cat > modules/greeting/main.tf << 'EOF'
-variable "environment" { type = string }
-
-resource "local_file" "marker" {
-  filename = "${path.module}/../../.build/${var.environment}.txt"
-  content  = "env=${var.environment}\n"
-}
-
-output "marker" { value = local_file.marker.filename }
-EOF
-
-cat > live/dev/main.tf << 'EOF'
+cat > versions.tf <<'EOF'
 terraform {
-  required_version = ">= 1.9.0"
+  required_version = ">= 1.5.0"
   required_providers {
     local = { source = "hashicorp/local", version = "~> 2.5" }
+    null  = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-
-module "greeting" {
-  source      = "../../modules/greeting"
-  environment = "dev"
+EOF
+cat > main.tf <<'EOF'
+locals {
+  tags = {
+    project = "rebash"
+    env     = "lab"
+    managed = "terraform"
+  }
 }
-
-output "marker" { value = module.greeting.marker }
+resource "null_resource" "guard" {
+  triggers = local.tags
+}
+resource "local_file" "inventory" {
+  filename = "${path.module}/inventory.json"
+  content  = jsonencode(local.tags)
+}
+output "tags" { value = local.tags }
 EOF
+terraform init
+terraform validate
+```
 
-mkdir -p .build
-cd live/dev && terraform init && terraform apply -auto-approve
+### Step 2 – Plan with refresh and apply
 
-cd ~/rebash-terraform/module-19
-cat > production-checklist.md << 'EOF'
-- [ ] modules/ vs live/ (or envs/) separation
-- [ ] State per environment / account
-- [ ] Provider and module versions pinned
-- [ ] CI: fmt, validate, test, plan, policy
-- [ ] Remote state encrypted + locking
-- [ ] Cost tags and review of expensive replaces
-- [ ] DR: state backup + restore rehearsal
-- [ ] import/moved only with plan review
-- [ ] CLI version aligned (tfenv/asdf/image pin)
-EOF
+```bash
+terraform plan -input=false
+terraform apply -auto-approve
+cat inventory.json
+terraform output -json
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-19/{modules/greeting,live/dev}/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production Terraform Patterns** always combines:
 
@@ -211,7 +233,11 @@ Production practice for **Production Terraform Patterns** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -219,7 +245,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "One state file for all environments “for simplicity”.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -230,7 +260,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production Terraform Patterns changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -238,7 +272,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -248,26 +286,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Production Terraform Patterns** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Production Terraform Patterns** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Which version pinning practices belong in production roots?
+2. How do you structure repositories for many environments?
+3. What review checklist items matter on every production plan?
+4. How do you limit blast radius of a mistaken apply?
+5. Why keep modules thin at the edge and shared modules versioned?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check destroys, replacements, security group openings, and IAM changes carefully. Small unexpected deletes are common incident sources.
+
+!!! tip "Sample answer — question 4"
+    Separate states, guardrails on who can apply prod, prevent_destroy on critical data stores, and canary environments reduce blast radius.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Troubleshooting Terraform](troubleshooting-terraform.md)
+- [Troubleshooting Terraform](troubleshooting-terraform.md)
+
+
 
 ## References
+
+
 
 - [Module composition](https://developer.hashicorp.com/terraform/language/modules/develop/composition) · [Refactoring](https://developer.hashicorp.com/terraform/language/modules/develop/refactoring) · [State backends](https://developer.hashicorp.com/terraform/language/backend)

@@ -45,17 +45,27 @@ comments: false
 
 ## Overview
 
+
+
 Provision managed Kubernetes clusters and node pools with Terraform, understand the kubernetes and helm providers, and draw a clear boundary where GitOps owns in-cluster desired state.
 
 Terraform shines at **cluster infrastructure**: control plane, node pools, IAM for the API server, and add-on plumbing at the cloud edge. In-cluster workloads usually belong to **GitOps** (Argo CD / Flux) with Helm charts — not endless `kubernetes_*` resources in the same root that created the cluster. Use the kubernetes/helm providers sparingly for bootstrap (for example CRDs or controllers that GitOps then manages).
 
 This is a core tutorial in **Module 18 · Kubernetes Infrastructure** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Multi-Cloud Terraform](multi-cloud-terraform.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -64,13 +74,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe helm provider use for bootstrap only  
 - [ ] Draw the GitOps boundary after cluster create
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform and Kubernetes](../assets/excalidraw/terraform-kubernetes.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -146,7 +164,10 @@ provider "kubernetes" {
 - Letting Terraform and Argo CD both own the same Deployment.  
 - Untested control-plane version bumps in production without a staging cluster.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -154,29 +175,90 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-18 && cd ~/rebash-terraform/module-18
 ```
 
-**Focus:** hands-on practice for Kubernetes Infrastructure with Terraform
+**Focus:** Represent Kubernetes-oriented objects as local files (no live cluster provider required)
 
-### Step 1 – Core exercise
+### Step 1 – Generate namespace and deployment manifests from Terraform
 
 ```bash
-mkdir -p ~/rebash-terraform/module-18 && cd ~/rebash-terraform/module-18
+cat > main.tf <<'EOF'
+terraform {
+  required_providers {
+    local = { source = "hashicorp/local", version = "~> 2.5" }
+  }
+}
+variable "namespace" {
+  type    = string
+  default = "rebash-lab"
+}
+resource "local_file" "namespace" {
+  filename = "${path.module}/manifests/namespace.yaml"
+  content  = <<-EOT
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: ${var.namespace}
+  EOT
+}
+resource "local_file" "deploy" {
+  filename = "${path.module}/manifests/deploy.yaml"
+  content  = <<-EOT
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: demo
+      namespace: ${var.namespace}
+    spec:
+      replicas: 1
+      selector:
+matchLabels:
+  app: demo
+      template:
+metadata:
+  labels:
+    app: demo
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27-alpine
+  EOT
+}
+EOF
+mkdir -p manifests
+terraform init
+```
 
-cat > boundary.md << 'EOF'
+### Step 2 – Apply and optionally dry-run with kubectl if available
+
+```bash
+terraform apply -auto-approve
+ls -la manifests/
+head -n 20 manifests/deploy.yaml
+if command -v kubectl >/dev/null; then kubectl apply --dry-run=client -f manifests/; else echo "kubectl optional for dry-run"; fi
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-18/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Infrastructure with Terraform** always combines:
 
@@ -188,7 +270,11 @@ Production practice for **Kubernetes Infrastructure with Terraform** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -196,7 +282,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Managing every microservice as `helm_release` in the cluster root — plans become unusable."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -207,7 +297,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Kubernetes Infrastructure with Terraform changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -215,7 +309,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -225,26 +323,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Kubernetes Infrastructure with Terraform** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Kubernetes Infrastructure with Terraform** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How can Terraform manage Kubernetes objects?
+2. What is the trade-off between the Kubernetes provider and rendering manifests for GitOps?
+3. Why is cluster bootstrap often split from workload delivery?
+4. What credential risks exist when Terraform talks directly to the API server?
+5. How do you avoid Terraform fighting a GitOps controller?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Terraform-applied cluster objects can drift from GitOps reconcilers if both manage the same resources. Pick one controller per object or clearly separate layers (cluster vs apps).
+
+!!! tip "Sample answer — question 4"
+    Kubeconfig or cloud tokens in CI are powerful. Scope RBAC, prefer short-lived auth, and keep cluster-admin usage rare.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Production Terraform Patterns](production-terraform-patterns.md)
+- [Production Terraform Patterns](production-terraform-patterns.md)
+
+
 
 ## References
+
+
 
 - [Kubernetes provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs) · [Helm provider](https://registry.terraform.io/providers/hashicorp/helm/latest/docs) · [EKS](https://docs.aws.amazon.com/eks/) / [AKS](https://learn.microsoft.com/azure/aks/) / [GKE](https://cloud.google.com/kubernetes-engine/docs)

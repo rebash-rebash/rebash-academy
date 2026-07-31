@@ -49,6 +49,8 @@ comments: false
 
 ## Overview
 
+
+
 Read Amazon Web Services (AWS) bills with intent: know pricing models, use Cost Explorer and Budgets, and apply Savings Plans, Reserved Instances (RIs), Spot, and Trusted Advisor recommendations without breaking reliability.
 
 Cloud cost is an engineering problem. Idle NAT Gateways, oversized Amazon Elastic Compute Cloud (EC2) instances, unattached Elastic Block Store (EBS) volumes, and forgotten load balancers dominate surprise invoices. **FinOps** (cloud financial operations) means visibility, ownership via tags, and continuous right-sizing — not a once-a-year discount purchase.
@@ -58,13 +60,21 @@ Cloud cost is an engineering problem. Idle NAT Gateways, oversized Amazon Elasti
 
 This is a core tutorial in **Module 13 · Cost Optimisation** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [CI/CD on AWS](cicd-on-aws.md)
 - Billing access (or a read-only billing view) in a sandbox or shared account
 - Familiarity with EC2, Amazon Simple Storage Service (S3), and networking cost drivers from earlier modules
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -74,13 +84,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Interpret Trusted Advisor cost checks safely  
 - [ ] List top waste patterns and how to eliminate them
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Cost optimisation loop](../assets/excalidraw/aws-cost.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -140,7 +158,13 @@ Platforms that ignore unit cost become unaffordable. SRE balances Multi-AZ relia
 - Savings Plans without Budgets or a usage baseline.
 - Cutting Multi-AZ “to save money” without an explicit reliability trade-off.
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -148,63 +172,43 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-13 && cd ~/rebash-aws/module-13
 ```
 
-**Focus:** hands-on practice for Cost Optimisation on AWS
+**Focus:** fetch cost-and-usage style signals if permitted (otherwise document)
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-13
-cd ~/rebash-aws/module-13
-# Billing APIs need iam:Get* / ce:* style permissions — use a billing-reader role if available
-```
-
-Read-only cost discovery where permissions allow. Otherwise complete the checklist from the Billing console screenshots your admin provides.
+### Step 1 – Cost awareness
 
 ```bash
-cd ~/rebash-aws/module-13
-
-cat > cost-playbook.md << 'EOF'
-# Module 13 — Cost optimisation
-1. Cost Explorer → Group by Service (last 30 days)
-2. Group by Tag (Owner / Environment) — fix missing tags
-3. Identify top 5 line items; classify waste vs necessary HA
-4. Create Budget: monthly cap + 50%/80%/100% alerts
-5. Review Compute Optimizer / Trusted Advisor cost checks
-6. Decide: rightsize | schedule off-hours | Spot | Savings Plan
-EOF
-
-# Optional CLI (needs ce:Get* permissions)
 aws ce get-cost-and-usage \
-  --time-period Start="$(date -u -v-7d +%Y-%m-%d 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%d)",End="$(date -u +%Y-%m-%d)" \
-  --granularity DAILY \
-  --metrics UnblendedCost \
-  --group-by Type=DIMENSION,Key=SERVICE \
-  --query 'ResultsByTime[-1].Groups[].[Keys[0],Metrics.UnblendedCost.Amount]' \
-  --output table 2>/dev/null || echo "Skip CLI if no Cost Explorer API access"
-
-cat > waste-checklist.md << 'EOF'
-- [ ] Idle NAT Gateways / unused Elastic IPs
-- [ ] Unattached EBS volumes & old snapshots
-- [ ] Oversized EC2 / RDS (CPU < 10% sustained)
-- [ ] Non-prod running 24×7 without schedules
-- [ ] S3 Intelligent-Tiering / lifecycle for cold data
+  --time-period Start=$(date -u -v-7d +%F 2>/dev/null || date -u -d '7 days ago' +%F),End=$(date -u +%F) \
+  --granularity DAILY --metrics UnblendedCost \
+  --query 'ResultsByTime[].{Date:TimePeriod.Start,Amount:Total.UnblendedCost.Amount}' \
+  --output table 2>/dev/null | tee cost.txt || echo 'Cost Explorer not permitted — enable budgets anyway' | tee cost.txt
+tee finops.txt << 'EOF'
+Tag owners, turn off idle NAT/ELB/EC2, use budgets + anomaly detection.
 EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-13/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Cost Optimisation on AWS** always combines:
 
@@ -216,7 +220,11 @@ Production practice for **Cost Optimisation on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -224,7 +232,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Three-year RIs on day one of a migration."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -235,7 +247,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Cost Optimisation on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -243,7 +259,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -253,27 +273,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Cost Optimisation on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Cost Optimisation on AWS** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Cost Optimisation on AWS** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Reliability and Disaster Recovery](reliability-and-disaster-recovery.md)
+- [Reliability and Disaster Recovery](reliability-and-disaster-recovery.md)
+
+
 
 ## References
+
+
 
 - [AWS Cost Explorer](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-what-is.html)  
 - [AWS Budgets](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html)  

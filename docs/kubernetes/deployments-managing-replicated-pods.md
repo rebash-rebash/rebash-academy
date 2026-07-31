@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Create a Deployment, scale it, perform a rolling update, and roll back when a bad image ships.
 
 A **Deployment** owns ReplicaSets and provides declarative updates. Default strategy is RollingUpdate — control `maxUnavailable` / `maxSurge`.
 
 This is a core tutorial in **Module 4 · Workload Management** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Labels, Selectors, and Namespaces](kubernetes-objects-labels-and-namespaces.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Roll out a new image  
 - [ ] `rollout undo` / history
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -108,7 +126,10 @@ Prefer changing the image via the Deployment (`set image` or edit YAML + apply),
 - Expecting in-place container upgrades; Pods are replaced, not mutated in place.
 - Forgetting `rollout status` in CI — pipelines proceed before the new revision is healthy.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -116,56 +137,83 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-04 && cd ~/rebash-k8s/module-04
 ```
 
-**Focus:** hands-on practice for Deployments — Managing Replicated Pods
+**Focus:** Roll out and scale a Deployment safely
 
-### Step 1 – Core exercise
+### Step 1 – Create a Deployment and Service
 
 ```bash
-mkdir -p ~/rebash-k8s/module-04 && cd ~/rebash-k8s/module-04
-cat > deploy.yaml << 'EOF'
+kubectl create namespace rebash-lab
+cat > deploy.yaml <<'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rebash-api
+  name: web
+  namespace: rebash-lab
 spec:
   replicas: 2
   selector:
-    matchLabels: { app: rebash-api }
-  strategy:
-    type: RollingUpdate
-    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+    matchLabels:
+      app: web
   template:
     metadata:
-      labels: { app: rebash-api }
+      labels:
+app: web
     spec:
       containers:
-        - name: api
-          image: nginx:1.25-alpine
-          ports: [{ containerPort: 80 }]
+      - name: nginx
+image: nginx:1.27-alpine
+ports:
+- containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: rebash-lab
+spec:
+  selector:
+    app: web
+  ports:
+  - port: 80
+    targetPort: 80
 EOF
 kubectl apply -f deploy.yaml
-kubectl scale deploy/rebash-api --replicas=3
-kubectl set image deploy/rebash-api api=nginx:1.26-alpine
-kubectl rollout status deploy/rebash-api
-kubectl rollout history deploy/rebash-api
-kubectl rollout undo deploy/rebash-api
-kubectl delete -f deploy.yaml
+kubectl -n rebash-lab rollout status deploy/web
+```
+
+### Step 2 – Scale and perform a rolling update
+
+```bash
+kubectl -n rebash-lab scale deploy/web --replicas=3
+kubectl -n rebash-lab set image deploy/web nginx=nginx:1.27
+kubectl -n rebash-lab rollout status deploy/web
+kubectl -n rebash-lab rollout history deploy/web
+kubectl -n rebash-lab get pods -l app=web -o wide
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-04/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Deployments — Managing Replicated Pods** always combines:
 
@@ -177,7 +225,11 @@ Production practice for **Deployments — Managing Replicated Pods** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -185,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Selectors that do not match the pod template labels — create fails or orphans Pods."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -196,7 +252,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Deployments — Managing Replicated Pods changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -204,7 +264,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -214,26 +278,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Deployments — Managing Replicated Pods** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Deployments — Managing Replicated Pods** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What problem does a Deployment solve compared with creating Pods directly?
+2. How does a rolling update differ from a recreate strategy?
+3. What does `kubectl rollout undo` do, and when would you use it?
+4. How do readiness probes interact with a Deployment rollout, and what risk appears if they are missing?
+5. Explain the relationship between Deployment, ReplicaSet, and Pod.
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    A rolling update gradually replaces Pods with a new ReplicaSet while keeping capacity available. A recreate strategy terminates old Pods first, causing downtime but avoiding mixed versions.
+
+!!! tip "Sample answer — question 4"
+    Without readiness probes, new Pods may receive traffic before they can serve it, causing errors during rollouts. Probes gate Endpoints so only ready Pods join the Service.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Workload Controllers — StatefulSet, DaemonSet, Jobs](workload-controllers-statefulset-daemonset-jobs.md)
+- [Workload Controllers — StatefulSet, DaemonSet, Jobs](workload-controllers-statefulset-daemonset-jobs.md)
+
+
 
 ## References
+
+
 
 - [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)

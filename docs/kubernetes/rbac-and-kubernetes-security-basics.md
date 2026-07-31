@@ -42,17 +42,27 @@ comments: false
 
 ## Overview
 
+
+
 Create a ServiceAccount with a Role that can only list Pods in one namespace — least privilege in practice.
 
 **RBAC** answers: who (Subject) can do what (verbs) on which resources. Prefer Roles + RoleBindings for namespace scope; ClusterRoles for cluster-wide.
 
 This is a core tutorial in **Module 10 · Security** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes Scheduling](kubernetes-scheduling.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -61,13 +71,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast Role vs ClusterRole  
 - [ ] Avoid default SA over-privilege
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![RBAC model](../assets/excalidraw/k8s-rbac-model.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -110,7 +128,10 @@ Test with `kubectl auth can-i` as the subject before deploying.
 - Confusing authentication (who are you?) with authorisation (what may you do?).
 - Granting `*` verbs on `*` resources in a namespace that still includes Secrets and Roles.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -118,58 +139,72 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-10 && cd ~/rebash-k8s/module-10
 ```
 
-**Focus:** hands-on practice for RBAC and Kubernetes Security Basics
+**Focus:** Grant least-privilege access with Role and RoleBinding
 
-### Step 1 – Core exercise
+### Step 1 – Create a ServiceAccount and Role
 
 ```bash
-mkdir -p ~/rebash-k8s/module-10 && cd ~/rebash-k8s/module-10
-kubectl create ns rebash-rbac
-cat > rbac.yaml << 'EOF'
-apiVersion: v1
-kind: ServiceAccount
-metadata: { name: pod-reader, namespace: rebash-rbac }
----
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab create serviceaccount app-sa
+cat > rbac.yaml <<'EOF'
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
-metadata: { name: pod-reader, namespace: rebash-rbac }
+metadata:
+  name: pod-reader
+  namespace: rebash-lab
 rules:
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
-metadata: { name: pod-reader, namespace: rebash-rbac }
+metadata:
+  name: app-sa-pod-reader
+  namespace: rebash-lab
 subjects:
-  - kind: ServiceAccount
-    name: pod-reader
-    namespace: rebash-rbac
+- kind: ServiceAccount
+  name: app-sa
+  namespace: rebash-lab
 roleRef:
+  apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: pod-reader
-  apiGroup: rbac.authorization.k8s.io
 EOF
 kubectl apply -f rbac.yaml
-kubectl auth can-i list pods -n rebash-rbac --as=system:serviceaccount:rebash-rbac:pod-reader
-kubectl auth can-i delete pods -n rebash-rbac --as=system:serviceaccount:rebash-rbac:pod-reader
-kubectl delete ns rebash-rbac
+```
+
+### Step 2 – Verify authorisation with kubectl auth can-i
+
+```bash
+kubectl -n rebash-lab auth can-i list pods --as=system:serviceaccount:rebash-lab:app-sa
+kubectl -n rebash-lab auth can-i delete pods --as=system:serviceaccount:rebash-lab:app-sa
+kubectl -n rebash-lab get role,rolebinding
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-10/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **RBAC and Kubernetes Security Basics** always combines:
 
@@ -181,7 +216,11 @@ Production practice for **RBAC and Kubernetes Security Basics** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -189,7 +228,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Binding `cluster-admin` to application SAs “temporarily” and never removing it."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -200,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode RBAC and Kubernetes Security Basics changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -208,7 +255,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -218,26 +269,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **RBAC and Kubernetes Security Basics** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **RBAC and Kubernetes Security Basics** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What are Role, ClusterRole, RoleBinding, and ClusterRoleBinding?
+2. How do you test whether a ServiceAccount can list Pods in a namespace?
+3. Why prefer RoleBinding in a single namespace over ClusterRoleBinding?
+4. What is the danger of binding users to cluster-admin for convenience?
+5. How should applications authenticate to the API from inside a Pod?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Use `kubectl auth can-i` with `--as=system:serviceaccount:ns:name` to evaluate RBAC without guessing. It reflects the authorisation rules currently applied.
+
+!!! tip "Sample answer — question 4"
+    cluster-admin bypasses least privilege and turns any credential leak into full cluster compromise. Scope Roles narrowly and use Just-In-Time elevation where possible.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Kubernetes Security Hardening](kubernetes-security-hardening.md)
+- [Kubernetes Security Hardening](kubernetes-security-hardening.md)
+
+
 
 ## References
+
+
 
 - [Using RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)

@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Shrink and harden images with multi-stage builds, sensible bases, BuildKit cache, and ordered layers.
 
 Smaller images pull faster, scan cleaner, and attack less surface. **Multi-stage** builds compile in a fat stage and copy artefacts into a slim runtime stage.
 
 This is a core tutorial in **Module 6 · Image Optimisation** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Building Images with Dockerfile](building-images-with-dockerfile.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Enable BuildKit features  
 - [ ] Measure image size before/after
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Image layers](../assets/excalidraw/docker-image-layers.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -101,7 +119,10 @@ Declare a builder stage (`FROM golang:… AS build`) that compiles, then a runti
 - Keeping package manager caches in layers  
 - Using multi-stage complexity when a single slim stage would do
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -109,63 +130,46 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
 ```
 
-**Focus:** hands-on practice for Dockerfile Best Practices and Multi-Stage Builds
+**Focus:** multi-stage build that keeps the final image small
 
-### Step 1 – Core exercise
+### Step 1 – Multi-stage
 
 ```bash
-mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
-cat > .dockerignore << 'EOF'
-.git
-**/__pycache__
-*.md
-EOF
-
-cat > app.py << 'EOF'
-print("optimised hello")
-EOF
-
 cat > Dockerfile << 'EOF'
-# syntax=docker/dockerfile:1
-FROM python:3.12-alpine AS builder
+FROM alpine:3.20 AS build
 WORKDIR /src
-COPY app.py .
-# pretend build step
-RUN python -m py_compile app.py
-
-FROM python:3.12-alpine
-WORKDIR /app
-RUN adduser -D appuser
-COPY --from=builder /src/app.py .
-USER appuser
-CMD ["python", "app.py"]
+RUN echo 'compiled-artefact' > app.txt
+FROM alpine:3.20
+COPY --from=build /src/app.txt /app.txt
+CMD ["cat","/app.txt"]
 EOF
-
-docker build -t rebash-opt:fat -f - . <<'EOF'
-FROM python:3.12
-COPY app.py /app.py
-CMD ["python", "/app.py"]
-EOF
-
-docker build -t rebash-opt:slim .
-docker images 'rebash-opt'
-docker run --rm rebash-opt:slim
+docker build -t rebash-lab:local .
+docker run --rm rebash-lab:local
+docker image inspect rebash-lab:local --format '{{ "{{" }}.Size{{ "}}" }}' | tee size.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-06/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Dockerfile Best Practices and Multi-Stage Builds** always combines:
 
@@ -177,7 +181,11 @@ Production practice for **Dockerfile Best Practices and Multi-Stage Builds** alw
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -185,7 +193,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Copying the entire build stage into the final image by mistake  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -196,7 +208,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Dockerfile Best Practices and Multi-Stage Builds changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -204,7 +220,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -214,26 +234,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Dockerfile Best Practices and Multi-Stage Builds** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Dockerfile Best Practices and Multi-Stage Builds** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Dockerfile Best Practices and Multi-Stage Builds** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Volumes and Persistent Storage](volumes-and-persistent-storage.md)
+- [Volumes and Persistent Storage](volumes-and-persistent-storage.md)
+
+
 
 ## References
+
+
 
 - [Multi-stage builds](https://docs.docker.com/build/building/multi-stage/) · [BuildKit](https://docs.docker.com/build/buildkit/)

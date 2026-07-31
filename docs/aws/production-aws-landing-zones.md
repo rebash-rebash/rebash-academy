@@ -50,6 +50,8 @@ comments: false
 
 ## Overview
 
+
+
 Design a production-ready Amazon Web Services (AWS) **landing zone**: multi-account layout with AWS Organizations, guardrails, tagging standards, operational excellence habits, and security automation that scales with teams.
 
 A landing zone is the *foundational* cloud environment — accounts, identity, networking, logging, and security baselines — onto which product teams deploy workloads. One shared “everything” account collapses under audit and blast-radius pressure. Production AWS means **separation of duties**, automated compliance, and boring, repeatable account vending.
@@ -59,13 +61,21 @@ A landing zone is the *foundational* cloud environment — accounts, identity, n
 
 This is a core tutorial in **Module 15 · Production AWS** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Reliability and Disaster Recovery](reliability-and-disaster-recovery.md)
 - [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
 - [AWS Security Services](aws-security-services.md) and [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -75,13 +85,21 @@ By the end of this tutorial, you will be able to:
 - [ ] List operational excellence practices (runbooks, IaC, small reversible change)  
 - [ ] Outline security best practices and automation (baselines, Config, Security Hub, EventBridge)
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Landing zone / multi-account](../assets/excalidraw/aws-landing-zone.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -154,7 +172,13 @@ Platform and DevSecOps win when engineers self-serve into safe defaults. One fla
 - No account factory → immediate baseline drift.
 - “Temporary” shared workload accounts that become permanent.
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -162,70 +186,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-15 && cd ~/rebash-aws/module-15
 ```
 
-**Focus:** hands-on practice for Production AWS Landing Zones
+**Focus:** document Organizations / account-vending checklist with STS proof
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-15
-cd ~/rebash-aws/module-15
-```
-
-Design artefacts only (safe for any account). Optional Organisations read-only listing if you have access.
+### Step 1 – Landing zone checklist
 
 ```bash
-cd ~/rebash-aws/module-15
-
-cat > ou-design.md << 'EOF'
-# Landing zone sketch
-Root
-├── Security OU
-│   ├── LogArchive
-│   └── SecurityTooling
-├── Infrastructure OU
-│   ├── Network
-│   └── SharedServices
-├── Workloads OU
-│   ├── Prod (per app or domain)
-│   └── NonProd
-└── Sandbox OU
+aws sts get-caller-identity | tee identity.json
+aws organizations describe-organization 2>/dev/null | tee org.json || echo 'No org access from this identity'
+tee landing-zone.txt << 'EOF'
+- Mandatory accounts: security, log-archive, shared, workload OU structure
+- SCPs for region/deny controls
+- Central logging + GuardDuty/Security Hub
+- No long-lived keys on humans
 EOF
-
-cat > tag-taxonomy.md << 'EOF'
-Required tags:
-- Owner (team email or Slack handle)
-- Environment (prod|staging|dev|sandbox)
-- CostCenter
-- DataClass (public|internal|confidential)
-Optional: Application, Ticket
-EOF
-
-cat > security-automation.md << 'EOF'
-- CloudTrail → LogArchive (org trail)
-- Config rules → Security Hub
-- GuardDuty → Security Hub
-- EventBridge rule: critical finding → SNS / ticket
-- SCP: deny cloudtrail:StopLogging, deny leaving org
-EOF
-
-aws organizations list-accounts --output table 2>/dev/null \
-  || echo "Skip Organisations API if not management account"
+cat landing-zone.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-15/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production AWS Landing Zones** always combines:
 
@@ -237,7 +235,11 @@ Production practice for **Production AWS Landing Zones** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -245,7 +247,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "SCPs so tight they break Support or logging."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -256,7 +262,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production AWS Landing Zones changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -264,7 +274,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -274,27 +288,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Production AWS Landing Zones** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Production AWS Landing Zones** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Production AWS Landing Zones** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Troubleshooting AWS](troubleshooting-aws.md)
+- [Troubleshooting AWS](troubleshooting-aws.md)
+
+
 
 ## References
+
+
 
 - [Organizing Your AWS Environment Using Multiple Accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html)  
 - [AWS Control Tower](https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html)  

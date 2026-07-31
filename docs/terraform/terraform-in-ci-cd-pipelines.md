@@ -42,17 +42,27 @@ comments: false
 
 ## Overview
 
+
+
 Design PR plan and protected-branch apply pipelines with plan artefacts, least-privilege credentials, and optional Atlantis-style PR automation across common CI systems.
 
 Production Terraform is applied by **pipelines**, not laptops. Pull requests run format, validate, test, and **plan**; protected branches or environments run **apply** of a reviewed plan with short-lived credentials. Store the binary plan as an artefact so apply executes exactly what was reviewed. Atlantis comments plans on pull requests for teams that prefer chatops-style workflows.
 
 This is a core tutorial in **Module 16 · CI/CD** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Terraform Security and Secrets](terraform-security-and-secrets.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Sketch GitHub Actions, GitLab CI, Azure DevOps, and Jenkins patterns  
 - [ ] Explain when Atlantis fits
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform CI/CD pipeline](../assets/excalidraw/terraform-cicd-pipeline.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -117,7 +135,10 @@ Prefer apply-of-saved-plan for production; re-plan-on-main only when your change
 - Letting fork PRs run apply-capable workflows.  
 - Skipping state locking so two pipelines apply concurrently.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -125,18 +146,19 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-16/.github/workflows && cd ~/rebash-terraform/module-16/.github/workflows
 ```
 
-**Focus:** hands-on practice for Terraform in CI/CD Pipelines
+**Focus:** Simulate a CI plan artefact workflow locally
 
-### Step 1 – Core exercise
+### Step 1 – Produce a saved plan like CI would
 
 ```bash
-mkdir -p ~/rebash-terraform/module-16/.github/workflows
-cd ~/rebash-terraform/module-16
-
-cat > main.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.9.0"
+  required_version = ">= 1.5.0"
   required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
     local = {
       source  = "hashicorp/local"
       version = "~> 2.5"
@@ -144,99 +166,56 @@ terraform {
   }
 }
 
-resource "local_file" "ci" {
-  filename = "${path.module}/ci-marker.txt"
-  content  = "planned-in-ci\n"
+resource "null_resource" "lab" {
+  triggers = {
+    note = "rebash-lab"
+  }
+}
+
+resource "local_file" "marker" {
+  content  = "managed-by-terraform
+"
+  filename = "${path.module}/marker.txt"
 }
 EOF
-
 terraform init
-terraform plan -out=tfplan -input=false
+terraform fmt -check || terraform fmt
+terraform validate
+terraform plan -input=false -out=tfplan
 terraform show -no-color tfplan | head -n 40
 ```
 
-Create a workflow sketch (pattern only — adapt secrets and OIDC for your org):
-
-{% raw %}
-```yaml
-# .github/workflows/terraform.yml
-name: terraform
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-  id-token: write
-  pull-requests: write
-
-jobs:
-  plan:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.9.8
-      - run: terraform fmt -check -recursive
-      - run: terraform init -input=false
-      - run: terraform validate
-      - run: terraform plan -out=tfplan -input=false
-        env:
-          TF_IN_AUTOMATION: "true"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: tfplan
-          path: tfplan
-          retention-days: 5
-
-  apply:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.9.8
-      - run: terraform init -input=false
-      # Prefer downloading the reviewed plan artefact; re-plan only if your process requires it
-      - run: terraform apply -input=false -auto-approve
-        env:
-          TF_IN_AUTOMATION: "true"
-```
-{% endraw %}
+### Step 2 – Apply the exact plan file (CI apply job pattern)
 
 ```bash
-mkdir -p ~/rebash-terraform/module-16/.github/workflows
-# Copy the workflow YAML above into .github/workflows/terraform.yml when you adapt it for a real repo.
-
-cat > ~/rebash-terraform/module-16/pipeline-notes.md << 'EOF'
-- PR: fmt, validate, test, plan → artefact
-- Main/env: apply reviewed plan with OIDC
-- GitLab: plan job + environment: production apply
-- Azure DevOps: plan stage + approval gate
-- Jenkins: same stages on agents with locked credentials
-- Atlantis: atlantis.yaml projects + plan/apply comments
-EOF
+terraform apply -input=false tfplan
+terraform state list
+echo "In real CI: OIDC to cloud, remote state, plan on PR, apply on main"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-16/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Terraform in CI/CD Pipelines** always combines:
 
@@ -248,7 +227,11 @@ Production practice for **Terraform in CI/CD Pipelines** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -256,7 +239,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Applying from a fresh `plan` on main without tying to the reviewed PR plan.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -267,7 +254,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Terraform in CI/CD Pipelines changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -275,7 +266,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -285,26 +280,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Terraform in CI/CD Pipelines** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Terraform in CI/CD Pipelines** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is a typical PR plan / merge apply pipeline shape?
+2. Why apply a saved plan file rather than re-planning on apply?
+3. How does OIDC improve cloud authentication from CI?
+4. What blast-radius controls belong in Terraform pipelines?
+5. How do you prevent unreviewed applies to production?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Re-planning at apply time can pick up drift or new provider behaviour that reviewers never saw. Applying the exact plan artefact preserves intent.
+
+!!! tip "Sample answer — question 4"
+    Use environment protections, required reviews, remote state locking, least-privilege roles, and separate prod pipelines with manual approval gates.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Multi-Cloud Terraform](multi-cloud-terraform.md)
+- [Multi-Cloud Terraform](multi-cloud-terraform.md)
+
+
 
 ## References
+
+
 
 - [Running Terraform in automation](https://developer.hashicorp.com/terraform/cli/run/automating-terraform) · [Atlantis](https://www.runatlantis.io/) · [setup-terraform](https://github.com/hashicorp/setup-terraform)

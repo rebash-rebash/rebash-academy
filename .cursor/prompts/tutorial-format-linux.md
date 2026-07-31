@@ -73,10 +73,14 @@ Cover **every** concept from the technology prompt module. British English. Prod
 - Title casing: `## Hands-on Lab` (not “lab”).
 - Workspace: `~/rebash-<technology>/labNN` (zero-padded) **or** `module-NN` consistently within a course — prefer `labNN` to match Linux/Shell.
 - Line: `**Focus:** …` (what the learner will practise)
-- Numbered steps with **topic-relevant** titles: `### Step 1 – …`, `### Step 2 – …`, `### Final step – Cleanup note`
+- **2–3 real steps** with **topic-relevant** titles: `### Step 1 – …`, `### Step 2 – …`, `### Final step – Cleanup note`
+- Each step needs runnable commands tied to Theory and an **observable success** (file created, pod Ready, plan shows change, curl 200, pipeline YAML validates).
+- Cleanup must remove disposable resources (containers, namespaces, Terraform state) — not re-run a no-op script.
+- Safe defaults: local/`null`/kind where possible; AWS read-only / sandbox warnings; no committed secrets.
 - **Never** use a placeholder “Skeleton” step that only echoes the tutorial name — every step must teach the module skill.
 - Use `set -euo pipefail` in shell labs where appropriate.
 - Escape `${{` / `{#` for mkdocs-macros (`{% raw %}`).
+- Quality bar examples: `docs/linux/ssh-and-remote-access.md`. Enrich priority tracks with `python3 scripts/enrich-labs-and-interviews.py --course <technology>`.
 
 ### Validation
 
@@ -113,7 +117,10 @@ Markdown table: Symptom | Likely cause | Fix
 
 ### Interview Questions
 
-5 numbered questions + one `!!! tip "Sample answer — question N"` block.
+- **5 topic-specific questions** (concepts, debugging, security, trade-offs, production) — not the generic “How does X show up…” boilerplate.
+- **1–2 sample answers** in `!!! tip "Sample answer — question N"` blocks tied to this module.
+- British English; expand acronyms on first use in answers when needed.
+- Prefer banks from `scripts/enrich-labs-and-interviews.py` over aligner stubs.
 
 ### Related Tutorials
 

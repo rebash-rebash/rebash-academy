@@ -43,17 +43,27 @@ comments: false
 
 ## Overview
 
+
+
 Author a GitLab CI job that builds a multi-stage Dockerfile (BuildKit-friendly), tags the image with the commit SHA, and documents promotion from registry to later environments without rebuilding.
 
 CI builds containers so every merge produces a **reproducible image**. GitLab provides a **Container Registry** per project (`$CI_REGISTRY_IMAGE`). Prefer **BuildKit** (or Kaniko/buildah on locked-down runners) over ad-hoc Docker-in-Docker. Tag with `$CI_COMMIT_SHA` (and optionally a digest); promote that same image through staging and production.
 
 This is a core tutorial in **Module 8 · Docker Pipelines** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Artifacts, Caches, and Dependencies](artifacts-caches-and-dependencies.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -63,13 +73,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe image promotion without rebuild  
 - [ ] Note DinD vs rootless / Kaniko trade-offs
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitLab Docker pipeline](../assets/excalidraw/gitlab-docker-pipeline.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -114,68 +132,65 @@ Cache mounts and registry pull-through caches accelerate rebuilds; they do not r
 - Assuming cache guarantees bit-identical images across builders.  
 - Rebuilding for production instead of promoting the tested digest.
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-08 && cd ~/rebash-gitlab/module-08
 ```
 
-**Focus:** build a local image in CI-shaped steps, then author a GitLab Docker job
+**Focus:** build a Dockerfile and a GitLab job that would build the image
 
-### Step 1 – Local image (same Dockerfile CI will use)
+### Step 1 – Dockerfile + CI job
 
 ```bash
-mkdir -p app
-cat > app/Dockerfile << 'EOF'
+cat > Dockerfile << 'EOF'
 FROM alpine:3.20
-RUN apk add --no-cache curl
 WORKDIR /app
 COPY hello.txt .
 CMD ["cat", "hello.txt"]
 EOF
-echo 'hello from rebash gitlab docker lab' > app/hello.txt
-docker build -t rebash/gitlab-lab:dev ./app
-docker run --rm rebash/gitlab-lab:dev
-```
-
-### Step 2 – GitLab CI job that builds (DinD or shell runner)
-
-```bash
+echo 'hello from gitlab ci' > hello.txt
+docker build -t rebash-gitlab-lab:local .
+docker run --rm rebash-gitlab-lab:local
 cat > .gitlab-ci.yml << 'EOF'
-stages: [build]
 build-image:
-  stage: build
   image: docker:27
-  services:
-    - docker:27-dind
+  services: [docker:27-dind]
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   script:
-    - docker info
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" ./app
-    - docker run --rm "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-  rules:
-    - if: $CI_COMMIT_BRANCH
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
 EOF
-sed -n '1,80p' .gitlab-ci.yml
+echo 'CI job documented; local image build verified.'
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi rebash/gitlab-lab:dev 2>/dev/null || true
-# Keep ~/rebash-gitlab/ for later tutorials; do not commit registry credentials
+docker rmi rebash-gitlab-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-08/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Building Docker Images in CI** always combines:
 
@@ -187,7 +202,11 @@ Production practice for **Building Docker Images in CI** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -195,7 +214,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Privileged DinD on shared runners without isolation.  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -206,7 +229,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Building Docker Images in CI changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -214,7 +241,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -224,26 +255,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Building Docker Images in CI** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Building Docker Images in CI** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Building Docker Images in CI** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md)
+- [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md)
+
+
 
 ## References
+
+
 
 - [Build Docker images with GitLab CI](https://docs.gitlab.com/ee/ci/docker/using_docker_build.html) · [GitLab Container Registry](https://docs.gitlab.com/ee/user/packages/container_registry/) · [BuildKit](https://docs.docker.com/build/buildkit/)

@@ -20,9 +20,12 @@ prerequisites:
 comments: false
 ---
 
+
 # Environment Variables and Secrets
 
 ## Overview
+
+
 
 Applications need **configuration** — database URLs, API keys, feature flags, log levels — that changes between environments without rebuilding the image. The [Twelve-Factor App](https://12factor.net/config) principle states: store config in the **environment**, not in code. Docker provides several mechanisms to inject configuration at runtime: **environment variables**, **env files**, **secrets**, **bind mounts**, and integration with external **secret managers**.
 
@@ -30,14 +33,22 @@ This tutorial explains when to use each approach, how to avoid leaking credentia
 
 This is **Tutorial 12** in **Module 4: Networking & Registry** of the REBASH Academy Docker series. Complete [Container Registries and Distribution](container-registries-and-distribution.md) before this tutorial.
 
+
+
 ## Prerequisites
+
+
 
 - Docker Engine and Docker Compose plugin installed
 - Completion of [Docker Compose Fundamentals](docker-compose-fundamentals.md)
 - Familiarity with [Environment Variables and Shell Config](../linux/environment-variables-shell-config.md) on Linux
 - A lab directory where you can create test files (no real production credentials)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -48,13 +59,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Integrate external secret managers conceptually (Vault, AWS Secrets Manager, GCP Secret Manager)
 - [ ] Debug missing or incorrect environment variables in running containers
 
+
+
 ## Architecture
+
+
 
 Configuration flows from sources of truth into the container process environment or mounted files — never through rebuilt image layers for secrets.
 
 ![Compose and configuration](../assets/excalidraw/docker-compose.svg)
 
+
+
 ## Theory
+
+
 
 ### Configuration vs Secrets
 
@@ -159,197 +178,43 @@ The Twelve-Factor **config** factor aligns with containers:
 
 Add `.env` to `.gitignore`. Scan repos with secret detection tools in CI.
 
+
+
 ## Hands-on Lab
 
-Build a small Python HTTP app that reads config from environment and a secret file.
 
-### Step 1 – Create the lab project
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/env-secrets-lab/app && cd /tmp/env-secrets-lab
+mkdir -p ~/rebash-docker/environment-variables-and-secrets && cd ~/rebash-docker/environment-variables-and-secrets
 ```
 
-Create `app/server.py`:
+**Focus:** pass env files without baking secrets into the image
 
-```python
-import os
-from http.server import BaseHTTPRequestHandler, HTTPServer
-
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        log_level = os.environ.get("LOG_LEVEL", "info")
-        secret_path = "/run/secrets/api_token"
-        if os.path.isfile(secret_path):
-            with open(secret_path, "r", encoding="utf-8") as f:
-                token = f.read().strip()
-            token_status = "present"
-        else:
-            token_status = "missing"
-        body = f"log_level={log_level} token={token_status}\n"
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain")
-        self.end_headers()
-        self.wfile.write(body.encode("utf-8"))
-
-port = int(os.environ.get("APP_PORT", "8080"))
-HTTPServer(("0.0.0.0", port), Handler).serve_forever()
-```
-
-Create `Dockerfile`:
-
-```dockerfile
-FROM python:3.12-alpine
-WORKDIR /app
-COPY app/server.py .
-ENV APP_PORT=8080
-ENV LOG_LEVEL=info
-EXPOSE 8080
-CMD ["python", "server.py"]
-```
-
-**Explanation:** The app exposes non-sensitive config via env and checks for a secret file without printing the token value.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 2 – Build the image
-
-**Command:**
+### Step 1 – Env file run
 
 ```bash
-docker build -t env-secrets-lab:1.0 .
+cat > app.env << 'EOF'
+APP_MODE=lab
+EOF
+docker run --rm --env-file app.env alpine:3.20 sh -c 'echo APP_MODE=$APP_MODE' | tee env-out.txt
+tee secrets-notes.txt << 'EOF'
+Never COPY .env with production secrets into images. Prefer runtime injection / orchestrator secrets.
+EOF
+cat secrets-notes.txt
 ```
 
-**Expected output:**
-
-```text
-Successfully tagged env-secrets-lab:1.0
-```
-
-### Step 3 – Run with inline environment variables
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-docker run -d --name env-lab-1 -p 8081:8080 \
-  -e LOG_LEVEL=debug \
-  -e APP_PORT=8080 \
-  env-secrets-lab:1.0
-curl -s http://127.0.0.1:8081/
-docker rm -f env-lab-1
+rm -f app.env
 ```
 
-**Explanation:** Runtime `-e` overrides Dockerfile `ENV` defaults. `LOG_LEVEL=debug` appears in output; token remains missing.
-
-**Expected output:**
-
-```text
-log_level=debug token=missing
-```
-
-### Step 4 – Use an env file for non-secrets
-
-**Command:**
-
-```bash
-printf 'LOG_LEVEL=warning\nAPP_PORT=8080\n' > app.env
-docker run -d --name env-lab-2 -p 8082:8080 \
-  --env-file ./app.env \
-  env-secrets-lab:1.0
-curl -s http://127.0.0.1:8082/
-docker rm -f env-lab-2
-```
-
-**Explanation:** Env files group configuration for repeatability. Do not store API keys in files committed to Git.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 5 – Mount a secret file with bind mount
-
-**Command:**
-
-```bash
-mkdir -p secrets
-printf 'demo-token-not-for-production' > secrets/api_token
-chmod 600 secrets/api_token
-docker run -d --name env-lab-3 -p 8083:8080 \
-  -e LOG_LEVEL=info \
-  -v "$(pwd)/secrets/api_token:/run/secrets/api_token:ro" \
-  env-secrets-lab:1.0
-curl -s http://127.0.0.1:8083/
-docker rm -f env-lab-3
-```
-
-**Explanation:** Read-only bind mount simulates secret file injection. Production uses secret managers or Swarm secrets instead of host paths when possible.
-
-**Expected output:**
-
-```text
-log_level=info token=present
-```
-
-### Step 6 – Docker Compose with environment and env_file
-
-Create `docker-compose.yml`:
-
-```yaml
-services:
-  web:
-    image: env-secrets-lab:1.0
-    ports:
-      - "8084:8080"
-    environment:
-      LOG_LEVEL: production
-    env_file:
-      - app.env
-    volumes:
-      - ./secrets/api_token:/run/secrets/api_token:ro
-```
-
-**Command:**
-
-```bash
-docker compose up -d
-curl -s http://127.0.0.1:8084/
-docker compose down
-```
-
-**Explanation:** Compose merges `environment`, `env_file`, and volumes. Keys in `environment` override `env_file` when both define the same variable.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 7 – Inspect container environment safely
-
-**Command:**
-
-```bash
-docker run -d --name env-lab-4 -e LOG_LEVEL=inspect-test env-secrets-lab:1.0
-docker inspect env-lab-4 --format='Env section present'
-docker inspect env-lab-4 | grep -A5 '"Env"'
-docker rm -f env-lab-4
-```
-
-**Explanation:** `docker inspect` shows all environment variables — including secrets if you mistakenly passed them via `-e`. Never put secrets in env vars you plan to inspect or log.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 8 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf env-secrets-lab
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -364,7 +229,11 @@ Confirm the lab before moving on:
 | Inspect awareness | You can show where env values appear in `docker inspect` |
 | Cleanup | Containers and any local `.env` lab files handled safely |
 
+
+
 ## Code Walkthrough
+
+
 
 | Command / directive | Description | Example |
 |---------------------|-------------|---------|
@@ -403,7 +272,11 @@ DATABASE_HOST=localhost
 # Secrets: mount at /run/secrets/api_token instead of env vars
 ```
 
+
+
 ## Security Considerations
+
+
 
 - Never commit `.env` files containing real credentials; provide `.env.example` with placeholders only
 - Prefer Docker secrets / external secret managers over plain `environment:` for production
@@ -413,7 +286,10 @@ DATABASE_HOST=localhost
 - Scrub CI logs — echo and debug printing commonly leak secrets from env blocks
 
 
+
 ## Common Mistakes
+
+
 
 !!! warning "Passing secrets via -e or ENV"
     Environment variables appear in `docker inspect`, process listings (`ps e`), and crash dumps. Use file-based secrets for credentials in production.
@@ -427,7 +303,11 @@ DATABASE_HOST=localhost
 !!! warning "Assuming Compose secrets work with docker compose up"
     Top-level `secrets` in Compose require Swarm (`docker stack deploy`) unless you bind-mount files manually on standalone Docker.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Separate config repos from secret delivery"
     Version Compose and Dockerfiles in Git; deliver secrets from vaults or cloud secret managers at deploy time.
@@ -441,7 +321,11 @@ DATABASE_HOST=localhost
 !!! tip "Validate required variables at startup"
     Fail fast with clear errors when `DATABASE_URL` or secret files are missing — avoids silent misconfiguration in production.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -452,7 +336,11 @@ DATABASE_HOST=localhost
 | Compose variable substitution empty | `.env` missing for YAML | Add `.env` for `${VAR}` in compose file or export in shell |
 | Permission denied on secret mount | Host file permissions too open | `chmod 600` on host; match container user if needed |
 
+
+
 ## Summary
+
+
 
 - **Configuration** belongs in the environment; **secrets** need stronger protection than plain env vars
 - Use Dockerfile `ENV` for safe defaults; override at runtime with `-e` and `--env-file`
@@ -461,28 +349,28 @@ DATABASE_HOST=localhost
 - Production integrates **external secret managers** for rotation, audit, and least-privilege access
 - Compose merges multiple env sources — understand precedence to avoid surprises
 
+
+
 ## Interview Questions
 
-1. What is the Twelve-Factor App guidance on application configuration?
-2. Why should secrets not be passed as environment variables in production?
-3. What is the difference between Dockerfile ENV and ARG?
-4. How do Docker Swarm secrets differ from bind-mounted secret files?
-5. What is the order of precedence for environment variables in Docker Compose?
-6. How would you rotate a database password without rebuilding a container image?
-7. Why is committing `.env` to Git dangerous even for private repositories?
-8. How does AWS ECS inject secrets from Secrets Manager into containers?
-9. What appears in `docker inspect` that makes `-e SECRET_KEY=...` risky?
-10. How do you document required environment variables for a team without exposing secrets?
 
-??? tip "Sample Answers (Questions 2, 4, and 6)"
+1. What production problem does **Environment Variables and Secrets** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
-    **Q2 — Secrets in env vars:** Environment variables are visible to anyone who can run `docker inspect`, view orchestrator API responses, or read `/proc/PID/environ` on the host. They propagate to child processes and may appear in core dumps and APM tools. File-based secrets with restrictive permissions limit exposure to the application process reading the mount.
+!!! tip "Sample answer — question 2"
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
 
-    **Q4 — Swarm secrets vs bind mounts:** Swarm secrets are encrypted at rest in the cluster, distributed only to nodes running the service, and mounted in memory (tmpfs) at `/run/secrets/`. Bind mounts read from the host filesystem — simpler but depend on host file security and manual distribution to every node.
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
 
-    **Q6 — Password rotation:** Store the password in a secret manager or Swarm secret. Update the value in the manager, create a new secret version, and rolling-restart containers to pick up the new file mount. The image unchanged; only runtime secret reference updates. Database side: create new user/password, dual-write period, revoke old credential.
+
 
 ## Related Tutorials
+
+
 
 - [Docker – Category Overview](index.md)
 - [Docker Compose Fundamentals](docker-compose-fundamentals.md)
@@ -493,7 +381,11 @@ DATABASE_HOST=localhost
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Twelve-Factor App – Config](https://12factor.net/config)
 - [Docker run – environment variables](https://docs.docker.com/reference/cli/docker/container/run/#env)

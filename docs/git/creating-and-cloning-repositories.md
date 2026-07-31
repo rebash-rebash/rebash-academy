@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Initialise a local repository, clone a remote, and inspect `.git` so you know where history lives before first commits.
 
 `git init` starts history locally; `git clone` copies a remote including objects and remotes. IaC and app work both start here.
 
 This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] List remotes after clone  
 - [ ] Describe what `.git/` holds
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -104,51 +122,55 @@ Forks on GitHub are separate remotes you usually name `origin` (your fork) and `
 - Assuming a shallow clone can always rebase or bisect across old history  
 - Pushing to a non-bare repo that has a checked-out branch (server rejection)
 
+
+
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Creating and Cloning Repositories
+
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-git/module-03
-cd ~/rebash-git/module-03
-git config --global user.name >/dev/null || git config --global user.name "REBASH Lab"
-git config --global user.email >/dev/null || git config --global user.email "lab@rebash.local"
+mkdir -p ~/rebash-git/module-03 && cd ~/rebash-git/module-03
 ```
 
-### Step 1 – init
+**Focus:** create a bare remote and clone it
+
+### Step 1 – Clone workflow
 
 ```bash
-cd ~/rebash-git/module-03
-rm -rf demo && mkdir demo && cd demo
-git init -b main
-ls -la .git | head
+git init -b main seed && cd seed
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# seed' > README.md
+git add README.md && git commit -m 'seed'
+cd ..
+git clone --bare seed remote.git
+git clone remote.git workspace
+cd workspace && git log --oneline && pwd
 ```
 
-### Step 2 – First file (no commit yet)
+### Final step – Cleanup note
 
 ```bash
-echo '# demo' > README.md
-git status
+rm -rf seed remote.git workspace
 ```
 
-### Step 3 – Clone local bare (simulate remote)
 
-```bash
-cd ~/rebash-git/module-03
-git init --bare remote-demo.git
-cd demo
-git remote add origin ../remote-demo.git
-# commit happens in next tutorial
-```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-03/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Creating and Cloning Repositories** always combines:
 
@@ -160,7 +182,11 @@ Production practice for **Creating and Cloning Repositories** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -168,7 +194,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Running `git init` inside an existing clone and creating a nested repo by accident  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -179,7 +209,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Creating and Cloning Repositories changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -187,7 +221,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -197,26 +235,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Creating and Cloning Repositories** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Creating and Cloning Repositories** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Creating and Cloning Repositories** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+- [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+
+
 
 ## References
+
+
 
 - [git-init](https://git-scm.com/docs/git-init) · [git-clone](https://git-scm.com/docs/git-clone)

@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply a namespace ResourceQuota and LimitRange so Pods cannot starve the cluster or run without requests.
 
 **ResourceQuota** caps aggregate usage in a namespace. **LimitRange** sets default/min/max per container. Together they enable soft multi-tenancy.
 
 This is a core tutorial in **Module 8 · Configuration** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [ConfigMaps and Secrets](configmaps-and-secrets.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,13 +67,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Create LimitRange defaults  
 - [ ] See admission reject over-quota creates
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -104,7 +122,10 @@ Quotas count **requests** (and sometimes limits, depending on the resource name)
 - Expecting quotas to stop runtime CPU spikes alone — they govern scheduling admission, not CFS throttling by themselves.
 - Creating quotas in `kube-system` accidentally and breaking cluster components.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -112,56 +133,75 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-08-quota && cd ~/rebash-k8s/module-08-quota
 ```
 
-**Focus:** hands-on practice for Resource Quotas and LimitRanges
+**Focus:** Enforce hard quotas and default container limits
 
-### Step 1 – Core exercise
+### Step 1 – Apply quota objects
 
 ```bash
-mkdir -p ~/rebash-k8s/module-08-quota && cd ~/rebash-k8s/module-08-quota
-kubectl create ns rebash-quota
-cat > quota.yaml << 'EOF'
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: compute
-  namespace: rebash-quota
-spec:
-  hard:
-    requests.cpu: "1"
-    requests.memory: 1Gi
-    pods: "10"
----
+kubectl create namespace rebash-lab
+cat > limits.yaml <<'EOF'
 apiVersion: v1
 kind: LimitRange
 metadata:
   name: defaults
-  namespace: rebash-quota
+  namespace: rebash-lab
 spec:
   limits:
-    - type: Container
-      defaultRequest: { cpu: 50m, memory: 64Mi }
-      default: { cpu: 200m, memory: 128Mi }
+  - type: Container
+    max:
+      memory: 256Mi
+    default:
+      memory: 128Mi
+    defaultRequest:
+      memory: 64Mi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: hard
+  namespace: rebash-lab
+spec:
+  hard:
+    requests.memory: 512Mi
+    limits.memory: 1Gi
+    pods: "5"
 EOF
-kubectl apply -f quota.yaml
-kubectl create deploy tiny --image=nginx:alpine -n rebash-quota
-kubectl get quota,limitrange -n rebash-quota
-kubectl delete ns rebash-quota
+kubectl apply -f limits.yaml
+```
+
+### Step 2 – Admit a Pod and attempt an oversize request
+
+```bash
+kubectl -n rebash-lab run ok --image=nginx:1.27-alpine
+kubectl -n rebash-lab get pod ok -o jsonpath='{.spec.containers[0].resources}{"
+"}'
+kubectl -n rebash-lab run too-big --image=nginx:1.27-alpine --overrides='{"spec":{"containers":[{"name":"too-big","image":"nginx:1.27-alpine","resources":{"limits":{"memory":"512Mi"}}}]}}' 2>&1 || true
+kubectl -n rebash-lab describe resourcequota hard
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-08-quota/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Resource Quotas and LimitRanges** always combines:
 
@@ -173,7 +213,11 @@ Production practice for **Resource Quotas and LimitRanges** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -181,7 +225,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Quota on `requests.cpu` while teams set only limits — usage accounting surprises."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -192,7 +240,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Resource Quotas and LimitRanges changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -200,7 +252,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -210,26 +266,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Resource Quotas and LimitRanges** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Resource Quotas and LimitRanges** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What fields commonly appear under ResourceQuota hard limits?
+2. How does LimitRange set defaults differently from forcing every manifest to declare resources?
+3. Can a LimitRange max block a Pod that a quota would otherwise allow?
+4. How do memory limits interact with OOMKilled behaviour?
+5. What governance process should surround quota changes?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    LimitRange can inject default request/limit values at admission, reducing boilerplate while still enforcing maxima. Teams can override within allowed bounds.
+
+!!! tip "Sample answer — question 4"
+    Exceeding a memory limit triggers OOMKill of the container. Set limits from observed usage plus headroom; too low causes restarts, too high wastes node capacity.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Kubernetes Scheduling](kubernetes-scheduling.md)
+- [Kubernetes Scheduling](kubernetes-scheduling.md)
+
+
 
 ## References
+
+
 
 - [Resource Quotas](https://kubernetes.io/docs/concepts/policy/resource-quotas/)

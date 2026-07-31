@@ -21,9 +21,12 @@ prerequisites:
 comments: false
 ---
 
+
 # Health Checks, Probes, and Self-Healing
 
 ## Overview
+
+
 
 Deploying a Pod is only the beginning. Production clusters must answer: **Is this container alive?** **Is it ready to receive traffic?** **Has it finished starting up?** Kubernetes answers these questions through **probes** — periodic health checks the kubelet runs against each container. Failed **liveness** probes trigger restarts; failed **readiness** probes remove the Pod from Service endpoints; **startup** probes protect slow-booting applications from premature liveness kills.
 
@@ -31,7 +34,11 @@ Combined with ReplicaSet controllers and node health monitoring, probes enable *
 
 This is **Tutorial 12** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Namespaces and Resource Management](namespaces-and-resource-management.md) first.
 
+
+
 ## Prerequisites
+
+
 
 - Completed [Namespaces and Resource Management](namespaces-and-resource-management.md)
 - Ability to deploy nginx or a simple HTTP app and expose it via a Service
@@ -39,7 +46,11 @@ This is **Tutorial 12** in **Module 4: Networking & Operations** of the REBASH A
 - Optional: `curl` inside the cluster or port-forward for probe verification
 - Familiarity with YAML editing and `kubectl apply`
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -51,13 +62,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Design probe endpoints that reflect application health, not just process existence
 - [ ] Relate probe behaviour to Deployment rolling update success criteria
 
+
+
 ## Architecture
+
+
 
 The kubelet runs probes locally on each node. Readiness state flows to the endpoints controller; liveness failures trigger container restarts.
 
 ![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
+
+
 ## Theory
+
+
 
 ### Why Probes Exist
 
@@ -166,236 +185,82 @@ Production `/healthz` and `/ready` endpoints should differ:
 
 Avoid expensive checks on liveness (full DB query across shards). Keep liveness fast and local; readiness can check dependencies with timeouts.
 
+
+
 ## Hands-on Lab
 
-### Step 1 – Deploy nginx without probes (baseline)
 
-**Command:**
-
-```bash
-kubectl create namespace probe-lab
-kubectl create deployment web \
-  --image=nginx:1.25-alpine \
-  --replicas=2 \
-  -n probe-lab
-kubectl expose deployment web --port=80 -n probe-lab
-kubectl get pods -n probe-lab -o wide
-kubectl get endpoints web -n probe-lab
-```
-
-**Explanation:** Without readiness probes, pods join endpoints as soon as containers start — potentially before nginx binds port 80.
-
-**Expected output:**
-
-```text
-NAME                   READY   STATUS    RESTARTS   AGE
-web-xxxxxxxxxx-xxxxx   1/1     Running   0          15s
-web-xxxxxxxxxx-yyyyy   1/1     Running   0          15s
-```
-
-### Step 2 – Add HTTP liveness and readiness probes
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-cat <<'EOF' | kubectl apply -f -
+mkdir -p ~/rebash-kubernetes/health-checks-probes-and-self-healing && cd ~/rebash-kubernetes/health-checks-probes-and-self-healing
+```
+
+**Focus:** Configure liveness and readiness probes so Kubernetes restarts and unready Pods correctly
+
+### Step 1 – Deploy an app with probes
+
+```bash
+kubectl create namespace rebash-lab
+cat > probes.yaml <<'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web
-  namespace: probe-lab
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: web
-  template:
-    metadata:
-      labels:
-        app: web
-    spec:
-      containers:
-        - name: nginx
-          image: nginx:1.25-alpine
-          ports:
-            - containerPort: 80
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            periodSeconds: 5
-            failureThreshold: 2
-EOF
-
-kubectl rollout status deployment/web -n probe-lab
-kubectl describe pod -n probe-lab -l app=web | grep -A6 "Liveness\|Readiness"
-```
-
-**Explanation:** nginx serves `/` on port 80 — suitable for lab probes. Production apps expose dedicated `/healthz` endpoints.
-
-**Expected output:**
-
-```text
-Liveness:   http-get http://:80/ delay=5s timeout=1s period=10s #success=1 #failure=3
-Readiness:  http-get http://:80/ delay=0s timeout=1s period=5s #success=1 #failure=2
-```
-
-### Step 3 – Observe readiness during rollout
-
-**Command:**
-
-```bash
-kubectl set image deployment/web nginx=nginx:1.25-alpine -n probe-lab
-kubectl get pods -n probe-lab -w &
-sleep 2
-kubectl get endpoints web -n probe-lab -o yaml | grep -A3 addresses
-kill %1 2>/dev/null || true
-```
-
-**Explanation:** During rollout, new pods may show `0/1 Ready` briefly. Endpoints update only for Ready pods — zero-downtime depends on readiness passing before old pods terminate.
-
-**Expected output:**
-
-```text
-web-aaa   0/1   Running   0   5s
-web-aaa   1/1   Running   0   8s
-```
-
-### Step 4 – Simulate liveness failure
-
-**Command:**
-
-```bash
-POD=$(kubectl get pod -n probe-lab -l app=web -o jsonpath='{.items[0].metadata.name}')
-kubectl exec -n probe-lab "$POD" -- sh -c 'kill 1'
-sleep 15
-kubectl get pod -n probe-lab "$POD"
-kubectl describe pod -n probe-lab "$POD" | tail -15
-```
-
-**Explanation:** Killing PID 1 in a container triggers liveness failure. The kubelet restarts the container — RESTARTS count increments.
-
-**Expected output:**
-
-```text
-NAME          READY   STATUS    RESTARTS      AGE
-web-xxxxx     1/1     Running   1 (10s ago)   5m
-Warning  Unhealthy  Liveness probe failed...
-Normal   Killing    Container nginx failed liveness probe, will be restarted
-Normal   Started    Started container nginx
-```
-
-### Step 5 – Configure a startup probe for slow boot
-
-**Command:**
-
-```bash
-cat <<'EOF' | kubectl apply -f -
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: slow-app
-  namespace: probe-lab
+  name: probe-demo
+  namespace: rebash-lab
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: slow-app
+      app: probe-demo
   template:
     metadata:
       labels:
-        app: slow-app
+app: probe-demo
     spec:
       containers:
-        - name: app
-          image: busybox:1.36
-          command: ["sh", "-c", "sleep 30 && while true; do echo ok | nc -l -p 8080; done"]
-          ports:
-            - containerPort: 8080
-          startupProbe:
-            tcpSocket:
-              port: 8080
-            periodSeconds: 5
-            failureThreshold: 12
-          livenessProbe:
-            tcpSocket:
-              port: 8080
-            periodSeconds: 10
-            failureThreshold: 3
+      - name: nginx
+image: nginx:1.27-alpine
+ports:
+- containerPort: 80
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 2
+  periodSeconds: 5
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 10
 EOF
-
-kubectl get pods -n probe-lab -l app=slow-app -w &
-sleep 35
-kill %1 2>/dev/null || true
-kubectl get pods -n probe-lab -l app=slow-app
+kubectl apply -f probes.yaml
+kubectl -n rebash-lab rollout status deploy/probe-demo
 ```
 
-**Explanation:** The app sleeps 30 seconds before listening. Startup probe allows 60 seconds (`12 × 5s`) without liveness killing the container during boot.
-
-**Expected output:**
-
-```text
-slow-app-xxxxx   0/1   Running   0   10s
-slow-app-xxxxx   1/1   Running   0   35s
-```
-
-### Step 6 – Use exec probe (optional pattern)
-
-**Command:**
+### Step 2 – Observe Ready condition and describe probe status
 
 ```bash
-cat <<'EOF' | kubectl apply -f -
-apiVersion: v1
-kind: Pod
-metadata:
-  name: exec-probe-demo
-  namespace: probe-lab
-spec:
-  containers:
-    - name: demo
-      image: busybox:1.36
-      command: ["sh", "-c", "touch /tmp/healthy && sleep 3600"]
-      livenessProbe:
-        exec:
-          command:
-            - cat
-            - /tmp/healthy
-        periodSeconds: 5
-EOF
-
-kubectl get pod exec-probe-demo -n probe-lab
-kubectl exec -n probe-lab exec-probe-demo -- rm /tmp/healthy
-sleep 20
-kubectl get pod exec-probe-demo -n probe-lab
+kubectl -n rebash-lab get pods -l app=probe-demo
+kubectl -n rebash-lab describe pod -l app=probe-demo | sed -n '/Conditions:/,/Volumes:/p'
+kubectl -n rebash-lab get pod -l app=probe-demo -o jsonpath='{.items[0].status.containerStatuses[0].ready}{"
+"}'
 ```
 
-**Explanation:** Exec probes run commands inside the container. Removing `/tmp/healthy` simulates an unhealthy state — kubelet restarts the container.
-
-**Expected output:**
-
-```text
-exec-probe-demo   1/1   Running   1 (5s ago)   45s
-```
-
-### Step 7 – Clean up
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-kubectl delete namespace probe-lab --wait=false
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -410,7 +275,11 @@ Confirm the lab before moving on:
 | Failure behaviour | Induced failure shows restart or traffic shift as documented |
 | Cleanup | Lab workloads removed |
 
+
+
 ## Code Walkthrough
+
+
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -450,7 +319,11 @@ containers:
       timeoutSeconds: 3
 ```
 
+
+
 ## Security Considerations
+
+
 
 - Do not point liveness probes at dependencies (databases) — you will kill healthy Pods during dependency blips
 - Protect probe endpoints from expensive work; unauthenticated heavy probes become DoS vectors
@@ -460,7 +333,10 @@ containers:
 - Log probe failures centrally so crash loops are visible without exec into Pods
 
 
+
 ## Common Mistakes
+
+
 
 !!! warning "Using the same endpoint for liveness and readiness"
     Readiness should gate traffic including dependency checks. Liveness should be minimal — checking external DBs on liveness causes restart loops during outages.
@@ -474,7 +350,11 @@ containers:
 !!! warning "Ignoring readiness during rollouts"
     If readiness never passes, Deployment rollouts stall with `ProgressDeadlineExceeded`. Monitor rollout status and probe endpoints in CI.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Implement /healthz and /ready in application code"
     Frameworks like Spring Boot Actuator, ASP.NET health checks, and Go `net/http` handlers make this straightforward. Document what each checks.
@@ -488,7 +368,11 @@ containers:
 !!! tip "Test probes under load"
     Health endpoints must respond during peak traffic. Slow probes cause unnecessary NotReady states and uneven load balancing.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -499,7 +383,11 @@ containers:
 | 502 from Ingress during deploy | Old pods terminated before new Ready | Tune `maxUnavailable`; fix readiness timing |
 | Probe works locally, fails in cluster | Wrong port or network policy | Verify `containerPort`; check NetworkPolicy |
 
+
+
 ## Summary
+
+
 
 - **Liveness** probes restart unhealthy containers; **readiness** probes control Service traffic; **startup** probes protect slow boot sequences
 - Probe handlers include **HTTP**, **TCP**, **exec**, and **gRPC** — choose based on application protocol
@@ -508,28 +396,28 @@ containers:
 - Design separate health endpoints: liveness checks internal recovery; readiness checks request-serving ability
 - Misconfigured probes cause restart storms — test under failure and load conditions before production
 
+
+
 ## Interview Questions
 
-1. What is the difference between a liveness probe and a readiness probe?
-2. When would you use a startup probe instead of increasing `initialDelaySeconds` on liveness?
-3. What happens to Service endpoints when a Pod fails its readiness probe?
-4. Name three probe handler types and give a use case for each.
-5. How does the kubelet act on consecutive liveness probe failures?
-6. Why should liveness probes avoid checking external dependencies like databases?
-7. Explain how readiness probes enable zero-downtime Deployments.
-8. What is CrashLoopBackOff and how can probes contribute to it?
-9. What HTTP status codes does Kubernetes consider successful for httpGet probes?
-10. How do probes interact with PodDisruptionBudgets during node drains?
 
-??? tip "Sample Answers (Questions 1, 3, and 7)"
+1. What is the difference between liveness, readiness, and startup probes?
+2. What does Kubernetes do when a liveness probe fails repeatedly?
+3. When should you use a startup probe instead of a long initialDelaySeconds on liveness?
+4. How can aggressive probes harm availability, and how do you tune them safely?
+5. Why is a readiness probe essential for Services during rollouts?
 
-    **Q1 — Liveness vs readiness:** A liveness probe asks whether the container is alive and should be restarted if broken. Failure causes the kubelet to kill and restart the container. A readiness probe asks whether the Pod should receive traffic. Failure removes the Pod from Service endpoints but does not restart it — useful during startup, dependency outages, or graceful shutdown.
+!!! tip "Sample answer — question 2"
+    Repeated liveness failures cause the kubelet to restart the container. This recovers stuck processes but cannot fix application bugs that crash-loop immediately.
 
-    **Q3 — Readiness and endpoints:** When readiness fails, the Pod's IP is removed from EndpointSlice objects backing the Service. kube-proxy and Ingress controllers stop forwarding traffic to that Pod. When readiness passes again, the IP is re-added. Other Ready pods continue receiving traffic.
+!!! tip "Sample answer — question 4"
+    Probes that are too frequent or too strict can kill healthy Pods under load or remove them from Service prematurely. Tune thresholds with realistic timeouts, failure thresholds, and separate readiness from liveness semantics.
 
-    **Q7 — Zero-downtime rollouts:** During a rolling update, new Pods must pass readiness before old Pods are terminated (subject to `maxUnavailable`/`maxSurge`). Readiness ensures traffic only routes to instances that can handle requests. Combined with graceful termination (`preStop` hooks), this avoids sending requests to starting or shutting-down containers.
+
 
 ## Related Tutorials
+
+
 
 - [Kubernetes – Category Overview](index.md)
 - [Namespaces and Resource Management](namespaces-and-resource-management.md) *(previous — Module 4)*
@@ -540,7 +428,11 @@ containers:
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Configure Liveness, Readiness and Startup Probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
 - [Pod Lifecycle](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes)

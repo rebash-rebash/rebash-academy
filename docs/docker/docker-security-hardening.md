@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Run a container as non-root with a read-only root filesystem, dropped capabilities, and no secrets in the image layers.
 
 Default containers often run as root with a writable filesystem — fine for demos, risky in production. Defence in depth: user, capabilities, seccomp/AppArmor, read-only FS, secrets mounts.
 
 This is a core tutorial in **Module 11 · Security** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Container Registries and Distribution](container-registries-and-distribution.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline seccomp / AppArmor roles  
 - [ ] Keep secrets out of `ENV` in images
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Production platform](../assets/excalidraw/docker-production-platform.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -101,7 +119,10 @@ Set `USER` in the Dockerfile to a non-root UID and align Kubernetes `runAsNonRoo
 - Baking cloud keys into images  
 - Dropping capabilities without testing startup (then disabling all hardening)
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -109,43 +130,43 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
 ```
 
-**Focus:** hands-on practice for Docker Security Hardening
+**Focus:** run as non-root and drop capabilities
 
-### Step 1 – Core exercise
+### Step 1 – Hardened run
 
 ```bash
-mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
-cat > Dockerfile << 'EOF'
-FROM alpine:3.20
-RUN adduser -D -u 10001 appuser
-USER appuser
-WORKDIR /home/appuser
-CMD ["sleep", "3600"]
+docker run --rm --name rebash-lab --user 1000:1000 --read-only --cap-drop ALL alpine:3.20 id | tee id.txt
+docker run --rm --security-opt=no-new-privileges:true alpine:3.20 true
+tee docker-security.txt << 'EOF'
+Prefer minimal base images, non-root, read-only rootfs, and scanning in CI.
 EOF
-docker build -t rebash-secure:0.1.0 .
-docker run -d --name rebash-sec \
-  --read-only --tmpfs /tmp \
-  --cap-drop=ALL \
-  --security-opt=no-new-privileges:true \
-  rebash-secure:0.1.0
-docker exec rebash-sec id
-docker rm -f rebash-sec
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
+docker network rm rebash-net 2>/dev/null || true
+docker volume rm rebash-vol 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-11/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Docker Security Hardening** always combines:
 
@@ -157,7 +178,11 @@ Production practice for **Docker Security Hardening** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -165,7 +190,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Mounting `docker.sock` into random utility containers  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -176,7 +205,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Docker Security Hardening changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -184,7 +217,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -194,27 +231,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Docker Security Hardening** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Docker Security Hardening** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Docker Security Hardening** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Container Scanning and SBOM](container-scanning-and-sbom.md)
+- [Container Scanning and SBOM](container-scanning-and-sbom.md)
 - Depth: [Environment Variables and Secrets](environment-variables-and-secrets.md)
 
+
+
 ## References
+
+
 
 - [Docker security](https://docs.docker.com/engine/security/)

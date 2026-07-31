@@ -48,17 +48,27 @@ comments: false
 
 ## Overview
 
+
+
 Sketch OIDC-oriented GitLab CI patterns for AWS (IAM / EKS / ECS), Azure (login / AKS), and Google Cloud (Workload Identity / GKE / Cloud Run) without embedding long-lived cloud keys in the repository.
 
 Modern GitLab deploy jobs **federate identity**: the job presents a GitLab-issued OIDC token; the cloud exchanges it for a short-lived role. That role then updates EKS/ECS, AKS, GKE, or Cloud Run. Patterns differ by cloud, but the CI shape is the same — authenticate, deploy immutable artefact, protect production.
 
 This is a core tutorial in **Module 11 · Cloud Deployments** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Terraform Pipelines in GitLab](terraform-pipelines-in-gitlab.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -68,13 +78,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Sketch GCP Workload Identity + GKE/Cloud Run  
 - [ ] Scope identities per environment and branch
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Multi-cloud GitLab deployments](../assets/excalidraw/gitlab-multi-cloud.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -118,55 +136,60 @@ Never print tokens. Prefer environment-scoped variables for account IDs and clus
 - Mixing long-lived keys “just for break-glass” without separate process.  
 - Redeploying different image digests per cloud “environment” for the same commit.
 
+
+
 ## Hands-on Lab
+
+
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
-git init -q
 ```
 
-**Focus:** author and validate CI config for Multi-Cloud Deployments with GitLab
+**Focus:** matrix-like parallel deploy stubs for two clouds
 
-### Step 1 – Write a minimal pipeline
+### Step 1 – Multi-cloud jobs
 
 ```bash
 cat > .gitlab-ci.yml << 'EOF'
-stages: [validate]
-validate:
-  stage: validate
+.deploy:
   image: alpine:3.20
   script:
-    - echo "pipeline ok"
-    - uname -a
+    - echo "Deploy to $CLOUD using OIDC — no static keys"
+
+deploy_aws:
+  extends: .deploy
+  variables: { CLOUD: aws }
+deploy_gcp:
+  extends: .deploy
+  variables: { CLOUD: gcp }
 EOF
-ls -la
-sed -n '1,80p' .gitlab-ci.yml
-```
-
-### Step 2 – Static checks before push
-
-```bash
-# Syntax / structure sanity (no runner required)
-test -s .gitlab-ci.yml
-grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
-# When a runner is available, push a branch and confirm the job is green
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); print(sorted(k for k in d if k.startswith('deploy')))"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-11/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Multi-Cloud Deployments with GitLab** always combines:
 
@@ -178,7 +201,11 @@ Production practice for **Multi-Cloud Deployments with GitLab** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -186,7 +213,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Trusting `*` subjects on the OIDC provider (any project can assume the role).  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -197,7 +228,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Multi-Cloud Deployments with GitLab changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -205,7 +240,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -215,26 +254,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Multi-Cloud Deployments with GitLab** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Multi-Cloud Deployments with GitLab** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Multi-Cloud Deployments with GitLab** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Security Scanning and DevSecOps](security-scanning-and-devsecops.md)
+- [Security Scanning and DevSecOps](security-scanning-and-devsecops.md)
+
+
 
 ## References
+
+
 
 - [OIDC with GitLab CI/CD](https://docs.gitlab.com/ee/ci/cloud_services/) · [AWS IAM OIDC](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html) · [Azure workload identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) · [GCP Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)

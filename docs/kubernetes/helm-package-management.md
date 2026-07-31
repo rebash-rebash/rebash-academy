@@ -37,18 +37,28 @@ comments: false
 
 ## Overview
 
+
+
 Install a chart from a repo with custom values, list/upgrade/rollback a release, and sketch chart structure (`Chart.yaml`, templates, values).
 
 **Helm** packages Kubernetes manifests as **charts**. Releases track installed instances. Prefer pinned chart versions in production.
 
 This is a core tutorial in **Module 14 · Package Management** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes Autoscaling](kubernetes-autoscaling.md)
 - Helm 3 CLI installed
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,13 +67,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Inspect `helm template` output  
 - [ ] Outline chart dependencies
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Helm architecture](../assets/excalidraw/k8s-helm-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -109,7 +127,10 @@ Prefer pinned chart versions in production; floating `latest` charts are supply-
 - Mixing `kubectl apply` and Helm on the same resources without ownership rules.
 - Trusting unverified third-party charts with cluster-admin RBAC inside.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -117,38 +138,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-14 && cd ~/rebash-k8s/module-14
 ```
 
-**Focus:** hands-on practice for Helm Package Management
+**Focus:** Install and inspect a Helm chart into a dedicated namespace (Helm from the Kubernetes track)
 
-### Step 1 – Core exercise
+### Step 1 – Create a chart and template it
 
 ```bash
-mkdir -p ~/rebash-k8s/module-14 && cd ~/rebash-k8s/module-14
-helm version
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm search repo nginx
-# Lightweight: create a local chart instead of full install if offline
-helm create rebash-chart
-helm template rebash-chart ./rebash-chart | head -n 40
-# Example install (optional):
-# helm install demo bitnami/nginx --set service.type=ClusterIP
-# helm list; helm uninstall demo
+kubectl create namespace rebash-lab
+helm create chart-demo
+helm lint chart-demo
+helm template chart-demo ./chart-demo -n rebash-lab --set replicaCount=1 | head -n 40
+```
+
+### Step 2 – Install, upgrade, and list the release
+
+```bash
+helm upgrade --install demo ./chart-demo -n rebash-lab --set replicaCount=2
+helm -n rebash-lab list
+kubectl -n rebash-lab get deploy,svc
+helm -n rebash-lab get values demo
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-lab --ignore-not-found || true
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-14/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Helm Package Management** always combines:
 
@@ -160,7 +193,11 @@ Production practice for **Helm Package Management** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -168,7 +205,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Upgrading with incomplete values and accidentally resetting replicas or resources to chart"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -179,7 +220,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Helm Package Management changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -187,7 +232,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -197,26 +246,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Helm Package Management** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Helm Package Management** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is a Helm chart, and what problem does it solve?
+2. What is the difference between `helm install` and `helm upgrade --install`?
+3. Where does Helm store release metadata in modern Helm 3?
+4. What risks come from installing charts with default values in production?
+5. How do values files help manage environment differences?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    `helm upgrade --install` creates the release if missing or upgrades it if present, which is convenient for CI idempotency. Plain `helm install` fails if the release already exists.
+
+!!! tip "Sample answer — question 4"
+    Default values often enable broad permissions, public images, or weak resource settings. Production needs reviewed values, pinned versions, least privilege, and secret handling outside plain values where possible.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md)
+- [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md)
+
+
 
 ## References
+
+
 
 - [Helm docs](https://helm.sh/docs/) · [REBASH Helm track](../helm/index.md)

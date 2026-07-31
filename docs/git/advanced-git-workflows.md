@@ -18,21 +18,32 @@ prerequisites:
 comments: false
 ---
 
+
 # Advanced Git Workflows
 
 ## Overview
+
+
 
 Branching strategy shapes how fast you ship and how painful merges become. GitFlow's long-lived branches suit scheduled releases; trunk-based development suits continuous deployment; GitHub Flow balances simplicity and review. Platform and application teams often need different models — this tutorial helps you choose and implement the right one.
 
 This is **Tutorial 17** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
 
+
+
 ## Prerequisites
+
+
 
 - [Git Hooks and Automation](git-hooks-and-automation.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -44,13 +55,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Document team workflow in CONTRIBUTING.md
 - [ ] Migrate gradually between workflow models
 
+
+
 ## Architecture
+
+
 
 Team workflows constrain which branches accept direct commits and how changes promote from development to release.
 
 ![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
 
+
+
 ## Theory
+
+
 
 ### GitHub Flow
 
@@ -178,67 +197,53 @@ git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short) %(
 
 Review quarterly with platform team; adjust workflow if branch lifetime exceeds one week consistently.
 
+
+
 ## Hands-on Lab
 
-### Step 1 – Simulate GitHub Flow
 
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-workflow-lab && cd /tmp/git-workflow-lab
+mkdir -p ~/rebash-git/advanced-git-workflows && cd ~/rebash-git/advanced-git-workflows
+```
+
+**Focus:** practise Git skills for: Advanced Git Workflows
+
+### Step 1 – Init repository
+
+```bash
 git init -b main
-echo "1.0.0" > VERSION && git add . && git commit -m "release: v1.0.0 baseline"
-git switch -c feature/add-metrics
-echo "metrics=on" >> config.env && git commit -am "feat: enable metrics"
-git switch main && git merge --no-ff feature/add-metrics -m "Merge PR: add metrics"
-git tag -a v1.1.0 -m "Release 1.1.0"
-git log --oneline --graph --decorate -5
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
 ```
 
-**Expected result:** Branches match the workflow under test (feature, release, or trunk).
-
-### Step 2 – Simulate hotfix (GitFlow-style)
-
-**Command:**
+### Step 2 – Cherry-pick + rebase combo
 
 ```bash
-git switch -c hotfix/security-patch v1.0.0 2>/dev/null || git switch -c hotfix/security-patch HEAD~2
-echo "patch=applied" >> security.patch && git add . && git commit -m "fix: security patch"
-git switch main && git merge --no-ff hotfix/security-patch -m "Merge hotfix: security"
-git tag -a v1.0.1 -m "Hotfix 1.0.1"
-git log --oneline --graph --all --decorate -8
-```
-
-**Expected result:** Promotion or release tag step succeeds.
-
-### Step 3 – Trunk-based short branch
-
-**Command:**
-
-```bash
+git switch -c topic
+echo t > t.txt && git add t.txt && git commit -m 'topic'
 git switch main
-git switch -c fix/typo
-echo "# fixed typo" >> README.md 2>/dev/null || echo "# README fixed" > README.md
-git commit -am "fix: typo in README"
-git switch main && git merge --ff-only fix/typo
-git branch -d fix/typo
-git log --oneline -3
+echo m > m.txt && git add m.txt && git commit -m 'mainline'
+git cherry-pick topic
+git log --oneline --graph --all | tee advanced.txt
 ```
 
-**Expected result:** You can point to which branches are protected from force-push.
-
-### Step 4 – Clean up
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-cd /tmp && rm -rf git-workflow-lab
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
-**Expected result:** Lab remotes cleaned up.
 
 
 ## Validation
+
+
 
 Confirm the lab before moving on:
 
@@ -253,7 +258,11 @@ Confirm the lab before moving on:
 | Protection | You can state which branches forbid force-push |
 | Cleanup | Lab remotes/repos removed |
 
+
+
 ## Code Walkthrough
+
+
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -266,18 +275,31 @@ Confirm the lab before moving on:
 ### CONTRIBUTING.md workflow snippet
 
 ```markdown
+
+
+
 ## Branching
+
+
 - Branch from `main`: `feature/`, `fix/`, `hotfix/`
 - Keep branches < 2 days (trunk-based)
 - Open PR when ready; require 1 approval + CI pass
 - Squash merge to `main`
 
+
+
 ## Releases
+
+
 - Tag `main` with `vX.Y.Z` for production deploy
 - Hotfix: branch from tag, merge to `main`, tag patch release
 ```
 
+
+
 ## Security Considerations
+
+
 
 - Document which branches are force-pushable; treat `main` and release lines as immutable history
 - Separate build identities from human identities for auditable releases
@@ -285,7 +307,11 @@ Confirm the lab before moving on:
 - Avoid embedding long-lived cloud keys in workflow files — use OIDC federation
 - Review monorepo path filters so skipped CI cannot bypass security checks
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "GitFlow for Terraform without release cadence"
     Long-lived develop branch drifts; plan diffs become unmanageable. Use trunk-based.
@@ -299,7 +325,11 @@ Confirm the lab before moving on:
 !!! warning "No documented hotfix path"
     Incidents cause ad-hoc force pushes. Document hotfix branch + cherry-pick procedure.
 
+
+
 ## Best Practices
+
+
 
 !!! tip "Optimise for merge frequency, not branch count"
     Integrate to main daily; reduce merge conflict cost.
@@ -313,7 +343,11 @@ Confirm the lab before moving on:
 !!! tip "Review workflow annually"
     Team scale and release cadence change — workflow should evolve.
 
+
+
 ## Troubleshooting
+
+
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -324,7 +358,11 @@ Confirm the lab before moving on:
 | Hotfix missing on develop | Incomplete GitFlow merge | Cherry-pick hotfix to integration branch |
 | Monorepo CI too slow | Full test on every commit | Path-based CI filters |
 
+
+
 ## Summary
+
+
 
 - **GitHub Flow:** main + feature PRs — simple, continuous deployment friendly
 - **Trunk-based:** very short branches, feature flags — highest merge frequency
@@ -333,26 +371,28 @@ Confirm the lab before moving on:
 - **Annotated tags** mark releases regardless of branching model
 - Document workflow in **CONTRIBUTING.md** and align with CI/CD gates
 
+
+
 ## Interview Questions
 
-1. What is trunk-based development?
-2. Compare GitFlow and GitHub Flow.
-3. When would you choose GitFlow over trunk-based?
-4. What role do feature flags play in branching strategy?
-5. How should DevOps/IaC repositories handle environment promotion?
-6. What is a hotfix branch, and how does it merge?
-7. Why are long-lived feature branches problematic?
-8. What merge strategy pairs well with trunk-based development?
-9. How do annotated tags relate to release workflow?
-10. What should CONTRIBUTING.md document about branching?
 
-??? tip "Sample Answers (Questions 1 and 5)"
+1. Explain **Advanced Git Workflows** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
-    **Q1 — Trunk-based:** Developers integrate to a single main branch frequently — ideally daily or multiple times daily. Feature branches, if used, live less than 48 hours. Incomplete features hide behind feature flags. Requires strong CI keeping main always green. Minimizes merge debt and enables continuous deployment.
+!!! tip "Sample answer — question 2"
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
 
-    **Q5 — IaC environment promotion:** Avoid long-lived environment branches that diverge. Store environment-specific values in separate directories (`envs/dev/`, `envs/prod/`), Terraform workspaces, or external config stores. Promote by merging to main and deploying with environment-specific pipeline parameters or GitOps paths — not by merging develop → release → main.
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
+
+
 
 - [Git Hooks and Automation](git-hooks-and-automation.md) *(previous)*
 - [Git Submodules and Subtrees](git-submodules-and-subtrees.md) *(next)*
@@ -363,7 +403,11 @@ Confirm the lab before moving on:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
+
+
 ## References
+
+
 
 - [Trunk Based Development](https://trunkbaseddevelopment.com/)
 - [GitFlow original post](https://nvie.com/posts/a-successful-git-branching-model/)

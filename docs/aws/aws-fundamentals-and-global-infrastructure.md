@@ -49,6 +49,8 @@ comments: false
 
 ## Overview
 
+
+
 Build a clear mental map of Amazon Web Services (AWS): Regions, Availability Zones (AZs), edge locations, the shared responsibility model, and safe first use of the AWS Command Line Interface (CLI) and CloudShell.
 
 AWS is a global public cloud platform. Before you launch compute or open a Virtual Private Cloud (VPC), you need to know **where** resources live, **who** is responsible for security, and **how** you authenticate to the Application Programming Interface (API). Wrong Region choices create latency, compliance, and cost surprises; misunderstanding shared responsibility creates security gaps.
@@ -60,13 +62,21 @@ This course is **AWS for Cloud & DevOps Engineers** — production habits from d
 
 This is a core tutorial in **Module 1 · AWS Fundamentals** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Linux Fundamentals](../linux/index.md) — terminal comfort
 - [Networking Fundamentals](../networking/index.md) — IP, DNS, HTTPS basics
 - An AWS account (Free Tier eligible) or read-only access for discovery commands
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -76,13 +86,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose a sensible home Region for labs  
 - [ ] Decide when to use the AWS CLI versus CloudShell, and run read-only discovery
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![AWS global infrastructure](../assets/excalidraw/aws-global-infrastructure.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -135,7 +153,13 @@ Cloud and DevOps work is Regional by default. Pipelines, Terraform state, EC2, a
 - Assuming CloudShell replaces a proper CLI/SSO setup for production automation  
 - Believing edge locations alone make an application multi-AZ resilient
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -143,55 +167,42 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-01 && cd ~/rebash-aws/module-01
 ```
 
-**Focus:** hands-on practice for AWS Fundamentals and Global Infrastructure
+**Focus:** verify identity with STS and record account/region facts
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-01
-cd ~/rebash-aws/module-01
-# Optional: aws --version && aws sts get-caller-identity
-```
-
-Read-only discovery. Prefer Free Tier Regions you already use (for example `eu-west-1` or `us-east-1`).
+### Step 1 – Caller identity
 
 ```bash
-cd ~/rebash-aws/module-01
-
-cat > notes.md << 'EOF'
-# Module 1 — AWS fundamentals
-- Region = geography; AZ = failure domain inside Region
-- Edge = CloudFront / Route 53 proximity
-- Shared responsibility: AWS facilities + hypervisor; you = IAM, network, data, guest OS
-- Home Region for labs: <fill in>
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head -n 10 | tee regions.txt
+tee safety.txt << 'EOF'
+Use a sandbox account. Enable budgets/alerts. Never commit access keys.
 EOF
-
-# Authenticated discovery (skip if no credentials yet)
-aws sts get-caller-identity
-aws ec2 describe-availability-zones --region "${AWS_DEFAULT_REGION:-eu-west-1}" \
-  --query 'AvailabilityZones[].{Zone:ZoneName,State:State}' --output table
-
-# Optional CloudShell: open from console → same identity, no local install
-# Optional LocalStack: endpoint-url http://localhost:4566 for offline CLI practice
+cat safety.txt
 ```
-
-!!! tip "Destroy nothing if you created nothing"
-    This module should create **no** billable resources. If you experimented in the console, delete those resources and confirm Cost Explorer shows no unexpected spend.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only — revoke any temporary lab keys you exported
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **AWS Fundamentals and Global Infrastructure** always combines:
 
@@ -203,7 +214,11 @@ Production practice for **AWS Fundamentals and Global Infrastructure** always co
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -211,7 +226,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Creating resources in the wrong Region and “losing” them in the console filter  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -222,7 +241,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode AWS Fundamentals and Global Infrastructure changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -230,7 +253,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -240,27 +267,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **AWS Fundamentals and Global Infrastructure** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **AWS Fundamentals and Global Infrastructure** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **AWS Fundamentals and Global Infrastructure** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
+- [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
+
+
 
 ## References
+
+
 
 - [AWS Global Infrastructure](https://aws.amazon.com/about-aws/global-infrastructure/)  
 - [Shared Responsibility Model](https://aws.amazon.com/compliance/shared-responsibility-model/)  

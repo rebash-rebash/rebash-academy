@@ -41,18 +41,28 @@ comments: false
 
 ## Overview
 
+
+
 Install `kubectl`, create a local learning cluster (kind recommended), and verify with `kubectl get nodes`.
 
 **kind** (Kubernetes in Docker) and **Minikube** suit laptops. **k3s** is light for VMs. **kubeadm** builds production-like clusters. Managed (EKS/AKS/GKE) is Module 19.
 
 This is a core tutorial in **Module 2 · Cluster Setup** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Kubernetes Architecture](kubernetes-architecture-and-components.md)
 - Docker Engine or Desktop running
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -61,13 +71,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Read kubeconfig contexts  
 - [ ] Contrast local vs managed
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -111,7 +129,10 @@ Local tools start control-plane and worker components for you. Managed clouds ho
 - Expecting Ingress or LoadBalancer to work on kind without installing a controller or using port mappings.
 - Treating a local single-node lab as equivalent to HA production networking and storage.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -119,35 +140,49 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-02 && cd ~/rebash-k8s/module-02
 ```
 
-**Focus:** hands-on practice for Installing Kubernetes and kubectl
+**Focus:** Verify kubectl connectivity and cluster prerequisites
 
-### Step 1 – Core exercise
+### Step 1 – Check client and cluster versions
 
 ```bash
-mkdir -p ~/rebash-k8s/module-02 && cd ~/rebash-k8s/module-02
 kubectl version --client
-# kind create cluster --name rebash
-# Or: minikube start
-kind create cluster --name rebash 2>/dev/null || minikube start 2>/dev/null || echo "Install kind or minikube"
+kubectl config current-context
 kubectl cluster-info
 kubectl get nodes -o wide
-kubectl config get-contexts
+```
+
+### Step 2 – Create a smoke-test namespace and Pod
+
+```bash
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab run smoke --image=busybox:1.36 --restart=Never --command -- echo 'cluster-ok'
+kubectl -n rebash-lab wait --for=jsonpath='{.status.phase}'=Succeeded pod/smoke --timeout=60s || kubectl -n rebash-lab get pod smoke -o yaml
+kubectl -n rebash-lab logs smoke
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-02/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Installing Kubernetes and kubectl** always combines:
 
@@ -159,7 +194,11 @@ Production practice for **Installing Kubernetes and kubectl** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -167,7 +206,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Installing only Docker Desktop “Kubernetes” and not verifying `kubectl get nodes` Ready."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -178,7 +221,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Installing Kubernetes and kubectl changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -186,7 +233,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -196,26 +247,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Installing Kubernetes and kubectl** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Installing Kubernetes and kubectl** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What components must be reachable for kubectl to manage a cluster?
+2. What does kubeconfig contain, and why should it be protected?
+3. How do you verify that your client can authenticate to the API server?
+4. What are the risks of using an admin kubeconfig on a shared workstation?
+5. Name two common local cluster options for learning Kubernetes.
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Run `kubectl cluster-info` or `kubectl get nodes`. Success shows credentials and network path to the API server work. Failures usually indicate wrong context, expired tokens, or network blocks.
+
+!!! tip "Sample answer — question 4"
+    Admin kubeconfigs grant cluster-wide power. On shared machines they risk credential theft and accidental destructive commands. Prefer short-lived credentials, least privilege, and separate contexts per environment.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [kubectl Essentials and Workflows](kubectl-essentials-and-workflows.md)
+- [kubectl Essentials and Workflows](kubectl-essentials-and-workflows.md)
+
+
 
 ## References
+
+
 
 - [Install kubectl](https://kubernetes.io/docs/tasks/tools/) · [kind](https://kind.sigs.k8s.io/)

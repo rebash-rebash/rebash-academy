@@ -43,17 +43,27 @@ comments: false
 
 ## Overview
 
+
+
 Write maintainable workflow YAML using `strategy.matrix`, job and step `if:` conditionals, job outputs, and a first **reusable workflow** call pattern.
 
 Beyond a single job, production workflows need **fan-out** (test on multiple OS or language versions), **selective execution** (`if:` on jobs and steps), and **reuse** so fifty repositories do not diverge. A **matrix** expands one job definition into many. **Outputs** pass data between jobs. **Reusable workflows** (`workflow_call`) let a platform team own a canonical CI definition that callers invoke with inputs.
 
 This is a core tutorial in **Module 4 · Workflow Syntax** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [GitHub-Hosted and Self-Hosted Runners](github-hosted-and-self-hosted-runners.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -63,13 +73,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Sketch a `workflow_call` reusable workflow and a caller  
 - [ ] Name when to prefer composite actions vs reusable workflows
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Workflow syntax](../assets/excalidraw/gha-workflow-syntax.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -128,7 +146,10 @@ Author both files in one repository for learning; in production, platform teams 
 - Treating reusable workflow `@main` as a stable contract — pin versions for production.
 - Overusing `continue-on-error` so red builds look green in required checks.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -136,110 +157,52 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-04/.github/workflows && cd ~/rebash-github-actions/module-04/.github/workflows
 ```
 
-**Focus:** hands-on practice for Workflow Syntax: Matrix and Reusable Workflows
+**Focus:** build a matrix workflow and reusable workflow stub
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-github-actions/module-04/.github/workflows
-cd ~/rebash-github-actions/module-04
-```
-
-Build a matrix job plus a local reusable workflow pair.
-
-```bash
-cd ~/rebash-github-actions/module-04
-printf 'demo\n' > README.md
-```
+### Step 1 – Matrix + reusable
 
 {% raw %}
-```yaml
-# .github/workflows/reusable-ci.yml
-name: Reusable CI
-
-on:
-  workflow_call:
-    inputs:
-      app_name:
-        description: Application name
-        required: true
-        type: string
-    outputs:
-      status_line:
-        description: Summary line
-        value: ${{ jobs.verify.outputs.status_line }}
-
+```bash
+mkdir -p .github/workflows
+cat > .github/workflows/matrix.yml << 'EOF'
+name: matrix
+on: workflow_dispatch
 jobs:
-  verify:
+  test:
     runs-on: ubuntu-latest
-    outputs:
-      status_line: ${{ steps.meta.outputs.status_line }}
     strategy:
-      fail-fast: false
       matrix:
-        python-version: ['3.11', '3.12']
+        python: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Smoke test
-        run: |
-          python --version
-          test -f README.md
-          echo "OK ${{ inputs.app_name }} on ${{ matrix.python-version }}"
-      - name: Set output once
-        id: meta
-        if: matrix.python-version == '3.12'
-        run: echo "status_line=${{ inputs.app_name }}-ok" >> "$GITHUB_OUTPUT"
+      - run: echo "python ${{ matrix.python }}"
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/matrix.yml')); print('matrix OK')"
 ```
 {% endraw %}
-
-{% raw %}
-```yaml
-# .github/workflows/caller.yml
-name: Module 4 caller
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-  workflow_dispatch:
-
-jobs:
-  call-reusable:
-    uses: ./.github/workflows/reusable-ci.yml
-    with:
-      app_name: rebash-demo
-
-  after:
-    needs: call-reusable
-    if: needs.call-reusable.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Reusable finished — ${{ needs.call-reusable.outputs.status_line }}"
-```
-{% endraw %}
-
-```bash
-# Push to GitHub and open the Actions tab to see matrix rows under the reusable run
-# actionlint .github/workflows/*.yml
-```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
+# File-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-github-actions/module-04/.github/workflows/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Workflow Syntax: Matrix and Reusable Workflows** always combines:
 
@@ -251,7 +214,11 @@ Production practice for **Workflow Syntax: Matrix and Reusable Workflows** alway
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -259,7 +226,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Forgetting that matrix failure fails the workflow when `fail-fast: true` (default)."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -270,7 +241,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Workflow Syntax: Matrix and Reusable Workflows changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -278,7 +253,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -288,27 +267,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Workflow Syntax: Matrix and Reusable Workflows** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Workflow Syntax: Matrix and Reusable Workflows** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Workflow Syntax: Matrix and Reusable Workflows** fit into a GitHub Actions delivery model?
+2. A workflow fails only on `pull_request` — what differences do you inspect?
+3. Why pin Actions and limit `permissions`?
+4. How should production secrets and OIDC cloud access be designed?
+5. How do you keep workflows reusable without copy-paste sprawl?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+
+!!! tip "Sample answer — question 4"
+    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
+- [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
+
+
 
 ## References
+
+
 
 - [Workflow syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)  
 - [Running a matrix of jobs](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)  

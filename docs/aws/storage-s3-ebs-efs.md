@@ -48,6 +48,8 @@ comments: false
 
 ## Overview
 
+
+
 Select the right AWS storage service for each workload — Amazon Simple Storage Service (S3), Elastic Block Store (EBS), Elastic File System (EFS), and a brief Amazon FSx overview — and apply storage classes, lifecycle rules, and encryption correctly.
 
 Cloud storage is not one product. **Block**, **file**, and **object** models solve different problems. Using EBS like a shared drive, or S3 like a POSIX disk, creates outages and surprise bills. This module gives Cloud and DevOps engineers a decision framework used in production architectures.
@@ -57,12 +59,20 @@ Cloud storage is not one product. **Block**, **file**, and **object** models sol
 
 This is a core tutorial in **Module 5 · Storage** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
 - Comfortable with Linux filesystems and the AWS CLI
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -72,13 +82,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Know when EFS or FSx fits shared file access  
 - [ ] Enforce encryption at rest (SSE-S3, SSE-KMS, client-side) and in transit
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![AWS storage](../assets/excalidraw/aws-storage.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -130,7 +148,13 @@ Lifecycle sketch: Standard → IA (30d) → Glacier Flexible (90d) → expire (3
 - Mounting EFS without TLS or the correct security group and blaming “hangs”  
 - Choosing FSx for every shared-file need when EFS or S3 would suffice
 
+
+
 ## Hands-on Lab
+
+
+!!! warning "Cost and account safety"
+    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
 
 Create a workspace for this tutorial.
 
@@ -138,84 +162,43 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-aws/module-05 && cd ~/rebash-aws/module-05
 ```
 
-**Focus:** hands-on practice for Storage: S3, EBS, and EFS
+**Focus:** list S3 buckets and inspect one bucket's encryption/public-access block
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-aws/module-05
-cd ~/rebash-aws/module-05
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-aws s3 ls
-aws ec2 describe-volumes --query 'Volumes[].{Id:VolumeId,Size:Size,State:State,Type:VolumeType}' --output table
-```
-
-Create a short-lived private bucket, apply lifecycle + encryption, then **delete everything**.
+### Step 1 – S3 hygiene check
 
 ```bash
-cd ~/rebash-aws/module-05
-ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-BUCKET="rebash-lab-m5-${ACCOUNT}-$(date +%s)"
-REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-
-aws s3api create-bucket --bucket "$BUCKET" --region "$REGION" \
-  --create-bucket-configuration LocationConstraint="$REGION" 2>/dev/null \
-  || aws s3api create-bucket --bucket "$BUCKET" --region us-east-1
-
-aws s3api put-public-access-block --bucket "$BUCKET" \
-  --public-access-block-configuration \
-  BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
-
-aws s3api put-bucket-encryption --bucket "$BUCKET" \
-  --server-side-encryption-configuration \
-  '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
-
-aws s3api put-bucket-lifecycle-configuration --bucket "$BUCKET" \
-  --lifecycle-configuration '{
-    "Rules": [{
-      "ID": "abort-and-expire-lab",
-      "Status": "Enabled",
-      "Filter": { "Prefix": "" },
-      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 1 },
-      "Expiration": { "Days": 3 }
-    }]
-  }'
-
-echo "rebash module 5" > hello.txt
-aws s3 cp hello.txt "s3://${BUCKET}/hello.txt"
-aws s3api head-object --bucket "$BUCKET" --key hello.txt \
-  --query '{Class:StorageClass,SSE:ServerSideEncryption}' --output table
-
-# Cleanup — always
-aws s3 rm "s3://${BUCKET}" --recursive
-aws s3api delete-bucket --bucket "$BUCKET"
-echo "Deleted bucket $BUCKET"
-
-cat > storage-decision.md << 'EOF'
-# Storage chooser
-Object API / web assets / backups → S3 (+ lifecycle)
-Single-instance disk → EBS gp3 + snapshots
-Shared POSIX across fleet → EFS
-Windows SMB / Lustre HPC → FSx family
-EOF
+aws s3api list-buckets --query 'Buckets[].Name' --output text | tr '\t' '\n' | head -n 20 | tee buckets.txt
+BUCKET=$(head -n 1 buckets.txt)
+if [ -n "$BUCKET" ]; then
+  aws s3api get-public-access-block --bucket "$BUCKET" 2>/dev/null | tee pab.json || echo 'No PAB or no permission'
+  aws s3api get-bucket-encryption --bucket "$BUCKET" 2>/dev/null | tee enc.json || echo 'No encryption config visible'
+else
+  echo 'No buckets visible — still record the commands.' | tee buckets.txt
+fi
 ```
-
-Optional: `aws ec2 describe-snapshots --owner-ids self` and delete unused lab snapshots.
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
+# Read-only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-aws/module-05/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Storage: S3, EBS, and EFS** always combines:
 
@@ -227,7 +210,11 @@ Production practice for **Storage: S3, EBS, and EFS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -235,7 +222,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Public buckets “for just a minute”  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -246,7 +237,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Storage: S3, EBS, and EFS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -254,7 +249,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -264,27 +263,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Storage: S3, EBS, and EFS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Storage: S3, EBS, and EFS** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **Storage: S3, EBS, and EFS** appear in a well-run AWS landing zone?
+2. Users report timeouts to a service — what is your AWS-oriented triage order?
+3. How do IAM roles and least privilege change your design for this topic?
+4. What cost or blast-radius controls should wrap experiments in this area?
+5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+
+!!! tip "Sample answer — question 4"
+    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Databases on AWS](databases-on-aws.md)
+- [Databases on AWS](databases-on-aws.md)
+
+
 
 ## References
+
+
 
 - [Amazon S3 User Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)  
 - [Amazon EBS](https://docs.aws.amazon.com/ebs/latest/userguide/what-is-ebs.html)  

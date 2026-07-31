@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Merge branches with fast-forward and three-way merges, resolve a conflict deliberately, and abort cleanly when needed.
 
 Merges integrate history. Conflicts are normal — resolve with intent, test, then commit.
 
 This is a core tutorial in **Module 6 · Merging** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Branching Fundamentals](branching-fundamentals.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `merge --abort`  
 - [ ] Prefer PR merges in teams
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Merge process](../assets/excalidraw/git-merge-process.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -100,7 +118,10 @@ Git finds the best common ancestor (merge base), compares both tips to that base
 - Merging broken WIP into `main` to “deal with it later”  
 - Using ours/theirs strategies to hide real design disagreements
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -108,46 +129,63 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-06 && cd ~/rebash-git/module-06
 ```
 
-**Focus:** hands-on practice for Merging and Merge Conflicts
+**Focus:** practise Git skills for: Merging and Merge Conflicts
 
-### Step 1 – Core exercise
+### Step 1 – Init repository
 
 ```bash
-mkdir -p ~/rebash-git/module-06 && cd ~/rebash-git/module-06
 git init -b main
-git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
-echo 'v1' > cfg.txt && git add cfg.txt && git commit -m "chore: v1"
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline
+```
 
-git switch -c feature/conflict
-echo 'feature' > cfg.txt && git add cfg.txt && git commit -m "feat: feature edit"
+### Step 2 – Merge conflict
 
+```bash
+echo base > conflict.txt
+git add conflict.txt && git commit -m 'base'
+git switch -c left
+echo left > conflict.txt && git commit -am 'left'
 git switch main
-echo 'mainline' > cfg.txt && git add cfg.txt && git commit -m "fix: main edit"
-
-git merge feature/conflict || true
-# resolve:
-cat > cfg.txt << 'EOF'
+git switch -c right
+echo right > conflict.txt && git commit -am 'right'
+git switch main
+git merge left
+git merge right || true
+tee conflict.txt << 'EOF'
 resolved
 EOF
-git add cfg.txt
-git commit -m "merge: resolve cfg.txt"
-git log --oneline --graph
+git add conflict.txt
+git commit -m 'resolve conflict'
+git log --oneline --graph --all | tee merge.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
+# Safe local repo under the lab directory; delete the folder when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-git/module-06/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Merging and Merge Conflicts** always combines:
 
@@ -159,7 +197,11 @@ Production practice for **Merging and Merge Conflicts** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -167,7 +209,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Resolving conflicts by blindly taking “theirs” on Terraform without reading  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -178,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Merging and Merge Conflicts changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -186,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -196,26 +250,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Merging and Merge Conflicts** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Merging and Merge Conflicts** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Explain **Merging and Merge Conflicts** as you would in a senior engineer interview.
+2. You rebased a shared branch and teammates are blocked — what now?
+3. How do you recover a commit that seems lost?
+4. What Git security controls belong in a production org?
+5. How should Git history look for Infrastructure as Code (IaC) repos?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+
+!!! tip "Sample answer — question 4"
+    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
+- [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
+
+
 
 ## References
+
+
 
 - [Pro Git — Basic Merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging)

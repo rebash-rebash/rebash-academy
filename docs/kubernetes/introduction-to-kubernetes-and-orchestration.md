@@ -41,17 +41,27 @@ comments: false
 
 ## Overview
 
+
+
 Explain what Kubernetes orchestrates, why single-host Docker is not enough for production fleets, and use cluster vocabulary correctly.
 
 **Kubernetes** schedules containers across machines, keeps desired state, and exposes stable networking. This course is **Kubernetes for Cloud & DevOps Engineers** — operate clusters, not slide-deck trivia.
 
 This is a core tutorial in **Module 1 · Kubernetes Fundamentals** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Docker](../docker/index.md) · [Linux](../linux/index.md) · networking basics
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,13 +70,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast Compose vs Kubernetes  
 - [ ] Name CKA/CKAD-relevant domains
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -112,7 +130,10 @@ Desired state is the source of truth. If a Pod dies, a controller recreates it. 
 - Confusing the container runtime (containerd) with orchestration — Kubernetes orchestrates; the runtime only runs containers.
 - Jumping into production clusters before learning desired-state mental models and kubectl inspection habits.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -120,39 +141,51 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-01 && cd ~/rebash-k8s/module-01
 ```
 
-**Focus:** hands-on practice for Introduction to Kubernetes and Orchestration
+**Focus:** Run your first workload and contrast it with a single container process
 
-### Step 1 – Core exercise
+### Step 1 – Create a namespace and run a Pod
 
 ```bash
-mkdir -p ~/rebash-k8s/module-01
-cd ~/rebash-k8s/module-01
+kubectl create namespace rebash-lab
+kubectl -n rebash-lab run hello --image=nginx:1.27-alpine --port=80
+kubectl -n rebash-lab wait --for=condition=Ready pod/hello --timeout=60s
+kubectl -n rebash-lab get pods -o wide
 ```
 
+### Step 2 – Inspect orchestration metadata
+
 ```bash
-cd ~/rebash-k8s/module-01
-cat > why-k8s.md << 'EOF'
-- Desired state API
-- Multi-node scheduling
-- Rolling updates / self-heal
-EOF
-kubectl version --client 2>/dev/null || echo "Install kubectl in Module 2"
+kubectl -n rebash-lab describe pod hello | head -n 40
+kubectl -n rebash-lab get pod hello -o jsonpath='{.status.podIP}{"
+"}{.spec.nodeName}{"
+"}'
+kubectl -n rebash-lab delete pod hello
+# Note: a bare Pod is not recreated — Deployments restore desired replicas
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Introduction to Kubernetes and Orchestration** always combines:
 
@@ -164,7 +197,11 @@ Production practice for **Introduction to Kubernetes and Orchestration** always 
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -172,7 +209,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Treating Kubernetes as “Docker with YAML” and ignoring controllers — bare Pods do not self"
     Validate assumptions against the Theory section and official docs before changing production.
@@ -183,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Introduction to Kubernetes and Orchestration changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -191,7 +236,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -201,26 +250,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Introduction to Kubernetes and Orchestration** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Introduction to Kubernetes and Orchestration** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What problem does container orchestration solve beyond running a single container?
+2. What is a Pod, and why is it the smallest deployable unit?
+3. How does desired state reconciliation differ from imperative scripting?
+4. What operational risks appear if you only run containers with Docker on one host in production?
+5. Name three capabilities Kubernetes provides out of the box for applications.
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    A Pod is one or more containers sharing network and storage namespaces. Kubernetes schedules and restarts Pods as units, so the Pod—not the container—is the atomic deployable object.
+
+!!! tip "Sample answer — question 4"
+    A single host lacks automated rescheduling, rolling updates, and cluster-wide service discovery. Failures of that host take everything down, and scaling is manual and error-prone.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Kubernetes Architecture and Components](kubernetes-architecture-and-components.md)
+- [Kubernetes Architecture and Components](kubernetes-architecture-and-components.md)
+
+
 
 ## References
+
+
 
 - [Kubernetes overview](https://kubernetes.io/docs/concepts/overview/)

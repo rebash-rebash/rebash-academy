@@ -42,17 +42,27 @@ comments: false
 
 ## Overview
 
+
+
 Separate CI (build/push images) from GitOps (desired cluster state in Git) and sketch an Argo CD Application sync/rollback flow.
 
 **GitOps**: Git is source of truth; a reconciler (Argo CD / Flux) syncs the cluster. Progressive delivery (Argo Rollouts / Flagger) gates traffic.
 
 This is a core tutorial in **Module 15 · GitOps** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Helm](helm-package-management.md) · [GitOps fundamentals](../git/gitops-fundamentals.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -61,13 +71,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe Argo CD sync / rollback  
 - [ ] Layout app vs config repos
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitOps workflow](../assets/excalidraw/k8s-gitops-workflow.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -108,7 +126,10 @@ Desired state lives in Git; the cluster is a projection. Controllers still own r
 - Monorepo paths without directory-scoped Applications — one bad sync affects all.
 - Treating sync success as user-success without app health/metrics gates.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -116,55 +137,80 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev} && cd ~/rebash-k8s/module-15/{apps/demo,clusters/dev}
 ```
 
-**Focus:** hands-on practice for GitOps and CI/CD with Kubernetes
+**Focus:** Treat cluster desired state as versioned manifests with a dry-run apply loop
 
-### Step 1 – Core exercise
+### Step 1 – Initialise a GitOps-style manifest repo layout
 
 ```bash
-mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev}
-cd ~/rebash-k8s/module-15
-cat > apps/demo/deployment.yaml << 'EOF'
+kubectl create namespace rebash-lab
+mkdir -p apps/demo overlays/lab
+cat > apps/demo/deployment.yaml <<'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo
+  name: gitops-demo
+  namespace: rebash-lab
+  labels:
+    app: gitops-demo
 spec:
-  replicas: 2
+  replicas: 1
   selector:
-    matchLabels: { app: demo }
+    matchLabels:
+      app: gitops-demo
   template:
     metadata:
-      labels: { app: demo }
+      labels:
+app: gitops-demo
     spec:
       containers:
-        - name: demo
-          image: nginx:1.26-alpine
+      - name: nginx
+image: nginx:1.27-alpine
 EOF
-cat > clusters/dev/kustomization.yaml << 'EOF'
+cat > overlays/lab/kustomization.yaml <<'EOF'
 resources:
   - ../../apps/demo/deployment.yaml
+images:
+  - name: nginx
+    newTag: 1.27-alpine
 EOF
-# Simulate GitOps apply
-kubectl apply -k clusters/dev
-kubectl get deploy demo
-kubectl delete -k clusters/dev
-# Real: install Argo CD and point Application at this repo path
+git init -b main
+git add apps overlays
+git -c user.email=lab@rebash.local -c user.name=Lab commit -m "Add GitOps demo manifests"
+```
+
+### Step 2 – Apply from Git and verify drift detection habit
+
+```bash
+kubectl apply -k overlays/lab
+kubectl -n rebash-lab rollout status deploy/gitops-demo
+kubectl -n rebash-lab get deploy gitops-demo -o yaml | grep -A2 'image:'
+# Simulate a CI check: render and diff without mutating the live cluster
+kubectl diff -k overlays/lab || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
+kubectl delete namespace rebash-lab --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-k8s/module-15/{apps/demo,clusters/dev}/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **GitOps and CI/CD with Kubernetes** always combines:
 
@@ -176,7 +222,11 @@ Production practice for **GitOps and CI/CD with Kubernetes** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for kubernetes as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -184,7 +234,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Storing plaintext Secrets in Git."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -195,7 +249,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode GitOps and CI/CD with Kubernetes changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -203,7 +261,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -213,26 +275,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **GitOps and CI/CD with Kubernetes** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **GitOps and CI/CD with Kubernetes** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is GitOps in the context of Kubernetes delivery?
+2. Why is the Git repository treated as the source of truth rather than imperative kubectl changes?
+3. What is the difference between push-based CI deploy jobs and pull-based GitOps agents?
+4. What security trade-offs exist when CI pipelines hold kubeconfig credentials versus a cluster-side reconciler?
+5. How do you detect and remediate configuration drift?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Git records the desired state, enabling review, audit, and rollback through normal version control. Imperative cluster edits are easy to lose and hard to reproduce across environments.
+
+!!! tip "Sample answer — question 4"
+    CI push models concentrate powerful credentials in the pipeline. Pull-based controllers keep credentials in-cluster with narrower RBAC, reducing blast radius if the CI system is compromised, at the cost of another in-cluster component to operate.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Platform Engineering on Kubernetes](platform-engineering-on-kubernetes.md)
+- [Platform Engineering on Kubernetes](platform-engineering-on-kubernetes.md)
+
+
 
 ## References
+
+
 
 - [Argo CD](https://argo-cd.readthedocs.io/) · [OpenGitOps](https://opengitops.dev/)

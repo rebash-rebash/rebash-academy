@@ -39,17 +39,27 @@ comments: false
 
 ## Overview
 
+
+
 Describe the Docker client–daemon path and the roles of `dockerd`, `containerd`, and the OCI runtime so you can debug “where did my request fail?”
 
 You talk to the **Docker CLI**; it calls the **Docker Engine API** on `dockerd`. The daemon uses **containerd** and **runc** to create containers on the host kernel.
 
 This is a core tutorial in **Module 1 · Container Fundamentals** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Introduction to Containers and Docker](introduction-to-containers-and-docker.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -58,13 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Know what `docker context` selects  
 - [ ] Relate namespaces/cgroups to isolation
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Docker architecture](../assets/excalidraw/docker-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -100,7 +118,10 @@ You type `docker` commands; the CLI calls the Engine API (local Unix socket or T
 - Assuming Desktop networking equals Linux Engine networking  
 - Confusing image ID, digest, and tag
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -108,33 +129,39 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-01-arch && cd ~/rebash-docker/module-01-arch
 ```
 
-**Focus:** hands-on practice for Docker Architecture and Components
+**Focus:** map client/daemon/images/containers with docker info
 
-### Step 1 – Core exercise
+### Step 1 – Architecture signals
 
 ```bash
-mkdir -p ~/rebash-docker/module-01-arch && cd ~/rebash-docker/module-01-arch
-cat > architecture.md << 'EOF'
-CLI → dockerd → containerd → runc → kernel
-EOF
-docker info 2>/dev/null | head -n 30 || echo "Need Module 2 install"
-docker context ls 2>/dev/null || true
+docker version
+docker info | tee info.txt
+docker system df | tee df.txt
+printf '%s\n' 'CLI -> API -> dockerd -> containerd/runc + image graph driver' | tee model.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+# Inspection only
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-01-arch/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Docker Architecture and Components** always combines:
 
@@ -146,7 +173,11 @@ Production practice for **Docker Architecture and Components** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -154,7 +185,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Exposing the Docker socket without understanding it is root-equivalent  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -165,7 +200,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Docker Architecture and Components changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -173,7 +212,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -183,26 +226,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Docker Architecture and Components** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Docker Architecture and Components** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Docker Architecture and Components** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Docker Installation and Setup](docker-installation-and-setup.md)
+- [Docker Installation and Setup](docker-installation-and-setup.md)
+
+
 
 ## References
+
+
 
 - [Docker Engine architecture](https://docs.docker.com/engine/)

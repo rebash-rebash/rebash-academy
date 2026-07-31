@@ -40,17 +40,27 @@ comments: false
 
 ## Overview
 
+
+
 Apply SemVer to charts, structure an enterprise chart repo, and complete a production readiness checklist.
 
 Production charts are boring: small templates, documented values, pinned deps, OCI publish, CI lint/template, GitOps deploy. Treat chart version bumps as release engineering.
 
 This is a core tutorial in **Module 11 · Production Helm** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - Modules 7–10
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Document values (README / values schema)  
 - [ ] Complete an excellence checklist
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![OCI registry](../assets/excalidraw/helm-oci-registry.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -113,7 +131,10 @@ Excellence means you can answer: What changed in 1.4.0? Which values are require
 - Undocumented required values discovered only in production.
 - Publishing mutable `latest` chart tags in OCI for production promotion.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -121,50 +142,60 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-helm/module-11 && cd ~/rebash-helm/module-11
 ```
 
-**Focus:** hands-on practice for Production Helm Practices
+**Focus:** Pin versions, use values files, and verify before upgrade
 
-### Step 1 – Core exercise
+### Step 1 – Prepare production-style install inputs
 
 ```bash
-mkdir -p ~/rebash-helm/module-11 && cd ~/rebash-helm/module-11
-helm create rebash-prod
-# Bump Chart.yaml version intentionally
-python3 - <<'PY'
-from pathlib import Path
-p = Path("rebash-prod/Chart.yaml")
-text = p.read_text()
-text = text.replace("version: 0.1.0", "version: 0.1.1")
-p.write_text(text)
-print("chart version -> 0.1.1")
-PY
-helm package ./rebash-prod
-ls -la rebash-prod-*.tgz
-cat > production-checklist.md << 'EOF'
-- [ ] Chart SemVer + changelog
-- [ ] values.schema.json (optional but useful)
-- [ ] README documents required values
-- [ ] No secrets in chart
-- [ ] CI: lint + template (dev/stage/prod values)
-- [ ] Published to OCI with immutable tag
-- [ ] GitOps Application per env
-- [ ] Rollback tested
+kubectl create namespace rebash-helm
+helm create prod-demo
+# Pin chart version in Chart.yaml (already 0.1.0) and freeze image tag via values
+cat > prod-values.yaml <<'EOF'
+replicaCount: 2
+image:
+  tag: "1.27-alpine"
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
 EOF
+helm lint prod-demo
+helm template demo ./prod-demo -n rebash-helm -f prod-values.yaml > /tmp/prod-render.yaml
+grep -E 'replicas:|image:|cpu:' /tmp/prod-render.yaml | head -n 20
+```
+
+### Step 2 – Upgrade with atomic flag and check history
+
+```bash
+helm upgrade --install demo ./prod-demo -n rebash-helm -f prod-values.yaml --atomic --timeout 2m
+helm -n rebash-helm history demo
+kubectl -n rebash-helm get deploy -o wide
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
+helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl delete namespace rebash-helm --ignore-not-found
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-helm/module-11/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Production Helm Practices** always combines:
 
@@ -176,7 +207,11 @@ Production practice for **Production Helm Practices** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for helm as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -184,7 +219,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Bumping only `appVersion` when templates changed — consumers track **chart** `version`."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -195,7 +234,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Production Helm Practices changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -203,7 +246,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -213,26 +260,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Production Helm Practices** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Production Helm Practices** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. Which Helm flags help safer production upgrades?
+2. How should chart and image versions be pinned?
+3. What belongs in a release checklist before upgrading prod?
+4. How do you limit blast radius of a bad chart upgrade?
+5. Why keep values structured per environment rather than one mega file?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    `--atomic`, timeouts, and staged environments help upgrades fail cleanly. Pin chart version and image tags, review `helm diff`/`template` output, and ensure PDBs exist for the app.
+
+!!! tip "Sample answer — question 4"
+    Use canary namespaces, smaller replica changes, and fast rollback. Separate prod pipelines with approvals so a bad values edit cannot silently ship.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Troubleshooting Helm](troubleshooting-helm.md)
+- [Troubleshooting Helm](troubleshooting-helm.md)
+
+
 
 ## References
+
+
 
 - [Chart best practices](https://helm.sh/docs/chart_best_practices/) · [SemVer](https://semver.org/)

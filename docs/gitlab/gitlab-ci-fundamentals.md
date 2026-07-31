@@ -43,6 +43,8 @@ comments: false
 
 ## Overview
 
+
+
 Explain what CI/CD solves, map GitLab’s architecture to pipelines and runners, and define stage, job, and pipeline in ops language.
 
 **Continuous Integration (CI)** builds and tests every change in Git. **Continuous Delivery / Deployment (CD)** promotes those builds toward production with gates you control. **GitLab CI/CD** stores the automation definition as `.gitlab-ci.yml` next to the application code, so review, history, and merge requests share one system.
@@ -51,12 +53,20 @@ This course is **GitLab CI/CD for Cloud & DevOps Engineers** — production pipe
 
 This is a core tutorial in **Module 1 · GitLab CI/CD Fundamentals** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Git](../git/index.md) — commits, branches, and merge requests
 - [Linux](../linux/index.md) — comfortable terminal and YAML editing
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -65,13 +75,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast Free / Premium / Ultimate and SaaS vs self-managed  
 - [ ] Name when shared runners are enough vs when you need dedicated ones
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![GitLab architecture](../assets/excalidraw/gitlab-architecture.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -120,7 +138,10 @@ You do **not** need a paid GitLab instance for early labs: use **GitLab.com free
 - Free-tier minutes are finite on SaaS — lint and local runners save quota.
 - Stages are not the only ordering model; later modules cover `needs` DAGs.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -128,66 +149,62 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-01 && cd ~/rebash-gitlab/module-01
 ```
 
-**Focus:** hands-on practice for GitLab CI/CD Fundamentals
+**Focus:** author a valid .gitlab-ci.yml and validate stages locally
 
-### Step 1 – Core exercise
-
-```bash
-mkdir -p ~/rebash-gitlab/module-01
-cd ~/rebash-gitlab/module-01
-```
+### Step 1 – Pipeline skeleton
 
 ```bash
-cd ~/rebash-gitlab/module-01
+mkdir -p src
+echo 'print("ok")' > src/hello.py
 cat > .gitlab-ci.yml << 'EOF'
-stages:
-  - build
-  - test
+stages: [lint, test]
 
-variables:
-  APP_NAME: rebash-demo
-
-build_job:
-  stage: build
+lint:
+  stage: lint
+  image: python:3.12-alpine
   script:
-    - echo "Building $APP_NAME on $CI_COMMIT_SHORT_SHA"
-    - echo "build-ok" > build.txt
-  artifacts:
-    paths:
-      - build.txt
-    expire_in: 1 hour
+    - python -m py_compile src/hello.py
 
-test_job:
+test:
   stage: test
+  image: python:3.12-alpine
   script:
-    - test -f build.txt
-    - echo "Pipeline $CI_PIPELINE_ID OK"
+    - python src/hello.py
 EOF
-
-# Optional: lint without spending CI minutes
-# glab ci lint .gitlab-ci.yml
-# npx gitlab-ci-local --list   # if installed
-python3 - << 'PY'
-import yaml
-yaml.safe_load(open(".gitlab-ci.yml"))
-print("YAML parse OK")
+python3 - <<'PY'
+import yaml,sys
+with open('.gitlab-ci.yml') as f:
+    data=yaml.safe_load(f)
+assert 'stages' in data and 'lint' in data
+print('gitlab-ci.yml parsed OK; stages=', data['stages'])
 PY
+tee NOTES.txt << 'EOF'
+Push to GitLab to run on a shared/runner. Use CI Lint in the UI for deeper validation.
+EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
+# Keep the YAML; no cloud resources created
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-gitlab/module-01/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **GitLab CI/CD Fundamentals** always combines:
 
@@ -199,7 +216,11 @@ Production practice for **GitLab CI/CD Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -207,7 +228,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "CI is not “the runner” — GitLab schedules; runners execute."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -218,7 +243,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode GitLab CI/CD Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -226,7 +255,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -236,27 +269,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **GitLab CI/CD Fundamentals** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **GitLab CI/CD Fundamentals** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. How does **GitLab CI/CD Fundamentals** show up in a real GitLab delivery workflow?
+2. A pipeline is stuck / red — what do you check first?
+3. How do `needs`, stages, and artefacts interact?
+4. How should secrets and cloud credentials be handled in GitLab CI?
+5. How would you keep merge-request pipelines fast but still safe?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+
+!!! tip "Sample answer — question 4"
+    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md)
+- [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md)
+
+
 
 ## References
+
+
 
 - [GitLab CI/CD concepts](https://docs.gitlab.com/ee/ci/)  
 - [Pipelines](https://docs.gitlab.com/ee/ci/pipelines/)

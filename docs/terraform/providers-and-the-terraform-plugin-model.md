@@ -39,18 +39,28 @@ comments: false
 
 ## Overview
 
+
+
 Declare providers correctly, pin versions with `required_providers`, use aliases for multiple instances, and authenticate via environment or shared config — not committed secrets.
 
 A **provider** is a plugin that teaches Terraform a resource schema and how to call an API. HashiCorp and partners publish providers on the Terraform Registry. Your root module pins `source` and `version`; `init` installs the binary; `provider` blocks configure regions, endpoints, and credentials.
 
 This is a core tutorial in **Module 5 · Providers** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [HCL Fundamentals](hcl-fundamentals-blocks-arguments-and-expressions.md)
 - Completed Module 2 install (CLI + Registry access)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -59,13 +69,21 @@ By the end of this tutorial, you will be able to:
 - [ ] List safe authentication patterns (env vars, OIDC, shared config)  
 - [ ] Use the `local` provider for credential-free practice
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Terraform providers](../assets/excalidraw/terraform-providers.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -118,7 +136,10 @@ Illustrative alias (needs credentials — do not apply in this lab): `provider "
 - Assuming one `provider` block covers every account — use aliases or separate root modules.
 - Committing `.terraform/` provider binaries instead of the lock file.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -126,66 +147,60 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-05 && cd ~/rebash-terraform/module-05
 ```
 
-**Focus:** hands-on practice for Providers and the Terraform Plugin Model
+**Focus:** Pin providers and inspect the plugin lock file
 
-### Step 1 – Core exercise
+### Step 1 – Declare required_providers and initialise
 
 ```bash
-mkdir -p ~/rebash-terraform/module-05 && cd ~/rebash-terraform/module-05
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
-    }
     null = {
       source  = "hashicorp/null"
       version = "~> 3.2"
     }
   }
 }
-EOF
-
-cat > main.tf << 'EOF'
-provider "local" {}
 provider "null" {}
-
-resource "null_resource" "marker" {
-  triggers = {
-    note = "providers installed via init"
-  }
-}
-
-resource "local_file" "providers_ok" {
-  filename = "${path.module}/providers-ok.txt"
-  content  = "local + null providers ready\n"
-}
+resource "null_resource" "plugin_demo" {}
 EOF
-
 terraform init
+ls -la .terraform.lock.hcl .terraform/providers | head -n 20
+```
+
+### Step 2 – Show provider versions and apply
+
+```bash
 terraform providers
+terraform version
 terraform apply -auto-approve
-cat providers-ok.txt
-terraform destroy -auto-approve
+grep -A3 'provider "registry.terraform.io/hashicorp/null"' .terraform.lock.hcl || head -n 40 .terraform.lock.hcl
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-05/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Providers and the Terraform Plugin Model** always combines:
 
@@ -197,7 +212,11 @@ Production practice for **Providers and the Terraform Plugin Model** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -205,7 +224,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Hard-coding access keys in `.tf` files."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -216,7 +239,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Providers and the Terraform Plugin Model changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -224,7 +251,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -234,27 +265,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Providers and the Terraform Plugin Model** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Providers and the Terraform Plugin Model** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does a Terraform provider plugin do?
+2. Why pin provider versions with required_providers and the lock file?
+3. What is the difference between provider source address and local name?
+4. How can overly loose version constraints cause production incidents?
+5. What happens during `terraform init` regarding plugins?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Pinning and committing `.terraform.lock.hcl` keeps plans reproducible across machines and CI. Without pins, new plugin releases can change behaviour unexpectedly.
+
+!!! tip "Sample answer — question 4"
+    Floating to the newest provider may introduce breaking resource schemas or behavioural changes during routine plans. Constrain versions and test upgrades deliberately.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Resources, Dependencies, and Meta-Arguments](resources-dependencies-and-meta-arguments.md)
+- [Resources, Dependencies, and Meta-Arguments](resources-dependencies-and-meta-arguments.md)
+
+
 
 ## References
+
+
 
 - [Providers](https://developer.hashicorp.com/terraform/language/providers)  
 - [Dependency lock file](https://developer.hashicorp.com/terraform/language/files/dependency-lock)

@@ -41,19 +41,29 @@ comments: false
 
 ## Overview
 
+
+
 Create and select Terraform workspaces, use `terraform.workspace` carefully, and choose when separate roots (not workspaces) should isolate production.
 
 **Workspaces** isolate state for the same configuration. Selecting `dev` versus `staging` points Terraform at a different state slot while reusing the same `.tf` files. They suit light isolation — review apps, homogeneous clones — but many teams prefer **separate directories, accounts, or repositories** for production. Choose by blast radius, not habit.
 
 This is a core tutorial in **Module 12 · Workspaces** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Data Sources and Existing Infrastructure](data-sources-and-existing-infrastructure.md)
 - [Remote State and Backends](remote-state-and-backends.md)
 - Terraform CLI 1.9+
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Compare workspaces vs separate root modules  
 - [ ] Know when *not* to use workspaces for prod
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Workspaces](../assets/excalidraw/terraform-workspaces.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -110,7 +128,10 @@ Environment separation protects production from a bad apply aimed at staging. Wo
 - Deleting a workspace and assuming cloud resources are gone.
 - Equating CLI workspaces with HCP Terraform workspaces without reading the docs.
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -118,67 +139,82 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-12/workspaces/out && cd ~/rebash-terraform/module-12/workspaces/out
 ```
 
-**Focus:** hands-on practice for Workspaces and Environment Strategies
+**Focus:** Use workspaces to separate lab environments in one configuration
 
-### Step 1 – Core exercise
+### Step 1 – Apply in default workspace then create another
 
 ```bash
-mkdir -p ~/rebash-terraform/module-12/workspaces/out
-cd ~/rebash-terraform/module-12/workspaces
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.9.0"
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.9" }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
   }
 }
-EOF
 
-cat > main.tf << 'EOF'
-resource "local_file" "env_marker" {
-  filename        = "${path.module}/out/${terraform.workspace}.txt"
-  content         = "workspace=${terraform.workspace}\n"
-  file_permission = "0644"
+resource "null_resource" "lab" {
+  triggers = {
+    note = "rebash-lab"
+  }
 }
 
-output "workspace" { value = terraform.workspace }
-output "path"      { value = local_file.env_marker.filename }
+resource "local_file" "marker" {
+  content  = "managed-by-terraform
+"
+  filename = "${path.module}/marker.txt"
+}
 EOF
-
-terraform init -input=false
+terraform init
+terraform apply -auto-approve
 terraform workspace list
-terraform workspace new dev
-terraform apply -input=false -auto-approve
-cat out/dev.txt
 terraform workspace new staging
-terraform apply -input=false -auto-approve
-cat out/staging.txt
-terraform workspace select dev
-terraform workspace list
-# Cleanup each workspace before delete
-terraform destroy -input=false -auto-approve
-terraform workspace select staging
-terraform destroy -input=false -auto-approve
+```
+
+### Step 2 – Apply in staging and contrast state
+
+```bash
+terraform apply -auto-approve
+terraform workspace show
+terraform state list
 terraform workspace select default
-terraform workspace delete dev
-terraform workspace delete staging
+terraform state list
+echo "Workspaces isolate state keys; prefer separate directories/accounts for strong prod isolation"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform workspace select staging 2>/dev/null || true
+terraform destroy -auto-approve || true
+terraform workspace select default
+terraform destroy -auto-approve
+terraform workspace delete staging 2>/dev/null || true
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-12/workspaces/out/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Workspaces and Environment Strategies** always combines:
 
@@ -190,7 +226,11 @@ Production practice for **Workspaces and Environment Strategies** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -198,7 +238,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Using workspaces as the only prod vs non-prod control plane."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -209,7 +253,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Workspaces and Environment Strategies changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -217,7 +265,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -227,27 +279,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Workspaces and Environment Strategies** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Workspaces and Environment Strategies** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What does a Terraform workspace change about state?
+2. When are workspaces a good fit versus separate directories or accounts?
+3. How can workspace-based prod/staging separation fail as a hard tenancy boundary?
+4. What naming strategy helps avoid applying the wrong workspace?
+5. How do workspaces interact with remote backends?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Workspaces select different state keys for the same configuration. They are convenient for similar environments but easy to mis-select.
+
+!!! tip "Sample answer — question 4"
+    Because code is shared, a variable mistake can affect prod if you select the wrong workspace. Stronger isolation uses separate states, accounts, and pipelines.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Terraform Cloud and HCP Terraform](terraform-cloud-and-hcp-terraform.md)
+- [Terraform Cloud and HCP Terraform](terraform-cloud-and-hcp-terraform.md)
+
+
 
 ## References
+
+
 
 - [Workspaces](https://developer.hashicorp.com/terraform/language/state/workspaces)  
 - [CLI: workspace](https://developer.hashicorp.com/terraform/cli/workspaces)  

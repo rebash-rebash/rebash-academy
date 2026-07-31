@@ -37,17 +37,27 @@ comments: false
 
 ## Overview
 
+
+
 Author a `compose.yaml` with services, a shared network, a volume, environment variables, and a health check — then bring the stack up and down.
 
 **Compose** declares multi-container apps as code. Ideal for local DevOps stacks and simple single-host deploys before Kubernetes.
 
 This is a core tutorial in **Module 9 · Docker Compose** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,13 +67,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Use profiles for optional services  
 - [ ] `compose up` / `down` / `logs`
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Docker Compose](../assets/excalidraw/docker-compose.svg)
 
+
+
 ## Theory
+
+
 
 ### What
 
@@ -103,7 +121,10 @@ Keep Compose files readable: one service per concern, explicit image tags or dig
 - Relying on `depends_on` without health conditions  
 - Hard-coding hostpaths that only exist on one laptop
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -111,56 +132,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
 ```
 
-**Focus:** hands-on practice for Docker Compose Fundamentals
+**Focus:** Compose file with network and healthcheck
 
-### Step 1 – Core exercise
+### Step 1 – Compose up
 
 ```bash
-mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
 cat > compose.yaml << 'EOF'
 services:
   web:
     image: nginx:alpine
-    ports:
-      - "8082:80"
-    volumes:
-      - ./html:/usr/share/nginx/html:ro
+    ports: ["18080:80"]
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
       interval: 5s
       timeout: 3s
-      retries: 3
-    networks: [appnet]
-  cache:
-    image: redis:alpine
-    profiles: ["full"]
-    networks: [appnet]
-volumes: {}
-networks:
-  appnet:
+      retries: 5
 EOF
-mkdir -p html && echo '<h1>compose ok</h1>' > html/index.html
 docker compose up -d
-curl -s http://127.0.0.1:8082
 docker compose ps
-docker compose logs web --tail 5
+curl -sI http://127.0.0.1:18080 | head -n 3
 docker compose down
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
+docker compose down -v 2>/dev/null || true
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-docker/module-09/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Docker Compose Fundamentals** always combines:
 
@@ -172,7 +187,11 @@ Production practice for **Docker Compose Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -180,7 +199,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Using obsolete `docker-compose` v1 behaviour docs blindly  "
     Validate assumptions against the Theory section and official docs before changing production.
@@ -191,7 +214,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Docker Compose Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -199,7 +226,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -209,26 +240,44 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Docker Compose Fundamentals** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Docker Compose Fundamentals** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What production problem does **Docker Compose Fundamentals** address in container platforms?
+2. A container restarts continually — how do you triage?
+3. Why are mutable `latest` tags risky in production?
+4. Which container security controls do you insist on before prod?
+5. How do you keep images small and builds fast in CI?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+
+!!! tip "Sample answer — question 4"
+    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Container Registries and Distribution](container-registries-and-distribution.md)
+- [Container Registries and Distribution](container-registries-and-distribution.md)
+
+
 
 ## References
+
+
 
 - [Compose specification](https://docs.docker.com/compose/compose-file/)

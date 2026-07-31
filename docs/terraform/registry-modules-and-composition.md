@@ -42,18 +42,28 @@ comments: false
 
 ## Overview
 
+
+
 Address Registry-style modules with version pins, compose multiple modules in one root, and decide when to wrap upstream versus call it directly.
 
 The **Terraform Registry** distributes versioned modules the same way it distributes providers. Production roots pin `source` and `version`, read changelogs before upgrades, and wire outputs of one module into inputs of another. This lab stays local while mirroring Registry consumption patterns.
 
 This is a core tutorial in **Module 9 · Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
+
+
 ## Prerequisites
+
+
 
 - [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
 - Terraform CLI 1.9+
 
+
+
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -62,13 +72,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Compose modules by wiring outputs to inputs  
 - [ ] Decide when to wrap an upstream module
 
+
+
 ## Architecture
+
+
 
 This topic’s control points and relationships are shown below.
 
 ![Module composition](../assets/excalidraw/terraform-modules.svg)
 
+
+
 ## Theory
+
+
 
 ### What it is
 
@@ -105,7 +123,10 @@ Call upstream directly when the API is stable and defaults fit; wrap when many c
 - Over-wrapping — a facade that re-exposes every upstream input.
 - Treating community Registry modules as “official HashiCorp.”
 
+
+
 ## Hands-on Lab
+
 
 Create a workspace for this tutorial.
 
@@ -113,90 +134,74 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out} && cd ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}
 ```
 
-**Focus:** hands-on practice for Registry Modules and Composition
+**Focus:** Compose multiple local modules as you would Registry modules
 
-### Step 1 – Core exercise
+### Step 1 – Create two small modules and compose them
 
 ```bash
-mkdir -p ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}
-cd ~/rebash-terraform/module-09/registry-compose
-
-# Fake "upstream" module (mirrors a Registry child)
-cat > modules/label/variables.tf << 'EOF'
-variable "name" { type = string }
-variable "env"  { type = string }
+mkdir -p modules/network modules/app
+cat > modules/network/main.tf <<'EOF'
+resource "local_file" "net" {
+  filename = "${path.root}/network.txt"
+  content  = "cidr=10.0.0.0/16
+"
+}
+output "net_file" { value = local_file.net.filename }
 EOF
-cat > modules/label/main.tf << 'EOF'
-locals {
-  id = "${var.env}-${var.name}"
+cat > modules/app/main.tf <<'EOF'
+variable "network_file" { type = string }
+resource "local_file" "app" {
+  filename = "${path.root}/app.txt"
+  content  = "uses:${var.network_file}
+"
 }
 EOF
-cat > modules/label/outputs.tf << 'EOF'
-output "id" { value = local.id }
-EOF
-
-# Thin wrapper that pins org defaults
-cat > modules/app/variables.tf << 'EOF'
-variable "name" { type = string }
-variable "env"  { type = string }
-EOF
-cat > modules/app/main.tf << 'EOF'
-module "label" {
-  source = "../label"
-  name   = var.name
-  env    = var.env
-}
-resource "local_file" "marker" {
-  filename = "${path.module}/../../out/${module.label.id}.txt"
-  content  = "composed:${module.label.id}\n"
-}
-EOF
-cat > modules/app/outputs.tf << 'EOF'
-output "path" { value = local_file.marker.filename }
-output "id"   { value = module.label.id }
-EOF
-
-cat > versions.tf << 'EOF'
+cat > main.tf <<'EOF'
 terraform {
-  required_version = ">= 1.9.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.9" }
+    local = { source = "hashicorp/local", version = "~> 2.5" }
   }
 }
-EOF
-
-cat > main.tf << 'EOF'
-# Production shape: source  = "org/app/local"  version = "~> 1.0"
+module "network" { source = "./modules/network" }
 module "app" {
-  source = "./modules/app"
-  name   = "payments"
-  env    = "dev"
+  source        = "./modules/app"
+  network_file  = module.network.net_file
 }
-
-output "app_id"   { value = module.app.id }
-output "app_path" { value = module.app.path }
 EOF
+terraform init
+```
 
-terraform init -input=false
-terraform apply -input=false -auto-approve
-cat out/dev-payments.txt
-terraform destroy -input=false -auto-approve
+### Step 2 – Apply composition and verify wiring
+
+```bash
+terraform apply -auto-approve
+cat network.txt app.txt
+terraform state list
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
+terraform destroy -auto-approve
+# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
 
+
+
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
+
+
 ## Code Walkthrough
+
+
 
 Production practice for **Registry Modules and Composition** always combines:
 
@@ -208,7 +213,11 @@ Production practice for **Registry Modules and Composition** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
+
+
 ## Security Considerations
+
+
 
 - Treat credentials and tokens for terraform as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
@@ -216,7 +225,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
+
+
 ## Common Mistakes
+
+
 
 !!! warning "Omitting `version` on Registry modules in production."
     Validate assumptions against the Theory section and official docs before changing production.
@@ -227,7 +240,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
+
+
 ## Best Practices
+
+
 
 - Encode Registry Modules and Composition changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
@@ -235,7 +252,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
+
+
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -245,27 +266,45 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
+
+
 ## Summary
+
+
 
 **Registry Modules and Composition** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
+
+
 ## Interview Questions
 
-1. How does **Registry Modules and Composition** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+
+1. What is the Terraform Registry used for?
+2. Why pin module versions from the Registry?
+3. How does composition of small modules differ from one giant module?
+4. What supply-chain risks exist when consuming third-party modules?
+5. How do you evaluate whether a Registry module is trustworthy?
 
 !!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+    Composition keeps networking, compute, and app layers separable and testable. Giant modules become hard to change and review.
+
+!!! tip "Sample answer — question 4"
+    Third-party modules can run unexpected resources or exfiltrate data via provisioners. Prefer verified sources, pinned versions, code review, and least-privilege credentials.
+
+
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
-- - [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md)
+- [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md)
+
+
 
 ## References
+
+
 
 - [Terraform Registry](https://registry.terraform.io/)  
 - [Module Sources](https://developer.hashicorp.com/terraform/language/modules/sources)  
