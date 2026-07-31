@@ -1,6 +1,6 @@
 ---
 title: FAQ
-description: "Frequently asked questions about the GitLab CI/CD course."
+description: "Frequently asked questions about the GitLab CI/CD for Cloud & DevOps Engineers course."
 technology_id: gitlab
 hide:
   - toc
@@ -8,26 +8,31 @@ author: Shaik Basha
 category: gitlab
 tags:
   - gitlab
+  - gitlab-ci
 ---
 
 # GitLab CI/CD — FAQ
 
 ## Who is this course for?
 
-Engineers who need production-ready **GitLab CI/CD** skills for cloud, DevOps, and platform work.
+DevOps, Cloud, Platform, SRE, DevSecOps, and Infrastructure engineers who need production GitLab CI/CD skills.
 
 ## Do I need prior experience?
 
-See the course homepage for prerequisites. Beginner tracks start from fundamentals.
+Complete [Git](../git/index.md) first. [Docker](../docker/index.md), [Kubernetes](../kubernetes/index.md), and [Terraform](../terraform/index.md) are required for later modules. See the [course overview](index.md).
 
 ## Where are the tutorials?
 
-Tutorials live inside each **module** — open a module from the sidebar or course homepage.
+Open **Module 1–18** in the sidebar, or use the [modules table](index.md#2-modules) on the course homepage.
 
 ## How do labs and projects fit in?
 
-Complete the module tutorials first, then use the **Labs**, **Quizzes**, and **Projects** sections for practice and portfolio work.
+Complete module tutorials first, then use [Labs](../labs/index.md), [Quizzes](quizzes/index.md), and [Projects](projects/index.md). Labs live under `~/rebash-gitlab/module-NN` and favour lintable `.gitlab-ci.yml` samples.
+
+## Do diagrams use D2 or Mermaid?
+
+No. This course uses **Excalidraw** SVGs under `docs/assets/excalidraw/`. Regenerate with `python3 scripts/generate-excalidraw-svg.py`.
 
 ## Is progress tracked?
 
-Learner progress tracking is planned — course structure is ready today.
+Learner progress tracking is planned — the course structure is ready today.

@@ -1,525 +1,225 @@
 ---
-title: Volumes and Persistent Storage
-description: Master Docker storage — bind mounts, named volumes, tmpfs, volume drivers, backup patterns, and hands-on labs for persistent container data.
+title: "Volumes and Persistent Storage"
+description: "Use Docker volumes, bind mounts, and tmpfs — backup and restore patterns for stateful DevOps workloads."
 difficulty: intermediate
-estimated_time: "40 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "40–55 min"
+technology: docker
 category: docker
+module: "Module 7 · Volumes & Storage"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - docker
+  - volumes
+prerequisites:
+  - docker/dockerfile-best-practices-and-multi-stage-builds
+next:
+  - docker/docker-networking-fundamentals
+related:
+  - docker/production-docker-patterns
+labs: []
+projects: []
+interview: interview/docker
+certifications:
+  - Docker Certified Associate
 tags:
   - docker
   - volumes
   - storage
-  - bind-mounts
-  - persistence
-  - devops
-prerequisites:
-  - Running Your First Container
-  - Building Images with Dockerfile
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Volumes and Persistent Storage
 
 ## Overview
 
-Containers are ephemeral — when you remove a container, its writable layer disappears. Databases, uploaded files, configuration, and logs must **survive container restarts and replacements**. Docker provides three mount mechanisms: **volumes**, **bind mounts**, and **tmpfs mounts**. Choosing the right type affects portability, performance, backup strategy, and security.
+Persist data with named volumes, use bind mounts for live code, know when `tmpfs` fits, and back up a volume.
 
-This tutorial is **Tutorial 8** in **Module 3: Storage & Compose** of the REBASH Academy Docker series. You will create and manage named volumes, bind host directories, understand when each type applies, and practice backup and restore workflows. For multi-container stacks using volumes, see [Docker Compose Fundamentals](docker-compose-fundamentals.md).
+Container filesystems are ephemeral. **Volumes** survive container removal; **bind mounts** map host paths; **tmpfs** keeps data in memory.
+
+This is a core tutorial in **Module 7 · Volumes & Storage** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed [Running Your First Container](running-your-first-container.md)
-- Completed [Building Images with Dockerfile](building-images-with-dockerfile.md)
-- Docker Engine running on Linux (recommended for bind mount permission labs)
-- Basic understanding of filesystem paths and permissions
+- [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain the difference between volumes, bind mounts, and tmpfs mounts
-- [ ] Create, inspect, and remove named volumes with `docker volume`
-- [ ] Mount storage with `-v` and `--mount` syntax
-- [ ] Understand data lifecycle when containers are recreated
-- [ ] Apply permission and SELinux considerations for bind mounts
-- [ ] Back up and restore volume data using sidecar containers
+- [ ] Create and mount a named volume  
+- [ ] Contrast volume vs bind mount  
+- [ ] Use `tmpfs` for scratch data  
+- [ ] Backup/restore a volume with a helper container
 
 ## Architecture
 
-![Architecture diagram for Volumes and Persistent Storage](../assets/images/volumes-and-persistent-storage.svg)
+This topic’s control points and relationships are shown below.
 
-Named volumes are managed by Docker. Bind mounts reference explicit host paths. tmpfs exists only in memory.
+![Volume architecture](../assets/excalidraw/docker-volume-architecture.svg)
 
 ## Theory
 
-### Why Persistence Matters
+### What
 
-| Scenario | Without persistence | With volume/bind mount |
-|----------|--------------------|-----------------------|
-| Database container deleted | All data lost | Data remains in volume |
-| Application upgrade (new image) | Config inside container lost | Config on volume survives |
-| Horizontal scaling | Each replica needs shared or external storage | Shared volume or external DB |
-| Log retention | Logs die with container | Logs on bind mount or log driver |
+Containers are ephemeral by default: the writable layer disappears when the container is removed. **Volumes**, **bind mounts**, and **tmpfs** mounts persist or isolate data differently. Named volumes are managed by Docker; bind mounts map host paths; tmpfs keeps data in memory.
 
-**Stateless containers** (web APIs with external DB) should remain stateless. **Stateful services** (PostgreSQL, Redis with AOF, file uploads) require explicit storage strategy.
+### Why
 
-### Three Mount Types
+Databases, queues, and CI caches need durable or shared storage. Bind-mounting source code enables live development. Choosing the wrong mount type causes permission errors, data loss on recreate, or accidental exposure of host files.
 
-| Type | Location | Managed by | Best for |
-|------|----------|------------|----------|
-| **Volume** | `/var/lib/docker/volumes/` | Docker daemon | Production data, portable across hosts (with driver) |
-| **Bind mount** | Any host path | Administrator | Dev config sync, host log access, specific paths |
-| **tmpfs** | RAM | Kernel | Secrets, temp files — never written to disk |
+### How it works
 
-### Volume vs Bind Mount
+Declare mounts with `docker run -v` / `--mount` or Compose `volumes:`. Named volumes live under Docker’s volume directory and survive container recreation. Bind mounts use an absolute host path — ideal for code, risky for production config if paths differ. tmpfs is useful for scratch space and sensitive temporary files that must not touch disk. Volume drivers can back remote storage; local is the default. Permissions inside the container depend on user IDs (UID/GID) matching ownership on the volume.
 
-**Named volumes:**
+| Type | Use |
+|------|-----|
+| Named volume | Databases, durable app data |
+| Bind mount | Dev source, host configs |
+| tmpfs | Secrets scratch, caches (lost on stop) |
 
-- Created with `docker volume create`
-- Docker manages path on host
-- Works across platforms without path translation issues
-- Preferred for production database data
-- Can use volume drivers (NFS, cloud storage plugins)
+### Key concepts
 
-**Bind mounts:**
+- **Lifecycle** — volumes persist after `docker rm` unless removed explicitly  
+- **UID mapping** — non-root containers often need chowned volumes  
+- **Backup** — treat volumes as stateful; plan snapshots  
+- **Compose namespacing** — project prefixes on volume names  
 
-- Map host file or directory directly: `-v /host/path:/container/path`
-- Absolute host path required
-- Host must exist and have correct permissions
-- Ideal for live code reload during development
-- Tightly couples container to specific host layout
+### Common pitfalls
 
-### Mount Syntax: `-v` vs `--mount`
-
-Legacy `-v` syntax:
-
-```bash
-docker run -v mydata:/var/lib/postgresql/data postgres:16
-docker run -v /home/user/app:/app:ro nginx
-```
-
-Modern `--mount` syntax (recommended — explicit keys):
-
-```bash
-docker run --mount source=mydata,target=/var/lib/postgresql/data postgres:16
-docker run --mount type=bind,source=/home/user/app,target=/app,readonly nginx
-docker run --mount type=tmpfs,target=/run/secrets tmpfs-demo
-```
-
-| `--mount` key | Meaning |
-|---------------|---------|
-| `type` | `volume`, `bind`, or `tmpfs` |
-| `source` | Volume name or host path |
-| `target` | Path inside container |
-| `readonly` | Mount read-only |
-| `volume-opt` | Driver-specific options |
-
-### Copy-on-Write and the Writable Layer
-
-Every container has a thin **writable layer** on top of the read-only image. File writes go here unless a mount covers the path. Mounts **mask** underlying image directories at the mount point — files in the image at that path become hidden.
-
-### Permissions and Ownership
-
-Bind mount permission issues are common on Linux:
-
-- Container process runs as UID/GID (often root or `999` for postgres)
-- Host directory owned by different user → permission denied
-
-Solutions:
-
-- Match ownership: `chown 999:999 /host/data`
-- Run container with `--user $(id -u):$(id -g)` for dev bind mounts
-- Use named volumes (Docker initializes permissions on first use)
-
-### Volume Lifecycle
-
-```text
-docker volume create dbdata
-docker run -v dbdata:/data ...     # volume attached
-docker rm container                # volume persists
-docker volume rm dbdata            # data deleted (if unused)
-```
-
-`docker volume prune` removes all unused volumes — dangerous in production without backups.
-
-### Backup Strategies
-
-| Method | Command pattern |
-|--------|-----------------|
-| **Sidecar tar** | Run busybox container mounting same volume, `tar czf` to bind mount |
-| **Database native** | `pg_dump`, `mysqldump` from exec or sidecar |
-| **Volume clone** | Copy volume to new volume via intermediate container |
-| **Filesystem snapshot** | LVM/ZFS/btrfs snapshot on host (infrastructure level) |
-
-
-### Ephemeral layers vs durable volumes
-
-The container writable layer disappears with `docker rm`. Named volumes and bind mounts are how databases, uploads, and queues survive recreation. Prefer named volumes for portable lab data; use bind mounts when you intentionally edit host files. Remember permissions: UIDs inside the container must match volume ownership, and mounting sensitive host paths (`docker.sock`, `$HOME/.ssh`) defeats isolation.
-
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
-
-
-### Connecting the lab to production reviews
-
-When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
-
-### Observability while you learn
-
-Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+- Storing production data only in the container writable layer  
+- Bind-mounting `/var/run/docker.sock` without understanding host takeover risk  
+- Permission denied after switching `USER` in the image  
+- Deleting volumes with `docker volume prune` without checking labels
 
 ## Hands-on Lab
 
-### Step 1 – Explore default storage location
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-docker info | grep -i "docker root dir"
-docker system df -v | head -20
+mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07/host-data
 ```
 
-**Explanation:** Docker Root Dir shows where volumes and image layers live on the host (Linux default: `/var/lib/docker`).
+**Focus:** hands-on practice for Volumes and Persistent Storage
 
-**Expected output:**
-
-```text
-Docker Root Dir: /var/lib/docker
-```
-
-### Step 2 – Create and inspect a named volume
-
-**Command:**
+### Step 1 – Skeleton
 
 ```bash
-docker volume create rebash-lab-data
-docker volume inspect rebash-lab-data
-docker volume ls | grep rebash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Volumes and Persistent Storage"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Explanation:** Named volumes receive a unique directory under Docker's volume path. Inspect shows `Mountpoint` on the host.
-
-**Expected output:** JSON with `"Driver": "local"` and a `Mountpoint` path.
-
-### Step 3 – Write data through a container
-
-**Command:**
+### Step 2 – Core exercise
 
 ```bash
-docker run --rm \
-  --mount source=rebash-lab-data,target=/data \
-  alpine:3.20 \
-  sh -c 'echo "persisted at $(date -Iseconds)" > /data/timestamp.txt && cat /data/timestamp.txt'
+mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07
+docker volume create rebash-data
+docker run --rm -v rebash-data:/data alpine sh -c 'echo hello > /data/note.txt'
+docker run --rm -v rebash-data:/data alpine cat /data/note.txt
+# backup
+docker run --rm -v rebash-data:/data -v "$(pwd)":/backup alpine \
+  tar czf /backup/rebash-data.tgz -C /data .
+# bind mount
+echo host > host-data/file.txt
+docker run --rm -v "$(pwd)/host-data":/data alpine cat /data/file.txt
+# tmpfs
+docker run --rm --tmpfs /scratch:size=16m alpine sh -c 'echo x > /scratch/x && ls /scratch'
+ls -la rebash-data.tgz
 ```
 
-**Explanation:** Data written to `/data` inside the container persists in the named volume after container exits.
-
-**Expected output:**
-
-```text
-persisted at 2026-07-27T...
-```
-
-### Step 4 – Verify data survives container removal
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-docker run --rm \
-  --mount source=rebash-lab-data,target=/data \
-  alpine:3.20 \
-  cat /data/timestamp.txt
+# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** New container mounts same volume — proves persistence independent of container lifecycle.
-
-**Expected output:** Same timestamp line from Step 3.
-
-### Step 5 – Bind mount lab directory
-
-**Command:**
-
-```bash
-mkdir -p ~/lab/volume-lab/host-data
-echo "bind mount content" > ~/lab/volume-lab/host-data/config.txt
-
-docker run --rm \
-  --mount type=bind,source=$HOME/lab/volume-lab/host-data,target=/config,readonly \
-  alpine:3.20 \
-  cat /config/config.txt
-```
-
-**Explanation:** Bind mount exposes host file directly. `readonly` prevents container from modifying host files.
-
-**Expected output:**
-
-```text
-bind mount content
-```
-
-### Step 6 – Compare writable layer vs volume
-
-**Command:**
-
-```bash
-docker run -d --name vol-demo \
-  --mount source=rebash-lab-data,target=/data \
-  alpine:3.20 sleep 3600
-
-docker exec vol-demo sh -c 'echo layer-only > /tmp/ephemeral.txt'
-docker exec vol-demo sh -c 'echo volume-persist > /data/persist.txt'
-docker rm -f vol-demo
-
-docker run --rm \
-  --mount source=rebash-lab-data,target=/data \
-  alpine:3.20 ls -la /data
-```
-
-**Explanation:** After container deletion, `/tmp` content is gone; `/data/persist.txt` remains in volume.
-
-**Expected output:** Lists `timestamp.txt` and `persist.txt`; no `ephemeral.txt`.
-
-### Step 7 – tmpfs for sensitive temp data
-
-**Command:**
-
-```bash
-docker run --rm \
-  --mount type=tmpfs,target=/run/secrets \
-  alpine:3.20 \
-  sh -c 'echo secret-token > /run/secrets/token && cat /run/secrets/token'
-```
-
-**Explanation:** tmpfs stores data in memory — never hits disk. Suitable for short-lived secrets (still visible to root on host via memory inspection — not a full security solution).
-
-**Expected output:**
-
-```text
-secret-token
-```
-
-### Step 8 – Backup volume with sidecar pattern
-
-**Command:**
-
-```bash
-mkdir -p ~/lab/volume-lab/backups
-
-docker run --rm \
-  --mount source=rebash-lab-data,target=/data,readonly \
-  --mount type=bind,source=$HOME/lab/volume-lab/backups,target=/backup \
-  alpine:3.20 \
-  tar czf /backup/rebash-lab-data.tar.gz -C /data .
-
-ls -lh ~/lab/volume-lab/backups/
-tar tzf ~/lab/volume-lab/backups/rebash-lab-data.tar.gz
-```
-
-**Explanation:** Read-only volume mount prevents backup container from modifying source. Tar archive written to host bind mount.
-
-**Expected output:** Archive listing `timestamp.txt`, `persist.txt`.
-
-### Step 9 – Restore to new volume
-
-**Command:**
-
-```bash
-docker volume create rebash-lab-restored
-
-docker run --rm \
-  --mount source=rebash-lab-restored,target=/data \
-  --mount type=bind,source=$HOME/lab/volume-lab/backups,target=/backup,readonly \
-  alpine:3.20 \
-  tar xzf /backup/rebash-lab-data.tar.gz -C /data
-
-docker run --rm \
-  --mount source=rebash-lab-restored,target=/data \
-  alpine:3.20 \
-  ls -la /data
-```
-
-**Explanation:** Restore pattern for disaster recovery or cloning environments.
-
-**Expected output:** Same files as original volume.
-
-### Step 10 – Clean up
-
-**Command:**
-
-```bash
-docker volume rm rebash-lab-data rebash-lab-restored
-rm -rf ~/lab/volume-lab
-```
-
-**Explanation:** Remove lab volumes and host directories.
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Named volume | Volume appears in `docker volume ls` and data survives container recreate |
-| Bind mount | Host file/directory visible inside the container as documented |
-| Permissions | Ownership/mode behaviour matches the lab explanation |
-| Cleanup | Lab containers removed; volumes deleted only when the lab says so |
+- [ ] Lab commands run under `~/rebash-docker/module-07/host-data/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `docker volume create` | Create named volume | `docker volume create dbdata` |
-| `docker volume ls` | List volumes | `docker volume ls` |
-| `docker volume inspect` | Volume details and mountpoint | `docker volume inspect dbdata` |
-| `docker volume rm` | Delete unused volume | `docker volume rm dbdata` |
-| `docker volume prune` | Remove all unused volumes | `docker volume prune` |
-| `docker run -v` | Mount volume or bind | `docker run -v dbdata:/data app` |
-| `docker run --mount` | Explicit mount specification | See lab examples |
+Production practice for **Volumes and Persistent Storage** always combines:
 
-### PostgreSQL with named volume
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-docker volume create pgdata
-
-docker run -d \
-  --name postgres \
-  -e POSTGRES_PASSWORD=devpass \
-  --mount source=pgdata,target=/var/lib/postgresql/data \
-  postgres:16-alpine
-```
-
-### Development bind mount (live reload)
-
-```bash
-docker run --rm -it \
-  --mount type=bind,source=$(pwd),target=/app \
-  -w /app \
-  -p 3000:3000 \
-  node:22-alpine \
-  npm run dev
-```
-
-### Read-only root filesystem with writable volume
-
-```bash
-docker run -d \
-  --read-only \
-  --mount source=app-logs,target=/var/log/myapp \
-  --tmpfs /tmp \
-  myapp:1.0
-```
-
-Combines read-only container security with persistent logs and temp scratch space.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Prefer named volumes over host binds for application data; binds easily expose host paths
-- Never mount sensitive host paths (`/etc`, `/var/run/docker.sock`, `$HOME/.ssh`) into untrusted containers
-- Set correct ownership and mode on volume data; world-writable volumes invite lateral movement
-- Encrypt sensitive volume backends at rest when the platform supports it
-- Separate lab volume names from production; accidental `docker volume rm` on the wrong host is irreversible
-- Back up volume data before destructive experiments; practise restore, not only backup
-
+- Treat credentials and tokens for docker as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Storing database data in container writable layer"
-    `docker rm` destroys the layer. Always mount `/var/lib/postgresql/data`, `/var/lib/mysql`, etc.
+!!! warning "Storing production data only in the container writable layer  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Blind `docker volume prune` in production"
-    Removes all volumes not attached to a running container — can delete backup targets and dormant DB volumes.
+!!! warning "Bind-mounting `/var/run/docker.sock` without understanding host takeover risk  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Bind mounting over application binaries"
-    Mounting host code over `/app` hides image-built files — fine for dev, breaks immutable prod deploys.
-
-!!! warning "Ignoring UID/GID mismatch on bind mounts"
-    Postgres fails with "Permission denied" when host directory owned by wrong user.
-
-!!! warning "Assuming tmpfs is secure long-term storage"
-    tmpfs is volatile and inspectable — use proper secret management for credentials.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Use named volumes for production state"
-    Decouple data lifecycle from container lifecycle. Bind mounts for dev convenience only.
-
-!!! tip "Prefer --mount over -v for clarity"
-    Explicit `type`, `source`, `target`, and `readonly` reduce mount misconfiguration.
-
-!!! tip "Automate backups before upgrades"
-    Snapshot or tar volume before `docker run` with new image tag on stateful services.
-
-!!! tip "Document volume names in Compose or IaC"
-    Ad-hoc volume names become orphaned assets — label with project and environment.
-
-!!! tip "Separate config from data volumes"
-    Config can be bind-mounted or ConfigMaps (K8s); data volumes get backup schedules.
+- Encode Volumes and Persistent Storage changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Permission denied on bind mount | UID mismatch | `chown` host dir or `--user` flag |
-| Empty directory after mount | Named volume masked image files | Populate via init container or entrypoint |
-| Volume not found | Typo or wrong driver | `docker volume ls`; create explicitly |
-| Disk full on host | Unchecked log/volume growth | `docker system df`; prune unused; expand disk |
-| Data missing after recreate | Used anonymous volume | Use named volume; anonymous volumes removed with container unless `--rm` omitted carefully |
-| SELinux blocking bind mount | RHEL/CentOS/Fedora policy | Add `:z` or `:Z` suffix to bind mount (understand security implications) |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Container **writable layers are ephemeral** — use mounts for data that must survive
-- **Named volumes** are Docker-managed and preferred for production persistence
-- **Bind mounts** tie container paths to host paths — ideal for dev sync
-- **tmpfs** keeps data in memory — short-lived, non-persistent scratch
-- Use **`--mount`** for explicit, readable mount definitions
-- **Backup via sidecar containers** tar-ing volumes is portable and scriptable
+**Volumes and Persistent Storage** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What happens to data in a container's writable layer when the container is removed?
-2. Compare volumes, bind mounts, and tmpfs mounts.
-3. When would you choose a bind mount over a named volume?
-4. What is the difference between `-v` and `--mount`?
-5. How do you back up a Docker named volume?
-6. Why do permission errors occur with bind mounts?
-7. What does `docker volume prune` do and why is it risky?
-8. How does mounting a volume affect files baked into the image at that path?
-9. What is an anonymous volume and when is it created?
-10. How would you run PostgreSQL with persistent storage in Docker?
+1. How does **Volumes and Persistent Storage** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 2, and 5)"
-
-    **Q1 — Writable layer:** The container's thin writable layer stores changes not covered by mounts. When the container is removed, this layer is deleted and all data in it is lost permanently. Only mounted volumes, bind mounts, or external storage retain data.
-
-    **Q2 — Three mount types:** **Volumes** are Docker-managed storage under `/var/lib/docker/volumes`, portable and preferred for production data. **Bind mounts** map a specific host path into the container — great for dev but host-dependent. **tmpfs** stores data in RAM — fast, non-persistent, suitable for temp secrets or scratch space.
-
-    **Q5 — Volume backup:** Run a temporary container mounting the target volume read-only and a bind mount for backup output. Use `tar czf` to archive volume contents to the host. Restore by creating a new volume and extracting the tar into it with a similar sidecar container.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Docker – Category Overview](index.md)
-- [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md) *(previous)*
-- [Docker Compose Fundamentals](docker-compose-fundamentals.md) *(next)*
-- [Linux – Disk and Filesystem Management](../linux/storage-disks-partitions-and-filesystems.md)
-- [Production Docker Patterns](production-docker-patterns.md)
-- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
-- Interview prep: [Docker Interview Prep](../interview/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 
 ## References
 
-- [Docker storage overview](https://docs.docker.com/storage/)
-- [Volumes](https://docs.docker.com/storage/volumes/)
-- [Bind mounts](https://docs.docker.com/storage/bind-mounts/)
-- [tmpfs mounts](https://docs.docker.com/storage/tmpfs/)
-- [Backup, restore, or migrate data volumes](https://docs.docker.com/storage/volumes/#back-up-restore-or-migrate-data-volumes)
+- [Manage data in Docker](https://docs.docker.com/storage/)

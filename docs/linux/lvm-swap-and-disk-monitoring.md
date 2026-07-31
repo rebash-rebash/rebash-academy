@@ -44,46 +44,48 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for LVM, Swap, and Disk Monitoring](../assets/images/linux-lvm-swap.svg)
+![Architecture diagram for LVM, Swap, and Disk Monitoring](../assets/excalidraw/linux-storage-layout.svg)
 
 ## Theory
 
-### LVM basics
+### What it is
 
-**Logical Volume Manager (LVM)** layers:
+**Logical Volume Manager (LVM)** inserts a flexible layer between disks and filesystems: physical volumes (PV) feed a volume group (VG) pool, from which you carve logical volumes (LV) to format and mount. **Swap** is disk-backed virtual memory used under memory pressure (or for hibernation features on some platforms). **Disk monitoring** watches capacity (`df`/`du`), inodes, and I/O pressure (`iostat`, cloud metrics) so you grow volumes *before* outages.
 
-- **PV** — physical volume on a disk/partition
-- **VG** — volume group pool
-- **LV** — logical volume (formatted and mounted)
+### Why it matters
 
-```bash
-sudo pvs; sudo vgs; sudo lvs
-# pvcreate → vgcreate → lvcreate → mkfs → mount
-# lvextend -L +10G /dev/vg/lv && resize2fs|xfs_growfs
-```
+LVM lets you extend filesystems online when a database grows — a frequent cloud operations task. Swap thrashing destroys latency even when CPU looks idle. Silent disk fill on `/var` takes down logging, containers, and package installs. Combining LVM growth procedures with alerts at 80/90% utilisation is standard SRE hygiene.
 
-### Swap
+### How it works
 
-Swap backs memory pressure. On cloud VMs, sizing is a policy choice (often small or none on large RAM nodes; required for some hibernate features).
+Typical LVM flow: `pvcreate` → `vgcreate` → `lvcreate` → `mkfs` → mount. Inspect with `pvs`, `vgs`, `lvs`. Extend with `lvextend`, then grow the filesystem (`resize2fs` for ext4, `xfs_growfs` for XFS — XFS cannot shrink). Swap appears in `swapon --show` and `free -h`; create with `mkswap` and enable via `swapon` plus an `fstab` entry when policy requires it. Monitor capacity per mount and inode use; watch `wa` in `vmstat` and util/await in `iostat` for saturation. On cloud disks, also track burst credits and volume IOPS limits outside the guest.
 
-```bash
-swapon --show
-free -h
-# fallocate / mkswap / swapon / fstab entry
-```
+### Key concepts and comparisons
 
-Watch swap-in/out with `vmstat` — heavy swapping kills latency.
-
-### Disk monitoring
+| Object | Role |
+|--------|------|
+| PV | Disk/partition owned by LVM |
+| VG | Pool of storage |
+| LV | Allocated volume you format |
 
 | Signal | Tool |
 |--------|------|
-| Capacity | `df -h`, `df -i` |
+| Capacity / inodes | `df -h`, `df -i` |
 | Hot directories | `du` |
 | I/O pressure | `iostat`, `iotop` |
-| SMART / cloud metrics | vendor agents, `lsblk` |
+| Swap activity | `vmstat` `si`/`so`, `free` |
 
-Alert on mount utilisation (e.g. 80/90%) and inode use, not only root filesystem size.
+| Growth step | ext4 | XFS |
+|-------------|------|-----|
+| After `lvextend` | `resize2fs` | `xfs_growfs` (mounted) |
+
+### Common pitfalls
+
+- Running `resize2fs` on XFS (wrong tool) or trying to shrink XFS.
+- Extending the LV but forgetting to grow the filesystem — `df` stays unchanged.
+- Enabling large swap on latency-sensitive nodes and masking memory leaks.
+- Alerting only on root disk while LVM data volumes fill unnoticed.
+- Growing cloud volumes in the console but not rescanning/resizing inside the guest.
 
 ## Hands-on Lab
 

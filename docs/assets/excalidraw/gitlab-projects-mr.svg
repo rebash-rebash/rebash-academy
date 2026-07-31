@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200"
+     viewBox="0 0 800 200" role="img" aria-label="gitlab-projects-mr">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Projects · MRs · releases</text>
+
+  <path d="M 52.4,83.3 L 183.4,83.4 Q 193.4,83.4 193.4,93.4 L 193.6,143.7 Q 193.6,153.7 183.6,153.7 L 52.7,153.0 Q 42.7,153.0 42.7,143.0 L 42.4,93.3 Q 42.4,83.3 52.4,83.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.8,81.0 L 180.2,80.4 Q 190.2,80.4 190.2,90.4 L 190.0,139.4 Q 190.0,149.4 180.0,149.4 L 50.7,150.7 Q 40.7,150.7 40.7,140.7 L 39.8,91.0 Q 39.8,81.0 49.8,81.0 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Repository</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">branches</text>
+
+
+  <path d="M 242.2,83.9 L 382.1,84.0 Q 392.1,84.0 392.1,94.0 L 393.1,142.5 Q 393.1,152.5 383.1,152.5 L 242.0,153.8 Q 232.0,153.8 232.0,143.8 L 232.2,93.9 Q 232.2,83.9 242.2,83.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 240.4,79.3 L 379.1,79.3 Q 389.1,79.3 389.1,89.3 L 390.7,139.6 Q 390.7,149.6 380.7,149.6 L 239.6,149.2 Q 229.6,149.2 229.6,139.2 L 230.4,89.3 Q 230.4,79.3 240.4,79.3 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="310.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Merge request</text>
+  <text x="310.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">pipeline</text>
+
+
+  <path d="M 442.9,82.5 L 572.3,82.9 Q 582.3,82.9 582.3,92.9 L 583.5,142.0 Q 583.5,152.0 573.5,152.0 L 442.3,153.8 Q 432.3,153.8 432.3,143.8 L 432.9,92.5 Q 432.9,82.5 442.9,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 439.8,80.9 L 569.1,80.6 Q 579.1,80.6 579.1,90.6 L 580.3,140.6 Q 580.3,150.6 570.3,150.6 L 440.0,150.4 Q 430.0,150.4 430.0,140.4 L 429.8,90.9 Q 429.8,80.9 439.8,80.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="505.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Protected</text>
+  <text x="505.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">main/tags</text>
+
+
+  <path d="M 633.3,83.8 L 753.0,83.6 Q 763.0,83.6 763.0,93.6 L 763.1,143.9 Q 763.1,153.9 753.1,153.9 L 633.0,152.5 Q 623.0,152.5 623.0,142.5 L 623.3,93.8 Q 623.3,83.8 633.3,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 630.1,80.1 L 750.2,79.3 Q 760.2,79.3 760.2,89.3 L 759.9,139.8 Q 759.9,149.8 749.9,149.8 L 630.4,150.0 Q 620.4,150.0 620.4,140.0 L 620.1,90.1 Q 620.1,80.1 630.1,80.1 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="690.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Release</text>
+  <text x="690.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">changelog</text>
+
+
+  <path d="M 190.0,115.0 L 204.4,115.6 L 215.8,114.7 L 230.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 230.0,115.0 L 223.1,119.0 M 230.0,115.0 L 223.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 390.0,115.0 L 403.3,113.9 L 416.0,114.1 L 430.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 430.0,115.0 L 423.1,119.0 M 430.0,115.0 L 423.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 580.0,115.0 L 592.4,114.0 L 607.5,115.8 L 620.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 620.0,115.0 L 613.1,119.0 M 620.0,115.0 L 613.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

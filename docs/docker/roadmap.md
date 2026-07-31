@@ -1,6 +1,6 @@
 ---
 title: Learning Roadmap
-description: "Structured learning roadmap for the Docker course."
+description: "Structured 17-module learning roadmap for Docker for Cloud & DevOps Engineers."
 technology_id: docker
 hide:
   - toc
@@ -8,60 +8,51 @@ author: Shaik Basha
 category: docker
 tags:
   - docker
+  - roadmap
 ---
 
 # Docker — Learning Roadmap
 
 Follow the course in order:
 
-1. **Course overview** — understand scope, prerequisites, and outcomes
-2. **Modules** — work through tutorials module by module
-3. **Labs** — hands-on practice after core lessons
-4. **Quizzes** — check understanding before projects
-5. **Projects** — portfolio builds that connect multiple skills
-6. **Capstone** — end-to-end proof of production readiness
-7. **Interview preparation** — role-specific questions and scenarios
-8. **Certifications** — map lessons to industry exams
+1. **Course overview** — scope, prerequisites, outcomes  
+2. **Modules 1–17** — tutorials in sequence  
+3. **Labs / quizzes / projects** — practice  
+4. **Capstone** — production container platform  
+5. **Interview & certifications** — DCA concepts · CKA/CKAD container basics  
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![Docker architecture](../assets/excalidraw/docker-architecture.svg)
+
+![CI/CD pipeline](../assets/excalidraw/docker-cicd-pipeline.svg)
 
 ## Modules
 
-### Foundations
+| # | Focus | Tutorials |
+|---|-------|-----------|
+| 1 | Container fundamentals | [Introduction](introduction-to-containers-and-docker.md) · [Architecture](docker-architecture-and-components.md) |
+| 2 | Installing Docker | [Install and setup](docker-installation-and-setup.md) |
+| 3 | Docker CLI | [First container](running-your-first-container.md) |
+| 4 | Images | [Working with images](working-with-docker-images.md) |
+| 5 | Dockerfile | [Building with Dockerfile](building-images-with-dockerfile.md) |
+| 6 | Optimisation | [Multi-stage builds](dockerfile-best-practices-and-multi-stage-builds.md) |
+| 7 | Volumes | [Persistent storage](volumes-and-persistent-storage.md) |
+| 8 | Networking | [Networking fundamentals](docker-networking-fundamentals.md) |
+| 9 | Compose | [Compose fundamentals](docker-compose-fundamentals.md) |
+| 10 | Registries | [Registries](container-registries-and-distribution.md) |
+| 11 | Security | [Hardening](docker-security-hardening.md) |
+| 12 | Scanning | [Scanning & SBOM](container-scanning-and-sbom.md) |
+| 13 | Observability | [Logging & monitoring](container-logging-and-monitoring.md) |
+| 14 | Performance | [Resource limits](docker-performance-and-resource-limits.md) |
+| 15 | CI/CD | [CI/CD pipelines](docker-in-ci-cd-pipelines.md) |
+| 16 | Troubleshooting | [Troubleshooting](troubleshooting-docker-containers.md) |
+| 17 | Production | [Production patterns](production-docker-patterns.md) |
 
-- [Introduction To Containers And Docker](../introduction-to-containers-and-docker/)
-- [Docker Installation And Setup](../docker-installation-and-setup/)
-- [Docker Architecture And Components](../docker-architecture-and-components/)
+## Related depth
 
-### Images & Dockerfile
+- [Env vars & secrets](environment-variables-and-secrets.md) · [Swarm basics](docker-swarm-orchestration-basics.md) · [Docker → Kubernetes](from-docker-to-kubernetes.md) · [Capstone](docker-capstone-and-next-steps.md)
 
-- [Running Your First Container](../running-your-first-container/)
-- [Working With Docker Images](../working-with-docker-images/)
-- [Building Images With Dockerfile](../building-images-with-dockerfile/)
+## Diagrams
 
-### Storage & Compose
-
-- [Dockerfile Best Practices And Multi Stage Builds](../dockerfile-best-practices-and-multi-stage-builds/)
-- [Volumes And Persistent Storage](../volumes-and-persistent-storage/)
-- [Docker Compose Fundamentals](../docker-compose-fundamentals/)
-
-### Networking & Registry
-
-- [Docker Networking Fundamentals](../docker-networking-fundamentals/)
-- [Container Registries And Distribution](../container-registries-and-distribution/)
-- [Environment Variables And Secrets](../environment-variables-and-secrets/)
-
-### Operations
-
-- [Container Logging And Monitoring](../container-logging-and-monitoring/)
-- [Docker Security Hardening](../docker-security-hardening/)
-- [Troubleshooting Docker Containers](../troubleshooting-docker-containers/)
-
-### Production & Beyond
-
-- [Docker In Ci Cd Pipelines](../docker-in-ci-cd-pipelines/)
-- [Production Docker Patterns](../production-docker-patterns/)
-- [Docker Swarm Orchestration Basics](../docker-swarm-orchestration-basics/)
-- [From Docker To Kubernetes](../from-docker-to-kubernetes/)
-- [Docker Capstone And Next Steps](../docker-capstone-and-next-steps/)
-
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```

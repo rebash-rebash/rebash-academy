@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="180"
+     viewBox="0 0 820 180" role="img" aria-label="terraform-providers">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Provider model</text>
+
+  <path d="M 53.8,72.7 L 193.8,73.1 Q 203.8,73.1 203.8,83.1 L 203.7,133.3 Q 203.7,143.3 193.7,143.3 L 53.0,143.9 Q 43.0,143.9 43.0,133.9 L 43.8,82.7 Q 43.8,72.7 53.8,72.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.4,69.7 L 190.1,70.2 Q 200.1,70.2 200.1,80.2 L 199.3,129.3 Q 199.3,139.3 189.3,139.3 L 50.9,139.1 Q 40.9,139.1 40.9,129.1 L 40.4,79.7 Q 40.4,69.7 50.4,69.7 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">required_providers</text>
+  <text x="120.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">version pin</text>
+
+
+  <path d="M 252.5,73.9 L 392.2,73.6 Q 402.2,73.6 402.2,83.6 L 403.6,132.6 Q 403.6,142.6 393.6,142.6 L 253.3,143.2 Q 243.3,143.2 243.3,133.2 L 242.5,83.9 Q 242.5,73.9 252.5,73.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 249.9,69.2 L 390.8,70.1 Q 400.8,70.1 400.8,80.1 L 400.9,129.5 Q 400.9,139.5 390.9,139.5 L 250.3,139.1 Q 240.3,139.1 240.3,129.1 L 239.9,79.2 Q 239.9,69.2 249.9,69.2 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="320.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">provider {}</text>
+  <text x="320.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">auth · region</text>
+
+
+  <path d="M 453.7,73.8 L 593.3,73.2 Q 603.3,73.2 603.3,83.2 L 603.8,132.3 Q 603.8,142.3 593.8,142.3 L 452.8,143.9 Q 442.8,143.9 442.8,133.9 L 443.7,83.8 Q 443.7,73.8 453.7,73.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 450.8,69.6 L 590.1,70.9 Q 600.1,70.9 600.1,80.9 L 599.7,129.2 Q 599.7,139.2 589.7,139.2 L 450.6,139.2 Q 440.6,139.2 440.6,129.2 L 440.8,79.6 Q 440.8,69.6 450.8,69.6 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="520.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">alias</text>
+  <text x="520.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">multi-region</text>
+
+
+  <path d="M 652.9,73.2 L 773.4,72.2 Q 783.4,72.2 783.4,82.2 L 783.5,133.5 Q 783.5,143.5 773.5,143.5 L 653.4,142.8 Q 643.4,142.8 643.4,132.8 L 642.9,83.2 Q 642.9,73.2 652.9,73.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 650.4,69.2 L 769.7,70.5 Q 779.7,70.5 779.7,80.5 L 779.9,130.5 Q 779.9,140.5 769.9,140.5 L 649.5,139.7 Q 639.5,139.7 639.5,129.7 L 640.4,79.2 Q 640.4,69.2 650.4,69.2 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="710.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Registry</text>
+  <text x="710.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">plugins</text>
+
+
+  <path d="M 200.0,105.0 L 212.9,106.0 L 226.2,104.1 L 240.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,105.0 L 233.1,109.0 M 240.0,105.0 L 233.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 400.0,105.0 L 414.5,104.6 L 427.8,105.9 L 440.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 440.0,105.0 L 433.1,109.0 M 440.0,105.0 L 433.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 600.0,105.0 L 614.3,105.5 L 626.7,105.3 L 640.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 640.0,105.0 L 633.1,109.0 M 640.0,105.0 L 633.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

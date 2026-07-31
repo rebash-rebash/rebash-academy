@@ -1,220 +1,312 @@
 ---
 title: "Kubernetes Python Client Automation"
-description: "Automate Kubernetes with kubernetes-python-client across Pods, Deployments, Services, ConfigMaps, Secrets, Jobs, and Namespaces."
-difficulty: intermediate
-estimated_time: "60 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+description: "Automate Kubernetes with kubernetes-python-client — kubeconfig/in-cluster config, Pods, Deployments, Services, ConfigMaps, Secrets, Jobs, and Namespaces."
+difficulty: advanced
+estimated_time: "55–70 min"
+technology: python
 category: python
+module: "Module 18 · Kubernetes Automation"
+career_paths:
+  - kubernetes-engineer
+  - platform-engineer
+  - devops-engineer
+  - site-reliability-engineer
+skills:
+  - python
+  - kubernetes
+  - kubernetes-python-client
+prerequisites:
+  - python/docker-sdk-automation
+next:
+  - python/infrastructure-automation-terraform
+related:
+  - networking/kubernetes-networking-fundamentals
+  - labs/python-kubernetes-health-checker
+labs:
+  - labs/python-kubernetes-health-checker
+  - labs/python-kubernetes-deployment-validator
+projects: []
+interview: interview/python
+certifications:
+  - CKA
+  - CKAD
 tags:
   - python
   - kubernetes
   - client
-  - k8s
-prerequisites:
-  - Docker SDK Automation
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Kubernetes Python Client Automation
 
 ## Overview
 
-In-cluster and kubeconfig clients power health and validation tools — never print Secret values.
+Load kubeconfig or in-cluster config, list core workloads with the official Python client, and build read-only health/inventory reports (mutate only with explicit flags later).
 
-This is **Tutorial 18** in **Module 18: Kubernetes Automation** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+`kubernetes` Python client is a typed wrapper around the API server. Respect **RBAC**, never log Secret data, and default to get/list.
+
+Complete [Docker SDK Automation](docker-sdk-automation.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 18 · Kubernetes Automation** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Docker SDK Automation
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [REST APIs](rest-apis-requests-auth-and-resilience.md) concepts  
+- Optional: local cluster (kind/minikube/k3s) **or** fixture path
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Kubernetes Python Client Automation” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Load kubeconfig / in-cluster config  
+- [ ] List Pods and Deployments in a namespace  
+- [ ] Sketch Services, ConfigMaps, Jobs, Namespaces  
+- [ ] Treat Secrets as opaque (metadata only in reports)  
+- [ ] Handle ApiException status codes
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Kubernetes Python Client Automation](../assets/images/python-k8s-client-architecture.svg)
+![Kubernetes client architecture](../assets/excalidraw/python-k8s-client-architecture.svg)
 
 ## Theory
 
-### kubernetes-python-client
+### What it is
 
-Official client. Load config via `load_kube_config` or `load_incluster_config`. Use fixtures when no cluster is available.
+The official `kubernetes` Python package is a generated client around the Kubernetes API server. Your script loads credentials, builds typed API objects (`CoreV1Api`, `AppsV1Api`, and so on), and issues the same verbs `kubectl` uses — get, list, create, patch, delete — over HTTPS. It is not a replacement for controllers or operators; it is the library you use for inventory, health reports, CI gates, and small automation that must speak Kubernetes fluently.
 
-### Pods
+### Why it matters
 
-List phases, restarts, and not-ready conditions for health reports.
+Platform and SRE teams live in clusters. Shelling out to `kubectl` works for one-off jobs, but Python clients give structured objects, pagination helpers, and testable code paths. Read-only inventory tools catch Pending Pods, broken Deployments, and missing Services before users do. Mutating tools (when you eventually add them) inherit Role-Based Access Control (RBAC) from a ServiceAccount — so least privilege is enforceable, not optional.
 
-### Deployments
+### How it works
 
-Check desired vs available replicas; validate strategy and labels.
+Out of cluster, `config.load_kube_config()` reads `KUBECONFIG` or `~/.kube/config`. Inside a Pod, `config.load_incluster_config()` uses the mounted ServiceAccount token and CA. Clients then call namespaced or cluster-scoped list/get methods. Errors surface as `ApiException` with HTTP status codes: 401/403 for auth or RBAC, 404 for missing objects, 409 for conflicts. Prefer namespace-scoped lists for controllers and reports — cluster-wide scans are slower and need broader permissions.
 
-### Services
+```python
+from kubernetes import config
+config.load_kube_config()          # laptop / CI with kubeconfig
+# config.load_incluster_config()   # Pod ServiceAccount
+```
 
-Verify selectors match Pod labels — a common outage class.
+### Key concepts and comparisons
 
-### ConfigMaps
+| Resource | Typical client | Automation use |
+|----------|----------------|----------------|
+| Pods, Namespaces, ConfigMaps, Secrets, Services | `CoreV1Api` | Inventory, health, Service endpoints |
+| Deployments | `AppsV1Api` | Ready vs desired replicas |
+| Jobs / CronJobs | `BatchV1Api` | Batch completion checks |
 
-Inventory keys (not necessarily values) for drift detection.
+| Mode | When | Risk |
+|------|------|------|
+| List / get | Health checkers, audits | Low if RBAC is list/get only |
+| Create / patch / delete | Controllers, apply tools | High — require `--apply`, dry-run, tickets |
 
-### Secrets
+Treat Secrets as opaque: report name, namespace, and type — never decode or print `data` values in logs or JSON reports.
 
-List names/keys only. Never dump values to logs or CI artefacts.
+### Common pitfalls
 
-### Jobs
-
-Detect failed Jobs and surface backoff limits for batch ops.
-
-### Namespaces
-
-Scope all queries; refuse cluster-wide destructive actions without explicit flags.
+- Running with a cluster-admin kubeconfig “just for a script” and accidentally enabling write paths later.  
+- Logging full object dumps that include Secret payloads or tokens.  
+- Ignoring pagination / large namespaces and timing out CI.  
+- Treating 403 as “cluster down” instead of “RBAC denied.”  
+- Mutating without server-side dry-run or a clear `--apply` flag.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Kubernetes Python Client Automation
 
 ```bash
-mkdir -p ~/rebash-python/lab18 && cd ~/rebash-python/lab18
+mkdir -p ~/rebash-python/module-18
+cd ~/rebash-python/module-18
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install 'kubernetes==31.0.0'
 ```
 
-**Focus:** Kubernetes health checker using fixtures (or live read-only if kubeconfig present)
-
-### Step 1 – Skeleton
+### Step 1 – Fixture pod inventory
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab18 kubernetes-python-client-automation")
-EOF
-chmod +x lab.py
-python3 lab.py
-```
+cd ~/rebash-python/module-18
+source .venv/bin/activate
 
-### Step 2 – Kubernetes health fixtures
-
-```bash
-cat > pods.json << 'EOF'
-{"items":[{"metadata":{"name":"web-0","namespace":"demo"},"status":{"phase":"Running","containerStatuses":[{"ready":true,"restartCount":0}]}},{"metadata":{"name":"web-1","namespace":"demo"},"status":{"phase":"Running","containerStatuses":[{"ready":false,"restartCount":3}]}}]}
+mkdir -p fixtures
+cat > fixtures/pods.json << 'EOF'
+{
+  "items": [
+    {"metadata": {"name": "web-a", "namespace": "demo"}, "status": {"phase": "Running"}},
+    {"metadata": {"name": "web-b", "namespace": "demo"}, "status": {"phase": "Pending"}}
+  ]
+}
 EOF
-cat > k8s_health.py << 'EOF'
+
+cat > k8s_pods.py << 'EOF'
 #!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
 import json
+import sys
 from pathlib import Path
 
-data = json.loads(Path("pods.json").read_text())
-bad = []
-for pod in data["items"]:
-    name = pod["metadata"]["name"]
-    cs = pod["status"]["containerStatuses"][0]
-    if not cs["ready"] or cs["restartCount"] > 2:
-        bad.append(name)
-print(f"unhealthy={bad}")
-print("RESULT ok")
+
+def from_fixture(path: Path, namespace: str | None) -> list[dict]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    rows = []
+    for item in data.get("items", []):
+        ns = item["metadata"]["namespace"]
+        if namespace and ns != namespace:
+            continue
+        rows.append({
+            "name": item["metadata"]["name"],
+            "namespace": ns,
+            "phase": item.get("status", {}).get("phase"),
+        })
+    return rows
+
+
+def from_cluster(namespace: str) -> list[dict]:
+    from kubernetes import client, config
+
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+    pod_list = v1.list_namespaced_pod(namespace)
+    return [
+        {
+            "name": p.metadata.name,
+            "namespace": p.metadata.namespace,
+            "phase": p.status.phase,
+        }
+        for p in pod_list.items
+    ]
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description="Pod inventory")
+    p.add_argument("--namespace", default="demo")
+    p.add_argument("--fixture", type=Path)
+    args = p.parse_args()
+    try:
+        rows = (
+            from_fixture(args.fixture, args.namespace)
+            if args.fixture
+            else from_cluster(args.namespace)
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: {exc}", file=sys.stderr)
+        print("hint: pass --fixture fixtures/pods.json", file=sys.stderr)
+        return 1
+    print(json.dumps(rows, indent=2))
+    bad = [r for r in rows if r["phase"] != "Running"]
+    return 1 if bad else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-python3 k8s_health.py
+
+python k8s_pods.py --fixture fixtures/pods.json; echo exit=$?
 ```
 
-### Final step – Cleanup note
+### Step 2 – Deployment readiness sketch
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+dep = {"name": "api", "ready": 2, "desired": 3}
+print("healthy" if dep["ready"] == dep["desired"] else "degraded")
+print("# live: AppsV1Api().list_namespaced_deployment")
+PY
 ```
+
+### Step 3 – RBAC note
+
+Document: ServiceAccount + Role `get/list` on pods only for a health checker.
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab18/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-18/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Kubernetes Python Client Automation** always combines:
+Production practice for **Kubernetes Python Client Automation** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Running with a cluster-admin kubeconfig “just for a script” and accidentally enabling writ"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Logging full object dumps that include Secret payloads or tokens.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Kubernetes Python Client Automation changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| 403 Forbidden | RBAC | Grant least list/get |
+| Config exception | No kubeconfig | Fixture or set `KUBECONFIG` |
+| Slow list | Cluster-wide without need | Namespace-scope |
 
 ## Summary
 
-**Kubernetes Python Client Automation** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Official client + kubeconfig/in-cluster  
+- Read-only inventory/health first  
+- Labs for health checker and deployment validator
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Kubernetes Python Client Automation** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Docker SDK Automation](docker-sdk-automation.md) *(previous)*
-- [Infrastructure Automation — Terraform](infrastructure-automation-terraform.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Infrastructure Automation — Terraform](infrastructure-automation-terraform.md)  
+- [Kubernetes Health Checker lab](../labs/python-kubernetes-health-checker.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [kubernetes-client/python](https://github.com/kubernetes-client/python)

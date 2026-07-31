@@ -1,236 +1,319 @@
 ---
 title: "Linux Automation — subprocess and psutil"
-description: "Drive Linux safely with subprocess, os, pathlib, shutil, signal, psutil, process management, and permissions — never shell=True on the happy path."
+description: "Automate Linux with subprocess, os, pathlib, shutil, signals, and psutil — safe process management and permissions for DevOps Python."
 difficulty: intermediate
-estimated_time: "55 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "50–65 min"
+technology: python
 category: python
+module: "Module 13 · Linux Automation"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  - platform-engineer
+skills:
+  - python
+  - subprocess
+  - psutil
+  - linux-automation
+prerequisites:
+  - python/cli-applications-argparse-click-typer
+next:
+  - python/rest-apis-requests-auth-and-resilience
+related:
+  - linux/linux-networking-tools
+  - labs/python-linux-health-checker
+labs:
+  - labs/python-linux-health-checker
+projects: []
+interview: interview/python
+certifications:
+  - RHCSA
+  - PCAP
 tags:
   - python
   - subprocess
   - psutil
   - linux
-prerequisites:
-  - CLI Applications — argparse, Click, and Typer
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Linux Automation — subprocess and psutil
 
 ## Overview
 
-Python should call system tools with argument lists, timeouts, and captured stderr — not by building shell strings.
+Run host commands safely with `subprocess` (no `shell=True` on the happy path), inspect processes with `psutil`, and combine pathlib/shutil for file automation.
 
-This is **Tutorial 13** in **Module 13: Linux Automation** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Python orchestrates Linux: package checks, disk thresholds, service restarts (carefully), and wrapping CLIs. Prefer list args, timeouts, and captured output.
+
+Complete [CLI Applications](cli-applications-argparse-click-typer.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 13 · Linux Automation** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- CLI Applications — argparse, Click, and Typer
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [CLI Applications](cli-applications-argparse-click-typer.md)
+- Linux lab host with Python 3.12+
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Linux Automation — subprocess and psutil” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Call `subprocess.run` with list args and timeout  
+- [ ] Handle non-zero return codes explicitly  
+- [ ] Use pathlib/shutil for file ops  
+- [ ] Inspect CPU/memory/process lists with psutil  
+- [ ] Avoid `shell=True` unless strictly justified  
+- [ ] Note signal handling for graceful shutdown
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Linux Automation — subprocess and psutil](../assets/images/python-linux-automation.svg)
+![Linux automation](../assets/excalidraw/python-linux-automation.svg)
 
 ## Theory
 
-### subprocess
+### What it is
+
+Linux automation in Python means driving the host safely: run commands via **`subprocess`**, inspect the process and environment with **`os`** / **pathlib** / **shutil**, sample resources with **`psutil`**, and shut down cleanly on **signals**. You are not rewriting systemd — you are wrapping the same tools operators already trust, with timeouts and structured exit handling.
+
+### Why it matters
+
+Cloud SDKs do not replace “is nginx active?”, disk pressure, or collecting `uname` across bastions. Shell scripts grow fragile; Python wrappers add parsing, retries, and tests. Done badly (`shell=True`, no timeout, assume root), they become injection bugs and hung Continuous Integration (CI) jobs. Done well, they are the backbone of agentless host checks.
+
+### How it works
+
+Pass **argument lists** to `subprocess.run` — never build a shell string from untrusted input. Always set **`timeout`**. Use `capture_output=True` and `text=True` when you need to parse stdout. `check=True` raises on non-zero when failure is exceptional; otherwise inspect `returncode`. Read `os.environ` and `os.getuid()` for context; use pathlib for paths and shutil for copy/move/`disk_usage`. **psutil** samples CPU, memory, and disk without scraping `/proc` by hand. Register short handlers for `SIGINT`/`SIGTERM` to flush and clean temp files. Do not assume root — check access and fail with a clear message.
 
 ```python
-subprocess.run(["systemctl", "is-active", "nginx"], check=False, capture_output=True, text=True, timeout=30)
+import subprocess
+r = subprocess.run(
+    ["uname", "-a"],
+    check=False,
+    capture_output=True,
+    text=True,
+    timeout=10,
+)
 ```
 
-Pass a **list** of args. Set `timeout`. Inspect `returncode`, `stdout`, `stderr`.
+### Key concepts and comparisons
 
-### os
+| Tool | Job |
+|------|-----|
+| subprocess | Run CLIs with timeout and captured output |
+| pathlib / shutil | Paths, copy, disk usage |
+| psutil | CPU, memory, process tables |
+| Signals | Cooperative shutdown |
 
-Environment, getuid, and low-level helpers. Prefer `pathlib` for paths. Use `os.environ` copies carefully when spawning children.
+| Practice | Prefer | Avoid |
+|----------|--------|--------|
+| Invocation | Argv list | `shell=True` + user input |
+| Permissions | Fail closed | `chmod 0777` |
+| Long jobs | SIGTERM handler | Ignore signals |
 
-### pathlib
+### Common pitfalls
 
-Resolve and validate paths before mutating. Combine with subprocess for tools that need path arguments.
-
-### shutil
-
-Copy/move/which — wrap deletes behind dry-run. `shutil.which("kubectl")` before assuming binaries exist.
-
-### signal
-
-Handle SIGTERM/SIGINT for graceful shutdown of long pollers. Register handlers that set a stop flag rather than ignoring signals.
-
-### psutil
-
-Cross-platform process and host metrics (CPU, memory, connections). Ideal for Linux health checkers when available; degrade gracefully if missing.
-
-### Process Management
-
-List, inspect, and — carefully — terminate processes. Prefer signalling your own children. Never kill by fuzzy name match in production without allow-lists.
-
-### File Permissions
-
-Inspect with `Path.stat().st_mode`; set with `chmod`. Secret files should be `0o600`. Refuse to run if a private key is group/world-readable.
-
-**CRITICAL:** never use `shell=True` on the happy path. If you must for a legacy one-liner, pass a constant string and never interpolate untrusted input.
+- Omitting `timeout` on mounts or remote CLIs.  
+- Parsing locale-dependent human output instead of machine flags.  
+- Running as root “to make CI green.”  
+- Heavy work inside signal handlers.  
+- Treating `returncode == 0` as “healthy” when stdout says degraded.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Linux Automation — subprocess and psutil
 
 ```bash
-mkdir -p ~/rebash-python/lab13 && cd ~/rebash-python/lab13
+mkdir -p ~/rebash-python/module-13
+cd ~/rebash-python/module-13
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install 'psutil==6.1.1'
 ```
 
-**Focus:** Linux health checker with subprocess list args + optional psutil; prove no shell=True
-
-### Step 1 – Skeleton
+### Step 1 – Safe command wrapper
 
 ```bash
-cat > lab.py << 'EOF'
+cd ~/rebash-python/module-13
+source .venv/bin/activate
+
+cat > run_cmd.py << 'EOF'
 #!/usr/bin/env python3
-print("lab13 linux-automation-subprocess-and-psutil")
+from __future__ import annotations
+
+import subprocess
+import sys
+
+
+def run(cmd: list[str], timeout: float = 15) -> int:
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        print(f"error: timeout running {cmd!r}", file=sys.stderr)
+        return 124
+    if proc.stdout:
+        sys.stdout.write(proc.stdout)
+    if proc.stderr:
+        sys.stderr.write(proc.stderr)
+    return proc.returncode
+
+
+def main() -> int:
+    return run(["uname", "-s"])
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-chmod +x lab.py
-python3 lab.py
+
+python run_cmd.py
 ```
 
-### Step 2 – Linux health checker
+### Step 2 – Health snapshot with psutil
 
 ```bash
 cat > health.py << 'EOF'
 #!/usr/bin/env python3
 from __future__ import annotations
-import shutil, subprocess, sys
-from pathlib import Path
 
-def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=30)
+import shutil
+import sys
+
+import psutil
+
 
 def main() -> int:
-    df = run(["df", "-h", "."])
-    print(df.stdout.splitlines()[0] if df.stdout else "df failed")
-    which_python = shutil.which("python3")
-    print(f"python3={which_python}")
-    mode = Path(__file__).stat().st_mode & 0o777
-    print(f"mode={oct(mode)}")
-    try:
-        import psutil  # optional
-        print(f"cpu_percent={psutil.cpu_percent(interval=0.1)}")
-    except ImportError:
-        print("psutil optional — skipped", file=sys.stderr)
-    # Explicit: never shell=True
-    print("RESULT ok")
+    cpu = psutil.cpu_percent(interval=0.2)
+    mem = psutil.virtual_memory().percent
+    disk = shutil.disk_usage("/").used / shutil.disk_usage("/").total * 100
+    print(f"cpu_percent={cpu:.1f}")
+    print(f"mem_percent={mem:.1f}")
+    print(f"disk_percent={disk:.1f}")
+    # exit 1 if any over lab thresholds
+    if cpu > 95 or mem > 95 or disk > 95:
+        print("error: threshold exceeded", file=sys.stderr)
+        return 1
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
 EOF
-python3 health.py
+
+python health.py
 ```
 
-### Final step – Cleanup note
+### Step 3 – Anti-pattern reminder
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+# Never do this with untrusted input:
+# subprocess.run(f"echo {user}", shell=True)
+print("use list args: subprocess.run(['echo', user])")
+PY
+```
+
+### Step 4 – Process list peek
+
+```bash
+python - <<'PY'
+import psutil
+for p in psutil.process_iter(["pid", "name"]):
+    if p.info["name"] and "python" in p.info["name"]:
+        print(p.info)
+        break
+PY
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab13/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-13/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Linux Automation — subprocess and psutil** always combines:
+Production practice for **Linux Automation — subprocess and psutil** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Omitting `timeout` on mounts or remote CLIs.  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Parsing locale-dependent human output instead of machine flags.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Linux Automation — subprocess and psutil changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| `FileNotFoundError` | Binary not on PATH | Full path or document dependency |
+| Hang | Missing timeout | Always set timeout |
+| Permission denied | Non-root | Drop privilege needs; clearer errors |
 
 ## Summary
 
-**Linux Automation — subprocess and psutil** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- `subprocess` with lists + timeouts  
+- psutil for host signals in health checks  
+- pathlib/shutil for files; no casual `shell=True`  
+- Pair with the [Linux Health Checker](../labs/python-linux-health-checker.md) lab
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Linux Automation — subprocess and psutil** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [CLI Applications — argparse, Click, and Typer](cli-applications-argparse-click-typer.md) *(previous)*
-- [REST APIs — requests, Auth, and Resilience](rest-apis-requests-auth-and-resilience.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [REST APIs — requests, Auth, and Resilience](rest-apis-requests-auth-and-resilience.md)  
+- [Linux Health Checker lab](../labs/python-linux-health-checker.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [subprocess](https://docs.python.org/3/library/subprocess.html)  
+- [psutil](https://psutil.readthedocs.io/)

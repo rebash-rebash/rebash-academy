@@ -1,0 +1,83 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "rebash-academy-generator",
+  "elements": [
+    {
+      "type": "rectangle",
+      "id": "b0",
+      "x": 40,
+      "y": 40,
+      "width": 150,
+      "height": 70,
+      "label": "LAN"
+    },
+    {
+      "type": "rectangle",
+      "id": "b1",
+      "x": 240,
+      "y": 40,
+      "width": 150,
+      "height": 70,
+      "label": "MAN"
+    },
+    {
+      "type": "rectangle",
+      "id": "b2",
+      "x": 440,
+      "y": 40,
+      "width": 150,
+      "height": 70,
+      "label": "WAN"
+    },
+    {
+      "type": "rectangle",
+      "id": "b3",
+      "x": 140,
+      "y": 160,
+      "width": 150,
+      "height": 70,
+      "label": "Internet"
+    },
+    {
+      "type": "rectangle",
+      "id": "b4",
+      "x": 340,
+      "y": 160,
+      "width": 150,
+      "height": 70,
+      "label": "VPN"
+    },
+    {
+      "type": "rectangle",
+      "id": "b5",
+      "x": 40,
+      "y": 280,
+      "width": 150,
+      "height": 70,
+      "label": "Intranet"
+    },
+    {
+      "type": "rectangle",
+      "id": "b6",
+      "x": 240,
+      "y": 280,
+      "width": 150,
+      "height": 70,
+      "label": "Extranet"
+    },
+    {
+      "type": "rectangle",
+      "id": "b7",
+      "x": 440,
+      "y": 280,
+      "width": 150,
+      "height": 70,
+      "label": "Cloud VPC"
+    }
+  ],
+  "appState": {
+    "viewBackgroundColor": "#fffef8"
+  },
+  "files": {}
+}

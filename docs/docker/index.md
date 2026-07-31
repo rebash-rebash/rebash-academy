@@ -1,107 +1,83 @@
 ---
 title: Overview
-description: Docker learning track — 20 tutorials from container fundamentals to production patterns and Kubernetes bridge.
+description: "Docker for Cloud & DevOps Engineers — 17 modules covering containers, images, Compose, security, scanning, CI/CD, and production operations."
 difficulty: beginner
-estimated_time: "Varies"
+estimated_time: "6–8 weeks"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-31"
 category: docker
 tags:
   - docker
   - containers
+  - devops
+  - course
 comments: false
 ---
 
-# Docker
+# Docker for Cloud & DevOps Engineers
 
-Build, ship, and run applications in containers — from your first `docker run` to production-ready images, Compose stacks, and CI/CD integration.
+**Duration:** 6–8 weeks · **Difficulty:** Beginner → Advanced
+{ .ra-facts }
 
-## Overview
+Production-focused containerisation for Cloud, DevOps, Platform, and SRE — build, secure, optimise, and operate containers for real delivery pipelines.
 
-The REBASH Academy **Docker** track is a structured, 20-tutorial curriculum for developers and DevOps engineers. Containers power modern delivery: local dev parity, CI pipelines, and the foundation of Kubernetes. Each tutorial includes theory, hands-on labs, commands, best practices, and interview questions.
+!!! tip "Course status"
+    Curriculum follows the REBASH Docker technology prompt (**17 modules**). All **Modules 1–17** tutorials use the academy standard with **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Regenerate with `python3 scripts/generate-excalidraw-svg.py`. Start with [Introduction to Containers and Docker](introduction-to-containers-and-docker.md).
 
-## Modules and tutorials
+## 1. Course overview
 
-### Module 1 – Foundations
+### Purpose
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 1 | [Introduction to Containers and Docker](introduction-to-containers-and-docker.md) | Beginner | 30 min |
-| 2 | [Docker Installation and Setup](docker-installation-and-setup.md) | Beginner | 25 min |
-| 3 | [Docker Architecture and Components](docker-architecture-and-components.md) | Beginner | 35 min |
+Build production-quality images, run multi-container apps, harden and scan workloads, integrate Docker into CI/CD, and prepare for Kubernetes.
 
-### Module 2 – Images & Dockerfile
+### Target roles
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 4 | [Running Your First Container](running-your-first-container.md) | Beginner | 30 min |
-| 5 | [Working with Docker Images](working-with-docker-images.md) | Beginner | 40 min |
-| 6 | [Building Images with Dockerfile](building-images-with-dockerfile.md) | Beginner | 45 min |
+DevOps · Cloud · Platform · SRE · DevSecOps · Software · Infrastructure Engineer
 
-### Module 3 – Storage & Compose
+### Prerequisites
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 7 | [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md) | Intermediate | 50 min |
-| 8 | [Volumes and Persistent Storage](volumes-and-persistent-storage.md) | Intermediate | 40 min |
-| 9 | [Docker Compose Fundamentals](docker-compose-fundamentals.md) | Intermediate | 45 min |
+- [Linux Fundamentals](../linux/index.md)
+- [Shell](../shell/index.md) · [Git](../git/index.md)
+- Basic Python helpful for app labs
 
-### Module 4 – Networking & Registry
+### Capstone outcomes
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 10 | [Docker Networking Fundamentals](docker-networking-fundamentals.md) | Intermediate | 45 min |
-| 11 | [Container Registries and Distribution](container-registries-and-distribution.md) | Intermediate | 40 min |
-| 12 | [Environment Variables and Secrets](environment-variables-and-secrets.md) | Intermediate | 35 min |
+Production images · Compose stacks · registry strategy · scanning · security hardening · CI/CD · ops excellence · Kubernetes readiness
 
-### Module 5 – Operations
+## 2. Modules
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 13 | [Container Logging and Monitoring](container-logging-and-monitoring.md) | Intermediate | 40 min |
-| 14 | [Docker Security Hardening](docker-security-hardening.md) | Advanced | 50 min |
-| 15 | [Troubleshooting Docker Containers](troubleshooting-docker-containers.md) | Intermediate | 45 min |
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | Container fundamentals | [Introduction](introduction-to-containers-and-docker.md) · [Architecture](docker-architecture-and-components.md) |
+| 2 | Installing Docker | [Install and setup](docker-installation-and-setup.md) |
+| 3 | Docker CLI | [Running your first container](running-your-first-container.md) |
+| 4 | Images | [Working with images](working-with-docker-images.md) |
+| 5 | Dockerfile | [Building with Dockerfile](building-images-with-dockerfile.md) |
+| 6 | Image optimisation | [Multi-stage & best practices](dockerfile-best-practices-and-multi-stage-builds.md) |
+| 7 | Volumes & storage | [Volumes and persistent storage](volumes-and-persistent-storage.md) |
+| 8 | Networking | [Docker networking](docker-networking-fundamentals.md) |
+| 9 | Compose | [Docker Compose](docker-compose-fundamentals.md) |
+| 10 | Registries | [Registries and distribution](container-registries-and-distribution.md) |
+| 11 | Security | [Security hardening](docker-security-hardening.md) |
+| 12 | Scanning | [Scanning and SBOM](container-scanning-and-sbom.md) |
+| 13 | Logging & monitoring | [Logging and monitoring](container-logging-and-monitoring.md) |
+| 14 | Performance | [Performance and limits](docker-performance-and-resource-limits.md) |
+| 15 | CI/CD | [Docker in CI/CD](docker-in-ci-cd-pipelines.md) |
+| 16 | Troubleshooting | [Troubleshooting](troubleshooting-docker-containers.md) |
+| 17 | Production | [Production patterns](production-docker-patterns.md) |
 
-### Module 6 – Production & Beyond
+## 3. Practice
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 16 | [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md) | Intermediate | 45 min |
-| 17 | [Production Docker Patterns](production-docker-patterns.md) | Advanced | 50 min |
-| 18 | [Docker Swarm Orchestration Basics](docker-swarm-orchestration-basics.md) | Intermediate | 40 min |
-| 19 | [From Docker to Kubernetes](from-docker-to-kubernetes.md) | Intermediate | 40 min |
-| 20 | [Docker Capstone and Next Steps](docker-capstone-and-next-steps.md) | Advanced | 50 min |
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
 
-**Total estimated time:** ~14 hours of hands-on learning
+## Diagrams
 
-## Learning Objectives
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```
 
-After completing this track, you will be able to:
+## Related
 
-- [ ] Explain containers vs VMs and run Docker on Linux
-- [ ] Build optimised images with Dockerfile and multi-stage builds
-- [ ] Manage data with volumes and orchestrate stacks with Compose
-- [ ] Configure container networking and push to registries
-- [ ] Secure, monitor, and troubleshoot containers in production
-- [ ] Integrate Docker into CI/CD and transition toward Kubernetes
-
-## Who Is This For?
-
-| Audience | Benefit |
-|----------|---------|
-| **Developers** | Consistent local dev and deployable artifacts |
-| **DevOps / SRE** | Containerize services and pipeline images |
-| **Students** | Job-ready Docker for interviews and labs |
-| **Cloud engineers** | Foundation before [Kubernetes](../kubernetes/index.md) |
-
-## Related Sections
-
-- [Linux](../linux/index.md) — cgroups, namespaces, and CLI tools
-- [Networking](../networking/index.md) — bridges, ports, and DNS
-- [Git](../git/index.md) — version Dockerfiles and Compose files
-- [Kubernetes](../kubernetes/index.md) — next step after this track
-
-- [Docker Cheat Sheet](../cheatsheets/docker.md)
-- [Docker Interview Prep](../interview/docker.md)
-- [Docker Fundamentals Quiz](../quizzes/docker-fundamentals.md)
+- [Linux](../linux/index.md) · [Kubernetes](../kubernetes/index.md) · [GitHub Actions](../github-actions/index.md)
 - [DevOps Engineer path](../career-paths/devops-engineer/index.md)

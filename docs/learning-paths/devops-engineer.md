@@ -24,9 +24,9 @@ This path matches how production platforms are built: operating systems, **shell
 | 2 | [Shell Scripting](../shell/index.md) | [Shell Fundamentals — Bash vs sh and Execution](../shell/shell-fundamentals-bash-vs-sh-and-execution.md) | Ready — 18 modules · 18 tutorials |
 | 3 | [Python for DevOps](../python/index.md) | [Install, venv, and Tooling](../python/python-fundamentals-install-venv-and-tooling.md) | Ready — 27 modules · 27 tutorials |
 | 4 | [Networking](../networking/index.md) | [Introduction to Networking](../networking/introduction-to-networking.md) | Ready — 25 tutorials |
-| 5 | [AWS](../aws/index.md) | [Introduction to AWS and Global Infrastructure](../aws/introduction-to-aws-and-global-infrastructure.md) | Ready — 20 tutorials |
+| 5 | [AWS](../aws/index.md) | [AWS Fundamentals and Global Infrastructure](../aws/aws-fundamentals-and-global-infrastructure.md) | Ready — 16 modules · 16 tutorials |
 | 6 | [Git](../git/index.md) | [Introduction to Git](../git/introduction-to-git-and-version-control.md) | Ready — 20 tutorials |
-| 7 | [GitLab CI/CD](../gitlab/index.md) | [Introduction to CI/CD and Delivery Models](../gitlab/introduction-to-cicd-and-delivery-models.md) | Ready — 20 tutorials (GitLab CI) |
+| 7 | [GitLab CI/CD](../gitlab/index.md) | [GitLab CI/CD Fundamentals](../gitlab/gitlab-ci-fundamentals.md) | Ready — 18 modules (GitLab CI) |
 | 8 | [Docker](../docker/index.md) | [Introduction to Containers](../docker/introduction-to-containers-and-docker.md) | Ready — 20 tutorials |
 | 9 | [Kubernetes](../kubernetes/index.md) | [Introduction to Kubernetes](../kubernetes/introduction-to-kubernetes-and-orchestration.md) | Ready — 20 tutorials |
 | 10 | [Terraform](../terraform/index.md) | [Introduction to Terraform](../terraform/introduction-to-terraform-and-iac.md) | Ready — 20 tutorials |

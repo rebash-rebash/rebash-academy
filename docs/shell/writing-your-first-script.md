@@ -46,54 +46,31 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Writing Your First Script](../assets/images/shell-script-lifecycle.svg)
+![Architecture diagram for Writing Your First Script](../assets/excalidraw/shell-script-lifecycle.svg)
 
 ## Theory
 
-### Shebang
+### What it is
 
-The **shebang** is the first line that names the interpreter:
+A shell script is a text file that names an interpreter on the first line (the **shebang**), contains commands and comments, and returns an integer **exit code** when it finishes. Turning a one-liner into a reviewable file gives automation a clear contract: inputs, side effects, and how callers detect success or failure. From this module onward, production scripts enable **strict mode** (`set -euo pipefail`) so failures surface early instead of silently continuing.
+
+### Why it matters
+
+Ad-hoc terminal commands are not automation: they lack a review trail, a stable exit status for Continuous Integration (CI), and structure teammates can reuse. Schedulers need a predictable interpreter, a documented exit taxonomy, and behaviour that does not depend on your interactive shell. A small, well-structured script is the unit of delivery for Linux admin and DevOps glue work.
+
+### How it works
+
+The shebang tells the kernel which interpreter to load when you run `./script.sh`:
 
 ```bash
 #!/usr/bin/env bash
 ```
 
-`env` resolves `bash` from `PATH`. Absolute `#!/bin/bash` is fine when the path is guaranteed (many cloud images).
+`env` resolves `bash` from `PATH`. Absolute `#!/bin/bash` is fine when the path is guaranteed on your images. Make the file executable with `chmod +x`, then invoke it with `./script.sh`. Without the execute bit you can still run `bash script.sh`. Prefer those forms for jobs; reserve `source` for libraries of functions that must load into the current shell.
 
-### Executable Files
+Every process returns an exit code from 0 to 255. By convention **0** means success and non-zero means failure. Use `exit N` (or the last command’s status) and document a small taxonomy for teammates — for example `2` for usage errors, `3` for missing dependencies, and `4` for runtime failures.
 
-Make a script runnable:
-
-```bash
-chmod +x script.sh
-./script.sh
-```
-
-Without `+x`, call `bash script.sh`. The directory must be searchable; `./` avoids relying on `.` being in `PATH`.
-
-### Running Scripts
-
-| Form | Effect |
-|------|--------|
-| `./script.sh` | New process; needs execute bit + shebang |
-| `bash script.sh` | Explicit Bash; execute bit optional |
-| `source script.sh` | Current shell — inherits and mutates it |
-
-Prefer `./` or `bash` for jobs. Reserve `source` for libraries of functions.
-
-### Exit Codes
-
-Every process returns an integer **exit code** (0–255). By convention **0** means success; non-zero means failure. Scripts expose this via `exit N` or the last command’s status (`$?`).
-
-Document a small taxonomy for teammates: `2` usage error, `3` missing dependency, `4` runtime failure.
-
-### Comments
-
-Use `#` for human notes. Explain **why**, not what the next line already shows. Keep comments short; outdated comments are worse than none.
-
-### Script Structure
-
-Production default from this module onward:
+Production skeleton from this module onward:
 
 ```bash
 #!/usr/bin/env bash
@@ -104,7 +81,25 @@ set -euo pipefail
 # main
 ```
 
-`-e` exit on error, `-u` treat unset variables as errors, `pipefail` fails a pipeline if any stage fails. Put `set -euo pipefail` near the top after the shebang.
+`-e` exits on command failure, `-u` treats unset variables as errors, and `pipefail` fails a pipeline if any stage fails. Put this line near the top, after the shebang. Use `#` comments to explain **why**, not what the next line already shows.
+
+### Key concepts
+
+| Form | Effect |
+|------|--------|
+| `./script.sh` | New process; needs execute bit and a shebang |
+| `bash script.sh` | Explicit Bash; execute bit optional |
+| `source script.sh` | Runs in the current shell — can mutate it |
+| Exit `0` | Success contract for CI and monitoring |
+| `set -euo pipefail` | Default strict mode for ops scripts |
+
+### Common pitfalls
+
+- Omitting the shebang and relying on whoever typed `bash` this time
+- Forgetting `chmod +x` then blaming “Permission denied” on the wrong cause
+- Using `source` for scheduled jobs so `exit` or `cd` damages the caller
+- Leaving scripts without a documented exit-code contract
+- Skipping strict mode and discovering silent pipeline failures only in production
 
 ## Hands-on Lab
 

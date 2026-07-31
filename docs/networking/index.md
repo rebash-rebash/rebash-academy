@@ -1,118 +1,92 @@
 ---
 title: Overview
-description: Networking learning track — 25 tutorials from TCP/IP fundamentals through production network operations (segmentation, DNS ops, LB health checks, firewall change control, IR).
+description: "Networking for Cloud & DevOps Engineers — 17 modules from fundamentals through Linux, Kubernetes, multi-cloud, production operations, and troubleshooting."
 difficulty: beginner
-estimated_time: "Varies"
+estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-31"
 category: networking
 tags:
   - networking
+  - devops
+  - cloud
+  - course
 comments: false
 ---
 
-# Networking
+# Networking for Cloud & DevOps Engineers
 
-Understand how data moves across the internet and inside your infrastructure — from IP addressing and DNS to load balancers, firewalls, cloud VPCs, and production network operations.
+**Duration:** 8–10 weeks · **Difficulty:** Beginner → Advanced
+{ .ra-facts }
 
-## Overview
+A practical networking course focused on Linux, Cloud, Kubernetes, and DevOps — design, troubleshoot, and operate production networks.
 
-The REBASH Academy **Networking** track is a structured, 25-tutorial curriculum for DevOps engineers, SREs, and cloud administrators. Modules 1–6 build fundamentals through cloud networking; **Module 7: Production Network Operations** adds segmentation, DNS change control, load-balancer health checks, firewall canaries, and incident response. Each tutorial includes theory, step-by-step labs, commands, best practices, and interview questions.
+!!! tip "Course status"
+    Curriculum follows the REBASH Networking technology prompt (**17 modules**). Diagrams use **Excalidraw** assets under `docs/assets/excalidraw/` (not D2). Core tutorials for Modules **1–17** are on that standard; regenerate diagrams with `python3 scripts/generate-excalidraw-svg.py`.
 
-## Modules and tutorials
+## 1. Course overview
 
-### Module 1 – Foundations
+### Purpose
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 1 | [Introduction to Networking](introduction-to-networking.md) | Beginner | 30 min |
-| 2 | [OSI and TCP/IP Models](osi-and-tcp-ip-models.md) | Beginner | 35 min |
-| 3 | [IP Addressing and Subnetting](ip-addressing-and-subnetting.md) | Beginner | 45 min |
+Teach networking from an operations, troubleshooting, and cloud engineering perspective so learners can design and operate production networks.
 
-### Module 2 – Data Link & Routing
+### Target roles
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 4 | [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) | Beginner | 40 min |
-| 5 | [Routing Fundamentals](routing-fundamentals.md) | Intermediate | 45 min |
-| 6 | [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md) | Intermediate | 40 min |
+Cloud Engineer · DevOps Engineer · Platform Engineer · SRE · DevSecOps · Kubernetes Administrator · Infrastructure Engineer
 
-### Module 3 – Transport & DNS
+### Prerequisites
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 7 | [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md) | Intermediate | 50 min |
-| 8 | [DNS Fundamentals](dns-fundamentals.md) | Beginner | 40 min |
-| 9 | [DNS Records and Troubleshooting](dns-records-and-troubleshooting.md) | Intermediate | 45 min |
+- Basic Linux knowledge
+- Command line familiarity
 
-### Module 4 – Application Layer
+### Capstone outcome
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 10 | [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md) | Beginner | 40 min |
-| 11 | [Firewalls and Access Control](firewalls-and-access-control.md) | Intermediate | 45 min |
-| 12 | [Load Balancing Fundamentals](load-balancing-fundamentals.md) | Intermediate | 45 min |
-| 13 | [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md) | Intermediate | 40 min |
+Design production networks · Troubleshoot connectivity · Configure Linux networking · Understand Kubernetes networking · Build cloud network architectures · Diagnose DNS/routing · Operate secure production networking
 
-### Module 5 – Troubleshooting
+## 2. Modules and tutorials
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 14 | [Network Troubleshooting Methodology](network-troubleshooting-methodology.md) | Intermediate | 50 min |
-| 15 | [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md) | Intermediate | 55 min |
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | Networking Fundamentals | [What is Networking?](introduction-to-networking.md) |
+| 2 | OSI Model | [OSI Model](osi-model.md) |
+| 3 | TCP/IP Model | [TCP/IP Model](tcp-ip-model.md) |
+| 4 | IP Addressing | [IP Addressing](ip-addressing.md) |
+| 5 | Subnetting | [Subnetting and VLSM](subnetting-and-vlsm.md) |
+| 6 | Routing | [Routing Fundamentals](routing-fundamentals.md) |
+| 7 | Switching | [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) · [ICMP/ARP/DHCP](icmp-arp-dhcp-and-network-services.md) |
+| 8 | TCP & UDP | [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md) |
+| 9 | DNS | [DNS Fundamentals](dns-fundamentals.md) · [DNS Records](dns-records-and-troubleshooting.md) |
+| 10 | HTTP & HTTPS | [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md) |
+| 11 | NAT & Firewalls | [NAT](nat-and-port-forwarding.md) · [Firewalls](firewalls-and-access-control.md) |
+| 12 | Linux Networking | [Linux Networking Toolkit](linux-networking-toolkit.md) |
+| 13 | Load Balancing | [Load Balancing](load-balancing-fundamentals.md) · [Reverse Proxy / Ingress](reverse-proxy-and-ingress-basics.md) |
+| 14 | Kubernetes Networking | [Kubernetes Networking Fundamentals](kubernetes-networking-fundamentals.md) |
+| 15 | Cloud Networking | [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md) |
+| 16 | Production Networking | Segmentation · VPN · Hardening · Automation · DNS/LB/ACL ops |
+| 17 | Troubleshooting | Methodology · Packet analysis · Incident response |
 
-### Module 6 – Cloud & Advanced
+## 3. Practice
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 16 | [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md) | Intermediate | 50 min |
-| 17 | [NAT and Port Forwarding](nat-and-port-forwarding.md) | Intermediate | 40 min |
-| 18 | [VPN and Tunneling Basics](vpn-and-tunneling-basics.md) | Intermediate | 45 min |
-| 19 | [Network Security Hardening](network-security-hardening.md) | Advanced | 50 min |
-| 20 | [Network Automation and Monitoring](network-automation-and-monitoring.md) | Advanced | 50 min |
+- Labs: [DNS / firewall triage](../labs/networking-dns-firewall-triage.md) · [Edge failover](../labs/networking-edge-failover.md)
+- [Projects](projects/index.md) · [Quizzes](quizzes/index.md) · [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md)
 
-### Module 7 – Production Network Operations
+## Start here
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 21 | [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md) | Advanced | 55 min |
-| 22 | [Production DNS Operations](production-dns-operations.md) | Advanced | 60 min |
-| 23 | [Load Balancer Operations and Health Checks](load-balancer-operations-and-health-checks.md) | Advanced | 65 min |
-| 24 | [Firewall Change Control and Production ACLs](firewall-change-control-and-production-acls.md) | Advanced | 55 min |
-| 25 | [Network Incident Response and Observability](network-incident-response-and-observability.md) | Advanced | 60 min |
+1. [What is Networking?](introduction-to-networking.md)
+2. [OSI Model](osi-model.md)
+3. [TCP/IP Model](tcp-ip-model.md)
+4. [IP Addressing](ip-addressing.md)
+5. [Subnetting and VLSM](subnetting-and-vlsm.md)
 
-**Total estimated time:** ~19 hours of hands-on learning
+## Diagrams
 
-## Learning Objectives
+All course diagrams for rewritten modules live in [`docs/assets/excalidraw/`](../assets/excalidraw/) as `.svg` plus editable `.excalidraw` sources. Regenerate with:
 
-After completing this track, you will be able to:
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```
 
-- [ ] Explain how data flows through the TCP/IP stack from application to wire
-- [ ] Design and calculate IP subnets for cloud and on-premises networks
-- [ ] Configure and troubleshoot DNS, routing, and firewall rules
-- [ ] Understand load balancers, reverse proxies, and ingress patterns
-- [ ] Diagnose connectivity issues using layered troubleshooting and packet capture
-- [ ] Design VPC architectures with NAT, security groups, and VPN connectivity
-- [ ] Operate production networks: segmentation, DNS change control, LB health checks, ACL rollbacks, and incident response
+## Related
 
-## Who Is This For?
-
-| Audience | Benefit |
-|----------|---------|
-| **DevOps / SRE** | Debug production outages involving DNS, TLS, or routing |
-| **Cloud engineers** | Design VPCs, subnets, and security groups confidently |
-| **Developers** | Understand why your app can't reach the database |
-| **Students** | Build job-ready networking skills for certification and interviews |
-
-## Related Sections
-
-- [Linux](../linux/index.md) — OS-level networking, nginx, TLS on hosts
-- [Docker](../docker/index.md) — container networking overlays and bridge networks
-- [AWS](../aws/index.md) — VPC, ALB, and Route 53 in production
-- [Interview Prep](../interview/index.md) — networking interview questions
-- [Networking Production Quiz](../quizzes/networking-production.md)
-- [Lab — Edge Failover](../labs/networking-edge-failover.md)
-
-- [Networking Cheat Sheet](../cheatsheets/networking.md)
-- [Networking Interview Prep](../interview/networking.md)
+- [Linux](../linux/index.md) · [Docker](../docker/index.md) · [Kubernetes](../kubernetes/index.md) · [AWS](../aws/index.md)
 - [DevOps Engineer path](../career-paths/devops-engineer/index.md)

@@ -1,3 +1,37 @@
 title: GitHub Actions
+icon: material/github
+
 nav:
-  - Overview: index.md
+  - index.md
+  - Module 1 · CI/CD Fundamentals:
+    - cicd-fundamentals-and-github-actions.md
+  - Module 2 · GitHub Actions Basics:
+    - github-actions-basics-workflows-jobs-steps.md
+  - Module 3 · Runners:
+    - github-hosted-and-self-hosted-runners.md
+  - Module 4 · Workflow Syntax:
+    - workflow-syntax-matrix-and-reusable.md
+  - Module 5 · Secrets & Variables:
+    - secrets-variables-and-oidc.md
+  - Module 6 · Artifacts & Caching:
+    - artifacts-and-caching.md
+  - Module 7 · Docker Pipelines:
+    - docker-pipelines-with-github-actions.md
+  - Module 8 · Kubernetes Deployments:
+    - kubernetes-deployments-with-github-actions.md
+  - Module 9 · Terraform Pipelines:
+    - terraform-pipelines-with-github-actions.md
+  - Module 10 · Cloud Deployments:
+    - multi-cloud-deployments-with-github-actions.md
+  - Module 11 · Security:
+    - security-scanning-and-supply-chain.md
+  - Module 12 · Testing:
+    - testing-in-github-actions.md
+  - Module 13 · Release Management:
+    - release-management-and-versioning.md
+  - Module 14 · Reusable Components:
+    - composite-actions-and-reusable-workflows.md
+  - Module 15 · Production Pipelines:
+    - production-pipelines-and-environments.md
+  - Module 16 · Troubleshooting:
+    - troubleshooting-github-actions.md

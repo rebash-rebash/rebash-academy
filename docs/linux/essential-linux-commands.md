@@ -44,48 +44,46 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Essential Linux Commands](../assets/images/linux-essential-commands.svg)
+![Architecture diagram for Essential Linux Commands](../assets/excalidraw/linux-cli-workflow.svg)
 
 ## Theory
 
-### Navigation and listing
+### What it is
 
-| Command | Use |
-|---------|-----|
-| `pwd` | Print working directory |
-| `ls` | List directory entries (`-la`, `-lh`, `-lt`, `--color`) |
-| `cd` | Change directory (`cd -` previous, `cd` or `cd ~` home) |
+**Essential Linux commands** are the everyday Command Line Interface (CLI) tools for navigating the filesystem, creating and moving files, inspecting content, and reading metadata. Navigation (`pwd`, `ls`, `cd`), mutation (`mkdir`, `touch`, `cp`, `mv`, `rm`), viewing (`cat`, `less`, `head`, `tail`), and inspection (`stat`, `file`, `history`) form the baseline every SSH session and shell script builds on. Composition — redirection (`>`, `>>`, `2>`) and pipes (`|`) — turns these tools into small pipelines rather than one monolithic programme.
 
-### Create, copy, move, remove
+### Why it matters
 
-| Command | Use |
-|---------|-----|
-| `mkdir` | Create directories (`-p` parents) |
-| `touch` | Create empty file or update mtime |
-| `cp` | Copy (`-a` archive, `-r` recursive) |
-| `mv` | Move / rename |
-| `rm` | Remove (`-r` recursive, `-i` interactive — respect production caution) |
+Incident response, configuration checks, and automation all start with fluent navigation and safe file operations. Operators who guess at paths or paste destructive `rm` patterns cause outages; those who can page logs with `less`, follow with `tail -f`, and confirm type and mode with `stat`/`file` move faster and with less risk. Cloud and Continuous Integration (CI) environments expose the same commands inside containers and runners, so this fluency transfers across hosts.
 
-Prefer `rm -I` or trash tools in shared environments. Never `rm -rf /` patterns with unquoted variables.
+### How it works
 
-### Viewing content
+The shell resolves your current working directory; relative paths are interpreted against it, while absolute paths start at `/`. `ls` lists directory entries; flags such as `-la` and `-lh` add hidden files and human-readable sizes. `cp -a` preserves mode and timestamps for archives; `mv` renames or relocates within or across directories on the same host. `rm` unlinks names — recursive `-r` is powerful and dangerous on production. Pagers and `head`/`tail` avoid dumping huge files to the terminal. `stat` reads inode metadata; `file` uses magic bytes to guess content type. Shell history and reverse search (`Ctrl-R`) speed repetition without retyping secrets into tickets.
 
-| Command | Use |
-|---------|-----|
-| `cat` | Concatenate / print whole files (small files) |
-| `less` | Page through files (`/search`, `q` quit) |
-| `head` | First N lines (`-n`) |
-| `tail` | Last N lines (`-n`, `-f` follow logs) |
+### Key concepts and comparisons
 
-### Metadata and history
+| Need | Prefer |
+|------|--------|
+| Whole small file | `cat` |
+| Browse / search large file | `less` |
+| First or last lines | `head` / `tail` (`-f` to follow) |
+| Copy preserving attributes | `cp -a` |
+| Rename or relocate | `mv` |
+| Metadata (mode, times, inode) | `stat` |
 
-| Command | Use |
-|---------|-----|
-| `stat` | Detailed inode metadata (size, times, mode) |
-| `file` | Guess file type from content magic |
-| `history` | Shell command history (`!n`, `Ctrl-R` reverse search) |
+| Habit | Safer alternative |
+|-------|-------------------|
+| Blind `rm -rf` with variables | Quote paths; use `-i`/`-I`; dry-run with `ls` first |
+| `cat` huge logs | `less` or `tail` |
+| Guessing file type by extension | `file` |
 
-Combine with redirection (`>`, `>>`, `2>`) and pipes (`|`) — composition is the Linux ops superpower.
+### Common pitfalls
+
+- Running `rm -rf` on an unquoted variable that expands empty (classic “delete from cwd” failure).
+- Using `cat` on multi-gigabyte logs and locking your session.
+- Assuming `cd` succeeded without checking (`cd … \|\| exit` in scripts).
+- Copying with `cp` without `-a` and losing permissions needed by services.
+- Leaving secrets in shell history; disable history for sensitive one-offs or use dedicated secret stores.
 
 ## Hands-on Lab
 

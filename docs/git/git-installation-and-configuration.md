@@ -1,513 +1,228 @@
 ---
-title: Git Installation and Configuration
-description: Install Git on Linux, macOS, and Windows; configure identity, editors, SSH keys, credential helpers, and production-ready global settings for DevOps workflows.
+title: "Git Installation and Configuration"
+description: "Install Git, set user identity and editors, and configure SSH and HTTPS authentication for Cloud and DevOps workflows."
 difficulty: beginner
-estimated_time: "25 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "30–45 min"
+technology: git
 category: git
+module: "Module 2 · Installing Git"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - linux-administrator
+skills:
+  - git
+  - ssh
+  - configuration
+prerequisites:
+  - git/understanding-the-git-object-model
+next:
+  - git/creating-and-cloning-repositories
+related:
+  - git/signed-commits-and-git-security
+  - linux/index
+labs: []
+projects: []
+interview: interview/git
+certifications:
+  - GitHub Foundations
 tags:
   - git
-  - installation
-  - configuration
+  - install
   - ssh
-  - devops
-prerequisites:
-  - Introduction to Git and Version Control
-  - A Linux VM, WSL2, or macOS terminal with network access
-  - Basic familiarity with the Linux command line
+  - config
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Git Installation and Configuration
 
 ## Overview
 
-Before your first meaningful commit reaches a CI pipeline, Git must be **installed correctly** and **configured consistently**. Wrong author emails break compliance audits. Missing SSH keys block pushes from automation runners. A misconfigured credential helper leaks tokens into logs. Platform engineers onboarding hundreds of developers standardize Git installation and config the same way they standardize base AMIs and container images.
+Install a current Git, set global identity and defaults, and prepare SSH or HTTPS auth for GitHub/GitLab without committing secrets.
 
-This tutorial covers installing Git across environments, setting **identity** and **defaults**, configuring **SSH and HTTPS authentication**, tuning **performance settings** for large monorepos, and applying **security-conscious** options used in production DevOps teams.
+Wrong `user.name`/`user.email` pollutes audit trails. Broken SSH blocks every clone in CI. Configure once, verify, then never commit tokens.
 
-This is **Tutorial 2** in **Module 1: Foundations** of the REBASH Academy Git series. Complete [Introduction to Git and Version Control](introduction-to-git-and-version-control.md) first. Linux package management and SSH fundamentals from the [Linux track](../linux/index.md) and [Networking track](../networking/index.md) apply directly here.
+Diagrams: [git-workflow](../assets/excalidraw/git-workflow.svg).
+
+This is a core tutorial in **Module 2 · Installing Git** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completion of [Introduction to Git and Version Control](introduction-to-git-and-version-control.md)
-- A Linux environment (Ubuntu 22.04+ recommended) or macOS with terminal access
-- `sudo` privileges for package installation on Linux
-- Network access to download packages and reach Git hosting providers
-- Familiarity with [Essential Linux Commands](../linux/essential-linux-commands.md) — especially editing files and managing permissions
+- Linux/macOS/WSL with package install rights  
+- [Object model](understanding-the-git-object-model.md) recommended
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Install Git on Debian/Ubuntu, RHEL-family, and macOS using official or PPA sources
-- [ ] Verify installation and locate the Git binary and system configuration files
-- [ ] Configure global and repository-local identity (`user.name`, `user.email`)
-- [ ] Set productive defaults: default branch, editor, pull behaviour, and whitespace handling
-- [ ] Generate SSH key pairs and register them with GitHub or GitLab
-- [ ] Configure HTTPS credential helpers securely for automation and interactive use
-- [ ] Understand configuration precedence: system, global, local, and environment variables
-- [ ] Apply a production-ready `.gitconfig` baseline for DevOps engineers
+- [ ] Install/verify Git  
+- [ ] Set `user.name` and `user.email`  
+- [ ] Choose editor and useful defaults  
+- [ ] Configure SSH keys for hosting  
+- [ ] Know when HTTPS + credential helper / PAT applies
 
 ## Architecture
 
-Git configuration flows through four layers. Later layers override earlier ones — a common source of "I changed my email but commits still show the old one" confusion.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for git installation and configuration](../assets/images/git-installation-and-configuration.svg)
-
+![Architecture diagram for Git Installation and Configuration](../assets/excalidraw/git-workflow.svg)
 
 ## Theory
 
-### Installation Sources and Version Pinning
+### What
 
-Git releases frequently — security fixes and performance improvements land in minor versions. Production teams pin minimum versions in documentation (e.g., "Git ≥ 2.34") and CI base images.
+Installing Git gives you the `git` CLI and a local object database. **Configuration** sets identity (`user.name`, `user.email`), defaults (`init.defaultBranch`), editor choice, pull behaviour, and how you authenticate to remotes — usually **SSH** keys for humans and short-lived tokens or OpenID Connect (OIDC) for Continuous Integration (CI).
 
-| Platform | Recommended method | Notes |
-|----------|-------------------|-------|
-| Ubuntu/Debian | `apt` or Git PPA | Distro packages may lag; PPA provides latest stable |
-| RHEL/Rocky/Alma | `dnf install git` | AppStream module versions vary by release |
-| macOS | Xcode CLT or Homebrew | `git --version` after CLT may be older; Homebrew is newer |
-| Windows | Git for Windows installer | Includes Git Bash; use WSL2 for Linux parity in DevOps |
-| Containers | Base image + `apt-get install git` | Pin in Dockerfile; avoid `latest` tag drift |
+### Why
 
-For DevOps CI images, install Git in the Dockerfile layer and verify with `git --version` in a health check step. Alpine uses `apk add git`; ensure OpenSSH client is present if using SSH remotes.
+Wrong identity pollutes history with personal emails on corporate repos. Ambiguous pull defaults cause surprise merge commits or rebases. Broken SSH or credential helpers block every push. A few deliberate `git config` choices prevent weeks of friction for DevOps teams.
 
-### Identity Configuration
+### How it works
 
-Every commit records **author** and **committer** name and email. These fields are immutable in the object once committed (without history rewrite). Use:
-
-- **Corporate email** for work repositories — enables GitHub/GitLab account linking and audit trails
-- **noreply addresses** (e.g., `123456+user@users.noreply.github.com`) when privacy settings require hiding personal email
-- **Consistent bot identities** for automation: `ci-bot@company.com` with clear display name `CI Bot`
-
-Never use fake emails like `admin@localhost` in shared repos — they break `git blame` and code ownership tools.
-
-### The Three Configuration Scopes
+On Debian/Ubuntu you typically install the distribution package, then set **global** config in `~/.gitconfig`. Per-repository settings in `.git/config` override global ones — useful for work vs personal emails. Authentication is separate from Git itself: SSH uses keys loaded in an agent; HTTPS uses a credential helper and personal access tokens (PATs). Prefer SSH for day-to-day human work; CI often uses deploy keys, fine-grained PATs, or cloud OIDC federation.
 
 ```bash
-git config --system    # /etc/gitconfig — all users on machine (requires root)
-git config --global    # ~/.gitconfig — current user's default
-git config --local     # .git/config — single repository only
+# Debian/Ubuntu sketch
+sudo apt-get update && sudo apt-get install -y git
+git config --global user.name "Your Name"
+git config --global user.email "you@company.com"
+git config --global init.defaultBranch main
 ```
 
-**Precedence (highest wins):** command-line → local → global → system → built-in defaults.
+### Key concepts
 
-Repository-local config overrides global — useful when a contractor uses a personal email globally but a corporate email for one client repo.
+| Setting | Guidance |
+|---------|----------|
+| `user.name` / `user.email` | Match the hosting account; use work email at work |
+| `init.defaultBranch` | Prefer `main` unless the org standard differs |
+| `core.editor` | Set once (`vim`, `code --wait`, …) |
+| `pull.rebase` | Agree as a team — `true` or `false`, not “whatever happens” |
+| `fetch.prune` | `true` removes stale remote-tracking branches |
 
-### Essential Settings for DevOps
+SSH checklist: `ssh-keygen -t ed25519`, add the public key to GitHub/GitLab, then `ssh -T git@github.com`. Never commit tokens inside remote URLs.
 
-| Setting | Recommended value | Why |
-|---------|-------------------|-----|
-| `init.defaultBranch` | `main` | Industry standard; avoids renaming later |
-| `pull.rebase` | `false` (teams vary) | Document team policy; rebase keeps linear history |
-| `fetch.prune` | `true` | Removes stale remote-tracking branches after fetch |
-| `core.autocrlf` | `input` (Linux/macOS) | Prevents CRLF corruption in shell scripts and Terraform |
-| `core.editor` | `vim`, `nano`, or `code --wait` | Required for interactive rebase and commit amend |
-| `colour.ui` | `auto` | Readable diffs in terminal |
-| `push.default` | `simple` | Push current branch to matching remote branch only |
-| `rebase.autoStash` | `true` | Stash local changes before rebase automatically |
+### Common pitfalls
 
-### SSH vs HTTPS Authentication
-
-| Method | Pros | Cons | DevOps use case |
-|--------|------|------|-----------------|
-| **SSH** | Key-based, no password prompts, works with deploy keys | Key management overhead | Developer laptops, dedicated CI deploy keys |
-| **HTTPS** | Firewall-friendly (port 443), PAT/OAuth tokens | Tokens expire; credential storage risk | Corporate proxies, short-lived CI tokens |
-
-**SSH** uses `git@github.com:org/repo.git`. Keys live in `~/.ssh/`; `ssh-agent` holds passphrases during sessions.
-
-**HTTPS** uses `https://github.com/org/repo.git`. Personal Access Tokens (PATs) replace passwords. Store via `credential.helper` — never commit tokens to repos.
-
-For production CI, prefer **short-lived OIDC tokens** (GitHub Actions → AWS) or **machine users** with scoped PATs rotated on schedule.
-
-### Credential Helpers
-
-Git credential helpers cache or store HTTPS credentials:
-
-- **`cache`** — memory cache with timeout (default 15 minutes)
-- **`store`** — plaintext file `~/.git-credentials` (avoid on shared machines)
-- **`manager`** / **`osxkeychain`** — OS keychain integration (preferred on workstations)
-- **Custom helpers** — enterprise secret vault integration
-
-In CI, inject tokens via environment variables and use:
-
-```bash
-git config credential.helper '!f() { echo "username=x-access-token"; echo "password=$GITHUB_TOKEN"; }; f'
-```
-
-Never echo tokens in pipeline logs — mask variables in GitHub Actions / GitLab CI settings.
-
-### System-Wide and Enterprise Configuration
-
-Large organizations deploy `/etc/gitconfig` via configuration management (Ansible, cloud-init):
-
-```ini
-[safe]
-    directory = /var/lib/jenkins/workspace
-[protocol]
-    version = 2
-[credential]
-    helper = manager
-```
-
-The `safe.directory` setting (Git 2.35+) prevents CVE-2022-24765 issues when repos are owned by different users — common on CI runners and shared build hosts.
+- Embedding PATs in `https://user:token@…` remotes that leak via `git remote -v`  
+- Mixing personal and work emails without per-repo overrides  
+- Skipping logout/login after adding an SSH key to the agent  
+- Leaving `pull` behaviour undefined so juniors get inconsistent histories
 
 ## Hands-on Lab
 
-Perform these steps on your Linux lab machine. Adjust package commands for your distribution.
-
-### Step 1 – Check if Git is already installed
-
-**Command:**
+**Focus:** practise the core workflow for Git Installation and Configuration
 
 ```bash
-git --version 2>/dev/null || echo "Git not installed"
-type git 2>/dev/null
+mkdir -p ~/rebash-git/module-02
+cd ~/rebash-git/module-02
 ```
 
-**Explanation:** Cloud images and developer laptops often ship with Git pre-installed. Record the version for your runbook baseline.
-
-**Expected output:**
-
-```text
-git version 2.43.0
-git is /usr/bin/git
-```
-
-### Step 2 – Install Git on Ubuntu/Debian
-
-**Command:**
+### Step 1 – Verify install
 
 ```bash
-sudo apt update
-sudo apt install -y git
 git --version
+git config --list --show-origin | head -40
 ```
 
-**Explanation:** Distro packages are sufficient for learning. For the latest stable on Ubuntu, add the `git-core` PPA only in non-production lab environments.
-
-**Expected output:**
-
-```text
-git version 2.x.x
-```
-
-### Step 3 – Configure global identity
-
-**Command:**
+### Step 2 – Set lab identity (local to lab dir)
 
 ```bash
-git config --global user.name "Shaik Basha"
-git config --global user.email "you@example.com"
-git config --global init.defaultBranch main
-git config --global --list | grep -E 'user\.|init\.'
+cd ~/rebash-git/module-02
+mkdir cfg && cd cfg && git init -b main
+git config user.name "REBASH Lab"
+git config user.email "lab@rebash.local"
+git config --list --local
 ```
 
-**Explanation:** Identity applies to all new commits in repos without local overrides. Use your real work email for corporate projects.
-
-**Expected output:**
-
-```text
-user.name=Shaik Basha
-user.email=you@example.com
-init.defaultbranch=main
-```
-
-### Step 4 – Set editor and useful defaults
-
-**Command:**
+### Step 3 – SSH check (optional)
 
 ```bash
-git config --global core.editor "nano"
-git config --global color.ui auto
-git config --global fetch.prune true
-git config --global pull.rebase false
-git config --global push.default simple
-git config --global rebase.autoStash true
+ssh -T git@github.com 2>&1 | head -5 || echo "Configure keys when ready"
 ```
-
-**Explanation:** These defaults match common team policies. Align `pull.rebase` with your organisation's documented workflow.
-
-**Expected output:**
-
-```text
-(no output — success is silent)
-```
-
-### Step 5 – Generate an SSH key pair
-
-**Command:**
-
-```bash
-ssh-keygen -t ed25519 -C "you@example.com" -f ~/.ssh/id_ed25519_git -N ""
-ls -la ~/.ssh/id_ed25519_git*
-cat ~/.ssh/id_ed25519_git.pub
-```
-
-**Explanation:** Ed25519 keys are modern, compact, and secure. In production, use a passphrase (`-N ""` is lab-only). Add the public key to GitHub → Settings → SSH Keys.
-
-**Expected output:**
-
-```text
-Generating public/private ed25519 key pair.
-...
-ssh-ed25519 AAAA... you@example.com
-```
-
-### Step 6 – Configure SSH for Git hosting
-
-**Command:**
-
-```bash
-cat >> ~/.ssh/config << 'EOF'
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_ed25519_git
-  IdentitiesOnly yes
-EOF
-chmod 600 ~/.ssh/config
-ssh -T git@github.com 2>&1 | head -3
-```
-
-**Explanation:** `IdentitiesOnly yes` prevents SSH from offering wrong keys. Test connectivity — expect "Hi username!" or "Permission denied" if key not yet added to GitHub.
-
-**Expected output:**
-
-```text
-Hi username! You've successfully authenticated...
-```
-
-### Step 7 – Inspect configuration precedence
-
-**Command:**
-
-```bash
-mkdir -p /tmp/git-config-lab && cd /tmp/git-config-lab
-git init
-git config user.email "local-only@example.com"
-git config --show-origin --get user.email
-git config --show-origin --get user.name
-```
-
-**Explanation:** `--show-origin` reveals which file set each value — essential when debugging wrong identity in commits.
-
-**Expected output:**
-
-```text
-file:/tmp/git-config-lab/.git/config  local-only@example.com
-file:/home/user/.gitconfig  Shaik Basha
-```
-
-### Step 8 – Clean up lab directory
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-config-lab
-```
-
-**Explanation:** Remove test repositories after configuration labs.
-
-**Expected result:** Identity settings persist; no credentials written into the repository itself.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Version | `git --version` reports an installed client |
-| Identity | `git config user.name` and `user.email` are set |
-| Sanity | `git config --list --show-origin` shows expected sources |
-| Cleanup | No credentials committed; helper choice documented |
+- [ ] Lab commands run under `~/rebash-git/module-02/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git --version` | Verify installation | `git --version` |
-| `git config --global KEY VAL` | Set global option | `git config --global user.name "Name"` |
-| `git config --list --show-origin` | List all settings with source file | `git config -l --show-origin` |
-| `git config --unset KEY` | Remove a setting | `git config --global --unset credential.helper` |
-| `ssh-keygen -t ed25519` | Create SSH key pair | `ssh-keygen -t ed25519 -C "email"` |
-| `ssh -T git@github.com` | Test SSH auth to GitHub | `ssh -T git@github.com` |
-| `git config credential.helper` | Show credential helper | `git config --global credential.helper store` |
+Production practice for **Git Installation and Configuration** always combines:
 
-### Production baseline `.gitconfig`
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Copy to `~/.gitconfig` and customize identity:
-
-```ini
-[user]
-    name = Shaik Basha
-    email = you@company.com
-
-[init]
-    defaultBranch = main
-
-[core]
-    editor = nano
-    autocrlf = input
-    whitespace = trailing-space,space-before-tab
-    excludesfile = ~/.gitignore_global
-
-[color]
-    ui = auto
-
-[fetch]
-    prune = true
-
-[push]
-    default = simple
-
-[pull]
-    rebase = false
-
-[rebase]
-    autoStash = true
-
-[diff]
-    algorithm = histogram
-
-[merge]
-    conflictstyle = zdiff3
-
-[help]
-    autocorrect = 10
-
-[credential]
-    helper = cache --timeout=3600
-
-[safe]
-    directory = *
-```
-
-The `safe.directory = *` entry is convenient on trusted personal machines; on shared CI runners, list specific paths instead.
-
-### Global gitignore template
-
-Create `~/.gitignore_global` for OS and editor junk:
-
-```gitignore
-# OS
-.DS_Store
-Thumbs.db
-
-# Editors
-*.swp
-*~
-.idea/
-.vscode/
-
-# Secrets — never commit
-.env
-*.pem
-credentials.json
-```
-
-Register it: `git config --global core.excludesfile ~/.gitignore_global`
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Set `user.name` / `user.email` to identities your organisation recognises for audit trails
-- Store credentials in an OS keychain or credential helper — not in plaintext under `~/.git-credentials` on shared hosts
-- Prefer SSH keys or short-lived HTTPS tokens over long-lived personal access tokens
-- Keep Git itself updated; older clients miss security fixes for protocol and hook handling
-- Do not set `safe.directory=*` globally on multi-user machines without understanding the risks
+- Treat credentials and tokens for git as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using different emails across machines"
-    Commits from the same human with different emails fragment `git shortlog` and code ownership reports. Standardize via Ansible/chef and verify with `git config --global user.email`.
+!!! warning "Embedding PATs in `https://user:token@…` remotes that leak via `git remote -v`  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Committing with default 'root' identity on servers"
-    Running `git commit` as root on production boxes creates useless audit trails. Use deploy keys with bot identity or avoid Git operations on servers entirely — deploy artifacts instead.
+!!! warning "Mixing personal and work emails without per-repo overrides  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Storing PATs in plaintext credential store on shared CI"
-    The `store` helper writes credentials to disk unencrypted. On shared runners, use ephemeral environment-injected tokens with masked CI variables.
-
-!!! warning "Skipping SSH host key verification"
-    Disabling `StrictHostKeyChecking` opens MITM attacks. Pre-load known hosts in CI: `ssh-keyscan github.com >> ~/.ssh/known_hosts`.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Pin Git version in CI Dockerfiles"
-    Document `git --version` in build logs. Unexpected upgrades have changed default behaviours (e.g., `safe.directory`).
-
-!!! tip "Use separate SSH keys per purpose"
-    One key for personal GitHub, one deploy key per repo (read-only for CI), one for production bastion — limits blast radius if a key leaks.
-
-!!! tip "Configure Git once in golden AMI / container base"
-    Platform teams bake `/etc/gitconfig` and `safe.directory` into Jenkins agent AMIs and Kubernetes CI pod images.
-
-!!! tip "Align with Linux SSH hardening"
-    File permissions matter: `chmod 700 ~/.ssh`, `chmod 600 ~/.ssh/id_*`. See [Linux user management](../linux/users-groups-and-sudo.md) for permission fundamentals.
+- Encode Git Installation and Configuration changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `git: command not found` after install | PATH not updated in current shell | Open new shell or `hash -r`; verify `/usr/bin/git` |
-| Commits show wrong email | Local repo override or env var | `git config --show-origin --get user.email`; check `GIT_AUTHOR_EMAIL` |
-| `Permission denied (publickey)` | Key not loaded or not on GitHub | `ssh-add -l`; add pubkey to hosting platform; verify `IdentityFile` |
-| `Support for password authentication was removed` | GitHub deprecated password HTTPS | Use PAT or SSH instead |
-| `fatal: unsafe repository` | Repo owned by different user (Git 2.35+) | `git config --global --add safe.directory /path/to/repo` |
-| Credential helper not caching | Helper not configured or timeout expired | `git config credential.helper 'cache --timeout=86400'` |
-| `git commit` opens wrong editor | `core.editor` misconfigured | `git config --global core.editor "vim"` |
-| SSL certificate problem | Corporate MITM proxy or outdated CA | Install corporate CA; or use SSH remotes |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Install Git from trusted package sources and record version in runbooks and CI images
-- Configure **identity** (`user.name`, `user.email`) before any shared commits — emails are permanent in history unless rewritten
-- Settings apply in order: **system → global → local → environment → CLI flags**
-- Use **SSH keys** (Ed25519) for developer workflows; **HTTPS + PAT** where firewalls require port 443
-- Production teams standardize `.gitconfig`, global gitignore, `safe.directory`, and credential handling across the fleet
+- Install Git; set identity correctly  
+- SSH keys for daily work; short-lived tokens for CI  
+- Document team defaults (`pull.rebase`, default branch)
 
 ## Interview Questions
 
-1. What are the three Git configuration scopes, and which takes precedence?
-2. Why must `user.email` be configured correctly before your first commit?
-3. Compare SSH and HTTPS authentication for Git remotes.
-4. What is `init.defaultBranch`, and why set it to `main`?
-5. How do credential helpers work, and what are the security tradeoffs?
-6. What is the `safe.directory` configuration introduced in Git 2.35?
-7. How would you verify which config file sets a particular Git option?
-8. What Git settings would you bake into a CI runner base image?
-9. Why should `core.autocrlf` be set to `input` on Linux DevOps workstations?
-10. How do you test SSH connectivity to GitHub without cloning a repository?
+1. How does **Git Installation and Configuration** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 3, and 6)"
-
-    **Q1 — Config scopes and precedence:** System (`/etc/gitconfig`) applies to all users. Global (`~/.gitconfig`) applies to the current user. Local (`.git/config`) applies to one repository. Local overrides global, which overrides system. Command-line flags like `-c key=value` override all files for that invocation.
-
-    **Q3 — SSH vs HTTPS:** SSH uses public-key authentication (`git@host:repo.git`). No password prompts once keys are loaded; ideal for developers and deploy keys. HTTPS uses URLs like `https://host/repo.git` with PATs or OAuth tokens — better through strict corporate proxies on port 443. SSH requires key rotation discipline; HTTPS requires secure token storage and rotation.
-
-    **Q6 — safe.directory:** Git 2.35+ refuses to operate on repositories whose directory is owned by a different user than the one running Git, preventing CVE-2022-24765 exploits on shared systems. CI runners and `sudo` workflows hit this often. Fix by explicitly trusting paths with `git config --global --add safe.directory /path` or `*` on trusted personal machines only.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Git – Category Overview](index.md)
-- [Introduction to Git and Version Control](introduction-to-git-and-version-control.md) *(previous in Module 1)*
-- [Understanding the Git Object Model](understanding-the-git-object-model.md) *(next in Module 1)*
-- [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md)
-- [Introduction to Networking](../networking/introduction-to-networking.md) — SSH and HTTPS connectivity
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
 
 ## References
 
-- [Git – First-Time Git Setup](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup)
-- [GitHub – Connecting with SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
-- [GitLab – SSH keys](https://docs.gitlab.com/ee/user/ssh.html)
-- [Git config manual](https://git-scm.com/docs/git-config)
-- [CVE-2022-24765 – safe.directory](https://github.blog/2022-04-12-git-security-vulnerability-announced/)
-- [REBASH Academy – Linux Overview](../linux/index.md)
+- [git-config](https://git-scm.com/docs/git-config)  
+- [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)

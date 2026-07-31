@@ -1,517 +1,285 @@
 ---
-title: Registry Modules and Composition
-description: "Consume Terraform Registry modules with version pins and compose them into a maintainable root."
+title: "Registry Modules and Composition"
+description: "Consume Terraform Registry modules with version constraints, compose roots, and decide when to wrap upstream modules for production."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "45–60 min"
+technology: terraform
 category: terraform
-tags:
+module: "Module 9 · Modules"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - terraform
   - registry
   - modules
 prerequisites:
-  - Completed Modules — Creating Reusable Infrastructure
+  - terraform/modules-creating-reusable-infrastructure
+next:
+  - terraform/functions-templates-and-dynamic-blocks
+related:
+  - terraform/format-validate-and-terraform-test
+  - terraform/production-terraform-patterns
+labs: []
+projects: []
+interview: interview/terraform
+certifications:
+  - Terraform Associate
+tags:
+  - terraform
+  - registry
+  - composition
+  - versioning
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Registry Modules and Composition
 
 ## Overview
 
-The **Terraform Registry** distributes versioned modules the same way it distributes providers. Production roots pin `source` and `version`, read changelogs before upgrades, and compose modules so network outputs feed application inputs. This tutorial teaches Registry addresses, pinning, evaluation criteria, and composition patterns. The hands-on lab stays **local** (no AWS credentials) while mirroring how you would consume something like `terraform-aws-modules/vpc/aws` at version **6.6.1**.
+Address Registry-style modules with version pins, compose multiple modules in one root, and decide when to wrap upstream versus call it directly.
 
-This is **Tutorial 12** in **Module 3: Collaboration and Scale** of the REBASH Academy Terraform track.
+The **Terraform Registry** distributes versioned modules the same way it distributes providers. Production roots pin `source` and `version`, read changelogs before upgrades, and wire outputs of one module into inputs of another. This lab stays local while mirroring Registry consumption patterns.
+
+This is a core tutorial in **Module 9 · Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+
+## Prerequisites
+
+- [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
+- Terraform CLI 1.9+
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Address Registry modules with version constraints
-- [ ] Compare local, Git, and Registry sources
-- [ ] Compose multiple modules in one root with output wiring
-- [ ] Read module documentation before adoption
-- [ ] Avoid unpinned module sources in production
-- [ ] Decide when to wrap a public module behind an internal facade
-
-## Prerequisites
-
-- Completed [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
-- Terraform CLI **1.9+** (1.15.x recommended)
-- Ability to create directories and edit files
-- Network access only if you later try a real Registry download; the lab uses local sources
-- No cloud account required for this lab
+- [ ] Address Registry modules with version constraints  
+- [ ] Compare local, Git, and Registry sources  
+- [ ] Compose modules by wiring outputs to inputs  
+- [ ] Decide when to wrap an upstream module
 
 ## Architecture
 
-A root composes versioned building blocks. Each module has its own inputs/outputs; edges form when one module’s outputs feed another’s inputs.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Registry Modules and Composition](../assets/images/terraform-registry.svg)
-
-| Source kind | Example | Pin with |
-|-------------|---------|----------|
-| **Local** | `./modules/network` | Path in repo (version via Git) |
-| **Registry** | `terraform-aws-modules/vpc/aws` | `version` argument |
-| **Git** | `git::https://example.com/vpc.git?ref=v1.2.0` | `ref` query / tag |
+![Module composition](../assets/excalidraw/terraform-modules.svg)
 
 ## Theory
 
-### Registry addressing
+### What it is
 
-Public modules use `<NAMESPACE>/<NAME>/<PROVIDER>`:
+A Registry module address looks like `source = "terraform-aws-modules/vpc/aws"` with `version = "~> 5.0"` (example shape). Sources also include local paths, Git URLs with `?ref=`, and private registries. **Composition** means a root orchestrates several modules so network outputs feed application inputs without duplicating resource graphs. A **wrapper** (facade) module sits between a public module and many internal callers — you pin upstream once and expose a narrower, org-approved API.
 
-```hcl
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "6.6.1"
+### Why it matters
 
-  name = "example"
-  cidr = "10.0.0.0/16"
-  # See module docs for required inputs (AZs, subnets, etc.)
-}
-```
+Unpinned modules are a supply-chain risk: a floating `latest` can change between plan and apply. Version constraints make upgrades intentional. Composition keeps blast radius clear — network team owns the VPC module contract; app teams consume subnet IDs. Wrappers encode company defaults (tags, logging, encryption) so product squads cannot accidentally deploy “raw” public modules with insecure knobs left open.
 
-As of this writing, latest `terraform-aws-modules/vpc/aws` is **6.6.1** — re-check the Registry before production pins. Do **not** apply the snippet above without AWS credentials and a reviewed plan.
+### How it works
 
-### Why version pins matter
+1. Read the module’s docs: required inputs, outputs, provider versions, and known caveats.
+2. Pin `source` + `version` (or Git `ref`) in the caller.
+3. Pass only the inputs you understand; ignore optional knobs until needed.
+4. Wire `module.network.subnet_ids` style outputs into the next module’s variables.
+5. Upgrade by reading the changelog, widening the constraint carefully, and reviewing the plan for unexpected replaces.
 
-| Unpinned | Pinned |
-|----------|--------|
-| Next `init -upgrade` may jump majors | Reproducible plans across laptops and CI |
-| Surprise breaking changes | Deliberate upgrade PRs with changelog review |
+Before adoption: maintained releases, sensible defaults, least-privilege examples, and fit with your landing zone. Review modules like application dependencies.
 
-Prefer exact versions or carefully chosen pessimistic constraints for modules your team controls; many teams pin exact Registry versions and renovate intentionally.
+### Key concepts and comparisons
 
-### Evaluating a public module
+| Source | Pinning | Fit |
+|--------|---------|-----|
+| Local path | Directory / commit | Fast monorepo iteration |
+| Git URL + `ref` | Tag or commit SHA | Private modules |
+| Public / private Registry | `version` constraint | Shared / approved catalogue |
 
-Before adoption, check:
+Call upstream directly when the API is stable and defaults fit; wrap when many callers need org defaults; write your own when upstream fights your platform model. Prefer `~> 1.2`-style constraints; pin tighter on critical paths.
 
-- Recent commits and open issues
-- Terraform / provider version requirements
-- Licence compatibility
-- Whether examples match your region and compliance needs
-- Provisioners or external scripts (supply-chain risk)
-- Whether an official `hashicorp` / cloud-provider module exists instead
+### Common pitfalls
 
-### Wrapper (facade) modules
-
-When a public module’s API is broad or unstable for your org, wrap it:
-
-```text
-modules/company_vpc/   # your stable inputs
-  main.tf              # calls terraform-aws-modules/vpc/aws with pinned version
-```
-
-Callers depend on `company_vpc` only. You upgrade the inner pin in one place.
-
-### Composition patterns
-
-| Pattern | Description |
-|---------|-------------|
-| **Network → app** | App module receives subnet IDs from network outputs |
-| **Data → many** | Shared data module feeds multiple apps (careful coupling) |
-| **Stack roots** | Thin roots per env compose the same modules with different tfvars |
-
-Prefer **explicit outputs** over remote state spaghetti for sibling modules in the same root.
-
-### Git sources
-
-```hcl
-module "internal" {
-  source = "git::https://github.com/org/terraform-modules.git//network?ref=v1.4.0"
-}
-```
-
-Use tags, not mutable branches, for production. Private Git needs CI credentials (SSH or HTTPS tokens) — prefer OIDC/short-lived tokens.
-
-### Trade-offs
-
-| Choice | Benefit | Cost |
-|--------|---------|------|
-| Public Registry module | Speed, community fixes | External dependency risk |
-| Fully internal rewrite | Control | Maintenance burden |
-| Wrapper module | Stable internal API | Extra layer |
-| Many fine modules | Clear graphs | More wiring |
+- Omitting `version` on Registry modules in production.
+- Upgrading majors without reading breaking-change notes.
+- Over-wrapping — a facade that re-exposes every upstream input.
+- Treating community Registry modules as “official HashiCorp.”
 
 ## Hands-on Lab
 
-Scaffold **registry-style** local modules (`network` + `app`), compose them in a root, and compare the pin-and-compose pattern to a documented Registry call.
-
-### Step 1 – Scaffold directories
-
-**Objective:** Mirror a small internal module set.
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-tf-reg/{modules/network,modules/app,generated}
-cd ~/rebash-tf-reg
+mkdir -p ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out} && cd ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}
 ```
 
-**Expected:** Three paths under `~/rebash-tf-reg`.
+**Focus:** hands-on practice for Registry Modules and Composition
 
-### Step 2 – Network module
+### Step 1 – Skeleton
 
-**Objective:** Fake a VPC artefact with `local_file` outputs.
-
-Create `modules/network/variables.tf`:
-
-```hcl
-variable "name" {
-  description = "Logical network name"
-  type        = string
-}
-
-variable "cidr" {
-  description = "CIDR recorded in the lab artefact (not a real VPC)"
-  type        = string
-
-  validation {
-    condition     = can(cidrnetmask(var.cidr))
-    error_message = "cidr must be a valid IPv4 CIDR notation."
-  }
-}
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Registry Modules and Composition"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-Create `modules/network/main.tf`:
+### Step 2 – Core exercise
 
-```hcl
-resource "local_file" "vpc" {
-  filename        = "${path.module}/../../generated/${var.name}-vpc.txt"
-  content         = "vpc_name=${var.name}\ncidr=${var.cidr}\n"
-  file_permission = "0644"
+```bash
+mkdir -p ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}
+cd ~/rebash-terraform/module-09/registry-compose
+
+# Fake "upstream" module (mirrors a Registry child)
+cat > modules/label/variables.tf << 'EOF'
+variable "name" { type = string }
+variable "env"  { type = string }
+EOF
+cat > modules/label/main.tf << 'EOF'
+locals {
+  id = "${var.env}-${var.name}"
 }
+EOF
+cat > modules/label/outputs.tf << 'EOF'
+output "id" { value = local.id }
+EOF
 
-resource "terraform_data" "network_ready" {
-  input = local_file.vpc.content_md5
+# Thin wrapper that pins org defaults
+cat > modules/app/variables.tf << 'EOF'
+variable "name" { type = string }
+variable "env"  { type = string }
+EOF
+cat > modules/app/main.tf << 'EOF'
+module "label" {
+  source = "../label"
+  name   = var.name
+  env    = var.env
 }
-```
-
-Create `modules/network/outputs.tf`:
-
-```hcl
-output "vpc_id" {
-  description = "Lab stand-in for a VPC identifier"
-  value       = local_file.vpc.id
+resource "local_file" "marker" {
+  filename = "${path.module}/../../out/${module.label.id}.txt"
+  content  = "composed:${module.label.id}\n"
 }
+EOF
+cat > modules/app/outputs.tf << 'EOF'
+output "path" { value = local_file.marker.filename }
+output "id"   { value = module.label.id }
+EOF
 
-output "vpc_file" {
-  description = "Path of the network artefact consumed by app modules"
-  value       = local_file.vpc.filename
-}
-
-output "cidr" {
-  description = "Echo of the configured CIDR"
-  value       = var.cidr
-}
-```
-
-**Expected:** Network module validates CIDR and exports `vpc_file`.
-
-### Step 3 – App module
-
-**Objective:** Depend on network outputs only — not on network internals.
-
-Create `modules/app/variables.tf`:
-
-```hcl
-variable "name" {
-  description = "Application name"
-  type        = string
-}
-
-variable "vpc_file" {
-  description = "Path to the network artefact from the network module"
-  type        = string
-}
-
-variable "vpc_id" {
-  description = "Network identifier from the network module"
-  type        = string
-}
-```
-
-Create `modules/app/main.tf`:
-
-```hcl
-resource "local_file" "app" {
-  filename        = "${path.module}/../../generated/${var.name}-app.txt"
-  content         = <<-EOT
-    app=${var.name}
-    vpc_id=${var.vpc_id}
-    depends_on_vpc_file=${var.vpc_file}
-  EOT
-  file_permission = "0644"
-}
-```
-
-Create `modules/app/outputs.tf`:
-
-```hcl
-output "app_file" {
-  description = "Path of the application artefact"
-  value       = local_file.app.filename
-}
-```
-
-**Expected:** App module has no knowledge of how the network file was created.
-
-### Step 4 – Root composition
-
-**Objective:** Wire modules like a production root; document Registry pinning alongside.
-
-Create `versions.tf`:
-
-```hcl
+cat > versions.tf << 'EOF'
 terraform {
   required_version = ">= 1.9.0"
-
   required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.9"
-    }
+    local = { source = "hashicorp/local", version = "~> 2.9" }
   }
 }
-```
+EOF
 
-Create `main.tf`:
-
-```hcl
-module "network" {
-  source = "./modules/network"
-  name   = "payments"
-  cidr   = "10.20.0.0/16"
-}
-
+cat > main.tf << 'EOF'
+# Production shape: source  = "org/app/local"  version = "~> 1.0"
 module "app" {
-  source  = "./modules/app"
-  name    = "payments-api"
-  vpc_file = module.network.vpc_file
-  vpc_id   = module.network.vpc_id
+  source = "./modules/app"
+  name   = "payments"
+  env    = "dev"
 }
 
-output "artifacts" {
-  description = "Composed artefact paths"
-  value = {
-    vpc = module.network.vpc_file
-    app = module.app.app_file
-    cidr = module.network.cidr
-  }
-}
-```
+output "app_id"   { value = module.app.id }
+output "app_path" { value = module.app.path }
+EOF
 
-Create `registry-example.tf.example` (not applied):
-
-```hcl
-# Example only — requires AWS credentials and full VPC inputs from the module README.
-# module "vpc" {
-#   source  = "terraform-aws-modules/vpc/aws"
-#   version = "6.6.1"
-#
-#   name = "payments"
-#   cidr = "10.20.0.0/16"
-#   # azs, private_subnets, public_subnets, ...
-# }
-```
-
-**Expected:** Root wires outputs → inputs; Registry example remains documentation.
-
-### Step 5 – Apply and verify composition
-
-**Objective:** Prove dependency order and artefacts.
-
-```bash
 terraform init -input=false
-terraform plan -input=false -out=tfplan
-terraform apply -input=false tfplan
-cat generated/payments-vpc.txt generated/payments-api-app.txt
-terraform output -json
-```
-
-**Expected:** Both files exist. App file references the VPC file path and id. Plan created `module.network` resources before `module.app` via implicit edges.
-
-### Step 6 – Simulate a controlled “module upgrade”
-
-**Objective:** Change network output content and see app update.
-
-Edit `modules/network/main.tf` to add a `managed_by=terraform` line in `content`, then:
-
-```bash
 terraform apply -input=false -auto-approve
-cat generated/payments-vpc.txt
-cat generated/payments-api-app.txt
+cat out/dev-payments.txt
+terraform destroy -input=false -auto-approve
 ```
 
-**Expected:** Network artefact changes; app may update because it embeds `vpc_file` path (same path) — if only VPC file content changes, app content might be unchanged unless it references checksums. Optionally pass `module.network.vpc_id` only; content drift in VPC file still shows composition ownership boundaries.
-
-To force app refresh on network content changes, you could pass `content_md5` as an input — a good extension exercise.
-
-### Step 7 – Clean up
-
-**Objective:** Destroy and remove the lab tree.
+### Final step – Cleanup note
 
 ```bash
-terraform destroy -input=false -auto-approve
-rm -f tfplan
-cd ~
-rm -rf ~/rebash-tf-reg
+# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected:** Generated files removed; directory gone.
-
-## Code Walkthrough
-
-### CIDR validation
-
-`can(cidrnetmask(var.cidr))` rejects nonsense strings at plan time — the same class of guard you want on real network modules.
-
-### Output wiring
-
-```hcl
-vpc_file = module.network.vpc_file
-vpc_id   = module.network.vpc_id
-```
-
-This is the composition heart: **addresses stay inside modules**; only outputs cross the boundary. The same pattern applies when `module.network` is replaced by a pinned Registry VPC module — the app still receives subnet IDs/outputs.
-
-### Registry example arguments
-
-| Argument | Purpose |
-|----------|---------|
-| `source` | Registry address `terraform-aws-modules/vpc/aws` |
-| `version` | Exact pin `6.6.1` for reproducibility |
-
-Never omit `version` on Registry modules in production roots.
-
-### Why local stand-ins
-
-Downloading and applying a real VPC module needs credentials, cost, and cleanup. Local modules teach composition and pinning discipline without that overhead; swap `source`/`version` when you graduate to AWS labs.
 
 ## Validation
 
-```bash
-terraform fmt -recursive -check
-terraform init -input=false
-terraform validate
-terraform apply -input=false -auto-approve
-test -f generated/payments-vpc.txt
-test -f generated/payments-api-app.txt
-grep '10.20.0.0/16' generated/payments-vpc.txt
-terraform state list | grep module.app
-terraform destroy -input=false -auto-approve
-```
+- [ ] Lab commands run under `~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
-| Check | Pass criteria |
-|-------|----------------|
-| validate | Success including CIDR validation |
-| Composition | App artefact references network outputs |
-| State | Addresses under `module.network` and `module.app` |
-| Docs | `registry-example.tf.example` present with pinned version |
-| Cleanup | Destroy removes managed files |
+## Code Walkthrough
 
-## Best Practices
+Production practice for **Registry Modules and Composition** always combines:
 
-- Always set `version` on Registry modules; review changelogs on upgrade PRs
-- Prefer exact pins for third-party modules; automate upgrades with a bot and tests
-- Wrap wide public APIs behind internal modules with company defaults (tags, encryption)
-- Compose with outputs in the same root before reaching for remote state
-- Vendor or mirror modules for air-gapped environments
-- Run `terraform init -upgrade` only in dedicated upgrade branches
-- Keep an allow-list of approved module sources for regulated environments
-- Document why each external module was chosen (ticket / ADR)
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat module source as supply chain — pin, verify, and review diffs on upgrade
-- Prefer HTTPS Git with verified tags; protect against tag move where possible
-- Scan third-party modules for provisioners executing remote scripts
-- Do not pass secrets as plain module inputs in CI logs; mark sensitive
-- Least-privilege: a VPC module should not demand admin keys broader than needed
-- Private Registry / HCP private modules for internal intellectual property
+- Treat credentials and tokens for terraform as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "`source` without `version` for Registry modules"
-    Unexpected upgrades. **Fix:** Always pin; upgrade in reviewed PRs.
+!!! warning "Omitting `version` on Registry modules in production."
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Copy-pasting Registry examples into prod unchanged"
-    Wrong AZs, open CIDRs, missing flow logs. **Fix:** Read every input; align with your standards.
+!!! warning "Upgrading majors without reading breaking-change notes."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Deep remote_state instead of composition"
-    Spaghetti coupling. **Fix:** Compose in one root or publish a thin data contract.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-!!! warning "Pinning to a moving branch ref"
-    Non-reproducible applies. **Fix:** Immutable tags / release versions.
+## Best Practices
+
+- Encode Registry Modules and Composition changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Symptoms | Cause | Resolution |
-|-------|----------|-------|------------|
-| Could not download module | Init fails | Network / bad source | Check Registry URL and credentials |
-| Version not found | Init error | Yanked or typo | Verify version on Registry |
-| Circular module dependency | Cycle error | A↔B outputs | Introduce a third module or lift shared data |
-| App missing network values | Empty inputs | Forgot to pass outputs | Wire `module.network.*` explicitly |
-| Surprise resource churn on upgrade | Large replace plan | Module major change | Read upgrade guide; stage in non-prod |
-
-## Interview Questions
-
-1. How do you pin a Registry module version?
-   *Set `version` on the `module` block to an exact or constrained release.*
-
-2. What is the risk of source without a version?
-   *Non-reproducible infrastructure and surprise breaking changes on init/upgrade.*
-
-3. How do you evaluate a public module before adopting it?
-   *Licence, maintenance signals, requirements, examples, and security posture.*
-
-4. When should you wrap a Registry module in an internal module?
-   *When you need a stable org API, forced defaults, or to absorb upstream churn.*
-
-5. How do module outputs feed other modules?
-   *Pass `module.a.out` into `module.b` input arguments — creating graph edges.*
-
-6. What is the difference between count and for_each on modules?
-   *for_each uses stable keys; count uses indices that shift — prefer for_each.*
-
-7. How do you upgrade a module version in a controlled way?
-   *Bump pin in a PR, plan in non-prod, read changelog, then promote.*
-
-8. Where do you find module documentation?
-   *Terraform Registry pages, linked GitHub README, and `examples/` folders.*
-
-9. How do provisioners in third-party modules increase risk?
-   *Arbitrary local/remote execution expands supply-chain and security review scope.*
-
-10. What licence and maintenance signals matter?
-    *Compatible licence, recent releases, responsive maintainers, clear ownership.*
-
-11. How do you mirror modules for air-gapped use?
-    *Private Registry, Git mirrors, or vendored copies with verified versions.*
-
-12. Describe a composition pattern for network + app modules.
-    *Network exports subnet/VPC IDs; app receives them as variables — single root apply.*
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Pin Registry modules; treat them as supply-chain dependencies
-- Compose through outputs in the root; wrap public modules when you need a stable internal API
-- Local network+app labs teach the same wiring you will use with real VPC modules
-- Upgrade deliberately with plans and changelogs — never rely on floating sources
+**Registry Modules and Composition** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+
+## Interview Questions
+
+1. How does **Registry Modules and Composition** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
+
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- Track overview: [Terraform](index.md)
-- Previous: [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
-- Next: [Meta-Arguments — count, for_each, and lifecycle](meta-arguments-count-for-each-and-lifecycle.md)
-- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
-- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md)
 
 ## References
 
-1. [Terraform Registry](https://registry.terraform.io/)
-2. [Module Sources](https://developer.hashicorp.com/terraform/language/modules/sources)
-3. [Module Versions](https://developer.hashicorp.com/terraform/language/modules/syntax#version)
-4. [Module Composition](https://developer.hashicorp.com/terraform/language/modules/develop/composition)
-5. [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest)
-6. [Publishing Modules](https://developer.hashicorp.com/terraform/registry/modules/publish)
-7. [hashicorp/local provider](https://registry.terraform.io/providers/hashicorp/local/latest)
+- [Terraform Registry](https://registry.terraform.io/)  
+- [Module Sources](https://developer.hashicorp.com/terraform/language/modules/sources)  
+- [Publishing Modules](https://developer.hashicorp.com/terraform/registry/modules/publish)

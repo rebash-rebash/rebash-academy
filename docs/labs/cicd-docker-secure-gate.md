@@ -49,10 +49,10 @@ By the end of this lab, you will be able to:
 
 ### Knowledge
 
-- [Introduction to CI/CD and Delivery Models](../gitlab/introduction-to-cicd-and-delivery-models.md)
-- [GitLab CI Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
+- [GitLab CI/CD Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
 - [Building Docker Images in CI](../gitlab/building-docker-images-in-ci.md)
-- [Protected Environments and Approvals](../gitlab/protected-environments-and-approvals.md)
+- [Security Scanning and DevSecOps](../gitlab/security-scanning-and-devsecops.md)
+- [Production Pipelines and Environments](../gitlab/production-pipelines-and-environments.md)
 
 ### Software
 
@@ -369,13 +369,13 @@ You built and pushed a SHA-tagged image, enforced a scan gate, blocked deploy on
 
 ## Interview Connection
 
-Walk through build → scan → manual staging with immutable tags and RBAC. Pair with [CI/CD Interview Prep](../interview/cicd.md) and [Security Scanning in Pipelines](../gitlab/security-scanning-in-pipelines.md).
+Walk through build → scan → manual staging with immutable tags and RBAC. Pair with [CI/CD Interview Prep](../interview/cicd.md) and [Security Scanning and DevSecOps](../gitlab/security-scanning-and-devsecops.md).
 
 ## Related Tutorials
 
 - [CI/CD](../gitlab/index.md)
 - [Building Docker Images in CI](../gitlab/building-docker-images-in-ci.md)
-- [Protected Environments and Approvals](../gitlab/protected-environments-and-approvals.md)
+- [Production Pipelines and Environments](../gitlab/production-pipelines-and-environments.md)
 - [GitLab Runners and Executors](../gitlab/gitlab-runners-and-executors.md)
 - Quiz: [CI/CD Fundamentals](../quizzes/cicd-fundamentals.md)
 - Cheat sheet: [GitLab CI/CD](../cheatsheets/cicd.md)

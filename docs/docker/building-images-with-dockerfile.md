@@ -1,510 +1,243 @@
 ---
-title: Building Images with Dockerfile
-description: Write Dockerfiles from scratch — FROM, COPY, RUN, CMD, ENTRYPOINT, build context, .dockerignore, and hands-on labs building a web app image.
+title: "Building Images with Dockerfile"
+description: "Write Dockerfiles using FROM, RUN, COPY, CMD, ENTRYPOINT, ENV, ARG, USER, and EXPOSE for DevOps application packaging."
 difficulty: beginner
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "45–60 min"
+technology: docker
 category: docker
+module: "Module 5 · Dockerfile"
+career_paths:
+  - beginner
+  - devops-engineer
+  - platform-engineer
+  - software-engineer
+skills:
+  - docker
+  - dockerfile
+prerequisites:
+  - docker/working-with-docker-images
+next:
+  - docker/dockerfile-best-practices-and-multi-stage-builds
+related:
+  - python/index
+labs: []
+projects: []
+interview: interview/docker
+certifications:
+  - Docker Certified Associate
 tags:
   - docker
   - dockerfile
-  - build
-  - images
-  - containers
-  - devops
-prerequisites:
-  - Running Your First Container
-  - Working with Docker Images
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Building Images with Dockerfile
 
 ## Overview
 
-Running `docker run nginx` pulls a pre-built image. Production workflows require **building your own images** — packaging application code, dependencies, and runtime configuration into an immutable artifact that runs identically on a laptop, CI runner, and production host. A **Dockerfile** is the declarative recipe: a text file of instructions that `docker build` executes layer by layer.
+Author a clear Dockerfile for a small app: choose a base image, install deps, copy code, set `USER`, and define `CMD`/`ENTRYPOINT`.
 
-This tutorial is **Tutorial 6** in **Module 2: Images & Dockerfile** of the REBASH Academy Docker series. You will write Dockerfiles from scratch, understand how each instruction affects image layers, use build context and `.dockerignore` efficiently, and build a runnable web application image. For optimisation patterns, see [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md).
+A **Dockerfile** is a build recipe. Each instruction can create a layer — order matters for cache and size (optimisation is Module 6).
+
+This is a core tutorial in **Module 5 · Dockerfile** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed [Running Your First Container](running-your-first-container.md) — you can run and inspect containers
-- Completed [Working with Docker Images](working-with-docker-images.md) — you understand layers, tags, and `docker pull`
-- Docker Engine installed and running (`docker version` succeeds)
-- A text editor and terminal access
-- Basic familiarity with any programming language (labs use Python and shell)
+- [Working with Docker Images](working-with-docker-images.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain what a Dockerfile is and how `docker build` produces an image
-- [ ] Use core instructions: `FROM`, `WORKDIR`, `COPY`, `ADD`, `RUN`, `CMD`, `ENTRYPOINT`, `EXPOSE`, `ENV`, `ARG`, and `LABEL`
-- [ ] Understand build context and why `.dockerignore` matters
-- [ ] Build images with tags and inspect resulting layers
-- [ ] Override container commands at runtime with `docker run`
-- [ ] Debug failed builds using build output and layer history
+- [ ] Use `FROM`, `RUN`, `COPY`, `WORKDIR`  
+- [ ] Contrast `CMD` vs `ENTRYPOINT`  
+- [ ] Set `ENV` / `ARG`, `EXPOSE`, `LABEL`, `USER`  
+- [ ] Build and run a local image
 
 ## Architecture
 
-![Architecture diagram for Building Images with Dockerfile](../assets/images/building-images-with-dockerfile.svg)
+This topic’s control points and relationships are shown below.
 
-Each instruction in the Dockerfile typically creates one **immutable layer**. Cached layers speed rebuilds when inputs unchanged.
+![Image layers](../assets/excalidraw/docker-image-layers.svg)
 
 ## Theory
 
-### Dockerfile vs Image vs Container
+### What
 
-| Artifact | What it is | Created by |
-|----------|------------|------------|
-| **Dockerfile** | Text recipe on disk | You write it |
-| **Image** | Read-only stack of layers + metadata | `docker build` |
-| **Container** | Writable instance of an image | `docker run` |
+A **Dockerfile** is a recipe of instructions that BuildKit executes to produce an image. Core instructions include `FROM`, `RUN`, `COPY`, `WORKDIR`, `ENV`, `ARG`, `USER`, `EXPOSE`, `CMD`, and `ENTRYPOINT`. The build context is the directory you send to the daemon (filtered by `.dockerignore`).
 
-Images are the **shippable unit**. Containers are **ephemeral runtime instances** — delete the container; the image remains.
+### Why
 
-### Build Context
+Hand-built containers are not reproducible. Dockerfiles give teams a reviewable, CI-friendly definition of how production artefacts are made. Instruction choice affects size, cache hit rate, and security (especially `USER` and what you `COPY`).
 
-When you run:
+### How it works
 
-```bash
-docker build -t myapp:1.0 .
-```
+Each instruction creates a layer (conceptually). `FROM` selects a base. `RUN` executes build-time commands. `COPY` adds files from the context; prefer it over `ADD` unless you need a specific `ADD` feature. `ARG` values are build-time only; `ENV` persists into the runtime image. `CMD` and `ENTRYPOINT` together define the default process — know shell vs exec form. `EXPOSE` documents ports; it does not publish them. Builds run with BuildKit on modern Docker (`DOCKER_BUILDKIT=1`).
 
-The final `.` is the **build context** — the directory sent to the Docker daemon (unless using BuildKit secrets or remote builders). Only files inside the context can be referenced by `COPY` and `ADD`. Large contexts slow builds and leak unintended files into layers if not ignored.
+| Instruction | Role |
+|-------------|------|
+| `FROM` | Base image |
+| `RUN` | Execute at build time |
+| `COPY` / `ADD` | Prefer `COPY` for files |
+| `WORKDIR` | Working directory |
+| `ENV` / `ARG` | Runtime env vs build args |
+| `USER` | Drop root when possible |
+| `EXPOSE` | Document ports (not publish) |
+| `CMD` / `ENTRYPOINT` | Default process |
 
-**Best practice:** Keep context minimal. Place Dockerfile at project root or use `-f` to point to Dockerfile while context remains the directory you intend.
+### Key concepts
 
-### Core Instructions
+- **Build context** — only send what you need  
+- **Layer caching** — order stable steps before frequently changing ones  
+- **Exec form** — `CMD ["python","app.py"]` avoids shell surprises  
+- **Reproducibility** — pin base tags or digests  
 
-| Instruction | Purpose | Layer? |
-|-------------|---------|--------|
-| `FROM` | Base image; required first stage instruction | Yes |
-| `WORKDIR` | Set working directory for subsequent instructions | Yes |
-| `COPY` | Copy files from context into image | Yes |
-| `ADD` | Copy + optional tar extraction and URL fetch | Yes |
-| `RUN` | Execute command during build (install packages, compile) | Yes |
-| `CMD` | Default command when container starts (overridable) | Yes |
-| `ENTRYPOINT` | Main executable; `CMD` args append to it | Yes |
-| `EXPOSE` | Document intended listen ports (metadata only) | No |
-| `ENV` | Set environment variable at build and runtime | Yes |
-| `ARG` | Build-time variable; not present at runtime unless re-exported | No* |
-| `LABEL` | Metadata key-value pairs | Yes |
-| `USER` | Run subsequent instructions and default runtime as user | Yes |
+### Common pitfalls
 
-*ARG values can be passed with `--build-arg` and referenced in `RUN` lines.
-
-### CMD vs ENTRYPOINT
-
-| Pattern | Dockerfile | `docker run image` | `docker run image echo hi` |
-|---------|------------|-------------------|---------------------------|
-| CMD only | `CMD ["python", "app.py"]` | Runs app.py | Runs `echo hi` (replaces CMD) |
-| ENTRYPOINT + CMD | `ENTRYPOINT ["python"]` / `CMD ["app.py"]` | Runs `python app.py` | Runs `python echo hi` |
-| ENTRYPOINT exec form | `ENTRYPOINT ["/app/server"]` | Runs server | Appends args to server |
-
-**Exec form** (`["executable", "arg1"]`) avoids shell wrapping and signal-handling issues. Prefer exec form for production images.
-
-### COPY vs ADD
-
-Prefer **`COPY`** for straightforward file transfer. Use **`ADD`** only when you need automatic extraction of local tar archives or fetching remote URLs (discouraged — use multi-stage `curl` in `RUN` with checksum verification instead).
-
-### Layer Caching Behaviour
-
-Docker caches each instruction's result. If instruction text **and** all files it depends on are unchanged, Docker reuses the cached layer.
-
-| Change triggers rebuild of | Example |
-|----------------------------|---------|
-| Instruction text | Edit `RUN apt-get install` line |
-| Files copied before instruction | Modify source file before `COPY` |
-| Earlier layer invalidated | Any change above invalidates all below |
-
-Order Dockerfile instructions from **least frequently changing** (base image, OS packages) to **most frequently changing** (application source).
-
-### Tags and Naming
-
-```text
-registry.example.com/team/myapp:1.2.3
-│                      │    │     └── tag (version, branch, digest)
-│                      │    └──────── repository name
-│                      └───────────── namespace or team
-└──────────────────────────────────── registry host (optional for Docker Hub)
-```
-
-Local builds commonly use `myapp:dev`, `myapp:1.0.0`, or `myapp:abc1234` (git SHA).
-
-
-### How the build context reaches the daemon
-
-`docker build` uploads the build context (your directory minus `.dockerignore`) to the Docker daemon, then executes Dockerfile instructions as layers. Understanding that boundary explains many “it works on my laptop” failures: files outside the context cannot be `COPY`ed, secrets accidentally left in context become recoverable layers, and a bloated context slows every CI build. Keep contexts minimal, put Dockerfiles near the files they need, and prefer BuildKit for cache mounts and build secrets instead of baking credentials into `ARG` values.
-
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+- `COPY . .` without a `.dockerignore` (secrets, `.git`, node_modules)  
+- Running as root in the final image by default  
+- Confusing `ARG` (build) with runtime configuration  
+- Using `latest` bases that break builds unexpectedly
 
 ## Hands-on Lab
 
-All steps use a disposable lab directory. Run from a machine with Docker Engine and outbound network for package installs.
-
-### Step 1 – Create project structure
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/lab/dockerfile-build/app && cd ~/lab/dockerfile-build
-cat > app/app.py << 'PYEOF'
-from http.server import HTTPServer, BaseHTTPRequestHandler
+mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
+```
 
-class Handler(BaseHTTPRequestHandler):
+**Focus:** hands-on practice for Building Images with Dockerfile
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Building Images with Dockerfile"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05
+cat > app/server.py << 'EOF'
+from http.server import BaseHTTPRequestHandler, HTTPServer
+class H(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
-        self.send_header("Content-Type", "text/plain")
         self.end_headers()
-        self.wfile.write(b"Hello from Dockerfile lab\n")
-
-if __name__ == "__main__":
-    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
-PYEOF
-
-cat > app/requirements.txt << 'EOF'
-# No external deps — stdlib only for this lab
+        self.wfile.write(b"rebash docker ok\n")
+HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 EOF
 
-cat > README.md << 'EOF'
-# Dockerfile Lab App
-Minimal Python HTTP server for REBASH Academy Docker tutorial.
-EOF
-```
-
-**Explanation:** A tiny Python HTTP server avoids external dependencies while demonstrating real application packaging.
-
-**Expected output:** Three files under `~/lab/dockerfile-build/`.
-
-### Step 2 – Write a basic Dockerfile
-
-**Command:**
-
-```bash
 cat > Dockerfile << 'EOF'
-FROM python:3.12-slim
-
-LABEL org.rebash.tutorial="building-images-with-dockerfile"
-LABEL maintainer="lab@example.com"
-
+FROM python:3.12-alpine
+LABEL org.opencontainers.image.source="rebash-academy"
 WORKDIR /app
-
-COPY app/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY app/ .
-
+COPY app/server.py .
+RUN adduser -D appuser
+USER appuser
 EXPOSE 8080
-
-ENV APP_ENV=production
-
-CMD ["python", "app.py"]
-EOF
-```
-
-**Explanation:** `FROM` selects base image. `COPY` requirements before source code so dependency layer caches when only app code changes. `EXPOSE` documents port 8080; you still publish with `-p` at runtime.
-
-**Expected output:** `Dockerfile` created in project root.
-
-### Step 3 – Add .dockerignore
-
-**Command:**
-
-```bash
-cat > .dockerignore << 'EOF'
-.git
-.gitignore
-README.md
-*.md
-__pycache__
-*.pyc
-.env
-.venv
+CMD ["python", "server.py"]
 EOF
 
-cat .dockerignore
+docker build -t rebash-hello:0.1.0 .
+docker run --rm -d --name rebash-hello -p 8080:8080 rebash-hello:0.1.0
+curl -s http://127.0.0.1:8080
+docker stop rebash-hello
 ```
 
-**Explanation:** Excludes documentation and secrets from build context. Prevents accidental inclusion of `.env` files in image layers.
-
-**Expected output:**
-
-```text
-.git
-.gitignore
-README.md
-...
-```
-
-### Step 4 – Build the image
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-docker build -t rebash-lab-web:1.0 .
-docker images rebash-lab-web
+# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** `-t` names the image. Build context is current directory. Watch output for `Step` lines and `CACHED` indicators on rebuild.
-
-**Expected output:**
-
-```text
-Successfully tagged rebash-lab-web:1.0
-REPOSITORY        TAG   IMAGE ID       CREATED         SIZE
-rebash-lab-web    1.0   abcdef123456   2 seconds ago   ~150MB
-```
-
-### Step 5 – Run and verify
-
-**Command:**
-
-```bash
-docker run -d --name lab-web -p 8080:8080 rebash-lab-web:1.0
-sleep 2
-curl -s http://localhost:8080/
-docker logs lab-web
-```
-
-**Explanation:** `-p 8080:8080` maps host port to container port. `curl` confirms the server responds.
-
-**Expected output:**
-
-```text
-Hello from Dockerfile lab
-```
-
-### Step 6 – Inspect layers and history
-
-**Command:**
-
-```bash
-docker history rebash-lab-web:1.0 --no-trunc | head -15
-docker inspect rebash-lab-web:1.0 | grep -A5 '"Cmd"'
-```
-
-**Explanation:** `docker history` shows each layer and the instruction that created it. `docker inspect` JSON output includes `"Cmd"` showing the default command array.
-
-**Expected output:** History listing `CMD`, `COPY`, `RUN pip install`, `FROM python:3.12-slim`, etc.
-
-### Step 7 – Override CMD at runtime
-
-**Command:**
-
-```bash
-docker run --rm rebash-lab-web:1.0 python -c "print('override works')"
-docker stop lab-web
-```
-
-**Explanation:** Supplying a command at the end of `docker run` replaces `CMD` but not `ENTRYPOINT` (none set here). Container exits after print; `--rm` removes it.
-
-**Expected output:**
-
-```text
-override works
-```
-
-### Step 8 – Demonstrate build cache
-
-**Command:**
-
-```bash
-echo "# cache bust comment" >> app/app.py
-docker build -t rebash-lab-web:1.1 .
-```
-
-**Explanation:** After modifying `app/app.py`, layers before final `COPY app/` should show `CACHED`; only later steps rebuild.
-
-**Expected output:** Build completes faster with multiple `CACHED` lines for early steps.
-
-### Step 9 – Use ARG for build-time configuration
-
-**Command:**
-
-```bash
-cat >> Dockerfile << 'EOF'
-
-ARG BUILD_VERSION=dev
-LABEL org.rebash.version="${BUILD_VERSION}"
-EOF
-
-docker build --build-arg BUILD_VERSION=1.1 -t rebash-lab-web:1.1 .
-docker inspect rebash-lab-web:1.1 | grep -A2 Labels
-```
-
-**Explanation:** `ARG` accepts values at build time via `--build-arg`. Useful for embedding version metadata without hardcoding.
-
-**Expected output:** Label includes `org.rebash.version": "1.1"`.
-
-### Step 10 – Clean up
-
-**Command:**
-
-```bash
-docker rm -f lab-web 2>/dev/null || true
-docker rmi rebash-lab-web:1.0 rebash-lab-web:1.1 2>/dev/null || true
-rm -rf ~/lab/dockerfile-build
-```
-
-**Explanation:** Remove containers, images, and lab directory.
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Build | `docker build` completes with a tagged image |
-| Run | Container from your image serves the expected response |
-| Layering | You can point to which Dockerfile instruction created a key layer |
-| Cleanup | Build containers/images cleaned per lab |
+- [ ] Lab commands run under `~/rebash-docker/module-05/app/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `docker build` | Build image from Dockerfile | `docker build -t app:1.0 .` |
-| `docker build -f` | Specify Dockerfile path | `docker build -f docker/Dockerfile .` |
-| `docker build --no-cache` | Force full rebuild | `docker build --no-cache -t app .` |
-| `docker build --build-arg` | Pass build-time variable | `docker build --build-arg VERSION=2 .` |
-| `docker history` | Show image layer history | `docker history myapp:1.0` |
-| `docker run` | Start container from image | `docker run -p 8080:8080 myapp` |
+Production practice for **Building Images with Dockerfile** always combines:
 
-### Minimal Dockerfile template
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```dockerfile
-FROM python:3.12-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8080
-
-CMD ["python", "app.py"]
-```
-
-### ENTRYPOINT pattern for CLI tools
-
-```dockerfile
-FROM alpine:3.20
-ENTRYPOINT ["echo"]
-CMD ["default message"]
-```
-
-Run: `docker run myecho` prints `default message`; `docker run myecho hello` prints `hello`.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Never `COPY` `.env`, private keys, or kubeconfigs into an image — use build secrets or runtime mounts
-- Run as a non-root `USER` in the final stage whenever the workload allows
-- Prefer specific base tags or digests; avoid `FROM ubuntu:latest` in production Dockerfiles
-- Combine `apt-get update && install` and clean package caches in the same layer to avoid stale indexes
-- Do not disable SSL verification in `curl`/`wget` build steps “just to make the build pass”
-- Keep build contexts small with a tight `.dockerignore` so secrets and junk never enter the daemon
-
+- Treat credentials and tokens for docker as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using `ADD` when `COPY` suffices"
-    `ADD` has surprising tar-extraction behaviour. Use `COPY` unless you explicitly need extraction.
+!!! warning "`COPY . .` without a `.dockerignore` (secrets, `.git`, node_modules)  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Running as root in production images"
-    Default user is root. Add a non-root `USER` after installing dependencies — covered in depth in the best practices tutorial.
+!!! warning "Running as root in the final image by default  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Large build context without .dockerignore"
-    Sending gigabytes of `node_modules` or `.git` slows every build and risks leaking secrets into layers.
-
-!!! warning "Shell form CMD causing signal issues"
-    `CMD python app.py` wraps in `/bin/sh -c`, breaking graceful shutdown. Use exec form: `CMD ["python", "app.py"]`.
-
-!!! warning "Forgetting EXPOSE does not publish ports"
-    `EXPOSE` is documentation. You must still use `-p` or `-P` with `docker run` for host access.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Copy dependency manifests before source code"
-    Order `COPY requirements.txt` + `RUN pip install` before `COPY . .` so dependency layers cache when only application code changes.
-
-!!! tip "Pin base image tags"
-    Use `python:3.12-slim`, not `python:latest`, for reproducible builds.
-
-!!! tip "One concern per container"
-    Do not run a web server and background worker in one Dockerfile `CMD` without a proper init process — use separate containers or Compose services.
-
-!!! tip "Use .dockerignore from day one"
-    Treat it like `.gitignore` for the build context.
+- Encode Building Images with Dockerfile changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `COPY failed: file not found` | File outside build context or typo | Verify paths relative to context root |
-| Build hangs on `RUN apt-get` | Missing `-y` or network blocked | Add `-y`; check proxy/firewall |
-| `exec format error` | Wrong architecture base image | Use `--platform linux/amd64` if needed |
-| Image unexpectedly large | Dev tools in final layer | Multi-stage builds; slim bases |
-| Changes not reflected in container | Old image tag cached | Rebuild with new tag; `--no-cache` once |
-| Permission denied at runtime | Files copied as root, app runs non-root | `chown` in build or run as matching user |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- A **Dockerfile** defines image layers; **`docker build`** executes instructions against a **build context**
-- Core instructions: **`FROM`**, **`WORKDIR`**, **`COPY`**, **`RUN`**, **`CMD`**, **`ENTRYPOINT`**, **`EXPOSE`**, **`ENV`**, **`ARG`**
-- **`COPY` before frequent changes** maximizes layer cache hits
-- **`.dockerignore`** shrinks context and prevents secret leakage
-- **`CMD`** is overridable at `docker run`; **`ENTRYPOINT`** defines the main executable
-- Images are immutable artifacts; containers are disposable instances
+**Building Images with Dockerfile** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What is the difference between a Dockerfile, an image, and a container?
-2. Explain Docker layer caching and how instruction order affects rebuild speed.
-3. When would you use `ENTRYPOINT` vs `CMD`?
-4. What is build context and why does `.dockerignore` matter?
-5. What is the difference between `COPY` and `ADD`?
-6. Does `EXPOSE 8080` make the port reachable from the host?
-7. What is the difference between `ENV` and `ARG`?
-8. Why prefer exec form over shell form for `CMD` and `ENTRYPOINT`?
-9. How do you pass build-time variables to `docker build`?
-10. How would you debug a failing `RUN` instruction during build?
+1. How does **Building Images with Dockerfile** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 2, 3, and 7)"
-
-    **Q2 — Layer caching:** Each Dockerfile instruction creates a layer stored in cache. If instruction text and inputs (e.g., copied files) are unchanged, Docker reuses the cached layer. Put slow-changing steps (base image, package installs) before fast-changing steps (application source) so most rebuilds only recreate final layers.
-
-    **Q3 — ENTRYPOINT vs CMD:** `CMD` provides the default command and arguments, fully replaceable by arguments to `docker run`. `ENTRYPOINT` sets the main executable; `docker run` args append to it. Combined pattern: ENTRYPOINT defines the binary, CMD supplies default flags — useful for wrapper images.
-
-    **Q7 — ENV vs ARG:** `ARG` exists only at **build time** and is set with `--build-arg`. `ENV` sets environment variables available at **build time (after declared) and runtime** in containers. Secrets should not use either without proper secret management.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Docker – Category Overview](index.md)
-- [Working with Docker Images](working-with-docker-images.md) *(previous in Module 2)*
-- [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md) *(next in Module 3)*
-- [Running Your First Container](running-your-first-container.md)
-- [Linux – Package Management](../linux/package-management.md)
-- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
-- Interview prep: [Docker Interview Prep](../interview/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
 
 ## References
 
 - [Dockerfile reference](https://docs.docker.com/reference/dockerfile/)
-- [Docker build overview](https://docs.docker.com/build/concepts/overview/)
-- [.dockerignore file](https://docs.docker.com/build/concepts/context/#dockerignore-files)
-- [Best practices for writing Dockerfiles](https://docs.docker.com/build/building/best-practices/)
-- [REBASH Academy – Docker Overview](index.md)

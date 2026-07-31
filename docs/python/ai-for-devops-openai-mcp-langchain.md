@@ -1,211 +1,293 @@
 ---
 title: "AI for DevOps — OpenAI, MCP, and LangChain"
-description: "OpenAI SDK, MCP clients, LangChain basics, AI-assisted automation, and ops agents — with mocked/offline examples only."
+description: "Use AI assistively in DevOps — OpenAI SDK patterns, MCP clients, LangChain basics, and human-approved automation agents with strong guardrails."
 difficulty: advanced
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "45–60 min"
+technology: python
 category: python
-tags:
+module: "Module 26 · AI for DevOps"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - python
   - openai
   - mcp
   - langchain
-  - ai
+  - ai-ops
 prerequisites:
-  - Security for DevOps Python
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - python/security-for-devops-python
+next:
+  - python/troubleshooting-python-automation
+related:
+  - python/cli-applications-argparse-click-typer
+  - python/production-engineering-patterns
+labs: []
+projects: []
+interview: interview/python
+certifications: []
+tags:
+  - python
+  - ai
+  - openai
+  - mcp
+  - langchain
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # AI for DevOps — OpenAI, MCP, and LangChain
 
 ## Overview
 
-AI can draft runbooks and summarise incidents — but labs must never require real API keys.
+Use LLMs as **assistants** for ops work — summarise logs, draft runbooks, call tools via MCP — with human approval before any mutating action.
 
-This is **Tutorial 26** in **Module 26: AI for DevOps** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+AI does not replace kubectl, Terraform, or judgment. It speeds reading and drafting. **Never** let a model hold long-lived cloud keys or auto-apply infrastructure without a human gate.
+
+Complete [Security](security-for-devops-python.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 26 · AI for DevOps** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Security for DevOps Python
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [REST APIs](rest-apis-requests-auth-and-resilience.md)
+- [Configuration and Secrets](configuration-management-and-secrets.md)
+
+### Recommended
+
+- Optional API key for a provider; otherwise use the offline stub lab
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “AI for DevOps — OpenAI, MCP, and LangChain” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Call a chat API pattern with timeouts and secrets from env  
+- [ ] Explain MCP (Model Context Protocol) clients at a high level  
+- [ ] Sketch a LangChain-style tool-calling flow  
+- [ ] List guardrails for AI-assisted automation  
+- [ ] Design human-in-the-loop approval for destructive tools
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for AI for DevOps — OpenAI, MCP, and LangChain](../assets/images/python-ai-devops.svg)
+![AI for DevOps](../assets/excalidraw/python-ai-devops.svg)
 
 ## Theory
 
-### OpenAI SDK
+### What it is
 
-Official client for chat/completions. In this course, call a **mock client** that returns fixture text so CI stays offline.
+AI-assisted DevOps tooling uses large language model (LLM) APIs and orchestration libraries to **summarise, draft, classify, and call tools** — while humans and policy still own mutations. In Python you typically see OpenAI-compatible SDKs, **Model Context Protocol (MCP)** clients that discover scoped tools, and frameworks such as **LangChain** for prompts, chains, and agents. Offline stubs remain first-class for labs and CI without keys.
 
-### MCP Clients
+### Why it matters
 
-**Model Context Protocol (MCP)** connects assistants to tools (Kubernetes, Terraform, docs). Understand client/server roles; practise with stub tool lists.
+On-call noise is mostly text: logs, alerts, pull request diffs. Models compress that text and propose next steps. Without guardrails they also invent shell commands, leak secrets into prompts you log, or call write APIs. Treating AI as a **read-mostly assistant with allow-listed tools** is how platform teams gain speed without creating a new breach class.
 
-### LangChain Basics
+### How it works
 
-Chains/agents that call tools. Use only for well-bounded ops assistants with human approval on mutating tools.
+Load API keys from the environment (never commit them). Call chat/completions with timeouts and retry on 429 — same resilience as any HTTP client. Azure OpenAI and other providers differ mainly by base URL and auth. An MCP **client** connects to servers that expose tools/resources (docs, read-only cluster APIs, tickets). LangChain (or similar) wires prompt templates to those tools. Agents may choose tools; your code must still validate outputs before executing anything. Bound max tokens and log model name plus latency for cost control.
 
-### AI-assisted Automation
+```python
+# Conceptual — key from env, never committed
+# from openai import OpenAI
+# client = OpenAI()  # uses OPENAI_API_KEY
+# client.chat.completions.create(...)
+```
 
-Summarise logs, propose kubectl/terraform commands, and draft PRs — always show the plan and require `--apply` / human confirm for side effects.
+### Key concepts and comparisons
 
-### AI Agents for Operations
+| Pattern | Example |
+|---------|---------|
+| Summarise | Compress incident logs |
+| Draft | PR description / runbook |
+| Classify | Severity from alert text |
+| Tool use | Read-only `kubectl get` via MCP |
 
-Agents that can call inventory tools are useful; agents that can delete namespaces need strict allow-lists, dry-run defaults, and audit logs. Prefer recommendation over autonomous mutation.
+| Layer | Responsibility |
+|-------|----------------|
+| Model | Propose text / tool calls |
+| Allow-list | Which tools exist |
+| Human / policy | Approve writes |
+| Validator | Schema-check before exec |
+
+### Common pitfalls
+
+- Pasting secrets, tokens, or full `.env` files into prompts.  
+- Letting the model run arbitrary shell from its reply.  
+- No timeout/cost cap → runaway bills or hung jobs.  
+- Logging full prompts that contain customer data.  
+- Skipping an offline stub so CI cannot run without a vendor key.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for AI for DevOps — OpenAI, MCP, and LangChain
 
 ```bash
-mkdir -p ~/rebash-python/lab26 && cd ~/rebash-python/lab26
+mkdir -p ~/rebash-python/module-26
+cd ~/rebash-python/module-26
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+# Optional live SDK:
+# python -m pip install 'openai==1.59.6'
 ```
 
-**Focus:** mock LLM client summarising a fixture log; no real API keys
-
-### Step 1 – Skeleton
+### Step 1 – Offline “assistant” stub
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab26 ai-for-devops-openai-mcp-langchain")
-EOF
-chmod +x lab.py
-python3 lab.py
-```
+cd ~/rebash-python/module-26
+source .venv/bin/activate
 
-### Step 2 – Mock LLM summary
-
-```bash
-cat > incident.log << 'EOF'
-ERROR nginx upstream timed out
-WARN disk 85 percent
-INFO deploy finished
-EOF
-cat > ai_ops.py << 'EOF'
+cat > ai_assist.py << 'EOF'
 #!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
 from pathlib import Path
 
-class MockLLM:
-    def summarise(self, text: str) -> str:
-        errors = [ln for ln in text.splitlines() if "ERROR" in ln]
-        return f"errors={len(errors)}; first={errors[0] if errors else 'none'}"
 
-log = Path("incident.log").read_text()
-plan = MockLLM().summarise(log)
-print(f"SUMMARY {plan}")
-print("WOULD_NOTIFY slack --apply required for send")
-print("RESULT ok")
+def summarise_log(text: str) -> str:
+    errors = [ln for ln in text.splitlines() if "ERROR" in ln]
+    return json.dumps({
+        "line_count": len(text.splitlines()),
+        "error_count": len(errors),
+        "sample_errors": errors[:5],
+        "model": os.environ.get("AI_MODEL", "offline-stub"),
+    }, indent=2)
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description="AI-assisted log summary (stub or live)")
+    p.add_argument("logfile", type=Path)
+    p.add_argument("--live", action="store_true", help="call real provider (needs key)")
+    args = p.parse_args()
+    text = args.logfile.read_text(encoding="utf-8", errors="ignore")
+    if args.live:
+        if not os.environ.get("OPENAI_API_KEY"):
+            print("error: OPENAI_API_KEY required for --live", file=sys.stderr)
+            return 2
+        print("error: live path left to operator — wire OpenAI SDK with timeout", file=sys.stderr)
+        return 1
+    print(summarise_log(text))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-python3 ai_ops.py
+
+printf '%s\n' 'INFO start' 'ERROR timeout db' 'INFO ok' 'ERROR 502 upstream' > sample.log
+python ai_assist.py sample.log
 ```
 
-### Final step – Cleanup note
+### Step 2 – Approval gate sketch
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+cat > approve.py << 'EOF'
+#!/usr/bin/env python3
+proposed = {"tool": "kubectl_delete", "args": {"resource": "pod/web-a"}}
+print("PROPOSED", proposed)
+answer = "n"  # in real CLI: input("Approve? [y/N] ")
+if answer.lower() != "y":
+    raise SystemExit("rejected")
+print("would execute")
+EOF
+
+python approve.py || true
 ```
+
+### Step 3 – MCP mental model notes
+
+Write `mcp-notes.md`: server exposes `list_pods` (read); client must not expose `delete_namespace` without approval + RBAC.
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab26/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-26/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **AI for DevOps — OpenAI, MCP, and LangChain** always combines:
+Production practice for **AI for DevOps — OpenAI, MCP, and LangChain** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Pasting secrets, tokens, or full `.env` files into prompts.  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Letting the model run arbitrary shell from its reply.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode AI for DevOps — OpenAI, MCP, and LangChain changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| High cost | Huge prompts / loops | Truncate logs; cap tokens |
+| Hallucinated kubectl | Model invents flags | Never exec raw model text; use structured tools |
+| Data leak | Prompt logs contain secrets | Redact before send/log |
 
 ## Summary
 
-**AI for DevOps — OpenAI, MCP, and LangChain** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- AI assists; humans approve mutations  
+- MCP/LangChain = tool orchestration, not magic  
+- Offline stubs keep the course runnable without keys  
+- Security module rules still apply
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **AI for DevOps — OpenAI, MCP, and LangChain** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Security for DevOps Python](security-for-devops-python.md) *(previous)*
-- [Troubleshooting Python Automation](troubleshooting-python-automation.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Troubleshooting Python Automation](troubleshooting-python-automation.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [OpenAI API docs](https://platform.openai.com/docs)  
+- [Model Context Protocol](https://modelcontextprotocol.io/)  
+- [LangChain](https://python.langchain.com/)

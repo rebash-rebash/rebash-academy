@@ -48,7 +48,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-![Architecture diagram for From Docker to Kubernetes](../assets/images/from-docker-to-kubernetes.svg)
+![Production container platform](../assets/excalidraw/docker-production-platform.svg)
 
 ## Theory
 

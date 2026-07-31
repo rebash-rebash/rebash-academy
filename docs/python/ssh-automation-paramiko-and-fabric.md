@@ -1,215 +1,279 @@
 ---
 title: "SSH Automation — Paramiko and Fabric"
-description: "Remote execution with Paramiko, Fabric, SCP, SSH keys, and safe remote command patterns."
+description: "Automate remote hosts with Paramiko and Fabric — SSH keys, remote execution, SCP/SFTP, and safe defaults for DevOps Python."
 difficulty: intermediate
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "50–65 min"
+technology: python
 category: python
-tags:
+module: "Module 20 · SSH Automation"
+career_paths:
+  - devops-engineer
+  - linux-administrator
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - python
   - paramiko
   - fabric
   - ssh
 prerequisites:
-  - Infrastructure Automation — Terraform
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - python/infrastructure-automation-terraform
+next:
+  - python/concurrency-threads-asyncio-and-futures
+related:
+  - python/linux-automation-subprocess-and-psutil
+  - networking/vpn-and-tunneling-basics
+labs: []
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
+  - RHCSA
+tags:
+  - python
+  - ssh
+  - paramiko
+  - fabric
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # SSH Automation — Paramiko and Fabric
 
 ## Overview
 
-Bastions and fleets still need SSH automation — key hygiene and timeouts matter as much as the API.
+Understand Paramiko and Fabric for remote command execution and file transfer, prefer SSH keys over passwords, and practise patterns safely with a mock/dry-run path when you lack a lab host.
 
-This is **Tutorial 20** in **Module 20: SSH Automation** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+SSH is still how many fleets get bootstrap scripts and emergency fixes. Prefer **config management / cloud-init** for steady state; use Paramiko/Fabric for targeted remote exec. Never hard-code keys or passwords.
+
+Complete prior automation modules first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 20 · SSH Automation** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Infrastructure Automation — Terraform
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Linux Automation](linux-automation-subprocess-and-psutil.md)
+- SSH client basics
+
+### Recommended
+
+- Optional lab VM with key-based SSH; otherwise use the dry-run lab path
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “SSH Automation — Paramiko and Fabric” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Contrast Paramiko vs Fabric  
+- [ ] Describe key-based auth and `known_hosts` risks  
+- [ ] Sketch remote exec and SCP/SFTP flows  
+- [ ] Avoid password auth in automation  
+- [ ] Gate destructive remote commands behind `--apply`
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for SSH Automation — Paramiko and Fabric](../assets/images/python-ssh-paramiko.svg)
+![SSH automation](../assets/excalidraw/python-ssh-paramiko.svg)
 
 ## Theory
 
-### Paramiko
+### What it is
 
-SSH client library for Python. Prefer key-based auth, set connection timeouts, and reject unknown hosts unless you manage a known_hosts policy deliberately.
+Secure Shell (SSH) automation runs commands and transfers files on remote Linux hosts without an interactive terminal. **Paramiko** is the lower-level Python SSH library (connect, exec, SFTP). **Fabric** sits higher — tasks, `Connection.run()`, put/get — built on Paramiko/Invoke for multi-host scripts. Both use key-based auth and host-key verification the same way OpenSSH does.
 
-### Fabric
+### Why it matters
 
-Higher-level remote execution built on Paramiko — convenient for multi-host runbooks. Keep commands allow-listed.
+Cloud APIs do not cover every appliance, bastion jump, or legacy box. Fleet checks (`uname`, disk, service status), config pulls, and controlled restarts still travel over SSH. Doing that in Python beats unmaintainable expect scripts — if you treat host keys, allow-lists, and dry-run as first-class controls. A wrong host-key policy is a Man-in-the-Middle (MitM) invitation.
 
-### SCP
+### How it works
 
-Copy files with Paramiko SFTP/SCP helpers. Validate remote paths; do not overwrite blindly.
+Create an `SSHClient`, load `known_hosts`, set **`RejectPolicy`** for unknown keys (not `AutoAddPolicy` in production), then `connect` with username and key (agent or `key_filename` from the environment). Open a session channel to `exec_command`, or use SFTP for put/get. Fabric wraps the same flow in `@task` functions and host lists. Prefer Ed25519 keys; never commit private keys; disable password auth for service accounts. Validate remote paths before writes; avoid world-writable destinations.
 
-### SSH Keys
+```python
+import paramiko
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.RejectPolicy())
+# client.load_system_host_keys(); client.connect(...)
+```
 
-Load from agent or files with correct permissions (`0o600`). Never embed private keys in repos.
+### Key concepts and comparisons
 
-### Remote Execution
+| Tool | Level | Best for |
+|------|-------|----------|
+| Paramiko | Low | Fine control, embedding in larger apps |
+| Fabric | High | Multi-host task scripts |
+| OpenSSH CLI via subprocess | External | One-liners; weaker structure |
 
-Run remote commands with explicit argv-style strings you control. Capture exit codes. Prefer idempotent remote scripts. Default to a dry-run that only prints intended hosts/commands.
+| Action | Tutorial default |
+|--------|------------------|
+| `uname`, read files | Allowed in labs |
+| `rm`, service restart | `--apply` + command allow-list |
+
+### Common pitfalls
+
+- `AutoAddPolicy` in production (accepts any host key).  
+- Logging command lines that embed passwords.  
+- Unbounded parallel SSH that trips fail2ban or MaxStartups.  
+- Writing files to `/tmp` world-writable paths without ownership checks.  
+- Skipping bastion/ProxyJump modelling so scripts only work on the flat lab network.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for SSH Automation — Paramiko and Fabric
 
 ```bash
-mkdir -p ~/rebash-python/lab20 && cd ~/rebash-python/lab20
+mkdir -p ~/rebash-python/module-20
+cd ~/rebash-python/module-20
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install 'paramiko==3.5.1' 'fabric==3.2.2'
 ```
 
-**Focus:** Paramiko/Fabric dry-run runner that prints planned remote commands; mock transport if no SSH host
-
-### Step 1 – Skeleton
+### Step 1 – Dry-run remote runner
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab20 ssh-automation-paramiko-and-fabric")
-EOF
-chmod +x lab.py
-python3 lab.py
-```
+cd ~/rebash-python/module-20
+source .venv/bin/activate
 
-### Step 2 – SSH dry-run planner
-
-```bash
-cat > hosts.txt << 'EOF'
-web01.example
-db01.example
-EOF
-cat > ssh_plan.py << 'EOF'
+cat > ssh_run.py << 'EOF'
 #!/usr/bin/env python3
 from __future__ import annotations
+
 import argparse
-from pathlib import Path
+import shlex
+import sys
+
+
+ALLOWED = {"uname -s", "hostname", "uptime"}
+
 
 def main() -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("--apply", action="store_true")
-    p.add_argument("--cmd", default="uname -a")
+    p = argparse.ArgumentParser(description="SSH command helper (lab)")
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--user", default="lab")
+    p.add_argument("--command", required=True)
+    p.add_argument("--apply", action="store_true", help="actually open SSH")
     args = p.parse_args()
-    hosts = [h.strip() for h in Path("hosts.txt").read_text().splitlines() if h.strip()]
-    for host in hosts:
-        verb = "SSH" if args.apply else "WOULD_SSH"
-        print(f"{verb} {host} -- {args.cmd}")
-    print("RESULT ok")
-    return 0
+    if args.command not in ALLOWED:
+        print(f"error: command not allow-listed: {args.command!r}", file=sys.stderr)
+        return 2
+    if not args.apply:
+        print(f"DRY-RUN ssh {args.user}@{args.host} -- {args.command}")
+        return 0
+    try:
+        import paramiko
+    except ImportError:
+        print("error: paramiko missing", file=sys.stderr)
+        return 1
+    print("error: live SSH not enabled in default lab — use a dedicated VM and keys", file=sys.stderr)
+    print(f"hint: paramiko.SSHClient().connect({args.host!r}, username={args.user!r})", file=sys.stderr)
+    return 1
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
 EOF
-python3 ssh_plan.py
+
+python ssh_run.py --command "uname -s"
+python ssh_run.py --command "rm -rf /" || true
 ```
 
-### Final step – Cleanup note
+### Step 2 – Fabric mental model
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+print("Fabric: Connection(host).run('uname -s', hide=True)")
+print("Batch: Group from fabric.group — fan-out with care")
+PY
 ```
+
+### Step 3 – Key hygiene checklist
+
+Write `ssh-checklist.md`: agent forwarding off for automation, dedicated deploy keys, `RejectPolicy`, command allow-lists, timeouts.
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab20/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-20/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **SSH Automation — Paramiko and Fabric** always combines:
+Production practice for **SSH Automation — Paramiko and Fabric** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "`AutoAddPolicy` in production (accepts any host key).  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Logging command lines that embed passwords.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode SSH Automation — Paramiko and Fabric changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| Auth failure | Wrong key/user | `ssh -v`; check `authorized_keys` |
+| Host key verify fail | First connect / rotation | Verify out-of-band; update known_hosts |
+| Hang | No timeout | Set socket/command timeouts |
 
 ## Summary
 
-**SSH Automation — Paramiko and Fabric** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Paramiko = library; Fabric = task layer  
+- Keys only; reject unknown hosts by default  
+- Allow-list remote commands; dry-run first
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **SSH Automation — Paramiko and Fabric** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Infrastructure Automation — Terraform](infrastructure-automation-terraform.md) *(previous)*
-- [Concurrency — Threads, asyncio, and Futures](concurrency-threads-asyncio-and-futures.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Concurrency — Threads, asyncio, and Futures](concurrency-threads-asyncio-and-futures.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [Paramiko](https://docs.paramiko.org/)  
+- [Fabric](https://docs.fabfile.org/)

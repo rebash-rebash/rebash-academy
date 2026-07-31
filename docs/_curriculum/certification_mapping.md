@@ -99,24 +99,38 @@ Coverage is approximate until tutorial-level tagging is complete. Percentages re
 ## Terraform Associate
 
 - **Technologies:** terraform
-- **Ready tutorials (mapped techs):** 20
-- **Estimated coverage:** ~80%
+- **Ready tutorials (mapped techs):** 22
+- **Estimated coverage:** ~90%
 
 | Tutorial ID | Technology |
 |-------------|------------|
 | `terraform/introduction-to-terraform-and-iac` | terraform |
 | `terraform/installing-terraform-and-the-cli-workflow` | terraform |
+| `terraform/terraform-workflow-init-plan-apply` | terraform |
 | `terraform/hcl-fundamentals-blocks-arguments-and-expressions` | terraform |
 | `terraform/providers-and-the-terraform-plugin-model` | terraform |
+| `terraform/resources-dependencies-and-meta-arguments` | terraform |
 | `terraform/variables-locals-and-outputs` | terraform |
-| `terraform/resources-and-data-sources` | terraform |
-| `terraform/dependencies-and-the-resource-graph` | terraform |
 | `terraform/terraform-state-fundamentals` | terraform |
+| `terraform/remote-state-and-backends` | terraform |
+| `terraform/modules-creating-reusable-infrastructure` | terraform |
+| `terraform/registry-modules-and-composition` | terraform |
+| `terraform/functions-templates-and-dynamic-blocks` | terraform |
+| `terraform/data-sources-and-existing-infrastructure` | terraform |
+| `terraform/workspaces-and-environment-strategies` | terraform |
+| `terraform/terraform-cloud-and-hcp-terraform` | terraform |
+| `terraform/format-validate-and-terraform-test` | terraform |
+| `terraform/terraform-security-and-secrets` | terraform |
+| `terraform/terraform-in-ci-cd-pipelines` | terraform |
+| `terraform/multi-cloud-terraform` | terraform |
+| `terraform/kubernetes-infrastructure-with-terraform` | terraform |
+| `terraform/production-terraform-patterns` | terraform |
+| `terraform/troubleshooting-terraform` | terraform |
 
 ## AWS SAA
 
 - **Technologies:** aws, networking
-- **Ready tutorials (mapped techs):** 45
+- **Ready tutorials (mapped techs):** 41
 - **Estimated coverage:** ~95%
 
 | Tutorial ID | Technology |
@@ -129,23 +143,39 @@ Coverage is approximate until tutorial-level tagging is complete. Percentages re
 | `networking/icmp-arp-dhcp-and-network-services` | networking |
 | `networking/tcp-and-udp-deep-dive` | networking |
 | `networking/dns-fundamentals` | networking |
+| `aws/aws-fundamentals-and-global-infrastructure` | aws |
+| `aws/iam-identity-access-and-organizations` | aws |
+| `aws/vpc-networking-on-aws` | aws |
+| `aws/compute-ec2-asg-and-load-balancing` | aws |
+| `aws/storage-s3-ebs-efs` | aws |
+| `aws/databases-on-aws` | aws |
+| `aws/containers-ecs-eks-ecr` | aws |
+| `aws/serverless-on-aws` | aws |
+| `aws/monitoring-and-observability-on-aws` | aws |
+| `aws/aws-security-services` | aws |
+| `aws/infrastructure-as-code-on-aws` | aws |
+| `aws/cicd-on-aws` | aws |
+| `aws/cost-optimisation-on-aws` | aws |
+| `aws/reliability-and-disaster-recovery` | aws |
+| `aws/production-aws-landing-zones` | aws |
+| `aws/troubleshooting-aws` | aws |
 
 ## AWS Security Specialty
 
 - **Technologies:** aws, security, devsecops
-- **Ready tutorials (mapped techs):** 20
+- **Ready tutorials (mapped techs):** 16
 - **Estimated coverage:** ~80%
 
 | Tutorial ID | Technology |
 |-------------|------------|
-| `aws/introduction-to-aws-and-global-infrastructure` | aws |
-| `aws/accounts-free-tier-billing-and-cost-hygiene` | aws |
-| `aws/iam-fundamentals` | aws |
-| `aws/aws-cli-credentials-and-profiles` | aws |
-| `aws/vpc-subnets-and-multi-az-design` | aws |
-| `aws/internet-gateways-routes-and-egress` | aws |
-| `aws/security-groups-and-nacls` | aws |
-| `aws/vpc-endpoints-and-private-aws-access` | aws |
+| `aws/aws-fundamentals-and-global-infrastructure` | aws |
+| `aws/iam-identity-access-and-organizations` | aws |
+| `aws/vpc-networking-on-aws` | aws |
+| `aws/aws-security-services` | aws |
+| `aws/monitoring-and-observability-on-aws` | aws |
+| `aws/infrastructure-as-code-on-aws` | aws |
+| `aws/production-aws-landing-zones` | aws |
+| `aws/troubleshooting-aws` | aws |
 
 ## Azure AZ-104
 

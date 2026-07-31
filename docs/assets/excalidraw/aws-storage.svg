@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="200"
+     viewBox="0 0 750 200" role="img" aria-label="aws-storage">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Storage services</text>
+
+  <path d="M 53.6,83.9 L 182.1,82.7 Q 192.1,82.7 192.1,92.7 L 193.7,142.9 Q 193.7,152.9 183.7,152.9 L 52.1,152.7 Q 42.1,152.7 42.1,142.7 L 43.6,93.9 Q 43.6,83.9 53.6,83.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.7,80.0 L 179.6,80.6 Q 189.6,80.6 189.6,90.6 L 190.0,139.4 Q 190.0,149.4 180.0,149.4 L 49.5,151.0 Q 39.5,151.0 39.5,141.0 L 39.7,90.0 Q 39.7,80.0 49.7,80.0 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">S3</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">object</text>
+
+
+  <path d="M 223.6,82.6 L 353.2,83.8 Q 363.2,83.8 363.2,93.8 L 363.3,142.4 Q 363.3,152.4 353.3,152.4 L 222.6,152.4 Q 212.6,152.4 212.6,142.4 L 213.6,92.6 Q 213.6,82.6 223.6,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 220.8,80.1 L 350.6,79.6 Q 360.6,79.6 360.6,89.6 L 360.3,140.7 Q 360.3,150.7 350.3,150.7 L 220.2,149.5 Q 210.2,149.5 210.2,139.5 L 210.8,90.1 Q 210.8,80.1 220.8,80.1 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="285.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">EBS</text>
+  <text x="285.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">block</text>
+
+
+  <path d="M 393.9,82.7 L 523.3,83.7 Q 533.3,83.7 533.3,93.7 L 532.1,143.5 Q 532.1,153.5 522.1,153.5 L 393.3,152.7 Q 383.3,152.7 383.3,142.7 L 383.9,92.7 Q 383.9,82.7 393.9,82.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 389.3,79.3 L 519.1,80.2 Q 529.1,80.2 529.1,90.2 L 530.5,140.2 Q 530.5,150.2 520.5,150.2 L 389.6,149.7 Q 379.6,149.7 379.6,139.7 L 379.3,89.3 Q 379.3,79.3 389.3,79.3 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="455.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">EFS/FSx</text>
+  <text x="455.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">file</text>
+
+
+  <path d="M 563.1,82.2 L 702.5,83.5 Q 712.5,83.5 712.5,93.5 L 712.4,142.4 Q 712.4,152.4 702.4,152.4 L 563.1,153.2 Q 553.1,153.2 553.1,143.2 L 553.1,92.2 Q 553.1,82.2 563.1,82.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 560.0,80.3 L 699.8,80.0 Q 709.8,80.0 709.8,90.0 L 709.0,139.7 Q 709.0,149.7 699.0,149.7 L 560.4,150.8 Q 550.4,150.8 550.4,140.8 L 550.0,90.3 Q 550.0,80.3 560.0,80.3 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="630.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Lifecycle</text>
+  <text x="630.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">tiers · KMS</text>
+
+</svg>

@@ -45,53 +45,25 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Shell Fundamentals — Bash vs sh and Execution](../assets/images/shell-execution-flow.svg)
+![Architecture diagram for Shell Fundamentals — Bash vs sh and Execution](../assets/excalidraw/shell-execution-flow.svg)
 
 ## Theory
 
-### What is a Shell?
+### What it is
 
-A **shell** is a command interpreter: it reads text (interactive lines or a script), expands variables and globs, runs programs, and reports exit status. Common shells on Linux include **Bash** (Bourne Again SHell), **dash**, **zsh**, and **fish**.
+A **shell** is a command interpreter: it reads text (interactive lines or a script), expands variables and globs, runs programs, and reports an exit status. On Linux you will meet **Bash** (Bourne Again SHell), **dash**, **zsh**, and others. For DevOps work the shell glues humans, schedulers, Continuous Integration (CI) jobs, and tools such as `systemctl`, `curl`, and `kubectl`. How the shell starts — and what it inherits — underpins every later scripting topic.
 
-For DevOps and platform work the shell is the glue between humans, schedulers, CI jobs, and system tools (`systemctl`, `curl`, `kubectl`, package managers).
+### Why it matters
 
-### Bash vs sh
+Scripts that “work in my terminal” often fail under cron, systemd, or CI because the environment is thinner: a short `PATH`, no aliases, and different startup files. Bash versus POSIX `sh` also matters: Debian and Ubuntu commonly point `/bin/sh` at **dash**, which rejects Bash-only features. Fingerprinting the interpreter and environment early saves hours of false debugging later.
 
-| Interpreter | Typical path | Notes |
-|-------------|--------------|-------|
-| Bash | `/bin/bash` or via `env` | Arrays, `[[ ]]`, process substitution, Bashisms |
-| POSIX `sh` | `/bin/sh` | Often **dash** on Debian/Ubuntu — not Bash |
-| zsh | `/bin/zsh` | Interactive favourite; avoid as script shebang for portability |
+### How it works
 
-If the shebang is `#!/bin/sh`, write POSIX. Bash-only features fail under dash. Prefer `#!/usr/bin/env bash` for this course unless a tool requires POSIX `sh`.
+When you run `./script.sh` or `bash script.sh`, the kernel loads the interpreter from the shebang (or the explicit `bash` binary). The new shell inherits the caller’s environment unless started with something like `env -i`. The script body runs as a separate process unless you `source` it. The exit status of the last command — or an explicit `exit N` — becomes the process exit code that CI and monitoring consume.
 
-### Shell Execution
+`source script.sh` (or `. script.sh`) runs in the **current** shell. That is useful for loading shared functions, but dangerous when the file calls `exit` or `cd`, because those side effects alter your live session.
 
-When you run `./script.sh` or `bash script.sh`:
-
-1. The kernel loads the interpreter from the shebang (or the explicit `bash`)
-2. The shell inherits the caller’s environment (unless started with `env -i`)
-3. The script body runs as a new process (unless `source`d)
-4. The exit status of the last command (or `exit N`) becomes the process exit code
-
-`source script.sh` / `. script.sh` runs in the **current** shell — useful for loading functions, dangerous for `exit` and `cd` side effects.
-
-### Interactive vs Non-interactive Shell
-
-| Mode | Examples | Behaviour |
-|------|----------|-----------|
-| Interactive | SSH login, terminal | Prompt, history, aliases, often reads `~/.bashrc` |
-| Non-interactive | Cron, CI, `bash script.sh` | No prompt; aliases usually off; leaner startup files |
-
-Ops scripts must not depend on interactive aliases or a fancy `PS1`. Test with `bash script.sh` and under a minimal `env`.
-
-### Login Shell
-
-A **login shell** typically reads `/etc/profile` and `~/.profile` (and Bash may read `~/.bash_profile`). SSH sessions are often login shells; `bash script.sh` is usually not. Put shared `PATH` and umask settings where non-interactive jobs will still see them — preferably **inside the script**.
-
-### Environment Variables
-
-Environment variables are key/value pairs exported to child processes: `PATH`, `HOME`, `USER`, `LANG`, `SSH_AUTH_SOCK`, cloud metadata helpers, and CI secrets.
+A **login shell** typically reads `/etc/profile` and `~/.profile` (Bash may also read `~/.bash_profile`). SSH sessions are often login shells; `bash script.sh` usually is not. Prefer setting `PATH`, umask, and required variables **inside the script** so non-interactive jobs stay reliable.
 
 ```bash
 echo "$PATH"
@@ -100,7 +72,25 @@ export OPS_ENV=lab
 env -i PATH=/usr/bin:/bin HOME="$HOME" bash -c 'echo PATH=$PATH'
 ```
 
-Cron and systemd often provide a short `PATH`. Export what you need or use absolute paths.
+### Key concepts
+
+| Idea | What to remember |
+|------|------------------|
+| Bash | `/bin/bash` or via `env` — arrays, `[[ ]]`, Bashisms |
+| POSIX `sh` | Often **dash** on Debian/Ubuntu — not Bash |
+| Interactive | Prompt, history, aliases; often reads `~/.bashrc` |
+| Non-interactive | Cron, CI, `bash script.sh` — leaner startup, aliases usually off |
+| Environment | Exported key/value pairs (`PATH`, `HOME`, CI secrets) inherited by children |
+
+Prefer `#!/usr/bin/env bash` for this course unless a tool requires strict POSIX `sh`. Ops scripts must not depend on interactive aliases or a fancy `PS1`.
+
+### Common pitfalls
+
+- Writing Bashisms under `#!/bin/sh` and wondering why dash rejects `[[` or arrays
+- Assuming cron or CI has the same `PATH` as your SSH session
+- Using `source` for jobs that should run as a clean child process
+- Relying on aliases or functions defined only in interactive `~/.bashrc`
+- Leaving required settings in profile files that non-interactive shells never read
 
 ## Hands-on Lab
 

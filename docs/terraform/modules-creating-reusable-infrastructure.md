@@ -1,246 +1,177 @@
 ---
-title: Modules — Creating Reusable Infrastructure
-description: "Build a child module with typed inputs and outputs, then call it from a root module with a clear contract."
+title: "Modules — Creating Reusable Infrastructure"
+description: "Build a Terraform child module with typed inputs and outputs, call it from a root, and design reusable local versioning for DevOps teams."
 difficulty: intermediate
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–70 min"
+technology: terraform
 category: terraform
-tags:
+module: "Module 9 · Modules"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - terraform
   - modules
 prerequisites:
-  - Completed Workspaces and Environment Strategies
+  - terraform/remote-state-and-backends
+next:
+  - terraform/registry-modules-and-composition
+related:
+  - terraform/variables-locals-and-outputs
+  - terraform/format-validate-and-terraform-test
+labs: []
+projects: []
+interview: interview/terraform
+certifications:
+  - Terraform Associate
+tags:
+  - terraform
+  - modules
+  - reuse
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Modules — Creating Reusable Infrastructure
 
 ## Overview
 
-**Modules** package reusable infrastructure patterns behind a typed input/output API. Platform teams publish child modules; application teams call them from root modules without copying raw resource blocks. This tutorial builds a local child module and calls it from a root — the fundamental composition skill before consuming Registry modules.
+Create a child module with typed variables and outputs, call it twice from a root, and apply a clear input/output contract without leaking internals.
 
-This is **Tutorial 11** in **Module 3: Collaboration and Scale** of the REBASH Academy Terraform track.
+**Modules** package reusable infrastructure patterns behind a typed API. Platform teams publish child modules; application roots call them without copying raw resource blocks. Local `source = "./modules/..."` is the composition skill before Registry modules.
+
+This is a core tutorial in **Module 9 · Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+
+## Prerequisites
+
+- [Remote State and Backends](remote-state-and-backends.md)
+- Terraform CLI 1.9+
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Create a child module with variables, resources, and outputs
-- [ ] Call modules with the `module` block and a local `source`
-- [ ] Use `path.module` correctly inside child modules
-- [ ] Design small, composable modules with clear contracts
-- [ ] Avoid leaking unnecessary implementation outputs
-- [ ] Explain how providers are inherited by child modules
-
-## Prerequisites
-
-- Completed [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md)
-- Terraform CLI **1.9+** (1.15.x recommended)
-- Ability to create directories and edit files
-- No cloud account required for this lab
+- [ ] Create a child module with variables, resources, and outputs  
+- [ ] Call modules with a local `source`  
+- [ ] Use `path.module` correctly inside children  
+- [ ] Design small modules with stable contracts
 
 ## Architecture
 
-The root module orchestrates; child modules encapsulate implementation. Values enter through module arguments (mapped to variables) and exit through outputs.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Modules — Creating Reusable Infrastructure](../assets/images/terraform-modules.svg)
-
-| Layer | Responsibility |
-|-------|----------------|
-| **Root** | Backend, providers, composition, env-specific values |
-| **Child module** | One reusable pattern (greeting file, VPC, RDS wrapper) |
-| **Contract** | Variables in, outputs out — hide resource addresses |
+![Terraform modules](../assets/excalidraw/terraform-modules.svg)
 
 ## Theory
 
-### Module block
+### What it is
 
-```hcl
-module "greeting" {
-  source  = "./modules/greeting"
-  project = "rebash"
-  message = "hello"
-}
-```
+A **module** is a directory of `.tf` files. The **root module** is where you run Terraform; **child modules** are called with a `module` block. Values enter through arguments (mapped to `variable` blocks) and exit through `output` blocks. Reference results as `module.NAME.output_name`. Providers are inherited from the root unless you pass an explicit `providers` map.
 
-| Argument | Purpose |
-|----------|---------|
-| `source` | Local path, Registry address, or Git URL |
-| Input labels | Must match child `variable` names |
-| Meta-arguments | `count`, `for_each`, `providers`, `depends_on` |
+Typical child layout: `variables.tf`, `main.tf`, `outputs.tf`, optional `versions.tf` (`required_providers`), and a README. Prefer `path.module` for files the child owns; pass caller paths as inputs instead of hard-coded `../../` escapes.
 
-Reference outputs as `module.greeting.path`.
+### Why it matters
 
-### File layout
+Copy-pasted VPC and IAM blocks drift across teams. Modules encode a reviewed pattern once — naming, tags, secure defaults — and roots supply environment-specific inputs. Clear contracts speed code review: reviewers check the module API, not every nested resource address. Local versioning (Git tags on a module repo, or a pinned subdirectory) lets you evolve internals without breaking every consumer on day one.
 
-```text
-modules/greeting/
-  versions.tf   # optional required_providers for the module
-  variables.tf
-  main.tf
-  outputs.tf
-  README.md
-```
+### How it works
 
-Root:
+1. Author the child with typed variables (descriptions, validation) and minimal outputs (IDs, names, ARNs — not every attribute).
+2. From the root: `module "greeting" { source = "./modules/greeting" ... }`.
+3. `terraform init` installs / links the module source; addresses become `module.greeting.local_file.this`.
+4. Two `module` blocks with different inputs create two state namespaces — reuse without copy-paste.
+5. Change behaviour inside the child; callers that only depend on outputs stay stable.
 
-```text
-versions.tf
-main.tf
-outputs.tf
-modules/
-```
+Design tips: one responsibility per module; sensible defaults for non-secret optionals; avoid mega-modules; declare `required_providers` so callers get clear version errors.
 
-### `path.module` vs `path.root`
+### Key concepts and comparisons
+
+| Layer | Responsibility |
+|-------|----------------|
+| Root | Backend, providers, composition, env values |
+| Child | One reusable pattern |
+| Contract | Variables in, outputs out — hide resource addresses |
 
 | Expression | Meaning |
 |------------|---------|
 | `path.module` | Directory of the **current** module |
 | `path.root` | Directory of the root module |
-| `path.cwd` | Process working directory |
 
-Child modules should prefer `path.module` for files they own. Writing into `path.root` couples the module to caller layout — sometimes useful, often brittle.
+Child module when reused; inline resources for one-offs; wrapper modules to soften a third-party Registry API.
 
-### Design tips
+### Common pitfalls
 
-- **One responsibility** per module (network, secrets wrapper, “greeting file”)
-- Typed variables with descriptions and validation
-- Stable outputs only (IDs, names, ARNs) — not every attribute
-- Sensible defaults for non-secret optional inputs
-- Pin external module versions (next tutorial)
-- Avoid mega-modules that create an entire company
-
-### Provider inheritance
-
-Child modules inherit provider configurations from the root unless you pass an explicit `providers` map. Declare `required_providers` in modules that need minimum versions so callers get clear errors.
-
-### Composition vs copy-paste
-
-| Approach | When |
-|----------|------|
-| Child module | Pattern reused across roots or teams |
-| Inline resources | One-off, unlikely to reuse |
-| Wrapper module | Soften a third-party Registry module’s API |
-
-### Trade-offs
-
-| Choice | Benefit | Cost |
-|--------|---------|------|
-| Many tiny modules | Reuse, clear reviews | Indirection overhead |
-| One mega-module | Fast first demo | Unreviewable, rigid |
-| Deep nesting | DRY | Hard graphs and outputs |
-| Export everything | Flexible callers | Breaks encapsulation |
+- Mega-modules with unreviewable blast radius.
+- Leaking every resource as an output — callers couple to internals.
+- Using relative `../` paths as the public API instead of input variables.
+- Forgetting `required_providers` or a README with examples.
 
 ## Hands-on Lab
 
-You will create `modules/greeting`, call it from the root, apply, and read the output path.
-
-### Step 1 – Scaffold directories
-
-**Objective:** Standard module folder layout.
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-tf-mod/modules/greeting ~/rebash-tf-mod/generated
-cd ~/rebash-tf-mod
+mkdir -p ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated} && cd ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}
 ```
 
-**Expected:** `modules/greeting` and `generated` exist.
+**Focus:** hands-on practice for Modules — Creating Reusable Infrastructure
 
-### Step 2 – Author the child module
+### Step 1 – Skeleton
 
-**Objective:** Typed inputs, one resource, one output.
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Modules — Creating Reusable Infrastructure"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
 
-Create `modules/greeting/variables.tf`:
+### Step 2 – Core exercise
 
-```hcl
+```bash
+mkdir -p ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}
+cd ~/rebash-terraform/module-09/create-modules
+
+cat > modules/greeting/variables.tf << 'EOF'
 variable "project" {
-  description = "Short project name used in the generated filename"
-  type        = string
-
+  type = string
   validation {
     condition     = length(var.project) > 0 && length(var.project) < 32
-    error_message = "project must be a non-empty string under 32 characters."
+    error_message = "project must be non-empty and under 32 characters."
   }
 }
+variable "message" { type = string }
+EOF
 
-variable "message" {
-  description = "Body written into the greeting file"
-  type        = string
-}
-
-variable "file_permission" {
-  description = "POSIX file mode for the managed greeting file"
-  type        = string
-  default     = "0644"
-}
-```
-
-Create `modules/greeting/main.tf`:
-
-```hcl
+cat > modules/greeting/main.tf << 'EOF'
 resource "local_file" "this" {
   filename        = "${path.module}/../../generated/${var.project}.txt"
   content         = "${var.message}\n"
-  file_permission = var.file_permission
+  file_permission = "0644"
 }
+EOF
 
-resource "terraform_data" "fingerprint" {
-  input = local_file.this.content_md5
-}
-```
+cat > modules/greeting/outputs.tf << 'EOF'
+output "path" { value = local_file.this.filename }
+output "md5"  { value = local_file.this.content_md5 }
+EOF
 
-Create `modules/greeting/outputs.tf`:
-
-```hcl
-output "path" {
-  description = "Absolute path of the greeting file"
-  value       = local_file.this.filename
-}
-
-output "md5" {
-  description = "Content checksum of the greeting file"
-  value       = local_file.this.content_md5
-}
-```
-
-Create `modules/greeting/versions.tf`:
-
-```hcl
-terraform {
-  required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = ">= 2.9.0"
-    }
-  }
-}
-```
-
-**Expected:** Child module is self-contained with a clear API.
-
-### Step 3 – Author the root module
-
-**Objective:** Call the child; re-export only what callers need.
-
-Create `versions.tf`:
-
-```hcl
+cat > versions.tf << 'EOF'
 terraform {
   required_version = ">= 1.9.0"
-
   required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.9"
-    }
+    local = { source = "hashicorp/local", version = "~> 2.9" }
   }
 }
-```
+EOF
 
-Create `main.tf`:
-
-```hcl
+cat > main.tf << 'EOF'
 module "greeting" {
   source  = "./modules/greeting"
   project = "rebash"
@@ -253,206 +184,101 @@ module "greeting_alt" {
   message = "second-instance"
 }
 
-output "greeting_path" {
-  description = "Path from the primary greeting module"
-  value       = module.greeting.path
-}
+output "greeting_path" { value = module.greeting.path }
+EOF
 
-output "all_paths" {
-  description = "Paths from both module instances"
-  value = {
-    primary = module.greeting.path
-    alt     = module.greeting_alt.path
-  }
-}
-```
-
-**Expected:** Two instances prove modules are reusable like functions.
-
-### Step 4 – Init, plan, apply
-
-**Objective:** Install the module and create both files.
-
-```bash
 terraform init -input=false
-terraform plan -input=false -out=tfplan
-terraform apply -input=false tfplan
-cat generated/rebash.txt generated/rebash-alt.txt
-terraform output
-```
-
-**Expected:** Init installs `./modules/greeting`. Apply creates two files. Outputs show both paths. Addresses look like `module.greeting.local_file.this`.
-
-### Step 5 – Change the module contract carefully
-
-**Objective:** See that callers only depend on outputs.
-
-```bash
-# Edit modules/greeting/main.tf content to append a header line, then:
 terraform apply -input=false -auto-approve
-cat generated/rebash.txt
+cat generated/rebash.txt generated/rebash-alt.txt
+terraform state list | head
+terraform destroy -input=false -auto-approve
 ```
 
-**Expected:** Root `main.tf` unchanged; behaviour updates through the module. That is encapsulation.
-
-### Step 6 – Clean up
-
-**Objective:** Destroy module resources and remove the lab.
+### Final step – Cleanup note
 
 ```bash
-terraform destroy -input=false -auto-approve
-rm -f tfplan
-cd ~
-rm -rf ~/rebash-tf-mod
+# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected:** Generated files removed via destroy; directory deleted.
-
-## Code Walkthrough
-
-### Child variables
-
-| Variable | Role |
-|----------|------|
-| `project` | Validated name segment for the filename |
-| `message` | Required body — no default |
-| `file_permission` | Optional with safe default |
-
-### `path.module` in the child
-
-Resolves under `modules/greeting/`, so `../../generated` reaches the repo’s `generated/` folder. In production modules, prefer writing only inside a path the caller passes as an input (for example `var.output_dir`) instead of assuming `../../generated`.
-
-### Root `module` blocks
-
-Two instances with different inputs → two state namespaces: `module.greeting.*` and `module.greeting_alt.*`.
-
-### Outputs
-
-Root exports `module.greeting.path` rather than `module.greeting.local_file.this.filename` — callers should not rely on internal resource addresses.
 
 ## Validation
 
-```bash
-terraform fmt -recursive -check
-terraform init -input=false
-terraform validate
-terraform apply -input=false -auto-approve
-test -f generated/rebash.txt && test -f generated/rebash-alt.txt
-terraform state list | grep 'module.greeting'
-terraform destroy -input=false -auto-approve
-```
+- [ ] Lab commands run under `~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
-| Check | Pass criteria |
-|-------|----------------|
-| fmt | Recursive check passes |
-| validate | Success |
-| Apply | Two generated files |
-| State | Addresses prefixed with `module.` |
-| Cleanup | Destroy removes managed files |
+## Code Walkthrough
 
-## Best Practices
+Production practice for **Modules — Creating Reusable Infrastructure** always combines:
 
-- Write a module README with inputs, outputs, and examples
-- Validate inputs at the module boundary
-- Keep outputs minimal and stable across minor versions
-- Use `terraform-docs` or equivalent in CI for module repos
-- Prefer composition of small modules over one monolith
-- Version modules when shared across repositories (Git tags / Registry)
-- Pass `output_dir` or similar instead of hard-coded relative escapes when possible
-- Add examples/ as a tiny root that calls the module for smoke tests
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Do not accept raw IAM policies as free-form strings without review patterns
-- Sensitive module variables/outputs must be marked — still land in state
-- Review child modules like dependencies: supply chain risk applies to internal Git too
-- Avoid shelling out via provisioners inside shared modules
-- Limit who can merge to module repositories that production roots pin
+- Treat credentials and tokens for terraform as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Mega-modules that create an entire company"
-    Unreviewable blast radius. **Fix:** Compose small modules with clear ownership.
+!!! warning "Mega-modules with unreviewable blast radius."
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Using relative `../` paths as the public API"
-    Callers break when layout changes. **Fix:** Pass paths as variables; export stable IDs.
+!!! warning "Leaking every resource as an output — callers couple to internals."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Leaking every resource as an output"
-    Tight coupling to internals. **Fix:** Export only what consumers need.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-!!! warning "No required_providers in shared modules"
-    Confusing version errors at the root. **Fix:** Declare minimum provider needs in the module.
+## Best Practices
+
+- Encode Modules — Creating Reusable Infrastructure changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Symptoms | Cause | Resolution |
-|-------|----------|-------|------------|
-| Module not found | Init error | Wrong `source` path | Fix relative path from root |
-| Unknown variable | Validate fails | Input name mismatch | Align module args with variables |
-| Files in wrong place | Unexpected path | `path.module` relative escape | Pass `output_dir` input |
-| Duplicate object | Provider conflict | Two instances same name | Ensure unique `project` values |
-| State address confusion | Hard to `state show` | Forgot `module.` prefix | Use `state list` |
-
-## Interview Questions
-
-1. What makes a good module boundary?
-   *A single responsibility, typed inputs/outputs, and hidden internals.*
-
-2. How do you version modules for consumers?
-   *Git tags or Registry versions; pin in the caller’s `module` block.*
-
-3. Why avoid leaking too many outputs?
-   *Callers couple to internals; refactors become breaking changes.*
-
-4. What is path.module inside a child module?
-   *The filesystem path of that module’s directory.*
-
-5. How do providers pass into modules?
-   *Inherited from the root by default, or via the `providers` meta-argument.*
-
-6. When should a module use count or for_each?
-   *When the caller needs N instances driven by a list or map — prefer for_each for stable keys.*
-
-7. How do you test a module locally with a source path?
-   *`source = "../.."` or `./modules/...` from an examples root; init/plan/apply.*
-
-8. What belongs in the module README?
-   *Purpose, examples, inputs, outputs, and requirements (Terraform/provider versions).*
-
-9. How do input validations protect callers?
-   *Fail fast at plan with clear errors before providers mutate anything.*
-
-10. Why pin module sources in production?
-    *Unpinned sources can change under you between plans.*
-
-11. What is compositional nesting versus a megamodule?
-    *Nesting small modules versus one module that does everything — prefer composition.*
-
-12. How do you refactor a root into modules safely?
-    *Extract with `moved` blocks so state addresses follow resources without destroy/create.*
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Modules are reusable functions for infrastructure with typed contracts
-- Roots compose modules; children hide resource details behind outputs
-- Use `path.module` carefully; prefer caller-provided paths in production modules
-- Two instances in the lab prove reuse without copy-paste
+**Modules — Creating Reusable Infrastructure** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+
+## Interview Questions
+
+1. How does **Modules — Creating Reusable Infrastructure** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
+
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- Track overview: [Terraform](index.md)
-- Previous: [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md)
-- Next: [Registry Modules and Composition](registry-modules-and-composition.md)
-- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
-- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Registry Modules and Composition](registry-modules-and-composition.md)
 
 ## References
 
-1. [Modules Overview](https://developer.hashicorp.com/terraform/language/modules)
-2. [Module Blocks](https://developer.hashicorp.com/terraform/language/modules/syntax)
-3. [Module Composition](https://developer.hashicorp.com/terraform/language/modules/develop/composition)
-4. [Publishing Modules](https://developer.hashicorp.com/terraform/registry/modules/publish)
-5. [Refactoring with moved](https://developer.hashicorp.com/terraform/language/modules/develop/refactoring)
-6. [hashicorp/local provider](https://registry.terraform.io/providers/hashicorp/local/latest)
-7. [Terraform Registry](https://registry.terraform.io/)
+- [Modules Overview](https://developer.hashicorp.com/terraform/language/modules)  
+- [Module Blocks](https://developer.hashicorp.com/terraform/language/modules/syntax)  
+- [Module Composition](https://developer.hashicorp.com/terraform/language/modules/develop/composition)

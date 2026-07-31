@@ -44,33 +44,43 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Backup, Disaster Recovery, and Capacity](../assets/images/linux-backup-dr.svg)
+![Architecture diagram for Backup, Disaster Recovery, and Capacity](../assets/excalidraw/linux-backup-dr.svg)
 
 ## Theory
 
-### Backup strategies
+### What it is
+
+**Backups** create recoverable copies of data: file-level tools (`tar`, `rsync`, Borg, restic), block/volume snapshots from the cloud provider, and application-aware dumps that quiesce databases. **Disaster recovery (DR)** is the plan and practise to restore service within a Recovery Time Objective (RTO) and Recovery Point Objective (RPO). **Capacity** planning ensures disks, snapshot retention, and restore targets have space and budget before growth or restore day.
+
+### Why it matters
+
+Untested backups are theatre. Ransomware, accidental `rm`, failed migrations, and region issues all demand restore paths that include Identity and Access Management (IAM) and SSH break-glass access — not only data tarballs. Snapshot bills grow quietly; retention without a policy surprises finance. Capacity alerts that fire at 95% leave no time to expand before write failures.
+
+### How it works
+
+Choose patterns per dataset: volume snapshots for whole disks, file-level for selective trees, native DB tools for consistency. Follow **3-2-1** thinking: three copies, two media/types, one offsite or other region. Encrypt backups and control who can restore. Document RTO/RPO and drill: restore to a scratch VM, verify checksums and services, time the exercise. Include how operators regain access if the bastion dies. Watch `df`/`du` trends and snapshot age; expire old restores and unused snapshots. Application-aware steps (flush, snapshot, thaw) beat crashing disks mid-write.
+
+### Key concepts and comparisons
 
 | Pattern | Notes |
 |---------|-------|
-| File-level | `tar`, `rsync`, Borg, restic |
-| Block/volume | Cloud snapshots (EBS, Managed Disks) |
-| Application-aware | Quiesce DB; use native dump tools |
-| 3-2-1 | 3 copies, 2 media, 1 offsite |
+| File-level | Selective; good for configs and homes |
+| Volume snapshot | Fast; watch consistency and cost |
+| Application-aware | Required for many databases |
+| 3-2-1 | Diversify copies and locations |
 
-Encrypt backups; test permissions on restore paths.
+| Term | Meaning |
+|------|---------|
+| RTO | How long restore may take |
+| RPO | How much data loss is tolerable |
 
-### Disaster recovery
+### Common pitfalls
 
-Define RTO/RPO. Document restore steps. Drill: restore to a scratch VM, verify checksums/services, measure time. Include IAM/SSH access recovery in the plan.
-
-### Capacity (overlap with tutorial 24)
-
-Forecast growth from `sar`/metrics history. Alert before full disks. Plan snapshot retention costs — backups have a bill.
-
-```bash
-df -h
-du -sh /var /home 2>/dev/null
-```
+- Never testing restore — only testing that the backup job exited zero.
+- Snapshotting busy databases without flush/quiesce.
+- Storing backups on the same disk or same account without separation.
+- Ignoring IAM/SSH recovery in the DR runbook.
+- Infinite snapshot retention without a capacity or cost review.
 
 ## Hands-on Lab
 

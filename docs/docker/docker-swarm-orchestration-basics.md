@@ -47,7 +47,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-![Architecture diagram for Docker Swarm Orchestration Basics](../assets/images/docker-swarm-orchestration-basics.svg)
+![Docker networking / multi-host](../assets/excalidraw/docker-networking.svg)
 
 ## Theory
 

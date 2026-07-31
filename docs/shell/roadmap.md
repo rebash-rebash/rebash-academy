@@ -23,7 +23,9 @@ Follow the course in order:
 7. **Interview preparation** — role-specific questions and scenarios
 8. **Certifications** — map lessons to industry exams
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![Shell execution flow](../assets/excalidraw/shell-execution-flow.svg)
+
+![Bash script lifecycle](../assets/excalidraw/shell-script-lifecycle.svg)
 
 ## Modules
 

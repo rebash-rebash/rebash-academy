@@ -45,63 +45,44 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Filesystem Paths, Links, Mounts, and Inodes](../assets/images/linux-filesystem-links.svg)
+![Architecture diagram for Filesystem Paths, Links, Mounts, and Inodes](../assets/excalidraw/linux-filesystem-hierarchy.svg)
 
 ## Theory
 
-### Directory structure
+### What it is
 
-A Linux filesystem is a single rooted tree. Devices appear as **mount points** grafted into that tree — not as drive letters.
+Linux presents storage as a **single rooted tree**. Paths name locations in that tree; **inodes** hold file metadata and data pointers; directory entries map names to inode numbers. **Hard links** are extra names for the same inode on one filesystem; **symbolic links (symlinks)** store a path string and may cross filesystems. **Mounts** graft a filesystem onto a directory (mount point) so disks, network shares, and pseudo-filesystems appear as ordinary paths.
 
-### Absolute versus relative paths
+### Why it matters
 
-| Type | Example | Notes |
-|------|---------|-------|
-| Absolute | `/var/log/nginx/error.log` | Starts at `/`; stable from any cwd |
-| Relative | `../configs/app.toml` | Depends on current directory |
-| Home-relative | `~/rebash-linux` | Expanded by the shell |
+Broken symlinks after deployments, “disk full” with free space still showing (inode exhaustion), and bind mounts that hide directories under the same path are daily operations issues. Understanding absolute versus relative paths prevents scripts that work in your home directory from failing under cron. Mount discipline — what is in `/etc/fstab` versus a temporary `mount` — decides whether a data volume returns after reboot.
 
-Scripts should prefer absolute paths or resolve from a known base directory.
+### How it works
 
-### Inodes
+An absolute path starts at `/`; a relative path depends on the current working directory; `~/` is expanded by the shell to the home directory. Creating a file allocates an inode and a directory entry. `ln` without `-s` adds another name to that inode; the data remains until the link count reaches zero and no process holds the file open. `ln -s` creates a symlink; `readlink -f` resolves the final target. `mount` attaches a device or bind source at a directory; `findmnt` and `/proc/mounts` show the live table. Persist mounts with `fstab` (by UUID preferred) or systemd `.mount` units.
 
-An **inode** stores metadata (owner, mode, timestamps, size, data block pointers) — not the filename. A directory entry maps a name → inode number.
+### Key concepts and comparisons
 
-```bash
-ls -i file.txt
-stat -c '%i %n' file.txt
-df -i   # inode capacity
-```
+| Type | Same inode? | Cross filesystem? | Typical use |
+|------|-------------|-------------------|-------------|
+| Hard link | Yes | No | Extra name for a file |
+| Symlink | No (path string) | Yes | Stable path to versioned target |
 
-You can run out of inodes while `df -h` still shows free space (many tiny files).
+| Path style | Example | Stability |
+|------------|---------|-----------|
+| Absolute | `/var/log/nginx/error.log` | Stable from any cwd |
+| Relative | `../configs/app.toml` | Depends on cwd |
+| Home-relative | `~/rebash-linux` | Shell-expanded |
 
-### Hard links
+Pseudo-filesystems such as `/proc` and `/sys` are also mounts — they expose kernel state, not disk blocks.
 
-A **hard link** is another directory entry pointing at the same inode (same filesystem only). Deleting one name decrements the link count; data remains until count reaches zero.
+### Common pitfalls
 
-```bash
-ln original.txt hardlink.txt
-```
-
-### Symbolic links (symlinks)
-
-A **symlink** is a special file storing a path string. It can cross filesystems and point at directories.
-
-```bash
-ln -s /etc/os-release os-release.link
-readlink -f os-release.link
-```
-
-Broken symlinks are common after moves — validate with `test -e` / `readlink`.
-
-### Mount points
-
-`mount` attaches a filesystem at a directory. `findmnt` and `/proc/mounts` show the live table; `/etc/fstab` (or systemd `.mount` units) persists mounts across reboot.
-
-```bash
-findmnt
-lsblk -f
-```
+- Running out of inodes while `df -h` still shows free space (many tiny files).
+- Broken symlinks after moving targets; always validate with `test -e` or `readlink -f`.
+- Hard-linking directories (not allowed) or expecting hard links across disks.
+- Mounting over a non-empty directory and “losing” the underlying files until unmount.
+- Using device names (`/dev/sdb1`) in `fstab` instead of UUIDs — names can reorder on cloud VMs.
 
 ## Hands-on Lab
 

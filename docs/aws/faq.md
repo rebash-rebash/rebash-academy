@@ -1,6 +1,6 @@
 ---
 title: FAQ
-description: "Frequently asked questions about the AWS course."
+description: "Frequently asked questions about the AWS for Cloud & DevOps Engineers course."
 technology_id: aws
 hide:
   - toc
@@ -14,20 +14,24 @@ tags:
 
 ## Who is this course for?
 
-Engineers who need production-ready **AWS** skills for cloud, DevOps, and platform work.
+Cloud, DevOps, Platform, SRE, DevSecOps, Infrastructure, and Solutions Architect roles building production AWS systems.
 
 ## Do I need prior experience?
 
-See the course homepage for prerequisites. Beginner tracks start from fundamentals.
+Complete [Linux](../linux/index.md) and [Networking](../networking/index.md) first. An AWS Free Tier account (or LocalStack for CLI-shaped labs) helps for hands-on work.
+
+## Will this cost money?
+
+Many labs fit Free Tier if you destroy resources. NAT Gateways, load balancers, and databases can incur charges — set a billing alarm and tear down after each session.
 
 ## Where are the tutorials?
 
-Tutorials live inside each **module** — open a module from the sidebar or course homepage.
+Open **Module 1–16** in the sidebar, or use the [modules table](index.md#2-modules).
 
-## How do labs and projects fit in?
+## Do diagrams use D2 or Mermaid?
 
-Complete the module tutorials first, then use the **Labs**, **Quizzes**, and **Projects** sections for practice and portfolio work.
+No. This course uses **Excalidraw** under `docs/assets/excalidraw/`. Regenerate with `python3 scripts/generate-excalidraw-svg.py`.
 
 ## Is progress tracked?
 
-Learner progress tracking is planned — course structure is ready today.
+Learner progress tracking is planned — the course structure is ready today.

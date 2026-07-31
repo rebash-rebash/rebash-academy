@@ -2,29 +2,54 @@ title: Kubernetes
 icon: material/kubernetes
 nav:
   - index.md
-  - Foundations:
+  - Module 1 · Kubernetes Fundamentals:
     - introduction-to-kubernetes-and-orchestration.md
     - kubernetes-architecture-and-components.md
+  - Module 2 · Cluster Setup:
     - installing-kubernetes-and-kubectl.md
-  - Workloads:
     - kubectl-essentials-and-workflows.md
+  - Module 3 · Kubernetes Objects:
     - pods-the-atomic-unit.md
+    - kubernetes-objects-labels-and-namespaces.md
+  - Module 4 · Workload Management:
     - deployments-managing-replicated-pods.md
-  - Configuration & Storage:
+    - workload-controllers-statefulset-daemonset-jobs.md
+  - Module 5 · Services & Networking:
     - services-and-cluster-networking.md
-    - configmaps-and-secrets.md
-    - persistent-volumes-and-storage.md
-  - Networking & Operations:
+  - Module 6 · Ingress & Gateway API:
     - ingress-and-external-access.md
-    - namespaces-and-resource-management.md
-    - health-checks-probes-and-self-healing.md
-  - Security & Tooling:
+  - Module 7 · Storage:
+    - persistent-volumes-and-storage.md
+  - Module 8 · Configuration:
+    - configmaps-and-secrets.md
+    - resource-quotas-and-limit-ranges.md
+  - Module 9 · Scheduling:
+    - kubernetes-scheduling.md
+  - Module 10 · Security:
     - rbac-and-kubernetes-security-basics.md
-    - troubleshooting-kubernetes-workloads.md
-    - helm-package-management.md
-  - Production:
-    - gitops-and-cicd-with-kubernetes.md
-    - production-patterns-hpa-pdb-and-affinity.md
-    - monitoring-and-logging-in-kubernetes.md
     - kubernetes-security-hardening.md
+  - Module 11 · Networking Deep Dive:
+    - kubernetes-networking-deep-dive.md
+  - Module 12 · Observability:
+    - monitoring-and-logging-in-kubernetes.md
+  - Module 13 · Autoscaling:
+    - kubernetes-autoscaling.md
+  - Module 14 · Package Management:
+    - helm-package-management.md
+  - Module 15 · GitOps:
+    - gitops-and-cicd-with-kubernetes.md
+  - Module 16 · Platform Engineering:
+    - platform-engineering-on-kubernetes.md
+  - Module 17 · Production Operations:
+    - kubernetes-production-operations.md
+  - Module 18 · Troubleshooting:
+    - troubleshooting-kubernetes-workloads.md
+  - Module 19 · Managed Kubernetes:
+    - managed-kubernetes-eks-aks-gke.md
+  - Module 20 · Production Kubernetes:
+    - production-kubernetes-excellence.md
+  - Related depth:
+    - health-checks-probes-and-self-healing.md
+    - namespaces-and-resource-management.md
+    - production-patterns-hpa-pdb-and-affinity.md
     - kubernetes-capstone-and-next-steps.md

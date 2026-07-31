@@ -47,7 +47,7 @@ By the end of this tutorial, you will be able to:
 
 Submodules pin an external repository at a commit; subtrees vendor history into a subdirectory of the parent project.
 
-![Architecture diagram for Git Submodules and Subtrees](../assets/images/git-submodules-and-subtrees.svg)
+![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
 ## Theory
 

@@ -47,7 +47,7 @@ By the end of this tutorial, you will be able to:
 
 Hooks run scripts around Git events so teams can enforce policy locally and on the server before history is accepted.
 
-![Architecture diagram for Git Hooks and Automation](../assets/images/git-hooks-and-automation.svg)
+![Git workflow and hooks around commit](../assets/excalidraw/git-workflow.svg)
 
 ## Theory
 

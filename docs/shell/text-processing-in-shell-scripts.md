@@ -47,35 +47,49 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Text Processing in Shell Scripts](../assets/images/shell-text-processing.svg)
+![Architecture diagram for Text Processing in Shell Scripts](../assets/excalidraw/shell-text-processing.svg)
 
 ## Theory
 
-### grep
+### What it is
 
-Search lines: `grep -E 'error|fail' app.log`, `-F` fixed strings, `-r` recursive, `-v` invert. Prefer `rg` interactively; stick to `grep` in portable scripts.
+**Text processing** is the classic Unix pipeline: filter lines, rewrite fields, sort and count, then feed results into the next command. The core toolkit for shell scripts includes `grep` (search), `sed` (stream edit), `awk` (column and record logic), plus helpers such as `cut`, `tr`, `sort`, `uniq`, `paste`, and `xargs`. These tools turn logs, inventories, and command output into reports and actions without loading a heavier language for every small transform.
 
-### sed
+### Why it matters
 
-Stream editor for substitutions: `sed -E 's/foo/bar/'`. Prefer explicit files over in-place edits without backup in production.
+Linux administration and DevOps generate oceans of line-oriented text: service logs, `ps` output, package lists, and CSV-like exports. Knowing when to reach for `grep` versus `awk` — and how to batch safely with `xargs` — keeps scripts short, fast, and portable across Continuous Integration (CI) images. Mistakes here are equally costly: a greedy `sed -i` without backup can rewrite production configs, and `xargs` without NUL delimiters breaks on paths with spaces.
 
-### awk
+### How it works
 
-Column and record processing: `awk -F: '{print $1}' /etc/passwd`. Ideal for reports from structured text.
+`grep` selects lines: `grep -E 'error|fail' app.log`, with `-F` for fixed strings, `-r` for recursion, and `-v` to invert. Prefer `rg` interactively if you have it; stick to `grep` in portable scripts. `sed` applies substitutions such as `sed -E 's/foo/bar/'` — prefer writing to a new file over in-place edits without backup. `awk` shines on columns and records: `awk -F: '{print $1}' /etc/passwd` for structured reports.
 
-### cut, tr, sort, uniq, paste
+Smaller tools compose well: `cut` for field slices, `tr` for character classes, `sort` then `uniq` for frequency reports, and `paste` to merge streams. `xargs` builds command lines from stdin. Prefer NUL-safe pipelines when paths may contain spaces:
+
+```bash
+printf '%s\0' "${files[@]}" | xargs -0 -n 20 gzip
+```
+
+Enable `pipefail` so a failing stage in a text pipeline fails the script.
+
+### Key concepts
 
 | Tool | Use |
 |------|-----|
-| `cut` | Field slices (`-d -f`) |
-| `tr` | Character translate/delete |
-| `sort` | Order lines (`-u` unique) |
-| `uniq` | Adjacent duplicates (often after `sort`) |
+| `grep` | Select or exclude lines by pattern |
+| `sed` | Stream substitutions and simple edits |
+| `awk` | Fields, records, lightweight reports |
+| `cut` / `tr` | Slice fields; translate or delete characters |
+| `sort` / `uniq` | Order lines; collapse adjacent duplicates |
 | `paste` | Merge lines side by side |
+| `xargs -0` | Batch commands with safe path delimiters |
 
-### xargs
+### Common pitfalls
 
-Build command lines from stdin: `printf '%s\0' "${files[@]}" | xargs -0 -n 20 gzip`. Prefer `-0` / NUL delimiters for safe paths.
+- Editing in place with `sed -i` on production files without a backup or dry-run
+- Using `uniq` without sorting first and missing non-adjacent duplicates
+- Feeding `xargs` newline-separated paths that contain spaces
+- Parsing JSON or YAML with `grep`/`sed` instead of `jq`/`yq`
+- Building enormous one-liners that nobody can test or review
 
 ## Hands-on Lab
 

@@ -1,502 +1,231 @@
 ---
-title: Monitoring and Logging in Kubernetes
-description: Observe Kubernetes clusters with Prometheus, Grafana, and Alertmanager — collect pod logs with Loki or EFK, and define SLO-driven alerts.
-difficulty: advanced
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+title: "Monitoring and Logging in Kubernetes"
+description: "Observe clusters with Metrics Server, Prometheus, Grafana, kube-state-metrics, logging stacks, and Kubernetes Events."
+difficulty: intermediate
+estimated_time: "45–60 min"
+technology: kubernetes
 category: kubernetes
+module: "Module 12 · Observability"
+career_paths:
+  - kubernetes-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - kubernetes
+  - prometheus
+  - observability
+prerequisites:
+  - kubernetes/kubernetes-networking-deep-dive
+next:
+  - kubernetes/kubernetes-autoscaling
+related:
+  - monitoring/index
+  - prometheus/index
+labs: []
+projects: []
+interview: interview/kubernetes
+certifications:
+  - CKA
 tags:
   - kubernetes
-  - monitoring
-  - logging
   - prometheus
-  - grafana
-prerequisites:
-  - Production Patterns — HPA, PDB, and Affinity
-  - Health Checks, Probes, and Self-Healing
-  - Troubleshooting Kubernetes Workloads
+  - logging
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Monitoring and Logging in Kubernetes
 
 ## Overview
 
-You cannot operate what you cannot see. Production Kubernetes requires **metrics** (is the cluster healthy?), **logs** (what happened when the pod crashed?), and **traces** (where did this request spend 2 seconds?). The CNCF stack — **Prometheus**, **Grafana**, **Alertmanager**, and **Loki** — is the de facto observability foundation, often deployed via **kube-prometheus-stack** Helm chart.
+Use Metrics Server for `kubectl top`, explain the Prometheus/Grafana path, and debug with Events and container logs.
 
-This tutorial covers the observability pillars for Kubernetes, ServiceMonitor patterns, log aggregation, golden signals, and alert design that pages humans only when action is required.
+**Metrics Server** → HPA resource metrics. **Prometheus** + **kube-state-metrics** → deep metrics. Logs: node agents (Fluent Bit) or cloud logging. Always start with `kubectl describe` Events.
 
-This is **Tutorial 18** in **Module 6: Production** of the REBASH Academy Kubernetes series.
+This is a core tutorial in **Module 12 · Observability** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Production Patterns — HPA, PDB, and Affinity](production-patterns-hpa-pdb-and-affinity.md)
-- [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md)
-- [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md)
-- [Helm Package Management](helm-package-management.md)
-- [Services and Cluster Networking](services-and-cluster-networking.md)
-- Cluster with Helm 3 and sufficient resources (~4 GB RAM for monitoring stack)
+- [Kubernetes Networking Deep Dive](kubernetes-networking-deep-dive.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain the three pillars of observability in a Kubernetes context
-- [ ] Deploy kube-prometheus-stack and access Grafana dashboards
-- [ ] Configure ServiceMonitors to scrape application metrics
-- [ ] Aggregate container logs with Loki or the EFK pattern
-- [ ] Define alerts on golden signals — latency, traffic, errors, saturation
-- [ ] Correate metrics, logs, and Kubernetes events during incident response
+- [ ] `kubectl top nodes/pods` (if Metrics Server present)  
+- [ ] Map Prometheus scrape targets  
+- [ ] Use Events for failures  
+- [ ] Stream Pod logs
 
 ## Architecture
 
-![Architecture diagram for Monitoring and Logging in Kubernetes](../assets/images/monitoring-and-logging-in-kubernetes.svg)
+This topic’s control points and relationships are shown below.
+
+![Production observability](../assets/excalidraw/k8s-production-cluster.svg)
 
 ## Theory
 
-### Three pillars of observability
+### What it is
 
-| Pillar | Question | Kubernetes tools |
-|--------|----------|------------------|
-| **Metrics** | How much, how fast? | Prometheus, kube-state-metrics, cAdvisor |
-| **Logs** | What exactly happened? | Loki, Elasticsearch, CloudWatch |
-| **Traces** | Where did time go? | Jaeger, Tempo, OpenTelemetry |
+**Observability** on Kubernetes combines metrics, logs, and Events (plus traces in mature platforms). **Metrics Server** supplies resource metrics for `kubectl top` and resource-based **Horizontal Pod Autoscaler (HPA)**. **Prometheus** scrapes application and cluster targets; **kube-state-metrics** exposes object state as metrics; **Grafana** visualises. Logs ship via node agents (Fluent Bit, Fluentd) or cloud collectors. **Events** are the API’s short-lived narrative of scheduling and failures.
 
-Metrics are cheap at scale and drive alerts. Logs provide forensic detail. Traces connect microservice hops — essential for VoteStack's api → redis → worker → postgres flow.
+### Why it matters
 
-### Golden signals (Google SRE)
+You cannot operate what you cannot see. Autoscaling, capacity planning, and incident response depend on golden signals (latency, traffic, errors, saturation) and on Pod-level CPU/memory. Starting with Events and logs avoids premature dashboard archaeology.
 
-| Signal | Kubernetes manifestation |
-|--------|--------------------------|
-| **Latency** | Histogram `http_request_duration_seconds` |
-| **Traffic** | Counter `http_requests_total` |
-| **Errors** | 5xx rate, `kube_pod_container_status_restarts_total` |
-| **Saturation** | CPU/memory vs requests, node disk pressure |
+### How it works (mental model)
 
-Add **Availability** (uptime) and **Cost** (resource usage) for platform dashboards.
+1. Kubelet exposes summary metrics → Metrics Server aggregates → `kubectl top` / HPA.
+2. Prometheus discovers targets (Service monitors, annotations, or scrape configs) and stores time series.
+3. Containers write stdout/stderr → kubelet log files → agents forward to a store (Loki, Elasticsearch, cloud logging).
+4. Controllers emit Events (`FailedScheduling`, `Pulled`, `Killing`) — read with `describe` / `get events`.
+5. Alerts fire on PromQL (or cloud) rules; runbooks start from symptom → Events → logs → metrics.
 
-### Prometheus scraping model
+Control loops still reconcile without Prometheus; observability tells *you* when reconciliation is unhealthy.
 
-Prometheus **pulls** metrics from targets on an interval. In Kubernetes:
+### Key concepts / comparisons
 
-1. Pods expose `/metrics` on a named port
-2. **ServiceMonitor** CRD tells Prometheus Operator which services to scrape
-3. **PodMonitor** scrapes pods directly (sidecar or hostNetwork patterns)
+| Signal | Source |
+|--------|--------|
+| Resource metrics | Metrics Server / cAdvisor path |
+| Cluster object metrics | kube-state-metrics |
+| App metrics | `/metrics` scraped by Prometheus |
+| Logs | Container stdout + agents |
+| Events | Kubernetes API |
 
-Key metric types:
+| Tool | Role |
+|------|------|
+| Metrics Server | Lightweight resource API |
+| Prometheus + Grafana | Deep metrics & dashboards |
+| Log stack | Searchable history |
 
-| Type | Example | Use |
-|------|---------|-----|
-| Counter | `http_requests_total` | Rate of change |
-| Gauge | `memory_usage_bytes` | Current value |
-| Histogram | `request_duration_seconds` | Percentiles (p50, p99) |
-| Summary | Pre-computed quantiles | Legacy — prefer histogram |
+### Common pitfalls
 
-### Logging architecture
-
-Containers log to **stdout/stderr** — Kubernetes captures via kubelet. Collection agents run as DaemonSet:
-
-| Stack | Components |
-|-------|------------|
-| **PLG** | Promtail → Loki → Grafana |
-| **EFK** | Fluent Bit → Elasticsearch → Kibana |
-| **Managed** | CloudWatch, GCP Logging, Azure Monitor |
-
-Structured JSON logs (`{"level":"error","msg":"..."}`) enable label-based filtering in Loki.
-
-### Alerting philosophy
-
-**Alert on symptoms, not causes.** Page when users are impacted:
-
-- ✅ Error rate > 1% for 5 minutes
-- ✅ API p99 latency > 2s
-- ❌ Single pod restart (use ticket, not page)
-- ❌ Node NotReady for 30s (may self-heal)
-
-Use Alertmanager for routing, inhibition, and silencing during maintenance.
-
-
-### Metrics, logs, and who can see them
-
-Prometheus-style metrics and centralised logs make clusters operable — and they also reveal topology, label cardinality, and sometimes secrets if applications mis-log. Protect Grafana and similar UIs with SSO and network policy, change default chart passwords immediately, and scope service accounts for exporters. Retention is a security control: indefinite log storage increases breach impact.
-
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
-
-
-### Connecting the lab to production reviews
-
-When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
-
-### Observability while you learn
-
-Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
-
-
-### Checklist before you leave the lab
-
-1. Resources created in this tutorial are deleted or clearly labelled for retention.
-2. No secrets, kubeconfigs, or registry passwords were written into Git.
-3. You can explain the Architecture diagram without reading the caption.
-4. Validation pass criteria in this page are satisfied on your machine.
-5. You noted one question to revisit in the next tutorial of the series.
-
-### Common production failure modes this topic prevents
-
-Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+- Expecting `kubectl top` without Metrics Server installed.
+- Using only node CPU graphs while apps OOM — watch working set and restarts.
+- Log pipelines that drop crash logs — always keep `kubectl logs --previous` in the playbook.
+- Cardinality explosions from high-unique label values in Prometheus.
+- Treating Events as long-term audit — they are retained briefly; use audit logs for compliance.
 
 ## Hands-on Lab
 
-### Lab 1 — Install kube-prometheus-stack
+Create a workspace for this tutorial.
 
 ```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-
-kubectl create namespace monitoring
-
-helm install kube-prometheus prometheus-community/kube-prometheus-stack \
-  -n monitoring \
-  --set grafana.adminPassword=changeme \
-  --set prometheus.prometheusSpec.retention=15d \
-  --wait
-
-kubectl get pods -n monitoring
-kubectl port-forward svc/kube-prometheus-grafana -n monitoring 3000:80
-# Browser: http://localhost:3000 — admin / changeme
+mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
+**Focus:** hands-on practice for Monitoring and Logging in Kubernetes
 
-
-Explore built-in dashboards: **Kubernetes / Compute Resources / Namespace**, **Node Exporter**.
-
-### Lab 2 — Instrument VoteStack api
-
-Add Prometheus client to the api (Node.js example):
-
-```javascript
-const client = require('prom-client');
-const register = new client.Registry();
-client.collectDefaultMetrics({ register });
-
-const httpRequests = new client.Counter({
-  name: 'http_requests_total',
-  help: 'Total HTTP requests',
-  labelNames: ['method', 'route', 'status'],
-  registers: [register],
-});
-
-app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', register.contentType);
-  res.end(await register.metrics());
-});
-```
-
-Rebuild and deploy via GitOps. Verify:
+### Step 1 – Skeleton
 
 ```bash
-kubectl port-forward svc/votestack-api -n votestack 8080:8080
-curl -s localhost:8080/metrics | head -20
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Monitoring and Logging in Kubernetes"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 3 — ServiceMonitor for api
-
-```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: votestack-api
-  namespace: votestack
-  labels:
-    release: kube-prometheus   # must match Prometheus release label
-spec:
-  selector:
-    matchLabels:
-      app: votestack-api
-  endpoints:
-    - port: http
-      path: /metrics
-      interval: 30s
-```
-
-Ensure the Service exposes port name `http`:
-
-```yaml
-ports:
-  - name: http
-    port: 8080
-    targetPort: 8080
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Apply and confirm target in Prometheus UI → Status → Targets.
-
-### Lab 4 — Grafana dashboard panel
-
-In Grafana, add panel:
-
-- Query: `rate(http_requests_total{namespace="votestack"}[5m])`
-- Legend: `method` / `route` label placeholders
-- Add second panel: `histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))`
-
-Save dashboard to ConfigMap for GitOps:
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: votestack-dashboard
-  namespace: monitoring
-  labels:
-    grafana_dashboard: "1"
-data:
-  votestack.json: |
-    { "... dashboard JSON ..." }
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 5 — Deploy Loki for log aggregation
+### Step 2 – Core exercise
 
 ```bash
-helm repo add grafana https://grafana.github.io/helm-charts
-helm install loki grafana/loki-stack -n monitoring \
-  --set promtail.enabled=true \
-  --set loki.persistence.enabled=true \
-  --wait
+mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
+kubectl create deploy obs --image=nginx:alpine
+kubectl get events --sort-by=.lastTimestamp | tail -n 15
+kubectl logs deploy/obs --tail=20
+kubectl top pods 2>/dev/null || echo "Install metrics-server for kubectl top"
+kubectl delete deploy/obs
 ```
 
-Query logs in Grafana → Explore → Loki:
+### Final step – Cleanup note
 
-```logql
-{namespace="votestack", app="votestack-api"} |= "error"
-{namespace="votestack"} | json | level="error"
+```bash
+# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Correlate with metrics: click timestamp → view pod logs for same interval.
-
-### Lab 6 — Alert rules
-
-`PrometheusRule` for high error rate:
-
-```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: votestack-alerts
-  namespace: monitoring
-  labels:
-    release: kube-prometheus
-spec:
-  groups:
-    - name: votestack
-      rules:
-        - alert: VoteStackApiHighErrorRate
-          expr: |
-            sum(rate(http_requests_total{namespace="votestack",status=~"5.."}[5m]))
-            /
-            sum(rate(http_requests_total{namespace="votestack"}[5m]))
-            > 0.01
-          for: 5m
-          labels:
-            severity: critical
-          annotations:
-            summary: "VoteStack API error rate above 1%"
-            runbook: "https://wiki.internal/runbooks/votestack-api-errors"
-        - alert: VoteStackApiHighLatency
-          expr: |
-            histogram_quantile(0.99,
-              sum(rate(http_request_duration_seconds_bucket{namespace="votestack"}[5m])) by (le)
-            ) > 2
-          for: 10m
-          labels:
-            severity: warning
-```
-
-Configure Alertmanager receiver (Slack webhook in Helm values):
-
-```yaml
-alertmanager:
-  config:
-    receivers:
-      - name: slack
-        slack_configs:
-          - channel: '#alerts'
-            api_url: <webhook-url>
-    route:
-      receiver: slack
-      routes:
-        - match:
-            severity: critical
-          receiver: slack
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Test: `kubectl exec -n monitoring alertmanager-kube-prometheus-alertmanager-0 -- amtool alert add`
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Stack | Monitoring pods in the monitoring namespace are Ready |
-| Metrics | Prometheus (or platform metrics) scrapes a target |
-| Logs/dashboards | You opened a dashboard or retrieved Pod logs as documented |
-| Cleanup | Lab passwords rotated/changed; optional uninstall if required |
+- [ ] Lab commands run under `~/rebash-k8s/module-12/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-```bash
-# Quick health checks
-kubectl top nodes
-kubectl top pods -A --sort-by=memory
-kubectl get --raw /metrics | head
+Production practice for **Monitoring and Logging in Kubernetes** always combines:
 
-# Prometheus port-forward
-kubectl port-forward svc/kube-prometheus-prometheus -n monitoring 9090:9090
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-# Recent events (correlate with metrics spikes)
-kubectl get events -A --sort-by='.lastTimestamp' | tail -20
-
-# Pod logs
-kubectl logs -n votestack deploy/votestack-api --tail=100 -f
-kubectl logs -n votestack <pod> --previous   # crashed container
-
-# LogQL examples
-# {namespace="votestack"} |= "panic"
-# rate({namespace="votestack"}[1m])
-```
-
-| Tool | Purpose |
-|------|---------|
-| `kubectl top` | Snapshot CPU/memory (needs metrics-server) |
-| Prometheus | Time-series metrics and alerting |
-| Grafana | Dashboards and Explore |
-| Loki/LogQL | Log query language |
-| kube-state-metrics | Kubernetes object state metrics |
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Protect Grafana/Prometheus UIs with SSO and network controls — they reveal cluster topology
-- Scrub logs of secrets and tokens at the source; collectors amplify leaks
-- Scope service account permissions for exporters; node-exporters and agents are powerful
-- Retain metrics/logs per policy; indefinite retention increases breach impact
-- Separate monitoring namespaces and apply NetworkPolicies around scrapers
-- Change default chart passwords immediately (never leave `changeme` in shared labs)
-
+- Treat credentials and tokens for kubernetes as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Scraping without resource limits on Prometheus"
-    Unbounded cardinality (high-cardinality labels like `user_id`) crashes Prometheus — cap label dimensions.
+!!! warning "Expecting `kubectl top` without Metrics Server installed."
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Alerting on every pod restart"
-    Restart loops need investigation but single restarts during deploys are normal — use `for:` duration and rate thresholds.
+!!! warning "Using only node CPU graphs while apps OOM — watch working set and restarts."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "No log retention policy"
-    Loki/Elasticsearch disks fill — set retention (15–30 days typical) and sample debug logs in prod.
-
-!!! warning "Missing ServiceMonitor label selector"
-    Prometheus Operator only discovers ServiceMonitors matching its `serviceMonitorSelector` — verify label `release: kube-prometheus`.
-
-!!! warning "Metrics on the main app port without auth"
-    `/metrics` may expose internal stats — restrict via NetworkPolicy or separate metrics port.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "RED method for services"
-    Rate, Errors, Duration — three charts per microservice covers 80% of service health.
-
-!!! tip "USE method for resources"
-    Utilization, Saturation, Errors — for nodes and databases.
-
-!!! tip "Structured logging from day one"
-    JSON with `trace_id`, `level`, `msg` — enables Loki parsing and cross-service correlation.
-
-!!! tip "Runbooks linked in alert annotations"
-    Every page includes `runbook_url` — on-call should never guess first steps.
-
-!!! tip "Separate monitoring cluster for large estates"
-    At scale, federate Prometheus or use centralized observability SaaS to isolate blast radius.
+- Encode Monitoring and Logging in Kubernetes changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Target down in Prometheus | Wrong port name or NetworkPolicy | Match Service port name in ServiceMonitor |
-| Grafana no data | Datasource not configured | Add Prometheus/Loki datasources in Helm values |
-| High cardinality warning | Unbounded label values | Remove high-cardinality labels from metrics |
-| Logs missing in Loki | Promtail not on node | Check DaemonSet; verify pod labels |
-| Alerts not firing | Rule syntax or `for` window | Test expr in Prometheus UI → Alerts |
-| OOM on Prometheus pod | Too much retention/cardinality | Reduce retention; drop expensive metrics |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **Metrics, logs, and traces** form the observability pillars — Prometheus and Loki are the common Kubernetes stack
-- **Golden signals** (latency, traffic, errors, saturation) drive meaningful alerts and dashboards
-- **ServiceMonitors** declaratively configure Prometheus scraping for application `/metrics` endpoints
-- **Log aggregation** via Promtail/Loki or Fluent Bit/EFK centralizes stdout logs from all pods
-- **Alert on symptoms** with runbook links — reduce noise with `for` durations and severity routing
-- Next: [Kubernetes Security Hardening](kubernetes-security-hardening.md)
+**Monitoring and Logging in Kubernetes** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What are the three pillars of observability?
-2. Explain the golden signals and give a Kubernetes example for each.
-3. How does Prometheus discover scrape targets in Kubernetes?
-4. What is a ServiceMonitor and why use it over static config?
-5. Why should applications log to stdout instead of files?
-6. How do you avoid alert fatigue in Kubernetes operations?
-7. What is metric cardinality and why is it dangerous?
-8. Compare PLG stack vs EFK stack for logging.
-9. How would you debug a latency spike using metrics and logs together?
-10. What is the difference between metrics-server and Prometheus?
+1. How does **Monitoring and Logging in Kubernetes** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 3, 6, and 10)"
-
-    **Q3 — Prometheus discovery:** Prometheus Operator watches ServiceMonitor and PodMonitor CRDs. Each defines label selectors matching Services or Pods, plus scrape endpoints (port, path, interval). Prometheus config is generated dynamically — no manual target list when pods scale.
-
-    **Q6 — Alert fatigue:** Alert only on user-visible symptoms (error rate, SLO breach). Use `for:` windows to ignore transient blips. Route warnings to Slack, criticals to pager. Add inhibition rules (suppress node alerts when cluster is down). Review and delete unused alerts quarterly. Every alert needs a runbook.
-
-    **Q10 — metrics-server vs Prometheus:** metrics-server provides short-term CPU/memory summaries for `kubectl top` and HPA — lightweight, in kube-system. Prometheus is a full time-series database with long retention, alerting, and custom application metrics — deployed separately. They serve different purposes.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Production Patterns — HPA, PDB, and Affinity](production-patterns-hpa-pdb-and-affinity.md) *(previous)*
-- [Kubernetes Security Hardening](kubernetes-security-hardening.md) *(next)*
-- [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md)
-- [Container Logging and Monitoring](../docker/container-logging-and-monitoring.md)
-- [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md)
-- [Kubernetes – Category Overview](index.md)
-- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
-- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Kubernetes Autoscaling](kubernetes-autoscaling.md)
 
 ## References
 
-- [Prometheus – Documentation](https://prometheus.io/docs/)
-- [Grafana – Loki](https://grafana.com/docs/loki/latest/)
-- [kube-prometheus-stack Helm chart](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
-- [Google SRE – Monitoring Distributed Systems](https://sre.google/sre-book/monitoring-distributed-systems/)
-- [OpenTelemetry – Kubernetes](https://opentelemetry.io/docs/platforms/kubernetes/)
-- [CNCF Observability Landscape](https://landscape.cncf.io/)
+- [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) · [Prometheus on K8s](https://prometheus.io/docs/prometheus/latest/getting_started/)

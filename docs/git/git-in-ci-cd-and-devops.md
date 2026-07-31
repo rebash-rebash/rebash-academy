@@ -50,7 +50,7 @@ By the end of this tutorial, you will be able to:
 
 CI/CD watches remotes for new commits, runs automated verification, and deploys only when policy checks pass.
 
-![Architecture diagram for Git in CI/CD and DevOps](../assets/images/git-in-ci-cd-and-devops.svg)
+![GitHub Actions](../assets/excalidraw/git-github-actions.svg)
 
 ## Theory
 

@@ -1,517 +1,232 @@
 ---
-title: Container Logging and Monitoring
-description: Capture container logs with logging drivers, inspect resource usage with docker stats, configure log rotation, and preview cAdvisor for host-level container metrics.
+title: "Container Logging and Monitoring"
+description: "Collect Docker logs, choose logging drivers, add health checks, and expose metrics for Prometheus and Grafana in DevOps environments."
 difficulty: intermediate
-estimated_time: "40 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "40–55 min"
+technology: docker
 category: docker
-tags:
+module: "Module 13 · Logging & Monitoring"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - docker
   - logging
   - monitoring
-  - cadvisor
-  - metrics
-  - observability
 prerequisites:
-  - Completion of Module 1–3 Docker tutorials
-  - Basic familiarity with Linux log concepts from the Linux track
-  - Docker Engine running on a Linux host for full logging driver support
+  - docker/container-scanning-and-sbom
+next:
+  - docker/docker-performance-and-resource-limits
+related:
+  - monitoring/index
+  - prometheus/index
+labs: []
+projects: []
+interview: interview/docker
+certifications:
+  - Docker Certified Associate
+tags:
+  - docker
+  - logging
+  - healthcheck
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Container Logging and Monitoring
 
 ## Overview
 
-Containers are ephemeral, but the **signals they emit** — stdout/stderr logs, exit codes, CPU and memory usage — must be durable and observable for debugging, SLO tracking, and incident response. Without a logging and monitoring strategy, `docker logs` on a single host does not scale to fleets of nodes, and deleted containers take their last hour of stderr with them.
+Follow container logs, configure a logging mindset for production, add HEALTHCHECK, and know how metrics reach Prometheus/Grafana.
 
-This tutorial covers Docker's **logging drivers**, practical **log rotation**, reading logs with CLI tools, real-time resource metrics with **`docker stats`**, and a preview of **cAdvisor** for per-container CPU, memory, and network metrics on a host. These foundations transfer directly to Kubernetes (Fluent Bit, Prometheus, Grafana) and cloud-managed container services.
+Stdout/stderr is the default log stream. Drivers ship logs to journald, Fluentd, cloud sinks. Health checks and metrics tell you when to restart or scale.
 
-This is **Tutorial 13** in **Module 5: Operations** of the REBASH Academy Docker series. Complete [Environment Variables and Secrets](environment-variables-and-secrets.md) before starting Module 5.
+This is a core tutorial in **Module 13 · Logging & Monitoring** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Docker Engine on Linux (logging driver behaviour differs slightly on Docker Desktop)
-- Completion of [Running Your First Container](running-your-first-container.md)
-- Familiarity with [Log Management with journalctl](../linux/logging-syslog-journald-logrotate.md) concepts
-- Optional: second terminal window to generate load while observing stats
+- [Container Scanning and SBOM](container-scanning-and-sbom.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain how container logs flow from application stdout to storage backends
-- [ ] Configure the json-file logging driver with rotation limits
-- [ ] Retrieve, follow, and filter logs with `docker logs`
-- [ ] Monitor live CPU, memory, and I/O with `docker stats`
-- [ ] Run cAdvisor and interpret basic container resource dashboards
-- [ ] Describe production logging patterns (centralized aggregation, structured JSON logs)
+- [ ] Use `docker logs` effectively  
+- [ ] Name common logging drivers  
+- [ ] Add Dockerfile/`compose` health checks  
+- [ ] Outline cAdvisor / Prometheus scrape path
 
 ## Architecture
 
-Application processes write to stdout/stderr. The container runtime captures streams and forwards them through the configured logging driver.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Container Logging and Monitoring](../assets/images/container-logging-and-monitoring.svg)
+![Production observability](../assets/excalidraw/docker-production-platform.svg)
 
 ## Theory
 
-### Container Logs Are Stream Captures
+### What
 
-Unlike traditional apps writing to `/var/log/app.log` inside the container, **Twelve-Factor** and cloud-native practice recommend logging to **stdout/stderr**. Docker's containerd/shim captures these streams and hands them to a **logging driver**.
+Containers emit **logs** (usually stdout/stderr), expose **health** signals, and should produce **metrics** for resources and application golden signals. Docker logging drivers ship container output; healthchecks tell orchestrators whether to restart; metrics come from exporters, cAdvisor-style collectors, or the app’s `/metrics` endpoint.
 
-Benefits:
+### Why
 
-- No volume management for log files inside containers
-- Same pattern on Docker, Kubernetes, Cloud Run, and Lambda
-- Log shippers attach at the host or cluster level
+When a container exits, logs are often the only explanation. Without healthchecks, load balancers send traffic to dead processes. Without resource metrics, you learn about memory limits from the out-of-memory (OOM) killer. DevOps operability starts at the container boundary.
 
-Trade-off: extremely high-volume debug logging can fill disk if rotation is misconfigured.
+### How it works
 
-### Logging Drivers
+Prefer structured JSON logs on stdout; sidecars or agents ship to a central platform. Avoid logging secrets and high-cardinality noise. `HEALTHCHECK` in Dockerfiles or Compose `healthcheck:` run a command that exits non-zero when unhealthy. Monitor CPU, memory, restart counts, and application latency/error rate. Locally, `docker logs` and `docker stats` are first tools; in production, integrate with the platform’s observability stack.
 
-Docker supports multiple drivers via `/etc/docker/daemon.json` (default) or per-container `--log-driver`.
+| Signal | Source |
+|--------|--------|
+| Logs | App stdout → logging driver |
+| Health | `HEALTHCHECK` / Compose `healthcheck` |
+| Metrics | cAdvisor, exporters, app `/metrics` |
 
-| Driver | Default? | Typical use |
-|--------|----------|-------------|
-| **json-file** | Yes (Linux) | Local files under `/var/lib/docker/containers/` |
-| **local** | Alternative local | Optimised binary format, faster rotation |
-| **syslog** | No | Forward to syslog daemon |
-| **journald** | No | Integrate with systemd journal on host |
-| **fluentd** / **gelf** | No | Forward to centralized collectors |
-| **awslogs** / **gcplogs** | No | Native cloud log groups (requires plugins/setup) |
-| **none** | No | Discard logs (batch jobs with no observability need) |
+### Key concepts
 
-Check active driver:
-
-```bash
-docker info | grep 'Logging Driver'
-```
-
-Per-container override example:
-
-```bash
-docker run --log-driver=syslog --log-opt syslog-address=udp://127.0.0.1:514 myapp
-```
-
-### json-file Rotation
-
-Unbounded json-file logs are a top cause of **disk-full** incidents on Docker hosts. Configure defaults in `/etc/docker/daemon.json`:
-
-```json
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  }
-}
-```
-
-Each container log rotates at 10 MB, keeping three files (~30 MB cap per container). Restart Docker after daemon changes. Existing containers keep their creation-time driver options until recreated.
-
-### docker logs Command
-
-`docker logs` reads from the configured driver (for json-file/local, from disk):
-
-| Flag | Purpose |
-|------|---------|
-| `-f` | Follow (like `tail -f`) |
-| `--tail N` | Show last N lines |
-| `--since` | Logs since timestamp or duration |
-| `--until` | Logs before timestamp |
-| `-t` | Show timestamps |
-
-Logs include both stdout and stderr unless separated by driver features. Exit code and OOM events appear in `docker inspect`, not always in application logs.
-
-### Structured Logging
-
-Plain text logs are hard to query at scale. Production apps emit **JSON lines**:
-
-```json
-{"level":"info","msg":"request completed","method":"GET","path":"/health","duration_ms":12}
-```
-
-Central systems (Elasticsearch, Loki, CloudWatch Logs Insights) index fields. Docker does not parse JSON — the collector downstream does. Include `request_id`, `service`, and `version` fields for correlation.
-
-### docker stats — Live Resource Metrics
-
-`docker stats` streams container **cgroup** metrics:
-
-- CPU % (relative to host cores)
-- Memory usage / limit
-- Network I/O
-- Block I/O
-
-Single snapshot:
-
-```bash
-docker stats --no-stream
-```
-
-Limit to specific containers:
-
-```bash
-docker stats web db cache
-```
-
-**Limitations:** Host-level view only; no historical retention; resets when container restarts. Production uses Prometheus, Datadog, or cloud monitoring for time-series storage.
-
-### cAdvisor Preview
-
-**cAdvisor** (Container Advisor) is a Google open-source tool that exposes per-container resource usage and historical graphs via a web UI. It reads cgroup and filesystem metrics from the host.
-
-Typical deployment: cAdvisor runs as a container with host mounts:
-
-- `/:/rootfs:ro`
-- `/var/run:/var/run:ro`
-- `/sys:/sys:ro`
-- `/var/lib/docker/:/var/lib/docker:ro`
-
-Default UI port: **8080**. In production, Prometheus scrapes cAdvisor's `/metrics` endpoint; Grafana dashboards visualize pod/container usage. Kubernetes users often rely on kubelet/cAdvisor integration built into nodes.
-
-cAdvisor complements `docker stats` with graphs and exportable metrics — it does not replace centralized logging.
-
-### Production Observability Stack (Conceptual)
-
-| Layer | Docker-era tools | Kubernetes-era evolution |
-|-------|------------------|--------------------------|
-| **Logs** | json-file + Fluent Bit → Loki/ELK | DaemonSet log agents |
-| **Metrics** | cAdvisor + Prometheus + Grafana | kube-prometheus-stack |
-| **Traces** | OpenTelemetry SDK → Jaeger/Tempo | Same, sidecar or eBPF |
-| **Alerts** | Alertmanager, PagerDuty | SLO-based alerting on RED metrics |
-
-**RED method** for services: Rate (requests/sec), Errors, Duration — derived from logs and metrics together.
+- **Twelve-factor logging** — treat logs as event streams  
+- **Driver choice** — json-file defaults vs journald/fluentd in enterprises  
+- **Cardinality** — labels/tags that explode metric series  
+- **Correlation** — request IDs across services  
 
 
-### Logging drivers and production shipping
+Define a minimum dashboard per service: restart rate, CPU/memory against limits, error log rate, and latency if applicable. On shared Docker hosts, also watch disk usage for log drivers that default to unbounded json-file growth — set `max-size` and `max-file` options. Practice reading logs from a failed container during game days, not for the first time in an outage.
 
-The default `json-file` driver is convenient for labs because `docker logs` reads local files under the Docker root. In production you usually ship stdout/stderr to a collector (Fluent Bit, Vector, cloud agents) via `json-file` + sidecar, the `local` driver with size caps, or a journald/syslog driver. Design applications to log structured lines to stdout, set max-size/max-file options so a chatty container cannot fill the disk, and never rely on interactive `docker logs` as your only production evidence path.
+### Common pitfalls
 
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+- Writing logs only inside the container filesystem  
+- Healthchecks that always succeed (testing the shell, not the app)  
+- Logging passwords or tokens  
+- Alerting solely on container “running” without app metrics
 
 ## Hands-on Lab
 
-### Step 1 – Create a verbose logging container
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-docker run -d --name log-lab \
-  alpine sh -c 'i=0; while true; do i=$((i+1)); echo "tick number $i"; sleep 2; done'
-sleep 3
-docker logs log-lab --tail 5
+mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
 ```
 
-**Explanation:** The container writes numbered lines to stdout every two seconds — simulates application logging.
+**Focus:** hands-on practice for Container Logging and Monitoring
 
-**Expected output:**
-
-```text
-tick number 1
-tick number 2
-...
-```
-
-### Step 2 – Follow logs in real time
-
-Open a second terminal for this step, or run with a timeout.
-
-**Command:**
+### Step 1 – Skeleton
 
 ```bash
-timeout 8 docker logs -f --timestamps log-lab
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Container Logging and Monitoring"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Explanation:** `-f` follows new output; `-t` prefixes ISO8601 timestamps from Docker (not necessarily from the app).
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 3 – Filter logs by time
-
-**Command:**
+### Step 2 – Core exercise
 
 ```bash
-docker logs log-lab --since 5s --tail 10
+mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
+docker run -d --name rebash-log nginx:alpine
+docker logs rebash-log --tail 20
+docker inspect --format '{{ "{{" }}.State.Health{{ "}}" }}' rebash-log || true
+
+cat > Dockerfile << 'EOF'
+FROM nginx:alpine
+HEALTHCHECK --interval=5s --timeout=3s --retries=3 \
+  CMD wget -qO- http://127.0.0.1/ || exit 1
+EOF
+docker build -t rebash-hc:0.1.0 .
+docker run -d --name rebash-hc rebash-hc:0.1.0
+sleep 6
+docker inspect --format '{{ "{{" }}.State.Health.Status{{ "}}" }}' rebash-hc
+docker rm -f rebash-log rebash-hc
 ```
 
-**Explanation:** `--since` accepts durations (`5s`, `2m`) or RFC3339 timestamps — useful during incident triage.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 4 – Inspect logging driver configuration
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-docker inspect log-lab | grep -A6 '"LogConfig"'
-docker info | grep 'Logging Driver'
+# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** Per-container `LogConfig` shows driver and options. Compare with daemon-wide defaults from `docker info`.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 5 – Run a container with log rotation options
-
-**Command:**
-
-```bash
-docker run -d --name log-lab-rot \
-  --log-driver=json-file \
-  --log-opt max-size=1m \
-  --log-opt max-file=2 \
-  alpine sh -c 'while true; do dd if=/dev/zero bs=1024 count=50 2>/dev/null | base64; sleep 1; done'
-sleep 15
-docker inspect log-lab-rot | grep -A8 '"LogConfig"'
-docker rm -f log-lab-rot
-```
-
-**Explanation:** High-volume output triggers rotation at 1 MB with two file retention. Prevents one chatty container from filling the disk.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 6 – Monitor with docker stats
-
-**Command:**
-
-```bash
-docker run -d --name stats-lab --memory=128m nginx:1.27-alpine
-docker stats stats-lab --no-stream
-```
-
-**Explanation:** Memory limit appears in stats output. CPU percentage is relative to one full host core unless limits apply.
-
-**Expected output (columns vary by version):**
-
-```text
-CONTAINER ID   NAME       CPU %   MEM USAGE / LIMIT   MEM %   ...
-```
-
-Generate load optional:
-
-```bash
-docker exec stats-lab sh -c 'while true; do :; done' &
-sleep 3
-docker stats stats-lab --no-stream
-docker rm -f stats-lab
-```
-
-### Step 7 – Run cAdvisor (preview)
-
-**Command:**
-
-```bash
-docker run -d \
-  --name=cadvisor \
-  --volume=/:/rootfs:ro \
-  --volume=/var/run:/var/run:ro \
-  --volume=/sys:/sys:ro \
-  --volume=/var/lib/docker/:/var/lib/docker:ro \
-  --publish=8080:8080 \
-  --detach=true \
-  gcr.io/cadvisor/cadvisor:v0.49.1
-sleep 5
-curl -s -o /dev/null -w 'cAdvisor HTTP %{http_code}\n' http://127.0.0.1:8080/containers/
-```
-
-**Explanation:** Open `http://127.0.0.1:8080` in a browser to explore per-container graphs. Pin a specific cAdvisor version in production; `latest` tags drift.
-
-**Expected output:**
-
-```text
-cAdvisor HTTP 200
-```
-
-### Step 8 – cAdvisor metrics endpoint
-
-**Command:**
-
-```bash
-curl -s http://127.0.0.1:8080/metrics | head -20
-```
-
-**Explanation:** Prometheus scrapes this endpoint. Metric names include `container_cpu_usage_seconds_total`, `container_memory_usage_bytes`, and labels for container name/id.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 9 – Clean up
-
-**Command:**
-
-```bash
-docker rm -f log-lab cadvisor 2>/dev/null || true
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Logs | `docker logs` shows application stdout from the lab container |
-| Follow/since | Follow and time-filter options behave as documented |
-| Driver | You identified the active logging driver |
-| Cleanup | Logging lab containers removed |
+- [ ] Lab commands run under `~/rebash-docker/module-13/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `docker logs` | Fetch container logs | `docker logs -f --tail 100 web` |
-| `docker events` | Stream Docker daemon events | `docker events --filter container=web` |
-| `docker stats` | Live resource usage | `docker stats --no-stream` |
-| `docker inspect` | Log config and state | `docker inspect web` |
-| `docker info` | Daemon logging defaults | `docker info` |
+Production practice for **Container Logging and Monitoring** always combines:
 
-### daemon.json log rotation template
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Apply on Linux hosts running many containers:
-
-```json
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "50m",
-    "max-file": "5",
-    "compress": "true"
-  }
-}
-```
-
-Restart Docker: `sudo systemctl restart docker` — plan maintenance; recreates may be needed for opts on existing containers.
-
-### Minimal Fluent Bit forward (conceptual)
-
-Production hosts often ship json-file logs via Fluent Bit. Illustrative `/fluent-bit/etc/fluent-bit.conf` fragment:
-
-```ini
-[INPUT]
-    Name              tail
-    Path              /var/lib/docker/containers/*/*-json.log
-    Parser            docker
-    Tag               docker.*
-
-[OUTPUT]
-    Name              loki
-    Match             docker.*
-    Host              loki.example.com
-    Port              3100
-```
-
-Exact paths depend on your log driver and distribution.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Avoid logging secrets (tokens, passwords, PII); redact at the application layer
-- Cap log size and retention on the json-file driver so disks cannot be filled as an availability attack
-- Restrict who can `docker logs` / exec into containers on shared hosts
-- Prefer central log shipping over interactive `docker logs` for production evidence
-- Protect metrics endpoints; unauthenticated `/metrics` can leak infrastructure detail
-- Treat log pipelines as sensitive data paths — encrypt in transit to collectors
-
+- Treat credentials and tokens for docker as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Logging inside the container filesystem only"
-    Logs written only to `/var/log/app.log` inside the container are lost on `docker rm` unless mounted. Prefer stdout or mount a volume to the host.
+!!! warning "Writing logs only inside the container filesystem  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "No log rotation on json-file driver"
-    Default infinite growth fills `/var/lib/docker`. Always set `max-size` and `max-file` in daemon.json or per container.
+!!! warning "Healthchecks that always succeed (testing the shell, not the app)  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Treating docker stats as historical monitoring"
-    Stats are point-in-time/live only. Incidents requiring "memory usage last Tuesday" need Prometheus or cloud metrics.
-
-!!! warning "Exposing cAdvisor without authentication"
-    cAdvisor reveals container metadata and resource data. Bind to localhost or protect with network policy and auth in production.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Log to stdout in JSON for production services"
-    Structured logs enable high-cardinality search without regex parsing fragile plain text.
-
-!!! tip "Set memory and CPU limits before interpreting stats"
-    Unbounded containers can starve the host; stats show usage relative to limits when configured.
-
-!!! tip "Correlate logs with container IDs and image digests"
-    Include `container_id` and `image_tag` in deploy logs — maps observability back to registry artifacts from Tutorial 11.
-
-!!! tip "Plan centralized logging before fleet scale"
-    json-file on each host works for tens of containers; hundreds require Fluent Bit, Datadog agent, or cloud log drivers.
+- Encode Container Logging and Monitoring changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `docker logs` empty | App logs to file not stdout | Fix app or tail mounted volume |
-| Disk full on `/var/lib/docker` | Log rotation missing | Add `max-size`/`max-file`; prune unused containers |
-| `docker logs -f` hangs silently | App buffers stdout | Run Python with `PYTHONUNBUFFERED=1`; flush logs in app |
-| stats show 0 CPU always | Idle container | Generate load; verify container running |
-| cAdvisor UI empty | Wrong mounts or permissions | Verify volume paths; run on Linux host |
-| Logs missing after restart | Driver `none` or remote-only | Check `LogConfig`; verify remote collector health |
-| Timestamps inconsistent | App vs Docker timestamps | Use `-t` on docker logs; emit ISO8601 in app JSON |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Container logs capture **stdout/stderr** through **logging drivers** — default `json-file` stores JSON lines on the host
-- Configure **log rotation** (`max-size`, `max-file`) to prevent disk exhaustion
-- **`docker logs`** retrieves and filters historical output; **`docker stats`** shows live CPU/memory/network
-- **cAdvisor** exposes per-container metrics and a web UI; Prometheus scrapes `/metrics` in production
-- Mature observability combines centralized **logs**, **metrics**, and **traces** — Docker CLI tools are the starting point, not the destination
+**Container Logging and Monitoring** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. Where do container logs go when an app prints to stdout?
-2. How do you prevent Docker json-file logs from filling the disk?
-3. What is the difference between docker logs and application log files inside the container?
-4. What metrics does docker stats provide, and what are its limitations?
-5. What is cAdvisor, and how does it relate to Prometheus?
-6. Why is structured JSON logging recommended for microservices?
-7. How would you forward Docker logs to Elasticsearch or CloudWatch?
-8. What logging driver would you use to discard logs entirely, and when?
-9. How do cgroup memory limits appear in docker stats output?
-10. What is the RED method, and which Docker tools help measure its components?
+1. How does **Container Logging and Monitoring** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 4, and 5)"
-
-    **Q1 — stdout destination:** The container runtime attaches to the process stdout/stderr file descriptors. Docker's configured logging driver (default json-file) receives each line and persists or forwards it — typically to `/var/lib/docker/containers/<id>/<id>-json.log` on the host for json-file.
-
-    **Q4 — docker stats:** Provides live CPU%, memory usage/limit, network I/O, and block I/O per container from cgroup statistics. Limitations: no history, host-scoped only, resets on container restart, and CPU% interpretation depends on host core count and limits.
-
-    **Q5 — cAdvisor:** Container Advisor collects resource usage and performance characteristics per container from cgroups and exposes them via web UI and Prometheus metrics. Prometheus scrapes `/metrics` for time-series storage; Grafana visualizes trends — unlike docker stats, enabling alerting and capacity planning.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Docker – Category Overview](index.md)
-- [Environment Variables and Secrets](environment-variables-and-secrets.md) *(end of Module 4)*
-- [Docker Security Hardening](docker-security-hardening.md) *(next in Module 5)*
-- [Log Management with journalctl](../linux/logging-syslog-journald-logrotate.md)
-- [Monitoring – Category Overview](../monitoring/index.md)
-- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
-- Interview prep: [Docker Interview Prep](../interview/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Docker Performance and Resource Limits](docker-performance-and-resource-limits.md)
 
 ## References
 
-- [Configure logging drivers](https://docs.docker.com/engine/logging/configure/)
-- [json-file logging driver](https://docs.docker.com/engine/logging/drivers/json-file/)
-- [docker logs reference](https://docs.docker.com/reference/cli/docker/container/logs/)
-- [docker stats reference](https://docs.docker.com/reference/cli/docker/container/stats/)
-- [cAdvisor GitHub](https://github.com/google/cadvisor)
-- [Prometheus cAdvisor exporter](https://prometheus.io/docs/guides/cadvisor/)
-- [REBASH Academy – Monitoring Overview](../monitoring/index.md)
+- [Configure logging drivers](https://docs.docker.com/engine/logging/) · [HEALTHCHECK](https://docs.docker.com/reference/dockerfile/#healthcheck)

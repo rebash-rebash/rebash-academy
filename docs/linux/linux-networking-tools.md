@@ -45,56 +45,46 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Linux Networking Tools](../assets/images/linux-networking-stack.svg)
+![Architecture diagram for Linux Networking Tools](../assets/excalidraw/linux-networking-stack.svg)
 
 ## Theory
 
-### Interfaces and routes — ip
+### What it is
 
-```bash
-ip -br a
-ip route
-ip neigh
-```
+Linux networking tools inspect and verify host connectivity: **ip** for addresses, routes, and neighbours; **ss** for sockets; **ping**/**traceroute** (or `tracepath`) for path checks; **dig**/**host**/**nslookup** for Domain Name System (DNS); **curl**/**wget** for Hypertext Transfer Protocol (HTTP) clients; **tcpdump** and **netcat (`nc`)** for packet capture and port probes. Prefer these modern tools over legacy `ifconfig`/`netstat` on current distributions.
 
-### Sockets — ss
+### Why it matters
 
-```bash
-ss -tulpn
-ss -tp | head
-```
+Most “the app is down” tickets are network or DNS until proven otherwise. Security groups and host firewalls fail closed; wrong routes black-hole traffic; broken resolvers make every Fully Qualified Domain Name (FQDN) look dead. Fast, accurate use of `ip`, `ss`, and `dig` separates host problems from platform networking and from application bugs.
 
-### Path checks — ping / traceroute
+### How it works
 
-```bash
-ping -c 3 1.1.1.1
-traceroute -n example.com   # or tracepath
-```
+`ip -br a` shows interface addresses; `ip route` the routing table; `ip neigh` Address Resolution Protocol (ARP)/neighbour cache. `ss -tulpn` lists listening TCP/UDP sockets with processes. ping proves Internet Control Message Protocol (ICMP) reachability (which firewalls may block even when TCP works). dig queries DNS deliberately (`dig +short example.com A`). curl exercises TLS and HTTP status (`-I`, `-v`, write-out formats). tcpdump captures packets for short, targeted windows; always consider privacy — payloads may hold secrets. netcat checks whether a port accepts connections (`nc -vz host port`).
 
-### DNS — dig / nslookup / host
+### Key concepts and comparisons
 
-```bash
-dig +short example.com A
-host example.com
-nslookup example.com
-```
+| Question | Tool |
+|----------|------|
+| Do I have an address/route? | `ip` |
+| Is anything listening? | `ss -tulpn` |
+| Does DNS resolve? | `dig` / `host` |
+| Does HTTP(S) respond? | `curl` |
+| Where does the path break? | `traceroute` / `tracepath` |
+| What packets hit the NIC? | `tcpdump` |
 
-### HTTP clients — curl / wget
+| Legacy | Prefer |
+|--------|--------|
+| `ifconfig` | `ip` |
+| `netstat` | `ss` |
+| `nslookup` alone | `dig` (more controllable) |
 
-```bash
-curl -I https://example.com
-curl -fsS -o /dev/null -w '%{http_code}\n' https://example.com
-wget -qO- https://example.com | head
-```
+### Common pitfalls
 
-### Capture and raw TCP — tcpdump / netcat
-
-```bash
-sudo tcpdump -ni any port 443 -c 20
-nc -vz example.com 443
-```
-
-Use captures briefly and with privacy in mind — payloads may contain secrets.
+- Declaring the network dead because ping is blocked while TCP 443 works.
+- Using `curl` without noticing certificate or proxy errors hidden by scripts.
+- Capturing traffic for too long or on shared hosts without authorisation.
+- Debugging the guest while the cloud security group or Network ACL is the real deny.
+- Ignoring DNS search domains and split-horizon results that differ from public resolvers.
 
 ## Hands-on Lab
 

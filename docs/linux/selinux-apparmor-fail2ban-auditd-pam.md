@@ -46,49 +46,45 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for SELinux, AppArmor, Fail2Ban, Auditd, and PAM](../assets/images/linux-mac-security.svg)
+![Architecture diagram for SELinux, AppArmor, Fail2Ban, Auditd, and PAM](../assets/excalidraw/linux-security-layers.svg)
 
 ## Theory
 
-### SELinux (RHEL family)
+### What it is
 
-```bash
-getenforce
-sudo setenforce 0   # temporary permissive — not a production fix
-ls -Z file
-```
+This tutorial covers complementary host security controls. **SELinux** (common on RHEL-family) and **AppArmor** (common on Ubuntu/SUSE) are Mandatory Access Control (MAC) systems that confine processes beyond Discretionary Access Control (DAC) permissions. **Fail2Ban** bans addresses after repeated authentication failures. **auditd** records security-relevant events for compliance. **Pluggable Authentication Modules (PAM)** stacks define how login, sudo, and SSH authentication behave.
 
-Modes: Enforcing, Permissive, Disabled. Fix labels (`restorecon`) rather than disabling.
+### Why it matters
 
-### AppArmor (Ubuntu/SUSE)
+MAC denials often look like mysterious permission errors after a correct `chmod`. Disabling SELinux to “make it work” removes a major control — fix labels instead. Failed SSH brute force without Fail2Ban or equivalent wastes resources and risks success. Broken PAM can lock out every user. Audit trails matter for regulated environments and for proving what changed during an incident.
 
-```bash
-sudo aa-status
-```
+### How it works
 
-Profiles confine programmes; complain vs enforce modes aid tuning.
+SELinux modes: Enforcing, Permissive, Disabled (`getenforce`). File labels appear in `ls -Z`; restore with `restorecon`. AppArmor profiles confine programmes (`aa-status`); complain mode aids tuning before enforce. Fail2Ban watches logs and updates firewall rules for jails such as `sshd`. auditd rules (`auditctl`) and searches (`ausearch`) retrieve events like `USER_LOGIN`. PAM files under `/etc/pam.d/` chain modules for account, auth, password, and session — edit carefully with a root break-glass session available. These tools layer: PAM authenticates, MAC confines, audit records, Fail2Ban reacts to abuse.
 
-### Fail2Ban
+### Key concepts and comparisons
 
-Bans IPs after repeated auth failures (SSH, etc.):
+| Control | Primary job |
+|---------|-------------|
+| SELinux / AppArmor | Confine processes (MAC) |
+| DAC (chmod/ACL) | Owner-managed access |
+| Fail2Ban | Reactive IP bans on abuse |
+| auditd | Compliance / forensic trail |
+| PAM | Auth stack behaviour |
 
-```bash
-sudo fail2ban-client status
-sudo fail2ban-client status sshd
-```
+| Distro tendency | MAC |
+|-----------------|-----|
+| RHEL, Rocky, Alma | SELinux |
+| Ubuntu | AppArmor |
+| Many containers | Often unconfined unless configured |
 
-### Auditd
+### Common pitfalls
 
-Kernel audit framework for compliance trails:
-
-```bash
-sudo ausearch -m USER_LOGIN -ts recent 2>/dev/null | tail
-sudo auditctl -l 2>/dev/null | head
-```
-
-### PAM
-
-**Pluggable Authentication Modules** stack controls login, sudo, and SSH auth (`/etc/pam.d/*`). Mis-edited PAM can lock everyone out — always keep a root session and test carefully.
+- Setting SELinux to Disabled permanently instead of fixing contexts.
+- Misreading DAC success as “not SELinux” when AVC denials are in the audit log.
+- Editing PAM and testing only after all sessions disconnect.
+- Fail2Ban jails that never match your log path or journal config.
+- Assuming MAC in the guest equals isolation for containers — runtime config matters.
 
 ## Hands-on Lab
 

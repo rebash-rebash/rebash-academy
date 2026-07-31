@@ -55,7 +55,7 @@ By the end of this tutorial, you will be able to:
 
 The kubelet runs probes locally on each node. Readiness state flows to the endpoints controller; liveness failures trigger container restarts.
 
-![Architecture diagram for Health Checks, Probes, and Self-Healing](../assets/images/health-checks-probes-and-self-healing.svg)
+![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
 ## Theory
 
@@ -145,7 +145,7 @@ Total time before restart (liveness): roughly `initialDelaySeconds + (periodSeco
 
 Probes are one layer of resilience:
 
-![Self-Healing Mechanisms Beyond Probes diagram](../assets/images/health-checks-probes-and-self-healing-1.svg)
+![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
 
 - **ReplicaSet** recreates deleted pods to match `replicas`

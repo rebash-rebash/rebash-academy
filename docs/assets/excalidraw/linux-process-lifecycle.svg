@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="230"
+     viewBox="0 0 800 230" role="img" aria-label="linux-process-lifecycle">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Process lifecycle</text>
+
+  <path d="M 42.4,82.7 L 152.2,82.4 Q 162.2,82.4 162.2,92.4 L 163.3,148.3 Q 163.3,158.3 153.3,158.3 L 42.7,157.4 Q 32.7,157.4 32.7,147.4 L 32.4,92.7 Q 32.4,82.7 42.4,82.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 40.7,79.7 L 150.5,79.6 Q 160.5,79.6 160.5,89.6 L 159.8,145.8 Q 159.8,155.8 149.8,155.8 L 39.6,155.8 Q 29.6,155.8 29.6,145.8 L 30.7,89.7 Q 30.7,79.7 40.7,79.7 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="95.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">fork/exec</text>
+  <text x="95.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">create</text>
+
+
+  <path d="M 160.0,118.0 L 167.8,117.6 L 173.6,119.0 L 180.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 180.0,118.0 L 173.1,122.0 M 180.0,118.0 L 173.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 194.0,83.2 L 302.0,83.4 Q 312.0,83.4 312.0,93.4 L 313.3,148.3 Q 313.3,158.3 303.3,158.3 L 192.6,158.1 Q 182.6,158.1 182.6,148.1 L 184.0,93.2 Q 184.0,83.2 194.0,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 191.0,80.0 L 300.2,79.7 Q 310.2,79.7 310.2,89.7 L 309.7,144.5 Q 309.7,154.5 299.7,154.5 L 190.3,154.3 Q 180.3,154.3 180.3,144.3 L 181.0,90.0 Q 181.0,80.0 191.0,80.0 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="245.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Running</text>
+  <text x="245.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">R / S</text>
+
+
+  <path d="M 310.0,118.0 L 316.0,118.3 L 322.9,118.5 L 330.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 330.0,118.0 L 323.1,122.0 M 330.0,118.0 L 323.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 343.0,84.0 L 452.5,82.8 Q 462.5,82.8 462.5,92.8 L 463.3,147.3 Q 463.3,157.3 453.3,157.3 L 342.2,158.7 Q 332.2,158.7 332.2,148.7 L 333.0,94.0 Q 333.0,84.0 343.0,84.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 340.3,80.5 L 450.9,80.8 Q 460.9,80.8 460.9,90.8 L 460.4,144.4 Q 460.4,154.4 450.4,154.4 L 340.0,155.5 Q 330.0,155.5 330.0,145.5 L 330.3,90.5 Q 330.3,80.5 340.3,80.5 Z" fill="#ffec99" stroke="#e67700" stroke-width="2"/>
+  
+  <text x="395.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Stopped</text>
+  <text x="395.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">T · signals</text>
+
+
+  <path d="M 460.0,118.0 L 466.3,117.6 L 472.5,116.9 L 480.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 480.0,118.0 L 473.1,122.0 M 480.0,118.0 L 473.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 493.3,82.1 L 602.8,82.5 Q 612.8,82.5 612.8,92.5 L 612.8,148.4 Q 612.8,158.4 602.8,158.4 L 492.4,157.6 Q 482.4,157.6 482.4,147.6 L 483.3,92.1 Q 483.3,82.1 493.3,82.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 489.8,80.5 L 600.7,79.2 Q 610.7,79.2 610.7,89.2 L 609.7,144.1 Q 609.7,154.1 599.7,154.1 L 490.9,154.9 Q 480.9,154.9 480.9,144.9 L 479.8,90.5 Q 479.8,80.5 489.8,80.5 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="545.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Zombie</text>
+  <text x="545.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">wait</text>
+
+
+  <path d="M 610.0,118.0 L 616.2,117.7 L 622.2,118.4 L 630.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 630.0,118.0 L 623.1,122.0 M 630.0,118.0 L 623.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 642.8,82.9 L 752.4,83.2 Q 762.4,83.2 762.4,93.2 L 762.9,148.7 Q 762.9,158.7 752.9,158.7 L 643.5,158.8 Q 633.5,158.8 633.5,148.8 L 632.8,92.9 Q 632.8,82.9 642.8,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 640.5,81.0 L 749.0,80.8 Q 759.0,80.8 759.0,90.8 L 759.2,145.4 Q 759.2,155.4 749.2,155.4 L 639.9,154.8 Q 629.9,154.8 629.9,144.8 L 630.5,91.0 Q 630.5,81.0 640.5,81.0 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="695.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Exit</text>
+  <text x="695.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">reaped</text>
+
+<text x="400.0" y="195.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Tools: ps · top · nice · kill · systemctl status</text>
+</svg>

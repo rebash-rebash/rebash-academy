@@ -1,6 +1,6 @@
 ---
 title: FAQ
-description: "Frequently asked questions about the GitHub Actions course."
+description: "Frequently asked questions about the GitHub Actions for Cloud & DevOps Engineers course."
 technology_id: github-actions
 hide:
   - toc
@@ -14,20 +14,24 @@ tags:
 
 ## Who is this course for?
 
-Engineers who need production-ready **GitHub Actions** skills for cloud, DevOps, and platform work.
+DevOps, Cloud, Platform, SRE, DevSecOps, and software engineers who need production GitHub Actions skills from first workflow to enterprise CI/CD.
 
 ## Do I need prior experience?
 
-See the course homepage for prerequisites. Beginner tracks start from fundamentals.
+Complete [Git](../git/index.md) first. Modules 1–2 assume beginner CI knowledge. [Docker](../docker/index.md), [Kubernetes](../kubernetes/index.md), and [Terraform](../terraform/index.md) are required from Module 7 onward.
 
 ## Where are the tutorials?
 
-Tutorials live inside each **module** — open a module from the sidebar or course homepage.
+Open **Module 1–16** in the sidebar, or use the [modules table](index.md#2-modules).
 
-## How do labs and projects fit in?
+## How do labs work?
 
-Complete the module tutorials first, then use the **Labs**, **Quizzes**, and **Projects** sections for practice and portfolio work.
+Labs live under `~/rebash-github-actions/module-NN`. Early modules use workflow YAML you can commit to a test repo; later modules show OIDC and deploy patterns you adapt to your cloud accounts.
+
+## Do diagrams use D2 or Mermaid?
+
+No. This course uses **Excalidraw** SVGs under `docs/assets/excalidraw/`. Regenerate with `python3 scripts/generate-excalidraw-svg.py`.
 
 ## Is progress tracked?
 
-Learner progress tracking is planned — course structure is ready today.
+Learner progress tracking is planned — the course structure is ready today.

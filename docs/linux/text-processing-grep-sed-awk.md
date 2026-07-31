@@ -45,62 +45,46 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Text Processing with grep, sed, and awk](../assets/images/linux-text-processing.svg)
+![Architecture diagram for Text Processing with grep, sed, and awk](../assets/excalidraw/linux-text-processing.svg)
 
 ## Theory
 
-### grep
+### What it is
 
-Search lines by pattern:
+**Text processing** tools search, transform, and summarise line-oriented data without loading everything into a spreadsheet. **grep** selects lines by pattern; **sed** edits streams (substitute, delete, print ranges); **awk** splits fields and computes reports. Helpers such as `cut`, `tr`, `sort`, `uniq`, `wc`, and `xargs` complete the classic Unix toolkit. Together they turn logs, CSV-like dumps, and config files into answers during incidents and automation.
 
-```bash
-grep -RIn --exclude-dir=.git ERROR /var/log 2>/dev/null | head
-grep -E '^(error|warn)' app.log
-grep -v '^#' /etc/ssh/sshd_config
-```
+### Why it matters
 
-### sed
+Production debugging is mostly reading text: journal exports, access logs, metrics scrapes, and Kubernetes events. Engineers who can filter noise with `grep -v`, extract columns with `awk`, and safely in-place edit with `sed -i.bak` resolve issues faster than those who only open editors. These tools also appear inside CI pipelines and configuration management validation scripts.
 
-Stream editor for substitutions and deletes:
+### How it works
 
-```bash
-sed -n '1,20p' file
-sed 's/foo/bar/g' file
-sed -i.bak 's/Enable=false/Enable=true/' config.ini
-```
+grep matches Regular Expressions (regex); `-R` recurses, `-I` skips binaries, `-E` enables extended regex, `-v` inverts. sed applies a script per line — `s/old/new/g` is the workhorse; always keep a backup for in-place edits on real configs. awk splits each line into fields (`$1`, `$2`, …) using whitespace or `-F` for a custom separator, and `END` blocks summarise. Pipelines compose: `sort | uniq -c | sort -nr` ranks frequencies. Prefer `find … -print0 | xargs -0` so filenames with spaces do not break.
 
-### awk
+### Key concepts and comparisons
 
-Field-oriented reporting:
+| Tool | Best at |
+|------|---------|
+| grep | Find / exclude matching lines |
+| sed | Line edits and substitutions |
+| awk | Field reports and simple aggregation |
+| cut | Fixed delimiter columns |
+| sort/uniq/wc | Ordering, counts, tallies |
+| xargs | Turn stdin lines into command arguments |
 
-```bash
-awk '{print $1,$3}' access.log
-awk -F: '{print $1}' /etc/passwd
-awk '{sum+=$1} END {print sum}' nums.txt
-```
+| Pattern | Example intent |
+|---------|----------------|
+| `grep -RIn ERROR dir` | Locate errors with file:line |
+| `awk -F: '{print $1}'` | First colon-separated field |
+| `sed -i.bak 's/…/…/'` | Edit with backup |
 
-### cut, paste, tr
+### Common pitfalls
 
-```bash
-cut -d: -f1,7 /etc/passwd | head
-paste -d',' a.txt b.txt
-tr '[:upper:]' '[:lower:]' < mixed.txt
-```
-
-### sort, uniq, wc
-
-```bash
-sort file | uniq -c | sort -nr | head
-wc -l file
-```
-
-### xargs
-
-Build command lines from stdin (prefer `-0` with `find -print0`):
-
-```bash
-find . -name '*.log' -print0 | xargs -0 grep -l ERROR
-```
+- Editing production configs with `sed -i` and no backup or syntax test.
+- Greedy recursive grep through huge trees or binary directories without excludes.
+- Forgetting that awk fields break on irregular whitespace; set `-F` deliberately.
+- Using `xargs` without `-0` when names may contain spaces or newlines.
+- Assuming locale/collation will sort the way you expect — set `LC_ALL=C` for byte order when needed.
 
 ## Hands-on Lab
 

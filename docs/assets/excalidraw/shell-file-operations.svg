@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="200"
+     viewBox="0 0 700 200" role="img" aria-label="shell-file-operations">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="350.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">File operations in scripts</text>
+
+  <path d="M 53.4,82.1 L 172.4,82.0 Q 182.4,82.0 182.4,92.0 L 182.5,143.6 Q 182.5,153.6 172.5,153.6 L 52.4,153.8 Q 42.4,153.8 42.4,143.8 L 43.4,92.1 Q 43.4,82.1 53.4,82.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.1,79.8 L 170.6,80.6 Q 180.6,80.6 180.6,90.6 L 179.6,140.9 Q 179.6,150.9 169.6,150.9 L 50.7,149.5 Q 40.7,149.5 40.7,139.5 L 39.1,89.8 Q 39.1,79.8 49.1,79.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="110.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Test</text>
+  <text x="110.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">-f -d -r</text>
+
+
+  <path d="M 180.0,115.0 L 185.6,116.2 L 193.0,114.4 L 200.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 200.0,115.0 L 193.1,119.0 M 200.0,115.0 L 193.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 212.8,82.5 L 333.0,83.5 Q 343.0,83.5 343.0,93.5 L 342.5,142.2 Q 342.5,152.2 332.5,152.2 L 213.8,152.3 Q 203.8,152.3 203.8,142.3 L 202.8,92.5 Q 202.8,82.5 212.8,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 210.5,80.2 L 330.2,79.3 Q 340.2,79.3 340.2,89.3 L 339.1,140.0 Q 339.1,150.0 329.1,150.0 L 209.1,149.7 Q 199.1,149.7 199.1,139.7 L 200.5,90.2 Q 200.5,80.2 210.5,80.2 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="270.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Create</text>
+  <text x="270.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">mkdir · touch</text>
+
+
+  <path d="M 340.0,115.0 L 346.2,114.7 L 353.0,115.9 L 360.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 360.0,115.0 L 353.1,119.0 M 360.0,115.0 L 353.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 372.5,82.8 L 492.3,83.3 Q 502.3,83.3 502.3,93.3 L 503.0,142.1 Q 503.0,152.1 493.0,152.1 L 372.7,153.4 Q 362.7,153.4 362.7,143.4 L 362.5,92.8 Q 362.5,82.8 372.5,82.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 369.3,79.4 L 490.6,79.6 Q 500.6,79.6 500.6,89.6 L 499.4,140.9 Q 499.4,150.9 489.4,150.9 L 370.9,149.6 Q 360.9,149.6 360.9,139.6 L 359.3,89.4 Q 359.3,79.4 369.3,79.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="430.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Copy/move</text>
+  <text x="430.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cp · mv</text>
+
+
+  <path d="M 500.0,115.0 L 506.0,114.8 L 514.3,114.6 L 520.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 520.0,115.0 L 513.1,119.0 M 520.0,115.0 L 513.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 533.6,82.9 L 652.4,83.9 Q 662.4,83.9 662.4,93.9 L 662.1,142.4 Q 662.1,152.4 652.1,152.4 L 533.4,153.6 Q 523.4,153.6 523.4,143.6 L 523.6,92.9 Q 523.6,82.9 533.6,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 530.3,79.5 L 650.5,79.1 Q 660.5,79.1 660.5,89.1 L 659.4,139.1 Q 659.4,149.1 649.4,149.1 L 529.3,150.8 Q 519.3,150.8 519.3,140.8 L 520.3,89.5 Q 520.3,79.5 530.3,79.5 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="590.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Safe delete</text>
+  <text x="590.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">rm carefully</text>
+
+</svg>

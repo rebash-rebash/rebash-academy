@@ -46,28 +46,48 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Scheduling — cron, at, and systemd Timers](../assets/images/shell-cron-execution.svg)
+![Architecture diagram for Scheduling — cron, at, and systemd Timers](../assets/excalidraw/shell-cron-execution.svg)
 
 ## Theory
 
-### cron and crontab
+### What it is
 
-`crontab -e` installs per-user entries. System drop-ins live under `/etc/cron.*`. Five fields set schedule; sixth is the command.
+**Scheduling** runs scripts without a human at the keyboard. Classic **cron** uses five time fields plus a command in a crontab; **`at`** queues one-shot jobs for a future moment; **systemd timers** pair a `.timer` unit with a `.service` for calendar or monotonic triggers on modern Linux. The scheduler only starts your process — your script must still set `PATH`, log results, and prevent overlapping runs.
 
-### at
+### Why it matters
 
-`at` queues one-shot jobs. Useful for deferred maintenance windows; less common than cron/timers for recurring ops.
+Backups, certificate renewals, inventory syncs, and housekeeping all depend on unattended execution. The most common production failure is not “cron is broken” but “the job assumed an interactive environment”: missing binaries on a short `PATH`, wrong working directory, or two nightly runs overlapping and corrupting state. Choosing timers versus cron also affects observability: systemd units integrate with the journal and dependency ordering, which Site Reliability Engineering (SRE) and platform teams often prefer.
 
-### systemd Timers
+### How it works
 
-Prefer **systemd timers** for modern hosts: calendar or monotonic triggers, dependency ordering, and journal logs via the paired `.service`.
+Per-user cron entries come from `crontab -e`; system drop-ins live under `/etc/cron.*`. Five fields set minute, hour, day of month, month, and day of week; the remainder is the command. `at` is useful for deferred maintenance windows but less common for recurring operations.
+
+On hosts with systemd, prefer timers for new work:
 
 ```bash
 systemctl list-timers --all
 systemctl status myjob.timer
 ```
 
-Wrap the real work in a script with `set -euo pipefail`, explicit `PATH`, log redirection, and a lock file so overlaps do not corrupt state.
+Timers provide calendar expressions or monotonic delays, ordering relative to other units, and logs via the paired service. Regardless of scheduler, wrap real work in a script with `set -euo pipefail`, an explicit `PATH` (or absolute paths), log redirection to a file or the journal, and a lock file (`flock`) so overlaps do not corrupt backups or databases. Test under a minimal environment that resembles cron before you trust the schedule.
+
+### Key concepts
+
+| Mechanism | Best fit |
+|-----------|----------|
+| cron / crontab | Simple recurring jobs; wide familiarity |
+| `at` | One-shot deferred maintenance |
+| systemd timers | Modern hosts; journal + dependencies |
+| Wrapper script | Strict mode, `PATH`, logs, lock |
+| Lock (`flock`) | Prevent overlapping scheduled runs |
+
+### Common pitfalls
+
+- Depending on interactive `PATH` or aliases inside a cron command line
+- Omitting locks so a slow job overlaps the next schedule
+- Never reading mailed cron stderr (or having mail disabled)
+- Putting complex logic in the crontab instead of a versioned script
+- Forgetting that cron’s working directory is not your home project folder
 
 ## Hands-on Lab
 

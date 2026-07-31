@@ -46,33 +46,41 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Error Handling, Logging, and Debugging](../assets/images/shell-error-handling.svg)
+![Architecture diagram for Error Handling, Logging, and Debugging](../assets/excalidraw/shell-error-handling.svg)
 
 ## Theory
 
-### Exit Codes
+### What it is
 
-Map failures to documented integers. Propagate child failures; do not `|| true` away errors you care about.
+**Error handling, logging, and debugging** turn a happy-path script into something Continuous Integration (CI) and operators can trust. The pillars are documented **exit codes**, **traps** for cleanup and signal translation, **defensive programming** (`set -euo pipefail`, quoting, early validation), structured **logging** on stderr, and disciplined **debugging** with `bash -x` and a useful `PS4` prompt. Together they answer: did it fail, why, and what was left behind?
 
-### Trap
+### Why it matters
 
-Use `trap` for cleanup and to translate signals into known exit codes. Pair with `set -E` if you need `ERR` traps inside functions.
+Silent success is worse than a loud failure. Swallowing errors with `|| true`, logging to stdout so pipelines parse noise, or shipping without a reproducible debug method creates overnight incidents that look “green” in monitoring. DevOps and Linux admin scripts are usually unattended; the only story they leave is exit status plus logs. Investing in a small taxonomy of codes and consistent log levels pays off every time an on-call engineer opens a file at 02:00.
 
-### Defensive Programming
+### How it works
 
-- `set -euo pipefail`
-- Quote expansions
-- Validate args early
-- Prefer absolute paths under schedulers
-- Fail closed on missing dependencies (`command -v jq >/dev/null`)
+Map failures to documented integers and propagate child failures — do not mask errors you care about. Use `trap` for cleanup and to translate `INT` / `TERM` into known codes. Enable `set -E` if an `ERR` trap must fire inside functions. Defensive defaults include strict mode, quoted expansions, validating arguments before side effects, absolute paths under schedulers, and failing closed when dependencies are missing (`command -v jq >/dev/null`).
 
-### Logging
+Log to stderr with timestamps and levels such as `INFO`, `WARN`, and `ERROR`. Reserve stdout for data or `RESULT` lines that another tool will parse. For debugging, run `bash -x script.sh`, set a precise `PS4` that includes source and line number, and temporarily wrap suspect blocks with `set -x` / `set +x`. Remove noisy traces before merging.
 
-Log to stderr with timestamps and levels (`INFO`, `WARN`, `ERROR`). Reserve stdout for data or `RESULT` lines consumers can parse.
+### Key concepts
 
-### Debugging
+| Practice | Purpose |
+|----------|---------|
+| Exit taxonomy | Stable contract for CI and callers |
+| `trap` / `ERR` | Cleanup and signal → exit mapping |
+| `set -euo pipefail` | Fail fast on errors, unset vars, pipe stages |
+| stderr logs | Humans and aggregators; keep stdout clean |
+| `bash -x` + `PS4` | Reproduce and locate failing lines |
 
-`bash -x script.sh`, `PS4='+${BASH_SOURCE}:${LINENO}: '`, and temporary `set -x` around suspect blocks. Remove noisy traces before shipping.
+### Common pitfalls
+
+- Using `|| true` on critical commands to “keep going”
+- Printing diagnostics on stdout and breaking `jq` or `grep` consumers
+- Logging secrets when dumping environment or request bodies
+- Leaving `set -x` enabled in production cron output
+- Forgetting cleanup traps so failed runs leave locks that block retries
 
 ## Hands-on Lab
 

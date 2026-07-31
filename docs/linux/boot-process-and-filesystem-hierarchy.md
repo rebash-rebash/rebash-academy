@@ -44,53 +44,49 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Boot Process and Filesystem Hierarchy](../assets/images/linux-boot-process.svg)
+![Architecture diagram for Boot Process and Filesystem Hierarchy](../assets/excalidraw/linux-boot-process.svg)
 
 ## Theory
 
-### Boot process (Cloud VM view)
+### What it is
 
-Typical order:
+The **boot process** is the ordered path from firmware power-on to a usable multi-user system: firmware (BIOS or UEFI), bootloader (usually GRUB), kernel plus initial RAM filesystem (initramfs), then PID 1 (**systemd**), which reaches a default **target** such as `multi-user.target`. On cloud images, **cloud-init** often runs next to apply instance metadata, Secure Shell (SSH) keys, hostname, and first-boot packages. The **Filesystem Hierarchy Standard (FHS)** is the conventional layout of directories under `/` so packages, scripts, and operators know where configuration, binaries, logs, and runtime state belong.
 
-1. **Firmware** — BIOS or UEFI initialises hardware / hypervisor presents a virtual firmware
-2. **Bootloader** — GRUB (or cloud-init friendly alternatives) loads the kernel and initramfs
-3. **Kernel** — mounts root (often via initramfs), starts PID 1
-4. **PID 1 (systemd)** — mounts filesystems, starts units, reaches a **target** (e.g. `multi-user.target`)
-5. **cloud-init** (on cloud images) — applies instance metadata, SSH keys, hostname, packages
+### Why it matters
 
-Useful commands:
+When a Virtual Machine (VM) fails to come up, hangs in emergency mode, or loses `/etc` after a disk mistake, you diagnose along this chain. Misplaced data — logs filling `/` instead of `/var`, or apps writing under `/tmp` that vanish on reboot — looks like an application fault but is often layout or mounts. FHS landmarks help separate Operating System (OS) state from application data on cloud volumes.
 
-```bash
-systemd-analyze
-systemd-analyze blame | head
-systemctl get-default
-systemctl list-units --type=target
-```
+### How it works
 
-Emergency recovery often means GRUB → rescue/emergency target → remount root `rw` → fix `/etc` or disk.
+Firmware initialises hardware (or the hypervisor presents virtual firmware). The bootloader loads the kernel and initramfs; the kernel mounts the real root (often after initramfs helpers) and starts systemd. systemd mounts filesystems, starts units in dependency order, and enters the default target. Rescue and emergency targets skip most services so you can remount root read-write and repair `/etc`, `fstab`, or disk labels. Persist mounts with `/etc/fstab` or systemd `.mount` units; inspect timing with `systemd-analyze` and `systemd-analyze blame`.
 
-### Filesystem Hierarchy Standard (FHS)
+### Key concepts and comparisons
 
-The **Filesystem Hierarchy Standard (FHS)** defines where things live so scripts and packages stay portable.
+| Stage | Role |
+|-------|------|
+| Firmware | Hardware init; boot device selection |
+| Bootloader | Loads kernel + initramfs |
+| Kernel / initramfs | Drivers, early root mount, start PID 1 |
+| systemd target | Desired system state (rescue vs multi-user) |
+| cloud-init | Instance customisation after first boot stages |
 
 | Path | Purpose |
 |------|---------|
-| `/` | Root of the tree |
-| `/bin`, `/sbin`, `/usr/bin`, `/usr/sbin` | Essential and user commands (merged `/usr` is common) |
 | `/etc` | Host configuration |
-| `/home` | User home directories |
-| `/var` | Variable data — logs, caches, spools |
-| `/var/log` | Traditional log files |
-| `/tmp`, `/var/tmp` | Temporary files (reboot-cleared vs preserved) |
-| `/opt` | Optional add-on software |
-| `/srv` | Site-specific served data |
-| `/proc`, `/sys` | Kernel/process interfaces (pseudo-filesystems) |
-| `/dev` | Device nodes |
+| `/var`, `/var/log` | Variable data and traditional logs |
 | `/boot` | Kernel, initramfs, bootloader configs |
-| `/mnt`, `/media` | Temporary / removable mounts |
-| `/run` | Runtime state since boot (tmpfs) |
+| `/proc`, `/sys`, `/run` | Kernel interfaces and runtime state |
+| `/home`, `/opt`, `/srv` | Users, optional software, site data |
 
-Cloud tip: separate disks often mount at `/var`, `/data`, or `/mnt/data` — never assume a single root disk has infinite space.
+Merged `/usr` layouts are common. Separate data disks often mount at `/var`, `/data`, or `/mnt/data`.
+
+### Common pitfalls
+
+- Treating hung cloud-init as “kernel failure” without checking `systemctl status cloud-init` and the journal.
+- Editing GRUB or `fstab` without a recovery plan; a wrong UUID drops you into emergency mode.
+- Assuming one root volume has infinite space — `/var` or container storage fills first.
+- Confusing `/tmp` (often cleared on reboot) with `/var/tmp` (preserved).
+- Looking only at `systemd-analyze` totals without checking failed units and mount order.
 
 ## Hands-on Lab
 

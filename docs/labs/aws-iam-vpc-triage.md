@@ -47,13 +47,10 @@ By the end of this lab, you will be able to:
 
 ### Knowledge
 
-- [Introduction to AWS and Global Infrastructure](../aws/introduction-to-aws-and-global-infrastructure.md) *(Module 1, Tutorial 1)*
-- [Accounts, Free Tier, Billing, and Cost Hygiene](../aws/accounts-free-tier-billing-and-cost-hygiene.md) *(Module 1, Tutorial 2)*
-- [IAM Fundamentals](../aws/iam-fundamentals.md) *(Module 1, Tutorial 3)*
-- [AWS CLI, Credentials, and Profiles](../aws/aws-cli-credentials-and-profiles.md) *(Module 1, Tutorial 4)*
-- [VPC, Subnets, and Multi-AZ Design](../aws/vpc-subnets-and-multi-az-design.md) *(Module 2, Tutorial 5)*
-- [Internet Gateways, Routes, and Egress](../aws/internet-gateways-routes-and-egress.md) *(Module 2, Tutorial 6)*
-- [Security Groups and NACLs](../aws/security-groups-and-nacls.md) *(Module 2, Tutorial 7)*
+- [AWS Fundamentals and Global Infrastructure](../aws/aws-fundamentals-and-global-infrastructure.md) *(Module 1)*
+- [IAM, Identity Access, and Organizations](../aws/iam-identity-access-and-organizations.md) *(Module 2)*
+- [VPC Networking on AWS](../aws/vpc-networking-on-aws.md) *(Module 3)*
+- [Compute — EC2, ASG, and Load Balancing](../aws/compute-ec2-asg-and-load-balancing.md) *(Module 4)*
 
 ### Software
 
@@ -465,9 +462,9 @@ Tell this story: confirm identity → prove app health with curl → narrow SG �
 ## Related Tutorials
 
 - [AWS](../aws/index.md)
-- [IAM Fundamentals](../aws/iam-fundamentals.md)
-- [Security Groups and NACLs](../aws/security-groups-and-nacls.md)
-- [Internet Gateways, Routes, and Egress](../aws/internet-gateways-routes-and-egress.md)
+- [IAM, Identity Access, and Organizations](../aws/iam-identity-access-and-organizations.md)
+- [VPC Networking on AWS](../aws/vpc-networking-on-aws.md)
+- [Troubleshooting AWS](../aws/troubleshooting-aws.md)
 - Quiz: [AWS Fundamentals](../quizzes/aws-fundamentals.md)
 - Cheat sheet: [AWS](../cheatsheets/aws.md)
 

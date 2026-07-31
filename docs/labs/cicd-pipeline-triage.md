@@ -48,10 +48,10 @@ By the end of this lab, you will be able to:
 
 ### Knowledge
 
-- [Introduction to CI/CD and Delivery Models](../gitlab/introduction-to-cicd-and-delivery-models.md)
-- [GitLab CI Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
-- [GitLab Merge Requests and Pipeline Triggers](../gitlab/gitlab-merge-requests-and-pipeline-triggers.md)
-- [Pipeline Anatomy — Stages, Jobs, and Artifacts](../gitlab/pipeline-anatomy-stages-jobs-and-artifacts.md)
+- [GitLab CI/CD Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
+- [GitLab Projects, Merge Requests, and Releases](../gitlab/gitlab-projects-mrs-and-releases.md)
+- [Pipeline Syntax](../gitlab/pipeline-syntax-gitlab-ci-yml.md)
+- [Troubleshooting GitLab CI](../gitlab/troubleshooting-gitlab-ci.md)
 
 ### Software
 
@@ -442,9 +442,10 @@ Tell this story: open pipeline graph → first failed job → log excerpt → cl
 ## Related Tutorials
 
 - [CI/CD](../gitlab/index.md)
-- [GitLab CI Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
-- [GitLab Merge Requests and Pipeline Triggers](../gitlab/gitlab-merge-requests-and-pipeline-triggers.md)
-- [Pipeline Anatomy](../gitlab/pipeline-anatomy-stages-jobs-and-artifacts.md)
+- [GitLab CI/CD Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
+- [GitLab Projects, Merge Requests, and Releases](../gitlab/gitlab-projects-mrs-and-releases.md)
+- [Pipeline Syntax](../gitlab/pipeline-syntax-gitlab-ci-yml.md)
+- [Troubleshooting GitLab CI](../gitlab/troubleshooting-gitlab-ci.md)
 - Quiz: [CI/CD Fundamentals](../quizzes/cicd-fundamentals.md)
 - Cheat sheet: [GitLab CI/CD](../cheatsheets/cicd.md)
 

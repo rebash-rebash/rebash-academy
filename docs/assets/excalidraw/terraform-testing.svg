@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="200"
+     viewBox="0 0 750 200" role="img" aria-label="terraform-testing">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Testing & validation</text>
+
+  <path d="M 53.9,82.9 L 182.4,83.5 Q 192.4,83.5 192.4,93.5 L 192.2,143.9 Q 192.2,153.9 182.2,153.9 L 53.2,153.3 Q 43.2,153.3 43.2,143.3 L 43.9,92.9 Q 43.9,82.9 53.9,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.3,80.6 L 180.0,80.7 Q 190.0,80.7 190.0,90.7 L 190.6,139.9 Q 190.6,149.9 180.6,149.9 L 50.0,149.6 Q 40.0,149.6 40.0,139.6 L 39.3,90.6 Q 39.3,80.6 49.3,80.6 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">fmt</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">style</text>
+
+
+  <path d="M 222.4,83.8 L 352.4,83.8 Q 362.4,83.8 362.4,93.8 L 363.5,142.5 Q 363.5,152.5 353.5,152.5 L 222.4,153.8 Q 212.4,153.8 212.4,143.8 L 212.4,93.8 Q 212.4,83.8 222.4,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 220.4,80.6 L 349.8,80.9 Q 359.8,80.9 359.8,90.9 L 359.9,140.3 Q 359.9,150.3 349.9,150.3 L 220.6,150.0 Q 210.6,150.0 210.6,140.0 L 210.4,90.6 Q 210.4,80.6 220.4,80.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="285.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">validate</text>
+  <text x="285.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">config</text>
+
+
+  <path d="M 392.9,82.6 L 523.4,82.6 Q 533.4,82.6 533.4,92.6 L 533.9,142.5 Q 533.9,152.5 523.9,152.5 L 393.5,152.3 Q 383.5,152.3 383.5,142.3 L 382.9,92.6 Q 382.9,82.6 392.9,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 390.7,80.7 L 519.3,80.1 Q 529.3,80.1 529.3,90.1 L 529.6,139.7 Q 529.6,149.7 519.6,149.7 L 389.7,150.9 Q 379.7,150.9 379.7,140.9 L 380.7,90.7 Q 380.7,80.7 390.7,80.7 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="455.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">terraform test</text>
+  <text x="455.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">assertions</text>
+
+
+  <path d="M 563.8,82.5 L 702.9,82.3 Q 712.9,82.3 712.9,92.3 L 712.7,142.0 Q 712.7,152.0 702.7,152.0 L 562.8,152.0 Q 552.8,152.0 552.8,142.0 L 553.8,92.5 Q 553.8,82.5 563.8,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 560.4,79.5 L 699.6,80.0 Q 709.6,80.0 709.6,90.0 L 710.9,140.3 Q 710.9,150.3 700.9,150.3 L 560.8,151.0 Q 550.8,151.0 550.8,141.0 L 550.4,89.5 Q 550.4,79.5 560.4,79.5 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="630.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Policy / lint</text>
+  <text x="630.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">OPA · tflint</text>
+
+</svg>

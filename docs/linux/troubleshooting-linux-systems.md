@@ -44,53 +44,47 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Troubleshooting Linux Systems](../assets/images/linux-troubleshooting.svg)
+![Architecture diagram for Troubleshooting Linux Systems](../assets/excalidraw/linux-troubleshooting.svg)
 
 ## Theory
 
-### Method
+### What it is
 
-1. Define blast radius and recent changes
-2. Check urgency signals: `uptime`, `free`, `df`, `systemctl --failed`
-3. Narrow domain: boot / CPU / memory / disk / perms / net / service
-4. Confirm with logs (`journalctl`, app logs)
-5. Change one variable; write down what you tried
+**Troubleshooting** is a disciplined loop: define blast radius and recent changes, gather host signals, narrow the domain, confirm with logs, change one variable, and record evidence. Domains include boot, CPU, memory, disk, permissions, network, and services. The goal is not clever guesses — it is reproducible diagnosis that works at 03:00 under pressure.
 
-### Boot failures
+### Why it matters
 
-GRUB → rescue → `journalctl -b -p err`, `systemctl list-units --failed`, filesystem checks, fstab `nofail`, cloud-init status.
+Cloud and Kubernetes incidents still terminate on Linux nodes. Without a method, teams thrash: restarting healthy services, widening permissions, or rebooting away evidence. A shared checklist (`systemctl --failed`, `df`, `ip`/`ss`, `journalctl`) aligns on-call engineers and shortens Mean Time To Recovery (MTTR). Post-incident learning depends on the notes you took while debugging.
 
-### High CPU
+### How it works
 
-`top`/`ps` → identify PID → `perf`/`strace` sparingly → restart or scale → fix root cause (loop, noisy neighbour).
+Start with urgency signals: load, memory, disk, failed units. Classify: boot (GRUB, fstab, emergency target), CPU (`top`/`ps`, then careful `strace`/`perf`), memory (`free`, OOM in `dmesg`/`journalctl -k`), disk (`df`/`df -i`/`du`, deleted-open files), permissions (`namei -l`, ACLs, MAC), network (`ip route`, `ss`, DNS, firewalls, `curl -v`), services (`systemctl status`, `journalctl -u`, config `-t`). Time-box log analysis to since deploy or since alert. Apply the USE method for performance: utilisation, saturation, errors. Fix forward with evidence; prefer reversible changes.
 
-### High memory
+### Key concepts and comparisons
 
-`free -h`, `ps --sort=-%mem`, OOM killer (`dmesg`/`journalctl -k`), leak vs undersized VM.
+| Domain | First tools |
+|--------|-------------|
+| Boot | `journalctl -b -p err`, failed units, fstab |
+| CPU | `top`, `ps`, load vs run queue |
+| Memory | `free`, OOM logs, top consumers |
+| Disk | `df -h`, `df -i`, `du`, `lsof +L1` |
+| Perms | `namei -l`, `id`, `getfacl`, MAC logs |
+| Network | `ip`, `ss`, `dig`, SG/firewall |
+| Service | `systemctl`, `journalctl -u`, config test |
 
-### Disk full
+| Anti-pattern | Better |
+|--------------|--------|
+| Change five things at once | One change + evidence |
+| Reboot immediately | Capture journal/metrics first |
+| Disable SELinux to pass | Read denials; fix labels |
 
-`df -h` + `df -i` → `du` → deleted-open files (`lsof +L1`) → logrotate → expand volume/LVM.
+### Common pitfalls
 
-### Permission issues
-
-`namei -l path`, `id`, ACLs (`getfacl`), MAC denials (`ausearch`/`journalctl` for SELinux).
-
-### Network problems
-
-`ip route`, `ss`, DNS (`dig`), security groups/firewalls, `curl -v`, `tcpdump`.
-
-### Service failures
-
-`systemctl status -l`, `journalctl -u`, config test (`nginx -t`, `sshd -t`), dependency targets.
-
-### Log analysis
-
-Time-box: since deploy / since alert. Correlate host journal + app + load balancer.
-
-### Performance bottlenecks
-
-USE method (utilisation, saturation, errors) with `vmstat`, `iostat`, `sar`, application metrics.
+- Skipping blast radius — rebooting a shared node for a single pod symptom.
+- Trusting only application logs while systemd shows the unit never started.
+- Clearing disk by deleting files still held open — space does not return.
+- Chasing DNS when the security group is the deny.
+- Leaving the host worse (debug packages, permissive MAC) after the incident.
 
 ## Hands-on Lab
 

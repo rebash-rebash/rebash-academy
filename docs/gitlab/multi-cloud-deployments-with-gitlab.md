@@ -1,0 +1,281 @@
+---
+title: "Multi-Cloud Deployments with GitLab"
+description: "Deploy to AWS, Azure, and Google Cloud from GitLab CI using OIDC-oriented identities for EKS/ECS, AKS, and GKE/Cloud Run."
+difficulty: advanced
+estimated_time: "50–65 min"
+technology: gitlab
+category: gitlab
+module: "Module 11 · Cloud Deployments"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
+skills:
+  - gitlab-ci
+  - aws
+  - azure
+  - gcp
+  - oidc
+prerequisites:
+  - gitlab/terraform-pipelines-in-gitlab
+next:
+  - gitlab/security-scanning-and-devsecops
+related:
+  - gitlab/variables-secrets-and-oidc
+  - aws/aws-fundamentals-and-global-infrastructure
+  - terraform/multi-cloud-terraform
+labs: []
+projects: []
+interview: interview/gitlab
+certifications:
+  - GitLab Certified CI/CD Associate
+  - GitLab Certified DevOps Professional
+tags:
+  - gitlab
+  - aws
+  - azure
+  - gcp
+  - oidc
+author: Shaik Basha
+last_updated: "2026-07-31"
+comments: false
+---
+
+
+# Multi-Cloud Deployments with GitLab
+
+## Overview
+
+Sketch OIDC-oriented GitLab CI patterns for AWS (IAM / EKS / ECS), Azure (login / AKS), and Google Cloud (Workload Identity / GKE / Cloud Run) without embedding long-lived cloud keys in the repository.
+
+Modern GitLab deploy jobs **federate identity**: the job presents a GitLab-issued OIDC token; the cloud exchanges it for a short-lived role. That role then updates EKS/ECS, AKS, GKE, or Cloud Run. Patterns differ by cloud, but the CI shape is the same — authenticate, deploy immutable artefact, protect production.
+
+This is a core tutorial in **Module 11 · Cloud Deployments** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+
+## Prerequisites
+
+- [Terraform Pipelines in GitLab](terraform-pipelines-in-gitlab.md)
+
+## Learning Objectives
+
+By the end of this tutorial, you will be able to:
+
+- [ ] Explain OIDC federation vs static access keys  
+- [ ] Map AWS IAM roles to EKS/ECS deploy jobs  
+- [ ] Sketch Azure login + AKS kubectl context  
+- [ ] Sketch GCP Workload Identity + GKE/Cloud Run  
+- [ ] Scope identities per environment and branch
+
+## Architecture
+
+This topic’s control points and relationships are shown below.
+
+![Multi-cloud GitLab deployments](../assets/excalidraw/gitlab-multi-cloud.svg)
+
+## Theory
+
+### What it is
+
+**Multi-cloud deployment from GitLab** means pipelines call cloud APIs with least-privilege, short-lived credentials:
+
+| Cloud | Identity pattern | Common targets |
+|-------|------------------|----------------|
+| AWS | IAM OIDC provider → assume role | EKS (`aws eks update-kubeconfig`), ECS update-service |
+| Azure | Federated credentials → `az login` | AKS `kubelogin` / kubeconfig |
+| Google Cloud | Workload Identity Federation | GKE, Cloud Run deploy |
+
+GitLab’s JWT (`CI_JOB_JWT_V2` / id tokens, depending on version) is trusted by a cloud identity provider you configure once. Jobs request `id_tokens` and exchange them in `before_script`.
+
+### Why it matters
+
+Static keys in CI variables leak, rarely rotate, and often are over-privileged. OIDC binds trust to project, branch, and environment claims so a compromised MR runner cannot assume production roles. Multi-cloud teams need one mental model — federate, deploy SHA artefact, gate production — even when CLIs differ.
+
+### How it works
+
+1. Configure cloud trust for your GitLab issuer and subject conditions (project path, `ref`, environment).  
+2. Job declares an id token and assumes/exchanges into a cloud role.  
+3. Deploy uses that session: update ECS task definition, `helm upgrade` on EKS/AKS/GKE, or `gcloud run deploy` with a digest.  
+4. Staging roles allow MR or default-branch pipelines; production roles require protected environments.  
+5. Terraform (Module 10) often creates the OIDC providers and roles; deploy pipelines only consume them.
+
+Never print tokens. Prefer environment-scoped variables for account IDs and cluster names, not secrets, when using federation.
+
+### Key concepts and comparisons
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| OIDC / federation | Short-lived, auditable, branch-aware | Initial IdP setup |
+| Static keys / PATs | Simple demos | Rotation, leak blast radius |
+| Per-cloud deploy jobs | Clear ownership | Duplicate pipeline structure — use templates |
+
+### Common pitfalls
+
+- Trusting `*` subjects on the OIDC provider (any project can assume the role).  
+- Giving one role rights to all accounts and clusters.  
+- Running production deploy jobs on shared MR runners.  
+- Mixing long-lived keys “just for break-glass” without separate process.  
+- Redeploying different image digests per cloud “environment” for the same commit.
+
+## Hands-on Lab
+
+Create a workspace for this tutorial.
+
+```bash
+mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
+```
+
+**Focus:** hands-on practice for Multi-Cloud Deployments with GitLab
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Multi-Cloud Deployments with GitLab"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+Cloud accounts are not required — capture the federation pattern and role sketch locally.
+
+```bash
+mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
+```
+
+{% raw %}
+```yaml
+# .gitlab-ci.yml — pattern sketch (adapt issuer/role ARNs for your org)
+stages: [deploy]
+
+.aws_oidc:
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  before_script:
+    - >
+      aws sts assume-role-with-web-identity
+      --role-arn "$AWS_ROLE_ARN"
+      --role-session-name "gitlab-$CI_PROJECT_ID-$CI_PIPELINE_ID"
+      --web-identity-token "$GITLAB_OIDC_TOKEN"
+      --duration-seconds 3600
+      > /tmp/creds.json
+    # Export AccessKeyId / SecretAccessKey / SessionToken from /tmp/creds.json in real jobs
+
+deploy-aws-ecs:
+  extends: .aws_oidc
+  stage: deploy
+  image: amazon/aws-cli:2.17.0
+  environment: staging
+  script:
+    - echo "Update ECS service to $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Azure: az login --service-principal --tenant … with federated credential
+# GCP: gcloud auth login --cred-file=<(workload identity federation)
+```
+{% endraw %}
+
+```bash
+cat > cloud-identity-notes.md << 'EOF'
+AWS: IAM OIDC provider → role trust on project/ref → EKS/ECS deploy
+Azure: App registration federated credential → az login → AKS
+GCP: Workload Identity Federation → GKE / Cloud Run
+All: protect production environments; never commit cloud keys
+EOF
+
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+```
+
+### Final step – Cleanup note
+
+```bash
+# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
+./lab.sh || true
+```
+
+## Validation
+
+- [ ] Lab commands run under `~/rebash-gitlab/module-11/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
+
+## Code Walkthrough
+
+Production practice for **Multi-Cloud Deployments with GitLab** always combines:
+
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+
+## Security Considerations
+
+- Treat credentials and tokens for gitlab as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
+
+## Common Mistakes
+
+!!! warning "Trusting `*` subjects on the OIDC provider (any project can assume the role).  "
+    Validate assumptions against the Theory section and official docs before changing production.
+
+!!! warning "Giving one role rights to all accounts and clusters.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+
+## Best Practices
+
+- Encode Multi-Cloud Deployments with GitLab changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+
+## Summary
+
+**Multi-Cloud Deployments with GitLab** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+
+## Interview Questions
+
+1. How does **Multi-Cloud Deployments with GitLab** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
+
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+
+## Related Tutorials
+
+- [Course overview](index.md)
+- - [Security Scanning and DevSecOps](security-scanning-and-devsecops.md)
+
+## References
+
+- [OIDC with GitLab CI/CD](https://docs.gitlab.com/ee/ci/cloud_services/) · [AWS IAM OIDC](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html) · [Azure workload identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) · [GCP Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)

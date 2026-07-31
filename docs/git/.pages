@@ -1,30 +1,49 @@
-title: Git
+title: Git & GitHub
 icon: material/git
 nav:
   - index.md
-  - Foundations:
+  - Module 1 · Version Control Fundamentals:
     - introduction-to-git-and-version-control.md
-    - git-installation-and-configuration.md
     - understanding-the-git-object-model.md
-  - Essential Workflow:
+  - Module 2 · Installing Git:
+    - git-installation-and-configuration.md
+  - Module 3 · Git Basics:
     - creating-and-cloning-repositories.md
     - basic-git-workflow-add-commit-push.md
     - viewing-history-and-diffs.md
-  - Branching:
-    - branching-fundamentals.md
-    - merging-and-merge-conflicts.md
-    - rebasing-and-interactive-rebase.md
-  - Collaboration:
-    - working-with-remotes.md
-    - pull-requests-and-code-review.md
+  - Module 4 · Working with Repositories:
     - gitignore-and-gitattributes.md
-  - Recovery & Debugging:
+  - Module 5 · Branching:
+    - branching-fundamentals.md
+  - Module 6 · Merging:
+    - merging-and-merge-conflicts.md
+  - Module 7 · Rebasing & History:
+    - rebasing-and-interactive-rebase.md
     - undoing-changes-reset-revert-stash.md
     - cherry-pick-and-reflog.md
-    - git-bisect-and-debugging-history.md
-  - Advanced & DevOps:
-    - git-hooks-and-automation.md
-    - advanced-git-workflows.md
-    - git-submodules-and-subtrees.md
+  - Module 8 · Remote Repositories:
+    - working-with-remotes.md
+  - Module 9 · GitHub Fundamentals:
+    - github-fundamentals.md
+  - Module 10 · Collaboration:
+    - pull-requests-and-code-review.md
+  - Module 11 · GitHub Actions:
+    - github-actions-for-devops.md
+  - Module 12 · GitOps:
+    - gitops-fundamentals.md
+  - Module 13 · Infrastructure as Code:
+    - git-for-infrastructure-as-code.md
+  - Module 14 · Repository Management:
+    - repository-management-and-releases.md
+  - Module 15 · Security:
     - signed-commits-and-git-security.md
+  - Module 16 · Troubleshooting:
+    - git-troubleshooting.md
+    - git-bisect-and-debugging-history.md
+  - Module 17 · Production Git Practices:
+    - production-git-practices.md
+  - Related depth:
+    - git-hooks-and-automation.md
+    - git-submodules-and-subtrees.md
     - git-in-ci-cd-and-devops.md
+    - advanced-git-workflows.md

@@ -1,493 +1,210 @@
 ---
-title: Network Automation and Monitoring
-description: Automate network operations with Ansible, manage DNS and firewall as code, and monitor infrastructure with Prometheus node_exporter and SmokePing.
-difficulty: advanced
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+title: "Network Automation and Monitoring"
+description: "Automate network configuration safely, monitor reachability and path health, and build alerts and runbooks for production network operations."
+difficulty: intermediate
+estimated_time: "40–55 min"
+technology: networking
 category: networking
+module: "Module 16 · Production Networking"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - site-reliability-engineer
+  - platform-engineer
+skills:
+  - network-automation
+  - monitoring
+  - observability
+prerequisites:
+  - networking/network-segmentation-and-trust-boundaries
+next:
+  - networking/production-dns-operations
+related:
+  - networking/network-incident-response-and-observability
+  - networking/linux-networking-toolkit
+labs: []
+projects: []
+interview: interview/networking
+certifications:
+  - AWS SAA
 tags:
   - networking
   - automation
   - monitoring
-  - prometheus
-  - ansible
-  - smokeping
-  - infrastructure-as-code
-  - iac
-prerequisites:
-  - Network Security Hardening (Tutorial 19)
-  - Linux administration, YAML basics, and networking fundamentals
-  - Optional: Docker for running Prometheus/Grafana locally
+  - observability
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Network Automation and Monitoring
 
 ## Overview
 
-Manual network configuration does not scale. When you manage hundreds of firewall rules, dozens of DNS zones, and a fleet of load balancers, **infrastructure as code (IaC)** and **network automation** become mandatory. Ansible playbooks configure devices consistently, Terraform modules provision cloud networking, and GitOps workflows enforce review before any change hits production. Equally critical is **observability**: you cannot fix what you cannot measure. **Prometheus** with **node_exporter** exposes host and network metrics, **SmokePing** tracks latency and packet loss over time, and centralised dashboards turn raw data into actionable alerts.
+Treat network policy as code, monitor path health with useful signals, and wire alerts to runbooks instead of noisy ICMP spam.
 
-This tutorial closes **Module 6** of the Networking track: automate DNS and firewall management, use Ansible network modules, deploy Prometheus monitoring for network health, and integrate monitoring into your CI/CD pipeline. **Module 7: Production Network Operations** continues with segmentation, DNS ops, load-balancer health checks, firewall change control, and incident response.
+Manual console clicks drift. Automate VPC/SG/DNS/LB with Terraform/OpenTofu or cloud APIs, and watch **reachability, error rates, saturation, and TLS expiry** — not just “ping OK.”
 
-This is **Tutorial 20** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
+This is a core tutorial in **Module 16 · Production Networking** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed the full Networking track (Tutorials 1–19) or equivalent experience
-- Linux CLI proficiency ([Linux series](../linux/index.md) recommended)
-- Basic YAML syntax and Git workflow
-- Python 3 and pip available for Ansible installation
-- Optional: Docker for local Prometheus/Grafana stack
-- Familiarity with [Network Security Hardening](network-security-hardening.md) and [DNS Fundamentals](dns-fundamentals.md)
+- [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md)
+- Basic IaC familiarity helpful
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain why network automation and monitoring are essential at scale
-- [ ] Deploy Prometheus and node_exporter to collect host and network metrics
-- [ ] Configure SmokePing for latency and packet loss monitoring
-- [ ] Use Ansible to manage firewall rules and DNS records idempotently
-- [ ] Manage cloud DNS and firewall rules as code with Terraform
-- [ ] Design alerting rules for network connectivity failures
-- [ ] Articulate next steps in the REBASH Academy learning path (Docker, Kubernetes, cloud)
+- [ ] List network objects that belong in IaC  
+- [ ] Choose golden signals for network/LB/DNS  
+- [ ] Design change + verify pipelines  
+- [ ] Avoid alert noise
 
 ## Architecture
 
-The diagram shows a typical network observability and automation stack: Prometheus scrapes exporters, Grafana visualizes, Alertmanager notifies, and Ansible/Terraform push configuration from Git.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Network Automation and Monitoring](../assets/images/network-automation-and-monitoring.svg)
-
+![Network observability](../assets/excalidraw/network-observability.svg)
 
 ## Theory
 
-### Why Automate Network Operations?
+### What it is
 
-Manual CLI configuration creates **configuration drift** — each device accumulates unique rules that nobody documented. **Network automation** applies DevOps principles: version control, peer review, automated testing, and continuous delivery of infrastructure changes.
+Network automation manages connectivity configuration as code — route tables, security groups / network security groups (NSGs), Domain Name System (DNS) records, load balancer listeners and target groups, firewall change requests — through pull requests, plan/apply, and policy checks. **Monitoring** watches traffic, errors, latency, saturation, and correctness (synthetics) so drift and denials surface before customers do.
 
-| Manual approach pain | Automation benefit |
-|---------------------|-------------------|
-| "Works on my router" differences | Idempotent, version-controlled configs |
-| Undocumented emergency changes | Git history with PR review |
-| Slow disaster recovery | Rebuild from code in minutes |
-| Audit failures | IaC proves intended state |
+### Why it matters
 
-### Infrastructure as Code for DNS
+Click-ops networking drifts and cannot be reviewed. Forgotten open rules become breaches; missing routes become Sev-1s. Automation without monitoring is blind CI green; monitoring without automation means you see the fire but fix it by hand under stress. Together they are how platform teams scale network change safely.
 
-DNS is infrastructure. Treating DNS records as code prevents stale entries and enables reproducible environments.
+### How it works
 
-| Tool | DNS scope | Example use |
-|------|-----------|-------------|
-| Terraform | Route 53, Cloud DNS, Azure DNS | `aws_route53_record` resources |
-| Ansible | Route 53, bind | `amazon.aws.route53` module |
-| ExternalDNS | Kubernetes → cloud DNS | Auto-create records for Ingress/LB |
+Express desired state in Infrastructure as Code (Terraform, cloud formation, or equivalent). Every change is a PR: `plan` shows the blast radius; policy-as-code rejects `0.0.0.0/0` on data ports; `apply` runs in pipelines with approvals. Export or scrape metrics for the golden signals; alert on burn and saturation (NAT gateway bytes, conntrack, Elastic IP limits). Use flow / Virtual Private Cloud (VPC) logs to prove which rule denied a flow during incidents. Synthetic checks hit critical URLs from outside so you notice DNS and certificate failures that internal metrics miss.
 
-Best practices: store zone files in Git; require PR approval for production zones; use low TTL (60–300s) before migrations; always run `terraform plan` before apply.
+### Key concepts and comparisons
 
-### Infrastructure as Code for Firewalls
+| Automate | Why in PRs |
+|----------|------------|
+| Routes, SGs/NSGs | Reviewable blast radius |
+| DNS records | TTL and rollback discipline |
+| LB listeners / targets | Safe registration changes |
+| Firewall tickets | Dual control + expiry |
 
-| Platform | IaC tool | Resource type |
-|----------|----------|---------------|
-| AWS | Terraform | `aws_security_group`, `aws_network_acl` |
-| GCP | Terraform | `google_compute_firewall` |
-| Linux host | Ansible / nftables | `community.general.ufw`, nftables templates |
-| Kubernetes | NetworkPolicy YAML | Calico, Cilium policies |
+| Signal | Examples |
+|--------|----------|
+| Traffic | Bytes, connections, SYN rates |
+| Errors | LB 5xx, DNS SERVFAIL, drops |
+| Latency | RTT, target response time |
+| Saturation | NAT bytes, conntrack, EIP limits |
+| Correctness | Synthetics to critical URLs |
 
-Review every `0.0.0.0/0` ingress in PR diffs. Integrate `checkov` or `tfsec` in CI to catch risky rules before merge.
+### Common pitfalls
 
-### Ansible Network Modules Overview
-
-Ansible automates configuration across Linux hosts and cloud APIs. Key modules:
-
-| Module | Purpose | Target |
-|--------|---------|--------|
-| `ansible.builtin.iptables` | Manage iptables rules | Linux hosts |
-| `community.general.nftables` | Manage nftables | Linux hosts |
-| `ansible.posix.firewalld` | firewalld zone rules | RHEL-family |
-| `amazon.aws.ec2_security_group` | AWS security groups | AWS API |
-| `amazon.aws.route53` | DNS records | Route 53 |
-| `community.general.ufw` | Uncomplicated Firewall | Ubuntu |
-
-Ansible is **agentless** (SSH/API), **idempotent**, and supports **Vault** for secrets. Terraform often owns cloud provisioning; Ansible handles post-provision host configuration.
-
-### Prometheus and node_exporter
-
-**Prometheus** is a pull-based metrics time-series database. Targets expose HTTP `/metrics` endpoints; Prometheus scrapes at configured intervals.
-
-**node_exporter** exposes hardware and OS metrics from Linux:
-
-| Metric family | Examples | Network relevance |
-|---------------|----------|-------------------|
-| `node_network_*` | `receive_bytes_total`, `transmit_errs_total` | Interface throughput, errors |
-| `node_netstat_*` | TCP retransmits | Connection health |
-| `node_sockstat_*` | TCP sockets in use | Connection exhaustion |
-
-Additional exporters: **blackbox_exporter** (HTTP/TCP/ICMP probes), **snmp_exporter** (switches/routers).
-
-Alerting examples:
-
-- `rate(node_network_receive_errs_total[5m]) > 0` — interface errors
-- `rate(node_netstat_Tcp_RetransSegs[5m]) > 10` — network path problems
-- `probe_success == 0` — endpoint unreachable (blackbox)
-
-### SmokePing — Latency and Loss Monitoring
-
-**SmokePing** measures **latency**, **packet loss**, and **jitter** to remote hosts over time. Unlike point-in-time `ping`, SmokePing stores historical data in RRD files and renders smoke graphs showing trends and spikes.
-
-Use SmokePing for ISP path quality, VPN tunnel latency, DNS resolution time trends, and before/after migration baselines. SmokePing complements Prometheus: SmokePing excels at long-term latency visualization; Prometheus excels at metric correlation and alerting integration.
-
-### Monitoring Strategy
-
-| Layer | Tool | What to watch |
-|-------|------|---------------|
-| L3 | SmokePing, blackbox ICMP | Latency, loss, path changes |
-| L4 | blackbox TCP, `ss`, conntrack | Port reachability |
-| L7 | blackbox HTTP | Status codes, TLS expiry |
-| Flow | VPC Flow Logs | Traffic patterns, exfiltration |
-| Config | CloudTrail, Terraform drift | Unauthorized rule changes |
-
-**Golden signals** for networking: **latency**, **packet loss**, **throughput**, and **availability**.
-
-### Alert runbooks and Module 7 handoff
-
-An alert without a runbook burns on-call time. For every network alert, store a short card:
-
-1. **Symptom** — what users or probes see
-2. **First three commands** — e.g. `curl -v`, `dig`, `ss -tulpn` (or `mtr`)
-3. **Blast radius** — which tiers/customers
-4. **Safe rollback** — DNS TTL revert, LB drain undo, ACL previous revision
-
-Module 7 turns that card into practised ops: segmentation matrices, DNS change control, LB health-check failover, firewall canaries, and incident timelines with packet capture discipline.
+- Automating apply without policy checks.  
+- Alerting on raw counters without rates or budgets.  
+- No synthetic view — only in-VPC metrics.  
+- Flow logs disabled “to save money” until the breach review.  
+- Snowclone scripts that bypass the IaC source of truth.
 
 ## Hands-on Lab
 
-### Step 1 – Install Ansible and verify connectivity
+**Focus:** practise the core workflow for Network Automation and Monitoring
 
-**Command:**
+### Step 1 – Inventory as code candidates
 
-```bash
-pip install --user ansible amazon.aws community.general
-ansible --version
+List 10 network resources in your last project that should be in Git.
 
-mkdir -p ~/net-automation/{inventory,playbooks}
-cat > ~/net-automation/inventory/hosts <<'EOF'
-[webservers]
-web1 ansible_host=127.0.0.1 ansible_connection=local
-EOF
-
-ansible webservers -m ping
-```
-
-**Expected output:**
-
-```text
-web1 | SUCCESS => { "changed": false, "ping": "pong" }
-```
-
-### Step 2 – Ansible playbook — manage UFW firewall rules
-
-**Command:**
+### Step 2 – Synthetic check sketch
 
 ```bash
-cat > ~/net-automation/playbooks/firewall.yml <<'EOF'
----
-- name: Configure host firewall
-  hosts: webservers
-  become: true
-  tasks:
-    - name: Default deny incoming
-      community.general.ufw:
-        direction: incoming
-        policy: deny
-
-    - name: Allow SSH from admin subnet
-      community.general.ufw:
-        rule: allow
-        port: "22"
-        proto: tcp
-        from_ip: "10.0.1.0/24"
-
-    - name: Allow HTTP and HTTPS
-      community.general.ufw:
-        rule: allow
-        port: "{{ '{{' }} item {{ '}}' }}"
-        proto: tcp
-      loop: ["80", "443"]
-
-    - name: Enable UFW
-      community.general.ufw:
-        state: enabled
-EOF
-
-ansible-playbook -i ~/net-automation/inventory/hosts ~/net-automation/playbooks/firewall.yml
+# Pattern for a cron/synthetic job
+curl -fsS -o /dev/null -w "%{http_code} %{time_total}\n" https://example.com/ || echo FAIL
+dig +short example.com A | head -1
 ```
 
-**Explanation:** Idempotent firewall configuration — re-running produces no changes unless drift occurs.
+### Step 3 – Alert design
 
-**Expected result:**
-
-Ansible reports `ok`/`changed` for UFW tasks (or check-mode diff) without embedding secrets in the playbook.
-
-### Step 3 – Deploy node_exporter
-
-**Command:**
-
-```bash
-NODE_EXPORTER_VERSION="1.8.2"
-curl -sLO "https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz"
-tar xzf node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz
-sudo cp node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64/node_exporter /usr/local/bin/
-
-sudo tee /etc/systemd/system/node_exporter.service <<'EOF'
-[Unit]
-Description=Prometheus Node Exporter
-After=network-online.target
-[Service]
-User=nobody
-ExecStart=/usr/local/bin/node_exporter --web.listen-address=:9100
-Restart=on-failure
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload && sudo systemctl enable --now node_exporter
-curl -s localhost:9100/metrics | grep node_network_receive_bytes_total | head -3
-```
-
-**Explanation:** Restrict port 9100 to Prometheus server IP via firewall — metrics expose system information.
-
-**Expected result:**
-
-```text
-# HELP node_network_receive_bytes_total ...
-```
-
-Metrics on `:9100/metrics` (or your chosen port).
-
-### Step 4 – Configure Prometheus to scrape node_exporter
-
-**Command:**
-
-```bash
-mkdir -p ~/prometheus-config
-cat > ~/prometheus-config/prometheus.yml <<'EOF'
-global:
-  scrape_interval: 15s
-
-scrape_configs:
-  - job_name: node
-    static_configs:
-      - targets: [localhost:9100]
-        labels:
-          env: lab
-EOF
-
-docker run -d --name prometheus -p 9090:9090 \
-  -v ~/prometheus-config/prometheus.yml:/etc/prometheus/prometheus.yml:ro \
-  prom/prometheus:latest
-
-curl -s 'http://localhost:9090/api/v1/targets' | python3 -m json.tool | head -20
-```
-
-**Explanation:** Open http://localhost:9090/targets — UP status means metrics are flowing.
-
-**Expected result:**
-
-Prometheus UI/API shows `node` target state UP.
-
-### Step 5 – Query network metrics with PromQL
-
-**Command:**
-
-```bash
-curl -sG 'http://localhost:9090/api/v1/query' \
-  --data-urlencode 'query=rate(node_network_receive_bytes_total{device!="lo"}[5m])'
-
-curl -sG 'http://localhost:9090/api/v1/query' \
-  --data-urlencode 'query=rate(node_netstat_Tcp_RetransSegs[5m])'
-```
-
-**Explanation:** Sustained retransmit rates correlate with congestion, packet loss, or MTU mismatches.
-
-**Expected result:**
-
-PromQL JSON `"status":"success"` with at least one result sample for a network metric.
-
-### Step 6 – Install SmokePing (Docker)
-
-**Command:**
-
-```bash
-mkdir -p ~/smokeping/config ~/smokeping/data
-cat > ~/smokeping/config/config <<'EOF'
-*** General ***
-owner = Network Team
-
-*** Probes ***
-+ FPing
-binary = /usr/bin/fping
-
-*** Targets ***
-probe = FPing
-
-+ targets
-menu = Network Latency
-
-++ DNS_Public
-menu = Public DNS
-
-+++ Google_DNS
-host = 8.8.8.8
-
-+++ Cloudflare_DNS
-host = 1.1.1.1
-EOF
-
-docker run -d --name smokeping -p 8080:80 \
-  -v ~/smokeping/config:/config \
-  -v ~/smokeping/data:/var/lib/smokeping \
-  lscr.io/linuxserver/smokeping:latest
-```
-
-**Explanation:** Open http://localhost:8080 after 5–10 minutes to see latency smoke graphs populate.
-
-**Expected result:**
-
-SmokePing container running and UI/latency graphs reachable, or alternative `ping` RRD note if skipped.
-
-### Step 7 – Cleanup lab resources
-
-**Command:**
-
-```bash
-docker rm -f prometheus smokeping 2>/dev/null || true
-sudo systemctl stop node_exporter 2>/dev/null || true
-```
+Write three alerts with threshold + runbook link (LB 5xx, NAT bytes, cert days left).
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Confirm Ansible playbook dry-run/apply, exporter listen, and Prometheus scrape succeed.
-2. Explain one PromQL network metric you queried.
-3. Remove lab containers and stop exporters you do not intend to keep.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Automation | Firewall playbook runs (check mode acceptable) without secrets in Git |
-| Exporter | `node_exporter` metrics endpoint returns text exposition |
-| Prometheus | Target UP; PromQL query returns a vector/matrix |
-| SmokePing | Container healthy or alternative latency check documented |
-| Cleanup | Docker lab stack removed; ports freed |
+- [ ] Lab commands run under `~/rebash-networking//`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `ansible-playbook` | Run Ansible playbook | `ansible-playbook -i inventory/hosts playbooks/firewall.yml` |
-| `terraform plan` | Preview IaC changes | `terraform plan` |
-| `curl :9100/metrics` | node_exporter metrics | `curl -s localhost:9100/metrics \| head` |
-| `promtool check rules` | Validate Prometheus alert rules | `promtool check rules alerts.yml` |
-| `fping` | ICMP latency probe | `fping -c 5 8.8.8.8` |
+Production practice for **Network Automation and Monitoring** always combines:
 
-```yaml
-# Prometheus alert — network interface errors
-- alert: NetworkInterfaceErrors
-  expr: rate(node_network_receive_errs_total[5m]) > 0
-  for: 5m
-  labels:
-    severity: warning
-```
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Store Ansible vault secrets and Prometheus credentials outside Git; rotate scrape tokens regularly
-- Bind exporters to localhost or private interfaces and scrape via authenticated reverse proxy where exposed
-- Alert on missing metrics as well as threshold breaches — silence can mean a compromised agent
-- Least-privilege the automation identity that pushes firewall or DNS changes
-- Separate monitoring networks from user workloads when architecture allows
+- Treat credentials and tokens for networking as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Alert fatigue from uncalibrated thresholds"
-    Alerting on every latency spike creates pager noise. Tune thresholds using SmokePing and Prometheus baselines; alert on SLO breaches with meaningful `for:` durations.
+!!! warning "Automating apply without policy checks.  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Scraping node_exporter from the internet"
-    Metrics expose system details. Bind to internal IP and firewall port 9100 to Prometheus only.
+!!! warning "Alerting on raw counters without rates or budgets.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Applying Terraform DNS changes without plan review"
-    A typo in an A record can redirect production traffic. Always run `terraform plan` in CI with human approval.
-
-!!! warning "Monitoring without runbooks"
-    Every alert needs a linked runbook. Alerts without runbooks waste on-call time.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "GitOps for all network configuration"
-    Store Terraform, Ansible, and DNS zone files in Git. Emergency console changes must be backported to code within 24 hours.
-
-!!! tip "Synthetic monitoring from multiple regions"
-    Deploy SmokePing slaves or blackbox probes in each region you serve.
-
-!!! tip "Test disaster recovery by rebuilding from code"
-    Quarterly, rebuild staging entirely from Terraform and Ansible.
+- Encode Network Automation and Monitoring changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Prometheus target DOWN | Firewall blocks 9100 | Open scrape path; verify metrics endpoint |
-| SmokePing graphs empty | ICMP blocked outbound | Check container logs; verify FPing works |
-| Ansible UFW module fails | UFW not installed | Install UFW or use nftables on RHEL |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **Network automation** eliminates configuration drift — manage DNS, firewalls, and devices as version-controlled code
-- **Ansible** provides agentless, idempotent configuration for Linux firewalls and cloud APIs
-- **Terraform** provisions cloud DNS records and security groups with plan/review/apply workflows
-- **Prometheus + node_exporter** collect host and network metrics for alerting and dashboards
-- **SmokePing** visualizes latency and packet loss trends — essential for path quality monitoring
-- Module 6 ends here — continue to **Module 7** for production network operations, then [Docker](../docker/index.md) for container networking
+- Network config belongs in Git with review  
+- Monitor user journeys and capacity, not vanity ICMP  
+- Every alert needs a runbook
 
 ## Interview Questions
 
-1. Why is infrastructure as code important for network configuration?
-2. Compare Ansible and Terraform for network automation. When use each?
-3. What metrics does node_exporter provide that are relevant to network health?
-4. How does SmokePing differ from a simple cron ping script?
-5. What is PromQL, and give an example query for network monitoring?
-6. How would you alert on network interface errors in Prometheus?
-7. What are the risks of managing DNS records manually vs as code?
+1. How does **Network Automation and Monitoring** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1 and 3)"
-
-    **Q1 — IaC for networking:** Manual config causes drift and slow recovery. IaC provides version control, peer review, and audit trails.
-
-    **Q3 — node_exporter metrics:** Throughput (`node_network_receive_bytes_total`), interface errors, TCP retransmissions, and connection counts.
-
-8. How would you explain network automation and monitoring to a junior engineer in two minutes?
-9. What production failure mode appears when teams ignore network automation and monitoring?
-10. Which metrics or logs would you check first when network automation and monitoring misbehaves?
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Networking – Category Overview](index.md)
-- [Network Security Hardening](network-security-hardening.md) *(previous in Module 6)*
-- [Network Segmentation and Trust Boundaries](network-segmentation-and-trust-boundaries.md) *(Module 7 — next)*
-- [Linux – Category Overview](../linux/index.md)
-- [Learning Paths – DevOps Engineer](../learning-paths/index.md)
-- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
-- Interview prep: [Networking Interview Prep](../interview/networking.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Production DNS Operations](production-dns-operations.md)
 
 ## References
 
-- [Prometheus Documentation](https://prometheus.io/docs/introduction/overview/)
-- [node_exporter GitHub](https://github.com/prometheus/node_exporter)
-- [SmokePing Documentation](https://oss.oetiker.ch/smokeping/doc/index.html)
-- [Ansible Documentation](https://docs.ansible.com/)
-
-**Expected result:**
-
-Lab containers removed; node_exporter process stopped if you started it only for this lab.
+- [Google SRE — Monitoring distributed systems](https://sre.google/sre-book/monitoring-distributed-systems/)

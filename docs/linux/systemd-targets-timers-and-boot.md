@@ -44,51 +44,44 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for systemd Targets, Timers, and Boot](../assets/images/linux-systemd-targets.svg)
+![Architecture diagram for systemd Targets, Timers, and Boot](../assets/excalidraw/linux-systemd-architecture.svg)
 
 ## Theory
 
-### Targets
+### What it is
 
-**Targets** group units (like runlevels):
+**Targets** are systemd units that group other units into a desired system state — the modern replacement for SysV runlevels. Common examples are `rescue.target`, `multi-user.target`, and `graphical.target`. **Timers** are units that activate services on calendar or monotonic schedules, often replacing cron for software already managed by systemd. Together with boot analysis tools, they explain *when* the system becomes ready and *when* recurring work runs.
+
+### Why it matters
+
+Wrong default target can leave a server at a graphical stack you do not want, or stuck below network-online so applications start before routes exist. Timers give dependency ordering, randomised delay (jitter), and journal integration — advantages over silent cron mail on fleets. Boot regressions after package updates show up in `systemd-analyze critical-chain` and failed dependencies long before users open tickets.
+
+### How it works
+
+`systemctl get-default` shows the target reached at boot; `set-default` changes it. Isolating a target (`systemctl isolate`) switches the running system — disruptive; know the blast radius. During boot, systemd pulls in dependencies of the default target after early `sysinit` and filesystem targets; `network-online.target` is the usual gate for network-dependent services. A `.timer` pairs with a `.service`: calendar expressions such as `OnCalendar=*-*-* 02:30:00` or monotonic `OnBootSec=` fire the service. `systemctl list-timers` shows next/last runs. On cloud images, cloud-init stages may still run after the default target is active on first boot.
+
+### Key concepts and comparisons
 
 | Target | Role |
 |--------|------|
-| `rescue.target` | Single-user recovery |
+| `rescue.target` | Minimal recovery environment |
+| `emergency.target` | Even smaller; often root shell on sulogin |
 | `multi-user.target` | Standard server (no GUI) |
-| `graphical.target` | Desktop |
-| `network-online.target` | Network is configured |
+| `graphical.target` | Desktop + multi-user |
+| `network-online.target` | Network configured (as defined by network manager) |
 
-```bash
-systemctl get-default
-systemctl set-default multi-user.target
-systemctl isolate rescue.target   # disruptive — know before using
-```
+| Scheduler | Strength |
+|-----------|----------|
+| cron | Ubiquitous; simple per-user tables |
+| systemd timer | Dependencies, journal, jitter, unit hardening |
 
-### Timers
+### Common pitfalls
 
-`.timer` units activate `.service` units on calendar or monotonic schedules.
-
-```bash
-systemctl list-timers --all
-systemctl status logrotate.timer
-```
-
-Example calendar: `OnCalendar=*-*-* 02:30:00`. Prefer timers when you need dependency ordering, jitter, or unified journals.
-
-### Boot process (service side)
-
-After the kernel starts PID 1:
-
-1. systemd loads units
-2. `sysinit` / local-fs / network targets activate
-3. Default target pulls in enabled services
-4. `cloud-init` stages may still be running on first boot
-
-```bash
-systemd-analyze critical-chain
-systemctl list-dependencies multi-user.target
-```
+- Isolating rescue/emergency on a production VM without console access planned.
+- Starting apps `After=network.target` when they actually need `network-online.target`.
+- Creating a timer without enabling it (or enabling the service instead of the timer).
+- Calendar timezones surprises — timers use the system timezone unless configured otherwise.
+- Ignoring `systemd-analyze blame` hits that add minutes before SSH is ready.
 
 ## Hands-on Lab
 

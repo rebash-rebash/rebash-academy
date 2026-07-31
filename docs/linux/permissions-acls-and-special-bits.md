@@ -47,59 +47,45 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Permissions, ACLs, and Special Bits](../assets/images/linux-permission-model.svg)
+![Architecture diagram for Permissions, ACLs, and Special Bits](../assets/excalidraw/linux-permission-model.svg)
 
 ## Theory
 
-### chmod, chown, chgrp
+### What it is
 
-POSIX modes: user / group / other × read(4) write(2) execute(1).
+Linux file access starts with **POSIX permissions**: three classes (user/owner, group, other) each with read (4), write (2), and execute (1). **umask** masks default permissions at file creation. **Access Control Lists (ACLs)** add named-user and named-group entries beyond the three classes. **Special bits** — sticky, setuid (SUID), and setgid (SGID) — change deletion rules or the effective identity when a programme runs, and SGID on directories inherits group ownership for new files.
 
-```bash
-chmod 640 file.conf
-chmod u=rwX,g=rX,o= dir/
-chown user:group file
-chgrp group file
-```
+### Why it matters
 
-Capital `X` sets execute only on directories or files that already had execute.
+“Permission denied” is rarely mysterious once you inspect mode, owner, group, ACL, and Mandatory Access Control (MAC). Shared deploy directories need group write without opening “other”; `/tmp` needs the sticky bit so users cannot delete each other’s files. Unexpected SUID binaries are a classic hardening finding. Getting umask wrong in CI creates world-writable secrets or unreadable artefacts for the next job.
 
-### umask
+### How it works
 
-**umask** masks permissions at creation time. Common: `0022` (files `644`, dirs `755`) or `0002` for collaborative groups.
+`chmod` sets mode (octal `640` or symbolic `u=rw,g=r,o=`). Capital `X` in symbolic mode sets execute only on directories or on files that already had execute. `chown`/`chgrp` change ownership (often requiring root). umask `0022` typically yields `644` files and `755` directories; `0027` is tighter for multi-user hosts. `setfacl`/`getfacl` manage ACLs; default ACLs on directories apply to new children. Sticky (`+t`) on a directory restricts unlinking to the file owner (plus root). SUID on an executable runs it as the file owner; SGID runs as the file group — audit these carefully.
 
-```bash
-umask
-umask 0027
-```
+### Key concepts and comparisons
 
-### ACLs
+| Mechanism | Granularity | Typical use |
+|-----------|-------------|-------------|
+| POSIX mode | owner/group/other | Default access model |
+| ACL | named users/groups | Shared dirs without widening other |
+| Sticky | directory delete rules | `/tmp`, shared drop boxes |
+| SGID directory | group inheritance | Team project trees |
+| SUID/SGID file | effective UID/GID at run | Rare; prefer capabilities |
 
-**Access Control Lists (ACLs)** add named-user/named-group entries beyond owner/group/other.
+| umask | Typical file / dir |
+|-------|---------------------|
+| `0022` | `644` / `755` |
+| `0002` | `664` / `775` (group-friendly) |
+| `0027` | `640` / `750` (tighter) |
 
-```bash
-setfacl -m u:appuser:rw file.txt
-getfacl file.txt
-setfacl -x u:appuser file.txt
-```
+### Common pitfalls
 
-Useful for shared deploy directories without widening “other”.
-
-### Sticky bit, SUID, SGID
-
-| Bit | On files | On directories |
-|-----|----------|----------------|
-| **Sticky** (`+t`) | (rare) | Only owner can delete their files (`/tmp`) |
-| **SUID** (`+s` user) | Runs as file owner | — |
-| **SGID** (`+s` group) | Runs as file group | New files inherit directory group |
-
-```bash
-chmod +t shared_dir
-chmod u+s /usr/bin/passwd   # example — do not invent SUID binaries
-chmod g+s team_dir
-```
-
-Audit unexpected SUID/SGID binaries on hardened hosts.
+- Widening `o+rwx` instead of using a group or ACL.
+- Forgetting that execute bit on directories means “traverse” — missing it breaks path lookup.
+- Leaving unexpected SUID/SGID binaries after package experiments.
+- Applying ACLs on filesystems mounted without ACL support.
+- Changing ownership of SSH keys or `.ssh` and locking yourself out (`700`/`600` matter).
 
 ## Hands-on Lab
 

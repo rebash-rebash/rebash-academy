@@ -47,7 +47,7 @@ Scannable commands and patterns for the [AWS track](../aws/index.md). Prefer the
 ## Related
 
 - Track: [AWS](../aws/index.md)
-- Start: [Introduction to AWS](../aws/introduction-to-aws-and-global-infrastructure.md)
+- Start: [AWS Fundamentals and Global Infrastructure](../aws/aws-fundamentals-and-global-infrastructure.md)
 - Lab: [IAM and VPC Triage](../labs/aws-iam-vpc-triage.md)
 - Lab: [SSM and S3](../labs/aws-ssm-s3.md)
 - Quiz: [AWS Fundamentals](../quizzes/aws-fundamentals.md)

@@ -45,45 +45,45 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for SSH Hardening and Firewalls](../assets/images/linux-ssh-hardening.svg)
+![Architecture diagram for SSH Hardening and Firewalls](../assets/excalidraw/linux-ssh-access.svg)
 
 ## Theory
 
-### SSH keys and hardening
+### What it is
 
-```bash
-# sshd_config (edit carefully; keep a session open)
-PasswordAuthentication no
-PermitRootLogin no
-PubkeyAuthentication yes
-AllowUsers deploy
-KbdInteractiveAuthentication no
-```
+**SSH hardening** tightens `sshd` so only intended users authenticate with strong methods — typically public keys, no password authentication, and no direct root login. **Host firewalls** (`firewalld` on RHEL-family systems, **Uncomplicated Firewall (UFW)** on Ubuntu) enforce default-deny inbound policies and allow only required service ports. Together with cloud security groups they form defence in depth for internet-facing or bastion hosts.
 
-```bash
-sudo sshd -t && sudo systemctl reload ssh
-```
+### Why it matters
 
-Use fail2ban or cloud security groups as defence in depth. Rotate keys; prefer hardware-backed or short-lived certs where available.
+SSH is the highest-value remote entry point on most Linux servers. Password guessing, reused credentials, and open management ports drive automated compromise. A hardened `sshd` plus a minimal firewall reduces attack surface even when a security group is mis-edited. Fail2ban or equivalent can slow repeated auth failures, but configuration correctness comes first.
 
-### firewalld (RHEL family)
+### How it works
 
-```bash
-sudo firewall-cmd --state
-sudo firewall-cmd --list-all
-sudo firewall-cmd --permanent --add-service=ssh
-sudo firewall-cmd --reload
-```
+Edit `/etc/ssh/sshd_config` (or drop-in files under `sshd_config.d/` where supported): disable password and keyboard-interactive auth, require pubkey, restrict with `AllowUsers`/`AllowGroups`, and keep `PermitRootLogin no`. Always `sshd -t` then reload while keeping a second session open. For firewalld, permanent rules plus `reload` persist across reboot; for UFW, allow OpenSSH before `enable`. Default deny incoming; egress policy is organisational. Align port allows with cloud security groups — neither layer alone is enough. Rotate keys and prefer short-lived certificates where your platform supports them.
 
-### ufw (Ubuntu)
+### Key concepts and comparisons
 
-```bash
-sudo ufw status verbose
-sudo ufw allow OpenSSH
-sudo ufw enable
-```
+| Control | Example |
+|---------|---------|
+| Auth method | `PubkeyAuthentication yes`, passwords off |
+| Identity scope | `AllowUsers deploy` |
+| Host firewall | firewalld / UFW allow SSH only |
+| Cloud SG / NSG | Restrict source CIDRs to bastion/VPN |
+| Rate limit | fail2ban / equivalent |
 
-Default deny incoming; allow only required service ports. Align host firewalls with cloud security groups — do not rely on one alone.
+| Stack | Tool |
+|-------|------|
+| RHEL family | firewalld (`firewall-cmd`) |
+| Ubuntu | UFW |
+| nftables/iptables | Underlying; prefer distro frontend |
+
+### Common pitfalls
+
+- Reloading sshd after a bad config with only one session — lockout.
+- Opening SSH to `0.0.0.0/0` and calling the host “hardened” because passwords are off.
+- Enabling UFW without allowing SSH first.
+- Relying on fail2ban while leaving password auth enabled.
+- Diverging host firewall and security group rules until nobody knows the true policy.
 
 ## Hands-on Lab
 

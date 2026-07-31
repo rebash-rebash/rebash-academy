@@ -12,6 +12,6 @@ tags:
 
 # Interview Preparation
 
-Browse interview for this course from the [Academy interview catalog](../../interview/).
+Browse interview guides for this course from the [Academy interview catalog](../../interview/).
 
 Individual items appear here as they are published for the **Terraform** track.

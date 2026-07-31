@@ -1,488 +1,251 @@
 ---
-title: GitOps and CI/CD with Kubernetes
-description: Deliver Kubernetes workloads with GitOps — Argo CD and Flux, CI pipelines that build and scan images, and declarative cluster reconciliation.
+title: "GitOps and CI/CD with Kubernetes"
+description: "Implement GitOps with Argo CD or Flux — progressive delivery, rollbacks, and how CI builds images while Git drives cluster state."
 difficulty: advanced
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–70 min"
+technology: kubernetes
 category: kubernetes
+module: "Module 15 · GitOps"
+career_paths:
+  - kubernetes-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - kubernetes
+  - gitops
+  - argo-cd
+prerequisites:
+  - kubernetes/helm-package-management
+  - git/gitops-fundamentals
+next:
+  - kubernetes/platform-engineering-on-kubernetes
+related:
+  - argocd/index
+  - git/index
+labs: []
+projects: []
+interview: interview/kubernetes
+certifications:
+  - CKA
 tags:
   - kubernetes
   - gitops
-  - cicd
   - argocd
-  - flux
-prerequisites:
-  - Helm Package Management
-  - RBAC and Kubernetes Security Basics
-  - ConfigMaps and Secrets
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # GitOps and CI/CD with Kubernetes
 
 ## Overview
 
-Building container images in CI and applying manifests by hand does not scale. **GitOps** treats Git as the single source of truth: every cluster change is a commit, every deployment is a reconciliation loop, and drift is automatically corrected or flagged. Combined with CI pipelines that build, test, scan, and push images, you get repeatable delivery from laptop to production.
+Separate CI (build/push images) from GitOps (desired cluster state in Git) and sketch an Argo CD Application sync/rollback flow.
 
-This tutorial covers the GitOps mental model, Argo CD and Flux patterns, separating CI from CD, and wiring a pipeline that updates a manifest repository consumed by your cluster.
+**GitOps**: Git is source of truth; a reconciler (Argo CD / Flux) syncs the cluster. Progressive delivery (Argo Rollouts / Flagger) gates traffic.
 
-This is **Tutorial 16** in **Module 6: Production** of the REBASH Academy Kubernetes series.
+This is a core tutorial in **Module 15 · GitOps** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Helm Package Management](helm-package-management.md)
-- [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
-- [ConfigMaps and Secrets](configmaps-and-secrets.md)
-- [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
-- [Ingress and External Access](ingress-and-external-access.md)
-- A Kubernetes cluster (kind, minikube, or cloud) with `kubectl` configured
-- Git hosting (GitHub or GitLab) and container registry access
-- Optional: [Git in CI/CD and DevOps](../git/git-in-ci-cd-and-devops.md)
+- [Helm](helm-package-management.md) · [GitOps fundamentals](../git/gitops-fundamentals.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain GitOps principles and how they differ from imperative `kubectl apply`
-- [ ] Design a repository layout separating application code, container builds, and cluster manifests
-- [ ] Configure Argo CD (or Flux) to sync Helm charts or Kustomize overlays from Git
-- [ ] Wire CI to build, scan, and push images — updating manifest tags without direct cluster access
-- [ ] Implement promotion flows across dev, staging, and production environments
-- [ ] Handle rollbacks, drift detection, and secrets in a GitOps workflow
+- [ ] State GitOps principles  
+- [ ] Contrast push CI deploy vs pull GitOps  
+- [ ] Describe Argo CD sync / rollback  
+- [ ] Layout app vs config repos
 
 ## Architecture
 
-![Architecture diagram for GitOps and CI/CD with Kubernetes](../assets/images/gitops-and-cicd-with-kubernetes.svg)
+This topic’s control points and relationships are shown below.
+
+![GitOps workflow](../assets/excalidraw/k8s-gitops-workflow.svg)
 
 ## Theory
 
-### What is GitOps?
+### What it is
 
-**GitOps** is an operational model where:
+**GitOps** keeps the desired cluster state in Git and uses a reconciler (**Argo CD**, **Flux**) to make the cluster match that state. **CI** still builds and tests images; it pushes artefacts to a registry and often opens a PR that bumps an image tag in the config repo. Progressive delivery tools (Argo Rollouts, Flagger) add traffic shifting and automated rollback on bad metrics.
 
-1. **Declarative** — desired state lives in Git (YAML, Helm, Kustomize)
-2. **Versioned** — every change has author, timestamp, and review history
-3. **Automated** — an agent in the cluster pulls and applies changes
-4. **Continuously reconciled** — the agent detects and fixes drift
+### Why it matters
 
-| Imperative deploy | GitOps deploy |
-|-------------------|---------------|
-| `kubectl set image ...` from CI | CI commits new tag to Git; agent syncs |
-| Cluster state unknown vs repo | Agent compares live vs Git |
-| Rollback = re-run old pipeline | Rollback = `git revert` |
-| Credentials in CI for cluster | CI never needs kubeconfig |
+Push-from-CI `kubectl apply` works until credentials sprawl, drifts accumulate, and nobody knows what production *should* look like. GitOps gives auditability (Git history), pull-based credentials on the cluster side, and a single rollback story: revert the commit or hard-sync a previous revision. Platform teams standardise Application/Kustomization objects per environment.
 
-The [OpenGitOps](https://opengitops.dev/) principles formalize this model adopted by platform teams at scale.
+### How it works (mental model)
 
-### CI vs CD separation
+1. Developers merge app code → CI builds/pushes image → updates manifest/Helm values in Git.
+2. Argo CD/Flux detects the commit (webhook or poll) and **syncs** (apply/prune per policy).
+3. Kubernetes controllers reconcile Deployments and friends as usual.
+4. If health checks or metrics fail, roll back Git or disable auto-sync and fix forward.
+5. Drift (manual `kubectl edit`) is either corrected on next sync or blocked by policy.
 
-| Phase | Responsibility | Tools |
-|-------|----------------|-------|
-| **CI** | Compile, test, build image, scan, push | GitHub Actions, GitLab CI, Jenkins |
-| **CD (GitOps)** | Apply manifests, health checks, sync status | Argo CD, Flux, Fleet |
+Desired state lives in Git; the cluster is a projection. Controllers still own runtime reconciliation.
 
-CI outputs **immutable artifacts** (image digests). CD consumes **manifest updates** pointing to those artifacts. Never let CI run `kubectl apply` against production with long-lived cluster-admin credentials.
+### Key concepts / comparisons
 
-### Repository strategies
+| Model | Flow |
+|-------|------|
+| Push CI deploy | Pipeline kubeconfig applies YAML |
+| Pull GitOps | In-cluster agent syncs from Git |
 
-**Monorepo:** application code and `deploy/` manifests in one repository. Simple for small teams.
+| Concern | Practice |
+|---------|----------|
+| App repo | Source code + Dockerfile |
+| Config repo | Manifests / Helm / Kustomize per env |
+| Secrets | Sealed Secrets, SOPS, ESO — not plain Git |
 
-**Polyrepo (recommended at scale):**
+### Common pitfalls
 
-| Repository | Contents |
-|------------|----------|
-| `votestack-app` | Source code, Dockerfiles, unit tests |
-| `votestack-gitops` | Helm charts, environment values, Argo CD Applications |
-| `platform-charts` | Shared library charts (optional) |
-
-Environment promotion updates image tags in `values-staging.yaml` → `values-prod.yaml` via PR, not by retagging images.
-
-### Argo CD vs Flux
-
-| Feature | Argo CD | Flux |
-|---------|---------|------|
-| UI | Rich web UI | Minimal (use Weave GitOps or CLI) |
-| Helm | Native support | HelmRelease CRD |
-| Multi-tenancy | Projects + RBAC | Namespace-scoped |
-| Image automation | Image Updater (optional) | Image Automation controllers |
-| CNCF status | Graduated | Graduated |
-
-Both are production-grade. This tutorial uses **Argo CD** for labs; Flux patterns translate directly.
-
-### Sync policies and health
-
-Argo CD Application spec controls behaviour:
-
-| Policy | Effect |
-|--------|--------|
-| `automated.prune: true` | Delete resources removed from Git |
-| `automated.selfHeal: true` | Revert manual kubectl edits |
-| `syncOptions: CreateNamespace=true` | Create target namespace if missing |
-
-Health assessment uses built-in rules (Deployment available replicas) and custom resources (CRDs).
-
-
-### Git as the control plane
-
-In GitOps, the repository is the desired state and the sync agent is the reconciler. Protect write access to that repository as carefully as cluster-admin: a merged PR can change production. Keep secrets out of Git, pin chart/image versions, and use least-privilege sync accounts per application or namespace so one compromised pipeline cannot sync the entire estate.
-
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
-
-
-### Connecting the lab to production reviews
-
-When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
-
-### Observability while you learn
-
-Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
-
-
-### Checklist before you leave the lab
-
-1. Resources created in this tutorial are deleted or clearly labelled for retention.
-2. No secrets, kubeconfigs, or registry passwords were written into Git.
-3. You can explain the Architecture diagram without reading the caption.
-4. Validation pass criteria in this page are satisfied on your machine.
-5. You noted one question to revisit in the next tutorial of the series.
-
-### Common production failure modes this topic prevents
-
-Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+- Storing plaintext Secrets in Git.
+- Auto-sync with prune in a shared folder that deletes unrelated resources.
+- CI and GitOps both deploying the same app — fight over image tags.
+- Monorepo paths without directory-scoped Applications — one bad sync affects all.
+- Treating sync success as user-success without app health/metrics gates.
 
 ## Hands-on Lab
 
-These labs use a **VoteStack** GitOps layout — the same poll app from the [Docker capstone](../docker/docker-capstone-and-next-steps.md), now deployed via Helm and Argo CD.
-
-### Lab 1 — Scaffold the GitOps repository
-
-Create `votestack-gitops/` with this structure:
-
-```text
-votestack-gitops/
-├── apps/
-│   └── votestack/
-│       └── application.yaml      # Argo CD Application
-├── charts/
-│   └── votestack/
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       ├── values-dev.yaml
-│       └── templates/
-│           ├── deployment-api.yaml
-│           ├── service-api.yaml
-│           └── ingress.yaml
-└── README.md
-```
-
-`charts/votestack/values.yaml` (excerpt):
-
-```yaml
-api:
-  image:
-    repository: ghcr.io/org/votestack-api
-    tag: "abc1234"
-  replicas: 2
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 500m
-      memory: 256Mi
-
-ingress:
-  enabled: true
-  host: votestack.local
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Commit and push to GitHub.
-
-### Lab 2 — Install Argo CD
+Create a workspace for this tutorial.
 
 ```bash
-kubectl create namespace argocd
-kubectl apply -n argocd -f \
-  https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-kubectl -n argocd wait --for=condition=available deployment/argocd-server --timeout=300s
-
-# Port-forward UI (or configure Ingress)
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &
-ARGO_PASS=$(kubectl -n argocd get secret argocd-initial-admin-secret \
-  -o jsonpath='{.data.password}' | base64 -d)
-echo "Login: admin / $ARGO_PASS"
+mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev} && cd ~/rebash-k8s/module-15/{apps/demo,clusters/dev}
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
+**Focus:** hands-on practice for GitOps and CI/CD with Kubernetes
 
+### Step 1 – Skeleton
 
-Change the admin password after first login.
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: GitOps and CI/CD with Kubernetes"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
 
-### Lab 3 — Register the Application
+### Step 2 – Core exercise
 
-`apps/votestack/application.yaml`:
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+```bash
+mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev}
+cd ~/rebash-k8s/module-15
+cat > apps/demo/deployment.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: votestack
-  namespace: argocd
+  name: demo
 spec:
-  project: default
-  source:
-    repoURL: https://github.com/org/votestack-gitops.git
-    targetRevision: main
-    path: charts/votestack
-    helm:
-      valueFiles:
-        - values-dev.yaml
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: votestack
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
+  replicas: 2
+  selector:
+    matchLabels: { app: demo }
+  template:
+    metadata:
+      labels: { app: demo }
+    spec:
+      containers:
+        - name: demo
+          image: nginx:1.26-alpine
+EOF
+cat > clusters/dev/kustomization.yaml << 'EOF'
+resources:
+  - ../../apps/demo/deployment.yaml
+EOF
+# Simulate GitOps apply
+kubectl apply -k clusters/dev
+kubectl get deploy demo
+kubectl delete -k clusters/dev
+# Real: install Argo CD and point Application at this repo path
 ```
 
-Apply from the GitOps repo (bootstrap pattern) or paste in UI:
+### Final step – Cleanup note
 
 ```bash
-kubectl apply -f apps/votestack/application.yaml
-argocd app get votestack
-argocd app sync votestack
+# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Verify pods: `kubectl get pods -n votestack`
-
-### Lab 4 — CI pipeline updates image tag
-
-GitHub Actions workflow in the **application** repo (`.github/workflows/ci.yml`):
-
-```yaml
-name: CI
-on:
-  push:
-    branches: [main]
-jobs:
-  build-api:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build and push
-        env:
-          IMAGE: ghcr.io/${{ '{{' }} github.repository_owner {{ '}}' }}/votestack-api
-        run: |
-          docker build -t "$IMAGE:${{ '{{' }} github.sha {{ '}}' }}" ./api
-          echo "${{ '{{' }} secrets.GITHUB_TOKEN {{ '}}' }}" | docker login ghcr.io -u "${{ '{{' }} github.actor {{ '}}' }}" --password-stdin
-          docker push "$IMAGE:${{ '{{' }} github.sha {{ '}}' }}"
-      - name: Update GitOps manifest
-        env:
-          GITOPS_TOKEN: ${{ '{{' }} secrets.GITOPS_PAT {{ '}}' }}
-        run: |
-          git clone https://x-access-token:${GITOPS_TOKEN}@github.com/org/votestack-gitops.git
-          cd votestack-gitops
-          yq -i '.api.image.tag = "${{ '{{' }} github.sha {{ '}}' }}"' charts/votestack/values-dev.yaml
-          git config user.email "ci@org.com"
-          git config user.name "CI Bot"
-          git commit -am "deploy(api): ${{ '{{' }} github.sha {{ '}}' }}"
-          git push
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Argo CD detects the commit within ~3 minutes and syncs automatically.
-
-### Lab 5 — Promotion to staging
-
-Never copy tags manually in prod. Open a PR in `votestack-gitops`:
-
-```bash
-# After dev soak, promote tag
-cp charts/votestack/values-dev.yaml charts/votestack/values-staging.yaml
-# Edit staging-specific overrides (replicas, ingress host)
-git checkout -b promote/abc1234-to-staging
-git commit -am "promote: api abc1234 to staging"
-git push -u origin HEAD
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Merge after review. Staging Application uses `values-staging.yaml`.
-
-### Lab 6 — Rollback via Git
-
-Bad deployment? Revert the manifest commit:
-
-```bash
-cd votestack-gitops
-git revert HEAD
-git push
-# Argo CD syncs previous tag automatically
-argocd app history votestack
-argocd app rollback votestack <revision>
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Repo layout | GitOps repository structure exists as documented |
-| Sync tool | Argo CD/Flux (or lab substitute) installed or reachable |
-| Sync | Application syncs desired manifests to the cluster |
-| Secrets | No plaintext production secrets committed |
+- [ ] Lab commands run under `~/rebash-k8s/module-15/{apps/demo,clusters/dev}/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-```bash
-# Argo CD CLI essentials
-argocd login localhost:8080 --username admin --password "$ARGO_PASS" --insecure
-argocd app list
-argocd app diff votestack
-argocd app sync votestack --prune
-kubectl -n argocd get applications
+Production practice for **GitOps and CI/CD with Kubernetes** always combines:
 
-# Flux equivalent (if using Flux)
-flux install
-flux create source git votestack --url=https://github.com/org/votestack-gitops --branch=main
-flux create helmrelease votestack --source=GitRepository/votestack --chart=./charts/votestack
-flux get helmreleases -A
-```
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-| Command | Description |
-|---------|-------------|
-| `argocd app diff` | Show live vs Git drift |
-| `argocd app sync` | Trigger manual reconciliation |
-| `kubectl apply -k` | Kustomize apply (alternative to Helm) |
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Protect the GitOps repo — write access equals cluster change control
-- Use least-privilege sync service accounts per Application/namespace
-- Prefer SSO + RBAC on Argo CD/Flux UIs; treat them as production control planes
-- Sign commits/images and verify in the sync pipeline
-- Keep secrets out of Git even in GitOps — use SOPS, sealed-secrets, or external operators
-- Separate app-of-apps / root applications so a single compromised repo cannot sync everything
-
+- Treat credentials and tokens for kubernetes as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "CI with cluster-admin kubeconfig"
-    Pipelines that `kubectl apply` directly bypass Git audit trails and store powerful credentials in CI. Use GitOps agents with scoped RBAC instead.
+!!! warning "Storing plaintext Secrets in Git."
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Mutable `:latest` tags in Git"
-    Always pin image tags or digests in values files. `:latest` makes rollbacks and forensics impossible.
+!!! warning "Auto-sync with prune in a shared folder that deletes unrelated resources."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Automated prune on first sync"
-    Test `prune: true` in dev first — a wrong manifest path can delete production resources.
-
-!!! warning "Secrets committed to Git"
-    Never commit plaintext Secrets. Use Sealed Secrets, External Secrets Operator, or SOPS-encrypted files.
-
-!!! warning "Skipping manifest review in promotion PRs"
-    Treat GitOps repo changes with the same rigor as application code — include diff of values and resource impact.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "One Application per environment"
-    Separate Argo CD Applications for dev/staging/prod with different value files and sync policies — prod may require manual sync approval.
-
-!!! tip "Sign and scan in CI, verify in cluster"
-    Trivy/Grype in CI; admission policies (OPA Gatekeeper, Kyverno) in cluster reject unsigned or critical CVE images.
-
-!!! tip "Use ApplicationSets for multi-cluster"
-    ApplicationSet generators deploy the same chart to many clusters with cluster-specific values.
-
-!!! tip "Observability on sync status"
-    Alert when Argo CD app is `Degraded` or `OutOfSync` beyond threshold — sync failures are production incidents.
-
-!!! tip "Document bootstrap procedure"
-    First cluster install requires applying the root Application manually — document this chicken-and-egg step in runbooks.
+- Encode GitOps and CI/CD with Kubernetes changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| App stuck OutOfSync | Manual kubectl edit | Enable selfHeal or revert manual change |
-| ImagePullBackOff after sync | Tag not pushed or wrong registry | Verify CI push; check imagePullSecrets |
-| Helm template error | Invalid values | `helm template` locally before commit |
-| Permission denied on sync | Argo CD RBAC | Grant project role for namespace |
-| Slow sync loop | Large chart / many resources | Split apps; use sync waves |
-| CI cannot push to GitOps repo | Token scope | PAT needs `contents: write` on gitops repo |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **GitOps** makes Git the source of truth — cluster agents reconcile desired state continuously
-- **Separate CI from CD** — CI builds and pushes images; CD updates manifests; never apply prod from CI with admin creds
-- **Argo CD and Flux** are CNCF-graduated GitOps controllers supporting Helm, Kustomize, and raw YAML
-- **Promotion** flows through PRs updating environment-specific values files
-- **Rollbacks** are Git reverts or Argo CD history rollbacks — fast and auditable
-- Next: [Production Patterns — HPA, PDB, and Affinity](production-patterns-hpa-pdb-and-affinity.md)
+**GitOps and CI/CD with Kubernetes** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What are the four core principles of GitOps?
-2. Why should CI not run `kubectl apply` against production?
-3. How does Argo CD detect and handle configuration drift?
-4. Explain the difference between promoting an image tag and rebuilding for each environment.
-5. What is the bootstrap problem in GitOps, and how do teams solve it?
-6. Compare monorepo vs polyrepo strategies for GitOps.
-7. How do you manage secrets in a GitOps workflow?
-8. What does `automated.prune: true` do, and what risk does it carry?
-9. How would you roll back a bad deployment using GitOps?
-10. When would you choose Flux over Argo CD?
+1. How does **GitOps and CI/CD with Kubernetes** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 3, and 9)"
-
-    **Q1 — GitOps principles:** (1) Declarative — desired state described in Git; (2) Versioned and immutable — every change is a commit with audit history; (3) Pulled automatically — agents in the cluster pull changes; (4) Continuously reconciled — agents compare live vs desired and correct drift.
-
-    **Q3 — Drift detection:** Argo CD continuously compares live cluster resources with the rendered manifest from Git. Status shows `Synced` or `OutOfSync`. With `selfHeal: true`, it re-applies Git state when someone kubectl-edits resources. `argocd app diff` shows the exact field-level differences.
-
-    **Q9 — Rollback:** Option A: `git revert` the commit that bumped the bad image tag — Argo CD syncs the previous tag. Option B: `argocd app rollback votestack <revision>` to a known-good deployment history entry. Option A is preferred for audit trail in Git.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Helm Package Management](helm-package-management.md) *(previous)*
-- [Production Patterns — HPA, PDB, and Affinity](production-patterns-hpa-pdb-and-affinity.md) *(next)*
-- [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
-- [ConfigMaps and Secrets](configmaps-and-secrets.md)
-- [Git in CI/CD and DevOps](../git/git-in-ci-cd-and-devops.md)
-- [Docker in CI/CD Pipelines](../docker/docker-in-ci-cd-pipelines.md)
-- [Kubernetes – Category Overview](index.md)
-- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
-- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Platform Engineering on Kubernetes](platform-engineering-on-kubernetes.md)
 
 ## References
 
-- [OpenGitOps Principles](https://opengitops.dev/)
-- [Argo CD – Getting Started](https://argo-cd.readthedocs.io/en/stable/getting_started/)
-- [Flux – Documentation](https://fluxcd.io/flux/)
-- [CNCF GitOps Working Group](https://github.com/cncf/tag-app-delivery/tree/main/gitops)
-- [Google SRE – Release Engineering](https://sre.google/sre-book/release-engineering/)
-- [REBASH Academy – GitLab CI/CD Overview](../gitlab/index.md)
+- [Argo CD](https://argo-cd.readthedocs.io/) · [OpenGitOps](https://opengitops.dev/)

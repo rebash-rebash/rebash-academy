@@ -1,0 +1,295 @@
+---
+title: "Multi-Cloud Deployments with GitHub Actions"
+description: "Deploy to AWS, Azure, and Google Cloud from GitHub Actions using OIDC — IAM/ECS/EKS, service principals/AKS, and Workload Identity/GKE/Cloud Run."
+difficulty: advanced
+estimated_time: "55–70 min"
+technology: github-actions
+category: github-actions
+module: "Module 10 · Cloud Deployments"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
+skills:
+  - github-actions
+  - aws
+  - azure
+  - gcp
+  - oidc
+prerequisites:
+  - github-actions/terraform-pipelines-with-github-actions
+next:
+  - github-actions/security-scanning-and-supply-chain
+related:
+  - github-actions/secrets-variables-and-oidc
+  - aws/aws-fundamentals-and-global-infrastructure
+  - terraform/multi-cloud-terraform
+labs: []
+projects: []
+interview: interview/github-actions
+certifications:
+  - GitHub Actions
+tags:
+  - github-actions
+  - aws
+  - azure
+  - gcp
+  - oidc
+  - multi-cloud
+author: Shaik Basha
+last_updated: "2026-07-31"
+comments: false
+---
+
+
+# Multi-Cloud Deployments with GitHub Actions
+
+## Overview
+
+Sketch OpenID Connect (OIDC)–oriented GitHub Actions patterns for Amazon Web Services (AWS) Identity and Access Management (IAM) / Elastic Container Service (ECS) / Elastic Kubernetes Service (EKS), Azure service principals / Azure Kubernetes Service (AKS), and Google Cloud Workload Identity Federation / Google Kubernetes Engine (GKE) / Cloud Run — without embedding long-lived cloud keys in the repository.
+
+Modern deploy jobs **federate identity**: the job requests an OIDC token (`id-token: write`); the cloud exchanges it for a short-lived role. That role then updates ECS/EKS, AKS, GKE, or Cloud Run. Patterns differ by cloud, but the Actions shape is the same — authenticate, deploy an immutable artefact from Module 7, protect production with environments.
+
+This is a core tutorial in **Module 10 · Cloud Deployments** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+
+## Prerequisites
+
+- [Terraform Pipelines with GitHub Actions](terraform-pipelines-with-github-actions.md)
+
+## Learning Objectives
+
+By the end of this tutorial, you will be able to:
+
+- [ ] Explain OIDC federation vs static access keys  
+- [ ] Map AWS IAM roles to ECS/EKS deploy jobs  
+- [ ] Sketch Azure login (federated credentials) + AKS  
+- [ ] Sketch GCP Workload Identity + GKE / Cloud Run  
+- [ ] Scope identities per environment and branch
+
+## Architecture
+
+This topic’s control points and relationships are shown below.
+
+![Multi-cloud with OIDC](../assets/excalidraw/gha-multi-cloud.svg)
+
+## Theory
+
+### What it is
+
+**Multi-cloud deployment from GitHub Actions** means workflows call cloud APIs with least-privilege, short-lived credentials:
+
+| Cloud | Identity pattern | Common targets |
+|-------|------------------|----------------|
+| AWS | IAM OIDC provider → `aws-actions/configure-aws-credentials` | ECS `update-service`, EKS kubeconfig |
+| Azure | App registration federated credential → `azure/login` | AKS `kubelogin` / kubectl |
+| Google Cloud | Workload Identity Federation → `google-github-actions/auth` | GKE, Cloud Run deploy |
+
+GitHub’s OIDC issuer (`https://token.actions.githubusercontent.com`) is trusted by a cloud identity provider you configure once. Trust conditions should include repository, ref, and optionally environment claims so a compromised pull-request job cannot assume production roles.
+
+### Why it matters
+
+Static keys in repository secrets leak, rarely rotate, and are often over-privileged. OIDC binds trust to `sub` / `ref` / environment so fork or feature-branch pipelines cannot deploy production. Multi-cloud teams need one mental model — federate, deploy SHA artefact, gate production — even when CLIs differ. Terraform (Module 9) often creates the OIDC providers and roles; deploy workflows only consume them.
+
+### How it works
+
+1. Configure cloud trust for the GitHub OIDC issuer and subject conditions (`repo:ORG/REPO:ref:refs/heads/main`, or environment subjects).  
+2. Job sets `permissions: id-token: write` and runs the cloud’s auth action.  
+3. Deploy uses that session: update an ECS task definition, `helm upgrade` / `kubectl` on EKS/AKS/GKE, or `gcloud run deploy` with a digest.  
+4. Staging roles allow default-branch (or selected) pipelines; production roles require protected environments and required reviewers.  
+5. Never print tokens. Prefer environment variables for account IDs and cluster names; secrets only when federation is not available.
+
+Reuse Module 7 digests across clouds for the same commit — do not rebuild a different image “for Azure” versus “for AWS”.
+
+### Key concepts and comparisons
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| OIDC / federation | Short-lived, auditable, branch-aware | Initial IdP setup |
+| Static keys / PATs | Simple demos | Rotation, leak blast radius |
+| Per-cloud jobs | Clear ownership | Duplicate structure — prefer reusable workflows (Module 14) |
+
+### Common pitfalls
+
+- Trusting `*` subjects on the OIDC provider (any repo can assume the role).  
+- Giving one role rights to all accounts and clusters.  
+- Running production deploy jobs without environment protection.  
+- Mixing long-lived keys “just for break-glass” without a separate process.  
+- Redeploying different image digests per cloud for the same commit.
+
+## Hands-on Lab
+
+Create a workspace for this tutorial.
+
+```bash
+mkdir -p ~/rebash-github-actions/module-10/.github/workflows && cd ~/rebash-github-actions/module-10/.github/workflows
+```
+
+**Focus:** hands-on practice for Multi-Cloud Deployments with GitHub Actions
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Multi-Cloud Deployments with GitHub Actions"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+Cloud accounts are not required — capture the federation pattern and role sketch locally.
+
+```bash
+mkdir -p ~/rebash-github-actions/module-10/.github/workflows
+cd ~/rebash-github-actions/module-10
+```
+
+{% raw %}
+```yaml
+# .github/workflows/multi-cloud.yml — pattern sketch (adapt role ARNs / IDs)
+name: Multi-cloud deploy
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  aws-ecs:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: echo "Update ECS service to ghcr.io/${{ github.repository }}:${{ github.sha }}"
+        # aws ecs update-service … --force-new-deployment
+
+  azure-aks:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: echo "az aks get-credentials + kubectl set image …:${{ github.sha }}"
+
+  gcp-run:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - run: echo "gcloud run deploy … --image=…@sha256:DIGEST"
+```
+{% endraw %}
+
+```bash
+cat > cloud-identity-notes.md << 'EOF'
+AWS: IAM OIDC provider → role trust on repo/ref/env → ECS/EKS
+Azure: App registration federated credential → azure/login → AKS
+GCP: Workload Identity Federation → GKE / Cloud Run
+All: protect production environments; never commit cloud keys
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/multi-cloud.yml'))"
+```
+
+### Final step – Cleanup note
+
+```bash
+# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
+./lab.sh || true
+```
+
+## Validation
+
+- [ ] Lab commands run under `~/rebash-github-actions/module-10/.github/workflows/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
+
+## Code Walkthrough
+
+Production practice for **Multi-Cloud Deployments with GitHub Actions** always combines:
+
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+
+## Security Considerations
+
+- Treat credentials and tokens for github-actions as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
+
+## Common Mistakes
+
+!!! warning "Trusting `*` subjects on the OIDC provider (any repo can assume the role).  "
+    Validate assumptions against the Theory section and official docs before changing production.
+
+!!! warning "Giving one role rights to all accounts and clusters.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+
+## Best Practices
+
+- Encode Multi-Cloud Deployments with GitHub Actions changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+
+## Summary
+
+**Multi-Cloud Deployments with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+
+## Interview Questions
+
+1. How does **Multi-Cloud Deployments with GitHub Actions** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
+
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+
+## Related Tutorials
+
+- [Course overview](index.md)
+- - [Security Scanning and Supply Chain](security-scanning-and-supply-chain.md)
+
+## References
+
+- [OIDC with cloud providers](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) · [AWS configure-aws-credentials](https://github.com/aws-actions/configure-aws-credentials) · [Azure login](https://github.com/Azure/login) · [google-github-actions/auth](https://github.com/google-github-actions/auth)

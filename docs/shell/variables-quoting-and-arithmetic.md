@@ -46,52 +46,59 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Variables, Quoting, and Arithmetic](../assets/images/shell-variables-quoting.svg)
+![Architecture diagram for Variables, Quoting, and Arithmetic](../assets/excalidraw/shell-variables-quoting.svg)
 
 ## Theory
 
-### Variables
+### What it is
 
-Assign without spaces: `name=value`. Expand with `"$name"` or `"${name}"`. Prefer lowercase for script-local names; uppercase for exported environment contracts.
+Bash **variables** hold strings (and, with care, integers) that you assign once and expand later. Related ideas include read-only **constants**, **environment variables** exported to child processes, **command substitution** that captures another command’s stdout, integer **arithmetic**, and **quoting** rules that decide whether an expansion stays one word or is split and globbed. Mastering this layer prevents the classic ops disaster: a filename with a space that quietly becomes three arguments and deletes the wrong path.
+
+### Why it matters
+
+Unquoted expansions break cron jobs, backup scripts, and Continuous Integration (CI) steps more often than exotic Bash features do. Schedulers pass paths, hostnames, and secrets through variables; one missing quote turns a safe `rm` into a catastrophe or a silent no-op. Clear naming and defaults also make scripts configurable without editing source — essential when the same job runs in lab, staging, and production with different values.
+
+### How it works
+
+Assign without spaces around `=`: `name=value`. Expand with `"$name"` or `"${name}"`. Prefer lowercase for script-local names and uppercase for exported environment contracts that other processes must see.
 
 ```bash
 host=$(hostname -s)
 echo "host=${host}"
 ```
 
-### Constants
+Bash has no true constants; use `readonly MAX_RETRIES=3` or `declare -r MAX_RETRIES=3` after validation. Publish to children with `export VAR=value`. For ops inputs, prefer defaults and required checks: `"${VAR:-default}"` and `"${VAR:?must set VAR}"`.
 
-Bash has no true constants. Convention: `readonly MAX_RETRIES=3` or `declare -r MAX_RETRIES=3`. Treat config knobs as read-only after validation.
-
-### Environment Variables
-
-`export VAR=value` publishes to children. Read with `"${VAR}"`. Prefer `"${VAR:-default}"` and `"${VAR:?must set VAR}"` for required ops inputs.
-
-### Command Substitution
-
-`$(command)` captures stdout. Prefer modern `$(...)` over backticks. Quote the result when it is one path or one token: `"$(date -Iseconds)"`.
-
-### Arithmetic
-
-Integer maths with `$((expression))` or `((expression))`:
+Command substitution uses `$(command)` (prefer this over backticks). Quote when the result is one path or token: `"$(date -Iseconds)"`. Integer maths uses arithmetic expansion or the `(( ))` compound command:
 
 ```bash
+n=0
 n=$((n + 1))
 (( n > 0 )) && echo positive
 ```
 
-For floats, call `bc` or move to Python.
+For floating-point work, call `bc` or move the logic to Python.
 
-### Quoting Rules
+### Key concepts
 
 | Form | Effect |
 |------|--------|
 | `"$var"` | Expand; keep as one word |
-| `'$var'` | Literal characters |
+| `'$var'` | Literal characters — no expansion |
 | `$var` | Word-split and glob — usually wrong in scripts |
 | `"$@"` | Safe forwarding of all positional parameters |
+| `"${VAR:-default}"` | Use default when unset or empty |
+| `"${VAR:?msg}"` | Fail with message when unset or empty |
 
 Always quote paths and user input. Prefer `"$1"` over `$1`.
+
+### Common pitfalls
+
+- Writing `name = value` (spaces) and getting a “command not found” error
+- Leaving `$path` unquoted so spaces and globs rewrite the command line
+- Using backticks instead of `$(...)` in nested substitutions
+- Treating Bash arithmetic as floating-point maths
+- Exporting secrets into the environment and then logging `printenv` in CI
 
 ## Hands-on Lab
 

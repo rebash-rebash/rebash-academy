@@ -45,45 +45,43 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Scheduling with cron, at, and Timers](../assets/images/linux-scheduling.svg)
+![Architecture diagram for Scheduling with cron, at, and Timers](../assets/excalidraw/linux-scheduling.svg)
 
 ## Theory
 
-### cron and crontab
+### What it is
 
-```bash
-crontab -l
-crontab -e
-```
+Linux schedules deferred and recurring work with **cron** (recurring calendar tables), **at** (one-shot jobs), and **systemd timers** (unit-based schedules). Cron entries set minute, hour, day of month, month, and day of week plus a command. Timers activate associated `.service` units using calendar or monotonic expressions and integrate with the journal and dependency graph.
 
-Format: `minute hour dom month dow command`
+### Why it matters
 
-```cron
-*/15 * * * * /usr/local/bin/healthcheck.sh >>/var/log/healthcheck.log 2>&1
-```
+Backups, certificate renewals, report scrapes, and housekeeping scripts fail silently when the scheduler environment differs from your interactive shell — especially `PATH` and working directory. Choosing timers for systemd-managed software improves observability; keeping cron for simple per-user tasks remains valid. Missed jobs are a common root cause of “stale data” incidents.
 
-System crontabs: `/etc/crontab`, `/etc/cron.d/`. Set `PATH` or use absolute paths — cron’s environment is minimal.
+### How it works
 
-### at
+`crontab -e` edits the current user’s table; system-wide jobs live in `/etc/crontab` and `/etc/cron.d/`. Always use absolute paths or set `PATH` in the crontab. Redirect stdout/stderr to a log file — cron mail is easy to miss. `at` queues a command for a future time (`atq`/`atrm` manage the queue). For timers, create a service that runs the work and a timer that triggers it; `systemctl enable --now foo.timer` starts the schedule; `systemctl list-timers` shows next/last run. Prefer timers when you need randomised delay, network-online ordering, or unified failure logs via `journalctl -u`.
 
-One-shot jobs:
+### Key concepts and comparisons
 
-```bash
-echo 'echo hello' | at now + 2 minutes
-atq
-atrm JOB
-```
+| Mechanism | Best for |
+|-----------|----------|
+| User crontab | Personal or per-account recurring jobs |
+| `/etc/cron.d/` | Package- and system-shipped jobs |
+| `at` | One-off deferred commands |
+| systemd timer | Services needing deps, journal, jitter |
 
-### systemd timers
+| Field (cron) | Meaning |
+|--------------|---------|
+| minute hour dom month dow | When to run |
+| command | What to run (absolute path preferred) |
 
-Prefer for services you already manage with systemd:
+### Common pitfalls
 
-```bash
-systemctl list-timers
-# pair foo.service + foo.timer; systemctl enable --now foo.timer
-```
-
-Timers integrate with `journalctl -u foo.service` and dependency ordering — better observability than silent cron mail.
+- Relying on interactive `PATH` — cron’s environment is minimal.
+- Enabling the `.service` instead of the `.timer` (or vice versa).
+- Omitting log redirection and assuming “no mail” means success.
+- Running jobs as root unnecessarily; prefer a dedicated service user.
+- Overlapping long jobs every minute without locking (`flock`).
 
 ## Hands-on Lab
 

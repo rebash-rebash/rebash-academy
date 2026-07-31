@@ -166,7 +166,7 @@ Use [Interview Guides](../interview/index.md) after you finish a track’s labs 
 
 ## Recommended first path (DevOps)
 
-If your goal is a DevOps role, complete these ready tracks in order. Each checkpoint opens that course — same sequence as the [DevOps Engineer career path](../career-paths/index.md#devops-engineer).
+If your goal is a DevOps role, complete these ready tracks in order. Each checkpoint opens that course — same sequence as the [DevOps Engineer career path](../career-paths/devops-engineer/index.md).
 
 {{ roadmap(["linux", "shell", "python", "networking", "aws", "git", "gitlab", "docker", "kubernetes", "terraform"], prefix="../") }}
 

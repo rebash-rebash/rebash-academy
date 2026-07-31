@@ -1,440 +1,365 @@
 ---
-title: Routing Fundamentals
-description: Master routing tables, default gateways, static and dynamic routes, longest prefix match, Linux ip route commands, and cloud route tables.
+title: "Routing Fundamentals"
+description: "Master routing tables, default gateways, longest prefix match, static routes, IP forwarding, and how Linux and cloud route tables forward packets between subnets."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–65 min"
+technology: networking
 category: networking
+module: "Module 6 · Routing"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - linux-administrator
+  - site-reliability-engineer
+  - kubernetes-engineer
+skills:
+  - routing
+  - ip-route
+  - default-gateway
+  - longest-prefix-match
+prerequisites:
+  - networking/subnetting-and-vlsm
+next:
+  - networking/ethernet-switching-and-vlans
+related:
+  - networking/cloud-networking-vpc-and-subnets
+  - networking/nat-and-port-forwarding
+  - linux/linux-networking-tools
+labs: []
+projects: []
+interview: interview/networking
+certifications:
+  - CompTIA Network+
+  - AWS SAA
+  - Azure AZ-104
 tags:
   - networking
   - routing
   - ip-route
   - gateway
-  - bgp
   - static-routes
-prerequisites:
-  - Complete Ethernet, Switching, and VLANs or understand Layer 2 vs Layer 3
-  - IP Addressing and Subnetting — CIDR, subnets, and broadcast domains
-  - Linux CLI familiarity with ip and ping
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Routing Fundamentals
 
 ## Overview
 
-**Routing** is how packets find their way across IP networks. When your application server sends traffic to a database in another subnet — or to a SaaS API on the public internet — the kernel consults a **routing table** to decide which **next hop** receives each packet. Misconfigured routes cause "works locally but not remotely," asymmetric routing, and black holes that look like firewall failures.
+Read and explain a Linux routing table, prove how longest prefix match works, add/remove a lab static route safely, and map the same ideas to cloud VPC route tables.
 
-This tutorial is **Tutorial 5** in **Module 2: Data Link & Routing** of the REBASH Academy Networking series. You will learn how routers make forwarding decisions, configure static routes on Linux, interpret `ip route` output, and relate on-premises concepts to **cloud route tables** and VPC gateways. Complete [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) first.
+**Routing** is how packets leave a subnet. When an app talks to a database in another CIDR — or to a public API — the kernel chooses a **next hop** from the **routing table**. Bad routes look like firewall bugs: asymmetric paths, black holes, and “works on the host, fails from elsewhere.”
+
+This is **Module 6 — Routing**. Complete [Subnetting and VLSM](subnetting-and-vlsm.md) first.
+
+This is a core tutorial in **Module 6 · Routing** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [IP Addressing and Subnetting](ip-addressing-and-subnetting.md) — CIDR notation, subnet boundaries, and default gateway role
-- [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) — ARP, MAC addresses, and same-subnet vs remote delivery
-- Linux VM or cloud instance with at least one network interface
-- Optional: `sudo` for adding/removing routes and enabling IP forwarding
+### Required
+
+- [Subnetting and VLSM](subnetting-and-vlsm.md)
+- [IP Addressing](ip-addressing.md)
+- Linux lab host with a default route
+
+### Recommended
+
+- `sudo` for temporary static routes and IP forwarding experiments
+- `~/rebash-networking/module-02/` from Tutorial 4
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain how a host decides whether traffic is local or must go through a gateway
-- [ ] Read and interpret Linux routing tables with `ip route`
-- [ ] Describe longest prefix match and why more specific routes win
-- [ ] Configure static routes and a default gateway on Linux
-- [ ] Distinguish static routing from dynamic routing (OSPF, BGP overview)
-- [ ] Enable and verify IP forwarding for Linux router lab scenarios
-- [ ] Map routing concepts to AWS/GCP route tables and Internet Gateways
-- [ ] Diagnose common routing failures using `ip route get` and traceroute
+- [ ] Explain on-link vs gateway delivery  
+- [ ] Read `ip route` and `ip route get` output  
+- [ ] Apply longest prefix match to competing routes  
+- [ ] Add and delete a static route in a lab  
+- [ ] Describe static vs dynamic routing at a practical level  
+- [ ] Enable/verify IP forwarding on Linux for lab router scenarios  
+- [ ] Map routes to AWS/GCP/Azure route table concepts  
+- [ ] Diagnose common routing failures systematically
 
 ## Architecture
 
-The diagram below summarises the core relationships for **Routing Fundamentals**.
+Packets move subnet → router → subnet (or Internet). More specific prefixes win.
 
-![Architecture diagram for Routing Fundamentals](../assets/images/routing-fundamentals.svg)
-
+![Routing fundamentals](../assets/excalidraw/routing-fundamentals.svg)
 
 ## Theory
 
-### Local Delivery vs Routed Delivery
+### On-link vs routed delivery
 
-When a host sends a packet, the kernel compares the destination IP to its own subnet mask:
+| Destination | Kernel action |
+|-------------|---------------|
+| Same subnet as an interface | Resolve destination MAC; deliver on-link |
+| Different subnet | Resolve **gateway** MAC; send to next hop |
 
-| Condition | Action |
-|-----------|--------|
-| Destination on **same subnet** | ARP for destination MAC; deliver directly (Layer 2) |
-| Destination on **different subnet** | ARP for **default gateway** MAC; router forwards (Layer 3) |
+No default route ⇒ most off-subnet traffic fails with `Network is unreachable`.
 
-The **default gateway** (default route) is the router for "everything else." Without it, off-subnet traffic has nowhere to go.
+### Routing table entries
 
-### Routing Tables and Longest Prefix Match
+Typical fields you will see:
 
-A **routing table** is an ordered list of `(destination prefix, next hop, interface, metric)` entries. When multiple routes match a destination, the kernel selects the **longest prefix match** — the most specific route wins.
+| Field | Meaning |
+|-------|---------|
+| Destination prefix | Match (for example `10.0.2.0/24`, `default`) |
+| `via` | Next-hop IP |
+| `dev` | Egress interface |
+| `proto` | Origin (`kernel`, `static`, `dhcp`, …) |
+| `metric` | Preference when prefixes tie (lower usually wins) |
+| `src` | Preferred source address (when shown) |
 
-| Destination | Next Hop | Interface | Notes |
-|-------------|----------|-----------|-------|
-| 10.0.2.0/24 | 10.0.1.1 | eth0 | Specific subnet route |
-| 10.0.0.0/8 | 10.0.1.1 | eth0 | Broader — loses to /24 for 10.0.2.x |
-| 0.0.0.0/0 | 10.0.1.1 | eth0 | Default route — matches everything else |
+### Longest prefix match
 
-Example: packet to `10.0.2.50` matches both `10.0.2.0/24` and `10.0.0.0/8`, but `/24` (24-bit prefix) is longer and wins.
+When multiple routes match, the **most specific** (longest prefix) wins.
 
-**Metric** (or priority) breaks ties when two routes have equal prefix length — lower metric preferred.
+| Destination | Next hop | Notes |
+|-------------|----------|-------|
+| `10.0.2.0/24` | `10.0.1.1` | Wins for `10.0.2.10` |
+| `10.0.0.0/8` | `10.0.1.1` | Broader — loses to `/24` |
+| `0.0.0.0/0` | `10.0.1.1` | Default — last resort |
 
-### Static vs Dynamic Routing
+This is why a dangling specific route can black-hole traffic even when the default route looks fine.
 
-**Static routes** are manually configured by administrators. Simple, predictable, no protocol overhead — ideal for small networks, point-to-point links, and cloud route tables with fixed paths.
+### Default gateway
 
-**Dynamic routing** uses protocols so routers exchange reachability information automatically:
+`default` / `0.0.0.0/0` is the route for “everywhere else.” Cloud equivalents: default route to an **Internet Gateway**, **NAT Gateway**, or virtual appliance ENI.
 
-| Protocol | Scope | Use Case |
-|----------|-------|----------|
-| **OSPF** | Interior (within org) | Enterprise LAN/WAN, data center |
-| **BGP** | Exterior (between ASes) | Internet routing, multi-homed datacenters, cloud hybrid |
-| **RIP** | Interior (legacy) | Small networks — largely obsolete |
+### Static vs dynamic routing
 
-**BGP (Border Gateway Protocol)** is how the public internet works. Autonomous Systems (AS) — ISPs, cloud providers, large enterprises — advertise IP prefixes to neighbors. Path selection considers AS path length, policies, and attributes — not just hop count.
+| Style | How routes appear | Where you see it |
+|-------|-------------------|------------------|
+| **Static** | Admin/IaC installs prefixes | Host `ip route add`, VPC static routes |
+| **Dynamic** | Protocols exchange reachability | BGP at the edge, OSPF in DCs |
 
-In cloud terms, you rarely run BGP yourself unless connecting on-premises via **Direct Connect** or **Cloud VPN** with dynamic routing. You **do** interact with route tables that behave like static routing.
+DevOps daily work is mostly **static** (VPC tables, host routes, CNI). You still need the vocabulary of BGP/OSPF for hybrid and interviews.
 
-### Linux Routing with ip route
+### IP forwarding
 
-Modern Linux uses the `ip` command from **iproute2**. Legacy `route` and `netstat -r` still appear in old runbooks but should not be used for new work.
+A Linux host becomes a router when:
 
-Key concepts in `ip route show`:
+1. IP forwarding is enabled (`net.ipv4.ip_forward=1`)  
+2. Interfaces exist in multiple networks  
+3. Other hosts use it as a gateway  
+4. Firewall policy allows transit  
 
-- **`default via X`** — default gateway at IP X
-- **`proto dhcp`** — route installed by DHCP client
-- **`src Y`** — preferred source IP for this route
-- **`dev eth0`** — egress interface
-- **`scope link`** — directly connected network (on-link)
+Cloud routers/gateways hide this, but the packet logic is the same.
 
-The **`ip route get`** command simulates forwarding decisions — invaluable for debugging:
+### Cloud mapping
 
-```bash
-ip route get 8.8.8.8
-```
-
-Shows which interface, source IP, and next hop the kernel would use for that destination.
-
-### Cloud Route Tables
-
-AWS VPC **route tables** associate subnets with routes:
-
-| Destination | Target | Meaning |
-|-------------|--------|---------|
-| 10.0.0.0/16 | local | Traffic within VPC stays internal |
-| 0.0.0.0/0 | igw-xxx | Default route to Internet Gateway |
-| 10.1.0.0/16 | pcx-xxx | Peered VPC traffic |
-| 0.0.0.0/0 | nat-xxx | Private subnet outbound via NAT |
-
-Each subnet links to exactly one route table. Missing routes cause silent black holes — packets leave the instance but never return.
-
-### IP Forwarding and Linux as a Router
-
-By default, Linux **does not forward** packets between interfaces — it only routes traffic **to/from itself**. Enabling **`net.ipv4.ip_forward=1`** turns a multi-NIC host into a router (lab, VPN gateway, Kubernetes node).
-
-Production routers use dedicated hardware or cloud virtual appliances. Understanding forwarding explains why a Kubernetes node can reach pod networks on other nodes through the node's routing table and CNI plugins.
+| Linux idea | AWS | Azure | GCP |
+|------------|-----|-------|-----|
+| Route table | VPC route table | Route table | Routes in VPC |
+| Default to Internet | `igw-…` | Internet gateway | Default Internet gateway |
+| Default private egress | NAT Gateway | NAT Gateway | Cloud NAT |
+| More specific route | Longer prefix in table | Same | Same |
+| `ip route get` | Effective route in console / reachability analyser | Effective routes | Network Intelligence / tests |
 
 ## Hands-on Lab
 
-Complete these steps on a Linux host. Route changes may require root; use a lab VM.
-
-### Step 1 – Inspect the routing table
-
-**Command:**
+**Focus:** practise the core workflow for Routing Fundamentals
 
 ```bash
-ip route show
-ip -4 route show table main
+mkdir -p ~/rebash-networking/module-02
+cd ~/rebash-networking/module-02
+
+sudo apt-get update
+sudo apt-get install -y iproute2 iputils-ping traceroute
+```
+
+Confirm you have a default route:
+
+```bash
 ip route show default
+ip route get 1.1.1.1
 ```
 
-**Explanation:** Lists all IPv4 routes. The default route (if present) shows your gateway for internet-bound traffic.
-
-**Expected output:**
-
-```text
-default via 10.0.0.1 dev eth0 proto dhcp src 10.0.0.42 metric 100
-10.0.0.0/24 dev eth0 proto kernel scope link src 10.0.0.42
-```
-
-### Step 2 – Simulate forwarding decisions
-
-**Command:**
+### Step 1 — Dump the table
 
 ```bash
-ip route get 8.8.8.8
-ip route get 10.0.0.1
-GATEWAY=$(ip route | awk '/default/ {print $3; exit}')
-ip route get "$GATEWAY"
+cd ~/rebash-networking/module-02
+ip route
+ip -4 route show table main
 ```
 
-**Explanation:** Shows exact path the kernel selects — interface, source IP, and next hop. Local gateway should show `dev eth0` with no `via` (on-link).
+**Expected:** At least one `default via …` line and on-link subnet routes (`proto kernel`).
 
-**Expected output:**
-
-```text
-8.8.8.8 via 10.0.0.1 dev eth0 src 10.0.0.42 uid 1000
-    cache
-10.0.0.1 dev eth0 src 10.0.0.42 uid 1000
-    cache
-```
-
-### Step 3 – Add and remove a static route (lab)
-
-**Command:**
+### Step 2 — Ask the kernel for a decision
 
 ```bash
-# Add route to fictional remote network via gateway
-sudo ip route add 192.168.100.0/24 via 10.0.0.1 dev eth0
-ip route show 192.168.100.0/24
-ip route get 192.168.100.50
+ip route get 1.1.1.1
+ip route get 127.0.0.1
 
-# Remove when done
-sudo ip route del 192.168.100.0/24 via 10.0.0.1 dev eth0
+# Replace with an address inside your own CIDR
+MY_IP=$(ip -4 -o addr show scope global | awk '{print $4; exit}' | cut -d/ -f1)
+ip route get "$MY_IP"
 ```
 
-**Explanation:** Static routes persist until reboot unless saved in netplan, NetworkManager, or `/etc/network/interfaces`. More specific than default route for that prefix.
+**Expected:** `ip route get` prints the chosen `via`/`dev`/`src` for that destination.
 
-**Expected output:**
-
-```text
-192.168.100.0/24 via 10.0.0.1 dev eth0
-192.168.100.50 via 10.0.0.1 dev eth0 src 10.0.0.42 uid 0
-```
-
-### Step 4 – Observe longest prefix match
-
-**Command:**
+### Step 3 — Save a routing baseline
 
 ```bash
-sudo ip route add 10.0.0.0/8 via 10.0.0.1 dev eth0 2>/dev/null || true
-ip route get 10.0.0.50
-ip route get 10.50.0.1
-sudo ip route del 10.0.0.0/8 via 10.0.0.1 dev eth0 2>/dev/null || true
+{
+  echo "=== ip route ==="
+  ip route
+  echo
+  echo "=== route get 1.1.1.1 ==="
+  ip route get 1.1.1.1
+  echo
+  echo "=== addresses ==="
+  ip -4 -br addr
+} | tee routing-baseline.txt
 ```
 
-**Explanation:** For `10.0.0.50`, the connected `/24` route wins over `/8`. For `10.50.0.1`, only `/8` matches (if `/24` doesn't cover it).
+### Step 4 — Trace the path (best effort)
 
-**Expected result:**
+```bash
+traceroute -n 1.1.1.1 | head -n 15
+# or: tracepath -n 1.1.1.1
+```
 
-More-specific route appears in `ip route get` for an address inside that prefix; remove the temporary route afterwards.
+**Expected:** A list of hops. `* * *` often means a hop does not reply to probes — not always a failure.
 
-### Step 5 – Check IP forwarding status
+### Step 5 — Temporary static route (safe pattern)
 
-**Command:**
+Use a **black-hole test prefix** that you do not need (`203.0.113.0/24` is documentation space — still avoid sending real traffic there). Prefer adding a route only if you understand egress.
+
+```bash
+IFACE=$(ip route show default | awk '/default/ {print $5; exit}')
+GW=$(ip route show default | awk '/default/ {print $3; exit}')
+echo "iface=$IFACE gw=$GW"
+
+# Example: more-specific route via the same default gateway (lab illustration)
+sudo ip route add 203.0.113.0/24 via "$GW" dev "$IFACE"
+ip route show | grep 203.0.113 || true
+ip route get 203.0.113.10
+
+# Always remove when done
+sudo ip route del 203.0.113.0/24 || true
+ip route show | grep 203.0.113 || echo "lab route removed"
+```
+
+**Expected:** While present, `ip route get 203.0.113.10` selects that `/24`. After delete, it falls back to `default`.
+
+!!! warning
+    Never add random routes on production hosts. Wrong `via` values create silent black holes.
+
+### Step 6 — Inspect IP forwarding (read-only first)
 
 ```bash
 sysctl net.ipv4.ip_forward
-cat /proc/sys/net/ipv4/ip_forward
+# Lab-only enable (reverts on reboot unless persisted):
+# sudo sysctl -w net.ipv4.ip_forward=1
 ```
 
-**Explanation:** `0` = forwarding disabled (normal for end hosts). `1` = router mode. Kubernetes nodes and VPN servers typically enable this.
+**Expected:** `0` on typical clients; `1` on routers/gateways/NAT instances.
 
-**Expected output:**
-
-```text
-net.ipv4.ip_forward = 0
-```
-
-### Step 6 – Trace the path with traceroute
-
-**Command:**
+### Step 7 — Failure simulation (mental + command)
 
 ```bash
-traceroute -n 8.8.8.8 2>/dev/null | head -10 \
-  || tracepath -n 8.8.8.8 | head -10
+# Show what happens conceptually without a default route (DO NOT delete default in production)
+ip route show default
 ```
 
-**Explanation:** Each hop is a router decrementing TTL. First hop is usually your default gateway. Asterisks indicate ICMP filtered at that hop — not necessarily a problem.
-
-**Expected result:**
-
-Numbered hop lines toward 8.8.8.8, or `*` hops where ICMP is filtered. At least the first hop (gateway) should resolve.
-
-### Step 7 – Diagnose missing default route (simulation)
-
-**Command:**
-
-```bash
-# Save and temporarily remove default route (lab only!)
-DEFAULT=$(ip route | awk '/^default/ {print $0; exit}')
-if [ -n "$DEFAULT" ]; then
-  sudo ip route del $DEFAULT
-  ip route get 8.8.8.8 2>&1 || true
-  sudo ip route add $DEFAULT
-fi
-```
-
-**Explanation:** Without a default route, off-subnet destinations fail with "Network is unreachable" — distinct from firewall timeout.
-
-**Expected output (without default route):**
-
-```text
-RTNETLINK answers: Network is unreachable
-```
+Write in your notes: if `default` disappeared, which destinations would still work? (Answer: on-link subnet only.)
 
 ## Validation
 
-Confirm the lab before moving on:
+- [ ] You can explain on-link vs via-gateway delivery  
+- [ ] `routing-baseline.txt` exists  
+- [ ] `ip route get 1.1.1.1` shows `via` and `dev`  
+- [ ] You can explain longest prefix match with one example  
+- [ ] Lab static route was added and removed  
+- [ ] You can name the cloud object that holds subnet routes  
 
-1. Re-run `ip route`, longest-prefix demos, and traceroute; match expected shapes.
-2. Explain how the kernel chooses between overlapping routes.
-3. Remove any temporary static routes added during the lab.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Table | Default and connected routes visible and understood |
-| LPM | More-specific route preferred when present |
-| Trace | Traceroute/tracepath shows hops or documents ICMP filtering |
-| Cleanup | Temporary `ip route add` entries deleted |
-| Understanding | You can predict next-hop for a sample destination IP |
+```bash
+test -f ~/rebash-networking/module-02/routing-baseline.txt && echo "routing baseline: OK"
+ip route show default | grep -q default && echo "default route: OK"
+```
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `ip route show` | Display routing table | `ip route` |
-| `ip route get DST` | Simulate route lookup | `ip route get 10.0.5.1` |
-| `ip route add` | Add static route | `sudo ip route add 10.1.0.0/16 via 10.0.0.1` |
-| `ip route del` | Remove route | `sudo ip route del 10.1.0.0/16` |
-| `ip route replace` | Add or replace route | `sudo ip route replace default via 10.0.0.1` |
-| `sysctl net.ipv4.ip_forward` | Check forwarding | `sysctl -w net.ipv4.ip_forward=1` |
-| `traceroute -n DST` | Path discovery | `traceroute -n 1.1.1.1` |
-| `tracepath DST` | Path without root | `tracepath 8.8.8.8` |
+Production practice for **Routing Fundamentals** always combines:
 
-### Route audit script
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-#!/usr/bin/env bash
-# route-audit.sh — summarize routing configuration for troubleshooting
-set -euo pipefail
-
-echo "=== Default Route ==="
-ip route show default || echo "(none — off-subnet traffic will fail)"
-
-echo ""
-echo "=== All Routes ==="
-ip -4 route show
-
-echo ""
-echo "=== Sample Lookups ==="
-for dst in 8.8.8.8 1.1.1.1; do
-  echo -n "$dst → "
-  ip route get "$dst" 2>/dev/null | head -1 || echo "unreachable"
-done
-
-echo ""
-echo "=== IP Forwarding ==="
-echo "net.ipv4.ip_forward = $(cat /proc/sys/net/ipv4/ip_forward)"
-```
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Protect route tables: unauthorised default-route changes redirect traffic for interception (blackhole or MITM)
-- Prefer more-specific routes only when intentional; accidental `/32` or overlapping static routes cause stealthy outages
-- Restrict who can modify cloud route tables, IGW attachments, and on-prem static routes
-- Avoid advertising private lab routes into production routing domains
-- Use source-based policy routing sparingly and document it — it is a common source of asymmetric, hard-to-audit paths
+- Treat credentials and tokens for networking as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Wrong subnet mask causes local vs remote confusion"
-    A host with `/16` mask may attempt direct ARP for IPs that should go through a gateway. Symptom: works for some hosts in the "logical" subnet but not others.
+!!! warning "Skipping fundamentals for Routing Fundamentals"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Asymmetric routing"
-    Request takes path A, response returns via path B. Stateful firewalls drop the return traffic. Always verify **both directions** in route and firewall rules.
+!!! warning "Treating lab defaults as production-ready for Routing Fundamentals"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Overlapping CIDR in peered networks"
-    VPC peering and VPN fail silently or route unpredictably when both sides use the same private range. Redesign CIDR before connecting.
-
-!!! warning "Forgetting to persist static routes"
-    `ip route add` is lost on reboot. Save in netplan, NetworkManager, or cloud route tables.
-
-!!! warning "Using legacy route command"
-    `route -n` output differs from `ip route`. Scripts and runbooks should standardize on iproute2.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Use ip route get before changing firewalls"
-    Confirm the kernel's chosen path and source IP first — misidentified source causes SG/NACL mismatches.
-
-!!! tip "Document every static route with owner and purpose"
-    Orphan routes from decommissioned VPNs cause traffic black holes months later.
-
-!!! tip "Design hub-and-spoke or transit gateway for multi-VPC"
-    Full mesh peering does not scale. Central transit simplifies route propagation.
-
-!!! tip "Monitor default gateway reachability"
-    Alert on ARP/gateway failures — entire off-subnet connectivity dies instantly.
-
-!!! tip "Prefer specific routes over broad summaries"
-    Aggregate when possible, but use /32 host routes for critical HA VIP failover scenarios.
+- Encode Routing Fundamentals changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `Network is unreachable` | No matching route | Add default gateway or specific route; check `ip route` |
-| Works by IP, not by hostname | DNS issue, not routing | Use `dig`; see [DNS Fundamentals](dns-fundamentals.md) |
-| One-way connectivity | Asymmetric routing or firewall | Compare forward/reverse `traceroute`; check stateful rules |
-| Traffic to peered VPC fails | Missing route table entry | Add route to pcx/tgw; verify no CIDR overlap |
-| Wrong source IP on outbound | Policy routing or multiple interfaces | `ip route get DST`; check `src` and rule tables |
-| Default route missing after reboot | DHCP or config not persisted | Fix netplan/NetworkManager; verify cloud subnet association |
-| High latency to nearby host | Suboptimal path via remote gateway | Add direct /32 or fix summary route |
-| Cannot reach internet from private subnet | No NAT route or missing NAT GW | Route `0.0.0.0/0` to NAT; verify NAT in public subnet |
-| Linux won't forward between NICs | ip_forward disabled | `sysctl -w net.ipv4.ip_forward=1`; check FORWARD chain |
+| Symptom | Likely cause | Commands | Fix direction |
+|---------|--------------|----------|---------------|
+| `Network is unreachable` | No matching route | `ip route`, `ip route get` | Restore default / specific route |
+| Wrong egress interface | Bad static route / metric | `ip route get D` | Delete conflicting prefix |
+| One-way traffic | Asymmetric return path | paths both ways | Align return routes |
+| Works on-link only | Missing default | `ip route show default` | DHCP / cloud route table |
+| Looks like firewall | Black-hole route | `ip route get` | Remove bad specific route |
+
+Triage order: **address present → route exists → neighbour for next hop → firewall → app port**.
 
 ## Summary
 
-- Hosts deliver locally via ARP; **remote traffic** goes to the **default gateway**
-- Routers forward using **routing tables** and **longest prefix match**
-- **Static routes** are manual; **dynamic protocols** (OSPF, BGP) exchange routes automatically
-- Use **`ip route show`** and **`ip route get`** as primary Linux diagnostic tools
-- Cloud **route tables** associate subnets with targets (IGW, NAT, peering, TGW)
-- **IP forwarding** enables Linux to route between interfaces — required for routers and many K8s/CNI setups
-- Routing failures often present as timeouts — distinguish from firewall drops with `ip route get`
+- Routing selects a **next hop** when the destination is off-link.  
+- **Longest prefix match** decides among overlapping routes.  
+- `ip route` and `ip route get` are the source of truth on Linux.  
+- Static routes dominate Cloud/DevOps; dynamic protocols matter at edges.  
+- Cloud route tables are the same mental model with provider gateways.
 
 ## Interview Questions
 
-1. How does a host decide whether to send traffic directly or via a gateway?
-2. What is longest prefix match and why does it matter?
-3. Explain the difference between static and dynamic routing.
-4. What is BGP and where is it used?
-5. What does `ip route get 8.8.8.8` tell you?
-6. What happens when a host has no default route?
-7. What is asymmetric routing and why is it problematic?
-8. How do AWS route tables relate to on-premises routing concepts?
-9. What is the purpose of `net.ipv4.ip_forward`?
-10. Why might traceroute show asterisks for intermediate hops?
+1. How does **Routing Fundamentals** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 2, and 6)"
-
-    **Q1 — Local vs gateway:** The kernel ANDs the destination IP with the subnet mask. If the result equals the local network address, the destination is on-link — ARP resolves its MAC directly. Otherwise, the packet goes to the configured default gateway (or a more specific route's next hop).
-
-    **Q2 — Longest prefix match:** When multiple routes match a destination IP, the route with the longest (most specific) prefix wins. A /24 route beats a /16 route for addresses within that /24. This allows summary routes with exceptions for specific subnets.
-
-    **Q6 — No default route:** Packets to destinations outside locally connected subnets cannot be forwarded. The kernel returns "Network is unreachable" immediately — no packets leave the interface. On-subnet communication may still work.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Networking – Category Overview](index.md)
-- [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) *(previous)*
-- [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md) *(next)*
-- [IP Addressing and Subnetting](ip-addressing-and-subnetting.md)
-- [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
-- [Learning Paths – DevOps Engineer](../learning-paths/index.md)
-- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
-- Interview prep: [Networking Interview Prep](../interview/networking.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - Continue with [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) — MAC forwarding and VLAN segmentation on the local path.
 
 ## References
 
-- [RFC 791 — Internet Protocol](https://www.rfc-editor.org/rfc/rfc791)
-- [RFC 4271 — BGP-4](https://www.rfc-editor.org/rfc/rfc4271)
-- [ip-route man page](https://man7.org/linux/man-pages/man8/ip-route.8.html)
-- [Linux Advanced Routing & Traffic Control HOWTO](https://tldp.org/HOWTO/Adv-Routing-HOWTO/)
-- [AWS VPC Route Tables](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html)
-- [REBASH Academy – Networking Overview](index.md)
+- [RFC 1812 – Requirements for IP Version 4 Routers](https://www.rfc-editor.org/rfc/rfc1812)  
+- [ip-route(8)](https://man7.org/linux/man-pages/man8/ip-route.8.html)  
+- [AWS VPC route tables](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html)  
+- [Azure routing overview](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview)

@@ -1,6 +1,6 @@
 ---
 title: Learning Roadmap
-description: "Structured learning roadmap for the Networking course."
+description: "Structured learning roadmap for the Networking for Cloud & DevOps Engineers course (17 modules)."
 technology_id: networking
 hide:
   - toc
@@ -8,68 +8,51 @@ author: Shaik Basha
 category: networking
 tags:
   - networking
+last_updated: "2026-07-31"
 ---
 
 # Networking — Learning Roadmap
 
 Follow the course in order:
 
-1. **Course overview** — understand scope, prerequisites, and outcomes
-2. **Modules** — work through tutorials module by module
-3. **Labs** — hands-on practice after core lessons
-4. **Quizzes** — check understanding before projects
-5. **Projects** — portfolio builds that connect multiple skills
-6. **Capstone** — end-to-end proof of production readiness
-7. **Interview preparation** — role-specific questions and scenarios
-8. **Certifications** — map lessons to industry exams
+1. **Course overview** — scope, prerequisites, outcomes  
+2. **Modules 1–17** — tutorials in nav order  
+3. **Labs** — hands-on practice  
+4. **Quizzes** — check understanding  
+5. **Projects** — portfolio builds  
+6. **Capstone** — production-ready proof  
+7. **Interview preparation** — role scenarios  
+8. **Certifications** — exam mapping  
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![DNS resolution path (course builds to production ops)](../assets/excalidraw/dns-resolution.svg)
 
-## Modules
+## Modules (prompt order)
 
-### Foundations
+| Module | Start |
+|-------:|-------|
+| 1 Fundamentals | [What is Networking?](introduction-to-networking.md) |
+| 2 OSI | [OSI Model](osi-model.md) |
+| 3 TCP/IP | [TCP/IP Model](tcp-ip-model.md) |
+| 4 IP Addressing | [IP Addressing](ip-addressing.md) |
+| 5 Subnetting | [Subnetting and VLSM](subnetting-and-vlsm.md) |
+| 6 Routing | [Routing Fundamentals](routing-fundamentals.md) |
+| 7 Switching | [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) |
+| 8 TCP & UDP | [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md) |
+| 9 DNS | [DNS Fundamentals](dns-fundamentals.md) |
+| 10 HTTP & HTTPS | [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md) |
+| 11 NAT & Firewalls | [NAT](nat-and-port-forwarding.md) · [Firewalls](firewalls-and-access-control.md) |
+| 12 Linux Networking | [Linux Networking Toolkit](linux-networking-toolkit.md) |
+| 13 Load Balancing | [Load Balancing](load-balancing-fundamentals.md) · [Reverse Proxy](reverse-proxy-and-ingress-basics.md) |
+| 14 Kubernetes | [Kubernetes Networking](kubernetes-networking-fundamentals.md) |
+| 15 Cloud | [VPCs and Subnets](cloud-networking-vpc-and-subnets.md) |
+| 16 Production | [VPN](vpn-and-tunneling-basics.md) · hardening · segmentation · automation · DNS/LB/ACL ops |
+| 17 Troubleshooting | [Methodology](network-troubleshooting-methodology.md) · [Packet analysis](packet-analysis-tcpdump-wireshark.md) · [Incidents](network-incident-response-and-observability.md) |
 
-- [Introduction To Networking](../introduction-to-networking/)
-- [Osi And Tcp Ip Models](../osi-and-tcp-ip-models/)
-- [Ip Addressing And Subnetting](../ip-addressing-and-subnetting/)
+## Diagrams
 
-### Data Link & Routing
+Excalidraw assets: `docs/assets/excalidraw/`. Regenerate with `python3 scripts/generate-excalidraw-svg.py`.
 
-- [Ethernet Switching And Vlans](../ethernet-switching-and-vlans/)
-- [Routing Fundamentals](../routing-fundamentals/)
-- [Icmp Arp Dhcp And Network Services](../icmp-arp-dhcp-and-network-services/)
+## Related
 
-### Transport & DNS
-
-- [Tcp And Udp Deep Dive](../tcp-and-udp-deep-dive/)
-- [Dns Fundamentals](../dns-fundamentals/)
-- [Dns Records And Troubleshooting](../dns-records-and-troubleshooting/)
-
-### Application Layer
-
-- [Http Https And Application Layer](../http-https-and-application-layer/)
-- [Firewalls And Access Control](../firewalls-and-access-control/)
-- [Load Balancing Fundamentals](../load-balancing-fundamentals/)
-- [Reverse Proxy And Ingress Basics](../reverse-proxy-and-ingress-basics/)
-
-### Troubleshooting
-
-- [Network Troubleshooting Methodology](../network-troubleshooting-methodology/)
-- [Packet Analysis Tcpdump Wireshark](../packet-analysis-tcpdump-wireshark/)
-
-### Cloud & Advanced
-
-- [Cloud Networking Vpc And Subnets](../cloud-networking-vpc-and-subnets/)
-- [Nat And Port Forwarding](../nat-and-port-forwarding/)
-- [Vpn And Tunneling Basics](../vpn-and-tunneling-basics/)
-- [Network Security Hardening](../network-security-hardening/)
-- [Network Automation And Monitoring](../network-automation-and-monitoring/)
-
-### Production Network Operations
-
-- [Network Segmentation And Trust Boundaries](../network-segmentation-and-trust-boundaries/)
-- [Production Dns Operations](../production-dns-operations/)
-- [Load Balancer Operations And Health Checks](../load-balancer-operations-and-health-checks/)
-- [Firewall Change Control And Production Acls](../firewall-change-control-and-production-acls/)
-- [Network Incident Response And Observability](../network-incident-response-and-observability/)
-
+- [Course overview](index.md)  
+- [Labs](../labs/index.md) · [Interview](interview/index.md) · [Cheat sheets](cheatsheets/index.md)  

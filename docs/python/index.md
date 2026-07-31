@@ -4,7 +4,7 @@ description: "Python for DevOps Engineers — complete course overview: 27 modul
 difficulty: beginner
 estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-07-31"
 category: python
 tags:
   - python
@@ -22,7 +22,7 @@ comments: false
 Practical Python for Cloud, DevOps, Platform Engineering, and SRE — **not** a general programming degree. Build production-ready automation for Linux, APIs, cloud, containers, Kubernetes, Terraform, and CI/CD.
 
 !!! tip "Course status"
-    **Track ready** — **27 modules · 27 tutorials**, 17 labs, quiz, cheat sheet, interview prep, and projects (beginner → expert → capstone). Start with [Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md).
+    Curriculum follows the REBASH **Python for DevOps Engineers** technology prompt (**27 modules**). All **Modules 1–27** tutorials are rewritten to the academy standard with **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Regenerate with `python3 scripts/generate-excalidraw-svg.py`. Start with [Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md).
 
 ---
 
@@ -245,7 +245,7 @@ Per-tutorial interview banks (5 Q) live inside each tutorial.
 7. Monitoring + notifications hooks
 8. Configuration management + secrets hygiene
 9. Logging + pytest suite
-10. Packaging (`pyproject.toml`) + documentation + D2 architecture
+10. Packaging (`pyproject.toml`) + documentation + Excalidraw architecture
 
 **Success:** Another engineer can clone, sync deps, run tests, and execute dry-run commands in under 15 minutes.
 

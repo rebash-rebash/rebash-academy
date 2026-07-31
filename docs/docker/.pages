@@ -2,29 +2,43 @@ title: Docker
 icon: material/docker
 nav:
   - index.md
-  - Foundations:
+  - Module 1 · Container Fundamentals:
     - introduction-to-containers-and-docker.md
-    - docker-installation-and-setup.md
     - docker-architecture-and-components.md
-  - Images & Dockerfile:
+  - Module 2 · Installing Docker:
+    - docker-installation-and-setup.md
+  - Module 3 · Docker CLI:
     - running-your-first-container.md
+  - Module 4 · Images:
     - working-with-docker-images.md
+  - Module 5 · Dockerfile:
     - building-images-with-dockerfile.md
-  - Storage & Compose:
+  - Module 6 · Image Optimisation:
     - dockerfile-best-practices-and-multi-stage-builds.md
+  - Module 7 · Volumes & Storage:
     - volumes-and-persistent-storage.md
-    - docker-compose-fundamentals.md
-  - Networking & Registry:
+  - Module 8 · Networking:
     - docker-networking-fundamentals.md
+  - Module 9 · Docker Compose:
+    - docker-compose-fundamentals.md
+  - Module 10 · Registries:
     - container-registries-and-distribution.md
-    - environment-variables-and-secrets.md
-  - Operations:
-    - container-logging-and-monitoring.md
+  - Module 11 · Security:
     - docker-security-hardening.md
-    - troubleshooting-docker-containers.md
-  - Production & Beyond:
+  - Module 12 · Container Scanning:
+    - container-scanning-and-sbom.md
+  - Module 13 · Logging & Monitoring:
+    - container-logging-and-monitoring.md
+  - Module 14 · Performance:
+    - docker-performance-and-resource-limits.md
+  - Module 15 · Docker in CI/CD:
     - docker-in-ci-cd-pipelines.md
+  - Module 16 · Troubleshooting:
+    - troubleshooting-docker-containers.md
+  - Module 17 · Production Docker:
     - production-docker-patterns.md
+  - Related depth:
+    - environment-variables-and-secrets.md
     - docker-swarm-orchestration-basics.md
     - from-docker-to-kubernetes.md
     - docker-capstone-and-next-steps.md

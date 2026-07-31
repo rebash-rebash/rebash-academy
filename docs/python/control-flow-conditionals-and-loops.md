@@ -1,262 +1,347 @@
 ---
 title: "Control Flow — Conditionals and Loops"
-description: "Branch and iterate with if/elif/else, match, for, while, break, continue, and pass in ops automation."
+description: "Master if/elif/else, match, for/while loops, and break/continue/pass for DevOps automation scripts and inventory tools."
 difficulty: beginner
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "45–60 min"
+technology: python
 category: python
+module: "Module 3 · Control Flow"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - python
+  - control-flow
+  - loops
+prerequisites:
+  - python/python-basics-types-and-io
+next:
+  - python/functions-parameters-and-scope
+related:
+  - python/data-structures-comprehensions-and-generators
+  - python/error-handling-and-exceptions
+labs: []
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
 tags:
   - python
   - control-flow
-  - match
   - loops
-prerequisites:
-  - Python Basics — Types and I/O
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - match
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Control Flow — Conditionals and Loops
 
 ## Overview
 
-Health checks and CLI verbs are mostly control flow. Get branching and loops right before larger frameworks.
+Branch and iterate confidently with `if`/`match`, `for`/`while`, and loop control so inventory, health-check, and remediation scripts stay readable and correct.
 
-This is **Tutorial 3** in **Module 3: Control Flow** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Automation is mostly “for each host/resource, if unhealthy then alert.” This module makes that structure explicit before functions and data structures.
+
+Complete [Python Basics](python-basics-types-and-io.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 3 · Control Flow** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Python Basics — Types and I/O
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Python Basics — Types and I/O](python-basics-types-and-io.md)
+- Project venv from Module 1–2
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Control Flow — Conditionals and Loops” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Write `if` / `elif` / `else` branches for ops decisions  
+- [ ] Use `match` for multi-way status or action dispatch (3.10+)  
+- [ ] Iterate with `for` over sequences and `range`  
+- [ ] Use `while` for retry-style loops carefully  
+- [ ] Apply `break`, `continue`, and `pass` intentionally
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Control Flow — Conditionals and Loops](../assets/images/python-control-flow.svg)
+![Control flow](../assets/excalidraw/python-control-flow.svg)
 
 ## Theory
 
-### if
+### if / elif / else
 
 ```python
-if code != 0:
-    print("failed", file=sys.stderr)
-    raise SystemExit(code)
+status = "degraded"
+if status == "healthy":
+    action = "noop"
+elif status == "degraded":
+    action = "page_secondary"
+else:
+    action = "page_primary"
 ```
 
-Use guard clauses early so the happy path stays left-aligned.
+Keep conditions boolean-clear. Prefer early returns in functions (Module 4) over deep nesting.
 
-### elif
+### match (structural pattern matching)
 
-Chain mutually exclusive conditions with `elif`. Prefer dictionaries or `match` when the set of verbs grows.
-
-### else
-
-`else` covers the remaining case. On loops, `for`/`while`…`else` runs only if no `break` — rarely useful in ops scripts; prefer explicit flags.
-
-### match
-
-Python 3.10+ structural pattern matching suits CLI verbs and status enums:
+Useful for status codes and command verbs:
 
 ```python
-match verb:
-    case "check" | "status":
-        return check()
-    case "apply":
-        return apply(dry_run=False)
+code = 503
+match code:
+    case 200 | 204:
+        level = "ok"
+    case 404:
+        level = "missing"
+    case 500 | 502 | 503 | 504:
+        level = "upstream"
     case _:
-        raise SystemExit(f"unknown verb: {verb}")
+        level = "other"
 ```
 
-### for
+Requires Python 3.10+. This course assumes 3.12+.
 
-Iterate collections and ranges: `for host in hosts:`, `for line in path.open():`. Prefer iterating files line-by-line over `read().splitlines()` for large logs.
+### for loops
 
-### while
+```python
+hosts = ["web-a", "web-b", "web-c"]
+for host in hosts:
+    print(f"check {host}")
 
-Use `while` for retries and poll loops with a clear exit:
+for i in range(3):
+    print(f"attempt {i + 1}")
+```
+
+Iterate dict keys/items when you reach Module 5:
+
+```python
+# for name, ip in inventory.items():
+#     ...
+```
+
+### while loops
+
+Use for retries with a **hard cap**:
 
 ```python
 attempts = 0
-while attempts < 3:
-    if probe():
-        break
+while attempts < 5:
     attempts += 1
+    # try connect...
+    break  # on success
+else:
+    # while-else: ran out without break
+    raise SystemExit("error: retries exhausted")
 ```
 
-Avoid infinite loops without a timeout.
+Unbounded `while True` without a break condition hangs CI and cron jobs.
 
-### break
+### break, continue, pass
 
-Exit the nearest loop immediately — useful when a host is healthy or a fatal error appears.
+| Keyword | Meaning |
+|---------|---------|
+| `break` | Leave the loop |
+| `continue` | Skip to next iteration |
+| `pass` | Empty body placeholder |
 
-### continue
-
-Skip to the next iteration — skip blank lines, comments, or dry-run-only hosts.
-
-### pass
-
-A no-op placeholder. Prefer real stubs that raise `NotImplementedError` in production code so unfinished paths fail loudly.
+```python
+for host in hosts:
+    if host.startswith("lab-"):
+        continue
+    if host == "bastion":
+        break
+```
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Control Flow — Conditionals and Loops
 
 ```bash
-mkdir -p ~/rebash-python/lab03 && cd ~/rebash-python/lab03
+mkdir -p ~/rebash-python/module-03
+cd ~/rebash-python/module-03
+
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-**Focus:** classify log levels with if/match; retry loop with break/continue
-
-### Step 1 – Skeleton
+### Step 1 – Health triage script
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab03 control-flow-conditionals-and-loops")
-EOF
-chmod +x lab.py
-python3 lab.py
-```
+cd ~/rebash-python/module-03
+source .venv/bin/activate
 
-### Step 2 – Control flow
-
-```bash
-cat > flow.py << 'EOF'
+cat > triage.py << 'EOF'
 #!/usr/bin/env python3
 from __future__ import annotations
+
 import sys
 
-def classify(level: str) -> str:
-    match level.upper():
-        case "INFO" | "DEBUG":
-            return "low"
-        case "WARN" | "WARNING":
-            return "medium"
-        case "ERROR" | "CRITICAL":
-            return "high"
-        case _:
-            raise ValueError(level)
+HOSTS = [
+    ("web-a", "healthy"),
+    ("web-b", "degraded"),
+    ("web-c", "down"),
+    ("lab-1", "healthy"),
+]
 
-def main(argv: list[str]) -> int:
-    for raw in argv[1:]:
-        if not raw.strip():
+
+def action_for(status: str) -> str:
+    match status:
+        case "healthy":
+            return "noop"
+        case "degraded":
+            return "warn"
+        case "down":
+            return "page"
+        case _:
+            return "unknown"
+
+
+def main() -> int:
+    worst = 0
+    for host, status in HOSTS:
+        if host.startswith("lab-"):
             continue
-        try:
-            print(f"{raw}->{classify(raw)}")
-        except ValueError:
-            print(f"skip:{raw}", file=sys.stderr)
-            continue
-    return 0
+        act = action_for(status)
+        print(f"host={host} status={status} action={act}")
+        if act == "page":
+            worst = max(worst, 2)
+        elif act == "warn":
+            worst = max(worst, 1)
+    return worst
+
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv))
+    raise SystemExit(main())
 EOF
-python3 flow.py INFO WARN nope ERROR
+
+python triage.py; echo "exit=$?"
 ```
 
-### Final step – Cleanup note
+### Step 2 – Retry with while
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+cat > retry_demo.py << 'EOF'
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import sys
+
+
+def main() -> int:
+    target_success_on = 3
+    attempt = 0
+    while attempt < 5:
+        attempt += 1
+        print(f"attempt={attempt}", file=sys.stderr)
+        if attempt == target_success_on:
+            print("ok")
+            return 0
+    print("error: retries exhausted", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+EOF
+
+python retry_demo.py
+```
+
+### Step 3 – range inventory numbering
+
+```bash
+python - <<'PY'
+for idx, name in enumerate(["db-a", "db-b"], start=1):
+    print(f"{idx}. {name}")
+PY
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab03/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-03/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Control Flow — Conditionals and Loops** always combines:
+Production practice for **Control Flow — Conditionals and Loops** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Skipping fundamentals for Control Flow — Conditionals and Loops"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Treating lab defaults as production-ready for Control Flow — Conditionals and Loops"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Control Flow — Conditionals and Loops changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| Infinite loop | `while True` without break | Add max attempts |
+| `SyntaxError` on match | Python &lt; 3.10 | Upgrade interpreter |
+| Nested if soup | Too many branches | Use `match` or dict dispatch |
 
 ## Summary
 
-**Control Flow — Conditionals and Loops** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Branch with `if`/`match`; iterate with `for`; retry with capped `while`  
+- `continue`/`break` keep inventory loops clear  
+- Exit codes should reflect worst severity for CI
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Control Flow — Conditionals and Loops** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Python Basics — Types and I/O](python-basics-types-and-io.md) *(previous)*
-- [Functions — Parameters and Scope](functions-parameters-and-scope.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Functions — Parameters and Scope](functions-parameters-and-scope.md)  
+- [Data Structures](data-structures-comprehensions-and-generators.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [Control flow tutorial](https://docs.python.org/3/tutorial/controlflow.html)  
+- [match statement](https://docs.python.org/3/reference/compound_stmts.html#the-match-statement)

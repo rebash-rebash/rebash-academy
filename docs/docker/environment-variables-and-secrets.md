@@ -52,7 +52,7 @@ By the end of this tutorial, you will be able to:
 
 Configuration flows from sources of truth into the container process environment or mounted files — never through rebuilt image layers for secrets.
 
-![Architecture diagram for Environment Variables and Secrets](../assets/images/environment-variables-and-secrets.svg)
+![Compose and configuration](../assets/excalidraw/docker-compose.svg)
 
 ## Theory
 

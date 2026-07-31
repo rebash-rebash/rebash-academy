@@ -1,525 +1,227 @@
 ---
-title: Docker Networking Fundamentals
-description: Understand Docker network drivers — bridge, host, user-defined networks, container DNS, port publishing, and hands-on connectivity labs.
+title: "Docker Networking Fundamentals"
+description: "Configure bridge, host, and overlay networks, publish ports, use container DNS, and troubleshoot Docker networking for DevOps."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "45–60 min"
+technology: docker
 category: docker
+module: "Module 8 · Networking"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - cloud-engineer
+skills:
+  - docker
+  - networking
+prerequisites:
+  - docker/volumes-and-persistent-storage
+  - networking/index
+next:
+  - docker/docker-compose-fundamentals
+related:
+  - docker/troubleshooting-docker-containers
+labs: []
+projects: []
+interview: interview/docker
+certifications:
+  - Docker Certified Associate
 tags:
   - docker
   - networking
   - bridge
-  - host
-  - dns
-  - ports
-  - devops
-prerequisites:
-  - Running Your First Container
-  - Docker Compose Fundamentals
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Docker Networking Fundamentals
 
 ## Overview
 
-Containers need to talk to each other, the host, and the outside world. Docker's networking model isolates container networks while providing controlled connectivity through **virtual bridges**, **NAT**, **port publishing**, and **embedded DNS**. Misunderstanding these mechanics causes the classic failures: "connection refused between containers," "works on my machine but not in CI," and "cannot reach service on localhost."
+Create a user-defined bridge network, connect containers by name, publish ports, and know when host/overlay/macvlan apply.
 
-This tutorial is **Tutorial 10** in **Module 4: Networking & Registry** of the REBASH Academy Docker series. You will work with **bridge**, **host**, and **user-defined bridge** networks, publish ports, inspect routing, and debug connectivity. For registry and image distribution, continue to [Container Registries and Distribution](container-registries-and-distribution.md).
+Default **bridge** isolates containers; user-defined bridges add DNS. **Host** shares the host stack. **Overlay** spans Swarm/multi-host. Port mapping publishes container ports to the host.
+
+This is a core tutorial in **Module 8 · Networking** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed [Running Your First Container](running-your-first-container.md)
-- Completed [Docker Compose Fundamentals](docker-compose-fundamentals.md) — helpful for multi-service DNS context
-- Linux host recommended (macOS/Windows Docker Desktop uses a VM — some routing differs)
-- Basic TCP/IP: IP addresses, ports, DNS names
-- [Networking fundamentals](../networking/introduction-to-networking.md) helpful but not required
+- [Volumes and Persistent Storage](volumes-and-persistent-storage.md)
+- Networking basics from the [Networking](../networking/index.md) track help
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Describe Docker's default bridge network and its limitations
-- [ ] Create and attach containers to user-defined bridge networks
-- [ ] Explain the difference between bridge, host, and none network drivers
-- [ ] Publish container ports with `-p` and understand NAT behaviour
-- [ ] Use container names and aliases for DNS-based discovery
-- [ ] Inspect networks with `docker network` commands and diagnose connectivity issues
+- [ ] Create and inspect a bridge network  
+- [ ] Reach containers via DNS names  
+- [ ] Publish ports with `-p`  
+- [ ] Contrast bridge vs host  
+- [ ] Outline overlay / macvlan use cases
 
 ## Architecture
 
-![Architecture diagram for Docker Networking Fundamentals](../assets/images/docker-networking-fundamentals.svg)
+This topic’s control points and relationships are shown below.
 
-User-defined networks add automatic DNS between connected containers.
+![Docker networking](../assets/excalidraw/docker-networking.svg)
 
 ## Theory
 
-### Docker Network Drivers
+### What
 
-| Driver | Scope | Use case |
-|--------|-------|----------|
-| **bridge** | Single host | Default container-to-container on same host |
-| **host** | Single host | Container shares host network stack — no isolation |
-| **none** | Single host | Disable networking — `--network none` |
-| **overlay** | Multi-host (Swarm) | Cross-node service mesh |
-| **macvlan** | Single host | Container gets MAC address on physical LAN |
-| **ipvlan** | Single host | Container shares MAC, unique IP |
+Docker networks connect containers to each other and to the outside world. The default **bridge** network suits single-host apps; **host** shares the host network namespace; **none** isolates; **overlay** serves multi-host Swarm; **macvlan** makes containers appear as LAN hosts. Published ports map container ports to the host.
 
-This tutorial focuses on **bridge** and **host** — the drivers you use daily before Kubernetes.
+### Why
 
-### Default Bridge vs User-Defined Bridge
+Most “container cannot connect” tickets are network misunderstandings: wrong network, unpublished ports, or DNS name mismatches. Compose and Swarm rely on user-defined networks so service names resolve via embedded DNS.
 
-**Default bridge (`docker0`):**
+### How it works
 
-- Created automatically at Docker daemon start
-- Containers get IP on `172.17.0.0/16` typically
-- **No automatic DNS** between containers by name (legacy behaviour)
-- All default-bridge containers share one L2 domain
+User-defined bridge networks give containers IP addresses and DNS entries based on container or Compose service names. `docker run --network` attaches at start; you can also connect later. Publishing `-p 8080:80` forwards host port 8080 to container port 80. Troubleshoot with `docker network inspect`, `docker exec` plus `wget`/`nc`, and host tools such as `ss` or `lsof` for published ports. Firewall rules on the host can still block traffic after Docker’s iptables/nftables integration.
 
-**User-defined bridge:**
+| Driver | Typical use |
+|--------|-------------|
+| bridge | Single-host apps (default for Compose) |
+| host | Max performance / special networking |
+| none | Locked down (no NIC) |
+| overlay | Multi-host Swarm |
+| macvlan | Appear as LAN hosts |
 
-- Created with `docker network create`
-- **Embedded DNS** resolves container names and network aliases
-- Better isolation — separate broadcast domains per network
-- Recommended for multi-container applications
+### Key concepts
 
-```bash
-docker network create app-net
-docker run -d --name api --network app-net myapi
-docker run -d --name web --network app-net nginx
-# web can curl http://api:8080
-```
+- **Embedded DNS** — service discovery on user-defined networks  
+- **Publish vs expose** — publish creates host forwarding  
+- **Hairpin / localhost** — Desktop vs Linux differences  
+- **Network policies** — Docker alone is not Kubernetes NetworkPolicy  
 
-### How Port Publishing Works
+### Common pitfalls
 
-```bash
-docker run -p 8080:80 nginx
-```
-
-| Segment | Meaning |
-|---------|---------|
-| `8080` | Host port (what clients connect to) |
-| `80` | Container port (what process listens on) |
-
-Docker installs **iptables DNAT** rules forwarding host:8080 → container IP:80. Binding `127.0.0.1:8080:80` restricts to localhost.
-
-**`-P` (publish all)** maps all `EXPOSE`d ports to random high host ports.
-
-Inside a container, `localhost` refers to **the container itself**, not the host. To reach host services from container:
-
-- Linux: `host.docker.internal` (recent Docker) or host gateway IP
-- Use `host` network mode for special cases (monitoring agents)
-
-### Host Network Mode
-
-```bash
-docker run --network host nginx
-```
-
-Container processes bind directly to host interfaces — **no port mapping needed**. Performance benefit for high-throughput workloads; **security and port conflict trade-offs**. Container sees host `localhost`, `eth0`, etc.
-
-Not available the same way on Docker Desktop macOS/Windows (VM layer).
-
-### Container DNS
-
-Docker runs an **embedded DNS server** at `127.0.0.11` inside containers on user-defined networks. It resolves:
-
-- Container names → container IP on shared network
-- Network **aliases** (additional names)
-- External names → upstream host resolver
-
-Custom DNS servers per container:
-
-```bash
-docker run --dns 8.8.8.8 myapp
-```
-
-### Network Isolation Patterns
-
-| Pattern | Configuration |
-|---------|---------------|
-| Frontend + backend split | Two networks; proxy on both, API only on backend |
-| Database internal only | No published ports; only app network attachment |
-| Compose default | One network per project; all services connected |
-
-```yaml
-networks:
-  frontend:
-  backend:
-    internal: true
-```
-
-`internal: true` blocks external routing from that network — outbound internet disabled for attached containers.
-
-### Inspecting Networking State
-
-| Command | Shows |
-|---------|-------|
-| `docker network ls` | All networks |
-| `docker network inspect app-net` | Subnet, gateway, connected containers |
-| `docker inspect container` | IPAddress, Networks section |
-| `docker port container` | Published port mappings |
-| `ip addr show docker0` | Host bridge interface (Linux) |
-
-Inside container debugging:
-
-```bash
-docker exec container ip addr
-docker exec container cat /etc/resolv.conf
-docker exec container wget -qO- http://other-service:8080/
-```
-
-### Common Connectivity Scenarios
-
-| From | To | Requirement |
-|------|-----|-------------|
-| Host | Container | `-p` port publish or host network |
-| Container A | Container B (same user network) | Shared network; use name `B` |
-| Container A | Container B (default bridge) | Use IP address or link (legacy) |
-| Container | Internet | NAT via host (unless `internal` network) |
-| External | Container | Host firewall allows published port |
-
-
-### Publish, DNS, and isolation
-
-Containers on a user-defined bridge resolve each other by name via embedded DNS; the default `bridge` network does not provide that DNS behaviour reliably for custom names. Publishing a port installs NAT rules on the host — bind to `127.0.0.1` in labs unless you need LAN access. Treat container networks like VLANs: put frontends and databases on appropriate networks, avoid `--network host` unless you accept shared network namespaces, and review `docker ps` published ports before leaving a session.
-
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
-
-
-### Connecting the lab to production reviews
-
-When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
-
-### Observability while you learn
-
-Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
+- Using the legacy default bridge without DNS service names  
+- Binding only to `127.0.0.1` then wondering why other hosts cannot connect  
+- Assuming containers share localhost with the host (they do not, except `host` mode)  
+- Overlapping subnet CIDRs with corporate VPNs
 
 ## Hands-on Lab
 
-Run on Linux with Docker Engine. Adjust paths if using Docker Desktop.
-
-### Step 1 – List existing networks
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-docker network ls
-docker network inspect bridge | head -40
+mkdir -p ~/rebash-docker/module-08 && cd ~/rebash-docker/module-08
 ```
 
-**Explanation:** Every installation has `bridge`, `host`, and `none` built-in networks. Default `bridge` shows gateway and subnet.
+**Focus:** hands-on practice for Docker Networking Fundamentals
 
-**Expected output:**
-
-```text
-NETWORK ID     NAME      DRIVER
-...
-               bridge    bridge
-               host      host
-               none      null
-```
-
-### Step 2 – Default bridge — no DNS by name
-
-**Command:**
+### Step 1 – Skeleton
 
 ```bash
-docker run -d --name net-alpine-1 alpine:3.20 sleep 3600
-docker run -d --name net-alpine-2 alpine:3.20 sleep 3600
-
-docker inspect net-alpine-1 | grep -A3 '"IPAddress"'
-docker inspect net-alpine-2 | grep -A3 '"IPAddress"'
-
-docker exec net-alpine-1 ping -c 2 net-alpine-2
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Docker Networking Fundamentals"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Explanation:** On default bridge, name resolution typically fails — ping by name shows unknown host. Use IP from inspect instead.
-
-**Expected output:** Ping by name fails; ping by IP succeeds.
-
-### Step 3 – User-defined network with DNS
-
-**Command:**
+### Step 2 – Core exercise
 
 ```bash
-docker network create rebash-app-net
-
-docker rm -f net-alpine-1 net-alpine-2
-
-docker run -d --name net-a --network rebash-app-net alpine:3.20 sleep 3600
-docker run -d --name net-b --network rebash-app-net alpine:3.20 sleep 3600
-
-docker exec net-a ping -c 2 net-b
-docker network inspect rebash-app-net
+mkdir -p ~/rebash-docker/module-08 && cd ~/rebash-docker/module-08
+docker network create rebash-net
+docker run -d --name rebash-web --network rebash-net nginx:alpine
+docker run --rm --network rebash-net alpine wget -qO- http://rebash-web/ | head -n 3
+docker run -d --name rebash-pub -p 8081:80 --network rebash-net nginx:alpine
+curl -sI http://127.0.0.1:8081 | head -n 3
+docker network inspect rebash-net --format '{{ "{{" }}json .Containers{{ "}}" }}' | head -c 200
+docker rm -f rebash-web rebash-pub
+docker network rm rebash-net
 ```
 
-**Explanation:** User-defined bridge enables automatic DNS — container name `net-b` resolves from `net-a`.
-
-**Expected output:** Successful ping to `net-b` by hostname.
-
-### Step 4 – Network aliases
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-docker run -d \
-  --name net-api \
-  --network rebash-app-net \
-  --network-alias api \
-  --network-alias backend \
-  alpine:3.20 sleep 3600
-
-docker exec net-a ping -c 1 api
-docker exec net-a ping -c 1 backend
+# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** Aliases provide stable service names independent of container name — useful when replacing containers without changing client config.
-
-**Expected output:** Both `api` and `backend` resolve and respond to ping.
-
-### Step 5 – Port publishing and host access
-
-**Command:**
-
-```bash
-docker run -d --name net-nginx -p 8080:80 nginx:alpine
-curl -sI http://localhost:8080/ | head -5
-docker port net-nginx
-```
-
-**Explanation:** Host port 8080 forwards to container port 80. `docker port` shows mapping.
-
-**Expected output:**
-
-```text
-HTTP/1.1 200 OK
-...
-80/tcp -> 0.0.0.0:8080
-```
-
-### Step 6 – Container cannot reach host via localhost
-
-**Command:**
-
-```bash
-docker exec net-a wget -qO- http://localhost:80 2>&1 | head -3
-```
-
-**Explanation:** Inside `net-a`, `localhost` is the alpine container — not the host nginx. Demonstrates common misconception.
-
-**Expected output:** Connection refused or failed (nothing listening on port 80 in alpine).
-
-### Step 7 – Container-to-container on published service
-
-**Command:**
-
-```bash
-docker network connect rebash-app-net net-nginx
-docker exec net-a wget -qO- http://net-nginx:80/ | head -3
-```
-
-**Explanation:** Attach nginx to app network. Now `net-a` reaches nginx by container name on internal port 80 without host publish.
-
-**Expected output:** HTML from nginx welcome page.
-
-### Step 8 – Host network mode
-
-**Command:**
-
-```bash
-docker run -d --name net-host-demo --network host nginx:alpine
-curl -sI http://127.0.0.1:80/ | head -3
-docker rm -f net-host-demo
-```
-
-**Explanation:** Host mode binds nginx directly to host port 80. Conflicts if host already uses port 80 — stop conflicting service or skip if occupied.
-
-**Expected output:** HTTP 200 from nginx on host port 80 (if port free).
-
-### Step 9 – Clean up
-
-**Command:**
-
-```bash
-docker rm -f net-a net-b net-api net-nginx 2>/dev/null || true
-docker network rm rebash-app-net 2>/dev/null || true
-```
-
-**Explanation:** Remove lab containers and custom networks.
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| User network | Custom bridge network exists and containers attach to it |
-| DNS | Containers resolve each other by Compose/Docker DNS name |
-| Publish | Host port mapping reaches the target container |
-| Cleanup | Lab containers and networks removed |
+- [ ] Lab commands run under `~/rebash-docker/module-08/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `docker network create` | Create user-defined network | `docker network create app-net` |
-| `docker network ls` | List networks | `docker network ls` |
-| `docker network inspect` | Network details | `docker network inspect app-net` |
-| `docker network connect` | Attach running container | `docker network connect app-net web` |
-| `docker network disconnect` | Detach container | `docker network disconnect app-net web` |
-| `docker network rm` | Delete unused network | `docker network rm app-net` |
-| `docker run -p` | Publish port | `docker run -p 8080:80 nginx` |
-| `docker run --network` | Select network | `docker run --network host app` |
+Production practice for **Docker Networking Fundamentals** always combines:
 
-### Compose multi-network example
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```yaml
-services:
-  proxy:
-    image: nginx:alpine
-    ports:
-      - "8080:80"
-    networks:
-      - frontend
-      - backend
-
-  api:
-    image: myapi:1.0
-    networks:
-      - backend
-
-  db:
-    image: postgres:16-alpine
-    networks:
-      - backend
-
-networks:
-  frontend:
-  backend:
-    internal: true
-```
-
-### Bind to specific host interface
-
-```bash
-docker run -p 127.0.0.1:8080:80 nginx
-```
-
-Only localhost can connect — useful for dev security.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Prefer user-defined bridge networks over the default bridge for service discovery and isolation
-- Publish only required ports; bind to localhost in labs (`-p 127.0.0.1:8080:80`)
-- Avoid `--network host` unless you understand you are sharing the host network namespace
-- Do not disable iptables integration casually — it underpins Docker’s publish and isolation model
-- Segment untrusted workloads onto separate networks; treat flat container networks like flat VLANs
-- Log and review unexpected published ports with `docker ps` before leaving a lab session
-
+- Treat credentials and tokens for docker as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using default bridge and expecting DNS by container name"
-    Create a user-defined network for automatic name resolution.
+!!! warning "Using the legacy default bridge without DNS service names  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "curl localhost inside container expecting host service"
-    `localhost` inside container is the container. Use service name, host IP, or `host.docker.internal`.
+!!! warning "Binding only to `127.0.0.1` then wondering why other hosts cannot connect  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Publishing database ports to 0.0.0.0 in production"
-    Exposes Postgres/Redis to the internet. Keep DB on internal network only.
-
-!!! warning "Host network mode without understanding port conflicts"
-    Multiple host-mode containers cannot bind same port.
-
-!!! warning "Forgetting firewall rules outside Docker"
-    iptables DNAT works but host firewalld/ufw may still block published ports.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "One user-defined network per application stack"
-    Compose does this automatically — replicate pattern for manual `docker run` stacks.
-
-!!! tip "Do not publish ports for internal services"
-    Only edge proxies (nginx, traefik) need host port mapping.
-
-!!! tip "Use network aliases for logical service names"
-    Decouple DNS name from container name for zero-downtime replacements.
-
-!!! tip "Segment with internal networks"
-    Databases and message queues on networks without external routing.
-
-!!! tip "Document published ports and dependencies"
-    Include network diagram in README — saves hours during incidents.
+- Encode Docker Networking Fundamentals changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Connection refused container-to-container | Different networks | `docker network connect` or shared network at create |
-| Name resolution fails | Default bridge or typo | User-defined network; verify container name |
-| Host cannot reach container | Port not published | Add `-p host:container` |
-| Published port works locally not remotely | Bound to 127.0.0.1 | Use `0.0.0.0:port` or specific interface |
-| Works in Compose, fails in run | Missing network config | Match Compose network names and aliases |
-| External internet fails from container | Internal network or DNS | Check `--internal`; inspect `/etc/resolv.conf` |
-| Port already in use | Host conflict | `ss -tlnp`; change host port or stop service |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Docker provides **bridge**, **host**, and **none** drivers for single-host networking
-- **User-defined bridge networks** enable **DNS-based discovery** by container name and alias
-- **Port publishing (`-p`)** uses host iptables NAT — required for external host access
-- **`localhost` inside a container** refers to that container, not the Docker host
-- **Host network mode** removes network isolation — use sparingly
-- **Multi-network attachment** enables gateway/proxy patterns and backend isolation
+**Docker Networking Fundamentals** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What is the difference between the default bridge and a user-defined bridge network?
-2. How does Docker container DNS work on user-defined networks?
-3. Explain what `docker run -p 8080:80` does at a high level.
-4. When would you use `--network host`?
-5. Why can't container A on `frontend` network reach container B on `backend` network?
-6. What is the purpose of `--network-alias`?
-7. What does `internal: true` on a Compose network do?
-8. Why does `curl localhost` inside a container not reach a service on the host?
-9. What network drivers exist beyond bridge and host?
-10. How would you debug container-to-container connectivity failures?
+1. How does **Docker Networking Fundamentals** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 3, and 8)"
-
-    **Q1 — Default vs user-defined bridge:** Default bridge (`docker0`) is auto-created; containers share it but lack automatic DNS by name. User-defined bridges are explicitly created, provide embedded DNS resolution for container names/aliases, and offer better isolation between application stacks.
-
-    **Q3 — Port publishing:** Maps host port 8080 to container port 80 via iptables DNAT. Traffic arriving at the host on 8080 forwards to the container's IP on port 80. Without `-p`, the service is reachable only from containers on shared Docker networks, not from external clients on the host LAN.
-
-    **Q8 — localhost scope:** Each container has its own network namespace. `localhost` (127.0.0.1) inside a container loops back to that container's interfaces only. Host services listening on host localhost are unreachable via container localhost — use the host gateway IP, `host.docker.internal`, or attach both to a shared user-defined network.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Docker – Category Overview](index.md)
-- [Docker Compose Fundamentals](docker-compose-fundamentals.md) *(previous module)*
-- [Container Registries and Distribution](container-registries-and-distribution.md) *(next in Module 4)*
-- [Networking – Introduction](../networking/introduction-to-networking.md)
-- [Networking – NAT and Port Forwarding](../networking/nat-and-port-forwarding.md)
-- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
-- Interview prep: [Docker Interview Prep](../interview/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Docker Compose Fundamentals](docker-compose-fundamentals.md)
 
 ## References
 
-- [Docker network overview](https://docs.docker.com/network/)
-- [Bridge network driver](https://docs.docker.com/network/drivers/bridge/)
-- [Host network driver](https://docs.docker.com/network/drivers/host/)
-- [Embedded DNS server](https://docs.docker.com/config/containers/container-networking/#dns-services)
-- [Publish ports](https://docs.docker.com/network/port-publishing/)
-- [REBASH Academy – NAT Tutorial](../networking/nat-and-port-forwarding.md)
+- [Docker networking overview](https://docs.docker.com/engine/network/)

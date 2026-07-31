@@ -1,379 +1,231 @@
 ---
-title: Rebasing and Interactive Rebase
-description: Rebase branches onto updated main, rewrite history with interactive rebase, squash and reorder commits, and know when not to rebase.
+title: "Rebasing and Interactive Rebase"
+description: "Rebase branches cleanly, squash with interactive rebase, and know when not to rebase shared history in DevOps teams."
 difficulty: intermediate
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "45–60 min"
+technology: git
 category: git
+module: "Module 7 · Rebasing & History"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - git
+  - rebase
+prerequisites:
+  - git/merging-and-merge-conflicts
+next:
+  - git/undoing-changes-reset-revert-stash
+related:
+  - git/cherry-pick-and-reflog
+  - git/production-git-practices
+labs: []
+projects: []
+interview: interview/git
+certifications:
+  - GitHub Foundations
 tags:
   - git
   - rebase
-  - history
-  - interactive
-prerequisites:
-  - Merging and Merge Conflicts
-  - Branching Fundamentals
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Rebasing and Interactive Rebase
 
 ## Overview
 
-Rebasing replays your commits on top of another branch — producing linear history without merge commits. Interactive rebase lets you squash, reorder, edit, and drop commits before sharing work. Used correctly, rebase keeps main readable; used incorrectly on shared branches, it causes team-wide pain.
+Rebase a feature onto `main`, squash commits interactively, and follow the rule: do not rebase commits already pushed to shared branches without coordination.
 
-This tutorial covers `git rebase`, conflict resolution during rebase, interactive mode, and the golden rule of rebasing.
+Rebase replays commits onto a new base — cleaner linear history, **new SHAs**. Use on local feature branches; prefer merge commits on protected `main` via PR settings.
 
-This is **Tutorial 9** in **Module 3: Branching** of the REBASH Academy Git series.
+This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
 - [Merging and Merge Conflicts](merging-and-merge-conflicts.md)
-- [Branching Fundamentals](branching-fundamentals.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Rebase a feature branch onto updated main
-- [ ] Resolve conflicts during rebase with continue/skip/abort
-- [ ] Use interactive rebase to squash, fixup, and reword commits
-- [ ] Explain rebase vs merge tradeoffs
-- [ ] Apply the golden rule: never rebase shared/public history
-- [ ] Use `git pull --rebase` for cleaner local updates
-- [ ] Recover from rebase mistakes with reflog
+- [ ] `git rebase main` on a feature branch  
+- [ ] Interactive squash (`rebase -i`)  
+- [ ] Abort a rebase  
+- [ ] State the shared-history rule
 
 ## Architecture
 
-Rebase replays commits onto a new base to keep history linear; interactive rebase lets you edit the todo list before applying.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Rebasing and Interactive Rebase](../assets/images/rebasing-and-interactive-rebase.svg)
+![Merge/rebase process](../assets/excalidraw/git-merge-process.svg)
 
 ## Theory
 
-### What Rebase Does
+### What
 
-Rebase finds the common ancestor, temporarily removes your commits, fast-forwards to the target tip, then replays commits one by one:
+**Rebase** replays your commits onto a new base tip, rewriting commit IDs into a linear history. **Interactive rebase** (`git rebase -i`) lets you reorder, squash, reword, or drop commits before sharing. Rebase is a history-editing tool, not a synonym for merge.
 
-```bash
-git switch feature/my-work
-git rebase main
-```
+### Why
 
-Each replayed commit gets a **new SHA** — history is rewritten.
+Teams rebase feature branches onto `origin/main` to reduce noisy merge commits and make review diffs cleaner. Interactive rebase tidies “fix typo” commits before a pull request. The cost is rewritten SHAs — anyone else who based work on the old commits must recover carefully.
 
-### Rebase vs Merge
+### How it works
 
-| Aspect | Merge | Rebase |
-|--------|-------|--------|
-| History | Preserves branch topology | Linear |
-| Merge commits | Yes (non-FF) | No |
-| SHA changes | No | Yes (replayed commits) |
-| Safe on shared branches | Yes | **No** |
-| Best for | Public/main integration | Local cleanup before PR |
-
-### The Golden Rule
-
-**Never rebase commits that exist on shared/public branches** that others may have pulled. Rewriting published history forces painful force-pushes and duplicate work for collaborators.
-
-Safe: rebase local feature branch before opening PR.
-
-Unsafe: rebase main after others cloned it.
-
-### Conflict Resolution During Rebase
-
-When conflict occurs:
-
-1. Fix files (same as merge)
-2. `git add` resolved files
-3. `git rebase --continue`
-
-Other options:
+You check out the feature branch, fetch, then `git rebase origin/main`. Git detaches HEAD at the new base and replays each commit as a patch. Conflicts pause the rebase; fix files, `git add`, then `git rebase --continue`, or `git rebase --abort`. Interactive mode opens an editor with `pick`/`squash`/`reword` lines for a commit range such as `HEAD~3`.
 
 ```bash
-git rebase --skip      # drop current commit
-git rebase --abort     # return to pre-rebase state
-```
-
-### Interactive Rebase
-
-Rewrite last N commits:
-
-```bash
+git switch feature/x
+git fetch origin
+git rebase origin/main
 git rebase -i HEAD~3
+git rebase --abort
 ```
 
-Editor shows:
+### Key concepts
 
-```text
-pick abc1234 feat: add module
-pick def5678 fix typo
-pick ghi9012 wip debug
+| Practice | Guidance |
+|----------|----------|
+| Rebase feature onto main | Common before merge |
+| Rebase shared `main` | Almost never — coordinate as an incident |
+| Squash via `-i` | Clean PR story |
+| `--force-with-lease` | Safer than `--force` after rewriting a pushed branch |
 
-# Commands:
-# p, pick = use commit
-# r, reword = edit message
-# e, edit = stop to amend
-# s, squash = meld into previous
-# f, fixup = squash discarding message
-# d, drop = remove commit
-```
 
-Common workflow before PR: squash WIP commits into one clean commit.
+After a successful rebase of a feature branch that was already pushed, update the remote with `git push --force-with-lease` so you do not overwrite newer commits another engineer pushed. Prefer rebase for cleaning *your* branch; prefer merge commits when you need to preserve exact integration history for audits.
 
-### git pull --rebase
+### Common pitfalls
 
-Default `git pull` merges remote into local. Rebase variant:
-
-```bash
-git pull --rebase origin main
-```
-
-Keeps local unpushed commits on top of remote — cleaner than merge commit on every pull.
-
-Configure globally:
-
-```bash
-git config --global pull.rebase true
-```
-
-### Rebase Onto Different Base
-
-```bash
-git rebase --onto main old-base feature
-```
-
-Useful when feature branch should exclude commits from another feature branch.
-
-### Autosquash
-
-Mark fixups during development:
-
-```bash
-git commit --fixup abc1234
-git rebase -i --autosquash HEAD~5
-```
-
-Fixup commits auto-squash into targets during interactive rebase.
+- Rewriting commits already on protected or shared branches  
+- Continuing past conflicts without running tests  
+- Confusing rebase “theirs/ours” with merge meanings  
+- Using rebase to hide large unfinished work instead of splitting PRs
 
 ## Hands-on Lab
 
-### Step 1 – Build divergent history
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-rebase-lab && cd /tmp/git-rebase-lab
+mkdir -p ~/rebash-git/module-07 && cd ~/rebash-git/module-07
+```
+
+**Focus:** hands-on practice for Rebasing and Interactive Rebase
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Rebasing and Interactive Rebase"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-git/module-07 && cd ~/rebash-git/module-07
 git init -b main
-echo "line1" > app.txt && git add . && git commit -m "feat: line1"
-git switch -c feature
-echo "line2" >> app.txt && git add . && git commit -m "feat: line2"
-echo "line3" >> app.txt && git add . && git commit -m "wip: line3 typo fix later"
+git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
+echo base > f.txt && git add f.txt && git commit -m "chore: base"
+git switch -c feature/rebasedemo
+echo a >> f.txt && git commit -am "feat: a"
+echo b >> f.txt && git commit -am "feat: b"
 git switch main
-echo "main-update" >> app.txt && git add . && git commit -m "fix: main update"
-git log --oneline --all --graph
-```
-
-**Expected result:** After rebase, feature commits sit on top of the updated base in a linear graph.
-
-### Step 2 – Rebase feature onto main
-
-**Command:**
-
-```bash
-git switch feature
+echo main >> f.txt && git commit -am "fix: main"
+git switch feature/rebasedemo
 git rebase main
-git log --oneline --graph --all
+git log --oneline --graph
 ```
 
-**Explanation:** Feature commits now sit on top of main's latest commit.
-
-**Expected result:** Conflict (if induced) pauses rebase; continue completes successfully.
-
-### Step 3 – Interactive rebase to squash
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-GIT_SEQUENCE_EDITOR="sed -i.bak '3s/^pick/squash/'" git rebase -i HEAD~2 2>/dev/null || \
-  git reset --soft HEAD~1 && git commit -m "feat: line2 and line3"
-git log --oneline -3
+# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** In practice, use editor to squash WIP into feature commit. Lab uses reset as fallback for non-interactive environments.
-
-**Expected result:** Interactive todo changes (squash/reword) appear in the rewritten log messages.
-
-### Step 4 – Practice abort
-
-**Command:**
-
-```bash
-git switch main && git switch -c feature-abort
-echo "conflict" > app.txt && git commit -am "feature side"
-git switch main && echo "other" > app.txt && git commit -am "main side"
-git switch feature-abort
-git rebase main || true
-git rebase --abort
-git log --oneline -1
-```
-
-**Expected result:** Abort returns the branch to the pre-rebase tip when practised.
-
-### Step 5 – pull --rebase simulation
-
-**Command:**
-
-```bash
-git init --bare /tmp/rebase-remote.git
-cd /tmp/git-rebase-lab
-git remote add origin /tmp/rebase-remote.git
-git push -u origin main
-echo "local only" >> app.txt && git commit -am "local commit"
-git pull --rebase origin main
-git log --oneline -3
-```
-
-**Expected result:** `--force-with-lease` awareness documented; lab does not wreck a shared remote.
-
-### Step 6 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-rebase-lab rebase-remote.git
-```
-
-**Expected result:** Lab repository removed.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Rebase | Feature commits replay onto updated base; graph is linear as expected |
-| Interactive | Todo edits (squash/reword) reflected in final log |
-| Conflict | Continue/abort paths practised successfully |
-| Cleanup | Lab repo removed; no shared remote force-pushed |
+- [ ] Lab commands run under `~/rebash-git/module-07/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git rebase main` | Rebase current branch onto main | `git rebase main` |
-| `git rebase -i HEAD~N` | Interactive rebase last N commits | `git rebase -i HEAD~4` |
-| `git rebase --continue` | Continue after conflict fix | `git rebase --continue` |
-| `git rebase --abort` | Cancel rebase | `git rebase --abort` |
-| `git pull --rebase` | Pull with rebase | `git pull --rebase origin main` |
-| `git commit --fixup SHA` | Create autosquash target | `git commit --fixup abc1234` |
-| `git rebase --onto A B C` | Rebase C onto A from B | Advanced branch surgery |
+Production practice for **Rebasing and Interactive Rebase** always combines:
 
-### Pre-PR cleanup workflow
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-# On feature branch before opening PR
-git fetch origin
-git rebase origin/main
-git rebase -i origin/main   # squash, reword, drop WIP
-git push --force-with-lease origin feature/my-branch
-```
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Never rebase commits already pushed to shared branches unless the team explicitly agrees
-- Interactive rebase can drop security fixes — verify the todo list carefully
-- Avoid `exec` lines in rebase that run untrusted scripts from the branch being rewritten
-- After rebase, re-run tests and secret scanners before force-with-lease push
-- Keep backup branches (`backup/pre-rebase-…`) until the rewrite is verified
+- Treat credentials and tokens for git as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Rebasing main or shared branches"
-    Force-pushing main breaks everyone's clone. Rebase only private feature branches.
+!!! warning "Rewriting commits already on protected or shared branches  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Force push without --force-with-lease"
-    `--force-with-lease` refuses push if remote advanced — prevents overwriting teammate's work.
+!!! warning "Continuing past conflicts without running tests  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Squashing reviewed commits after approval"
-    Post-approval squash changes SHAs — re-review required. Squash before requesting review.
-
-!!! warning "Interactive rebase on wrong commit count"
-    `HEAD~10` when you meant `HEAD~3` drops commits unintentionally. Verify with `git log` first.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Rebase feature onto main daily"
-    Small incremental rebases beat one giant conflict at PR time.
-
-!!! tip "Use fixup commits during development"
-    `--fixup` + `--autosquash` keeps history clean without manual squash editing.
-
-!!! tip "Document team policy"
-    Some teams prefer merge-only on main. Align with Advanced Git Workflows tutorial.
-
-!!! tip "Reflog is your safety net"
-    Mistakes during rebase recover via `git reflog` — see dedicated tutorial.
+- Encode Rebasing and Interactive Rebase changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Rebase conflict loop | Same hunk conflicts repeatedly | Resolve carefully; consider merge instead |
-| Commits disappeared | Wrong drop/squash in -i | `git reflog`; reset to pre-rebase |
-| Push rejected after rebase | History rewritten | `git push --force-with-lease` |
-| Duplicate commits after rebase | Merged and rebased same branch | Pick one strategy; reset |
-| Empty commit during rebase | Squash left nothing | `git rebase --skip` or `--continue` |
-| `fatal: invalid upstream` | Branch gone | Fetch; verify branch name |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **Rebase** replays commits onto a new base — linear history, new SHAs
-- **Interactive rebase** squashes, reorders, edits, and drops commits before sharing
-- **Golden rule:** never rebase public/shared branch history
-- Resolve rebase conflicts with **continue**, **skip**, or **abort**
-- **git pull --rebase** avoids unnecessary merge commits on local updates
-- Use **--force-with-lease** when pushing rebased branches
+**Rebasing and Interactive Rebase** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What does `git rebase main` do step by step?
-2. What is the golden rule of rebasing?
-3. How does rebase differ from merge in terms of history?
-4. What interactive rebase commands squash commits?
-5. How do you recover from a bad rebase?
-6. When should you use `git pull --rebase`?
-7. What is `--force-with-lease`, and why use it over `--force`?
-8. What does `git rebase --onto` do?
-9. Why do rebased commits get new SHAs?
-10. When is merge preferable to rebase for integrating feature branches?
+1. How does **Rebasing and Interactive Rebase** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1 and 2)"
-
-    **Q1 — git rebase main:** Git finds the merge base between feature and main, saves feature commits as patches, moves feature branch pointer to main's tip, then reapplies each commit sequentially. Conflicts pause for resolution. Result: feature commits appear as if developed on latest main.
-
-    **Q2 — Golden rule:** Do not rebase commits that have been pushed to a branch others use. Rebase rewrites SHAs; collaborators with old SHAs face duplicate commits and conflict hell on pull. Rebase local/unshared work only; integrate shared branches with merge or platform merge button.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Merging and Merge Conflicts](merging-and-merge-conflicts.md) *(previous)*
-- [Working with Remotes](working-with-remotes.md) *(next — Module 4)*
-- [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
-- [Advanced Git Workflows](advanced-git-workflows.md)
-- [Undoing Changes — Reset, Revert, and Stash](undoing-changes-reset-revert-stash.md)
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Undoing Changes — Reset, Revert, and Stash](undoing-changes-reset-revert-stash.md)
 
 ## References
 
-- [Pro Git Book – Rebasing](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
-- [git rebase documentation](https://git-scm.com/docs/git-rebase)
-- [Atlassian – Merging vs rebasing](https://www.atlassian.com/git/tutorials/merging-vs-rebasing)
-- [REBASH Academy – Git Overview](index.md)
+- [Pro Git — Rewriting History](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History)

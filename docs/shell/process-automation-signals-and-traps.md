@@ -46,23 +46,23 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Process Automation — Signals and Traps](../assets/images/shell-process-automation.svg)
+![Architecture diagram for Process Automation — Signals and Traps](../assets/excalidraw/shell-process-automation.svg)
 
 ## Theory
 
-### ps, kill, pkill
+### What it is
 
-`ps aux` / `ps -ef` list processes. `kill -TERM pid` requests graceful stop; `kill -KILL` is last resort. `pkill -f pattern` matches command lines — scope carefully on shared hosts.
+**Process automation** is how scripts start, observe, stop, and clean up other processes. You inspect with `ps`, signal with `kill` / `pkill`, run background work with `&`, `nohup`, `jobs`, and `wait`, and react to **signals** through Bash **`trap`**. Signals such as `SIGINT` (Ctrl-C), `SIGTERM` (systemd or container stop), and the shell’s `EXIT` pseudo-signal let you shut down gracefully instead of leaving temps, locks, or orphan children behind.
 
-### nohup, jobs, wait
+### Why it matters
 
-`nohup cmd &` ignores hangup for ad-hoc jobs (prefer systemd for real services). `jobs` lists shell background tasks; `wait` blocks until children finish and surfaces their status with `pipefail`-aware scripting.
+Schedulers and orchestrators stop workloads with signals, not with a polite chat. A backup script that ignores `SIGTERM` may be killed mid-write; one without an `EXIT` trap may leave lock files that block the next run. Shared hosts make broad `pkill -f` patterns dangerous — you can stop a teammate’s job. Understanding process lifecycle is essential for Continuous Integration (CI) steps, maintenance windows, and any script that spawns helpers.
 
-### Signals
+### How it works
 
-Common signals: `SIGINT` (Ctrl-C), `SIGTERM` (systemd/docker stop), `SIGHUP`, `EXIT` (pseudo-signal for shell cleanup).
+List processes with `ps aux` or `ps -ef`. Request a graceful stop with `kill -TERM pid`; reserve `kill -KILL` for last resort. `pkill -f pattern` matches full command lines — scope carefully. For ad-hoc background work, `nohup cmd &` survives hangup, but long-lived services belong under systemd. Within a script, `jobs` lists background tasks owned by the shell; `wait` blocks until children finish and surfaces their status (pair with `set -o pipefail` where relevant).
 
-### Trap
+Register handlers so cleanup always runs:
 
 ```bash
 cleanup() { rm -rf "${WORKDIR:-}"; }
@@ -71,7 +71,26 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 ```
 
-Always clean temps and lock files on `EXIT`. Keep trap handlers short and idempotent.
+Keep trap handlers short and idempotent: remove temps and locks, then exit with a known code. Avoid complex logic or network calls inside traps.
+
+### Key concepts
+
+| Tool / signal | Role |
+|---------------|------|
+| `ps` | Inspect running processes |
+| `kill -TERM` / `-KILL` | Graceful stop vs last resort |
+| `pkill` | Match by name or pattern (use narrow patterns) |
+| `wait` | Join background children and collect status |
+| `SIGINT` / `SIGTERM` | Interactive interrupt / orchestrator stop |
+| `trap` … `EXIT` | Guaranteed cleanup when the shell ends |
+
+### Common pitfalls
+
+- Using `kill -9` first and skipping graceful shutdown
+- Broad `pkill -f` patterns that match unrelated processes
+- Starting “services” with `nohup` instead of a proper unit file
+- Forgetting `trap` so interrupted runs leave locks and temp trees
+- Putting slow or failing network calls inside trap handlers
 
 ## Hands-on Lab
 

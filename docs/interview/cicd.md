@@ -76,11 +76,11 @@ Use this page as a revision map. Every tutorial in the [CI/CD track](../gitlab/i
 ## Related
 
 - Track: [CI/CD](../gitlab/index.md)
-- [Introduction to CI/CD and Delivery Models](../gitlab/introduction-to-cicd-and-delivery-models.md)
-- [GitLab CI Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
-- [GitLab Merge Requests and Pipeline Triggers](../gitlab/gitlab-merge-requests-and-pipeline-triggers.md)
+- [GitLab CI/CD Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
+- [GitLab Projects, Merge Requests, and Releases](../gitlab/gitlab-projects-mrs-and-releases.md)
 - [GitLab Runners and Executors](../gitlab/gitlab-runners-and-executors.md)
-- [Protected Environments and Approvals](../gitlab/protected-environments-and-approvals.md)
+- [Production Pipelines and Environments](../gitlab/production-pipelines-and-environments.md)
+- [Security Scanning and DevSecOps](../gitlab/security-scanning-and-devsecops.md)
 - Cheat sheet: [GitLab CI/CD cheat sheet](../cheatsheets/cicd.md)
 - Quiz: [CI/CD Fundamentals](../quizzes/cicd-fundamentals.md)
 - Lab: [Pipeline Failure Triage](../labs/cicd-pipeline-triage.md)

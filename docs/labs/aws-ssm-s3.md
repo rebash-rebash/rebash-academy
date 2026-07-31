@@ -48,11 +48,10 @@ By the end of this lab, you will be able to:
 
 ### Knowledge
 
-- [EC2 Fundamentals](../aws/ec2-fundamentals.md) *(Module 3, Tutorial 9)*
-- [User Data, IMDS, and SSM Session Manager](../aws/user-data-imds-and-ssm-session-manager.md) *(Module 3, Tutorial 10)*
-- [S3 Fundamentals](../aws/s3-fundamentals.md) *(Module 4, Tutorial 12)*
-- [S3 Security and Static Hosting](../aws/s3-security-and-static-hosting.md) *(Module 4, Tutorial 13)*
-- [IAM Fundamentals](../aws/iam-fundamentals.md) *(Module 1, Tutorial 3)*
+- [IAM, Identity Access, and Organizations](../aws/iam-identity-access-and-organizations.md) *(Module 2)*
+- [Compute — EC2, ASG, and Load Balancing](../aws/compute-ec2-asg-and-load-balancing.md) *(Module 4)*
+- [Storage — S3, EBS, EFS](../aws/storage-s3-ebs-efs.md) *(Module 5)*
+- [Troubleshooting AWS](../aws/troubleshooting-aws.md) *(Module 16)*
 
 ### Software
 
@@ -454,8 +453,8 @@ Explain the no-SSH admin pattern: instance profile, SSM agent outbound, Session 
 ## Related Tutorials
 
 - [AWS](../aws/index.md)
-- [User Data, IMDS, and SSM Session Manager](../aws/user-data-imds-and-ssm-session-manager.md)
-- [S3 Security and Static Hosting](../aws/s3-security-and-static-hosting.md)
+- [Compute — EC2, ASG, and Load Balancing](../aws/compute-ec2-asg-and-load-balancing.md)
+- [Storage — S3, EBS, EFS](../aws/storage-s3-ebs-efs.md)
 - Related lab: [AWS IAM and VPC Reachability Triage](aws-iam-vpc-triage.md)
 - Quiz: [AWS Fundamentals](../quizzes/aws-fundamentals.md)
 - Cheat sheet: [AWS](../cheatsheets/aws.md)

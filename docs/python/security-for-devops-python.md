@@ -1,217 +1,294 @@
 ---
 title: "Security for DevOps Python"
-description: "Secret management, encryption, hashing, secure coding, input validation, dependency scanning, and supply chain security."
+description: "Secure DevOps Python — secret management, hashing, encryption basics, input validation, secure coding, and dependency/supply-chain scanning."
 difficulty: advanced
-estimated_time: "55 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "50–65 min"
+technology: python
 category: python
-tags:
+module: "Module 25 · Security"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
+skills:
   - python
   - security
   - secrets
   - supply-chain
 prerequisites:
-  - Production Engineering Patterns
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - python/production-engineering-patterns
+next:
+  - python/ai-for-devops-openai-mcp-langchain
+related:
+  - python/configuration-management-and-secrets
+  - labs/python-secrets-scanner
+labs:
+  - labs/python-secrets-scanner
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
+tags:
+  - python
+  - security
+  - secrets
+  - supply-chain
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Security for DevOps Python
 
 ## Overview
 
-Automation runs with powerful credentials. Secure coding and supply-chain hygiene are mandatory.
+Apply secure coding defaults to automation: secrets handling, input validation, hashing/TLS basics, and dependency scanning habits that catch leaked tokens and vulnerable packages.
 
-This is **Tutorial 25** in **Module 25: Security** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Ops scripts often hold the keys to production. Treat every CLI as a privileged program: validate inputs, never log secrets, pin and scan dependencies, prefer cloud IAM over static keys.
+
+Complete [Production Engineering](production-engineering-patterns.md) and [Configuration/Secrets](configuration-management-and-secrets.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 25 · Security** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Production Engineering Patterns
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Configuration Management and Secrets](configuration-management-and-secrets.md)
+- [File Handling](file-handling-pathlib-json-yaml-csv.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Security for DevOps Python” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] List secret-management rules for CLIs and CI  
+- [ ] Hash data correctly (password vs integrity)  
+- [ ] Validate and sanitise paths/args  
+- [ ] Explain TLS verification for HTTP clients  
+- [ ] Run a simple secrets-scan pattern on a tree  
+- [ ] Outline dependency scanning in CI
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Security for DevOps Python](../assets/images/python-security-devops.svg)
+![Security for DevOps Python](../assets/excalidraw/python-security-devops.svg)
 
 ## Theory
 
-### Secret Management
+### What it is
 
-Load from env/secret managers; never commit; rotate; scope least privilege; redact logs.
+Security for DevOps Python is the set of habits that keep automation from becoming an attack path: how you store secrets, verify Transport Layer Security (TLS), hash artefacts, avoid injection via `subprocess`, and trust your dependency supply chain. It is not a cryptography course — it is operational hygiene for scripts that hold cloud keys, talk to clusters, and run in Continuous Integration (CI).
 
-### Encryption
+### Why it matters
 
-Use TLS for networks. For data at rest, prefer platform KMS. Do not invent crypto — use `cryptography` library primitives correctly.
+A leaked token in git history or a log line can open every account the bot can touch. `shell=True` with untrusted input is a classic remote execution bug. Typosquat packages on the Python Package Index (PyPI) have targeted DevOps tooling specifically. Treating security as “someone else’s job” means your inventory script becomes the breach.
 
-### Hashing
+### How it works
 
-Prefer `hashlib` for integrity checksums (SHA-256). For passwords, use purpose-built KDFs (bcrypt/argon2) — not raw SHA.
+**Secrets** live in the environment, a secret manager, or CI secret stores — never in the repo. Prefer short-lived credentials from instance roles or OpenID Connect (OIDC) federation. Redact tokens in logs and exception messages; avoid placing secrets on the command line (shell history and process lists). **Integrity** uses `hashlib` for file digests; password storage needs a dedicated key-derivation function (argon2/bcrypt), not raw SHA. **In transit**, verify TLS certificates. **At rest**, use platform Key Management Service (KMS), age, or SOPS for encrypted files. **Supply chain**: pin dependencies, review lockfile diffs, and run `pip audit` / OSV scanners in CI.
 
-### Secure Coding
+### Key concepts and comparisons
 
-No `shell=True`, no `eval`, no `pickle` of untrusted data, no YAML `load` without SafeLoader, path traversal checks before writes/deletes.
+| Goal | Tooling |
+|------|---------|
+| File integrity | `hashlib.sha256` |
+| Password storage | argon2 / bcrypt — not raw SHA |
+| In transit | TLS with verification |
+| At rest | KMS / age / SOPS |
+| Authz for APIs | Least-privilege IAM / RBAC tokens |
 
-### Input Validation
+| Practice | Do | Avoid |
+|----------|-----|--------|
+| Secrets | Env / manager / CI | Git, Docker layers, argv |
+| Subprocess | Argument lists | `shell=True` + user input |
+| Paths | Confine under a root | Open any absolute path from input |
+| Auth missing | Fail closed | Silent anonymous “success” |
 
-Allow-list hosts, namespaces, and path prefixes. Reject surprising characters in CLI args used for filesystem or shell-adjacent operations.
+### Common pitfalls
 
-### Dependency Scanning
-
-Run `pip-audit` / OSV scanners in CI. Fail on known critical CVEs for runtime deps.
-
-### Supply Chain Security
-
-Pin digests where possible, verify signatures when available, prefer trusted indexes, and review new dependencies like production code.
+- Printing `os.environ` or full HTTP headers in debug mode.  
+- Disabling TLS verify “temporarily” and shipping it.  
+- Committing `.env` or kubeconfig with tokens.  
+- Installing packages by approximate name (typosquatting).  
+- Granting admin cloud roles to a CI job that only needs `describe`/`list`.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Security for DevOps Python
 
 ```bash
-mkdir -p ~/rebash-python/lab25 && cd ~/rebash-python/lab25
+mkdir -p ~/rebash-python/module-25
+cd ~/rebash-python/module-25
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 ```
 
-**Focus:** secrets scanner for accidental tokens in files; pip-audit if available
-
-### Step 1 – Skeleton
+### Step 1 – Hash a file for integrity
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab25 security-for-devops-python")
+cd ~/rebash-python/module-25
+source .venv/bin/activate
+
+echo 'payload' > artefact.txt
+python - <<'PY'
+import hashlib
+from pathlib import Path
+data = Path("artefact.txt").read_bytes()
+print(hashlib.sha256(data).hexdigest())
+PY
+```
+
+### Step 2 – Tiny secrets scanner
+
+```bash
+mkdir -p sample_repo
+cat > sample_repo/leak.env << 'EOF'
+# pretend bad commit
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 EOF
-chmod +x lab.py
-python3 lab.py
-```
 
-### Step 2 – Secrets scanner
-
-```bash
-mkdir -p sample
-printf 'token = "ghp_EXAMPLESECRETVALUE1234567890"\n' > sample/bad.py
-printf 'print("hello")\n' > sample/good.py
-cat > scan.py << 'EOF'
+cat > scan_secrets.py << 'EOF'
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import re
+import sys
 from pathlib import Path
 
-PAT = re.compile(r"ghp_[A-Za-z0-9]{20,}")
-findings = []
-for path in Path("sample").rglob("*.py"):
-    text = path.read_text()
-    if PAT.search(text):
-        findings.append(str(path))
-print("findings=", findings)
-print("RESULT ok" if findings else "RESULT clean")
-raise SystemExit(0 if findings else 0)
+PATTERNS = [
+    re.compile(r"AWS_SECRET_ACCESS_KEY\s*=\s*\S+"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+    re.compile(r"BEGIN (RSA |OPENSSH )?PRIVATE KEY"),
+]
+
+
+def main() -> int:
+    root = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
+    findings = 0
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        if any(part.startswith(".venv") for part in path.parts):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        for pat in PATTERNS:
+            if pat.search(text):
+                print(f"finding path={path} pattern={pat.pattern}")
+                findings += 1
+                break
+    return 1 if findings else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-python3 scan.py
-command -v pip-audit >/dev/null && pip-audit || echo 'pip-audit optional'
+
+python scan_secrets.py sample_repo; echo exit=$?
 ```
 
-### Final step – Cleanup note
+### Step 3 – TLS verify reminder
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+import urllib.request
+# Default context verifies certificates — do not disable in production
+print("use requests/httpx defaults; never verify=False for prod APIs")
+PY
+```
+
+### Step 4 – Dependency audit (optional)
+
+```bash
+python -m pip install pip-audit -q && python -m pip audit || echo "pip-audit optional"
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab25/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-25/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Security for DevOps Python** always combines:
+Production practice for **Security for DevOps Python** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Printing `os.environ` or full HTTP headers in debug mode.  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Disabling TLS verify “temporarily” and shipping it.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Security for DevOps Python changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| Secret in CI logs | Debug print | Redact; scrub history |
+| False positives | Broad regex | Tune; allow-list test fixtures |
+| Audit noise | Transitive CVEs | Pin/upgrade; risk-accept with ticket |
 
 ## Summary
 
-**Security for DevOps Python** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Secrets out of git/logs/argv  
+- Validate inputs; verify TLS  
+- Scan code and dependencies in CI  
+- Lab: [Secrets Scanner](../labs/python-secrets-scanner.md)
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Security for DevOps Python** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Production Engineering Patterns](production-engineering-patterns.md) *(previous)*
-- [AI for DevOps — OpenAI, MCP, and LangChain](ai-for-devops-openai-mcp-langchain.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [AI for DevOps — OpenAI, MCP, and LangChain](ai-for-devops-openai-mcp-langchain.md)  
+- [Secrets Scanner lab](../labs/python-secrets-scanner.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/)  
+- [pip-audit](https://pypi.org/project/pip-audit/)

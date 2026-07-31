@@ -1,390 +1,229 @@
 ---
-title: Undoing Changes — Reset, Revert, and Stash
-description: Discard, reset, revert, and stash changes safely; understand soft, mixed, and hard reset; recover work without breaking shared history.
+title: "Undoing Changes — Reset, Revert, and Stash"
+description: "Undo safely with restore, reset, revert, and stash — choose the right tool for local vs published history in DevOps workflows."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "40–55 min"
+technology: git
 category: git
+module: "Module 7 · Rebasing & History"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - git
+  - reset
+  - revert
+  - stash
+prerequisites:
+  - git/rebasing-and-interactive-rebase
+next:
+  - git/cherry-pick-and-reflog
+related:
+  - git/git-troubleshooting
+labs: []
+projects: []
+interview: interview/git
+certifications:
+  - GitHub Foundations
 tags:
   - git
   - reset
   - revert
   - stash
-  - recovery
-prerequisites:
-  - gitignore and gitattributes
-  - Basic Git Workflow — Add, Commit, Push
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Undoing Changes — Reset, Revert, and Stash
 
 ## Overview
 
-Mistakes happen — wrong commit on main, accidental `git add` of secrets, need to context-switch mid-feature. Git provides reset, revert, restore, and stash to undo work at different levels. Choosing the wrong tool on shared branches causes outages; choosing the right one saves production.
+Pick the correct undo tool: `restore` for files, `stash` for WIP, `reset` for local history, `revert` for published commits.
 
-This is **Tutorial 13** in **Module 5: Recovery & Debugging** of the REBASH Academy Git series.
+**Reset** moves branch pointers (dangerous if pushed). **Revert** adds a new commit that undoes a previous one — safe on `main`. **Stash** shelves WIP.
+
+This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [gitignore and gitattributes](gitignore-and-gitattributes.md)
-- [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+- [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Distinguish reset, revert, restore, and stash
-- [ ] Apply soft, mixed, and hard reset appropriately
-- [ ] Revert commits on shared branches safely
-- [ ] Stash and restore work-in-progress changes
-- [ ] Unstage and discard working directory changes
-- [ ] Know when NOT to reset shared history
-- [ ] Recover from accidental hard reset using reflog
+- [ ] `git restore` / `restore --staged`  
+- [ ] `stash` / `stash pop`  
+- [ ] Soft/mixed/hard reset differences  
+- [ ] `git revert` on shared branches
 
 ## Architecture
 
-Reset moves branch tips locally, revert adds an inverse commit for shared history, and stash shelves unfinished work.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Undoing Changes — Reset, Revert, and Stash](../assets/images/undoing-changes-reset-revert-stash.svg)
+![Architecture diagram for Undoing Changes — Reset, Revert, and Stash](../assets/excalidraw/git-workflow.svg)
 
 ## Theory
 
-### Levels of Undo
+### What
 
-| Scope | Undo tool |
-|-------|-----------|
-| Uncommitted file edits | `git restore file` |
-| Staged but uncommitted | `git restore --staged file` |
-| Last commit (local, unpushed) | `git reset --soft HEAD~1` |
-| Published commit on shared branch | `git revert` |
-| Temporary context switch | `git stash` |
+Git offers several “undo” tools with different safety profiles. `git restore` fixes the working tree or unstages paths. `git stash` shelves work in progress. `git reset` moves a branch pointer (and optionally the index/working tree). `git revert` creates a *new* commit that undoes an earlier one — preferred on shared branches.
 
-### git restore (Git 2.23+)
+### Why
 
-```bash
-git restore app.yaml              # discard working changes
-git restore --staged app.yaml     # unstage
-git restore --source=HEAD~1 file  # restore file from old commit
-```
+Choosing the wrong undo destroys collaboration. Resetting `main` after others pulled rewrites public history. Revert keeps history honest for audit and GitOps. Stash prevents dirty-tree blockers when you must hot-fix another branch.
 
-Replaces older `git checkout -- file` pattern.
+### How it works
 
-### git reset — Three Modes
+Unstaged edits to a tracked file can be discarded with `git restore file`. Staged-but-unwanted paths use `git restore --staged`. Stash (`git stash -u` to include untracked) records a WIP commit-like object you can `pop` or `apply` later. `reset --soft` moves HEAD and keeps the index; `--mixed` (default) moves HEAD and resets the index; `--hard` also resets the working tree — destructive. On `main`, prefer `git revert <sha>` so the undo is reviewable.
 
-Moves branch pointer; optionally affects staging and working tree:
+| Situation | Tool |
+|-----------|------|
+| Discard unstaged edits | `git restore file` |
+| Unstage | `git restore --staged file` |
+| WIP switch branch | `git stash -u` |
+| Rewrite *local* commits | `git reset` |
+| Undo on shared `main` | `git revert <sha>` |
 
-| Mode | Moves branch | Staging | Working tree |
-|------|--------------|---------|--------------|
-| `--soft` | Yes | Unchanged | Unchanged |
-| `--mixed` (default) | Yes | Reset | Unchanged |
-| `--hard` | Yes | Reset | Reset |
+### Key concepts
 
-```bash
-git reset --soft HEAD~1    # undo commit, keep changes staged
-git reset HEAD~1           # undo commit, keep changes unstaged
-git reset --hard HEAD~1    # destroy commit AND changes — dangerous
-```
+- **Safe vs destructive** — revert and restore are usually safer than hard reset  
+- **Reflog** still remembers pre-reset positions for a while  
+- **Stash is local** — it is not a backup strategy for a team  
+- **Recoverability** — hard reset does not immediately delete objects  
 
-**Hard reset on shared branches is catastrophic** — use revert instead.
+### Common pitfalls
 
-### git revert
-
-Creates a **new commit** that inverse-applies a previous commit:
-
-```bash
-git revert abc1234
-git revert HEAD
-git revert -m 1 MERGE_COMMIT   # revert merge (mainline parent 1)
-```
-
-Safe for production — history preserved; audit trail shows explicit undo.
-
-### git stash
-
-Temporarily shelves uncommitted changes:
-
-```bash
-git stash push -m "wip: healthcheck"
-git stash list
-git stash pop                  # apply and remove
-git stash apply stash@{0}      # apply keep stash
-git stash drop stash@{0}
-```
-
-Stash including untracked:
-
-```bash
-git stash push -u -m "including new files"
-```
-
-### Stash vs Commit
-
-Stash for dirty tree when switching branches; commit for work worth preserving in history.
-
-### Reset vs Revert Decision Tree
-
-- **Unpushed local commits?** → reset OK
-- **Already pushed to shared branch?** → revert
-- **Need to remove secret from history?** → filter-repo + force push (emergency, coordinated)
-
-### ORIG_HEAD and Reflog
-
-Git saves previous HEAD in `ORIG_HEAD` after destructive operations. **Reflog** records all HEAD movements — recovery safety net (next tutorials expand).
-
-### Production Rollback Scenarios
-
-| Scenario | Recommended tool | Why |
-|----------|------------------|-----|
-| Bad commit merged to main, already deployed | `git revert` | Preserves audit trail; triggers normal CI/CD |
-| Wrong files staged locally, not pushed | `git restore --staged` | No history impact |
-| Need to discard local experiment | `git restore .` or `git stash` | Working tree only |
-| Catastrophic merge on unpushed branch | `git reset --hard ORIG_HEAD` | Local recovery |
-| Context switch mid-Terraform edit | `git stash push -u` | Resume later without commit noise |
-
-In regulated environments, **revert** is preferred because compliance auditors see an explicit undo commit linked to the incident ticket. Reset on shared branches requires force push — almost never approved for `main` or production branches.
-
-### Stash Stack Management
-
-Multiple stashes form a stack — newest first in `git stash list`:
-
-```bash
-git stash list
-git stash apply stash@{2}    # apply older stash without removing
-git stash drop stash@{0}     # remove top stash after manual merge
-git stash clear              # delete all stashes — use carefully
-```
-
-Name stashes descriptively in team environments so `stash@{0}` is identifiable during incident handoffs.
+- `reset --hard` on the wrong branch  
+- Stashing secrets then sharing a patch from the stash  
+- Reverting a merge commit without understanding `-m` parent selection  
+- Using reset to “clean” a laptop problem on a shared remote branch
 
 ## Hands-on Lab
 
-### Step 1 – Setup with commits
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-undo-lab && cd /tmp/git-undo-lab
+mkdir -p ~/rebash-git/module-07-undo && cd ~/rebash-git/module-07-undo
+```
+
+**Focus:** hands-on practice for Undoing Changes — Reset, Revert, and Stash
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Undoing Changes — Reset, Revert, and Stash"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-git/module-07-undo && cd ~/rebash-git/module-07-undo
 git init -b main
-echo "v1" > app.txt && git add . && git commit -m "feat: v1"
-echo "v2" >> app.txt && git add . && git commit -m "feat: v2"
-echo "v3" >> app.txt && git add . && git commit -m "feat: v3"
+git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
+echo 1 > a.txt && git add a.txt && git commit -m "chore: 1"
+echo 2 > a.txt && git commit -am "chore: 2"
+echo dirty > a.txt
+git restore a.txt
+echo stashme > b.txt && git stash push -u -m "wip"
+git stash list
+git stash pop
+git revert --no-edit HEAD
 git log --oneline
 ```
 
-**Expected result:** Soft reset keeps changes staged; mixed keeps them unstaged; hard clears the working tree as shown.
-
-### Step 2 – Soft reset
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-git reset --soft HEAD~1
-git status
-git log --oneline -2
-git commit -m "feat: v3 improved message"
+# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected result:** `git revert` adds a new commit that undoes the target change on the branch tip.
-
-### Step 3 – Mixed reset and restore
-
-**Command:**
-
-```bash
-echo "mistake" >> app.txt
-git add app.txt
-git reset HEAD app.txt
-git status
-git restore app.txt
-cat app.txt
-```
-
-**Expected result:** Stash list gains an entry; `stash pop`/`apply` restores the working tree files.
-
-### Step 4 – Stash workflow
-
-**Command:**
-
-```bash
-echo "wip feature" >> feature.txt
-git stash push -u -m "wip feature file"
-git status
-git stash list
-git stash pop
-git status
-```
-
-**Expected result:** Reflog still references pre-reset commits for recovery.
-
-### Step 5 – Revert (simulating shared branch)
-
-**Command:**
-
-```bash
-BAD=$(git rev-parse HEAD~1)
-git revert --no-edit "$BAD"
-git log --oneline -5
-cat app.txt
-```
-
-**Expected result:** Partial stash or path-limited undo behaves as the step describes.
-
-### Step 6 – Hard reset and reflog recovery
-
-**Command:**
-
-```bash
-BEFORE=$(git rev-parse HEAD)
-git reset --hard HEAD~2
-git log --oneline -3
-git reset --hard "$BEFORE"
-git log --oneline -3
-```
-
-**Expected result:** Status is clean after the final recovery path.
-
-### Step 7 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-undo-lab
-```
-
-**Expected result:** Lab repository removed.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Soft/mixed/hard | Each reset mode leaves the expected working/index/HEAD state |
-| Revert | New revert commit undoes the change on a shared-style branch |
-| Stash | Stash pop/apply restores work; stash list behaves as shown |
-| Cleanup | Lab repo removed |
+- [ ] Lab commands run under `~/rebash-git/module-07-undo/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git restore file` | Discard working changes | `git restore deploy.yaml` |
-| `git restore --staged file` | Unstage | `git restore --staged .` |
-| `git reset --soft HEAD~1` | Undo commit, keep staged | Soft reset last commit |
-| `git reset --hard HEAD~1` | Undo commit, discard all | **Dangerous** |
-| `git revert SHA` | Inverse commit on shared branch | `git revert abc1234` |
-| `git stash push -m "msg"` | Shelve WIP | `git stash push -u` |
-| `git stash pop` | Apply and remove stash | After context switch |
+Production practice for **Undoing Changes — Reset, Revert, and Stash** always combines:
 
-### Emergency revert script
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-#!/usr/bin/env bash
-# revert-last-main.sh — safely revert latest commit on main
-set -euo pipefail
-git switch main
-git pull --ff-only origin main
-git revert --no-edit HEAD
-git push origin main
-echo "Reverted $(git rev-parse HEAD~1) on main."
-```
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Prefer `git revert` on shared history; `reset --hard` is for local recovery only
-- Stash contents can hold secrets — do not stash on shared jump hosts without clearing later
-- Confirm the target SHA twice before hard reset; reflog is time-limited insurance
-- Coordinate before resetting branches others may have based work on
-- After recovering from a bad reset, rotate any credentials that appeared in recovered files
+- Treat credentials and tokens for git as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "git reset --hard on shared main"
-    Rewrites history others depend on. Use revert for published commits.
+!!! warning "`reset --hard` on the wrong branch  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Stashing secrets"
-    Stash contents persist in `.git/` — don't stash files with credentials long-term.
+!!! warning "Stashing secrets then sharing a patch from the stash  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Revert merge without -m"
-    Reverting merge commits requires specifying mainline parent: `git revert -m 1 SHA`.
-
-!!! warning "Assuming reset is undoable forever"
-    Reflog expires (~90 days default). Hard reset + gc may lose recovery path.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Prefer revert for production rollbacks"
-    Creates auditable undo commit; triggers CI same as any push.
-
-!!! tip "Use stash with descriptive messages"
-    `git stash push -m "JIRA-123 half-done IAM policy"` — not bare stash.
-
-!!! tip "Soft reset to reword unpushed commits"
-    Alternative to amend when multiple commits need message fix.
-
-!!! tip "Document rollback runbooks with revert commands"
-    On-call should revert SHA, not force-push main.
+- Encode Undoing Changes — Reset, Revert, and Stash changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Changes lost after hard reset | Hard reset discarded work | `git reflog`; reset to old SHA |
-| Revert conflict | Overlapping later changes | Resolve; complete revert commit |
-| Stash pop conflict | Diverged branch since stash | Resolve conflicts; drop stash manually |
-| Cannot revert merge | Missing -m flag | `git revert -m 1 MERGE_SHA` |
-| restore: path not found | Wrong path or deleted | Check `git status` paths |
-| Reset doesn't affect remote | Reset is local only | Force push (dangerous) or revert |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **restore** discards unstaged changes; **restore --staged** unstages
-- **reset --soft/mixed/hard** moves branch pointer; hard destroys uncommitted work
-- **revert** adds inverse commit — safe for shared/production branches
-- **stash** temporarily shelves WIP for branch switches
-- Unpushed history: reset OK; published history: revert; recovery: reflog
+**Undoing Changes — Reset, Revert, and Stash** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What is the difference between reset and revert?
-2. Explain soft, mixed, and hard reset.
-3. When is hard reset appropriate?
-4. How does git stash work?
-5. How do you unstage a file without losing edits?
-6. How do you revert a merge commit?
-7. Why should you avoid reset on shared branches?
-8. What is ORIG_HEAD?
-9. How do you recover after accidental git reset --hard?
-10. When use stash vs temporary commit?
+1. How does **Undoing Changes — Reset, Revert, and Stash** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1 and 2)"
-
-    **Q1 — reset vs revert:** Reset moves the branch pointer backward, optionally discarding staging and working tree changes — rewrites local history. Revert creates a new commit applying the inverse patch of a target commit — preserves history. Use reset for unpushed local fixes; revert for shared branches.
-
-    **Q2 — Reset modes:** Soft moves HEAD only — commits become staged changes. Mixed (default) moves HEAD and resets index — commits become unstaged working changes. Hard moves HEAD, resets index, and overwrites working tree to match — discards uncommitted work entirely.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [gitignore and gitattributes](gitignore-and-gitattributes.md) *(previous — Module 4)*
-- [Cherry-pick and Reflog](cherry-pick-and-reflog.md) *(next)*
-- [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
-- [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
-- [Git – Category Overview](index.md)
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 
 ## References
 
-- [Pro Git Book – Undoing Things](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
-- [git reset documentation](https://git-scm.com/docs/git-reset)
-- [git revert documentation](https://git-scm.com/docs/git-revert)
-- [git stash documentation](https://git-scm.com/docs/git-stash)
-- [REBASH Academy – Git Overview](index.md)
+- [git-reset](https://git-scm.com/docs/git-reset) · [git-revert](https://git-scm.com/docs/git-revert)

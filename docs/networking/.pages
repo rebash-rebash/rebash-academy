@@ -2,35 +2,49 @@ title: Networking
 icon: material/lan
 nav:
   - index.md
-  - Foundations:
+  - Module 1 · Fundamentals:
     - introduction-to-networking.md
-    - osi-and-tcp-ip-models.md
-    - ip-addressing-and-subnetting.md
-  - Data Link & Routing:
-    - ethernet-switching-and-vlans.md
+  - Module 2 · OSI Model:
+    - osi-model.md
+  - Module 3 · TCP/IP Model:
+    - tcp-ip-model.md
+  - Module 4 · IP Addressing:
+    - ip-addressing.md
+  - Module 5 · Subnetting:
+    - subnetting-and-vlsm.md
+  - Module 6 · Routing:
     - routing-fundamentals.md
+  - Module 7 · Switching:
+    - ethernet-switching-and-vlans.md
     - icmp-arp-dhcp-and-network-services.md
-  - Transport & DNS:
+  - Module 8 · TCP & UDP:
     - tcp-and-udp-deep-dive.md
+  - Module 9 · DNS:
     - dns-fundamentals.md
     - dns-records-and-troubleshooting.md
-  - Application Layer:
+  - Module 10 · HTTP & HTTPS:
     - http-https-and-application-layer.md
+  - Module 11 · NAT & Firewalls:
+    - nat-and-port-forwarding.md
     - firewalls-and-access-control.md
+  - Module 12 · Linux Networking:
+    - linux-networking-toolkit.md
+  - Module 13 · Load Balancing:
     - load-balancing-fundamentals.md
     - reverse-proxy-and-ingress-basics.md
-  - Troubleshooting:
-    - network-troubleshooting-methodology.md
-    - packet-analysis-tcpdump-wireshark.md
-  - Cloud & Advanced:
+  - Module 14 · Kubernetes Networking:
+    - kubernetes-networking-fundamentals.md
+  - Module 15 · Cloud Networking:
     - cloud-networking-vpc-and-subnets.md
-    - nat-and-port-forwarding.md
+  - Module 16 · Production Networking:
     - vpn-and-tunneling-basics.md
     - network-security-hardening.md
-    - network-automation-and-monitoring.md
-  - Production Network Operations:
     - network-segmentation-and-trust-boundaries.md
+    - network-automation-and-monitoring.md
     - production-dns-operations.md
     - load-balancer-operations-and-health-checks.md
     - firewall-change-control-and-production-acls.md
+  - Module 17 · Troubleshooting:
+    - network-troubleshooting-methodology.md
+    - packet-analysis-tcpdump-wireshark.md
     - network-incident-response-and-observability.md

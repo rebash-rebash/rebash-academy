@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="200"
+     viewBox="0 0 780 200" role="img" aria-label="linux-security-layers">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="390.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Linux security layers</text>
+
+  <path d="M 52.1,72.7 L 183.4,73.1 Q 193.4,73.1 193.4,83.1 L 193.4,132.6 Q 193.4,142.6 183.4,142.6 L 53.4,142.9 Q 43.4,142.9 43.4,132.9 L 42.1,82.7 Q 42.1,72.7 52.1,72.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.5,69.3 L 180.5,69.5 Q 190.5,69.5 190.5,79.5 L 190.0,129.5 Q 190.0,139.5 180.0,139.5 L 49.0,141.0 Q 39.0,141.0 39.0,131.0 L 39.5,79.3 Q 39.5,69.3 49.5,69.3 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">PAM</text>
+  <text x="115.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">auth stack</text>
+
+
+  <path d="M 232.4,73.1 L 363.2,73.7 Q 373.2,73.7 373.2,83.7 L 373.8,133.1 Q 373.8,143.1 363.8,143.1 L 233.8,142.2 Q 223.8,142.2 223.8,132.2 L 222.4,83.1 Q 222.4,73.1 232.4,73.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 229.4,70.8 L 360.1,70.5 Q 370.1,70.5 370.1,80.5 L 370.5,130.9 Q 370.5,140.9 360.5,140.9 L 229.2,140.1 Q 219.2,140.1 219.2,130.1 L 219.4,80.8 Q 219.4,70.8 229.4,70.8 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="295.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">MAC</text>
+  <text x="295.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">SELinux/AppArmor</text>
+
+
+  <path d="M 413.6,73.4 L 542.9,72.6 Q 552.9,72.6 552.9,82.6 L 552.8,132.9 Q 552.8,142.9 542.8,142.9 L 413.7,142.7 Q 403.7,142.7 403.7,132.7 L 403.6,83.4 Q 403.6,73.4 413.6,73.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 409.4,70.1 L 540.5,70.8 Q 550.5,70.8 550.5,80.8 L 549.7,129.3 Q 549.7,139.3 539.7,139.3 L 409.4,141.0 Q 399.4,141.0 399.4,131.0 L 399.4,80.1 Q 399.4,70.1 409.4,70.1 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="475.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Audit</text>
+  <text x="475.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">auditd</text>
+
+
+  <path d="M 593.4,72.6 L 732.0,72.0 Q 742.0,72.0 742.0,82.0 L 743.4,133.6 Q 743.4,143.6 733.4,143.6 L 593.8,143.9 Q 583.8,143.9 583.8,133.9 L 583.4,82.6 Q 583.4,72.6 593.4,72.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 589.2,69.2 L 729.2,69.4 Q 739.2,69.4 739.2,79.4 L 740.9,130.9 Q 740.9,140.9 730.9,140.9 L 590.3,140.8 Q 580.3,140.8 580.3,130.8 L 579.2,79.2 Q 579.2,69.2 589.2,69.2 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="660.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Fail2Ban</text>
+  <text x="660.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">bruteforce</text>
+
+
+  <path d="M 190.0,105.0 L 200.9,104.4 L 208.8,106.1 L 220.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 220.0,105.0 L 213.1,109.0 M 220.0,105.0 L 213.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 370.0,105.0 L 380.9,104.3 L 389.9,104.5 L 400.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 400.0,105.0 L 393.1,109.0 M 400.0,105.0 L 393.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 550.0,105.0 L 560.1,106.1 L 568.9,104.4 L 580.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 580.0,105.0 L 573.1,109.0 M 580.0,105.0 L 573.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

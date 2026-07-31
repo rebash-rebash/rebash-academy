@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="200"
+     viewBox="0 0 700 200" role="img" aria-label="aws-three-tier">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Three-tier application</text>
+
+  <path d="M 52.6,83.8 L 213.9,82.1 Q 223.9,82.1 223.9,92.1 L 223.6,143.1 Q 223.6,153.1 213.6,153.1 L 52.6,152.5 Q 42.6,152.5 42.6,142.5 L 42.6,93.8 Q 42.6,83.8 52.6,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.8,79.8 L 209.6,79.5 Q 219.6,79.5 219.6,89.5 L 219.2,139.8 Q 219.2,149.8 209.2,149.8 L 49.6,150.4 Q 39.6,150.4 39.6,140.4 L 39.8,89.8 Q 39.8,79.8 49.8,79.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="130.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Presentation</text>
+  <text x="130.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">ALB · CDN</text>
+
+
+  <path d="M 272.6,82.9 L 432.5,82.4 Q 442.5,82.4 442.5,92.4 L 443.7,143.5 Q 443.7,153.5 433.7,153.5 L 272.8,153.1 Q 262.8,153.1 262.8,143.1 L 262.6,92.9 Q 262.6,82.9 272.6,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 269.2,79.1 L 429.7,79.9 Q 439.7,79.9 439.7,89.9 L 439.2,140.0 Q 439.2,150.0 429.2,150.0 L 270.6,150.9 Q 260.6,150.9 260.6,140.9 L 259.2,89.1 Q 259.2,79.1 269.2,79.1 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="350.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Application</text>
+  <text x="350.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">ASG · ECS</text>
+
+
+  <path d="M 493.0,82.8 L 652.8,83.5 Q 662.8,83.5 662.8,93.5 L 663.6,143.5 Q 663.6,153.5 653.6,153.5 L 492.5,153.6 Q 482.5,153.6 482.5,143.6 L 483.0,92.8 Q 483.0,82.8 493.0,82.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 490.1,79.4 L 649.2,79.8 Q 659.2,79.8 659.2,89.8 L 659.0,140.8 Q 659.0,150.8 649.0,150.8 L 489.9,150.8 Q 479.9,150.8 479.9,140.8 L 480.1,89.4 Q 480.1,79.4 490.1,79.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="570.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Data</text>
+  <text x="570.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">RDS · cache</text>
+
+
+  <path d="M 220.0,115.0 L 232.8,115.0 L 246.5,115.3 L 260.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 260.0,115.0 L 253.1,119.0 M 260.0,115.0 L 253.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 440.0,115.0 L 453.6,115.3 L 466.3,114.6 L 480.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 480.0,115.0 L 473.1,119.0 M 480.0,115.0 L 473.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

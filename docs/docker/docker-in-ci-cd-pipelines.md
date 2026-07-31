@@ -1,475 +1,253 @@
 ---
-title: Docker in CI/CD Pipelines
-description: Build, test, scan, and push container images in GitHub Actions and GitLab CI — including Docker-in-Docker patterns, caching, and production pipeline design.
+title: "Docker in CI/CD Pipelines"
+description: "Build, scan, and promote multi-arch images with Buildx in GitHub Actions and GitLab CI for DevOps delivery."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–70 min"
+technology: docker
 category: docker
+module: "Module 15 · Docker in CI/CD"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - docker
+  - ci-cd
+  - buildx
+prerequisites:
+  - docker/docker-performance-and-resource-limits
+  - docker/container-scanning-and-sbom
+next:
+  - docker/troubleshooting-docker-containers
+related:
+  - git/github-actions-for-devops
+  - github-actions/index
+labs: []
+projects: []
+interview: interview/docker
+certifications:
+  - Docker Certified Associate
 tags:
   - docker
   - cicd
-  - github-actions
-  - gitlab-ci
-  - dind
-prerequisites:
-  - Building Images with Dockerfile
-  - Container Registries and Distribution
-  - Git in CI/CD and DevOps
+  - buildx
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Docker in CI/CD Pipelines
 
 ## Overview
 
-Containers are the standard artifact in modern CI/CD: build once in the pipeline, push to a registry, deploy everywhere. This tutorial shows how to integrate Docker builds into **GitHub Actions** and **GitLab CI**, manage credentials safely, cache layers for speed, and choose between **Docker socket binding** and **Docker-in-Docker (DinD)** runners.
+Design a build → scan → push → promote pipeline using Buildx for multi-architecture images and immutable tags.
 
-This is **Tutorial 16** in **Module 6: Production & Beyond** of the REBASH Academy Docker track.
+CI builds images from Git; never “docker build on a laptop then scp.” **Buildx** enables `linux/amd64` + `linux/arm64`. Promote by retagging digests across environments.
+
+This is a core tutorial in **Module 15 · Docker in CI/CD** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Building Images with Dockerfile](building-images-with-dockerfile.md)
-- [Container Registries and Distribution](container-registries-and-distribution.md)
-- [Git in CI/CD and DevOps](../git/git-in-ci-cd-and-devops.md) — pipeline triggers and commit SHA pinning
-- A GitHub or GitLab account with CI minutes available
-- A container registry (Docker Hub, GitHub Container Registry, or GitLab Container Registry)
+- [Docker Performance and Resource Limits](docker-performance-and-resource-limits.md)
+- [Container Scanning and SBOM](container-scanning-and-sbom.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Design a CI pipeline stage that builds and tags Docker images from Git events
-- [ ] Push images to a registry using short-lived CI credentials
-- [ ] Compare Docker socket binding vs Docker-in-Docker and choose appropriately
-- [ ] Implement layer caching in GitHub Actions and GitLab CI
-- [ ] Pin image tags to commit SHA for traceability
-- [ ] Add image scanning and promotion gates before production deploy
+- [ ] Sketch build/scan/push stages  
+- [ ] Use Buildx multi-platform builds  
+- [ ] Tag with git SHA  
+- [ ] Outline GitHub Actions / GitLab CI jobs
 
 ## Architecture
 
-![Architecture diagram for Docker in CI/CD Pipelines](../assets/images/docker-in-ci-cd-pipelines.svg)
+This topic’s control points and relationships are shown below.
+
+![CI/CD pipeline](../assets/excalidraw/docker-cicd-pipeline.svg)
 
 ## Theory
 
-### Why Docker in CI?
+### What
 
-| Benefit | Explanation |
-|---------|-------------|
-| **Reproducibility** | Same Dockerfile produces the same artifact on every branch |
-| **Immutability** | Image digest + commit SHA = auditable deployment identity |
-| **Speed** | Parallel test jobs; cached layers reduce build time |
-| **Security gate** | Scan images before they reach production clusters |
-| **Deploy parity** | Staging and prod run identical container artifacts |
+CI/CD pipelines **build**, **scan**, **push**, and **promote** container images. Typical steps use `docker buildx build`, a vulnerability gate (for example Trivy), push to a registry, then retag an immutable digest for staging and production. Authentication should prefer **OIDC** to cloud registries over long-lived passwords.
 
-The pipeline typically runs: **lint → unit test → build image → scan → push → deploy**.
+### Why
 
-### Image tagging strategy
+Images are the deployable unit for most cloud-native systems. Building on laptops and copying tarballs does not scale or audit. Pipelines encode the quality gates that protect production and make promotions repeatable.
 
-| Tag | When to use | Example |
-|-----|-------------|---------|
-| **Commit SHA** | Every build; immutable traceability | `myapp:a1b2c3d4` |
-| **Branch name** | Dev/staging latest for a branch | `myapp:main` |
-| **Semver tag** | Release promotion from Git tag | `myapp:1.4.2` |
-| **latest** | Convenience only — never prod | `myapp:latest` |
+### How it works
 
-Production should reference **digest** or **SHA tag**, not floating `latest`.
+On pull request, build (and optionally scan) without necessarily pushing production tags. On main, build once, push by digest, record provenance. Promotion moves the same digest across environments — do not rebuild differently “for prod”. GitHub Actions and similar systems need careful permissions: least-privilege `packages: write`, ephemeral credentials, and pinned actions. Cache layers with registry or BuildKit caches to keep feedback fast.
 
-### Runner Docker access models
+| Stage | Action |
+|-------|--------|
+| Build | `docker buildx build` |
+| Scan | Trivy (or equivalent) gate |
+| Push | Registry |
+| Promote | Retag digest to staging/prod |
 
-CI runners need a Docker daemon to build images. Two common patterns:
+In workflow docs, escape expressions such as {% raw %}`${{ github.sha }}`{% endraw %} when embedding examples in MkDocs.
 
-| Model | How it works | Pros | Cons |
-|-------|--------------|------|------|
-| **Socket bind** | Mount `/var/run/docker.sock` into job | Fast; uses host daemon | Shared daemon; security risk on multi-tenant runners |
-| **Docker-in-Docker (DinD)** | Run `docker:dind` sidecar or service | Isolated daemon per job | Slower startup; TLS setup; privileged mode often required |
-| **Kaniko / Buildah** | Daemonless build | No Docker socket; good for K8s | Different CLI; not full Docker feature parity |
-| **BuildKit remote** | Connect to remote buildkitd | Scalable builds | Extra infrastructure |
+### Key concepts
 
-For **shared GitHub-hosted runners**, prefer official `docker/build-push-action` (uses BuildKit) or Kaniko. For **self-hosted runners**, socket bind is common but must be locked down.
-
-### Docker-in-Docker (DinD) essentials
-
-DinD runs a Docker daemon **inside** a container. GitLab CI documents this as a `docker:dind` **service** alongside your job image.
-
-Key points:
-
-1. **Privileged mode** — DinD often requires `privileged: true` (GitLab) or equivalent. Treat as a security boundary.
-2. **TLS variables** — Set `DOCKER_TLS_CERTDIR` appropriately. GitLab defaults handle cert generation between job and dind service.
-3. **Wait for daemon** — Job must wait until `docker info` succeeds before building.
-4. **Storage driver** — Use `overlay2`; avoid devicemapper in CI.
-5. **Not the same as socket mount** — DinD is isolated; socket mount shares the host daemon.
-
-!!! warning "DinD vs socket mount"
-    Documentation and blog posts conflate these. **Socket mount** (`-v /var/run/docker.sock`) is *not* DinD — it delegates to the host daemon. True DinD starts a nested `dockerd`.
-
-### Secrets in CI
-
-Never embed registry passwords in Dockerfiles or compose files. Use:
-
-| Platform | Secret mechanism |
-|----------|------------------|
-| GitHub Actions | Repository secrets; `GITHUB_TOKEN` for ghcr.io |
-| GitLab CI | CI/CD variables (masked, protected) |
-| Both | OIDC federation to cloud registries (preferred at scale) |
-
-Login pattern:
-
-```bash
-echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USER" --password-stdin
-```
+- **Build once, promote many** — environment parity  
+- **OIDC federation** — short-lived cloud auth  
+- **Provenance / attestations** — advanced supply chain  
+- **Ephemeral runners** — clean build hosts  
 
 
-### Build once, promote the digest
+Keep pipeline YAML next to the Dockerfile so reviewers see build and gate changes together. Fail closed on CRITICAL vulnerabilities for images destined to production, with a documented exception path. Emit the image digest as a pipeline output so GitOps commits and release notes can reference it automatically.
 
-Production-safe pipelines build an image once, scan it, then promote the same digest through test and production registries or repositories. Retagging without rebuilding avoids “it changed between environments” drift. Prefer OIDC or short-lived registry tokens over long-lived PATs stored as CI secrets, fail the pipeline on critical CVE policy, and keep Docker-in-Docker / privileged builders isolated from deploy credentials.
+### Common pitfalls
 
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
-
-
-### Connecting the lab to production reviews
-
-When a teammate asks “is this ready?”, answer with evidence from this tutorial’s controls: image provenance, privilege level, network exposure, health signals, and teardown/rollback. Copy-pasting a working lab snippet into production without those answers is how quiet misconfigurations become incidents. Prefer small, reviewable changes — one Dockerfile improvement, one RBAC binding, one probe — over large untested stacks.
-
-### Observability while you learn
-
-Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
-
-
-### Checklist before you leave the lab
-
-1. Resources created in this tutorial are deleted or clearly labelled for retention.
-2. No secrets, kubeconfigs, or registry passwords were written into Git.
-3. You can explain the Architecture diagram without reading the caption.
-4. Validation pass criteria in this page are satisfied on your machine.
-5. You noted one question to revisit in the next tutorial of the series.
-
-### Common production failure modes this topic prevents
-
-Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
+- Storing Docker Hub passwords forever in CI secrets  
+- Pushing `:latest` as the only promotion signal  
+- Using privileged DinD without understanding risks  
+- Different Dockerfiles per environment that drift
 
 ## Hands-on Lab
 
-### Lab 1 — Minimal GitHub Actions build and push
+Create a workspace for this tutorial.
 
-Create `.github/workflows/docker.yml` in a sample Node or Python app with a Dockerfile:
+```bash
+mkdir -p ~/rebash-docker/module-15/.github/workflows && cd ~/rebash-docker/module-15/.github/workflows
+```
 
-```yaml
-name: Build and Push Docker Image
+**Focus:** hands-on practice for Docker in CI/CD Pipelines
 
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Docker in CI/CD Pipelines"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-docker/module-15/.github/workflows
+cd ~/rebash-docker/module-15
+cat > Dockerfile << 'EOF'
+FROM alpine:3.20
+CMD ["echo", "ci-image"]
+EOF
+
+docker buildx version || docker buildx create --use
+docker buildx build -t rebash-ci:local --load .
+
+cat > .github/workflows/docker.yml << 'EOF'
+name: docker
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: rebash-ci:${{ "{{" }} github.sha {{ "}}" }}
+EOF
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push
-        env:
-          REGISTRY: ghcr.io
-          IMAGE: ghcr.io/$GITHUB_REPOSITORY
-          TAG: $GITHUB_SHA
-        run: |
-          docker build -t "$IMAGE:$TAG" -t "$IMAGE:$GITHUB_REF_NAME" .
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-            docker push "$IMAGE:$TAG"
-            docker push "$IMAGE:$GITHUB_REF_NAME"
-          fi
+git init -b main 2>/dev/null || true
+echo "Pipeline skeleton ready" 
 ```
 
-**Expected result:** The commands succeed and produce the outcomes described in this step.
+### Final step – Cleanup note
 
-
-!!! note "GitHub Actions secrets"
-    `GITHUB_TOKEN` is injected automatically by GitHub Actions runners — no manual secret reference required for ghcr.io pushes with default permissions.
-
-Verify:
-
-1. Push to a feature branch — build runs; push skipped on PR.
-2. Merge to `main` — image appears in GitHub Packages (ghcr.io).
-3. Confirm tag matches short SHA.
-
-### Lab 2 — GitLab CI with Docker-in-Docker
-
-Add `.gitlab-ci.yml`:
-
-```yaml
-stages:
-  - build
-  - scan
-
-variables:
-  DOCKER_TLS_CERTDIR: "/certs"
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-
-build-image:
-  stage: build
-  image: docker:27-cli
-  services:
-    - name: docker:27-dind
-      alias: docker
-  before_script:
-    - until docker info; do sleep 1; done
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-  script:
-    - docker build -t "$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
-    - docker push "$IMAGE_TAG"
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-  rules:
-    - if: $CI_COMMIT_BRANCH
-
-scan-image:
-  stage: scan
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE_TAG"
-  needs: [build-image]
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+```bash
+# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-GitLab shared runners enable DinD when the runner executor supports it. Self-hosted runners need `privileged = true` in `config.toml` for the Docker executor.
-
-### Lab 3 — Multi-stage Dockerfile optimised for CI
-
-Ensure your Dockerfile leverages layer caching:
-
-```dockerfile
-# syntax=docker/dockerfile:1
-
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build
-
-FROM node:22-alpine AS runtime
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-USER node
-EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/health || exit 1
-CMD ["node", "dist/server.js"]
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Dependency layers rebuild only when `package-lock.json` changes — critical for CI speed.
-
-### Lab 4 — PR validation without push
-
-Add a job that builds but does not push on pull requests:
-
-```yaml
-      - name: Build and smoke test (PR only)
-        if: github.event_name == 'pull_request'
-        run: |
-          docker build -t myapp:pr-test .
-          docker run -d --name app -p 8080:3000 myapp:pr-test
-          sleep 5
-          curl -f http://localhost:8080/health
-          docker stop app
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-This catches Dockerfile breakage before merge.
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Pipeline build | CI job (or local analogue) builds the image |
-| Test/scan gate | Failing test or scan would block promotion as designed |
-| Push conditional | Image pushes only on the documented branch/tag condition |
-| Secrets | No long-lived registry password committed in workflow files |
+- [ ] Lab commands run under `~/rebash-docker/module-15/.github/workflows/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-### Useful local equivalents
+Production practice for **Docker in CI/CD Pipelines** always combines:
 
-```bash
-# Simulate CI build with SHA tag
-export GIT_SHA=$(git rev-parse --short HEAD)
-docker build -t myapp:$GIT_SHA .
-docker tag myapp:$GIT_SHA myapp:main
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-# Inspect image labels set in CI
-docker inspect myapp:$GIT_SHA \
-  | jq -r '.[0].Config.Labels["org.opencontainers.image.revision"]'
-
-# Verify registry auth
-docker login ghcr.io -u USERNAME
-docker push ghcr.io/org/myapp:$GIT_SHA
-```
-
-### GitLab CI — Kaniko alternative (no DinD)
-
-For environments that disallow privileged DinD:
-
-```yaml
-build-kaniko:
-  stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-  script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(printf "%s:%s" "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor
-        --context "$CI_PROJECT_DIR"
-        --dockerfile "$CI_PROJECT_DIR/Dockerfile"
-        --destination "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-```
-
-### Pipeline environment variables reference
-
-| Variable | Platform | Purpose |
-|----------|----------|---------|
-| `GITHUB_SHA` | GitHub Actions | Full commit SHA |
-| `GITHUB_REF_NAME` | GitHub Actions | Branch or tag name |
-| `CI_COMMIT_SHA` | GitLab CI | Full commit SHA |
-| `CI_COMMIT_SHORT_SHA` | GitLab CI | Short SHA for tags |
-| `CI_REGISTRY_IMAGE` | GitLab CI | Pre-built registry path |
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Use short-lived registry credentials (OIDC/workload identity) instead of long-lived PATs in CI
-- Build with BuildKit and never echo secrets in pipeline logs
-- Scan images in CI and fail the pipeline on policy violations before push
-- Isolate DinD / privileged builders; prefer rootless or Kaniko/buildah where feasible
-- Pin base images and actions by digest to reduce supply-chain drift
-- Separate build and deploy roles — the builder should not need cluster-admin
-
+- Treat credentials and tokens for docker as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using latest as the only production tag"
-    Deployments become untraceable. Always tag with commit SHA; promote semver tags from CI on Git tag events.
+!!! warning "Storing Docker Hub passwords forever in CI secrets  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Running DinD without waiting for the daemon"
-    Race conditions cause `Cannot connect to the Docker daemon`. Always loop on `docker info` in `before_script`.
+!!! warning "Pushing `:latest` as the only promotion signal  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Storing registry credentials in the Dockerfile"
-    Use CI secrets and `docker login --password-stdin`. Rotate credentials if leaked.
-
-!!! warning "Building on every commit without cache"
-    Multi-minute builds add up. Enable GHA cache or GitLab `--cache-from` registry cache.
-
-!!! warning "Socket mounting on untrusted multi-tenant runners"
-    Any job with socket access can control the host daemon. Prefer BuildKit action, Kaniko, or isolated DinD.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Pin base images by digest"
-    In Dockerfile: `FROM node:22-alpine@sha256:abc123...` — prevents supply-chain drift between CI runs.
-
-!!! tip "Separate build and deploy pipelines"
-    CI builds and pushes; CD (or GitOps) deploys from registry. CI runners should not hold production kubeconfig.
-
-!!! tip "Scan before push to prod registry"
-    Run Trivy, Grype, or Snyk on every main-branch build. Fail on CRITICAL CVEs with fix available.
-
-!!! tip "Use OCI labels"
-    Set `org.opencontainers.image.revision`, `source`, and `version` in CI for SBOM and audit trails.
-
-!!! tip "OIDC for cloud registries"
-    GitHub and GitLab support workload identity to AWS ECR, GCP Artifact Registry, and Azure ACR — no long-lived passwords.
+- Encode Docker in CI/CD Pipelines changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `permission denied` on docker.sock | Runner lacks socket access | Enable Docker on runner; use DinD service |
-| DinD TLS handshake error | Cert dir mismatch | Set `DOCKER_TLS_CERTDIR=/certs`; use matching dind version |
-| `denied: permission_denied` on push | Wrong token scope | Grant `packages: write`; use PAT with `write:packages` |
-| Empty layer cache | Cache backend not configured | Enable `cache-from: type=gha` or registry cache |
-| Build works locally, fails in CI | Wrong context or platform | Set `platforms: linux/amd64`; verify `.dockerignore` |
-| Image too large | Dev deps in final stage | Multi-stage build; `.dockerignore` node_modules |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **CI/CD pipelines** should build immutable container images tagged with **commit SHA**
-- **GitHub Actions** uses `docker/build-push-action` with BuildKit and GHA layer cache
-- **GitLab CI** commonly uses **Docker-in-Docker** via `docker:dind` service — wait for daemon, handle TLS
-- **DinD** is not the same as **socket binding** — understand security trade-offs on your runners
-- Add **scan gates**, **PR build-only** jobs, and **OIDC** registry auth for production-grade pipelines
-- Connect this workflow to [Production Docker Patterns](production-docker-patterns.md) for runtime hardening
+**Docker in CI/CD Pipelines** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What is the difference between Docker socket binding and Docker-in-Docker in CI?
-2. Why should production deployments pin images to commit SHA or digest rather than `latest`?
-3. How do you cache Docker layers in GitHub Actions?
-4. What Git events should trigger image build vs image push?
-5. How do you secure registry credentials in CI pipelines?
-6. When would you choose Kaniko over DinD?
-7. What OCI labels should CI attach to built images?
-8. How do you run container smoke tests in a PR pipeline without pushing to the registry?
-9. What causes `Cannot connect to the Docker daemon` in GitLab DinD jobs?
-10. Describe the flow from `git push` to a running container in production.
+1. How does **Docker in CI/CD Pipelines** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1 and 2)"
-
-    **Q1 — Socket vs DinD:** Socket binding mounts the host's `/var/run/docker.sock` into the CI job container, so `docker` CLI commands control the host daemon — fast but shared and risky on multi-tenant infrastructure. DinD runs a separate `dockerd` inside a privileged sidecar container, giving each job an isolated daemon at the cost of startup time, TLS configuration, and privileged mode requirements.
-
-    **Q2 — SHA vs latest:** `latest` is a mutable pointer — rebuilding overwrites what production runs, breaking rollback and audit trails. Commit SHA tags are immutable and map directly to source code, enabling traceability from running container to Git author, PR, and CI logs.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Container Registries and Distribution](container-registries-and-distribution.md) *(previous module)*
-- [Production Docker Patterns](production-docker-patterns.md) *(next)*
-- [Docker Security Hardening](docker-security-hardening.md)
-- [Git in CI/CD and DevOps](../git/git-in-ci-cd-and-devops.md)
-- [GitLab CI/CD Overview](../gitlab/index.md)
-- [Docker – Category Overview](index.md)
-- Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
-- Interview prep: [Docker Interview Prep](../interview/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Troubleshooting Docker Containers](troubleshooting-docker-containers.md)
 
 ## References
 
-- [GitHub Actions – Publishing Docker images](https://docs.github.com/en/actions/publishing-packages/publishing-docker-images)
-- [docker/build-push-action](https://github.com/docker/build-push-action)
-- [GitLab CI – Use Docker to build Docker images](https://docs.gitlab.com/ee/ci/docker/using_docker_build.html)
-- [Docker BuildKit](https://docs.docker.com/build/buildkit/)
-- [Kaniko Documentation](https://github.com/GoogleContainerTools/kaniko)
-- [OCI Image Spec – Annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md)
-- [Trivy – Container scanning](https://aquasecurity.github.io/trivy/)
+- [Buildx](https://docs.docker.com/build/building/multi-platform/) · [build-push-action](https://github.com/docker/build-push-action)

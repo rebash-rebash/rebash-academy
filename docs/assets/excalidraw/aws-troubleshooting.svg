@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="200"
+     viewBox="0 0 820 200" role="img" aria-label="aws-troubleshooting">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">AWS troubleshooting ladder</text>
+
+  <path d="M 33.7,82.0 L 123.2,83.2 Q 133.2,83.2 133.2,93.2 L 133.9,147.0 Q 133.9,157.0 123.9,157.0 L 33.0,157.3 Q 23.0,157.3 23.0,147.3 L 23.7,92.0 Q 23.7,82.0 33.7,82.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 30.1,79.2 L 119.0,79.1 Q 129.0,79.1 129.0,89.1 L 130.3,144.4 Q 130.3,154.4 120.3,154.4 L 29.8,154.8 Q 19.8,154.8 19.8,144.8 L 20.1,89.2 Q 20.1,79.2 30.1,79.2 Z" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  
+  <text x="75.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Symptom</text>
+  <text x="75.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">who/what</text>
+
+
+  <path d="M 130.0,118.0 L 137.0,118.3 L 143.3,118.0 L 150.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 150.0,118.0 L 143.1,122.0 M 150.0,118.0 L 143.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 163.1,83.6 L 252.1,82.1 Q 262.1,82.1 262.1,92.1 L 263.5,148.1 Q 263.5,158.1 253.5,158.1 L 163.7,158.4 Q 153.7,158.4 153.7,148.4 L 153.1,93.6 Q 153.1,83.6 163.1,83.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 159.8,80.0 L 250.9,79.3 Q 260.9,79.3 260.9,89.3 L 259.3,145.4 Q 259.3,155.4 249.3,155.4 L 160.0,155.3 Q 150.0,155.3 150.0,145.3 L 149.8,90.0 Q 149.8,80.0 159.8,80.0 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="205.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">IAM</text>
+  <text x="205.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">authz</text>
+
+
+  <path d="M 260.0,118.0 L 266.9,117.1 L 274.5,119.0 L 280.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 280.0,118.0 L 273.1,122.0 M 280.0,118.0 L 273.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 292.6,83.7 L 382.2,82.1 Q 392.2,82.1 392.2,92.1 L 392.7,147.6 Q 392.7,157.6 382.7,157.6 L 293.7,158.7 Q 283.7,158.7 283.7,148.7 L 282.6,93.7 Q 282.6,83.7 292.6,83.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 290.7,79.6 L 380.6,79.9 Q 390.6,79.9 390.6,89.9 L 390.2,145.0 Q 390.2,155.0 380.2,155.0 L 289.5,155.3 Q 279.5,155.3 279.5,145.3 L 280.7,89.6 Q 280.7,79.6 290.7,79.6 Z" fill="#ffec99" stroke="#e67700" stroke-width="2"/>
+  
+  <text x="335.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Network</text>
+  <text x="335.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">SG/route</text>
+
+
+  <path d="M 390.0,118.0 L 395.9,116.9 L 402.6,119.0 L 410.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 410.0,118.0 L 403.1,122.0 M 410.0,118.0 L 403.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 423.3,83.5 L 512.3,83.9 Q 522.3,83.9 522.3,93.9 L 522.2,147.5 Q 522.2,157.5 512.2,157.5 L 422.3,157.3 Q 412.3,157.3 412.3,147.3 L 413.3,93.5 Q 413.3,83.5 423.3,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 420.2,80.6 L 509.1,79.1 Q 519.1,79.1 519.1,89.1 L 520.3,144.2 Q 520.3,154.2 510.3,154.2 L 420.1,155.9 Q 410.1,155.9 410.1,145.9 L 410.2,90.6 Q 410.2,80.6 420.2,80.6 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="465.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Compute</text>
+  <text x="465.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">EC2/EKS</text>
+
+
+  <path d="M 520.0,118.0 L 526.9,118.6 L 532.6,118.1 L 540.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 540.0,118.0 L 533.1,122.0 M 540.0,118.0 L 533.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 552.6,82.9 L 643.5,83.9 Q 653.5,83.9 653.5,93.9 L 652.6,147.9 Q 652.6,157.9 642.6,157.9 L 553.5,158.4 Q 543.5,158.4 543.5,148.4 L 542.6,92.9 Q 542.6,82.9 552.6,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 550.4,79.5 L 639.6,80.5 Q 649.6,80.5 649.6,90.5 L 649.2,144.2 Q 649.2,154.2 639.2,154.2 L 550.8,154.2 Q 540.8,154.2 540.8,144.2 L 540.4,89.5 Q 540.4,79.5 550.4,79.5 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="595.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Data</text>
+  <text x="595.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">S3/RDS</text>
+
+
+  <path d="M 650.0,118.0 L 655.7,118.4 L 664.3,118.9 L 670.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 670.0,118.0 L 663.1,122.0 M 670.0,118.0 L 663.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 682.7,83.7 L 772.4,82.5 Q 782.4,82.5 782.4,92.5 L 782.2,147.7 Q 782.2,157.7 772.2,157.7 L 683.1,157.8 Q 673.1,157.8 673.1,147.8 L 672.7,93.7 Q 672.7,83.7 682.7,83.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 680.3,79.7 L 769.3,80.3 Q 779.3,80.3 779.3,90.3 L 779.6,145.2 Q 779.6,155.2 769.6,155.2 L 680.7,154.0 Q 670.7,154.0 670.7,144.0 L 670.3,89.7 Q 670.3,79.7 680.3,79.7 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="725.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Fix</text>
+  <text x="725.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">verify</text>
+
+</svg>

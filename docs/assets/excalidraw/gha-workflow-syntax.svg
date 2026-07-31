@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="810" height="200"
+     viewBox="0 0 810 200" role="img" aria-label="gha-workflow-syntax">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Workflow syntax power tools</text>
+
+  <path d="M 53.3,83.5 L 182.8,83.7 Q 192.8,83.7 192.8,93.7 L 192.3,142.6 Q 192.3,152.6 182.3,152.6 L 52.4,153.3 Q 42.4,153.3 42.4,143.3 L 43.3,93.5 Q 43.3,83.5 53.3,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.5,79.2 L 180.1,79.2 Q 190.1,79.2 190.1,89.2 L 189.3,139.4 Q 189.3,149.4 179.3,149.4 L 50.4,149.8 Q 40.4,149.8 40.4,139.8 L 40.5,89.2 Q 40.5,79.2 50.5,79.2 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">matrix</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">OS/versions</text>
+
+
+  <path d="M 232.1,82.6 L 363.2,82.7 Q 373.2,82.7 373.2,92.7 L 372.0,143.8 Q 372.0,153.8 362.0,153.8 L 232.2,152.2 Q 222.2,152.2 222.2,142.2 L 222.1,92.6 Q 222.1,82.6 232.1,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 229.4,80.5 L 359.1,80.0 Q 369.1,80.0 369.1,90.0 L 369.6,139.6 Q 369.6,149.6 359.6,149.6 L 229.2,149.1 Q 219.2,149.1 219.2,139.1 L 219.4,90.5 Q 219.4,80.5 229.4,80.5 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="295.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">if:</text>
+  <text x="295.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">conditions</text>
+
+
+  <path d="M 413.9,83.0 L 553.1,83.7 Q 563.1,83.7 563.1,93.7 L 563.2,143.8 Q 563.2,153.8 553.2,153.8 L 413.0,153.9 Q 403.0,153.9 403.0,143.9 L 403.9,93.0 Q 403.9,83.0 413.9,83.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 410.3,80.3 L 550.7,80.6 Q 560.7,80.6 560.7,90.6 L 559.5,140.1 Q 559.5,150.1 549.5,150.1 L 409.7,150.7 Q 399.7,150.7 399.7,140.7 L 400.3,90.3 Q 400.3,80.3 410.3,80.3 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="480.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">inputs/outputs</text>
+  <text x="480.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">wire jobs</text>
+
+
+  <path d="M 603.8,82.4 L 763.6,83.4 Q 773.6,83.4 773.6,93.4 L 773.3,142.7 Q 773.3,152.7 763.3,152.7 L 602.2,152.2 Q 592.2,152.2 592.2,142.2 L 593.8,92.4 Q 593.8,82.4 603.8,82.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 599.8,80.5 L 760.7,80.4 Q 770.7,80.4 770.7,90.4 L 769.5,140.1 Q 769.5,150.1 759.5,150.1 L 599.0,149.3 Q 589.0,149.3 589.0,139.3 L 589.8,90.5 Q 589.8,80.5 599.8,80.5 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="680.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">reusable</text>
+  <text x="680.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">workflow_call</text>
+
+</svg>

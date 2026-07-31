@@ -45,52 +45,44 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Disk Usage and File Attributes](../assets/images/linux-disk-usage-attrs.svg)
+![Architecture diagram for Disk Usage and File Attributes](../assets/excalidraw/linux-filesystem-hierarchy.svg)
 
 ## Theory
 
-### File attributes
+### What it is
 
-`ls -l` shows mode, link count, owner, group, size, mtime, name. `stat` exposes atime/mtime/ctime, inode, and device.
+**File attributes** are the metadata you see with `ls -l` and `stat`: mode, owner, group, size, timestamps, inode, and device. Extended attributes (xattrs) and filesystem flags (`chattr`/`lsattr` on ext4) add further behaviour such as immutability. **Disk usage** splits into two views: `df` reports free space and inodes **per mounted filesystem**; `du` reports how much space a **directory tree** consumes. Together they answer “who filled the disk?” and “why can’t I write?”
 
-Extended attributes (xattrs) and flags (`chattr`/`lsattr` on ext4) appear in hardening and immutable-file scenarios:
+### Why it matters
 
-```bash
-lsattr file.txt 2>/dev/null || true
-getfattr -d file.txt 2>/dev/null || true
-```
+Disk-full incidents are among the most common production pages. Container hosts fill `/var/lib/docker` or `/var/lib/containerd`; log directories grow without rotation; deleted files stay allocated while a process holds them open — `df` and `du` disagree until that process exits. Attribute checks separate “permission denied” from “wrong owner” and support hardening (immutable configs). Site Reliability Engineering (SRE) runbooks almost always start with `df -h`, `df -i`, then `du`.
 
-### Disk usage — `df`
+### How it works
 
-`df` reports **filesystem** free space (what the mount can still accept):
+`df -hT` lists mounts, types, and human-readable capacity; `df -i` shows inode capacity. Always note the mount point, not only `/`. `du -sh path` summarises a tree; `du -h --max-depth=1` finds hot children. When `df` shows full but `du` on `/` seems smaller, look for other mounts and for deleted-but-open files (`lsof +L1` or equivalent). `stat` prints atime/mtime/ctime and mode; formatting with `stat -c` helps scripts. On ext4, `chattr +i` can make a file immutable until cleared — useful for critical configs, dangerous if forgotten.
 
-```bash
-df -h
-df -hT
-df -i
-```
+### Key concepts and comparisons
 
-Watch mount points, not just `/` — `/var` or `/var/lib/docker` often fill first on container hosts.
+| Tool | Answers |
+|------|---------|
+| `df` | How much can this **mount** still accept? |
+| `du` | How much does this **tree** use? |
+| `stat` / `ls -l` | Who owns it, what mode, what size/times? |
+| `lsattr` / `getfattr` | Special flags / extended attributes |
 
-### Disk usage — `du`
+| Symptom | Likely cause |
+|---------|--------------|
+| `df` full, `du` smaller | Deleted-open files or another mount |
+| `df -h` free, create fails | Inode exhaustion (`df -i`) |
+| Permission denied | Mode/owner/ACL/MAC — not “disk full” |
 
-`du` reports **directory tree** consumption:
+### Common pitfalls
 
-```bash
-du -sh ~/rebash-linux
-du -h --max-depth=1 /var 2>/dev/null | sort -h
-```
-
-`df` vs `du` mismatches usually mean deleted-but-open files (restart the holding process) or bind mounts.
-
-### `stat` for attributes
-
-```bash
-stat file.txt
-stat -c '%a %U:%G %s %n' file.txt
-```
-
-Use size, ownership, and mode together when diagnosing permission-denied versus missing-file errors.
+- Checking only `/` while `/var` or a data volume is the one that filled.
+- Ignoring inodes — millions of small files exhaust them first.
+- Restarting nothing when `du` and `df` disagree; the holder process must release the file.
+- Leaving `chattr +i` on files and wondering why deploys cannot overwrite them.
+- Sorting `du` output incorrectly — use `sort -h` with human-readable sizes.
 
 ## Hands-on Lab
 

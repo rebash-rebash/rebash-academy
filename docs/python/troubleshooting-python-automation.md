@@ -1,228 +1,276 @@
 ---
 title: "Troubleshooting Python Automation"
-description: "Diagnose dependency issues, venv problems, API failures, memory leaks, performance issues, and production debugging — framed with a plugin architecture overview."
+description: "Diagnose DevOps Python failures — dependency and venv issues, API errors, memory leaks, performance problems, and production debugging checklists."
 difficulty: advanced
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "50–65 min"
+technology: python
 category: python
+module: "Module 27 · Troubleshooting"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - python
+  - troubleshooting
+  - debugging
+prerequisites:
+  - python/ai-for-devops-openai-mcp-langchain
+next:
+  - python/index
+related:
+  - python/logging-and-debugging
+  - python/production-engineering-patterns
+  - python/python-fundamentals-install-venv-and-tooling
+labs: []
+projects:
+  - projects/python-devops-automation-framework
+interview: interview/python
+certifications:
+  - PCAP
 tags:
   - python
   - troubleshooting
   - debugging
-  - production
-prerequisites:
-  - AI for DevOps — OpenAI, MCP, and LangChain
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Troubleshooting Python Automation
 
 ## Overview
 
-When automation fails at 03:00, a checklist beats guesswork. This module closes the loop with systematic debugging and a reusable plugin shape for your toolkit.
+Run a systematic checklist for failing automation: environment and pins, imports/deps, API/auth failures, performance/memory, then fix with a regression test.
 
-This is **Tutorial 27** in **Module 27: Troubleshooting** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+“Works on my machine” is an environment bug until proven otherwise. Fingerprint the interpreter, recreate the venv, bisect the last change, and capture evidence (logs, exit codes, minimal repro).
+
+This closes the **Python for DevOps Engineers** tutorial track. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 27 · Troubleshooting** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- AI for DevOps — OpenAI, MCP, and LangChain
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- Modules 1, 8, 10, 14, and 24 completed (or equivalent experience)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Troubleshooting Python Automation” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Fingerprint Python/venv/pins in an incident  
+- [ ] Resolve common `ModuleNotFoundError` / dependency conflicts  
+- [ ] Triage HTTP/SDK auth and timeout failures  
+- [ ] Approach memory growth and slow jobs  
+- [ ] Produce a minimal repro and fix with a test
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Troubleshooting Python Automation](../assets/images/python-plugin-architecture.svg)
+![Troubleshooting ladder](../assets/excalidraw/python-troubleshooting.svg)
 
 ## Theory
 
-### Dependency Issues
+### What it is
 
-`ModuleNotFoundError`, version conflicts, and wrong interpreters. Fix: recreate venv, install from lockfile, fingerprint `sys.executable` in CI logs.
+Troubleshooting Python automation is a **disciplined ladder**: move from symptom to environment to dependencies/APIs to performance, then fix with a test and a note. It combines interpreter skills (`sys.executable`, venvs), HTTP/cloud error reading, and classic ops habits (what changed, which host, since when).
 
-### Virtual Environment Problems
+### Why it matters
 
-Forgot to activate, nested venvs, or system pip. Always invoke `.venv/bin/python -m pytest`.
+Automation fails in Continuous Integration (CI) at 02:00 with a one-line traceback. Without a method you thrash — reinstalling packages randomly, rotating credentials that were never the issue, or blaming “Python” when the region flag was wrong. A shared ladder shortens Mean Time To Recover (MTTR) and produces repeatable runbooks.
 
-### API Failures
+### How it works
 
-Timeouts, 401/403, pagination bugs, and rate limits. Log status + request id; reproduce with fixtures; verify token scopes.
+1. **Symptom** — exit code, stderr, first occurrence, which job/host/branch.  
+2. **Environment** — `sys.executable`, Python version, active virtual environment, pinned requirements.  
+3. **Dependencies / API** — import errors, HTTP status, Identity and Access Management (IAM) denials, wrong project/region.  
+4. **Performance** — hang versus slow; CPU, memory, thread-pool pile-up.  
+5. **Fix** — smallest patch, pytest coverage for the bug class, document the gotcha.
 
-### Memory Leaks
+Compare `which python` and `sys.prefix` before deep debugging; recreate `.venv` from the lockfile when imports disagree with CI. For signed cloud requests, check clock skew and token expiry. Profile with `tracemalloc` / `cProfile` only after the ladder says “performance.”
 
-Long-running listeners holding lists of responses. Use generators, clear caches, and `tracemalloc` snapshots.
+### Key concepts and comparisons
 
-### Performance Issues
+| Symptom | Likely checks |
+|---------|----------------|
+| `ModuleNotFoundError` | Wrong venv; missing install; package typo |
+| Resolver conflict | Pin clash; recreate venv from lock |
+| Works locally, fails CI | Different Python; missing system library |
+| 403 from API | IAM/RBAC; wrong account/role |
+| Hang, no logs | Missing timeout; deadlock; waiting on stdin |
 
-Serial HTTP to thousands of hosts, huge `read_text()`, unbounded thread pools. Bound concurrency and stream data.
+| Production habit | Why |
+|------------------|-----|
+| Dry-run / feature flags | Reproduce safely |
+| Temporary log level up | See request IDs without redeploying forever |
+| `run_id` in logs | Correlate CI artefacts |
+| Never ship `breakpoint()` | Jobs freeze waiting for a TTY |
 
-### Production Debugging
+### Common pitfalls
 
-Capture versions, config provenance (without secrets), recent deploys, and a failing input sample. Prefer feature flags and dry-run to bisect.
-
-### Plugin architecture (framework overview)
-
-A durable ops toolkit uses a small core CLI plus plugins (inventory, k8s, terraform) discovered via entry points — isolating failures to one plugin without breaking the suite.
+- Debugging the system Python while CI uses a venv (or the reverse).  
+- Assuming “network down” when DNS or TLS verify failed.  
+- Fixing symptoms without a regression test.  
+- Adding broad `except Exception: pass` that hides the next outage.  
+- Rotating every credential before checking region, project, or clock.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Troubleshooting Python Automation
 
 ```bash
-mkdir -p ~/rebash-python/lab27 && cd ~/rebash-python/lab27
+mkdir -p ~/rebash-python/module-27
+cd ~/rebash-python/module-27
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 ```
 
-**Focus:** broken-venv checklist; reproduce API failure from fixture; document plugin layout
-
-### Step 1 – Skeleton
+### Step 1 – Fingerprint script
 
 ```bash
-cat > lab.py << 'EOF'
+cd ~/rebash-python/module-27
+source .venv/bin/activate
+
+cat > fingerprint.py << 'EOF'
 #!/usr/bin/env python3
-print("lab27 troubleshooting-python-automation")
+from __future__ import annotations
+
+import platform
+import sys
+
+
+def main() -> int:
+    print(f"executable={sys.executable}")
+    print(f"version={platform.python_version()}")
+    print(f"prefix={sys.prefix}")
+    print(f"path0={sys.path[0]!r}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-chmod +x lab.py
-python3 lab.py
+
+python fingerprint.py
 ```
 
-### Step 2 – Troubleshoot checklist + plugin sketch
+### Step 2 – Simulate missing dep
 
 ```bash
-cat > checklist.md << 'EOF'
-- [ ] Same sys.executable / venv
-- [ ] Lockfile installed
-- [ ] Timeouts on HTTP
-- [ ] Fixture mode without cloud creds
-- [ ] Dry-run default for mutators
-EOF
-mkdir -p plugins
-cat > plugins/inventory.py << 'EOF'
-name = "inventory"
-
-def run() -> str:
-    return "inventory-plugin-ok"
-EOF
-cat > core.py << 'EOF'
-#!/usr/bin/env python3
-from pathlib import Path
-import importlib.util
-
-def load_plugins():
-    for path in Path("plugins").glob("*.py"):
-        spec = importlib.util.spec_from_file_location(path.stem, path)
-        mod = importlib.util.module_from_spec(spec)
-        assert spec.loader
-        spec.loader.exec_module(mod)
-        yield getattr(mod, "name", path.stem), mod.run()
-
-for name, result in load_plugins():
-    print(f"plugin={name} result={result}")
-print("RESULT ok")
-EOF
-python3 core.py
+python - <<'PY'
+try:
+    import totally_missing_rebash_pkg  # noqa: F401
+except ModuleNotFoundError as exc:
+    print("caught", exc)
+    print("fix: install pin or fix venv")
+PY
 ```
 
-### Final step – Cleanup note
+### Step 3 – Incident worksheet
 
-```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+Create `incident.md`:
+
+```text
+Symptom:
+Last good commit:
+Python fingerprint:
+Command + exit code:
+Hypothesis:
+Evidence:
+Fix + test:
 ```
+
+### Step 4 – Capstone pointer
+
+Review [Production DevOps Automation Platform](../projects/python-devops-automation-framework.md) — apply this ladder when the plugin CLI fails in CI.
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab27/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-27/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Troubleshooting Python Automation** always combines:
+Production practice for **Troubleshooting Python Automation** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Debugging the system Python while CI uses a venv (or the reverse).  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Assuming “network down” when DNS or TLS verify failed.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Troubleshooting Python Automation changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-**Troubleshooting Python Automation** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Fingerprint env before guessing code bugs  
+- Deps, auth, and timeouts cause most ops Python outages  
+- Fix + test + document  
+- You have completed the 27-module tutorial path — continue with labs, projects, and the capstone
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Troubleshooting Python Automation** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [AI for DevOps — OpenAI, MCP, and LangChain](ai-for-devops-openai-mcp-langchain.md) *(previous)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Python course overview](index.md)  
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Capstone](../projects/python-devops-automation-framework.md)  
+- [Interview prep](../interview/python.md) · [Cheat sheet](../cheatsheets/python.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [Python debugging HOWTO](https://docs.python.org/3/library/debug.html)  
+- [faulthandler](https://docs.python.org/3/library/faulthandler.html)

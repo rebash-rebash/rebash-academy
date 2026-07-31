@@ -1,450 +1,323 @@
 ---
-title: Terraform in CI/CD Pipelines
-description: "Run Terraform in CI with plan artefacts, reviews, least-privilege credentials, and apply gates."
+title: "Terraform in CI/CD Pipelines"
+description: "Run Terraform in GitHub Actions, GitLab CI, Azure DevOps, Jenkins, and Atlantis — automated plans, artefacts, and apply gates."
 difficulty: advanced
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–65 min"
+technology: terraform
 category: terraform
-tags:
+module: "Module 16 · CI/CD"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - terraform
   - cicd
   - github-actions
 prerequisites:
-  - Completed Policy as Code Overview
-  - Familiarity with GitHub Actions or GitLab CI
+  - terraform/terraform-security-and-secrets
+next:
+  - terraform/multi-cloud-terraform
+related:
+  - terraform/format-validate-and-terraform-test
+  - terraform/remote-state-and-backends
+labs: []
+projects: []
+interview: interview/terraform
+certifications:
+  - Terraform Associate
+tags:
+  - terraform
+  - cicd
+  - github-actions
+  - atlantis
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Terraform in CI/CD Pipelines
 
 ## Overview
 
-Production Terraform is applied by **pipelines**, not laptops. Pull requests run formatting, validation, tests, and **plan**; protected branches (or environments) run **apply** of a reviewed plan with short-lived credentials. Automation-friendly flags (`TF_IN_AUTOMATION`, `-input=false`) keep jobs non-interactive and auditable.
+Design PR plan and protected-branch apply pipelines with plan artefacts, least-privilege credentials, and optional Atlantis-style PR automation across common CI systems.
 
-This tutorial builds a tiny local root you can exercise on your machine, then provides a complete **GitHub Actions** workflow example. You do not need a live cloud account — treat the YAML as a production pattern to adapt when you attach remote state and OIDC later.
+Production Terraform is applied by **pipelines**, not laptops. Pull requests run format, validate, test, and **plan**; protected branches or environments run **apply** of a reviewed plan with short-lived credentials. Store the binary plan as an artefact so apply executes exactly what was reviewed. Atlantis comments plans on pull requests for teams that prefer chatops-style workflows.
 
-This is **Tutorial 19** in **Module 6: Production** of the REBASH Academy Terraform track.
+This is a core tutorial in **Module 16 · CI/CD** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+
+## Prerequisites
+
+- [Terraform Security and Secrets](terraform-security-and-secrets.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Design PR plan and main apply pipelines
-- [ ] Use `TF_IN_AUTOMATION` and `-input=false`
-- [ ] Store and reason about plan artefacts
-- [ ] Outline OIDC to cloud providers
-- [ ] Author a complete GitHub Actions workflow example
-
-## Prerequisites
-
-- Completed [Policy as Code Overview](policy-as-code-overview.md)
-- Familiarity with GitHub Actions or GitLab CI concepts
-- Terraform CLI **1.9+** (1.15.x recommended)
-- Ability to create directories and edit files
-- No cloud account required for the local simulation
+- [ ] Separate PR plan from privileged apply  
+- [ ] Use `TF_IN_AUTOMATION` and `-input=false`  
+- [ ] Store and consume plan artefacts safely  
+- [ ] Sketch GitHub Actions, GitLab CI, Azure DevOps, and Jenkins patterns  
+- [ ] Explain when Atlantis fits
 
 ## Architecture
 
-CI separates **untrusted proposal** (PR plan) from **privileged mutation** (apply on main with environment protections). State locking serialises applies; OIDC replaces long-lived cloud keys.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Terraform in CI/CD Pipelines](../assets/images/terraform-cicd.svg)
-
-| Job | Trigger | Privilege |
-|-----|---------|-----------|
-| fmt / validate / test | PR + main | Read repo |
-| plan | PR | Read state (often), write plan artefact |
-| policy | PR | Read plan JSON |
-| apply | main / environment | Write infrastructure + state |
+![Terraform CI/CD pipeline](../assets/excalidraw/terraform-cicd-pipeline.svg)
 
 ## Theory
 
-### Recommended flow
+### What it is
 
-1. **PR:** `fmt -check` → `init` → `validate` → `test` → `plan -out` → upload artefact → comment summary → policy check  
-2. **Reviewers** read the plan (and policy results)  
-3. **Main / protected environment:** download the approved plan **or** re-plan with change detection controls → `apply` saved plan  
-4. **Never** apply interactive plans from developer laptops to production when CI exists
+**Terraform in CI/CD** means machines run the write → plan → apply loop with auditability. A typical design:
 
-Applying the **same bytes** reviewed in the PR is the gold standard. Some teams re-plan on main with strict “no drift / no unexpected changes” checks — document which model you use.
+| Stage | Trigger | Privilege |
+|-------|---------|-----------|
+| fmt / validate / test / lint | Every PR | Low (often no cloud, or read-only) |
+| `terraform plan -out=` | Every PR | Read / plan role |
+| Review | Humans + policy | — |
+| `terraform apply tfplan` | Main / protected env | Apply role |
 
-### Automation environment
+**GitHub Actions**, **GitLab CI**, **Azure DevOps**, and **Jenkins** all host the same stages with different YAML or job DSLs. **Atlantis** is a pull-request automation server: comment `atlantis plan` / `atlantis apply`, lock projects, and keep plans next to the PR conversation.
 
-```bash
-export TF_IN_AUTOMATION=1
-terraform init -input=false
-terraform plan -input=false -out=tfplan
-terraform apply -input=false tfplan
-```
+Automation flags: `TF_IN_AUTOMATION=true` and `-input=false` keep jobs non-interactive. Pin Terraform versions (binary or Docker image) so CI matches local and HCP runners.
 
-`TF_IN_AUTOMATION` adjusts CLI messaging for machines; `-input=false` fails instead of prompting.
+### Why it matters
 
-### Authentication: prefer OIDC
+Laptop apply bypasses review, uses personal credentials, and leaves no consistent audit trail. Pipelines enforce format/test gates, OIDC roles, state locking, and environment protections (required reviewers, wait timers). Plan artefacts prevent “plan yesterday, apply today’s different config” drift between review and merge.
 
-| Anti-pattern | Prefer |
-|--------------|--------|
-| Long-lived `AWS_ACCESS_KEY_ID` in GitHub secrets | GitHub OIDC → cloud IAM role |
-| Broad admin roles for plan and apply | Separate plan (read) and apply (write) roles |
-| Credentials on laptops for prod | CI-only apply identities |
+### How it works
 
-OIDC issues short-lived tokens per job. Wire `id-token: write` permissions in GitHub Actions and a trust policy on the cloud role.
+1. On PR: checkout → setup Terraform → `fmt -check` → `init` → `validate` → `test` / `tflint` → `plan -out=tfplan` → upload artefact (restricted retention) → optional policy on JSON.  
+2. Comment or attach a human-readable plan summary for reviewers.  
+3. On merge to the protected branch (or after environment approval): download the **same** plan artefact (or re-plan under strict controls) → `apply -input=false tfplan`.  
+4. Credentials via OIDC to AWS/Azure/GCP; never long-lived keys in repository variables if avoidable.  
+5. Atlantis alternative: webhook from VCS → Atlantis runs plan/apply in its VPC with project `atlantis.yaml` configuration and concurrency locks.
 
-### Concurrency and locking
+Prefer apply-of-saved-plan for production; re-plan-on-main only when your change control explicitly allows it and locking prevents races.
 
-Remote state locking (DynamoDB, blob leases, Terraform Cloud) prevents two applies corrupting state. In GitHub Actions, also use `concurrency:` groups per root module so jobs queue instead of racing.
+### Key concepts and comparisons
 
-### Plan artefacts and secrets
+| System | Strength | Watch-outs |
+|--------|----------|------------|
+| GitHub Actions | OIDC to clouds, environments | Protect plan artefacts; fork PR trust |
+| GitLab CI | Environments, OIDC | Same artefact discipline |
+| Azure DevOps | Enterprise gates | Service connections scope |
+| Jenkins | Flexible agents | Credential sprawl if unmanaged |
+| Atlantis | PR-native UX, locking | Host security; apply authz |
 
-Treat `tfplan` and `plan.json` as confidential. Limit artefact retention, restrict download permissions, and never echo sensitive outputs into PR comments without redaction.
+### Common pitfalls
 
-### Practical mental model
-
-1. PR proves intent with a plan  
-2. Humans + policy approve  
-3. Apply runs with least privilege  
-4. Audit logs record who merged and which commit applied  
+- Applying from a fresh `plan` on main without tying to the reviewed PR plan.  
+- Logging full plans that contain secret attribute values.  
+- Using one static admin key for all environments.  
+- Letting fork PRs run apply-capable workflows.  
+- Skipping state locking so two pipelines apply concurrently.
 
 ## Hands-on Lab
 
-### Step 1 – Tiny root for CI simulation
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-tf-ci && cd ~/rebash-tf-ci
-terraform version
+mkdir -p ~/rebash-terraform/module-16/.github/workflows && cd ~/rebash-terraform/module-16/.github/workflows
 ```
 
-`versions.tf`:
+**Focus:** hands-on practice for Terraform in CI/CD Pipelines
 
-```hcl
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Terraform in CI/CD Pipelines"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-terraform/module-16/.github/workflows
+cd ~/rebash-terraform/module-16
+
+cat > main.tf << 'EOF'
 terraform {
   required_version = ">= 1.9.0"
-
   required_providers {
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.9"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.7"
+      version = "~> 2.5"
     }
   }
-}
-```
-
-`main.tf`:
-
-```hcl
-resource "random_id" "build" {
-  byte_length = 2
 }
 
 resource "local_file" "ci" {
   filename = "${path.module}/ci-marker.txt"
-  content  = "planned-by-ci\nbuild=${random_id.build.hex}\n"
+  content  = "planned-in-ci\n"
 }
+EOF
 
-resource "terraform_data" "pipeline" {
-  input = {
-    stage = "local-simulation"
-    build = random_id.build.hex
-  }
-}
-
-output "marker" {
-  value = local_file.ci.filename
-}
-
-output "build" {
-  value = random_id.build.hex
-}
-```
-
-**Expected:** Minimal root suitable for fmt/validate/plan/apply without cloud credentials.
-
-### Step 2 – Simulate pipeline stages locally
-
-```bash
-export TF_IN_AUTOMATION=1
-terraform fmt -check
-terraform init -input=false
-terraform validate
-terraform plan -input=false -out=tfplan
+terraform init
+terraform plan -out=tfplan -input=false
 terraform show -no-color tfplan | head -n 40
-# On "main" only:
-terraform apply -input=false tfplan
-terraform output
 ```
 
-**Expected:** fmt passes (run `terraform fmt` first if needed); validate succeeds; plan creates three objects; apply writes `ci-marker.txt`; outputs show path and build hex.
+Create a workflow sketch (pattern only — adapt secrets and OIDC for your org):
 
-### Step 3 – Simulate a PR change
-
-```bash
-# Edit content string, then:
-terraform plan -input=false -out=tfplan-pr
-terraform show -no-color tfplan-pr | head -n 40
-```
-
-**Expected:** Update in-place (or replace content) for `local_file.ci` / marker — the artefact you would attach to a PR.
-
-Do not apply yet if you are practising review flow; apply when satisfied:
-
-```bash
-terraform apply -input=false tfplan-pr
-```
-
-### Step 4 – Example GitHub Actions workflow
-
-Save as `.github/workflows/terraform.yml` in a real repo (example working directory `infra/`):
-
+{% raw %}
 ```yaml
-name: Terraform
-
+# .github/workflows/terraform.yml
+name: terraform
 on:
   pull_request:
-    paths:
-      - "infra/**"
-      - ".github/workflows/terraform.yml"
   push:
     branches: [main]
-    paths:
-      - "infra/**"
-      - ".github/workflows/terraform.yml"
 
 permissions:
   contents: read
-  pull-requests: write
   id-token: write
-
-concurrency:
-  group: terraform-infra-${{ '{{' }} github.ref {{ '}}' }}
-  cancel-in-progress: false
+  pull-requests: write
 
 jobs:
-  quality:
+  plan:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: infra
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.15.8"
+          terraform_version: 1.9.8
       - run: terraform fmt -check -recursive
       - run: terraform init -input=false
       - run: terraform validate
-      # - run: terraform test   # when modules ship tests/
-
-  plan:
-    if: github.event_name == 'pull_request'
-    needs: quality
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: infra
-    env:
-      TF_IN_AUTOMATION: "true"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.15.8"
-      - run: terraform init -input=false
-      - run: terraform plan -input=false -out=tfplan
+      - run: terraform plan -out=tfplan -input=false
+        env:
+          TF_IN_AUTOMATION: "true"
       - uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: infra/tfplan
+          path: tfplan
           retention-days: 5
-      # Optional: policy job consuming terraform show -json tfplan
 
   apply:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: quality
     runs-on: ubuntu-latest
     environment: production
-    defaults:
-      run:
-        working-directory: infra
-    env:
-      TF_IN_AUTOMATION: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.15.8"
+          terraform_version: 1.9.8
       - run: terraform init -input=false
-      # Prefer: download reviewed tfplan artefact when your process supports it
+      # Prefer downloading the reviewed plan artefact; re-plan only if your process requires it
       - run: terraform apply -input=false -auto-approve
+        env:
+          TF_IN_AUTOMATION: "true"
 ```
-
-Wire OIDC cloud credentials in `plan`/`apply` for real AWS/Azure/GCP backends — never store long-lived keys in GitHub secrets when OIDC is available. GitHub `environment: production` enables required reviewers before apply.
-
-### Step 5 – Backend config note (production)
-
-CI must authenticate to the same remote backend as humans. Pass backend config via partial configuration / `-backend-config` from secrets or OIDC-assumed roles — do not commit access keys. Local labs keep the default local backend.
-
-### Step 6 – Clean up local simulation
+{% endraw %}
 
 ```bash
-terraform destroy -input=false -auto-approve
-rm -f tfplan tfplan-pr
-unset TF_IN_AUTOMATION
+mkdir -p ~/rebash-terraform/module-16/.github/workflows
+# Copy the workflow YAML above into .github/workflows/terraform.yml when you adapt it for a real repo.
+
+cat > ~/rebash-terraform/module-16/pipeline-notes.md << 'EOF'
+- PR: fmt, validate, test, plan → artefact
+- Main/env: apply reviewed plan with OIDC
+- GitLab: plan job + environment: production apply
+- Azure DevOps: plan stage + approval gate
+- Jenkins: same stages on agents with locked credentials
+- Atlantis: atlantis.yaml projects + plan/apply comments
+EOF
 ```
 
-**Expected:** Marker file removed; plan artefacts deleted.
+### Final step – Cleanup note
 
-## Code Walkthrough
-
-### Local root resources
-
-| Resource | CI teaching point |
-|----------|-------------------|
-| `local_file.ci` | Visible apply effect without cloud |
-| `random_id.build` | Stable-in-state value across plans until replace |
-| `terraform_data.pipeline` | Marker for stage metadata |
-
-### Workflow jobs
-
-| Job | Role |
-|-----|------|
-| `quality` | Fast fail on fmt/validate |
-| `plan` | PR-only artefact generation |
-| `apply` | Main + environment protection |
-
-### Permissions block
-
-`id-token: write` enables OIDC. `pull-requests: write` allows plan comment bots. Least privilege: do not grant `contents: write` unless required.
-
-### Why `concurrency.cancel-in-progress: false`
-
-Cancelling an in-flight apply is dangerous; queue instead.
+```bash
+# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
+./lab.sh || true
+```
 
 ## Validation
 
-```bash
-export TF_IN_AUTOMATION=1
-terraform fmt -check
-terraform init -input=false
-terraform validate
-terraform plan -input=false -out=tfplan
-terraform apply -input=false tfplan
-test -f ci-marker.txt
-terraform destroy -input=false -auto-approve
-```
+- [ ] Lab commands run under `~/rebash-terraform/module-16/.github/workflows/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
-| Check | Pass criteria |
-|-------|----------------|
-| Non-interactive | No prompts with `-input=false` |
-| Plan artefact | `tfplan` created and applicable |
-| Workflow | YAML reviewed for PR plan / main apply split |
-| Auth story | You can explain OIDC vs static keys |
-| Cleanup | Destroy completed |
+## Code Walkthrough
 
-## Best Practices
+Production practice for **Terraform in CI/CD Pipelines** always combines:
 
-- Pin `terraform_version` in `setup-terraform` to match `required_version`
-- Commit `.terraform.lock.hcl`; cache plugin directories in CI for speed
-- One root module per state; matrix builds for many roots with care
-- Require status checks: quality + plan (and policy) before merge
-- Use environments for production applies with human approval
-- Prefer apply-of-saved-plan when organisationally feasible
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Separate IAM roles for plan (read) and apply (write) when the cloud allows
-- Restrict who can approve GitHub environments
-- Treat plan artefacts as secret-bearing
-- Disable unused workflow permissions (`permissions:` top-level deny-by-default mindset)
-- Never print provider credentials in `terraform` debug logs on shared runners
+- Treat credentials and tokens for terraform as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Apply on every commit to main without review"
-    Speed over safety. **Fix:** Require plan review, environment protection, and policy gates.
+!!! warning "Applying from a fresh `plan` on main without tying to the reviewed PR plan.  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Long-lived cloud keys in CI secrets"
-    Credential theft risk. **Fix:** OIDC federation with short-lived roles.
+!!! warning "Logging full plans that contain secret attribute values.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Interactive apply flags in CI"
-    Jobs hang or use wrong defaults. **Fix:** `TF_IN_AUTOMATION` and `-input=false` everywhere.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-!!! warning "Racing applies on the same state"
-    Lock errors and corruption risk. **Fix:** Backend locking + workflow concurrency groups.
+## Best Practices
+
+- Encode Terraform in CI/CD Pipelines changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Provider auth failures in CI | Missing OIDC/role | Configure cloud trust + `id-token: write` |
-| `Error acquiring the state lock` | Concurrent run | Wait; check stuck locks; avoid force-unlock casually |
-| Plan artefact missing on apply | Retention / wrong job | Upload/download artefact; align paths |
-| fmt fails only in CI | Local format skipped | Run `fmt` pre-commit; match Terraform versions |
-| Apply differs from PR plan | Drift between merge and apply | Re-plan with guards or apply exact reviewed bytes |
-
-## Interview Questions
-
-1. What stages belong in a Terraform pipeline?
-   *Format, init, validate, test, plan, policy, and gated apply — with reviews between plan and apply.*
-
-2. How do you pass plan artefacts between jobs?
-   *CI artefact storage (or Terraform Cloud run objects) with restricted access and short retention.*
-
-3. Why separate plan and apply permissions?
-   *Least privilege: many engineers can propose plans; few identities can mutate production.*
-
-4. How does OIDC improve cloud auth from CI?
-   *Short-lived, audience-bound tokens replace static keys sitting in secret stores.*
-
-5. What should block a merge?
-   *Failed fmt/validate/test/policy and unanswered destructive plan changes.*
-
-6. How do you handle manual approval for production?
-   *CI environments with required reviewers before the apply job runs.*
-
-7. Where do you store backend config in CI?
-   *Partial backend files or `-backend-config` from secrets/OIDC — not access keys in Git.*
-
-8. How do you prevent concurrent applies?
-   *State locking plus pipeline concurrency groups per root.*
-
-9. What logs must you treat as sensitive?
-   *Plan JSON, apply logs with attributes, and any debug traces near credentials.*
-
-10. How do matrix builds work for many roots?
-    *Matrix over directories with isolated state; fail fast; avoid one shared lock across unrelated stacks.*
-
-11. What is a safe destroy policy in CI?
-    *No automatic destroy on main; explicit workflows with approvals and strong policy denials.*
-
-12. How do you promote the same commit across environments?
-    *Immutable commit SHA through dev→stage→prod pipelines with per-env tfvars and backends.*
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- CI owns production applies; laptops own experimentation
-- PR plans, protected applies, locking, and OIDC are the default shape
-- Use `TF_IN_AUTOMATION` and `-input=false` for non-interactive runs
-- Treat plan artefacts as confidential and apply reviewed intent
-- Separate quality gates from privileged mutation
+**Terraform in CI/CD Pipelines** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+
+## Interview Questions
+
+1. How does **Terraform in CI/CD Pipelines** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
+
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- Track overview: [Terraform](index.md)
-- Previous: [Policy as Code Overview](policy-as-code-overview.md)
-- Next: [Production Patterns and Capstone](production-patterns-and-capstone.md)
-- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
-- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Multi-Cloud Terraform](multi-cloud-terraform.md)
 
 ## References
 
-1. [Running Terraform in automation](https://developer.hashicorp.com/terraform/cli/run)
-2. [GitHub Actions — hashicorp/setup-terraform](https://github.com/hashicorp/setup-terraform)
-3. [About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
-4. [Terraform CLI plan](https://developer.hashicorp.com/terraform/cli/commands/plan)
-5. [Terraform CLI apply](https://developer.hashicorp.com/terraform/cli/commands/apply)
-6. [State locking](https://developer.hashicorp.com/terraform/language/state/locking)
-7. [hashicorp/local provider](https://registry.terraform.io/providers/hashicorp/local/latest)
+- [Running Terraform in automation](https://developer.hashicorp.com/terraform/cli/run/automating-terraform) · [Atlantis](https://www.runatlantis.io/) · [setup-terraform](https://github.com/hashicorp/setup-terraform)

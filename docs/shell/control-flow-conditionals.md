@@ -46,11 +46,21 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Control Flow — Conditionals](../assets/images/shell-control-flow.svg)
+![Architecture diagram for Control Flow — Conditionals](../assets/excalidraw/shell-control-flow.svg)
 
 ## Theory
 
-### if, elif, else
+### What it is
+
+**Control flow** decides which commands run based on tests: file existence, string equality, exit status, or pattern matches. In Bash the main tools are `if` / `elif` / `else`, the POSIX `[ ]` (and `test`) command, Bash’s safer `[[ ]]` conditional, `case` for pattern matching, and the logical operators `&&` and `||`. Conditionals turn a linear script into decision-making automation — guard preconditions, choose CLI verbs, and exit with a clear status when something is wrong.
+
+### Why it matters
+
+Ops scripts must fail closed. Running a deployment when a config file is missing, or accepting an unknown subcommand, causes outages that a two-line guard would have prevented. Continuous Integration (CI) and systemd units rely on non-zero exits; conditionals are how you produce those exits with a human-readable reason on stderr. Choosing `[[ ]]` over brittle `[ ]` parsing also avoids subtle bugs with empty strings and pattern tests that waste debugging time.
+
+### How it works
+
+An `if` statement runs a command or test; a zero exit status means “true”. Prefer Bash `[[ ]]` in this course:
 
 ```bash
 if [[ -f "$cfg" ]]; then
@@ -64,9 +74,7 @@ else
 fi
 ```
 
-### case
-
-Match patterns for CLI verbs and status strings. Always include a `*)` default:
+Use `case` for CLI verbs and status strings. Always include a `*)` default so unknown input fails loudly:
 
 ```bash
 case "${1:-}" in
@@ -75,17 +83,27 @@ case "${1:-}" in
 esac
 ```
 
-### test and `[ ]`
+POSIX `[ -f "$f" ]` still appears in portable `sh` scripts — quote operands carefully. Inside Bash, `[[ ]]` offers safer parsing, `=~` regex matching, and `&&` / `||` within the brackets. Outside tests, `&&` runs the next command on success and `||` on failure; prefer a full `if` block when the body grows beyond one line.
 
-POSIX tests: `[ -f "$f" ]`, `[ "$a" = "$b" ]`. Quote operands. Prefer `[[ ]]` in Bash scripts.
+### Key concepts
 
-### `[[ ]]`
+| Construct | Prefer when |
+|-----------|-------------|
+| `[[ ]]` | Bash scripts — safer tests, patterns, regex |
+| `[ ]` / `test` | Strict POSIX `sh` portability |
+| `if` / `elif` / `else` | Multi-branch decisions with clear exits |
+| `case` | Matching verbs, statuses, or filename patterns |
+| `&&` / `\|\|` | Short one-liners; not deep nesting |
 
-Bash conditional with safer parsing, `=~` regex, and `&&` / `||` inside the brackets. No word-splitting surprises for unquoted globs in the same way as `[`.
+Combine related checks: `[[ -n "$x" && -f "$x" ]]`.
 
-### Logical Operators
+### Common pitfalls
 
-`&&` run next on success; `||` run next on failure. Prefer `if` for multi-line clarity. Combine tests: `[[ -n "$x" && -f "$x" ]]`.
+- Using `[ "$a" == "$b" ]` under dash — prefer `=` for POSIX, or `[[ ]]` in Bash
+- Forgetting quotes so empty variables break `[` with “unary operator expected”
+- Omitting a `*)` default in `case` and silently ignoring bad input
+- Chaining long `&&` / `||` trees that obscure which check failed
+- Testing interactive-only state (aliases, `tty`) inside scheduled scripts
 
 ## Hands-on Lab
 

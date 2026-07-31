@@ -47,26 +47,54 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Networking Automation with Shell](../assets/images/shell-networking-auto.svg)
+![Architecture diagram for Networking Automation with Shell](../assets/excalidraw/shell-automation-workflow.svg)
 
 ## Theory
 
-### ping, nc, dig
+### What it is
 
-`ping -c 3 host` for ICMP reachability (may be blocked). `nc -zv host port` for TCP probes. `dig +short` / `getent hosts` for DNS — prefer checking DNS before blaming the app.
+**Networking automation with the shell** means probing reachability, resolving names, calling HTTP APIs, and moving files over SSH — all from scripts that must succeed or fail clearly. Typical tools include `ping` and `nc` for connectivity checks, `dig` / `getent` for Domain Name System (DNS), `curl` or `wget` for transfers and APIs, and `ssh` / `rsync` for remote command execution and synchronisation. These commands are the first line of diagnosis when an application “cannot connect”.
 
-### curl and wget
+### Why it matters
 
-`curl -fsSL --connect-timeout 5 --max-time 30` for APIs and downloads (`-f` fails on HTTP errors). `wget` remains common for simple file fetches. Always set timeouts.
+Most production incidents labelled as application bugs start as DNS, firewall, or timeout problems. Scripts that call APIs without timeouts hang Continuous Integration (CI) runners; SSH prompts for passwords freeze unattended jobs; copying trees with `scp` instead of `rsync` wastes time and handles resumes poorly. Encoding network checks with explicit timeouts and non-interactive SSH options turns tribal knowledge into repeatable runbooks that DevOps and Site Reliability Engineering (SRE) teams can schedule and review.
 
-### SSH, SCP, rsync
+### How it works
+
+Start with DNS before blaming the app: `dig +short` or `getent hosts`. Use `ping -c 3 host` for Internet Control Message Protocol (ICMP) reachability when ICMP is allowed — many clouds block it. Probe Transmission Control Protocol (TCP) ports with `nc -zv host port` (or equivalent). For HTTP, prefer `curl` with failure-on-error and hard limits:
+
+```bash
+curl -fsSL --connect-timeout 5 --max-time 30 "$url"
+```
+
+`-f` makes HTTP error statuses fail the command. `wget` remains fine for simple file fetches; always set timeouts either way.
+
+For remote work:
 
 ```bash
 ssh -o BatchMode=yes -o ConnectTimeout=5 host 'uname -a'
 rsync -az --delete src/ host:dst/
 ```
 
-Use `BatchMode=yes` in automation so password prompts fail fast. Prefer `rsync` over `scp` for trees and resumes.
+`BatchMode=yes` fails fast instead of waiting for a password. Prefer `rsync` over `scp` for directory trees, deletes, and resumes. Log probe results to stderr; keep machine-readable summaries on stdout when another tool will parse them.
+
+### Key concepts
+
+| Tool | Role |
+|------|------|
+| `dig` / `getent` | DNS resolution checks |
+| `ping` / `nc` | ICMP / TCP connectivity probes |
+| `curl` / `wget` | HTTP APIs and downloads with timeouts |
+| `ssh` + `BatchMode` | Non-interactive remote commands |
+| `rsync` | Efficient, resumable remote sync |
+
+### Common pitfalls
+
+- Omitting `--connect-timeout` / `--max-time` so hung sockets block the job forever
+- Assuming `ping` failure means the host is down when ICMP is filtered
+- Interactive SSH in cron that waits indefinitely for a password
+- Using `scp` for large trees instead of `rsync`
+- Printing secrets or tokens in verbose `curl -v` logs
 
 ## Hands-on Lab
 

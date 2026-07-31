@@ -44,45 +44,47 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for systemd Services and journalctl](../assets/images/linux-systemd-architecture.svg)
+![Architecture diagram for systemd Services and journalctl](../assets/excalidraw/linux-systemd-architecture.svg)
 
 ## Theory
 
-### systemd architecture
+### What it is
 
-**systemd** is the init system and service manager: units (`.service`, `.socket`, `.timer`, `.mount`, …), dependencies, cgroups, and the journal.
+**systemd** is the init system and service manager on most modern Linux distributions. It starts **units** (`.service`, `.socket`, `.timer`, `.mount`, and others), tracks dependencies, places processes in control groups (cgroups), and records structured logs via **journald**. **systemctl** is the primary control interface; **journalctl** queries the journal by unit, boot, priority, and time range.
 
-### systemctl
+### Why it matters
 
-```bash
-systemctl status ssh
-systemctl is-active nginx
-systemctl start|stop|restart|reload UNIT
-systemctl enable|--now UNIT
-systemctl disable UNIT
-systemctl list-units --type=service --state=failed
-systemctl cat UNIT
-systemctl edit UNIT   # drop-in overrides
-```
+If a service will not start after a deploy, or vanished after reboot because it was never enabled, systemd is the control plane you debug. Editing vendor unit files in place loses changes on package upgrade; drop-ins under `/etc` are the supported override path. The journal is often the fastest evidence source during incidents — richer than grepping flat files alone — especially when you filter with `-u` and `--since`.
 
-Unit files live under `/lib/systemd/system` or `/etc/systemd/system`. Prefer drop-ins over editing vendor units.
+### How it works
 
-### Services
+Unit files declare how to start a process (`ExecStart`), user, restart policy, and ordering (`After=`, `Requires=`). Vendor units live under `/lib/systemd/system` (or `/usr/lib`); local units and drop-ins under `/etc/systemd/system`. `systemctl start/stop/restart/reload` affect the running system; `enable`/`disable` control whether the unit is pulled in at boot; `--now` combines enable and start. `systemctl cat` shows the effective unit; `systemctl edit` creates drop-ins safely. journald indexes fields such as `_PID` and `_UID`; persist journals under `/var/log/journal` if you need post-reboot forensics. Harden services with directives such as `ProtectSystem=` and `NoNewPrivileges=` where applicable.
 
-A `.service` unit defines `ExecStart`, user, restart policy, dependencies (`After=`, `Requires=`), and hardening directives (`ProtectSystem=`, `NoNewPrivileges=`).
+### Key concepts and comparisons
 
-### journalctl
+| Action | Effect |
+|--------|--------|
+| start / stop | Runtime only |
+| enable / disable | Boot persistence |
+| reload | Re-read config if supported |
+| restart | Stop then start |
+| edit (drop-in) | Override without touching vendor file |
+| mask | Make start impossible (stronger than disable) |
 
-**journald** stores structured logs:
+| Query | journalctl example |
+|-------|-------------------|
+| Unit | `journalctl -u nginx -e` |
+| Since | `journalctl --since '1 hour ago'` |
+| Priority | `journalctl -p err..alert -b` |
+| Follow | `journalctl -f` |
 
-```bash
-journalctl -u ssh -e
-journalctl -u nginx --since '1 hour ago'
-journalctl -p err..alert -b
-journalctl -f
-```
+### Common pitfalls
 
-`-b` current boot; `_PID=` / `_UID=` match fields. Persist journal on disk for post-reboot forensics (`/var/log/journal`).
+- Editing `/lib/systemd/system` units and losing changes on upgrade.
+- Forgetting `daemon-reload` after adding or changing unit files.
+- Enabling a unit but never noticing it failed (`systemctl --failed`).
+- Assuming the journal is persistent when the host only keeps a volatile journal.
+- Using `restart` when `reload` would drain connections more gently.
 
 ## Hands-on Lab
 

@@ -1,238 +1,320 @@
 ---
 title: "Python Basics — Types and I/O"
-description: "Variables, data types, operators, strings, numbers, booleans, input/output, and type conversion for ops scripts."
+description: "Variables, data types, operators, strings, numbers, booleans, input/output, and type conversion for reliable DevOps automation scripts."
 difficulty: beginner
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "45–60 min"
+technology: python
 category: python
+module: "Module 2 · Basics"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - python
+  - types
+  - strings
+  - io
+prerequisites:
+  - python/python-fundamentals-install-venv-and-tooling
+next:
+  - python/control-flow-conditionals-and-loops
+related:
+  - python/file-handling-pathlib-json-yaml-csv
+  - python/error-handling-and-exceptions
+labs: []
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
 tags:
   - python
   - basics
   - types
   - io
-prerequisites:
-  - Python Fundamentals — Install, venv, and Tooling
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Python Basics — Types and I/O
 
 ## Overview
 
-Ops scripts fail when types and I/O are sloppy. Master the basics before control flow and APIs.
+Use variables, core types, operators, and safe I/O/conversion patterns so ops scripts do not fail on sloppy types or silent bad input.
 
-This is **Tutorial 2** in **Module 2: Python Basics** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Inventory scripts, health checkers, and CLIs all start with names, numbers, and strings. This module makes those basics reliable for automation — with clear stderr messages and exit codes.
+
+Complete [Module 1](python-fundamentals-install-venv-and-tooling.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 2 · Basics** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Python Fundamentals — Install, venv, and Tooling
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Python Fundamentals — Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md)
+- Active project venv with Python 3.12+
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Python Basics — Types and I/O” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Declare and name variables for ops scripts  
+- [ ] Use `str`, `int`, `float`, `bool`, and `None` appropriately  
+- [ ] Apply arithmetic, comparison, and logical operators  
+- [ ] Format strings for logs and CLI output  
+- [ ] Convert types safely with clear failure messages  
+- [ ] Separate stdout (data) from stderr (diagnostics)
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Python Basics — Types and I/O](../assets/images/python-basics-types.svg)
+![Python basics — types and I/O](../assets/excalidraw/python-basics-types.svg)
 
 ## Theory
 
-### Variables
+### Variables and names
 
-Assign with `name = value`. Names are case-sensitive. Prefer `snake_case` for locals and functions; `UPPER_SNAKE` for module-level constants. Avoid single-letter names except short loop indices.
+Names bind to objects. Prefer descriptive names: `region`, `replica_count`, `dry_run` — not `x`, `data2`.
 
-### Data Types
+```python
+region = "eu-west-1"
+replica_count = 3
+dry_run = True
+```
 
-Common ops types: `str`, `int`, `float`, `bool`, `list`, `dict`, `tuple`, `None`. Use `type(x)` sparingly in debugging; prefer type hints on public functions.
+### Core types
+
+| Type | Example | Ops use |
+|------|---------|---------|
+| `str` | `"prod"` | Names, paths, messages |
+| `int` | `8080` | Ports, counts, exit codes |
+| `float` | `99.5` | Ratios, latencies |
+| `bool` | `True` | Flags (`dry_run`) |
+| `None` | `None` | Missing optional value |
+
+Check with `type(x)` or `isinstance(x, int)` when validating config.
 
 ### Operators
 
-Arithmetic (`+ - * / // % **`), comparison (`== != < > <= >=`), logical (`and or not`), membership (`in`), identity (`is` / `is not` — use for `None`). Prefer `//` for integer division in counters.
+- Arithmetic: `+ - * / // % **`  
+- Comparison: `== != < <= > >=`  
+- Logical: `and or not`  
+
+Use `//` for integer division when you need whole counts (e.g. shard sizes).
 
 ### Strings
 
-Strings are immutable. Prefer f-strings for logs: `f"host={host}"`. Methods: `strip`, `split`, `join`, `startswith`, `endswith`, `replace`. Never build shell commands by concatenating untrusted strings.
-
-### Numbers
-
-`int` for counts and exit codes; `float` for ratios. Beware float equality — compare with tolerances when parsing metrics. Exit codes stay integers 0–255.
-
-### Booleans
-
-`True` / `False`. Truthiness: empty `""`, `[]`, `{}`, `0`, and `None` are false. Prefer explicit checks for ops flags: `if dry_run is True`.
-
-### Input
-
-`input()` reads a line from stdin (interactive labs only). Production tools prefer CLI args (`sys.argv` / argparse) and environment variables — never block a cron job on `input()`.
-
-### Output
-
-`print(...)` writes to stdout. Diagnostics belong on stderr:
-
 ```python
-print("RESULT ok")
-print("progress...", file=sys.stderr)
+name = "api"
+msg = f"checking {name} in {region}"
+path = "logs/" + name + ".log"
 ```
 
-Keep machine-readable results on stdout so pipes stay clean.
+Prefer **f-strings** for readability. For paths, later modules use `pathlib` — avoid hand-rolled slash bugs.
 
-### Type Conversion
+### Booleans and truthiness
 
-`int("42")`, `str(3)`, `bool(1)`, `float("1.5")`. Wrap conversions in `try`/`except ValueError` when parsing external text. Prefer `pathlib.Path` over raw strings for filesystem paths (Module 7).
+Empty string, `0`, `None`, and empty collections are falsy. Be explicit when reading env flags:
+
+```python
+dry_run = os.environ.get("DRY_RUN", "1") not in {"0", "false", "False"}
+```
+
+(You will formalise env parsing in Module 11.)
+
+### Input and output
+
+- **`print(...)`** → stdout (data, RESULT lines)  
+- **Diagnostics** → `print(..., file=sys.stderr)`  
+- **`input()`** → interactive only; automation prefers CLI args (Module 12)
+
+### Type conversion
+
+```python
+port = int("8080")       # OK
+# int("8080/tcp")        # ValueError — catch and explain
+flag = bool("False")     # True! non-empty string — avoid for flags
+```
+
+For flags, compare strings explicitly. For numbers, wrap `int()`/`float()` in `try/except` (Module 8) or validate before convert.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Python Basics — Types and I/O
 
 ```bash
-mkdir -p ~/rebash-python/lab02 && cd ~/rebash-python/lab02
+mkdir -p ~/rebash-python/module-02
+cd ~/rebash-python/module-02
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 ```
 
-**Focus:** types and operators drills; stderr vs stdout; safe int conversion helper
-
-### Step 1 – Skeleton
+### Step 1 – Types fingerprint
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab02 python-basics-types-and-io")
-EOF
-chmod +x lab.py
-python3 lab.py
+cd ~/rebash-python/module-02
+source .venv/bin/activate
+
+python - <<'PY'
+region = "eu-west-1"
+port = 8080
+healthy = True
+latency_ms = 12.5
+print(type(region).__name__, type(port).__name__, type(healthy).__name__)
+print(f"{region}:{port} healthy={healthy} latency={latency_ms}ms")
+PY
 ```
 
-### Step 2 – Types and I/O
+### Step 2 – Safe port parsing helper
 
 ```bash
-cat > basics.py << 'EOF'
+cat > parse_port.py << 'EOF'
 #!/usr/bin/env python3
 from __future__ import annotations
+
 import sys
 
-def to_int(raw: str) -> int:
+
+def parse_port(raw: str) -> int:
     try:
-        return int(raw.strip())
+        port = int(raw)
     except ValueError as exc:
-        print(f"invalid int: {raw!r}", file=sys.stderr)
-        raise SystemExit(2) from exc
+        raise SystemExit(f"error: port must be an integer, got {raw!r}") from exc
+    if not 1 <= port <= 65535:
+        raise SystemExit(f"error: port out of range: {port}")
+    return port
+
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 2:
-        print(f"usage: {argv[0]} N", file=sys.stderr)
+    if len(argv) != 2:
+        print("usage: parse_port.py <port>", file=sys.stderr)
         return 2
-    n = to_int(argv[1])
-    print(f"RESULT n={n} doubled={n * 2}")
-    print("ok", file=sys.stderr)
+    port = parse_port(argv[1])
+    print(port)  # stdout = data
+    print(f"parsed port={port}", file=sys.stderr)
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
 EOF
-python3 basics.py 21
-python3 basics.py nope || echo "exit=$?"
+
+python parse_port.py 8080
+python parse_port.py 99999 || true
+python parse_port.py abc || true
 ```
 
-### Final step – Cleanup note
+### Step 3 – Operators for a simple SLO check
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+success = 980
+total = 1000
+ratio = success / total
+slo = 0.99
+ok = ratio >= slo
+print(f"success_ratio={ratio:.4f} meets_slo={ok}")
+raise SystemExit(0 if ok else 1)
+PY
+```
+
+### Step 4 – String hygiene for logs
+
+```bash
+python - <<'PY'
+service = "checkout"
+env = "prod"
+# Prefer structured-looking lines early — Module 10 adds logging
+print(f"service={service} env={env} event=start", file=__import__("sys").stderr)
+PY
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab02/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-02/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Python Basics — Types and I/O** always combines:
+Production practice for **Python Basics — Types and I/O** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Skipping fundamentals for Python Basics — Types and I/O"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Treating lab defaults as production-ready for Python Basics — Types and I/O"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Python Basics — Types and I/O changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| `ValueError: invalid literal` | Bad `int()` input | Validate; clear stderr message |
+| `bool("False")` is True | Non-empty string | Compare to `"true"`/`"1"` explicitly |
+| Logs mixed with JSON | Everything on stdout | Put diagnostics on stderr |
 
 ## Summary
 
-**Python Basics — Types and I/O** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Names and types are the foundation of safe automation  
+- Convert carefully; never trust raw strings from env/CLI  
+- stdout for data, stderr for humans and CI logs
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Python Basics — Types and I/O** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Python Fundamentals — Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md) *(previous)*
-- [Control Flow — Conditionals and Loops](control-flow-conditionals-and-loops.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Control Flow — Conditionals and Loops](control-flow-conditionals-and-loops.md)  
+- [File Handling](file-handling-pathlib-json-yaml-csv.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [Built-in types](https://docs.python.org/3/library/stdtypes.html)  
+- [str.format / f-strings](https://docs.python.org/3/tutorial/inputoutput.html)

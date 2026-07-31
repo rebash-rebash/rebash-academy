@@ -46,45 +46,48 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Storage — Disks, Partitions, and Filesystems](../assets/images/linux-storage-layout.svg)
+![Architecture diagram for Storage — Disks, Partitions, and Filesystems](../assets/excalidraw/linux-storage-layout.svg)
 
 ## Theory
 
-### Discover — lsblk
+### What it is
 
-```bash
-lsblk -f
-lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT,UUID
-```
+**Storage** on Linux starts with block devices (virtual disks in the cloud, physical drives on bare metal). You **partition** them (usually GPT today), create a **filesystem** with `mkfs` (commonly ext4 or XFS), then **mount** the filesystem on a directory so it appears in the single directory tree. Discovery tools (`lsblk`, `blkid`) show names, sizes, types, Universally Unique Identifiers (UUIDs), and mount points before you touch anything destructive.
 
-### Partition — fdisk and parted
+### Why it matters
 
-```bash
-sudo fdisk -l
-# sudo fdisk /dev/sdX     # interactive — lab VMs only
-# sudo parted /dev/sdX print
-```
+Attaching a data volume to the wrong device node, formatting the OS disk, or omitting a persistent mount entry are career-limiting mistakes. Cloud VMs routinely add second disks for databases or logs; without correct partitioning, filesystem choice, and `fstab`/`nofail` policy, reboot behaviour becomes lottery. Capacity and performance incidents also start with knowing which mount backs `/var` or `/data`.
 
-GPT is standard for modern cloud disks. Always confirm the device name — wrong disk destroys data.
+### How it works
 
-### Filesystems — mkfs
+`lsblk -f` maps NAME → FSTYPE → MOUNTPOINT. Partition with `fdisk` or `parted` (lab VMs only until you are sure of the device). Create a filesystem (`mkfs.ext4`, `mkfs.xfs`), record the UUID from `blkid`, mount at a directory you created, then persist with `/etc/fstab` or a systemd `.mount` unit. Prefer UUID= or LABEL= over `/dev/sdX` names that can reorder. For secondary cloud disks, `nofail` (and often `x-systemd.device-timeout`) lets the host boot if the volume is detached. Unmount with `umount` only when nothing holds open files on that path.
 
-```bash
-# sudo mkfs.ext4 /dev/sdX1
-# sudo mkfs.xfs /dev/sdX1
-```
+### Key concepts and comparisons
 
-Choose ext4 (ubiquitous) or XFS (common on RHEL large volumes). Record UUID from `blkid`.
+| Layer | Example |
+|-------|---------|
+| Disk | `/dev/nvme1n1`, `/dev/sdb` |
+| Partition | `/dev/nvme1n1p1` |
+| Filesystem | ext4, XFS |
+| Mount point | `/mnt/data`, `/var/lib/postgresql` |
 
-### mount and umount
+| Filesystem | Typical choice |
+|------------|----------------|
+| ext4 | Ubiquitous, simple volumes |
+| XFS | Large volumes; common on RHEL-family data disks |
 
-```bash
-sudo mount UUID=... /mnt/data
-findmnt /mnt/data
-sudo umount /mnt/data
-```
+| Persistence | Notes |
+|-------------|-------|
+| `/etc/fstab` | Classic; use UUID |
+| systemd `.mount` | Unit dependencies and journal |
 
-Persist via `/etc/fstab` or systemd `.mount` units. Use `nofail` for secondary data disks on cloud images so boot continues if the volume is detached.
+### Common pitfalls
+
+- Formatting the wrong disk because `lsblk` was not checked twice.
+- Using `/dev/sdb1` in `fstab` after a reboot renamed devices.
+- Forgetting `nofail` on optional data disks and hanging boot.
+- Creating a filesystem on a whole disk that already had partitions you needed.
+- Unmounting while applications still have files open (`umount` fails or force causes pain).
 
 ## Hands-on Lab
 

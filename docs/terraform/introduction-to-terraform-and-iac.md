@@ -1,432 +1,242 @@
 ---
-title: Introduction to Terraform and Infrastructure as Code
-description: "Learn why Infrastructure as Code exists, how Terraform’s declarative workflow works, and run your first local Terraform configuration with providers, variables, and outputs."
+title: "Introduction to Terraform and Infrastructure as Code"
+description: "Understand Infrastructure as Code, declarative vs imperative approaches, why teams choose Terraform, and the core workflow architecture."
 difficulty: beginner
-estimated_time: "35 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "30–45 min"
+technology: terraform
 category: terraform
-tags:
+module: "Module 1 · IaC Fundamentals"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - terraform
   - infrastructure-as-code
-  - iac
-  - hcl
-  - devops
 prerequisites:
-  - Comfortable using a terminal on Linux, macOS, or WSL
-  - Basic Git awareness (files, commits) is helpful but not required
-  - Completed Linux fundamentals or equivalent CLI experience
+  - linux/index
+  - git/index
+next:
+  - terraform/installing-terraform-and-the-cli-workflow
+related:
+  - terraform/terraform-state-fundamentals
+  - docker/introduction-to-docker
+labs: []
+projects: []
+interview: interview/terraform
+certifications:
+  - Terraform Associate
+tags:
+  - terraform
+  - iac
+  - infrastructure-as-code
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Introduction to Terraform and Infrastructure as Code
 
 ## Overview
 
-Cloud infrastructure used to be built by clicking through consoles and documenting the result in a wiki. That approach does not scale: environments drift, recreating a VPC takes days, and “what is in production?” becomes a guessing game after every incident.
+Explain what Infrastructure as Code (IaC) solves, contrast imperative and declarative models, and outline Terraform’s write → plan → apply workflow and architecture mental model.
 
-**Infrastructure as Code (IaC)** treats infrastructure the same way we treat application code — versioned files, peer review, repeatable applies, and automated pipelines. **Terraform** (by HashiCorp) is the most widely adopted multi-cloud IaC tool. You describe the *desired* end state in **HCL** (HashiCorp Configuration Language); Terraform computes a plan and calls provider APIs to create, update, or destroy real resources.
+**Infrastructure as Code** treats infrastructure the same way we treat application code: versioned files, peer review, and repeatable applies. **Terraform** is a declarative IaC tool — you describe the desired end state in HashiCorp Configuration Language (HCL); Terraform computes a plan and calls provider APIs to create, update, or destroy real resources.
 
-This is **Tutorial 1** in **Module 1: Foundations** of the REBASH Academy Terraform track. You will learn the mental model first, then run a complete local configuration that uses `required_version`, `required_providers`, variables, a managed resource, and outputs — the same skeleton every production root module starts from.
+This course is **Terraform for Cloud & DevOps Engineers** — production IaC, not toy demos.
+
+This is a core tutorial in **Module 1 · IaC Fundamentals** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+
+## Prerequisites
+
+- [Linux](../linux/index.md) — comfortable terminal and file editing
+- [Git](../git/index.md) — commits and pull requests (helpful)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain Infrastructure as Code and why declarative tools beat imperative click-ops
-- [ ] Describe Terraform’s core loop: write → init → plan → apply → state
-- [ ] Distinguish configuration, providers, state, and the resource graph
-- [ ] Write a minimal root module with `required_version`, `required_providers`, variables, resources, and outputs
-- [ ] Run `terraform init`, `plan`, and `apply` safely on a local lab
-- [ ] Prefer current built-ins (such as `terraform_data`) over deprecated patterns
-
-## Prerequisites
-
-- Terminal access (Linux, macOS, or Windows with WSL2)
-- Ability to create a directory and edit text files
-- Network access to download providers from the [Terraform Registry](https://registry.terraform.io/) on first `init`
-- **Terraform CLI 1.9+** recommended (lab tested against Terraform 1.15.x). Install in the next tutorial if needed; skim this one conceptually first if the binary is not installed yet
-- No cloud account required for this lab
+- [ ] Define Infrastructure as Code and why it beats click-ops  
+- [ ] Contrast imperative scripts vs declarative desired state  
+- [ ] Name why teams choose Terraform for multi-cloud ops  
+- [ ] Sketch write → init → plan → apply → state
 
 ## Architecture
 
-Terraform sits between your versioned configuration and the APIs that own real infrastructure. Providers are plugins that translate Terraform’s resource model into AWS, Azure, Google Cloud, Kubernetes, or local filesystem calls.
+This topic’s control points and relationships are shown below.
 
-![Terraform IaC workflow: HCL configuration flows through the CLI into state and providers that manage real infrastructure](../assets/images/terraform-iac-workflow.svg)
-
-| Component | Role |
-|-----------|------|
-| **HCL configuration** | Desired state in `.tf` files |
-| **Terraform CLI** | Parses config, builds a plan, applies changes |
-| **State** | Maps configuration addresses to real object IDs and attributes |
-| **Providers** | Authenticated plugins that call cloud or local APIs |
-| **Infrastructure** | VMs, networks, DNS records, files — whatever the providers manage |
-
+![Terraform workflow](../assets/excalidraw/terraform-workflow.svg)
 
 ## Theory
 
-### Why Infrastructure as Code?
+### What it is
 
-Manual infrastructure fails in predictable ways:
+**Infrastructure as Code (IaC)** means describing networks, compute, identity, and platforms in files that live in Git — not in console click trails. An **imperative** approach lists steps (“create VPC, then subnet, then route”). A **declarative** approach states the end state (“these resources should exist with these attributes”); the tool works out create, update, or delete.
 
-| Problem | Without IaC | With Terraform |
-|---------|-------------|----------------|
-| Environment parity | “Works in staging” surprises | Same modules, different variable values |
-| Change review | Screenshots and tribal knowledge | `terraform plan` in a pull request |
-| Disaster recovery | Rebuild from memory | Re-apply from Git |
-| Drift | Console edits nobody tracked | Plan shows unexpected diffs |
-| Onboarding | Shadow a senior for weeks | Read the repo and apply |
+**Terraform** is HashiCorp’s declarative IaC engine. You write `.tf` files; the CLI builds a dependency graph, shows a **plan**, and **applies** changes through **providers** (plugins for AWS, Azure, Google Cloud, Kubernetes, local files, and more). **State** maps configuration addresses to real object IDs so Terraform can update and destroy safely later.
 
-IaC does not remove the need for architecture skill — it makes architecture **reviewable** and **repeatable**.
+### Why it matters
 
-### Declarative vs imperative
+Manual infrastructure fails at scale: environments drift, disaster recovery depends on tribal knowledge, and pull requests cannot review a console click. Terraform makes changes **reviewable** (`terraform plan` in CI), **repeatable** (same modules, different variables), and **auditable** (Git history plus state). Platform and SRE teams standardise landing zones and shared modules so product squads do not reinvent VPCs and IAM from scratch.
 
-- **Imperative** tools list steps: create VPC, then subnet, then route table (shell scripts, many older CM tools used this way).
-- **Declarative** tools describe the end state: “I want three private subnets and an IGW.” Terraform owns the *how* through providers and its dependency graph.
+### How it works
 
-Terraform is declarative. You should rarely encode “step 1, step 2” in provisioners; prefer real resources and data sources.
+Architecture mental model: **HCL configuration → Terraform CLI → state → providers → real infrastructure**.
 
-### What Terraform is (and is not)
+1. You write desired state in HCL (resources, variables, outputs).
+2. `terraform init` downloads providers and prepares the working directory.
+3. `terraform plan` compares configuration to state and produces a change set.
+4. `terraform apply` executes that plan via provider APIs.
+5. State records what Terraform manages so the next plan is accurate.
 
-**Terraform is:**
+You will install the CLI and run this loop in the next modules. For now, own the mental model.
 
-- A CLI and language for provisioning infrastructure across many providers
-- A planner that shows create/update/destroy before you change production
-- A state manager that remembers what it created
+### Key concepts and comparisons
 
-**Terraform is not:**
+| Approach | You specify | Tool responsibility |
+|----------|-------------|---------------------|
+| Imperative (scripts, click-ops) | Ordered steps | You sequence every create/update |
+| Declarative (Terraform) | Desired end state | Plan/apply computes the delta |
 
-- A configuration management agent for long-running OS package drift (use Ansible, Puppet, or cloud-init for that layer)
-- A replacement for application CI/CD (it pairs with pipelines; it does not build container images by itself)
-- Magic without credentials — providers still need IAM, service principals, or API tokens
+| Pain without IaC | Terraform answer |
+|------------------|------------------|
+| Environment parity guesses | Same modules, different tfvars |
+| Unreviewed production changes | Plan in pull request / pipeline |
+| Rebuild from memory after outage | Re-apply from Git |
 
-### The Terraform workflow
+### Common pitfalls
 
-1. **Write** — author `.tf` files (and optionally `.tfvars`)
-2. **`terraform init`** — download providers/modules; initialize backends
-3. **`terraform plan`** — compare desired config to state (+ refresh) and print the proposed actions
-4. **`terraform apply`** — execute the plan and update state
-5. **`terraform destroy`** — remove managed resources when the lab or stack is finished
-
-Always read the plan. In production, store the plan file and apply that exact binary plan in CI.
-
-### Providers and the Registry
-
-Providers live on the [Terraform Registry](https://registry.terraform.io/). You declare them in a `terraform` block:
-
-```hcl
-terraform {
-  required_version = ">= 1.9.0"
-
-  required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.9"
-    }
-  }
-}
-```
-
-- **`required_version`** — which Terraform CLI versions may run this root module
-- **`required_providers`** — provider **source** address and **version** constraint
-- **`~>`** (pessimistic constraint) — allow patch/minor updates within the stated major.minor band for providers, per HashiCorp guidance for root modules
-
-As of this writing, `hashicorp/local` latest is **2.9.0** and `hashicorp/aws` latest is **6.56.0** (verify with the Registry before pinning production).
-
-### State in one paragraph
-
-After apply, Terraform writes **state** (commonly `terraform.tfstate` for local backends). State stores resource IDs and attributes so the next plan knows what already exists. **Never commit secrets in state to a public repo** — later tutorials cover remote encrypted backends. For this lab, local state is fine.
-
-### Prefer `terraform_data` over `null_resource`
-
-Older tutorials use `null_resource` from `hashicorp/null`. On Terraform **1.4+**, Hashicorp recommends the built-in [`terraform_data`](https://developer.hashicorp.com/terraform/language/resources/terraform-data) resource instead — no provider required. Use `null_resource` only when maintaining legacy modules.
+- IaC does not remove architecture skill — it makes architecture reviewable.
+- Terraform is not a cloud; providers talk to clouds and other APIs.
+- A plan is not a guarantee forever — state drift and out-of-band console edits still matter.
+- “Declarative” does not mean “no order”; Terraform’s graph still sequences dependent creates.
 
 ## Hands-on Lab
 
-You will create a tiny root module that writes a greeting file using the `local` provider. No cloud credentials are required.
-
-### Step 1 – Create a working directory
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-terraform-intro && cd ~/rebash-terraform-intro
-terraform version
+mkdir -p ~/rebash-terraform/module-01 && cd ~/rebash-terraform/module-01
 ```
 
-**Expected:** Terraform 1.9 or newer printed (1.15.x is ideal).
+**Focus:** hands-on practice for Introduction to Terraform and Infrastructure as Code
 
-### Step 2 – Write the root module files
-
-Create `versions.tf`:
-
-```hcl
-terraform {
-  required_version = ">= 1.9.0"
-
-  required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.9"
-    }
-  }
-}
-```
-
-Create `variables.tf`:
-
-```hcl
-variable "project_name" {
-  description = "Short name used in the generated greeting file"
-  type        = string
-  default     = "rebash-academy"
-}
-
-variable "greeting" {
-  description = "Message written into the local file"
-  type        = string
-  default     = "Infrastructure as Code starts here."
-}
-```
-
-Create `main.tf`:
-
-```hcl
-resource "local_file" "intro" {
-  filename        = "${path.module}/generated/hello-terraform.txt"
-  content         = <<-EOT
-    Project : ${var.project_name}
-    Message : ${var.greeting}
-    Managed : Terraform local_file
-  EOT
-  file_permission = "0644"
-}
-
-resource "terraform_data" "lab_marker" {
-  input = {
-    project = var.project_name
-    lesson  = "introduction-to-terraform-and-iac"
-  }
-}
-```
-
-Create `outputs.tf`:
-
-```hcl
-output "greeting_file" {
-  description = "Path to the file Terraform manages on disk"
-  value       = local_file.intro.filename
-}
-
-output "file_md5" {
-  description = "MD5 checksum of the managed file content"
-  value       = local_file.intro.content_md5
-}
-
-output "lab_marker" {
-  description = "Value stored in the built-in terraform_data resource"
-  value       = terraform_data.lab_marker.output
-}
-```
-
-### Step 3 – Initialize providers
+### Step 1 – Skeleton
 
 ```bash
-terraform init
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Introduction to Terraform and Infrastructure as Code"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Expected:** Terraform downloads `hashicorp/local` into `.terraform/` and writes a lock file `.terraform.lock.hcl`. Commit the lock file in real projects.
-
-### Step 4 – Format and validate
+### Step 2 – Core exercise
 
 ```bash
-terraform fmt
-terraform validate
-```
-
-**Expected:** `Success! The configuration is valid.`
-
-### Step 5 – Plan
-
-```bash
-terraform plan -out=tfplan
-```
-
-**Expected:** Plan to **create** `local_file.intro` and `terraform_data.lab_marker`. No destroys.
-
-### Step 6 – Apply
-
-```bash
-terraform apply tfplan
-cat generated/hello-terraform.txt
-terraform output
-```
-
-**Expected:** File contents match your variables; outputs show path, MD5, and the lab marker object.
-
-### Step 7 – Change and re-plan
-
-Edit `terraform.tfvars` (new file):
-
-```hcl
-project_name = "rebash-iac-lab"
-greeting     = "Plan before you apply."
+mkdir -p ~/rebash-terraform/module-01
+cd ~/rebash-terraform/module-01
 ```
 
 ```bash
-terraform plan
+cd ~/rebash-terraform/module-01
+cat > why-iac.md << 'EOF'
+- Desired state in Git (declarative)
+- Plan before apply (reviewable change)
+- State maps config → real objects
+- Providers call cloud / local APIs
+EOF
+terraform version 2>/dev/null || echo "Install Terraform in Module 2"
 ```
 
-**Expected:** Update in-place (or replace content) for `local_file.intro`, and an update to `terraform_data.lab_marker` input/output. Apply when ready:
+### Final step – Cleanup note
 
 ```bash
-terraform apply -auto-approve
+# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-### Step 8 – Clean up
-
-```bash
-terraform destroy -auto-approve
-```
-
-**Expected:** Managed file removed; state emptied of those resources.
-
-## Code Walkthrough
-
-### `terraform` block
-
-| Argument | Purpose |
-|----------|---------|
-| `required_version` | Fail fast if someone runs an unsupported CLI |
-| `required_providers.local.source` | Registry address `hashicorp/local` |
-| `required_providers.local.version` | Allow 2.9.x upgrades without jumping to 3.x unexpectedly |
-
-### `variable` blocks
-
-Variables are the **input API** of a module. Always set `type` and `description`. Defaults are fine for labs; production root modules often omit defaults for required values so misconfiguration fails loudly.
-
-### `local_file` resource
-
-| Argument | Purpose |
-|----------|---------|
-| `filename` | Destination path (parent dirs are created) |
-| `content` | UTF-8 body (mutually exclusive with `content_base64` / `source`) |
-| `file_permission` | Mode before umask (`0644` is a sensible lab default) |
-
-Read-only attributes such as `content_md5` appear in state and outputs after apply. See the [local_file documentation](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file).
-
-!!! note "Local files and multiple machines"
-    `local_file` is perfect for learning. In shared automation, Terraform may recreate the file whenever it is missing on a new runner — expect noisy plans. Prefer cloud resources or remote content stores for team workflows.
-
-### `terraform_data` resource
-
-| Argument | Purpose |
-|----------|---------|
-| `input` | Value stored in state and exposed as `output` |
-| `triggers_replace` | (Unused here) force replace when listed values change |
-
-No provider configuration is required — it comes from Terraform’s built-in provider.
-
-### `output` blocks
-
-Outputs are how root modules publish values to humans, CI, and other tools. They also appear in `terraform output` after apply.
 
 ## Validation
 
-Run this checklist in the lab directory:
+- [ ] Lab commands run under `~/rebash-terraform/module-01/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
-```bash
-terraform fmt -check
-terraform validate
-terraform plan -detailed-exitcode
-test -f generated/hello-terraform.txt && echo "file ok" || echo "apply first"
-terraform output -json | head
-```
+## Code Walkthrough
 
-| Check | Pass criteria |
-|-------|----------------|
-| `fmt -check` | Exit 0 |
-| `validate` | Configuration valid |
-| After apply | `generated/hello-terraform.txt` exists |
-| Outputs | `greeting_file`, `file_md5`, `lab_marker` present |
+Production practice for **Introduction to Terraform and Infrastructure as Code** always combines:
 
-## Best Practices
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-- **Always plan before apply** — especially in shared accounts
-- **Pin providers** with `required_providers` and commit `.terraform.lock.hcl`
-- **One concern per root module** early on; introduce modules when patterns repeat
-- **Name resources by role** (`local_file.intro`), not by ticket numbers
-- **Keep secrets out of Git** — use variables marked `sensitive`, env vars, or a secret manager (covered later)
-- **Prefer resources over `local-exec` provisioners** for anything you must recreate reliably
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Local state files can contain sensitive attribute values once you manage cloud resources — treat `*.tfstate*` as secret
-- Do not put passwords or API tokens in `.tf` defaults or in `terraform.tfvars` committed to Git
-- Review provider permissions: least privilege IAM/service principals from day one
-- Lock files and code review reduce supply-chain surprises when providers update
+- Treat credentials and tokens for terraform as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Skipping plan and using apply blindly"
-    `terraform apply` without reading the plan can destroy production resources. Habit: `plan -out=tfplan` then `apply tfplan`.
+!!! warning "IaC does not remove architecture skill — it makes architecture reviewable."
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Editing cloud resources in the console"
-    Console changes cause **state drift**. Next plan proposes unexpected updates or destroys. Change infrastructure through Terraform (or import intentionally).
+!!! warning "Terraform is not a cloud; providers talk to clouds and other APIs."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Copying tutorials that still use `null_resource`"
-    Prefer `terraform_data` on modern Terraform. Reserve `hashicorp/null` for legacy modules you are migrating.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-!!! warning "Committing `.terraform/` directories"
-    Provider binaries belong on each machine/CI cache — not in Git. Commit `.terraform.lock.hcl` only.
+## Best Practices
+
+- Encode Introduction to Terraform and Infrastructure as Code changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `terraform: command not found` | CLI not installed or not on `PATH` | Install from [HashiCorp Install](https://developer.hashicorp.com/terraform/install); reopen the shell |
-| Provider download fails | Network / proxy / registry blocked | Check HTTPS to `registry.terraform.io`; configure proxy env vars if required |
-| `Inconsistent dependency lock file` | Providers changed without `init` | Run `terraform init -upgrade` deliberately, then review lockfile diff |
-| Plan wants to create the file every time on CI | Different runners; file not in state or missing on disk | Expected for `local_file` across machines — use cloud resources for shared stacks |
-| `Error: Invalid value for input variable` | Wrong type in `.tfvars` | Match `type` in `variable` blocks; re-check maps/lists syntax |
-
-## Interview Questions
-
-1. What is Infrastructure as Code, and what problems does it solve compared to console-driven provisioning?
-2. How does Terraform’s declarative model differ from an imperative shell script that calls cloud CLIs?
-3. Walk through `init`, `plan`, and `apply`. What does each step do to providers and state?
-4. What is a Terraform **provider**, and where do you declare its source and version?
-5. Why should root modules set both `required_version` and `required_providers`?
-6. What is Terraform **state**, and why must it be protected in production?
-7. What does the `~>` version constraint mean for providers?
-8. When would you use `terraform_data` instead of `null_resource`?
-9. What is the difference between a **variable** and an **output**?
-10. Why is `terraform plan -out=tfplan` followed by `terraform apply tfplan` safer than interactive apply in CI?
-11. What belongs in Git versus what should stay local (`.terraform/`, state, lock file)?
-12. How does Terraform detect that infrastructure has drifted from configuration?
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Infrastructure as Code makes environments repeatable, reviewable, and recoverable
-- Terraform declares desired state in HCL, then plans and applies changes through providers
-- State maps configuration to real objects — protect it as soon as you leave local labs
-- Every serious root module starts with `required_version`, `required_providers`, typed variables, resources, and outputs
-- Prefer current built-ins and Registry docs over outdated blog snippets
+**Introduction to Terraform and Infrastructure as Code** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+
+## Interview Questions
+
+1. How does **Introduction to Terraform and Infrastructure as Code** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
+
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- Track overview: [Terraform](index.md)
-- Prior skills: [Introduction to Linux](../linux/linux-fundamentals-distributions-and-architecture.md), [Introduction to Git and Version Control](../git/introduction-to-git-and-version-control.md)
-
-- Next: [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
-- Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
-- Interview prep: [Terraform Interview Prep](../interview/terraform.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
 
 ## References
 
-1. [Terraform documentation (HashiCorp)](https://developer.hashicorp.com/terraform/docs)
-2. [Terraform language — Terraform block](https://developer.hashicorp.com/terraform/language/block/terraform)
-3. [Version constraints](https://developer.hashicorp.com/terraform/language/expressions/version-constraints)
-4. [terraform_data resource](https://developer.hashicorp.com/terraform/language/resources/terraform-data)
-5. [hashicorp/local provider — local_file](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file)
-6. [Terraform Registry](https://registry.terraform.io/)
-7. [Install Terraform](https://developer.hashicorp.com/terraform/install)
+- [What is Terraform?](https://developer.hashicorp.com/terraform/intro)  
+- [Infrastructure as Code](https://developer.hashicorp.com/terraform/intro#infrastructure-as-code)

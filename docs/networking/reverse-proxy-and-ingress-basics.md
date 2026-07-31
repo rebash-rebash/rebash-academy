@@ -1,479 +1,276 @@
 ---
-title: Reverse Proxy and Ingress Basics
-description: Configure nginx and HAProxy as reverse proxies, terminate TLS at the edge, route traffic with Kubernetes Ingress, and understand when to proxy vs load balance.
+title: "Reverse Proxy and Ingress Basics"
+description: "Configure reverse proxies with nginx and HAProxy concepts, terminate TLS at the edge, route by Host and path, and map the same ideas to Kubernetes Ingress."
 difficulty: intermediate
-estimated_time: "40 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "45–60 min"
+technology: networking
 category: networking
+module: "Module 13 · Load Balancing"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - site-reliability-engineer
+  - kubernetes-engineer
+  - platform-engineer
+skills:
+  - reverse-proxy
+  - nginx
+  - haproxy
+  - ingress
+  - tls
+prerequisites:
+  - networking/load-balancing-fundamentals
+next:
+  - networking/kubernetes-networking-fundamentals
+related:
+  - networking/http-https-and-application-layer
+  - networking/kubernetes-networking-fundamentals
+  - networking/load-balancer-operations-and-health-checks
+labs: []
+projects: []
+interview: interview/networking
+certifications:
+  - CompTIA Network+
+  - CKA
 tags:
   - networking
   - reverse-proxy
   - nginx
   - haproxy
   - ingress
-  - kubernetes
-  - tls
-prerequisites:
-  - Complete [Load Balancing Fundamentals](load-balancing-fundamentals.md) or equivalent
-  - Understanding of HTTP/HTTPS from [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
-  - Linux VM with sudo access; optional Kubernetes cluster for Ingress lab
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Reverse Proxy and Ingress Basics
 
 ## Overview
 
-A **reverse proxy** sits in front of backend servers and handles client requests on their behalf. Unlike a forward proxy (which protects clients), a reverse proxy protects and scales **servers**. It terminates TLS, routes requests by hostname or path, caches static assets, rate-limits abusive clients, and hides internal topology from the internet. Every production web stack uses reverse proxies — nginx in front of Node.js, HAProxy in front of microservices, AWS ALB acting as a managed reverse proxy, or Kubernetes **Ingress** controllers distributing HTTP traffic to pods.
+Explain reverse proxy vs load balancer roles, sketch nginx/HAProxy-style routing and TLS termination, and map the pattern to Kubernetes Ingress.
 
-Confusing reverse proxies with load balancers causes architectural mistakes. Load balancers distribute connections across **multiple identical backends**; reverse proxies add **application-aware** behaviour — URL rewriting, header injection, WebSocket upgrades, and authentication at the edge. In practice, one component often does both: an ALB load-balances and terminates TLS; nginx reverse-proxies and load-balances upstream pools.
+A **reverse proxy** accepts client traffic and forwards it to internal backends — often with TLS termination, Host/path routing, header injection, and rate limits. Many products are both proxy and balancer (ALB, nginx upstreams, Ingress controllers).
 
-This is **Tutorial 13** in **Module 4: Application Layer** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
+This is the second tutorial in **Module 13**. Complete [Load Balancing Fundamentals](load-balancing-fundamentals.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 13 · Load Balancing** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed [Load Balancing Fundamentals](load-balancing-fundamentals.md) — understand L4 vs L7, health checks, and backend pools
-- Familiarity with HTTP methods, headers, and status codes from [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
-- Linux VM (Ubuntu 22.04+) with `sudo`; Docker optional for multi-backend lab
-- Optional: local Kubernetes cluster (minikube, kind, or k3s) for Ingress exercises
-- Basic comfort editing configuration files and reloading services
+### Required
+
+- [Load Balancing Fundamentals](load-balancing-fundamentals.md)
+- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
+- Linux lab host with `sudo`
+
+### Recommended
+
+- Optional: local Kubernetes (kind/minikube) for Ingress observation
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain the difference between forward proxy, reverse proxy, and load balancer roles
-- [ ] Configure nginx as a reverse proxy with upstream pools and TLS termination
-- [ ] Route traffic by hostname and URL path using proxy rules
-- [ ] Describe Kubernetes Ingress architecture and common controller implementations
-- [ ] Choose between terminating TLS at the proxy vs passing through to backends
-- [ ] Debug common reverse proxy failures (502, 504, wrong backend routing)
+- [ ] Contrast forward proxy, reverse proxy, and load balancer  
+- [ ] Describe TLS terminate vs passthrough  
+- [ ] Route by hostname and URL path  
+- [ ] Sketch an nginx `upstream` + `proxy_pass` pattern  
+- [ ] Explain Kubernetes Ingress at a practical level  
+- [ ] Debug 502/504 and wrong-backend routing
 
 ## Architecture
 
-Clients connect to the reverse proxy; the proxy forwards requests to internal backends that are not directly exposed.
+Clients reach the proxy; internals stay private. Path/Host selects upstream.
 
-![Architecture diagram for Reverse Proxy and Ingress Basics](../assets/images/reverse-proxy-and-ingress-basics.svg)
-
+![Reverse proxy and Ingress](../assets/excalidraw/reverse-proxy-ingress.svg)
 
 ## Theory
 
-### Forward Proxy vs Reverse Proxy
+### Roles
 
-A **forward proxy** (corporate proxy, VPN egress) sits between **clients** and the internet. Clients configure the proxy; the destination server sees the proxy's IP, not the client's. Use cases: content filtering, anonymization, caching outbound requests.
+| Role | Protects / serves | Typical use |
+|------|-------------------|-------------|
+| Forward proxy | Clients | Egress control, caching |
+| Reverse proxy | Servers | Edge TLS, routing, hide topology |
+| Load balancer | Pool fairness/HA | Spread across identical backends |
 
-A **reverse proxy** sits between the **internet and servers**. Clients connect to the proxy's public address; the proxy selects a backend and forwards the request. Backends may listen only on private IPs — the reverse proxy is the sole public entry point.
+One process often does reverse proxy **and** L7 balancing.
 
-| Role | Protects | Client knows | Server sees |
-|------|----------|--------------|-------------|
-| Forward proxy | Client | Must configure proxy | Proxy IP |
-| Reverse proxy | Server | Connects to proxy URL | Proxy-added headers (X-Forwarded-For) |
-| Load balancer | Server fleet | Single VIP/DNS | Depends on L4 vs L7 |
+### TLS at the edge
 
-### What Reverse Proxies Do
+- **Terminate** at proxy — backends may speak HTTP on a private network; certs managed once  
+- **Passthrough** — proxy forwards TLS bytes; backends present certs (mTLS, special apps)  
+- **Re-encrypt** — terminate then TLS again to backends  
 
-Production reverse proxies typically handle:
+Always set or trust **`X-Forwarded-For`**, **`X-Forwarded-Proto`**, and **`Host`** behaviour so apps see the real client and scheme.
 
-1. **TLS termination** — decrypt HTTPS at the edge; backends speak plain HTTP on trusted networks
-2. **Request routing** — `Host: api.example.com` → API pool; `/static/*` → object storage
-3. **Load distribution** — round-robin, least-conn, or consistent hash across upstream servers
-4. **Connection pooling** — reuse TCP connections to backends, reducing handshake overhead
-5. **Caching** — store responses for cacheable GET requests
-6. **Compression** — gzip/brotli at the edge
-7. **Rate limiting and WAF** — throttle abusive clients before traffic hits application code
-8. **WebSocket and HTTP/2** — protocol upgrades managed at the proxy layer
-
-### TLS Termination vs Pass-Through
-
-**TLS termination** (SSL offloading): the proxy holds the certificate, decrypts traffic, forwards HTTP to backends. Simplifies certificate management (one cert at the edge) but requires trust in the internal network between proxy and app.
-
-**TLS pass-through** (SSL bridging): the proxy forwards encrypted bytes without decrypting. Backends terminate TLS individually. Preserves end-to-end encryption; the proxy cannot inspect HTTP headers for routing unless it uses **SNI** (Server Name Indication) at connection time for L4 routing.
-
-| Approach | Cert management | Header inspection | Internal traffic |
-|----------|-----------------|-------------------|------------------|
-| Termination | Centralised at proxy | Full L7 routing | Often plain HTTP |
-| Pass-through | Per backend | L4 only (SNI routing) | Encrypted end-to-end |
-
-!!! tip "Production pattern"
-    Terminate TLS at the reverse proxy or cloud load balancer on a trusted VPC network. Re-encrypt to backends (TLS to upstream) only when compliance requires encryption in transit inside the VPC.
-
-### nginx as a Reverse Proxy
-
-**nginx** is the most widely deployed open-source reverse proxy. Its `proxy_pass` directive forwards requests to upstream servers defined in `upstream` blocks.
-
-Core concepts:
-
-- **`upstream`** — named backend pool with load-balancing method
-- **`proxy_pass`** — forward location-matched requests to an upstream or URL
-- **`proxy_set_header`** — inject headers (`Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto`)
-- **`proxy_read_timeout`** — how long to wait for backend response (504 if exceeded)
-
-Example routing by path:
+### nginx pattern (conceptual)
 
 ```nginx
-upstream app_backend {
-    least_conn;
-    server 10.0.11.10:8080;
-    server 10.0.11.11:8080;
+upstream api {
+    server 10.0.2.10:8080;
+    server 10.0.2.11:8080;
 }
 
 server {
     listen 443 ssl;
-    server_name www.example.com;
-
-    ssl_certificate     /etc/ssl/certs/example.com.crt;
-    ssl_certificate_key /etc/ssl/private/example.com.key;
+    server_name api.example.com;
+    # ssl_certificate ...;
 
     location / {
-        proxy_pass http://app_backend;
+        proxy_pass http://api;
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    location /health {
-        access_log off;
-        return 200 'ok';
-    }
 }
 ```
 
-### HAProxy Overview
-
-**HAProxy** excels at high-concurrency TCP and HTTP proxying with ACL-based routing, stick tables, and a real-time stats page (`/haproxy?stats`). Use HAProxy when you need TCP-mode proxying alongside HTTP or granular health-check control beyond nginx defaults.
+HAProxy uses `frontend` / `backend` with ACLs on Host and path — same ideas, different syntax.
 
 ### Kubernetes Ingress
 
-In Kubernetes, **Ingress** is an API resource that defines HTTP routing rules. An **Ingress controller** (nginx-ingress, Traefik, AWS Load Balancer Controller, Istio gateway) watches Ingress objects and configures the underlying proxy.
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: app-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - app.example.com
-      secretName: app-tls
-  rules:
-    - host: app.example.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: web-service
-                port:
-                  number: 80
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: api-service
-                port:
-                  number: 8080
-```
-
-**Ingress vs Service LoadBalancer:** A Kubernetes `Service` of type `LoadBalancer` creates one cloud LB per service (expensive at scale). Ingress consolidates many services behind one entry point with host/path routing.
-
-**Gateway API** (successor to Ingress) provides richer routing, role-based resources (`Gateway`, `HTTPRoute`), and better multi-tenancy — learn Ingress first; adopt Gateway API for new clusters.
-
-### Headers and Client IP Preservation
-
-When a reverse proxy forwards requests, the backend sees the proxy's IP as `$remote_addr`. Applications that log client IPs or enforce IP-based rate limits need forwarded headers:
-
-| Header | Purpose |
-|--------|---------|
-| `X-Forwarded-For` | Chain of client and proxy IPs |
-| `X-Real-IP` | Single client IP (first hop) |
-| `X-Forwarded-Proto` | Original scheme (`http` or `https`) |
-| `X-Forwarded-Host` | Original Host header |
-
-!!! warning "Trust boundary"
-    Only trust `X-Forwarded-For` from known proxies. Attackers can spoof these headers if they reach the backend directly. Configure `real_ip` modules in nginx or `set_real_ip_from` to accept headers only from the proxy subnet.
+Ingress (and Gateway API) declare HTTP routing; a **controller** (nginx, Traefik, cloud LB controller) implements it. Flow: Client → Service type LoadBalancer / NodePort → Ingress controller → Service → Pods.
 
 ## Hands-on Lab
 
-Complete these exercises on an Ubuntu VM. Use disposable lab instances.
-
-### Step 1 – Start two backend servers
-
-**Command:**
+**Focus:** practise the core workflow for Reverse Proxy and Ingress Basics
 
 ```bash
-mkdir -p ~/proxy-lab && cd ~/proxy-lab
-python3 -m http.server 8081 --bind 127.0.0.1 &
-python3 -m http.server 8082 --bind 127.0.0.1 &
-curl -s http://127.0.0.1:8081/ | head -1
-curl -s http://127.0.0.1:8082/ | head -1
+mkdir -p ~/rebash-networking/module-13
+cd ~/rebash-networking/module-13
+
+sudo apt-get update
+sudo apt-get install -y nginx curl openssl
 ```
 
-**Explanation:** Two simple HTTP servers simulate distinct backends. Binding to localhost ensures they are reachable only via the reverse proxy once configured.
-
-**Expected output:**
-
-```text
-Serving HTTP on 127.0.0.1 port 8081 ...
-Serving HTTP on 127.0.0.1 port 8082 ...
-<!DOCTYPE HTML>
-```
-
-### Step 2 – Install nginx and create upstream config
-
-**Command:**
+### Step 1 – Inspect default nginx
 
 ```bash
-sudo apt-get update && sudo apt-get install -y nginx
-sudo tee /etc/nginx/conf.d/proxy-lab.conf <<'EOF'
-upstream lab_backends {
-    server 127.0.0.1:8081;
-    server 127.0.0.1:8082;
-}
-
-server {
-    listen 8888;
-    server_name _;
-
-    location / {
-        proxy_pass http://lab_backends;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-EOF
-sudo nginx -t && sudo systemctl reload nginx
+nginx -v
+sudo nginx -t
+curl -sI http://127.0.0.1/ | head -15
 ```
 
-**Explanation:** The upstream block defines a backend pool. nginx load-balances across both Python servers by default (round-robin).
+### Step 2 – Local reverse-proxy sketch
 
-**Expected output:**
+Create a notes file with:
 
-```text
-nginx: configuration file /etc/nginx/nginx.conf test is successful
-```
+1. `server_name` for two hosts (`app.local`, `api.local`)  
+2. `location /static` vs `location /` upstreams  
+3. Which headers you would forward  
 
-### Step 3 – Verify load distribution through the proxy
-
-**Command:**
+### Step 3 – Simulate upstream failure semantics
 
 ```bash
-for i in $(seq 1 6); do curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8888/; done
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:9 || true
 ```
 
-**Explanation:** Repeated requests should alternate between backends (200 responses). Check nginx access log to confirm different upstream response sizes or add custom backend headers in production.
+Relate to **502** (bad gateway) when the proxy cannot get a valid upstream response.
 
-**Expected result:**
-
-Repeated curls return HTTP 200; upstream selection varies across backends if round-robin is configured.
-
-### Step 4 – Add path-based routing
-
-**Command:**
+### Step 4 – Certificate glance
 
 ```bash
-sudo tee /etc/nginx/conf.d/proxy-lab.conf <<'EOF'
-upstream lab_backends {
-    server 127.0.0.1:8081;
-    server 127.0.0.1:8082;
-}
-
-server {
-    listen 8888;
-    server_name _;
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:8082/;
-        proxy_set_header Host $host;
-    }
-
-    location / {
-        proxy_pass http://lab_backends;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-EOF
-sudo nginx -t && sudo systemctl reload nginx
-curl -sI http://127.0.0.1:8888/api/ | head -3
+echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null \
+  | openssl x509 -noout -subject -dates
 ```
 
-**Explanation:** Path-based routing sends `/api/*` to a specific backend while `/` uses the pool. Note the trailing slash in `proxy_pass` — it affects URL rewriting behaviour.
+Edge certs are what clients validate when TLS terminates at the proxy.
 
-**Expected result:**
+### Step 5 – Ingress mental model
 
-`nginx -t` OK; `/api/` and `/` paths hit different upstreams as configured.
-
-### Step 5 – Simulate backend failure (502 Bad Gateway)
-
-**Command:**
+If you have a cluster:
 
 ```bash
-kill $(pgrep -f "http.server 8081") 2>/dev/null
-curl -v --connect-timeout 3 http://127.0.0.1:8888/ 2>&1 | grep -E "< HTTP|502"
+kubectl get ingress -A 2>/dev/null || echo "No cluster — skip; keep the paper model"
 ```
 
-**Explanation:** When all upstreams in a pool fail, nginx returns **502 Bad Gateway**. With one backend down, round-robin still succeeds on alternate requests.
-
-**Cleanup:**
-
-```bash
-kill $(pgrep -f "http.server") 2>/dev/null
-sudo rm /etc/nginx/conf.d/proxy-lab.conf
-sudo systemctl reload nginx
-```
-
-**Expected result:**
-
-```text
-502
-```
-
-(or 504) when the killed upstream is selected; restore backend afterwards for cleanup.
-
-### Step 6 – Review Kubernetes Ingress (optional)
-
-If you have kubectl access:
-
-```bash
-kubectl get ingress -A
-kubectl describe ingress app-ingress -n default 2>/dev/null || echo "No ingress found — apply sample YAML from Theory section"
-```
-
-**Explanation:** Inspect which Ingress controller is installed, assigned external IP, and backend service endpoints.
-
-**Expected result:**
-
-Ingress list or “No resources found”; optional step may be skipped without cluster access.
+Otherwise document: Host rule → Service name → Pod port.
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Confirm nginx proxies to backends and path rules return expected status codes.
-2. Explain the 502 you induced when a backend was killed.
-3. Remove lab `conf.d` files and stop temporary HTTP servers.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Proxy | Frontend returns 200 from healthy backends |
-| Paths | Path-based routes hit the correct upstream |
-| Failure | Killing a backend yields 502/504 as expected |
-| Ingress | Optional `kubectl get ingress` reviewed or skipped with note |
-| Cleanup | nginx lab config removed; ports 808x free |
+- [ ] Lab commands run under `~/rebash-networking/module-13/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `nginx -t` | Validate configuration syntax | `sudo nginx -t` |
-| `nginx -s reload` | Reload config without dropping connections | `sudo systemctl reload nginx` |
-| `curl -H "Host:"` | Test virtual host routing | `curl -H "Host: api.local" http://127.0.0.1/` |
-| `curl -v` | Verbose HTTP including headers | `curl -v https://example.com` |
-| `kubectl get ingress` | List Ingress resources | `kubectl get ingress -A` |
-| `haproxy -c` | Validate HAProxy config | `sudo haproxy -c -f /etc/haproxy/haproxy.cfg` |
+Production practice for **Reverse Proxy and Ingress Basics** always combines:
+
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Never forward `Host` or hop-by-hop headers blindly from untrusted clients without validation
-- Enforce TLS at the edge; use internal mTLS or network policy between proxy and backends when feasible
-- Lock down Ingress/annotations that enable snippets or arbitrary config injection
-- Hide backend version banners and detailed error pages on public listeners
-- Limit which namespaces/service accounts may create Ingress objects that bind privileged hosts
+- Treat credentials and tokens for networking as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Wrong proxy_pass trailing slash"
-    `location /api/ { proxy_pass http://backend/; }` strips `/api/` from the URL. Omitting the trailing slash on `proxy_pass` preserves the full path. Misconfiguration causes 404s that look like application bugs.
+!!! warning "Skipping fundamentals for Reverse Proxy and Ingress Basics"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Not setting X-Forwarded-Proto"
-    Applications generate HTTP URLs behind an HTTPS-terminating proxy, breaking redirects and cookies. Always set `X-Forwarded-Proto $scheme` and configure the app to trust it.
+!!! warning "Treating lab defaults as production-ready for Reverse Proxy and Ingress Basics"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Exposing backends directly"
-    If backends have public IPs alongside the reverse proxy, attackers bypass the proxy's rate limits and WAF. Backends should listen only on private interfaces or security-group-restricted ports.
-
-!!! warning "Infinite redirect loops"
-    SSL redirect at both proxy and application without checking `X-Forwarded-Proto` causes redirect loops. Configure one layer to handle HTTPS enforcement.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Terminate TLS at the edge"
-    Centralize certificate management with Let's Encrypt (cert-manager in Kubernetes) at the reverse proxy. Use short-lived certs and automated renewal.
-
-!!! tip "Set appropriate timeouts"
-    Configure `proxy_connect_timeout`, `proxy_send_timeout`, and `proxy_read_timeout` to match application SLA. Default nginx timeouts cause 504 errors on slow legitimate requests.
-
-!!! tip "Use separate upstreams per service"
-    Do not route all paths to one backend pool. Separate upstreams enable independent scaling, health checks, and circuit breaking.
-
-!!! tip "Enable access logs with upstream timing"
-    Log `$upstream_response_time` and `$upstream_addr` to identify slow or failing backends during incidents.
+- Encode Reverse Proxy and Ingress Basics changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| 502 Bad Gateway | All upstreams down or refusing connections | Check backend health with `curl` directly; verify upstream IP/port |
-| 504 Gateway Timeout | Backend too slow; proxy read timeout exceeded | Increase `proxy_read_timeout`; fix slow backend queries |
-| Wrong backend selected | Host/path rule order or ACL mismatch | Review location block precedence; test with `curl -H "Host: ..."` |
-| Client IP shows proxy IP | Missing or untrusted X-Forwarded-For | Set proxy headers; configure `real_ip` trusted sources |
-| Redirect loop | HTTP/HTTPS mismatch | Set `X-Forwarded-Proto`; disable duplicate SSL redirects |
-| WebSocket fails | Missing upgrade headers | Add `proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade;` |
-| 413 Request Entity Too Large | Default body size limit | Increase `client_max_body_size` for file uploads |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| 502 | Upstream down / wrong port | Check listen address; upstream DNS |
+| 504 | Upstream slow | Timeouts; app/DB latency |
+| Wrong site | Host/server_name mismatch | Fix vhost / Ingress host |
+| Redirect loop | HTTP↔HTTPS rules fight | Align proxy and app redirects |
+| Lost client IP | Missing forward headers | Set X-Forwarded-*; trust hop count |
 
 ## Summary
 
-- A **reverse proxy** protects backends by handling client connections, TLS, routing, and cross-cutting concerns at the edge
-- **nginx** and **HAProxy** are the dominant self-managed options; cloud ALBs and **Kubernetes Ingress** provide managed equivalents
-- **TLS termination** centralizes certificates; **pass-through** preserves end-to-end encryption at the cost of L7 inspection
-- Route by **hostname** and **path** using location blocks (nginx) or ACLs (HAProxy)
-- Always forward **`X-Forwarded-For`** and **`X-Forwarded-Proto`** so backends log correct client metadata
-- **502** means no healthy upstream; **504** means upstream too slow — different root causes and fixes
+- Reverse proxies front backends with HTTP-aware behaviour  
+- TLS usually terminates at the edge; headers preserve client context  
+- Ingress is declarative reverse-proxy routing for Kubernetes  
+- Gateway status codes often mean “proxy could not complete upstream”
 
 ## Interview Questions
 
-1. What is the difference between a forward proxy and a reverse proxy?
-2. Why terminate TLS at the reverse proxy instead of on each backend?
-3. Explain how nginx `proxy_pass` URL rewriting works with trailing slashes.
-4. What is Kubernetes Ingress, and how does it differ from a LoadBalancer Service?
-5. What headers must a reverse proxy set for backends to know the client's real IP?
-6. A user gets 502 errors intermittently. How do you diagnose whether the proxy or backend is at fault?
-7. Compare nginx and HAProxy for a high-traffic API gateway.
-8. What is TLS pass-through, and when would you use it?
-9. How does path-based routing work in an Ingress resource?
+1. How does **Reverse Proxy and Ingress Basics** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 4, and 6)"
-
-    **Q1 — Forward vs reverse:** A forward proxy sits on the client side — clients configure it to reach the internet, and servers see the proxy's IP. A reverse proxy sits on the server side — clients connect to the proxy's public address, and the proxy forwards to internal backends that may not be directly reachable. Forward proxies protect clients; reverse proxies protect and scale servers.
-
-    **Q4 — Ingress vs LoadBalancer Service:** A LoadBalancer Service provisions one cloud load balancer per service — costly and IP-heavy at scale. Ingress defines HTTP routing rules (host, path) consumed by an Ingress controller that configures a shared reverse proxy fronting many services through one entry point. Ingress is L7 HTTP routing; LoadBalancer is typically L4 with one external IP per service.
-
-    **Q6 — Intermittent 502:** 502 means the proxy received an invalid response or could not connect to upstream. Check nginx error log for `connect() failed` vs `upstream prematurely closed`. Test backends directly bypassing the proxy. Verify upstream health — intermittent 502 often indicates one backend in a pool is failing while others succeed. Check `max_fails` and passive health marking. Review recent deployments and resource exhaustion on backends.
-
-10. How would you explain reverse proxy and ingress basics to a junior engineer in two minutes?
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Networking – Category Overview](index.md)
-- [Load Balancing Fundamentals](load-balancing-fundamentals.md) *(previous in Module 4)*
-- [Network Troubleshooting Methodology](network-troubleshooting-methodology.md) *(next in Module 4 → Module 5)*
-- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
-- [Firewalls and Access Control](firewalls-and-access-control.md)
+- [Course overview](index.md)
+- - [Kubernetes Networking Fundamentals](kubernetes-networking-fundamentals.md)  
 - [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
-- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
-- Interview prep: [Networking Interview Prep](../interview/networking.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
 ## References
 
-- [HAProxy Configuration Manual](https://www.haproxy.org/download/2.9/doc/configuration.txt)
-- [Kubernetes Ingress documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/)
-- [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
-- [OWASP — Reverse Proxy Security](https://owasp.org/www-community/controls/Reverse_Proxy)
+- [nginx reverse proxy](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)  
+- [HAProxy documentation](https://www.haproxy.org/download/2.8/doc/configuration.txt)  
+- [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)

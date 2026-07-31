@@ -47,38 +47,49 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Production Shell Scripting](../assets/images/shell-automation-workflow.svg)
+![Architecture diagram for Production Shell Scripting](../assets/excalidraw/shell-automation-workflow.svg)
 
 ## Theory
 
-### ShellCheck
+### What it is
 
-Run `shellcheck script.sh` in CI. Treat warnings about quoting and `cd` as defects. Disable rules only with a justified directive.
+**Production shell scripting** is the set of practices that make Bash safe to run unattended at scale: static analysis with **ShellCheck**, **idempotent** behaviour under re-runs, **secure** handling of paths and secrets, structured **logging** with bounded **retries**, **lock files** against overlap, and clear **configuration** via environment or flags. It is less about clever one-liners and more about boring, reviewable contracts that Continuous Integration (CI) and operators can rely on.
 
-### Idempotent Scripts
+### Why it matters
 
-Safe to re-run: create users only if missing, `mkdir -p`, enable services only when needed. Prefer declare desired state over blind mutate.
+A script that works once on a laptop can still destroy data on the second cron tick or leak credentials in process lists. Production standards catch those classes of failure before merge: ShellCheck finds quoting bugs; locks stop overlapping backups; retries distinguish flaky networks from hard errors; secrets stay out of git and world-readable files. Teams that skip this layer accumulate fragile glue that only the original author dares to touch.
 
-### Secure Scripting
+### How it works
 
-No `eval`, no unquoted `rm -rf $var`, no secrets in argv or world-readable files. Validate paths stay under an allow-list root. Least privilege.
+Run `shellcheck script.sh` in CI and treat quoting and `cd` warnings as defects. Disable rules only with a justified inline directive. Design for idempotency: create users only if missing, use `mkdir -p`, enable services when needed — declare desired state rather than blind mutation.
 
-### Logging and Retry Logic
-
-Structured logs plus bounded retries with sleep/backoff for transient network errors. Cap attempts; escalate after exhaustion.
-
-### Lock Files
+Secure defaults: no `eval`, no unquoted `rm -rf $var`, no secrets on argv, path allow-lists before destructive operations, and least privilege. Log structured messages; retry transient network errors with sleep or backoff, a hard attempt cap, and escalation after exhaustion. Guard scheduled work with locks:
 
 ```bash
 exec 9>"$lock"
 flock -n 9 || { echo "already running" >&2; exit 0; }
 ```
 
-Prevent overlapping cron runs from corrupting backups.
+Accept configuration from environment files, flags, or drop-in directories. Keep secrets out of the repository; integrate with Ansible, systemd `EnvironmentFile=`, or a secrets store. Prefer small scripts that call well-tested tools over re-implementing complex logic in Bash.
 
-### Configuration Management
+### Key concepts
 
-Accept config via env files, flags, or drop-in directories. Keep secrets out of the repo; integrate with Ansible/systemd/`EnvironmentFile=` where appropriate.
+| Practice | Production role |
+|----------|-----------------|
+| ShellCheck in CI | Catch quoting and common foot-guns early |
+| Idempotency | Safe re-runs from cron and retries |
+| Security | No `eval`; allow-listed paths; least privilege |
+| Retries | Bounded backoff for transient failures |
+| `flock` | One active run for critical jobs |
+| External config | Env/flags; secrets outside git |
+
+### Common pitfalls
+
+- Merging scripts that fail ShellCheck with silenced warnings and no rationale
+- Non-idempotent steps that fail loudly on every scheduled re-run
+- Putting tokens in command-line arguments visible via `ps`
+- Infinite retry loops that mask a permanent outage
+- Skipping locks so two backups write to the same destination
 
 ## Hands-on Lab
 

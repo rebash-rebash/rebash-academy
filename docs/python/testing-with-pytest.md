@@ -1,215 +1,304 @@
 ---
 title: "Testing with pytest"
-description: "unittest and pytest, fixtures, mocking, coverage, and integration testing for automation tools."
+description: "Test DevOps Python with pytest — fixtures, mocking, coverage, unittest interop, and integration-test patterns for CLIs and APIs."
 difficulty: intermediate
-estimated_time: "55 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "50–65 min"
+technology: python
 category: python
+module: "Module 22 · Testing"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - python
+  - pytest
+  - mocking
+  - testing
+prerequisites:
+  - python/concurrency-threads-asyncio-and-futures
+next:
+  - python/packaging-pyproject-and-wheels
+related:
+  - python/cli-applications-argparse-click-typer
+  - python/error-handling-and-exceptions
+labs: []
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
 tags:
   - python
   - pytest
-  - unittest
+  - testing
   - mocking
-prerequisites:
-  - Concurrency — Threads, asyncio, and Futures
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Testing with pytest
 
 ## Overview
 
-Untested cleanup tools are outages waiting to happen. Fixture the network and assert dry-run behaviour.
+Write pytest unit tests with fixtures and mocks so ops CLIs stay reliable in CI without live cloud/Kubernetes credentials.
 
-This is **Tutorial 22** in **Module 22: Testing** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Untested automation breaks on Fridays. Prefer **pytest** for new work; keep `unittest` interop when needed. Mock SDKs; use fixtures for files and env.
+
+Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 22 · Testing** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Concurrency — Threads, asyncio, and Futures
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Functions](functions-parameters-and-scope.md) and [Error Handling](error-handling-and-exceptions.md)
+- Project venv
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Testing with pytest” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Write pytest functions and assertions  
+- [ ] Use fixtures for temp paths and sample data  
+- [ ] Mock HTTP/SDK calls  
+- [ ] Run coverage reports  
+- [ ] Separate unit vs integration tests  
+- [ ] Map unittest-style tests into pytest
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Testing with pytest](../assets/images/python-pytest-testing.svg)
+![pytest testing](../assets/excalidraw/python-pytest-testing.svg)
 
 ## Theory
 
-### unittest
+### What it is
 
-Stdlib xUnit style — fine for legacy. New code should prefer pytest.
+**pytest** is the dominant Python test runner for libraries and automation. You write functions named `test_*`, use plain `assert`, and share setup via **fixtures**. For DevOps code, tests prove parsers, exit codes, and “given this API JSON, we classify healthy” — without needing a live cluster on every commit.
 
-### pytest
+### Why it matters
 
-Concise asserts, fixtures, parametrisation, and plugins. Run with `pytest -q` in CI.
+Automation without tests is tribal knowledge. A one-line change to severity mapping can open a Sev-1 alert path or hide outages. Unit tests with mocked HTTP/cloud clients run in seconds on every pull request. Integration tests (Docker, kind) run in dedicated jobs. Coverage reports show which branches of CLI exit codes you never exercised — the ones that fail at 02:00.
 
-### Fixtures
+### How it works
 
-Share temp dirs, sample configs, and fake API responses. Prefer function-scoped fixtures unless expensive setup needs module scope.
+pytest collects tests from files matching `test_*.py`. Fixtures inject temporary paths (`tmp_path`), sample configs, or fake clients. `monkeypatch` / `unittest.mock.patch` replace `requests.get` or boto3 so tests return fixture JSON and assert call arguments. Markers such as `@pytest.mark.integration` skip unless `RUN_INTEGRATION=1`. Coverage (`pytest --cov`) should focus on parsers and failure paths, not chasing 100% for theatre. pytest can still collect `unittest.TestCase` classes; prefer plain functions for new code.
 
-### Mocking
+```python
+def test_add() -> None:
+    assert add(2, 3) == 5
 
-`unittest.mock` / `pytest-mock` to stub subprocess, HTTP, and cloud SDKs. Assert call args (especially that `shell=False`).
+@pytest.fixture
+def sample_json(tmp_path: Path) -> Path:
+    p = tmp_path / "cfg.json"
+    p.write_text('{"replicas": 2}\n', encoding="utf-8")
+    return p
+```
 
-### Coverage
+### Key concepts and comparisons
 
-`pytest --cov` to find untested failure paths. Aim for meaningful coverage of parsers and mutators — not 100% vanity.
+| Layer | Talks to | When |
+|-------|----------|------|
+| Unit | Mocks / fixtures | Every PR |
+| Integration | Real Docker / kind / API sandbox | Nightly or labelled jobs |
+| End-to-end | Full stack | Sparse; expensive |
 
-### Integration Testing
+| Tool | Role |
+|------|------|
+| Fixtures | Reusable setup/teardown |
+| monkeypatch / mock | Fake I/O and SDKs |
+| Markers | Opt-in slow tests |
+| Coverage | Find untested exit branches |
 
-Optional live tests marked `@pytest.mark.integration` and skipped without credentials. Default CI runs unit/fixture tests only.
+### Common pitfalls
+
+- Hitting real cloud APIs in unit tests (flaky, costly, credential-dependent).  
+- Asserting exact log strings that change every refactor.  
+- Skipping tests for “the hard error paths” that matter most.  
+- Sharing mutable global state between tests.  
+- Requiring network for collection time (imports that call home).
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Testing with pytest
 
 ```bash
-mkdir -p ~/rebash-python/lab22 && cd ~/rebash-python/lab22
+mkdir -p ~/rebash-python/module-22
+cd ~/rebash-python/module-22
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install 'pytest==8.3.4' 'pytest-cov==6.0.0'
 ```
 
-**Focus:** pytest for a parser + mocked subprocess; coverage on the failure path
-
-### Step 1 – Skeleton
+### Step 1 – Package under test
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab22 testing-with-pytest")
+cd ~/rebash-python/module-22
+source .venv/bin/activate
+
+mkdir -p healthlib tests
+cat > healthlib/__init__.py << 'EOF'
+from __future__ import annotations
+
+def severity(status: str) -> int:
+    ranks = {"healthy": 0, "degraded": 1, "down": 2}
+    if status not in ranks:
+        raise ValueError(status)
+    return ranks[status]
+
+
+def worst(statuses: list[str]) -> int:
+    return max((severity(s) for s in statuses), default=0)
 EOF
-chmod +x lab.py
-python3 lab.py
+
+export PYTHONPATH=.
 ```
 
-### Step 2 – pytest
+### Step 2 – Unit tests
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-python -m pip install -q 'pytest==8.3.4'
-cat > parse.py << 'EOF'
-def parse_kv(line: str) -> dict[str, str]:
-    out = {}
-    for part in line.split():
-        if "=" in part:
-            k, v = part.split("=", 1)
-            out[k] = v
-    return out
-EOF
-cat > test_parse.py << 'EOF'
-from parse import parse_kv
+cat > tests/test_severity.py << 'EOF'
+import pytest
 
-def test_parse_kv():
-    assert parse_kv("host=web status=ok") == {"host": "web", "status": "ok"}
+from healthlib import severity, worst
 
-def test_empty():
-    assert parse_kv("") == {}
+
+def test_severity_ok() -> None:
+    assert severity("healthy") == 0
+
+
+def test_severity_bad() -> None:
+    with pytest.raises(ValueError):
+        severity("nope")
+
+
+def test_worst() -> None:
+    assert worst(["healthy", "down"]) == 2
+
+
+def test_tmp_fixture(tmp_path) -> None:
+    p = tmp_path / "a.txt"
+    p.write_text("x", encoding="utf-8")
+    assert p.read_text(encoding="utf-8") == "x"
 EOF
+
 pytest -q
-deactivate || true
 ```
 
-### Final step – Cleanup note
+### Step 3 – Mock HTTP
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+cat > tests/test_http.py << 'EOF'
+from unittest.mock import Mock, patch
+
+import requests
+
+
+def fetch_status(url: str) -> int:
+    r = requests.get(url, timeout=5)
+    return r.status_code
+
+
+@patch("requests.get")
+def test_fetch_status(mock_get: Mock) -> None:
+    mock_get.return_value = Mock(status_code=200)
+    assert fetch_status("https://example.invalid") == 200
+    mock_get.assert_called_once()
+EOF
+
+pytest -q tests/test_http.py
+```
+
+### Step 4 – Coverage
+
+```bash
+pytest --cov=healthlib --cov-report=term-missing
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab22/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-22/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Testing with pytest** always combines:
+Production practice for **Testing with pytest** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Hitting real cloud APIs in unit tests (flaky, costly, credential-dependent).  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Asserting exact log strings that change every refactor.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Testing with pytest changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| Import errors | PYTHONPATH / package layout | Install editable or set path |
+| Tests hit network | Forgot mock | Patch where used |
+| Flaky integration | Shared cluster state | Isolate namespaces; mark/skip |
 
 ## Summary
 
-**Testing with pytest** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- pytest + fixtures + mocks for ops CLIs  
+- Coverage on critical branches  
+- Integration tests optional and gated  
+- CI should run unit tests on every PR
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Testing with pytest** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Concurrency — Threads, asyncio, and Futures](concurrency-threads-asyncio-and-futures.md) *(previous)*
-- [Packaging — pyproject.toml and Wheels](packaging-pyproject-and-wheels.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Packaging — pyproject.toml and Wheels](packaging-pyproject-and-wheels.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [pytest](https://docs.pytest.org/)  
+- [unittest.mock](https://docs.python.org/3/library/unittest.mock.html)

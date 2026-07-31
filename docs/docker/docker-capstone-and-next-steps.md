@@ -51,7 +51,7 @@ By the end of this capstone, you will be able to:
 
 ## Architecture
 
-![Architecture diagram for Docker Capstone and Next Steps](../assets/images/docker-capstone-and-next-steps.svg)
+![Production container platform](../assets/excalidraw/docker-production-platform.svg)
 
 ## Project Overview — VoteStack
 

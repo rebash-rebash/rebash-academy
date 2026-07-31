@@ -1,416 +1,228 @@
 ---
-title: Git Bisect and Debugging History
-description: Binary search commit history with git bisect to find regression-introducing commits; automate with test scripts for DevOps debugging.
-difficulty: intermediate
-estimated_time: "40 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+title: "Git Bisect and Debugging History"
+description: "Use git bisect to find the commit that introduced a bug, and read history with blame and pickaxe searches for DevOps debugging."
+difficulty: advanced
+estimated_time: "40–55 min"
+technology: git
 category: git
-tags:
+module: "Module 16 · Troubleshooting"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - git
   - bisect
   - debugging
-  - regression
 prerequisites:
-  - Cherry-pick and Reflog
-  - Viewing History and Diffs
+  - git/git-troubleshooting
+next:
+  - git/production-git-practices
+related:
+  - git/viewing-history-and-diffs
+labs: []
+projects: []
+interview: interview/git
+certifications:
+  - GitHub Foundations
+tags:
+  - git
+  - bisect
+  - blame
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Git Bisect and Debugging History
 
 ## Overview
 
-Production worked in v1.4.0 but fails in v1.5.0 — which of 200 commits broke it? Manual search is impractical. `git bisect` performs binary search through history, halving the candidate set with each test. Combined with automated test scripts, bisect finds regression commits in logarithmic time.
+Run `git bisect` to binary-search history for the first bad commit, and use `blame` / pickaxe (`-S`) when you know the change shape.
 
-This is **Tutorial 15** in **Module 5: Recovery & Debugging** of the REBASH Academy Git series.
+When “it worked last week,” bisect beats scrolling `git log`. Mark a known good and known bad commit; Git checks out midpoints until the culprit is found.
+
+This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
-- [Viewing History and Diffs](viewing-history-and-diffs.md)
+- [Git Troubleshooting](git-troubleshooting.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Start and run manual git bisect sessions
-- [ ] Automate bisect with test scripts (`git bisect run`)
-- [ ] Mark commits good/bad/skip appropriately
-- [ ] Bisect across merge commits and tags
-- [ ] Visualize bisect progress and results
-- [ ] Integrate bisect into CI debugging workflows
-- [ ] Reset cleanly after bisect with `git bisect reset`
+- [ ] Start/end a bisect session  
+- [ ] Automate with `git bisect run` when a script returns exit codes  
+- [ ] Use `git blame` for line ownership  
+- [ ] Search history with `git log -S`
 
 ## Architecture
 
-Bisect performs a binary search across history: you mark good and bad commits until Git identifies the first change that introduced the fault.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Git Bisect and Debugging History](../assets/images/git-bisect-and-debugging-history.svg)
+![Object model / history](../assets/excalidraw/git-object-model.svg)
 
 ## Theory
 
-### Binary Search Concept
+### What
 
-Given a known **good** commit (works) and a **bad** commit (broken), bisect checks out a midpoint and asks: good or bad? Each answer eliminates roughly half the remaining commits.
+`git bisect` performs a binary search across history to find the commit that introduced a bug. You mark a known **good** revision and a known **bad** revision; Git checks out midpoints until the first bad commit remains. Automation uses a script that exits `0` for good and non-zero for bad.
 
-For *N* commits you need about log₂(*N*) tests — 1,024 commits need around 10 tests. That is why bisect dominates linear `git log` browsing during incidents: the cost grows slowly even when release trains contain hundreds of merges.
+### Why
 
-Bisect does not invent knowledge. It only narrows the set of commits that could explain a **reproducible** predicate you define (test failed, metric above threshold, plan errored). If the predicate is noisy, the binary search converges on the wrong SHA.
+Linear “guess and rebuild” wastes hours on long histories. Bisect is ideal for regressions in pipelines, Terraform modules, or application behaviour when you can test each checkout quickly. It turns vague “it broke last month” into a precise SHA for revert or fix-forward.
 
-### Starting Bisect
+### How it works
 
-```bash
-git bisect start
-git bisect bad                    # current HEAD is broken
-git bisect good v1.4.0            # tag known good
-```
+Start with a clean working tree: `git bisect start`, `git bisect bad` (current), `git bisect good <oldsha>`. Git picks a midpoint commit; you run your test and mark `good` or `bad` (or `skip` if untestable). Repeat until Git prints the culprit. `git bisect reset` returns you to the original branch. Scripted mode: `git bisect run ./test.sh` drives the loop. Avoid committing new fixes mid-bisect unless you know you are branching off a midpoint on purpose.
 
-Git checks out a middle commit and detaches HEAD. You test manually:
+### Key concepts
 
-```bash
-make test
-git bisect good    # if pass
-git bisect bad     # if fail
-```
+| Need | Detail |
+|------|--------|
+| Reproducible test | Same input → same exit code |
+| Clean tree | Dirty files confuse results |
+| Skip | Untestable commits (broken build mid-range) |
+| Outcome | First bad commit SHA |
 
-Repeat until Git prints the first bad commit. At that point, read the commit with `git show` and confirm the change matches the symptom before you open a fix PR.
 
-You may also start with both ends in one command:
+Prepare a script that builds or configures just enough to reproduce the failure — for example a targeted pytest, a `terraform validate`, or a curl against a local binary. If old commits need different tool versions, document that limitation and skip those revisions rather than marking them randomly. Once you find the culprit, write a regression test so bisect is unnecessary next time.
 
-```bash
-git bisect start HEAD v1.4.0
-```
+### Common pitfalls
 
-Here `HEAD` is treated as bad and `v1.4.0` as good. Prefer tags or release SHAs from the incident ticket so teammates can reproduce the same search.
-
-### Automated Bisect
-
-```bash
-git bisect start HEAD v1.4.0
-git bisect run ./test.sh
-```
-
-Script exit codes:
-
-- **0** — good
-- **1–124, 126–127** — bad
-- **125** — skip (untestable commit)
-
-```bash
-#!/usr/bin/env bash
-# test.sh for bisect — keep side effects local to the worktree
-set -euo pipefail
-make build && ./run-integration-test.sh
-```
-
-Automation enables overnight bisect on large histories. Keep the script **hermetic**: no production deploys, no writes to shared databases, and no reliance on services that differ between commits unless you stub them.
-
-### Designing a Good Bisect Predicate
-
-| Predicate type | Example | Pitfall |
-|----------------|---------|---------|
-| Unit/integration test | `go test ./...` | Flaky tests flip good/bad randomly |
-| Build | `make` / `terraform validate` | Build tool upgrades may break older commits |
-| Behavioural check | `curl` health endpoint in a local compose stack | Network timeouts look like regressions |
-| Metric threshold | Script fails if p95 latency > 200 ms | Noise needs repeats or medians |
-
-Write the predicate so **exit 0 means the old good behaviour**. Do not invert the sense halfway through a session.
-
-### Skip Commits
-
-Non-buildable commits (missing dependency, broken CI tooling) should be skipped rather than guessed:
-
-```bash
-git bisect skip
-```
-
-Too many skips may prevent an exact answer — bisect warns when the remaining range cannot be resolved cleanly. In that case, widen the good/bad boundaries or fix the build on the skipped tip in a throwaway branch solely to keep searching.
-
-### Bisect and Merges
-
-On merge-heavy repos, walking every merge parent can land you inside topic branches that never shipped. Prefer the first-parent history of the integration branch when the regression appeared on `main`:
-
-```bash
-git bisect start --first-parent
-```
-
-If the bug only reproduces after a specific merge, note that in the ticket — the first bad commit may be the merge itself, not a feature commit.
-
-### Worktrees for Parallel Investigation
-
-While bisect detaches HEAD in one clone, you can keep a second worktree on `main` for drafting the fix:
-
-```bash
-git worktree add /tmp/fix-worktree main
-```
-
-That avoids stashing bisect state or accidentally committing a fix on a detached commit mid-search.
-
-### Finding Good/Bad Boundaries
-
-| Reference | Example |
-|-----------|---------|
-| Tag | `v1.4.0` |
-| Commit SHA | `abc1234` |
-| Relative | `HEAD~50` |
-| Branch tip | `origin/main` |
-
-Document good/bad boundaries in incident tickets. Re-verify the good boundary once — a mis-tagged “good” release wastes the entire search.
-
-### After Bisect
-
-```bash
-git bisect reset    # return to original branch
-```
-
-Always reset — bisect leaves you in detached HEAD. If you need the culprit SHA later, copy it from the final bisect message or save the session log first:
-
-```bash
-git bisect log > /tmp/bisect.log
-# note the "first bad commit" SHA from the terminal output, then:
-git bisect reset
-```
-
-### DevOps Use Cases
-
-- **Terraform plan regression** — which commit changed module source or provider constraints?
-- **Docker build failure** — which Dockerfile or base-image pin broke the build?
-- **Flaky test introduction** — harder; run the test multiple times per commit or use a quarantine signal
-- **Performance regression** — script comparing response time against a threshold with warm-up discarded
-- **Kubernetes manifest drift** — render manifests and `diff` against a known-good golden file
-
-### git bisect log and replay
-
-```bash
-git bisect log > bisect.log
-git bisect replay bisect.log
-```
-
-Share the bisect session with teammates so they can audit how you marked commits. Replay is also useful when a CI runner dies mid-search.
-
-### Limitations
-
-- Requires a reproducible good/bad test
-- Shallow clones may lack commits — `git fetch --unshallow` first
-- Flaky tests produce wrong results
-- Submodule repositories need the submodule pins checked out at each step
-- Monorepos may need path-scoped builds so unrelated packages do not dominate runtime
+- Using flaky tests that randomly mark good/bad  
+- Bisecting without enough disk/tooling for old revisions  
+- Forgetting `bisect reset` and staying on a detached midpoint  
+- Marking the newest commit good by mistake and getting nonsense ranges
 
 ## Hands-on Lab
 
-### Step 1 – Create history with intentional bug
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-bisect-lab && cd /tmp/git-bisect-lab
-git init -b main
+mkdir -p ~/rebash-git/module-16-bisect && cd ~/rebash-git/module-16-bisect
+```
 
-good_test() { test "$(cat counter.txt 2>/dev/null)" -lt 5; }
+**Focus:** hands-on practice for Git Bisect and Debugging History
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Git Bisect and Debugging History"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-git/module-16-bisect && cd ~/rebash-git/module-16-bisect
+git init -b main
+git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
 
 for i in 1 2 3 4 5 6 7 8; do
-  echo "$i" > counter.txt
-  git add counter.txt
-  if [ "$i" -le 4 ]; then
-    git commit -m "feat: increment to $i (good)"
-  else
-    git commit -m "feat: increment to $i (bad region)"
-  fi
+  echo "v$i" > app.txt
+  if [ "$i" -ge 5 ]; then echo BROKEN > app.txt; fi
+  git add app.txt
+  git commit -m "chore: version $i"
 done
-git log --oneline
-```
 
-**Explanation:** Commits 5-8 are "bad" when threshold is `< 5`.
-
-**Expected result:** Repository contains a linear history with an intentional bad commit in the middle.
-
-### Step 2 – Manual bisect
-
-**Command:**
-
-```bash
-git bisect start
-git bisect bad HEAD
-git bisect good HEAD~7
-# Test current counter
-VAL=$(cat counter.txt)
-if [ "$VAL" -lt 5 ]; then git bisect good; else git bisect bad; fi
-# Repeat until found — or use run script below
-git bisect reset
-```
-
-**Expected result:** Manual bisect session prints the first bad commit SHA matching the injected fault.
-
-### Step 3 – Automated bisect
-
-**Command:**
-
-```bash
-cat > test.sh << 'EOF'
-#!/usr/bin/env bash
-val=$(cat counter.txt)
-test "$val" -lt 5
-EOF
-chmod +x test.sh
 git bisect start HEAD HEAD~7
-git bisect run ./test.sh
+git bisect run bash -c 'grep -q BROKEN app.txt && exit 1 || exit 0'
 git bisect reset
+git blame -L 1,1 app.txt | head
+git log -S BROKEN --oneline
 ```
 
-**Expected:** First bad commit is when counter reaches 5.
-
-### Step 4 – Inspect culprit commit
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-git log --oneline | head -5
-git show HEAD~4 --stat
+# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected result:** `git show` / log of the culprit matches the breaking change.
-
-### Step 5 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-bisect-lab
-```
-
-**Expected result:** `git bisect reset` done; `/tmp/git-bisect-lab` removed.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Manual bisect | Session identifies the first bad commit |
-| Automate | `git bisect run` (or documented script) exits with the culprit |
-| Reset | `git bisect reset` returns you to a normal branch |
-| Cleanup | `/tmp/git-bisect-lab` removed |
+- [ ] Lab commands run under `~/rebash-git/module-16-bisect/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git bisect start` | Begin session | `git bisect start bad good` |
-| `git bisect good` | Mark current good | After successful test |
-| `git bisect bad` | Mark current bad | After failed test |
-| `git bisect skip` | Skip untestable | Broken build commit |
-| `git bisect run script` | Automated bisect | `git bisect run ./test.sh` |
-| `git bisect reset` | End and restore | Always run when done |
-| `git bisect log` | Export session | Share with team |
+Production practice for **Git Bisect and Debugging History** always combines:
 
-### Terraform plan bisect test
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-#!/usr/bin/env bash
-# tf-plan-bisect.sh — exit 0 if plan succeeds without errors
-set -euo pipefail
-terraform init -backend=false -input=false >/dev/null 2>&1
-terraform validate
-terraform plan -detailed-exitcode -input=false >/dev/null 2>&1
-rc=$?
-# 0 = no changes (good), 2 = changes (good), 1 = error (bad)
-test "$rc" -ne 1
-```
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Bisect scripts must not deploy or mutate production; run them in disposable worktrees
-- Do not mark commits good/bad based on flaky tests — you may ship the wrong fix
-- Skip commits that cannot build rather than guessing, and document skips
-- When the first bad commit touches auth or crypto, escalate for security review
-- Clean up bisect state (`git bisect reset`) so detached HEAD does not confuse later pushes
+- Treat credentials and tokens for git as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Forgetting git bisect reset"
-    Leaves repo in detached HEAD — confusing subsequent work.
+!!! warning "Using flaky tests that randomly mark good/bad  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Wrong good/bad boundaries"
-    If good is actually bad, bisect returns wrong commit. Verify boundaries first.
+!!! warning "Bisecting without enough disk/tooling for old revisions  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Bisect with flaky tests"
-    Random failures mislead binary search. Stabilize test or run multiple times.
-
-!!! warning "Shallow clone missing commits"
-    `git fetch --unshallow` before bisect across long history.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Automate with git bisect run"
-    Manual bisect error-prone on >20 steps. Script the test.
-
-!!! tip "Use tags for release boundaries"
-    `git bisect good v1.4.0` clearer than SHA in incident docs.
-
-!!! tip "Document bisect result in postmortem"
-    Link first-bad commit to fix PR and root cause.
-
-!!! tip "Add bisect helper to Makefile"
-    `make bisect-good-release` standardizes test command for team.
+- Encode Git Bisect and Debugging History changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Bisect cannot find commit | Too many skips | Reduce skips; widen good/bad range |
-| Wrong commit identified | Flaky or wrong test | Fix test; re-run bisect |
-| `fatal: Needed a single revision` | Invalid ref | Verify tag/SHA exists |
-| Bisect stuck in loop | Inconsistent good/bad | Reset; verify test logic |
-| Script always exits 125 | Misconfigured skip | Fix script exit codes |
-| No commits to bisect | Good and bad adjacent | Already found; inspect good..bad |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **git bisect** binary-searches history between known good and bad commits
-- Manual mode: mark **good**/**bad** after each test; automated: **git bisect run**
-- Exit code **125** skips untestable commits; **0** good, non-zero bad for scripts
-- Always **git bisect reset** when finished
-- Essential for regression hunting in IaC, builds, and integration tests
+**Git Bisect and Debugging History** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. How does git bisect work algorithmically?
-2. What exit codes should a bisect test script use?
-3. When would you use git bisect skip?
-4. How many steps to bisect 1000 commits approximately?
-5. What is git bisect run?
-6. Why must you run git bisect reset after finishing?
-7. What are limitations of bisect with flaky tests?
-8. How do tags help bisect in release debugging?
-9. How does shallow clone affect bisect?
-10. Give a DevOps scenario where bisect saves significant time.
+1. How does **Git Bisect and Debugging History** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1 and 10)"
-
-    **Q1 — Algorithm:** Bisect maintains a range of commits between known good and bad boundaries. It checks out the midpoint commit. If test passes, the bad commit must be later — shrink range to upper half. If fails, bad is in lower half. Repeat until the first bad commit is isolated. Complexity O(log n).
-
-    **Q10 — DevOps scenario:** After weekly deploy, Terraform plan suddenly wants to destroy production RDS. Good state is last week's tag v2.3.0; bad is current main. Bisect with `terraform plan` exit code script finds the exact commit that changed module version or removed lifecycle block — hours of manual log review reduced to ~10 automated tests.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Cherry-pick and Reflog](cherry-pick-and-reflog.md) *(previous)*
-- [Git Hooks and Automation](git-hooks-and-automation.md) *(next — Module 6)*
-- [Viewing History and Diffs](viewing-history-and-diffs.md)
-- [Undoing Changes — Reset, Revert, and Stash](undoing-changes-reset-revert-stash.md)
-- [Git – Category Overview](index.md)
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Production Git Practices](production-git-practices.md)
 
 ## References
 
-- [Pro Git Book – Debugging with Git](https://git-scm.com/book/en/v2/Git-Tools-Debugging-with-Git)
-- [git bisect documentation](https://git-scm.com/docs/git-bisect)
-- [Kernel.org – Bisecting regressions](https://www.kernel.org/doc/html/latest/process/debugging/gdb-kernel-debugging.html)
-- [REBASH Academy – Git Overview](index.md)
+- [git-bisect](https://git-scm.com/docs/git-bisect)

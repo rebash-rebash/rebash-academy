@@ -1,596 +1,255 @@
 ---
-title: Kubernetes Security Hardening
-description: Harden Kubernetes clusters with Pod Security Standards, NetworkPolicies, admission control, RBAC least privilege, and supply-chain security.
+title: "Kubernetes Security Hardening"
+description: "Harden clusters with securityContexts, Pod Security Admission, NetworkPolicies, and image policy practices for CKS-level DevOps."
 difficulty: advanced
-estimated_time: "55 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–70 min"
+technology: kubernetes
 category: kubernetes
-tags:
+module: "Module 10 · Security"
+career_paths:
+  - kubernetes-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
+skills:
   - kubernetes
   - security
-  - rbac
-  - networkpolicy
-  - admission
+  - network-policy
 prerequisites:
-  - Monitoring and Logging in Kubernetes
-  - RBAC and Kubernetes Security Basics
-  - ConfigMaps and Secrets
+  - kubernetes/rbac-and-kubernetes-security-basics
+next:
+  - kubernetes/kubernetes-networking-deep-dive
+related:
+  - docker/docker-security-hardening
+labs: []
+projects: []
+interview: interview/kubernetes
+certifications:
+  - CKS
+tags:
+  - kubernetes
+  - psa
+  - networkpolicy
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Kubernetes Security Hardening
 
 ## Overview
 
-Kubernetes defaults prioritize developer velocity over maximum security. Production clusters require deliberate hardening: **Pod Security Standards** restrict dangerous pod capabilities, **NetworkPolicies** enforce micro-segmentation, **admission controllers** block non-compliant resources at the API gate, and **RBAC** grants least-privilege access. Supply-chain controls ensure only trusted, scanned images run in the cluster.
+Run a Pod with a restrictive securityContext, enable Pod Security Admission labels on a namespace, and draft a default-deny NetworkPolicy pattern.
 
-This tutorial builds a defense-in-depth security model for the VoteStack application and cluster infrastructure — the capstone security layer before full production deployment.
+Defence in depth: RBAC + **securityContext** + **Pod Security Admission (PSA)** + **NetworkPolicy** + signed/scanned images + Secrets hygiene.
 
-This is **Tutorial 19** in **Module 6: Production** of the REBASH Academy Kubernetes series.
+This is a core tutorial in **Module 10 · Security** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md)
 - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
-- [ConfigMaps and Secrets](configmaps-and-secrets.md)
-- [Namespaces and Resource Management](namespaces-and-resource-management.md)
-- [GitOps and CI/CD with Kubernetes](gitops-and-cicd-with-kubernetes.md)
-- Cluster admin access for policy installation
-- Optional: [Docker Security Hardening](../docker/docker-security-hardening.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply Pod Security Standards (restricted, baseline, privileged) at namespace level
-- [ ] Write NetworkPolicies that default-deny and allow explicit traffic paths
-- [ ] Configure admission policies with Kyverno or OPA Gatekeeper
-- [ ] Implement RBAC least privilege for users, CI, and GitOps agents
-- [ ] Secure secrets with External Secrets Operator or Sealed Secrets
-- [ ] Enforce image provenance and vulnerability thresholds in the deploy pipeline
+- [ ] Set `runAsNonRoot`, drop capabilities  
+- [ ] Label ns for PSA (`restricted`/`baseline`)  
+- [ ] Explain NetworkPolicy default-deny  
+- [ ] List image policy controls
 
 ## Architecture
 
-![Architecture diagram for Kubernetes Security Hardening](../assets/images/kubernetes-security-hardening.svg)
+This topic’s control points and relationships are shown below.
+
+![RBAC](../assets/excalidraw/k8s-rbac-model.svg)
 
 ## Theory
 
-### Defense in depth for Kubernetes
+### What it is
 
-| Layer | Control | Blocks |
-|-------|---------|--------|
-| **Identity** | RBAC, OIDC | Unauthorized API access |
-| **Admission** | Kyverno, Gatekeeper | Non-compliant manifests |
-| **Pod** | PSS, seccomp, AppArmor | Privileged containers, hostPath |
-| **Network** | NetworkPolicy | Lateral movement |
-| **Secrets** | External Secrets, encryption at rest | Credential leakage |
-| **Supply chain** | Image signing, Trivy, admission | Vulnerable or untrusted images |
-| **Audit** | Audit logs, Falco | Forensics and runtime threats |
+**Hardening** layers controls beyond basic RBAC. **securityContext** settings run containers as non-root, drop Linux capabilities, and disallow privilege escalation. **Pod Security Admission (PSA)** enforces baseline/restricted profiles per namespace. **NetworkPolicies** restrict Pod-to-Pod and egress traffic (enforced by the CNI). Image hygiene — digests, scanning, admission policies — reduces supply-chain risk. Secrets encryption and audit logging complete the picture.
 
-No single layer is sufficient — assume breach and limit blast radius.
+### Why it matters
 
-### Pod Security Standards
+A cluster with open RBAC but privileged Pods and unrestricted east-west traffic is one CVE away from lateral movement. CKS-oriented DevOps treats defence in depth as normal: identity, workload, network, and supply chain each fail closed where practical.
 
-Replace deprecated PodSecurityPolicy with **Pod Security Admission** (built-in):
+### How it works (mental model)
 
-| Profile | Restrictions |
-|---------|--------------|
-| **privileged** | Unrestricted — system namespaces only |
-| **baseline** | Blocks known privilege escalations |
-| **restricted** | Hardened — non-root, drop caps, no host namespaces |
+1. **Workload**: Pod/container `securityContext` + PSA labels (`enforce=restricted` when apps allow).
+2. **Network**: default-deny NetworkPolicy, then allow only needed ingress/egress.
+3. **Identity**: dedicated SAs, no unnecessary secret mounts, short-lived tokens where possible.
+4. **Supply chain**: pin digests, scan in CI, optional admission (Kyverno/OPA Gatekeeper) to block `:latest` or unsigned images.
+5. Controllers still reconcile — hardening constrains *what* may run, not the reconcile loop itself.
 
-Apply via namespace labels:
+PSA replaces the older PodSecurityPolicy API; learn labels, not PSP.
 
-```yaml
-metadata:
-  labels:
-    pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/audit: restricted
-    pod-security.kubernetes.io/warn: restricted
-```
+### Key concepts / comparisons
 
-Pods violating `enforce` are rejected; `warn` surfaces issues in audit logs.
+| Control | Layer |
+|---------|-------|
+| RBAC | API access |
+| securityContext | Process privileges |
+| PSA | Admission of Pod specs |
+| NetworkPolicy | East-west / egress |
+| Image policy | What may be pulled/run |
 
-### NetworkPolicy fundamentals
+| PSA level | Strictness |
+|-----------|------------|
+| privileged | No restriction |
+| baseline | Minimally opinionated |
+| restricted | Hardened defaults |
 
-Without policies, all pods communicate freely (default allow). Production uses **default deny**:
+### Common pitfalls
 
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-all
-spec:
-  podSelector: {}
-  policyTypes: [Ingress, Egress]
-```
-
-Then add explicit allow rules — ingress controller → web/api; api → postgres/redis only.
-
-Requires a CNI that enforces NetworkPolicy (Calico, Cilium, Weave).
-
-### Admission control
-
-**Validating** policies reject bad resources. **Mutating** policies inject defaults (labels, sidecars).
-
-Kyverno example — require resource limits:
-
-```yaml
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: require-requests-limits
-spec:
-  validationFailureAction: Enforce
-  rules:
-    - name: validate-resources
-      match:
-        any:
-          - resources:
-              kinds: [Pod]
-      validate:
-        message: "CPU and memory requests/limits required"
-        pattern:
-          spec:
-            containers:
-              - resources:
-                  requests:
-                    memory: "?*"
-                    cpu: "?*"
-                  limits:
-                    memory: "?*"
-                    cpu: "?*"
-```
-
-### RBAC least privilege
-
-| Actor | Scope | Permissions |
-|-------|-------|-------------|
-| Developer | Namespace | get/list pods, logs — no secrets |
-| CI bot | None on cluster | Push images only |
-| Argo CD | App namespaces | apply/sync specific resources |
-| On-call | Namespace or cluster | escalate via break-glass role |
-
-Avoid cluster-admin bindings except for bootstrap automation with audited access.
-
-### Secrets management
-
-Never commit plaintext Secrets to Git. Options:
-
-| Tool | Pattern |
-|------|---------|
-| **Sealed Secrets** | Encrypt Secret into SealedSecret CRD — only cluster decrypts |
-| **External Secrets Operator** | Sync from Vault, AWS SM, GCP SM |
-| **SOPS** | Encrypt YAML in Git — decrypted at deploy time |
-
-Enable **encryption at rest** for etcd Secret resources via KMS provider.
+- Labelling `enforce=restricted` without fixing images that require root — mass Pending/reject.
+- Writing NetworkPolicies when the CNI does not enforce them — false sense of safety.
+- Dropping `ALL` capabilities but adding back dangerous ones casually.
+- Leaving `hostNetwork` / `hostPID` enabled on ordinary apps.
+- Scanning images once and never again — rebuild pipelines must re-scan.
 
 ## Hands-on Lab
 
-### Lab 1 — Apply Pod Security Standards
-
-Label the votestack namespace:
+Create a workspace for this tutorial.
 
 ```bash
-kubectl label namespace votestack \
-  pod-security.kubernetes.io/enforce=restricted \
-  pod-security.kubernetes.io/audit=restricted \
-  pod-security.kubernetes.io/warn=restricted \
-  --overwrite
+mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
 ```
 
-Update VoteStack api Deployment for restricted compliance:
+**Focus:** hands-on practice for Kubernetes Security Hardening
 
-```yaml
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Kubernetes Security Hardening"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
+kubectl create ns rebash-sec
+kubectl label ns rebash-sec pod-security.kubernetes.io/enforce=baseline --overwrite
+cat > secure-pod.yaml << 'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secure
+  namespace: rebash-sec
 spec:
-  template:
-    spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile: { type: RuntimeDefault }
+  containers:
+    - name: app
+      image: nginxinc/nginx-unprivileged:alpine
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
-      containers:
-        - name: api
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: [ALL]
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
-      volumes:
+        allowPrivilegeEscalation: false
+        capabilities: { drop: ["ALL"] }
+        readOnlyRootFilesystem: true
+      volumeMounts:
         - name: tmp
-          emptyDir: {}
+          mountPath: /tmp
+  volumes:
+    - name: tmp
+      emptyDir: {}
+EOF
+kubectl apply -f secure-pod.yaml
+kubectl get pod secure -n rebash-sec
+kubectl delete ns rebash-sec
 ```
 
-Apply and verify: `kubectl apply -f api-deployment.yaml`
-
-Test rejection — this pod should fail:
-
-```yaml
-# bad-pod.yaml — privileged
-securityContext:
-  privileged: true
-```
+### Final step – Cleanup note
 
 ```bash
-kubectl apply -f bad-pod.yaml -n votestack
-# Expected: forbidden by PodSecurity
+# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 2 — Default-deny NetworkPolicies
-
-```yaml
-# 01-default-deny.yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny
-  namespace: votestack
-spec:
-  podSelector: {}
-  policyTypes: [Ingress, Egress]
----
-# 02-allow-api-ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-api-ingress
-  namespace: votestack
-spec:
-  podSelector:
-    matchLabels:
-      app: votestack-api
-  policyTypes: [Ingress]
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ingress-nginx
-        - podSelector:
-            matchLabels:
-              app: votestack-web
-      ports:
-        - protocol: TCP
-          port: 8080
----
-# 03-allow-api-egress-data.yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-api-egress-data
-  namespace: votestack
-spec:
-  podSelector:
-    matchLabels:
-      app: votestack-api
-  policyTypes: [Egress]
-  egress:
-    - to:
-        - podSelector:
-            matchLabels:
-              app: postgres
-      ports:
-        - protocol: TCP
-          port: 5432
-    - to:
-        - podSelector:
-            matchLabels:
-              app: redis
-      ports:
-        - protocol: TCP
-          port: 6379
-    - to:   # DNS
-        - namespaceSelector: {}
-      ports:
-        - protocol: UDP
-          port: 53
-```
-
-```bash
-kubectl apply -f networkpolicies/
-kubectl run -it debug --rm --image=busybox -n votestack -- wget -qO- http://votestack-api:8080/health
-# Should succeed from allowed paths; fail from unauthorized pods
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 3 — Install Kyverno and enforce policies
-
-```bash
-helm repo add kyverno https://kyverno.github.io/kyverno/
-helm install kyverno kyverno/kyverno -n kyverno --create-namespace --wait
-kubectl get clusterpolicies
-```
-
-Apply policies from Theory section plus disallow `:latest` tag:
-
-```yaml
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: disallow-latest-tag
-spec:
-  validationFailureAction: Enforce
-  rules:
-    - name: require-image-tag
-      match:
-        any:
-          - resources:
-              kinds: [Pod]
-      validate:
-        message: "Using ':latest' tag is not allowed"
-        pattern:
-          spec:
-            containers:
-              - image: "!*:latest"
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-Test: deploy pod with `nginx:latest` — should be blocked.
-
-### Lab 4 — Sealed Secrets for database credentials
-
-```bash
-helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
-helm install sealed-secrets sealed-secrets/sealed-secrets -n kube-system --wait
-
-kubectl create secret generic postgres-credentials \
-  --from-literal=username=voteapp \
-  --from-literal=password='super-secret' \
-  -n votestack --dry-run=client -o yaml | \
-  kubeseal --format yaml > sealed-postgres.yaml
-
-kubectl apply -f sealed-postgres.yaml
-# Safe to commit sealed-postgres.yaml to GitOps repo
-```
-
-Reference in Deployment:
-
-```yaml
-envFrom:
-  - secretRef:
-      name: postgres-credentials
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 5 — RBAC for GitOps agent
-
-Argo CD should not use cluster-admin. Create scoped Role:
-
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: argocd-votestack
-  namespace: votestack
-rules:
-  - apiGroups: ["", "apps", "networking.k8s.io"]
-    resources: ["*"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: argocd-votestack
-  namespace: votestack
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: argocd-votestack
-subjects:
-  - kind: ServiceAccount
-    name: argocd-application-controller
-    namespace: argocd
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
-
-### Lab 6 — Image scanning in CI + admission
-
-CI gate (GitHub Actions):
-
-```yaml
-- name: Trivy scan
-  uses: aquasecurity/trivy-action@master
-  with:
-    image-ref: ghcr.io/org/votestack-api:${{ '{{' }} github.sha {{ '}}' }}
-    severity: CRITICAL,HIGH
-    exit-code: 1
-```
-
-Kyverno verifyImages (with cosign signatures in mature setups):
-
-```yaml
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: verify-image-signature
-spec:
-  validationFailureAction: Enforce
-  rules:
-    - name: verify-signature
-      match:
-        any:
-          - resources:
-              kinds: [Pod]
-      verifyImages:
-        - imageReferences:
-            - "ghcr.io/org/votestack-*"
-          attestors:
-            - count: 1
-              entries:
-                - keys:
-                    publicKeys: |-
-                      -----BEGIN PUBLIC KEY-----
-                      ...
-                      -----END PUBLIC KEY-----
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| PSS/securityContext | Restricted settings applied to the lab workload |
-| NetworkPolicy | Policy denies unexpected traffic when tested |
-| Non-root | Pod refuses or runs non-root per lab |
-| Cleanup | Hardening lab namespace/objects deleted |
+- [ ] Lab commands run under `~/rebash-k8s/module-10-hard/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-```bash
-# Pod Security
-kubectl label namespace votestack pod-security.kubernetes.io/enforce=restricted
-kubectl auth can-i create pods --as=system:serviceaccount:votestack:default -n votestack
+Production practice for **Kubernetes Security Hardening** always combines:
 
-# NetworkPolicy debug
-kubectl run nettest --rm -it --image=nicolaka/netshoot -n votestack
-# curl, nc, traceroute between services
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-# RBAC audit
-kubectl auth can-i --list --as=developer@corp.com -n votestack
-kubectl get rolebindings,clusterrolebindings -A | grep argocd
-
-# Audit logs (enable on api-server)
-# --audit-log-path=/var/log/k8s-audit.log
-
-# Runtime security (optional)
-helm install falco falcosecurity/falco -n falco --create-namespace
-```
-
-| Control | Verify command |
-|---------|----------------|
-| PSS enforced | Deploy privileged pod — expect rejection |
-| NetworkPolicy | Connect from unauthorized pod — expect timeout |
-| Kyverno | `kubectl get policyreport -A` |
-| Sealed Secret | `kubectl get sealedsecret -n votestack` |
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Enforce Pod Security Standards (restricted) on application namespaces
-- Drop capabilities, run as non-root, and use read-only root filesystems by default
-- Enable NetworkPolicies and default-deny where the CNI supports them
-- Turn on Secrets encryption at rest and API audit logging
-- Restrict admission of privileged Pods via admission controllers / policy engines
-- Keep nodes patched and minimise host access — most escapes still need a node foothold
-
+- Treat credentials and tokens for kubernetes as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Pod Security privileged in app namespaces"
-    Running `privileged` profile in application namespaces negates container isolation — reserve for kube-system only.
+!!! warning "Labelling `enforce=restricted` without fixing images that require root — mass Pending/reje"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "NetworkPolicy without DNS egress"
-    Default-deny egress blocks CoreDNS — pods fail name resolution. Always allow UDP 53.
+!!! warning "Writing NetworkPolicies when the CNI does not enforce them — false sense of safety."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "cluster-admin for Argo CD"
-    Compromised GitOps repo becomes full cluster takeover — scope RBAC per namespace.
-
-!!! warning "Secrets in ConfigMaps"
-    ConfigMaps are not encrypted differently from Secrets but are widely readable — never store passwords in ConfigMaps.
-
-!!! warning "Admission policies without exemptions"
-    System namespaces (kube-system, monitoring) need exemptions or bootstrap breaks.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Start baseline, move to restricted"
-    Migrate workloads incrementally — baseline first, fix violations, then enforce restricted.
-
-!!! tip "NetworkPolicy as code in GitOps"
-    Version policies alongside app manifests — review traffic changes in PRs.
-
-!!! tip "Break-glass cluster-admin"
-    Emergency role with MFA, time-limited, fully audited — not daily driver.
-
-!!! tip "Rotate secrets automatically"
-    External Secrets with short TTL beats manual rotation quarterly.
-
-!!! tip "CIS Kubernetes Benchmark"
-    Run kube-bench periodically against node configuration — complement app-layer controls.
+- Encode Kubernetes Security Hardening changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Pod rejected by PSS | Non-root, caps, volumes | Fix securityContext; add emptyDir for /tmp |
-| Service unreachable after NetworkPolicy | Missing ingress rule | Trace path; add allow rule for source labels |
-| Kyverno blocks deploy | Policy mismatch | `kubectl describe clusterpolicy`; check PolicyReport |
-| SealedSecret won't decrypt | Wrong cluster cert | Re-seal with current cluster public key |
-| Image pull fails after policy | Unsigned image | Sign in CI or adjust verifyImages policy |
-| Argo CD sync forbidden | RBAC too narrow | Expand Role verbs or resource list |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **Defense in depth** combines RBAC, admission control, pod hardening, network segmentation, and supply-chain verification
-- **Pod Security Standards** enforce restricted profiles in application namespaces
-- **NetworkPolicies** implement default-deny with explicit allow paths for VoteStack tiers
-- **Kyverno/Gatekeeper** block non-compliant manifests before pods are scheduled
-- **Sealed Secrets or External Secrets** keep credentials out of plaintext Git
-- Next: [Kubernetes Capstone and Next Steps](kubernetes-capstone-and-next-steps.md)
+**Kubernetes Security Hardening** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What are the three Pod Security Standard profiles and when use each?
-2. Why implement default-deny NetworkPolicies?
-3. How does admission control differ from RBAC?
-4. Explain the blast radius if Argo CD has cluster-admin and the GitOps repo is compromised.
-5. What is seccomp RuntimeDefault and why enable it?
-6. Compare Sealed Secrets vs External Secrets Operator.
-7. How do you allow DNS in a default-deny egress NetworkPolicy?
-8. What supply-chain controls apply before an image runs in Kubernetes?
-9. How would you audit who deleted a production Deployment?
-10. What is the difference between Pod Security Admission and Kyverno?
+1. How does **Kubernetes Security Hardening** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 2, 4, and 10)"
-
-    **Q2 — Default-deny NetworkPolicy:** Without policies, any compromised pod can reach any service — lateral movement to postgres, redis, or the Kubernetes API. Default-deny blocks all traffic; explicit allow rules document and enforce the intended architecture (ingress → api only; api → data tier only). Principle of least privilege at network layer.
-
-    **Q4 — GitOps cluster-admin blast radius:** Attacker merges malicious manifest to GitOps repo → Argo CD syncs → attacker gets any cluster resource including Secrets cluster-wide, persistent volumes, or crypto-mining DaemonSets. Scoped namespace Role limits damage to votestack namespace even if repo is compromised.
-
-    **Q10 — PSA vs Kyverno:** Pod Security Admission is built into Kubernetes — enforces pod-level standards (restricted/baseline) via namespace labels. Kyverno is a flexible admission webhook — custom policies (image tags, labels, resource limits, signature verification). PSA is baseline pod hardening; Kyverno extends to organizational policy-as-code.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md) *(previous)*
-- [Kubernetes Capstone and Next Steps](kubernetes-capstone-and-next-steps.md) *(next)*
-- [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
-- [ConfigMaps and Secrets](configmaps-and-secrets.md)
-- [Docker Security Hardening](../docker/docker-security-hardening.md)
-- [Network Security Hardening](../networking/network-security-hardening.md)
-- [Kubernetes – Category Overview](index.md)
-- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
-- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Kubernetes Networking Deep Dive](kubernetes-networking-deep-dive.md)
 
 ## References
 
-- [Kubernetes – Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
-- [Kubernetes – Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
-- [Kyverno – Policies](https://kyverno.io/policies/)
-- [OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper/)
-- [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
-- [CIS Kubernetes Benchmark](https://www.cisecurity.org/benchmark/kubernetes)
-- [NSA/CISA Kubernetes Hardening Guide](https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.1_20220829.PDF)
+- [Pod Security Admission](https://kubernetes.io/docs/concepts/security/pod-security-admission/) · [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)

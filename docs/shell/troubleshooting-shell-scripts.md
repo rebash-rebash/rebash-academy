@@ -47,38 +47,44 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Troubleshooting Shell Scripts](../assets/images/shell-troubleshooting.svg)
+![Architecture diagram for Troubleshooting Shell Scripts](../assets/excalidraw/shell-troubleshooting.svg)
 
 ## Theory
 
-### Debugging Bash
+### What it is
 
-Reproduce with the same interpreter and env: `env -i PATH=... bash -x ./script.sh`. Bisect with `set -x` regions. Confirm shebang and line endings (`file`, `sed -n l`).
+**Troubleshooting shell scripts** is a systematic way to reproduce failures, isolate causes, and fix them without guesswork. You align the interpreter and environment with production, interpret common error messages, chase permission and cron-specific quirks, inspect variable expansions, and — when needed — profile slow loops. The goal is a short feedback cycle: same symptoms under a controlled `env`, a precise `bash -x` trace, and a verified fix.
 
-### Common Errors
+### Why it matters
 
-| Symptom | Cause |
-|---------|--------|
-| `command not found` | PATH / typo / missing package |
-| `unbound variable` | `set -u` + missing default |
-| `unexpected token` | Windows CRLF or bad quoting |
-| `Permission denied` | Mode, mount `noexec`, or directory bits |
+“Works on my machine” is the default state of unfinished automation. Continuous Integration (CI) runners, cron, and service accounts see different `PATH` values, working directories, and security modules. Without a method, engineers change random lines until the symptom moves. A repeatable troubleshooting approach saves hours in outages and prevents “fixes” that only mask the real fault — for example silencing `set -u` instead of supplying a required variable.
 
-### Permission Problems
+### How it works
 
-Check execute bit, directory `x`, SELinux/AppArmor denials, and whether the scheduler user differs from yours.
+Reproduce with the same interpreter and a minimal environment: `env -i PATH=/usr/bin:/bin HOME="$HOME" bash -x ./script.sh`. Bisect by wrapping suspect regions with `set -x` / `set +x`. Confirm the shebang, execute bit, and line endings (`file`, `sed -n l`) — Windows CRLF produces baffling syntax errors.
 
-### Cron Issues
+Map symptoms to likely causes, then verify. Permission problems involve the execute bit, directory search (`x`) bits, `noexec` mounts, SELinux/AppArmor denials, and a scheduler user that is not you. Cron issues add a short `PATH`, unexpected cwd, no tty, and stderr mailed somewhere nobody reads — fix with absolute paths, explicit `PATH`, and file logs. For expansion bugs, compare quoted versus unquoted forms, know `${var:-}` versus `${var-}`, and print `declare -p var` while debugging.
 
-Minimal `PATH`, different cwd, missing tty, and mailed stderr you never read. Log to a file; set `PATH`; use absolute paths.
+When the script is correct but slow, reduce process churn: avoid needless pipelines in tight loops, batch with `xargs`, prefer builtins for simple strings, and collapse heavy JSON work into one `jq` call. Profile with `time` before and after.
 
-### Variable Expansion Problems
+### Key concepts
 
-Unquoted `$var`, wrong `${var:-}` vs `${var-}` , and accidental globbing. Print `declare -p var` while debugging.
+| Symptom | Likely cause |
+|---------|--------------|
+| `command not found` | `PATH`, typo, or missing package |
+| `unbound variable` | `set -u` without a default or export |
+| `unexpected token` | CRLF line endings or broken quoting |
+| `Permission denied` | Mode, `noexec`, directory bits, MAC |
+| Works in SSH, fails in cron | Env, cwd, `PATH`, missing tty |
+| Slow loops | Too many process spawns per iteration |
 
-### Performance Optimisation
+### Common pitfalls
 
-Avoid spawning needless pipelines in tight loops; batch with `xargs`; prefer Bash builtins for simple string work; move heavy JSON transforms to one `jq` invocation. Profile with `time` and reduce process count.
+- Debugging under a full interactive environment that hides cron/`PATH` issues
+- “Fixing” failures by adding `\|\| true` instead of finding the root cause
+- Ignoring CRLF after editing scripts on Windows
+- Overlooking that the service user lacks execute permission on a directory in the path
+- Premature micro-optimisation before confirming the hot loop with `time`
 
 ## Hands-on Lab
 

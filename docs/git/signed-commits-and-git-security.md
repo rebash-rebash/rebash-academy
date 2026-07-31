@@ -1,401 +1,245 @@
 ---
-title: Signed Commits and Git Security
-description: Configure GPG and SSH commit signing, verify signatures, protect branches, manage secrets, and meet compliance requirements for Git repositories.
+title: "Signed Commits and Git Security"
+description: "Sign commits with SSH or GPG, verify signatures, protect branches, keep secrets out of Git, and harden GitHub for DevOps compliance."
 difficulty: advanced
-estimated_time: "40 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "45–60 min"
+technology: git
 category: git
+module: "Module 15 · Security"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
+skills:
+  - git
+  - commit-signing
+  - security
+prerequisites:
+  - git/repository-management-and-releases
+  - git/pull-requests-and-code-review
+next:
+  - git/git-troubleshooting
+related:
+  - git/production-git-practices
+  - security/index
+labs: []
+projects: []
+interview: interview/git
+certifications:
+  - GitHub Advanced Security
 tags:
   - git
   - security
-  - gpg
   - signing
-prerequisites:
-  - Git Submodules and Subtrees
-  - Git Installation and Configuration
-  - Pull Requests and Code Review
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Signed Commits and Git Security
 
 ## Overview
 
-Compliance frameworks (SOC 2, FedRAMP) increasingly require proof that commits came from authorized developers. **Signed commits** cryptographically bind identity to changes. Combined with branch protection, secret scanning, and access controls, signing forms a defense-in-depth strategy for Git security in DevOps pipelines.
+Configure commit signing (SSH preferred for simplicity), verify signatures, and apply Git/GitHub security baselines: branch protection, secret hygiene, and least-privilege access.
 
-This is **Tutorial 19** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
+Author email in Git is forgeable. **Signed commits** prove the committer held a key tied to a verified identity. Pair signing with branch protection, secret scanning, and never committing credentials.
+
+This is a core tutorial in **Module 15 · Security** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Git Submodules and Subtrees](git-submodules-and-subtrees.md)
-- [Git Installation and Configuration](git-installation-and-configuration.md)
+- [Repository Management and Releases](repository-management-and-releases.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Generate GPG and SSH signing keys
-- [ ] Configure Git to sign commits and tags automatically
-- [ ] Verify signatures locally and on GitHub/GitLab
-- [ ] Enforce signed commits via branch protection
-- [ ] Apply Git security best practices for secrets and access
-- [ ] Understand Sigstore/gitsign as cloud-native alternative
-- [ ] Respond to leaked credential incidents in Git history
+- [ ] Configure SSH commit signing  
+- [ ] Verify with `git log --show-signature`  
+- [ ] Explain required signed commits on protected branches  
+- [ ] List secrets that must never enter history  
+- [ ] Outline response if a secret is committed
 
 ## Architecture
 
-Signed commits and tags bind identity cryptography to history so reviewers can verify authorship on protected branches.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Signed Commits and Git Security](../assets/images/signed-commits-and-git-security.svg)
+![PR / review gate](../assets/excalidraw/git-pr-lifecycle.svg)
 
 ## Theory
 
-### Why Sign Commits?
+### What
 
-Git's default author metadata is trivially forgeable — anyone can set `user.email` to another person. **Signing** proves the committer possessed a private key associated with a verified identity.
+**Git security** combines cryptography and platform controls. **Signed commits and tags** (GPG, SSH, or X.509 signing) prove authorship integrity. Branch protection, CODEOWNERS, secret scanning, push protection, and least-privilege tokens reduce the chance that bad or spoofed changes reach `main`.
 
-Benefits:
+### Why
 
-- **Non-repudiation** — audit trail for compliance
-- **Supply chain security** — verify code origin in CI
-- **Protected branch enforcement** — reject unsigned commits
+Unsigned history can be rewritten or attributed falsely in social-engineering scenarios. Secrets in Git are a leading cloud breach pattern — assume anything committed is eventually exfiltrated. DevOps repos that deploy production need stronger defaults than hobby projects.
 
-### GPG Signing
+### How it works
 
-Traditional approach using OpenPGP:
+You configure a signing key, enable `commit.gpgsign` or SSH signing, and let the host verify badges on commits. Branch protection blocks direct pushes and requires reviews plus CI. Secret scanning alerts (and push protection blocks) known credential patterns. CI should prefer OIDC federation to cloud roles over long-lived static keys. If a secret is committed: **rotate first**, then scrub history with purpose-built tools (`git filter-repo` / BFG) under an incident process — never “delete the file in a new commit” as the only step.
 
-```bash
-gpg --full-generate-key
-gpg --list-secret-keys --keyid-format=long
-git config --global user.signingkey YOUR_KEY_ID
-git config --global commit.gpgsign true
-git config --global tag.gpgsign true
-git commit -S -m "feat: signed commit"
-```
+| Control | Purpose |
+|---------|---------|
+| Signed commits/tags | Authorship integrity |
+| Branch protection | No direct push to `main` |
+| CODEOWNERS | Path-based review |
+| Secret scanning / push protection | Stop credential leaks |
+| Fine-grained PATs / OIDC | Safer CI auth |
 
-Export public key to GitHub/GitLab → Settings → SSH and GPG keys.
+### Key concepts
 
-Verify:
+- **Verify signatures** in clone policies for sensitive repos  
+- **History rewrite** after leaks is an org-wide coordination event  
+- **Deploy keys vs GitHub Apps** — scope automation narrowly  
+- **Dependency and Action pinning** — adjacent supply-chain controls  
 
-```bash
-git log --show-signature -1
-gpg --verify .git/objects/...
-```
+### Common pitfalls
 
-### SSH Commit Signing (Git 2.34+)
-
-Simpler for teams already using SSH keys:
-
-```bash
-ssh-keygen -t ed25519 -C "signing@example.com" -f ~/.ssh/id_ed25519_sign
-git config --global gpg.format ssh
-git config --global user.signingkey ~/.ssh/id_ed25519_sign.pub
-git config --global commit.gpgsign true
-```
-
-Add **signing** public key to GitHub (separate from authentication key).
-
-### Signed Tags
-
-Release tags should be annotated and signed:
-
-```bash
-git tag -s v2.0.0 -m "Release 2.0.0"
-git push origin v2.0.0
-```
-
-Production deploy pipelines should verify tag signature before deploy.
-
-### Platform Verification
-
-GitHub shows **Verified** badge when:
-
-- Signature valid
-- Key associated with committer account
-- For web commits, GitHub signs on your behalf
-
-GitLab shows similar verification in commit view.
-
-### Enforcing Signed Commits
-
-**Branch protection rules:**
-
-- Require signed commits
-- Require linear history
-- Require status checks
-- Restrict push to specific teams
-
-Combine with **rulesets** (GitHub) or **push rules** (GitLab self-managed).
-
-### Secret Management in Git
-
-**Never commit:**
-
-- API keys, passwords, tokens
-- Private keys, kubeconfig with credentials
-- `.tfstate` files
-
-**Prevention stack:**
-
-1. `.gitignore` + `.gitattributes`
-2. pre-commit `detect-private-key`
-3. CI secret scanning (Gitleaks, GitHub secret scanning)
-4. Regular audits
-
-**If secret committed:**
-
-1. Revoke credential immediately
-2. Remove from history (`git filter-repo` / BFG)
-3. Force push coordinated with team
-4. Post-incident review
-
-### Access Control
-
-- **Least privilege** — read vs write vs admin
-- **SSH deploy keys** — read-only for CI clone
-- **PAT rotation** — short-lived tokens
-- **2FA enforced** on Git hosting orgs
-- **Audit logs** — review anomalous push events
-
-### gitsign / Sigstore
-
-Cloud-native keyless signing using identity from OIDC (GitHub Actions):
-
-```bash
-# gitsign signs with ephemeral certificates
-gitsign commit -m "signed with sigstore"
-```
-
-No long-lived GPG key management — growing adoption in supply chain security.
-
-### Supply Chain Frameworks
-
-- **SLSA** — provenance attestations for builds
-- **SBOM** — software bill of materials stored alongside releases
-- Git signing is one layer — not sufficient alone
+- Rotating a leaked key but leaving the old commit publicly readable without rewrite/incident notes  
+- Signing commits while still allowing unprotected force-pushes  
+- Broad classic PATs in shared CI secrets  
+- Committing `.env` “temporarily” on a feature branch
 
 ## Hands-on Lab
 
-### Step 1 – Configure SSH signing (if key exists)
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-sign-lab && cd /tmp/git-sign-lab
+mkdir -p ~/rebash-git/module-15 && cd ~/rebash-git/module-15
+```
+
+**Focus:** hands-on practice for Signed Commits and Git Security
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Signed Commits and Git Security"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-git/module-15 && cd ~/rebash-git/module-15
 git init -b main
-git config user.name "Sign Lab"
-git config user.email "sign@example.com"
+git config user.email "lab@rebash.local"
+git config user.name "REBASH Lab"
 
-# Create signing key for lab
-ssh-keygen -t ed25519 -f /tmp/sign_key -N "" -C "sign@example.com"
-git config gpg.format ssh
-git config user.signingkey /tmp/sign_key.pub
-git config commit.gpgsign true
-git config tag.gpgsign true
+# Prefer SSH signing when you have an SSH key (Git 2.34+)
+# git config --global gpg.format ssh
+# git config --global user.signingkey ~/.ssh/id_ed25519.pub
+# git config --global commit.gpgsign true
+
+git config commit.gpgsign false   # lab machines may lack keys
+echo 'security-lab' > README.md
+git add README.md && git commit -m "chore: security module lab"
+
+cat > security-checklist.md << 'EOF'
+- [ ] Signing configured (SSH or GPG)
+- [ ] Branch protection: PR + reviews + status checks
+- [ ] Secret scanning / push protection on
+- [ ] No .env / keys in repo; .gitignore reviewed
+- [ ] CI uses OIDC or short-lived tokens
+EOF
+git add security-checklist.md && git commit -m "docs: security checklist"
 ```
 
-**Expected result:** Signing key/SSH key is configured for the lab identity.
+Add your public signing key in GitHub → Settings → SSH and GPG keys when using a real account.
 
-### Step 2 – Create signed commit
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-echo "secure config" > app.conf
-git add app.conf
-git commit -m "feat: add config with signing enabled"
-git log --show-signature -1 2>&1 | head -15
+# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** Without key on GitHub, shows "Good signature" locally but unverified on platform.
-
-**Expected result:** `git log --show-signature` reports a good signature on the signed commit.
-
-### Step 3 – Verify signature status
-
-**Command:**
-
-```bash
-git verify-commit HEAD 2>&1 || echo "Verify output above"
-git log --format="%H %G? %aN" -1
-```
-
-**Explanation:** `%G?` shows signature status: G=good, N=none, B=bad.
-
-**Expected result:** Unsigned comparison commit is clearly unmarked or unverified.
-
-### Step 4 – Signed tag
-
-**Command:**
-
-```bash
-git tag -s v0.1.0 -m "Signed release 0.1.0"
-git tag -v v0.1.0 2>&1 | head -10
-```
-
-**Expected result:** Tag signing (if practised) verifies with `git tag -v`.
-
-### Step 5 – Simulate unsigned commit rejection policy
-
-**Command:**
-
-```bash
-git config commit.gpgsign false
-echo "unsigned" >> app.conf
-git commit -am "test: unsigned commit"
-git log --format="%H %G?" -2
-git config commit.gpgsign true
-```
-
-**Expected result:** Forge UI or local verify step matches “verified” expectations.
-
-### Step 6 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-sign-lab sign_key sign_key.pub
-```
-
-**Expected result:** Test key material not committed; lab repo cleaned.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Sign | `git log --show-signature` reports a good signature on lab commits |
-| Config | `commit.gpgsign` or SSH signing config matches the lab |
-| Verify | Forged/unsigned comparison behaves as documented |
-| Cleanup | Test keys handled safely; no private keys committed |
+- [ ] Lab commands run under `~/rebash-git/module-15/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git commit -S` | Sign single commit | Explicit sign |
-| `git config commit.gpgsign true` | Auto-sign all commits | Global policy |
-| `git log --show-signature` | Display signatures | Audit commits |
-| `git verify-commit SHA` | Verify commit signature | CI gate |
-| `git tag -s v1.0.0` | Signed annotated tag | Release |
-| `gpg --list-secret-keys` | List GPG keys | Key management |
-| `git config gpg.format ssh` | Use SSH signing | Modern alternative |
+Production practice for **Signed Commits and Git Security** always combines:
 
-### CI signature verification
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-#!/usr/bin/env bash
-# verify-signed-commits.sh — fail if recent commits unsigned
-set -euo pipefail
-RANGE="${1:-origin/main..HEAD}"
-while read -r sha status; do
-  if [ "$status" != "G" ]; then
-    echo "ERROR: Commit $sha is not signed (status=$status)"
-    exit 1
-  fi
-done < <(git log --format='%H %G?' $RANGE)
-echo "All commits in range are signed."
-```
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Protect signing keys with passphrases or hardware tokens; never commit private keys
-- Enforce verified signatures on protected branches in GitHub/GitLab settings
-- Rotate compromised signing keys and re-sign tags that matter for releases
-- Prefer SSH or GPG signing consistently across the team to avoid unverified noise
-- Treat unsigned commits on release tags as suspicious until explained
+- Treat credentials and tokens for git as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Signing key without backup"
-    Lost key cannot sign; old signatures become unverifiable after key rotation. Backup securely.
+!!! warning "Rotating a leaked key but leaving the old commit publicly readable without rewrite/inciden"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Same key for auth and signing"
-    Compromise exposes both. Use separate SSH keys.
+!!! warning "Signing commits while still allowing unprotected force-pushes  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Assuming signing replaces secret scanning"
-    Signed malicious commits are still malicious. Sign AND scan.
-
-!!! warning "Not revoking leaked secrets immediately"
-    History rewrite takes time — revocation is first action.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Enable commit.gpgsign globally from day one"
-    Habits form early; retrofitting signing across team is harder.
-
-!!! tip "Require signed commits on main via branch protection"
-    Policy without enforcement gets ignored.
-
-!!! tip "Use SSH signing for simpler developer experience"
-    One less GPG agent headache on macOS/Linux.
-
-!!! tip "Integrate secret scanning in CI and platform"
-    GitHub Advanced Security, GitLab secret detection, or Gitleaks.
+- Encode Signed Commits and Git Security changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `gpg: signing failed` | Agent not running | Start gpg-agent; pinentry |
-| Unverified on GitHub | Key not uploaded | Add GPG/SSH signing key to account |
-| Wrong key used | Multiple keys | Set user.signingkey explicitly |
-| CI cannot sign | No key in runner | Use bot account or gitsign |
-| `error: gpg failed to sign` | Passphrase prompt in CI | Use gpg-agent or SSH signing |
-| Secret in history | Committed before hook | filter-repo; revoke secret |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **Signed commits** cryptographically prove authorship — GPG or SSH keys
-- Configure **commit.gpgsign** and upload public keys to hosting platform
-- **Branch protection** can require signed commits on main
-- **Secret scanning** and `.gitignore` complement signing — not substitutes
-- **Signed tags** anchor trusted release deployments
-- **gitsign/Sigstore** offers keyless signing for CI environments
+**Signed Commits and Git Security** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. Why are signed commits important for compliance?
-2. What is the difference between GPG and SSH commit signing?
-3. How do you configure Git to sign all commits automatically?
-4. How do you verify a commit signature locally?
-5. What should you do if a secret is committed to Git?
-6. How do branch protection rules enforce signing?
-7. What is the difference between author and committer in signed commits?
-8. What is gitsign/Sigstore?
-9. Why use separate keys for authentication and signing?
-10. What layers form Git security defense-in-depth?
+1. How does **Signed Commits and Git Security** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1 and 5)"
-
-    **Q1 — Compliance value:** Signed commits provide cryptographic proof that a specific key holder created the change, supporting non-repudiation requirements in SOC 2 and similar frameworks. Combined with branch protection and audit logs, organizations demonstrate access control and change integrity for production infrastructure code.
-
-    **Q5 — Secret committed:** Immediately revoke/rotate the credential in the target system — this works even before history cleanup. Then remove from Git history using git filter-repo or BFG Repo-Cleaner. Force-push cleaned history with team coordination. Run secret scan to verify removal. Document incident and improve pre-commit/CI scanning.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Git Submodules and Subtrees](git-submodules-and-subtrees.md) *(previous)*
-- [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md) *(next — finale)*
-- [Git Installation and Configuration](git-installation-and-configuration.md)
-- [Git Hooks and Automation](git-hooks-and-automation.md)
-- [gitignore and gitattributes](gitignore-and-gitattributes.md)
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Git Troubleshooting](git-troubleshooting.md)
 
 ## References
 
-- [GitHub – Signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification)
-- [GitLab – Signed commits](https://docs.gitlab.com/ee/user/project/repository/signed_commits/)
-- [Sigstore gitsign](https://github.com/sigstore/gitsign)
-- [git filter-repo](https://github.com/newren/git-filter-repo)
-- [SLSA framework](https://slsa.dev/)
-- [REBASH Academy – Git Overview](index.md)
+- [About commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification)  
+- [git-config signing](https://git-scm.com/docs/git-config#Documentation/git-config.txt-commitgpgsign)

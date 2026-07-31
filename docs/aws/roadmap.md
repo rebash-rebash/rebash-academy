@@ -1,6 +1,6 @@
 ---
 title: Learning Roadmap
-description: "Structured learning roadmap for the AWS course."
+description: "Structured 16-module beginner-to-advanced roadmap for AWS for Cloud & DevOps Engineers."
 technology_id: aws
 hide:
   - toc
@@ -8,60 +8,46 @@ author: Shaik Basha
 category: aws
 tags:
   - aws
+  - roadmap
 ---
 
 # AWS — Learning Roadmap
 
 Follow the course in order:
 
-1. **Course overview** — understand scope, prerequisites, and outcomes
-2. **Modules** — work through tutorials module by module
-3. **Labs** — hands-on practice after core lessons
-4. **Quizzes** — check understanding before projects
-5. **Projects** — portfolio builds that connect multiple skills
-6. **Capstone** — end-to-end proof of production readiness
-7. **Interview preparation** — role-specific questions and scenarios
-8. **Certifications** — map lessons to industry exams
+1. **Course overview** — scope, prerequisites, cost hygiene
+2. **Modules 1–16** — fundamentals through production and troubleshooting
+3. **Labs / quizzes / projects** — practice
+4. **Capstone** — production AWS landing zone
+5. **Interview & certifications** — Cloud Practitioner → SAA → DevOps Pro
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![AWS global infrastructure](../assets/excalidraw/aws-global-infrastructure.svg)
+
+![VPC architecture](../assets/excalidraw/aws-vpc-architecture.svg)
 
 ## Modules
 
-### Module 1 · Foundations
+| # | Focus | Tutorial |
+|---|-------|----------|
+| 1 | AWS fundamentals | [Global infrastructure](aws-fundamentals-and-global-infrastructure.md) |
+| 2 | IAM | [Identity & access](iam-identity-access-and-organizations.md) |
+| 3 | Networking | [VPC networking](vpc-networking-on-aws.md) |
+| 4 | Compute | [EC2 · ASG · LB](compute-ec2-asg-and-load-balancing.md) |
+| 5 | Storage | [S3 · EBS · EFS](storage-s3-ebs-efs.md) |
+| 6 | Databases | [RDS · DynamoDB](databases-on-aws.md) |
+| 7 | Containers | [ECS · EKS · ECR](containers-ecs-eks-ecr.md) |
+| 8 | Serverless | [Lambda & events](serverless-on-aws.md) |
+| 9 | Monitoring | [Observability](monitoring-and-observability-on-aws.md) |
+| 10 | Security | [Security services](aws-security-services.md) |
+| 11 | IaC | [Terraform · CFN · CDK](infrastructure-as-code-on-aws.md) |
+| 12 | CI/CD | [Pipelines on AWS](cicd-on-aws.md) |
+| 13 | Cost | [Cost optimisation](cost-optimisation-on-aws.md) |
+| 14 | Reliability | [HA & DR](reliability-and-disaster-recovery.md) |
+| 15 | Production | [Landing zones](production-aws-landing-zones.md) |
+| 16 | Troubleshooting | [Troubleshoot AWS](troubleshooting-aws.md) |
 
-- [Introduction to AWS and Global Infrastructure](../introduction-to-aws-and-global-infrastructure/)
-- [Accounts, Free Tier, Billing, and Cost Hygiene](../accounts-free-tier-billing-and-cost-hygiene/)
-- [IAM Fundamentals](../iam-fundamentals/)
-- [AWS CLI, Credentials, and Profiles](../aws-cli-credentials-and-profiles/)
+## Diagrams
 
-### Module 2 · VPC Networking
-
-- [VPC, Subnets, and Multi-AZ Design](../vpc-subnets-and-multi-az-design/)
-- [Internet Gateways, Routes, and Egress](../internet-gateways-routes-and-egress/)
-- [Security Groups and NACLs](../security-groups-and-nacls/)
-- [VPC Endpoints and Private AWS Access](../vpc-endpoints-and-private-aws-access/)
-
-### Module 3 · Compute
-
-- [EC2 Fundamentals](../ec2-fundamentals/)
-- [User Data, IMDS, and SSM Session Manager](../user-data-imds-and-ssm-session-manager/)
-- [EBS Volumes, Snapshots, and Encryption](../ebs-volumes-snapshots-and-encryption/)
-
-### Module 4 · Storage
-
-- [S3 Fundamentals](../s3-fundamentals/)
-- [S3 Security and Static Hosting](../s3-security-and-static-hosting/)
-
-### Module 5 · Edge and Data
-
-- [Elastic Load Balancing — ALB and NLB](../elastic-load-balancing-alb-and-nlb/)
-- [Route 53 DNS and Health Checks](../route-53-dns-and-health-checks/)
-- [RDS Fundamentals](../rds-fundamentals/)
-- [Auto Scaling Groups and Launch Templates](../auto-scaling-groups-and-launch-templates/)
-
-### Module 6 · Ops and Capstone
-
-- [CloudWatch Metrics, Logs, and Alarms](../cloudwatch-metrics-logs-and-alarms/)
-- [CloudTrail, Config, and Account Guardrails](../cloudtrail-config-and-account-guardrails/)
-- [Lambda and Three-Tier Capstone](../lambda-and-three-tier-capstone/)
-
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```

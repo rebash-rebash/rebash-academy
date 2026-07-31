@@ -46,46 +46,59 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Arrays and String Manipulation](../assets/images/shell-arrays-strings.svg)
+![Architecture diagram for Arrays and String Manipulation](../assets/excalidraw/shell-arrays-strings.svg)
 
 ## Theory
 
-### Indexed Arrays
+### What it is
+
+Bash **arrays** store ordered lists (**indexed**) or key/value maps (**associative**, Bash 4+). Alongside arrays, **parameter expansion** offers built-in string surgery: strip prefixes and suffixes, replace substrings, and take slices — without spawning `sed` for every small edit. **Pattern matching** with `[[ ]]`, `case`, and `=~` validates names and selects behaviour. Together these features let ops scripts manage host inventories, port maps, and path rewriting cleanly.
+
+### Why it matters
+
+DevOps work is full of lists: targets to patch, services to restart, files to archive. Storing them in a properly quoted array avoids the “split on spaces” trap that breaks paths and hostnames. Associative arrays replace brittle parallel lists (`names[i]` with `ports[i]`) with named lookups. Built-in string expansions keep simple transforms fast and dependency-free — useful in constrained Continuous Integration (CI) images — while patterns stop unsafe input before a destructive command runs.
+
+### How it works
+
+Indexed arrays hold elements in order. Always expand with `"${array[@]}"` so spaces inside elements are preserved:
 
 ```bash
 hosts=(web01 web02 web03)
 hosts+=("web04")
 printf '%s\n' "${hosts[@]}"
-# count elements without array-length parameter expansion (mkdocs-safe):
 n=0
 for _ in "${hosts[@]}"; do n=$((n + 1)); done
 echo "count=$n"
 ```
 
-Always expand as `"${array[@]}"` to preserve elements with spaces.
-
-### Associative Arrays
+Associative arrays need an explicit declaration:
 
 ```bash
 declare -A ports=( [web]=80 [db]=5432 )
 printf 'web port=%s\n' "${ports[web]}"
 ```
 
-Requires Bash 4+. Useful for env→value maps and small inventories.
+They require Bash 4+ and suit environment-to-value maps and small inventories. For strings, parameter expansions rewrite without external tools. Combine with `[[ $name == *.log ]]`, `case` patterns, or `=~` regex — and validate before any destructive use.
 
-### String Manipulation
+### Key concepts
 
-| Expansion | Use |
-|-----------|-----|
-| `${var%%.*}` | Strip longest suffix |
-| `${var##*/}` | Basename-like |
+| Expansion / form | Use |
+|------------------|-----|
+| `"${array[@]}"` | All elements, safely quoted |
+| `declare -A` | Associative map (Bash 4+) |
+| `${var%%.*}` / `${var##*/}` | Strip longest suffix / basename-like |
 | `${var%/*}` | Dirname-like |
 | `${var/old/new}` | Replace first match |
-| `${var:0:3}` | Substring |
+| `${var:0:3}` | Substring slice |
+| `[[ ]]` / `case` / `=~` | Pattern and regex tests |
 
-### Pattern Matching
+### Common pitfalls
 
-`[[ $name == *.log ]]`, `case` patterns, and `=~` with extended regex. Validate inputs before destructive use.
+- Expanding `${array[*]}` or unquoted `$array` and merging elements incorrectly
+- Using associative arrays under Bash 3 (for example older macOS defaults)
+- Forgetting `declare -A` before assignments to a map
+- Applying string replacements to untrusted input without validation
+- Confusing `${var%}` (shortest) with `${var%%}` (longest) suffix removal
 
 ## Hands-on Lab
 

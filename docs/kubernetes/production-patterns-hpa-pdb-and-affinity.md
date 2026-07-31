@@ -51,7 +51,7 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
-![Architecture diagram for Production Patterns — HPA, PDB, and Affinity](../assets/images/production-patterns-hpa-pdb-and-affinity.svg)
+![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
 ## Theory
 

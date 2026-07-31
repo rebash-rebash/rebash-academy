@@ -1,238 +1,320 @@
 ---
 title: "Data Structures — Comprehensions and Generators"
-description: "Lists, tuples, dictionaries, sets, comprehensions, iterators, and generators for inventory and log processing."
-difficulty: beginner
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+description: "Lists, tuples, dictionaries, sets, comprehensions, iterators, and generators for inventory and log processing in DevOps automation."
+difficulty: intermediate
+estimated_time: "50–65 min"
+technology: python
 category: python
-tags:
+module: "Module 5 · Data Structures"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - python
   - lists
   - dicts
   - generators
 prerequisites:
-  - Functions — Parameters and Scope
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - python/functions-parameters-and-scope
+next:
+  - python/modules-packages-and-dependencies
+related:
+  - python/file-handling-pathlib-json-yaml-csv
+  - python/linux-automation-subprocess-and-psutil
+labs:
+  - labs/python-log-analyser
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
+tags:
+  - python
+  - lists
+  - dicts
+  - generators
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Data Structures — Comprehensions and Generators
 
 ## Overview
 
-Inventories, labels, and log streams are collections. Choose the right structure and stream large data with generators.
+Choose the right collection for inventories and labels, transform data with comprehensions, and stream large logs with generators without loading everything into memory.
 
-This is **Tutorial 5** in **Module 5: Data Structures** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Hosts, labels, and log lines are collections. Wrong structure (list vs set vs dict) causes slow lookups and duplicate chaos; loading a 2 GB log into a list OOMs a runner.
+
+Complete [Functions](functions-parameters-and-scope.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 5 · Data Structures** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Functions — Parameters and Scope
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Functions — Parameters and Scope](functions-parameters-and-scope.md)
+- Project venv with Python 3.12+
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Data Structures — Comprehensions and Generators” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Use list, tuple, dict, and set for typical ops data  
+- [ ] Write list and dict comprehensions clearly  
+- [ ] Explain iterators vs materialised lists  
+- [ ] Write a generator that streams lines  
+- [ ] Deduplicate and look up inventory efficiently
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Data Structures — Comprehensions and Generators](../assets/images/python-data-structures.svg)
+![Data structures](../assets/excalidraw/python-data-structures.svg)
 
 ## Theory
 
 ### Lists
 
-Ordered, mutable sequences: `hosts = ["web01", "web02"]`. Methods: `append`, `extend`, `sort`, `pop`. Use lists for ordered inventories and CLI argument lists for `subprocess`.
+Ordered, mutable — host lists, CLI argv copies:
+
+```python
+hosts = ["web-a", "web-b"]
+hosts.append("web-c")
+```
 
 ### Tuples
 
-Immutable sequences — good for fixed records: `("web", 8080)`. Prefer tuples as dict keys when you need composite keys.
+Ordered, immutable — fixed records, dict keys:
+
+```python
+endpoint = ("api.internal", 443)
+```
 
 ### Dictionaries
 
-Key/value maps for JSON-like configs and inventories: `{"name": "api", "replicas": 2}`. Prefer `.get(key, default)` and validate required keys explicitly.
+Key → value — inventory, labels, config maps:
+
+```python
+inventory = {"web-a": "10.0.1.10", "web-b": "10.0.1.11"}
+inventory.get("web-z", "MISSING")
+```
 
 ### Sets
 
-Unordered unique membership: useful for comparing desired vs actual host sets (`desired - actual`).
-
-### List Comprehensions
+Unique membership — dedupe tags, fast “is this allowed?”:
 
 ```python
-failed = [h for h in hosts if h["status"] != "ok"]
+regions = {"eu-west-1", "us-east-1"}
+"eu-west-1" in regions  # O(1) average
 ```
 
-Keep them readable; nest sparingly. Prefer generator expressions for large streams.
+### Choosing
 
-### Dictionary Comprehensions
+| Need | Structure |
+|------|-----------|
+| Ordered sequence | `list` |
+| Fixed record | `tuple` |
+| Lookup by name/id | `dict` |
+| Unique membership | `set` |
+
+### Comprehensions
 
 ```python
-by_name = {h["name"]: h for h in hosts}
+ips = [ip for host, ip in inventory.items() if host.startswith("web-")]
+by_region = {h: "eu-west-1" for h in hosts}
 ```
 
-Ideal for indexing inventories after a cloud SDK call.
+Keep them readable — if you need comments, use a normal loop.
 
-### Iterators
+### Iterators and generators
 
-Objects supporting `__iter__` / `__next__`. Files, `range`, and dict views are iterators — they stream without loading everything into memory.
-
-### Generators
-
-Functions with `yield` produce values lazily — perfect for multi-gigabyte logs:
+Anything you `for` over is iterable. A **generator** yields values lazily:
 
 ```python
-def lines(path: Path):
-    with path.open() as fh:
+def matching_lines(path: str, needle: str):
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
-            yield line.rstrip("\n")
+            if needle in line:
+                yield line.rstrip("\n")
 ```
+
+Use generators for large files; use lists when you need len/shuffle/reuse.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Data Structures — Comprehensions and Generators
 
 ```bash
-mkdir -p ~/rebash-python/lab05 && cd ~/rebash-python/lab05
+mkdir -p ~/rebash-python/module-05
+cd ~/rebash-python/module-05
+
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-**Focus:** build inventory list/dict/set; stream a log with a generator
-
-### Step 1 – Skeleton
+### Step 1 – Inventory dict and set dedupe
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab05 data-structures-comprehensions-and-generators")
-EOF
-chmod +x lab.py
-python3 lab.py
+cd ~/rebash-python/module-05
+source .venv/bin/activate
+
+python - <<'PY'
+raw = ["web-a", "web-b", "web-a", "db-a"]
+unique = sorted(set(raw))
+inv = {name: f"10.0.1.{i+10}" for i, name in enumerate(unique)}
+print(inv)
+print("web-a" in inv)
+PY
 ```
 
-### Step 2 – Structures and generators
+### Step 2 – Comprehension filter
 
 ```bash
-cat > inventory.json << 'EOF'
-[{"name":"web","env":"prod"},{"name":"db","env":"prod"},{"name":"bastion","env":"ops"}]
-EOF
-printf 'a\nb\na\n' > sample.log
-cat > structs.py << 'EOF'
+python - <<'PY'
+services = [
+    {"name": "api", "replicas": 3},
+    {"name": "worker", "replicas": 0},
+    {"name": "web", "replicas": 2},
+]
+live = [s["name"] for s in services if s["replicas"] > 0]
+print(live)
+PY
+```
+
+### Step 3 – Generator over a sample log
+
+```bash
+printf '%s\n' 'INFO start' 'ERROR timeout' 'INFO ok' 'ERROR 502' > sample.log
+
+cat > scan_log.py << 'EOF'
 #!/usr/bin/env python3
-import json
+from __future__ import annotations
+
+import sys
+from collections.abc import Iterator
 from pathlib import Path
 
-def lines(path: Path):
-    with path.open() as fh:
-        for line in fh:
-            yield line.rstrip("\n")
 
-hosts = json.loads(Path("inventory.json").read_text())
-by_env = {h["name"]: h["env"] for h in hosts}
-envs = {h["env"] for h in hosts}
-print(by_env)
-print(sorted(envs))
-print(list(lines(Path("sample.log"))))
+def error_lines(path: Path) -> Iterator[str]:
+    with path.open(encoding="utf-8") as fh:
+        for line in fh:
+            if "ERROR" in line:
+                yield line.rstrip("\n")
+
+
+def main() -> int:
+    path = Path("sample.log")
+    count = 0
+    for line in error_lines(path):
+        print(line)
+        count += 1
+    print(f"errors={count}", file=sys.stderr)
+    return 0 if count == 0 else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-python3 structs.py
+
+python scan_log.py; echo exit=$?
 ```
 
-### Final step – Cleanup note
+### Step 4 – dict lookup vs list scan
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+hosts = [f"host-{i}" for i in range(5000)]
+as_set = set(hosts)
+needle = "host-4200"
+print(needle in hosts)   # scans list
+print(needle in as_set)  # hash lookup
+PY
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab05/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-05/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Data Structures — Comprehensions and Generators** always combines:
+Production practice for **Data Structures — Comprehensions and Generators** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Skipping fundamentals for Data Structures — Comprehensions and Generators"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Treating lab defaults as production-ready for Data Structures — Comprehensions and Generat"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Data Structures — Comprehensions and Generators changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| `KeyError` | Missing dict key | `.get()` or validate |
+| Memory blow-up | `readlines()` on huge file | Iterate file / yield |
+| Unreadable comprehension | Too much logic | Use a for-loop |
 
 ## Summary
 
-**Data Structures — Comprehensions and Generators** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Match structure to access pattern  
+- Comprehensions for clear transforms  
+- Generators for large streams  
+- Sets/dicts for fast membership and lookup
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Data Structures — Comprehensions and Generators** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Functions — Parameters and Scope](functions-parameters-and-scope.md) *(previous)*
-- [Modules, Packages, and Dependencies](modules-packages-and-dependencies.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Modules, Packages, and Dependencies](modules-packages-and-dependencies.md)  
+- [Log Analyser lab](../labs/python-log-analyser.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [Data structures tutorial](https://docs.python.org/3/tutorial/datastructures.html)  
+- [Generators](https://docs.python.org/3/howto/functional.html#generators)

@@ -1,50 +1,79 @@
 ---
 title: "Modules, Packages, and Dependencies"
-description: "Import mechanics, the standard library, custom modules, packages, and dependency management for ops tools."
-difficulty: beginner
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+description: "Import mechanics, the standard library, custom modules, packages, and pinned dependency management for DevOps Python tools."
+difficulty: intermediate
+estimated_time: "45–60 min"
+technology: python
 category: python
-tags:
+module: "Module 6 · Modules & Packages"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
   - python
   - modules
   - packages
   - dependencies
 prerequisites:
-  - Data Structures — Comprehensions and Generators
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - python/data-structures-comprehensions-and-generators
+next:
+  - python/file-handling-pathlib-json-yaml-csv
+related:
+  - python/python-fundamentals-install-venv-and-tooling
+  - python/packaging-pyproject-and-wheels
+labs: []
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
+tags:
+  - python
+  - modules
+  - packages
+  - dependencies
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Modules, Packages, and Dependencies
 
 ## Overview
 
-A single 800-line script becomes unreviewable. Split into packages and pin dependencies early.
+Split an ops tool into importable modules, reuse the standard library first, and pin third-party dependencies in a project venv.
 
-This is **Tutorial 6** in **Module 6: Modules & Packages** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+An 800-line script is hard to review and test. Packages give you boundaries: `cli.py`, `inventory.py`, `checks.py`. Dependencies belong in a venv with pins — never “whatever pip finds today.”
+
+Complete [Data Structures](data-structures-comprehensions-and-generators.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 6 · Modules & Packages** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Data Structures — Comprehensions and Generators
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Data Structures — Comprehensions and Generators](data-structures-comprehensions-and-generators.md)
+- [Module 1 venv habits](python-fundamentals-install-venv-and-tooling.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Modules, Packages, and Dependencies” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Import stdlib and local modules correctly  
+- [ ] Lay out a small package (`mytool/`)  
+- [ ] Use `if __name__ == "__main__"` vs library imports  
+- [ ] Prefer stdlib before adding PyPI packages  
+- [ ] Pin dependencies with `requirements.txt`
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+App entrypoint imports your package, stdlib, and pinned third-party deps.
 
-![Architecture diagram for Modules, Packages, and Dependencies](../assets/images/python-package-architecture.svg)
+![Package architecture](../assets/excalidraw/python-package-architecture.svg)
 
 ## Theory
 
@@ -53,172 +82,215 @@ Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud
 ```python
 import json
 from pathlib import Path
-from mytool.lib.meta import fingerprint
+from collections import Counter
 ```
 
-Prefer absolute imports inside a package. Avoid `from module import *`.
+Prefer absolute imports inside packages. Avoid `from module import *`.
 
-### Standard Library
+### Standard library first
 
-Reach for stdlib first: `pathlib`, `json`, `subprocess`, `logging`, `argparse`, `tempfile`, `dataclasses`, `concurrent.futures`. Add third-party libraries only when they clearly reduce risk or complexity.
+Reach for `pathlib`, `json`, `subprocess`, `argparse`, `logging`, `urllib` before adding SDKs. Third-party earns its place when stdlib is awkward (YAML → `PyYAML`, rich CLIs → Typer).
 
-### Custom Modules
+### Custom modules
 
-A module is a `.py` file. Put shared helpers in `lib/` and keep `cli.py` thin. Use `if __name__ == "__main__":` only at entry points.
+A `.py` file is a module. Same directory / `PYTHONPATH` / package install makes it importable.
 
 ### Packages
 
-A **package** is a directory with `__init__.py` (or a native namespace package). Layout that scales:
+A directory with `__init__.py` (or a namespace package) groups modules:
 
 ```text
-tool/
-  pyproject.toml
-  src/tool/
-    __init__.py
-    cli.py
-    lib/
-  tests/
+healthcheck/
+  __init__.py
+  checks.py
+  cli.py
 ```
 
-### Dependency Management
+### Dependency management
 
-Pin versions in `requirements.txt` or a lockfile. Install only inside a venv. Separate runtime vs optional extras (`[dev]` for pytest). Never commit secrets; do commit the lock so CI and laptops match.
+```bash
+python -m pip install 'PyYAML==6.0.2'
+python -m pip freeze > requirements.txt
+```
+
+Document install in README: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. Later modules cover `pyproject.toml` (Module 23).
+
+### Running vs importing
+
+```python
+# healthcheck/cli.py
+def main() -> int:
+    ...
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+```
+
+Tests and other modules import `main` without executing side effects.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Modules, Packages, and Dependencies
 
 ```bash
-mkdir -p ~/rebash-python/lab06 && cd ~/rebash-python/lab06
+mkdir -p ~/rebash-python/module-06
+cd ~/rebash-python/module-06
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 ```
 
-**Focus:** create a tiny package with cli + lib; pin one dependency in requirements.txt
-
-### Step 1 – Skeleton
+### Step 1 – Package layout
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab06 modules-packages-and-dependencies")
+cd ~/rebash-python/module-06
+source .venv/bin/activate
+
+mkdir -p healthcheck
+cat > healthcheck/__init__.py << 'EOF'
+"""Tiny healthcheck package for the Module 6 lab."""
+__version__ = "0.1.0"
 EOF
-chmod +x lab.py
-python3 lab.py
-```
 
-### Step 2 – Package layout
+cat > healthcheck/checks.py << 'EOF'
+from __future__ import annotations
 
-```bash
-mkdir -p demo_tool/lib
-printf '%s\n' '' > demo_tool/__init__.py
-printf '%s\n' '' > demo_tool/lib/__init__.py
-cat > demo_tool/lib/meta.py << 'EOF'
-def fingerprint() -> str:
-    return "demo_tool-ok"
+
+def is_healthy(status: str) -> bool:
+    return status == "healthy"
 EOF
-cat > demo_tool/cli.py << 'EOF'
-from demo_tool.lib.meta import fingerprint
 
-def main() -> int:
-    print(fingerprint())
-    return 0
+cat > healthcheck/cli.py << 'EOF'
+from __future__ import annotations
+
+import sys
+
+from healthcheck.checks import is_healthy
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = argv if argv is not None else sys.argv[1:]
+    if not argv:
+        print("usage: python -m healthcheck.cli <status>", file=sys.stderr)
+        return 2
+    status = argv[0]
+    ok = is_healthy(status)
+    print("ok" if ok else "fail")
+    return 0 if ok else 1
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
 EOF
-echo 'PyYAML==6.0.2' > requirements.txt
-PYTHONPATH=. python3 -m demo_tool.cli
 ```
 
-### Final step – Cleanup note
+### Step 2 – Run as module
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+export PYTHONPATH=.
+python -m healthcheck.cli healthy; echo exit=$?
+python -m healthcheck.cli down; echo exit=$?
+```
+
+### Step 3 – Import without side effects
+
+```bash
+python - <<'PY'
+from healthcheck.checks import is_healthy
+from healthcheck import __version__
+assert is_healthy("healthy")
+print("version", __version__)
+PY
+```
+
+### Step 4 – Pin an optional dep (YAML peek)
+
+```bash
+python -m pip install 'PyYAML==6.0.2'
+python -m pip freeze | tee requirements.txt | head
+python -c "import yaml; print(yaml.__version__)"
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab06/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-06/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Modules, Packages, and Dependencies** always combines:
+Production practice for **Modules, Packages, and Dependencies** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Skipping fundamentals for Modules, Packages, and Dependencies"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Treating lab defaults as production-ready for Modules, Packages, and Dependencies"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Modules, Packages, and Dependencies changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| `ModuleNotFoundError: healthcheck` | Wrong cwd / PYTHONPATH | `export PYTHONPATH=.` or install editable later |
+| Import runs CLI | Missing `if __name__` guard | Guard side effects |
+| Works locally, fails in CI | Unpinned / missing install step | Commit requirements; install in job |
 
 ## Summary
 
-**Modules, Packages, and Dependencies** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Split tools into packages early  
+- Stdlib first; pin everything else  
+- Entry points guarded with `__main__`  
+- Same import path in tests and CLI
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Modules, Packages, and Dependencies** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Data Structures — Comprehensions and Generators](data-structures-comprehensions-and-generators.md) *(previous)*
-- [File Handling — pathlib, JSON, YAML, CSV](file-handling-pathlib-json-yaml-csv.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [File Handling — pathlib, JSON, YAML, CSV](file-handling-pathlib-json-yaml-csv.md)  
+- [Packaging — pyproject.toml and Wheels](packaging-pyproject-and-wheels.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [Modules tutorial](https://docs.python.org/3/tutorial/modules.html)  
+- [import system](https://docs.python.org/3/reference/import.html)

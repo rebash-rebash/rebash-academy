@@ -2,30 +2,36 @@ title: AWS
 icon: material/aws
 
 nav:
-  - Overview: index.md
-  - "Module 1 · Foundations":
-    - Introduction to AWS and Global Infrastructure: introduction-to-aws-and-global-infrastructure.md
-    - Accounts, Free Tier, Billing, and Cost Hygiene: accounts-free-tier-billing-and-cost-hygiene.md
-    - IAM Fundamentals: iam-fundamentals.md
-    - AWS CLI, Credentials, and Profiles: aws-cli-credentials-and-profiles.md
-  - "Module 2 · VPC Networking":
-    - VPC, Subnets, and Multi-AZ Design: vpc-subnets-and-multi-az-design.md
-    - Internet Gateways, Routes, and Egress: internet-gateways-routes-and-egress.md
-    - Security Groups and NACLs: security-groups-and-nacls.md
-    - VPC Endpoints and Private AWS Access: vpc-endpoints-and-private-aws-access.md
-  - "Module 3 · Compute":
-    - EC2 Fundamentals: ec2-fundamentals.md
-    - User Data, IMDS, and SSM Session Manager: user-data-imds-and-ssm-session-manager.md
-    - EBS Volumes, Snapshots, and Encryption: ebs-volumes-snapshots-and-encryption.md
-  - "Module 4 · Storage":
-    - S3 Fundamentals: s3-fundamentals.md
-    - S3 Security and Static Hosting: s3-security-and-static-hosting.md
-  - "Module 5 · Edge and Data":
-    - Elastic Load Balancing — ALB and NLB: elastic-load-balancing-alb-and-nlb.md
-    - Route 53 DNS and Health Checks: route-53-dns-and-health-checks.md
-    - RDS Fundamentals: rds-fundamentals.md
-    - Auto Scaling Groups and Launch Templates: auto-scaling-groups-and-launch-templates.md
-  - "Module 6 · Ops and Capstone":
-    - CloudWatch Metrics, Logs, and Alarms: cloudwatch-metrics-logs-and-alarms.md
-    - CloudTrail, Config, and Account Guardrails: cloudtrail-config-and-account-guardrails.md
-    - Lambda and Three-Tier Capstone: lambda-and-three-tier-capstone.md
+  - index.md
+  - Module 1 · AWS Fundamentals:
+    - aws-fundamentals-and-global-infrastructure.md
+  - Module 2 · Identity & Access Management:
+    - iam-identity-access-and-organizations.md
+  - Module 3 · Networking:
+    - vpc-networking-on-aws.md
+  - Module 4 · Compute:
+    - compute-ec2-asg-and-load-balancing.md
+  - Module 5 · Storage:
+    - storage-s3-ebs-efs.md
+  - Module 6 · Databases:
+    - databases-on-aws.md
+  - Module 7 · Containers:
+    - containers-ecs-eks-ecr.md
+  - Module 8 · Serverless:
+    - serverless-on-aws.md
+  - Module 9 · Monitoring & Observability:
+    - monitoring-and-observability-on-aws.md
+  - Module 10 · Security:
+    - aws-security-services.md
+  - Module 11 · Infrastructure as Code:
+    - infrastructure-as-code-on-aws.md
+  - Module 12 · CI/CD:
+    - cicd-on-aws.md
+  - Module 13 · Cost Optimisation:
+    - cost-optimisation-on-aws.md
+  - Module 14 · Reliability:
+    - reliability-and-disaster-recovery.md
+  - Module 15 · Production AWS:
+    - production-aws-landing-zones.md
+  - Module 16 · Troubleshooting:
+    - troubleshooting-aws.md

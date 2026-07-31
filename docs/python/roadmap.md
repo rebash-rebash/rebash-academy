@@ -23,7 +23,7 @@ Follow the course in order:
 7. **Interview preparation** — role-specific questions and scenarios
 8. **Certifications** — map lessons to industry exams
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![Python automation pipeline](../assets/excalidraw/python-automation-pipeline.svg)
 
 ## Modules
 

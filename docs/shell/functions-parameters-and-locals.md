@@ -46,11 +46,21 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Functions, Parameters, and Locals](../assets/images/shell-functions-locals.svg)
+![Architecture diagram for Functions, Parameters, and Locals](../assets/excalidraw/shell-functions-locals.svg)
 
 ## Theory
 
-### Function Declaration
+### What it is
+
+A **function** is a named block of commands you can call with arguments. Inside the function, positional parameters (`$1`, `$2`, `"$@"`) refer to those arguments. Functions report success or failure with `return` (an exit status from 0 to 255) and can emit data on stdout for the caller to capture. **Local variables** keep temporary state from leaking into the rest of the script. Shared helpers such as `log` and `die` become the backbone of readable ops automation.
+
+### Why it matters
+
+Copy-pasted command blocks drift apart: one path gains a timeout, another forgets quoting, and production only hits the broken copy. Functions give you a single place to fix behaviour, a clear contract for Continuous Integration (CI) callers, and smaller reviewable units. Using `local` prevents the subtle bug where a loop variable or temporary path overwrites a global and the next stage misbehaves. Libraries sourced from `lib/common.sh` let many scripts share the same logging and error style.
+
+### How it works
+
+Define functions before you call them. Prefer the `name()` form over `function name` for a consistent Bash style:
 
 ```bash
 log() {
@@ -63,23 +73,27 @@ die() {
 }
 ```
 
-Define functions before use. Prefer `name()` over `function name` for portability within Bash style guides.
+Inside a function, `$1` and `"$@"` are the function’s arguments, not the script’s — forward explicitly when you need both. Use `return N` for status. For data, print to stdout and capture with `"$(fn arg)"`. Do not mix silent side effects with captured stdout, or callers will capture log noise.
 
-### Parameters
+Declare temporaries with `local var=value`. Without `local`, assignments affect the global script scope. Group reusable helpers in a small library file and `source` it from scripts that need them. Prefer a clear order: validate inputs → transform data → perform side effects. Document exit codes for helpers that call `exit` or `die`.
 
-Inside a function, `$1`, `$2`, … and `"$@"` refer to the function’s arguments, not the script’s (unless you forward them).
+### Key concepts
 
-### Return Values
+| Idea | Practice |
+|------|----------|
+| Declaration | `name() { ... }` before first use |
+| Parameters | `"$1"`, `"$@"` inside the function |
+| Status | `return N` (0–255); data via stdout |
+| `local` | Scope variables to the function |
+| Libraries | `source lib/common.sh` for shared helpers |
 
-`return N` sets the function’s exit status (0–255). For data, print to stdout and capture with `"$(fn)"`. Do not mix silent side effects with captured stdout.
+### Common pitfalls
 
-### Local Variables
-
-`local var=value` scopes a variable to the function. Without `local`, assignments leak into the global script scope — a common production bug.
-
-### Reusable Functions
-
-Group helpers in `lib/common.sh` and `source` them. Keep functions pure where possible: validate → transform → side effect. Document exit codes for `die`-style helpers.
+- Forgetting `local` so a helper clobbers a global path or counter
+- Capturing `"$(log ...)"` and swallowing messages meant for stderr
+- Using `exit` inside a sourced library when `return` would be safer for the caller
+- Shadowing script positional parameters without documenting the hand-off
+- Defining functions after `main` calls them under `set -e` and getting “command not found”
 
 ## Hands-on Lab
 

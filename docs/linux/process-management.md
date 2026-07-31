@@ -46,67 +46,47 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Process Management](../assets/images/linux-process-lifecycle.svg)
+![Architecture diagram for Process Management](../assets/excalidraw/linux-process-lifecycle.svg)
 
 ## Theory
 
-### Viewing processes
+### What it is
+
+A **process** is a running programme with a Process ID (PID), parent, environment, and resource usage. Operators inspect processes with `ps`, `top`, or `htop`; send **signals** with `kill`/`pkill`; manage shell **jobs** (`fg`, `bg`, `Ctrl-Z`); adjust CPU scheduling priority with **nice**/**renice**; and keep work alive after logout with `nohup` — or, preferably in production, with **systemd** user or system services.
+
+### Why it matters
+
+High CPU, memory leaks, stuck deploys, and zombie parents all surface as process problems. Knowing the difference between a polite `TERM` and a forced `KILL`, and between an interactive job and a supervised service, prevents both data corruption and “I closed my laptop and the migration died” incidents. Priority tuning protects interactive control planes from batch jobs on shared hosts.
+
+### How it works
+
+`ps` takes a snapshot; `top`/`htop` refresh live. Signals request behaviour: `TERM` (15) asks for clean shutdown; `KILL` (9) cannot be caught — last resort. `pkill -f` matches command lines carefully to avoid collateral damage. Job control is per-shell: background with `&`, list with `jobs`, resume with `fg`/`bg`. Niceness ranges roughly from -20 (higher priority) to 19 (lower); unprivileged users can usually only raise niceness. `nohup` ignores hangup so a command survives terminal close, but it still lacks restart policy, dependencies, and journal integration — systemd units are the durable pattern.
+
+### Key concepts and comparisons
 
 | Tool | Role |
 |------|------|
-| `ps` | Snapshot (`ps aux`, `ps -ef`, `ps -p PID`) |
-| `top` | Interactive live view |
-| `htop` | Friendlier interactive view (if installed) |
+| `ps` | Point-in-time process list |
+| `top` / `htop` | Interactive live view |
+| `kill` / `pkill` | Send signals |
+| `nice` / `renice` | CPU scheduling priority |
+| `nohup` | Survive hangup (ad hoc) |
+| systemd service | Supervised long-running work |
 
-```bash
-ps aux --sort=-%cpu | head
-ps -ef | grep '[s]shd'
-```
+| Signal | Meaning |
+|--------|---------|
+| TERM | Graceful stop (prefer first) |
+| INT | Interrupt (like Ctrl-C) |
+| HUP | Hangup / often reload configs |
+| KILL | Force stop — no cleanup |
 
-### Signals — kill and pkill
+### Common pitfalls
 
-```bash
-kill -TERM PID
-kill -KILL PID    # last resort
-pkill -f 'pattern'
-killall -TERM name  # where available
-```
-
-Prefer `TERM` then wait; `KILL` skips cleanup.
-
-### Job control
-
-| Command | Role |
-|---------|------|
-| `jobs` | List shell jobs |
-| `fg` | Foreground a job |
-| `bg` | Background a stopped job |
-| `Ctrl-Z` | Suspend | 
-
-```bash
-sleep 300 &
-jobs
-fg %1
-```
-
-### Priority — nice / renice
-
-Lower niceness → higher priority (range typically -20..19). Non-root can only increase niceness.
-
-```bash
-nice -n 10 ./batch.sh
-renice -n 15 -p PID
-```
-
-### nohup
-
-Survive hangup when the terminal closes:
-
-```bash
-nohup ./long-job.sh > long-job.out 2>&1 &
-```
-
-Prefer `systemd --user` services or timers for production longevity over raw nohup.
+- Jumping straight to `kill -9` and leaving locks or half-written state.
+- Matching too broadly with `pkill -f` and killing the wrong processes.
+- Relying on `nohup` for production workloads that need restart and logs.
+- Misreading load average without checking run queue, I/O wait, and steal time.
+- Renicing critical daemons downward without understanding latency impact.
 
 ## Hands-on Lab
 

@@ -1,3 +1,29 @@
 title: Helm
+icon: material/package-variant
 nav:
-  - Overview: index.md
+  - index.md
+  - Module 1 · Helm Fundamentals:
+    - introduction-to-helm.md
+    - helm-architecture-and-components.md
+  - Module 2 · Installing Helm:
+    - installing-helm-and-repositories.md
+  - Module 3 · Working with Charts:
+    - working-with-helm-charts.md
+  - Module 4 · Templates:
+    - helm-templates-and-go-templating.md
+  - Module 5 · Values:
+    - helm-values-and-overrides.md
+  - Module 6 · Chart Dependencies:
+    - helm-chart-dependencies.md
+  - Module 7 · Releases:
+    - helm-releases-and-lifecycle.md
+  - Module 8 · Testing & Validation:
+    - helm-testing-and-validation.md
+  - Module 9 · Security:
+    - helm-security.md
+  - Module 10 · GitOps Integration:
+    - helm-gitops-integration.md
+  - Module 11 · Production Helm:
+    - production-helm-practices.md
+  - Module 12 · Troubleshooting:
+    - troubleshooting-helm.md

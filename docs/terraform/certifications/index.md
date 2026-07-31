@@ -14,4 +14,4 @@ tags:
 
 Browse certifications for this course from the [Academy certifications catalog](../../certifications/).
 
-Individual items appear here as they are published for the **Terraform** track.
+Individual items appear here as they are published for the **Terraform** track (including Terraform Associate).

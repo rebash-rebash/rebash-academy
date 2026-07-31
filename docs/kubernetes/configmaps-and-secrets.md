@@ -1,572 +1,248 @@
 ---
-title: ConfigMaps and Secrets
-description: Decouple configuration from container images using ConfigMaps and Secrets — inject as environment variables, command arguments, or mounted volumes.
+title: "ConfigMaps and Secrets"
+description: "Inject configuration with ConfigMaps, Secrets, environment variables, and the Downward API for Kubernetes applications."
 difficulty: intermediate
-estimated_time: "40 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "40–55 min"
+technology: kubernetes
 category: kubernetes
-tags:
+module: "Module 8 · Configuration"
+career_paths:
+  - kubernetes-engineer
+  - devops-engineer
+  - platform-engineer
+skills:
   - kubernetes
   - configmaps
   - secrets
-  - configuration
-  - twelve-factor
 prerequisites:
-  - Services and Cluster Networking
-  - Deployments — Managing Replicated Pods
-  - Pods — The Atomic Unit
+  - kubernetes/persistent-volumes-and-storage
+next:
+  - kubernetes/resource-quotas-and-limit-ranges
+related:
+  - kubernetes/kubernetes-security-hardening
+labs: []
+projects: []
+interview: interview/kubernetes
+certifications:
+  - CKAD
+  - CKS
+tags:
+  - kubernetes
+  - configmap
+  - secrets
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # ConfigMaps and Secrets
 
 ## Overview
 
-Hardcoding configuration inside container images violates the [twelve-factor app](https://12factor.net/config) principle: **store config in the environment**. Kubernetes **ConfigMaps** hold non-sensitive configuration — feature flags, log levels, config file contents. **Secrets** hold sensitive data — passwords, API tokens, TLS certificates. Both decouple configuration from images so the same container runs in dev, staging, and production with different settings.
+Mount ConfigMaps and Secrets into a Pod (env and volume) and use Downward API for pod metadata — without baking config into images.
 
-Platform engineers mount ConfigMaps as files, inject them as environment variables, or reference them in command arguments. Security teams integrate Secrets with external vaults (HashiCorp Vault, AWS Secrets Manager) via operators while keeping the Kubernetes API surface consistent.
+**ConfigMap** = non-sensitive config. **Secret** = sensitive data (still base64 in etcd — enable encryption at rest and prefer external secret stores in production).
 
-This is **Tutorial 8** in **Module 3: Configuration & Storage** of the REBASH Academy Kubernetes series. Complete [Services and Cluster Networking](services-and-cluster-networking.md) and [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md) first.
+This is a core tutorial in **Module 8 · Configuration** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
-- Completed [Services and Cluster Networking](services-and-cluster-networking.md)
-- Completed [Pods — The Atomic Unit](pods-the-atomic-unit.md) — volumes, env vars
-- Familiarity with [Environment Variables and Shell Config](../linux/environment-variables-shell-config.md)
-- A running Kubernetes cluster with kubectl configured
+- [Persistent Volumes and Storage](persistent-volumes-and-storage.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Create ConfigMaps from literals, files, and directories
-- [ ] Create Secrets and understand base64 encoding vs encryption at rest
-- [ ] Inject ConfigMaps and Secrets as environment variables
-- [ ] Mount ConfigMaps and Secrets as volumes in Pods
-- [ ] Update configuration and trigger Pod restarts when needed
-- [ ] Apply security best practices for Secret management
-- [ ] Know when to use ConfigMap vs Secret vs external secret stores
+- [ ] Create ConfigMap / Secret  
+- [ ] Inject via `envFrom` and volume mounts  
+- [ ] Use Downward API fields  
+- [ ] State Secret limitations
 
 ## Architecture
 
-ConfigMaps and Secrets live in etcd (namespace-scoped). Pods consume them via env vars or volume mounts — the kubelet syncs mounted files.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for ConfigMaps and Secrets](../assets/images/configmaps-and-secrets.svg)
+![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
 ## Theory
 
-### ConfigMaps
+### What it is
 
-ConfigMaps store key-value pairs or entire file contents as data. Maximum size is 1 MiB per ConfigMap — split large configs or use volumes backed by other storage for bigger files.
+**ConfigMaps** hold non-sensitive configuration (files, key/value settings). **Secrets** hold sensitive material (tokens, passwords, TLS keys). Both inject into Pods as environment variables or mounted files. The **Downward API** exposes Pod metadata (name, namespace, labels, resource values) without hard-coding. The goal is twelve-factor style config: images stay generic; environment-specific data lives in the cluster (or an external store).
 
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config
-  namespace: default
-data:
-  LOG_LEVEL: "info"
-  APP_MODE: "production"
-  nginx.conf: |
-    worker_processes auto;
-    events { worker_connections 1024; }
-    http {
-      server { listen 80; location / { return 200 'ok'; } }
-    }
-```
+### Why it matters
 
-Create imperatively:
+Baking config into images forces rebuilds for every environment and leaks secrets into registries. Separating config enables the same artefact across dev/stage/prod. Understanding Secret limitations matters for CKS-level security: etcd contents, RBAC read access, and encryption at rest are operational concerns, not optional polish.
 
-```bash
-kubectl create configmap app-config --from-literal=LOG_LEVEL=debug
-kubectl create configmap nginx-config --from-file=nginx.conf
-```
+### How it works (mental model)
 
-### Secrets
+1. Create ConfigMap/Secret objects (literals, files, or YAML).
+2. Reference them from a Pod/Deployment via `env`, `envFrom`, or `volumes` + `volumeMounts`.
+3. Kubelet materialises values into the container environment or filesystem.
+4. Updates to ConfigMaps/Secrets mounted as volumes can appear as file changes (depending on projection); env vars typically need a Pod restart.
+5. Downward API `fieldRef` / `resourceFieldRef` populate fields from the running Pod object.
 
-Secrets store sensitive data in `data` (base64-encoded) or `stringData` (plain text — encoded by the API server):
+Prefer external secret managers (cloud SM, Vault, ESO) for production credentials.
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: db-credentials
-type: Opaque
-stringData:
-  username: appuser
-  password: "s3cr3t-p@ss"
-```
+### Key concepts / comparisons
 
-| Secret type | Use case |
-|-------------|----------|
-| **Opaque** | Generic user-defined data |
-| **kubernetes.io/tls** | TLS cert and key pair |
-| **kubernetes.io/dockerconfigjson** | Registry pull credentials |
-| **kubernetes.io/service-account-token** | Legacy SA tokens (avoid manual creation) |
+| Object | Use |
+|--------|-----|
+| ConfigMap | Non-sensitive config |
+| Secret | Sensitive data (still base64 in API) |
+| Downward API | Pod/cluster metadata injection |
 
-!!! warning "Base64 is not encryption"
-    Secret values are base64-encoded for transport, not encrypted. Anyone with etcd access or `kubectl get secret -o yaml` permission can decode them. Enable **encryption at rest** and restrict RBAC.
+| Injection | Pros | Cons |
+|-----------|------|------|
+| Environment variables | Simple | Restart to refresh; visible in process listings |
+| Volume mounts | Good for files; can update | App must reload files |
 
-### Injecting as Environment Variables
+### Common pitfalls
 
-```yaml
-spec:
-  containers:
-    - name: app
-      image: myapp:1.0
-      env:
-        - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: app-config
-              key: LOG_LEVEL
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-credentials
-              key: password
-      envFrom:
-        - configMapRef:
-            name: app-config
-```
-
-| Method | Behaviour |
-|--------|----------|
-| `env.valueFrom.configMapKeyRef` | Single key as env var |
-| `envFrom.configMapRef` | All keys as env vars |
-| `env.valueFrom.secretKeyRef` | Single secret key as env var |
-
-**Limitation:** Environment variables do not update after Pod start. ConfigMap/Secret changes require Pod restart to pick up new env values.
-
-### Mounting as Volumes
-
-Volume mounts **can** update on disk when the ConfigMap/Secret changes (kubelet sync interval ~60 seconds). Applications must watch files or support reload.
-
-```yaml
-spec:
-  volumes:
-    - name: config-vol
-      configMap:
-        name: app-config
-        items:
-          - key: nginx.conf
-            path: nginx.conf
-    - name: secret-vol
-      secret:
-        secretName: db-credentials
-  containers:
-    - name: app
-      volumeMounts:
-        - name: config-vol
-          mountPath: /etc/config
-          readOnly: true
-        - name: secret-vol
-          mountPath: /etc/secrets
-          readOnly: true
-```
-
-Mounted Secrets appear as files named after keys (`/etc/secrets/password`). File permissions default to `0644` — use `defaultMode: 0400` for tighter permissions.
-
-### Immutable ConfigMaps and Secrets
-
-Mark resources immutable to prevent accidental updates and reduce kubelet watch load:
-
-```yaml
-metadata:
-  name: app-config
-immutable: true
-```
-
-Changes require creating a new ConfigMap/Secret and updating the Pod spec reference.
-
-### Config vs Secret — When to Use Which
-
-| Data type | Resource |
-|-----------|----------|
-| Log levels, feature flags, URLs | ConfigMap |
-| Passwords, tokens, private keys | Secret |
-| TLS certificates | Secret (type `kubernetes.io/tls`) |
-| Large non-sensitive files | ConfigMap volume or PVC |
-| Highly sensitive production secrets | External secret operator + Secret |
-
-### External Secret Management
-
-Production clusters often sync from:
-
-- **HashiCorp Vault** via CSI driver or agents
-- **AWS Secrets Manager / SSM** via External Secrets Operator
-- **GCP Secret Manager** via External Secrets Operator
-
-The Pod spec stays the same — only the Secret source changes.
-
-
-### Configuration vs confidential data
-
-ConfigMaps are for non-sensitive settings; Secrets are for credentials — and even Secrets are only base64 in etcd unless encryption at rest is enabled. Prefer file mounts with restrictive modes for secrets when applications support them, limit RBAC read access, and rotate deliberately. Never commit raw Secret manifests to Git; use sealed-secrets, SOPS, or an external secrets operator for real environments.
-
-
-### Practice mindset
-
-As you work through this tutorial, narrate *why* each control or command exists — not only *how* to type it. Production incidents are rarely solved by memorising flags; they are solved by connecting symptoms to the architecture (daemon vs kubelet, image vs running container, Service vs Endpoints, volume vs writable layer). After the lab, write three bullet notes in your own words: what you verified, what would break in production if skipped, and what you would monitor next.
+- Believing Secrets are encrypted by default — they are base64-encoded, not ciphertext, unless encryption at rest is enabled.
+- Wide RBAC allowing `get secrets` cluster-wide.
+- Huge ConfigMaps (1 MiB object limits) or embedding binaries.
+- Committing Secret YAML with real credentials into Git.
+- Expecting env-injected values to hot-reload after ConfigMap edits.
 
 ## Hands-on Lab
 
-### Step 1 – Create a ConfigMap
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-kubectl create namespace lab-config
-kubectl create configmap web-config -n lab-config \
-  --from-literal=LOG_LEVEL=debug \
-  --from-literal=APP_ENV=lab
-kubectl get configmap web-config -n lab-config -o yaml
+mkdir -p ~/rebash-k8s/module-08 && cd ~/rebash-k8s/module-08
 ```
 
-**Explanation:** Literal keys become `data` entries. Inspect the YAML to see plain-text values in ConfigMaps.
+**Focus:** hands-on practice for ConfigMaps and Secrets
 
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 2 – Create a Secret
-
-**Command:**
+### Step 1 – Skeleton
 
 ```bash
-kubectl create secret generic db-secret -n lab-config \
-  --from-literal=username=appuser \
-  --from-literal=password='lab-secret-123'
-kubectl get secret db-secret -n lab-config -o yaml
-echo "cGFzc3dvcmQ=" | base64 -d  # decode example if key visible
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: ConfigMaps and Secrets"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Explanation:** Secrets store base64-encoded values in `data`. Prefer `stringData` in manifests for readability — the API encodes on write.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 3 – Deploy with env var injection
-
-**Command:**
-
-Save as `web-with-config.yaml`:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web
-  namespace: lab-config
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: web
-  template:
-    metadata:
-      labels:
-        app: web
-    spec:
-      containers:
-        - name: web
-          image: nginx:1.25-alpine
-          env:
-            - name: LOG_LEVEL
-              valueFrom:
-                configMapKeyRef:
-                  name: web-config
-                  key: LOG_LEVEL
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: db-secret
-                  key: username
-          command: ["/bin/sh", "-c"]
-          args:
-            - echo "LOG_LEVEL=$LOG_LEVEL DB_USER=$DB_USER"; nginx -g 'daemon off;'
-```
+### Step 2 – Core exercise
 
 ```bash
-kubectl apply -f web-with-config.yaml
-kubectl logs -n lab-config -l app=web
-```
-
-**Expected output:**
-
-```text
-LOG_LEVEL=debug DB_USER=appuser
-```
-
-### Step 4 – Mount ConfigMap as a volume
-
-**Command:**
-
-Save as `web-config-volume.yaml`:
-
-```yaml
+mkdir -p ~/rebash-k8s/module-08 && cd ~/rebash-k8s/module-08
+kubectl create configmap rebash-cfg --from-literal=APP_ENV=lab
+kubectl create secret generic rebash-secret --from-literal=token=demo-token
+cat > pod.yaml << 'EOF'
 apiVersion: v1
-kind: ConfigMap
+kind: Pod
 metadata:
-  name: nginx-html
-  namespace: lab-config
-data:
-  index.html: |
-    <html><body><h1>ConfigMap Volume Lab</h1></body></html>
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web-vol
-  namespace: lab-config
+  name: rebash-cfg
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: web-vol
-  template:
-    metadata:
-      labels:
-        app: web-vol
-    spec:
-      volumes:
-        - name: html
-          configMap:
-            name: nginx-html
-      containers:
-        - name: nginx
-          image: nginx:1.25-alpine
-          volumeMounts:
-            - name: html
-              mountPath: /usr/share/nginx/html/index.html
-              subPath: index.html
-          ports:
-            - containerPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: web-vol
-  namespace: lab-config
-spec:
-  selector:
-    app: web-vol
-  ports:
-    - port: 80
-      targetPort: 80
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["sh", "-c", "env | grep -E 'APP_|TOKEN|POD_' ; sleep 3600"]
+      envFrom:
+        - configMapRef: { name: rebash-cfg }
+      env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef: { name: rebash-secret, key: token }
+        - name: POD_NAME
+          valueFrom:
+            fieldRef: { fieldPath: metadata.name }
+EOF
+kubectl apply -f pod.yaml
+kubectl wait --for=condition=Ready pod/rebash-cfg --timeout=60s
+kubectl logs rebash-cfg
+kubectl delete -f pod.yaml configmap/rebash-cfg secret/rebash-secret
 ```
+
+### Final step – Cleanup note
 
 ```bash
-kubectl apply -f web-config-volume.yaml
-kubectl run curl-test --image=curlimages/curl:8.5.0 -n lab-config --restart=Never --rm -i -- \
-  curl -s http://web-vol
+# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected output:**
-
-```html
-<html><body><h1>ConfigMap Volume Lab</h1></body></html>
-```
-
-### Step 5 – Update ConfigMap and observe behaviour
-
-**Command:**
-
-```bash
-kubectl patch configmap web-config -n lab-config -p '{"data":{"LOG_LEVEL":"trace"}}'
-kubectl logs -n lab-config -l app=web --tail=1
-kubectl rollout restart deployment/web -n lab-config
-kubectl logs -n lab-config -l app=web --tail=1
-```
-
-**Explanation:** Env vars are set at Pod creation — patch alone does not update running Pods. Restart the Deployment to pick up changes.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 6 – Create a TLS Secret
-
-**Command:**
-
-```bash
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout tls.key -out tls.crt -subj "/CN=lab.local"
-kubectl create secret tls web-tls -n lab-config --cert=tls.crt --key=tls.key
-kubectl describe secret web-tls -n lab-config
-rm -f tls.key tls.crt
-```
-
-**Explanation:** TLS Secrets store `tls.crt` and `tls.key`. Ingress controllers reference these for HTTPS termination.
-
-
-**Expected result:** Commands complete successfully and match the lab intent described above.
-
-### Step 7 – Clean up
-
-**Command:**
-
-```bash
-kubectl delete namespace lab-config
-```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| ConfigMap | Pod consumes ConfigMap data as env or volume |
-| Secret | Pod consumes Secret data; raw Secret not committed to Git |
-| Update behaviour | You observed how updates propagate (or require restart) |
-| Cleanup | Lab ConfigMaps/Secrets/Pods deleted |
+- [ ] Lab commands run under `~/rebash-k8s/module-08/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `kubectl create configmap` | Create ConfigMap | `kubectl create configmap cfg --from-literal=KEY=val` |
-| `kubectl create secret generic` | Create Opaque Secret | `kubectl create secret generic sec --from-literal=PASS=x` |
-| `kubectl create secret tls` | Create TLS Secret | `kubectl create secret tls tls --cert=c.crt --key=c.key` |
-| `kubectl get configmap -o yaml` | Export ConfigMap | `kubectl get cm app-config -o yaml` |
-| `kubectl rollout restart` | Restart Pods after config change | `kubectl rollout restart deployment/web` |
+Production practice for **ConfigMaps and Secrets** always combines:
 
-### Complete Deployment with ConfigMap volume and Secret env
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: api
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: api
-  template:
-    metadata:
-      labels:
-        app: api
-    spec:
-      volumes:
-        - name: app-config
-          configMap:
-            name: api-config
-      containers:
-        - name: api
-          image: myapi:2.0
-          envFrom:
-            - secretRef:
-                name: api-secrets
-          volumeMounts:
-            - name: app-config
-              mountPath: /etc/api/config.yaml
-              subPath: config.yaml
-              readOnly: true
-```
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Never store credentials in ConfigMaps — use Secrets or an external secret manager
-- Enable encryption at rest for Secrets in etcd
-- Prefer mounting Secrets as files with restrictive modes over environment variables when practical
-- RBAC-limit `get/list/watch` on Secrets; many roles over-grant read access
-- Rotate Secrets and update workloads deliberately — stale mounts are a common outage and security gap
-- Avoid committing raw Secret YAML to Git; use sealed-secrets/SOPS/ESO patterns instead
-
+- Treat credentials and tokens for kubernetes as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Storing secrets in ConfigMaps"
-    ConfigMaps are not designed for sensitive data. Use Secrets (with encryption at rest and RBAC) or external vaults. Never commit Secrets to Git in plain text.
+!!! warning "Believing Secrets are encrypted by default — they are base64-encoded, not ciphertext, unle"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Expecting env vars to update live"
-    Environment variables are injected at Pod start. Updating a ConfigMap does not change running container env — restart Pods or use volume mounts with app reload support.
+!!! warning "Wide RBAC allowing `get secrets` cluster-wide."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Committing Secret manifests to Git"
-    Even base64 is trivially decoded. Use Sealed Secrets, SOPS, or External Secrets Operator for GitOps workflows.
-
-!!! warning "Oversized ConfigMaps"
-    The 1 MiB limit applies per ConfigMap. Split large configs or use init containers to fetch configuration from object storage.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Separate config by environment with namespaces"
-    Use `dev`, `staging`, `prod` namespaces with identically named ConfigMaps containing environment-specific values.
-
-!!! tip "Mark production ConfigMaps immutable"
-    `immutable: true` prevents accidental kubectl edits and reduces control plane load on large clusters.
-
-!!! tip "Use subPath carefully"
-    subPath mounts do not receive ConfigMap updates. Use full directory mounts when hot-reload is required.
-
-!!! tip "Restrict Secret access with RBAC"
-    Grant `get/list` on Secrets only to service accounts that need them. Audit with [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md).
+- Encode ConfigMaps and Secrets changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `CreateContainerConfigError` | Missing ConfigMap/Secret reference | Verify resource exists in same namespace |
-| Env var empty | Wrong key name | `kubectl get cm -o yaml`; match key exactly |
-| Volume mount empty | Wrong key in `items` | Check ConfigMap keys vs volume `items.path` |
-| Config change not reflected | Env injection (no hot reload) | `kubectl rollout restart deployment/...` |
-| Secret decode in logs | Env vars visible in `/proc` | Prefer file mounts; use external secrets |
-| Permission denied on secret file | defaultMode too restrictive | Set `defaultMode: 0440` appropriately |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **ConfigMaps** store non-sensitive configuration; **Secrets** store sensitive data
-- Inject via **environment variables** (static after start) or **volume mounts** (can sync on update)
-- Base64 encoding is **not encryption** — enable encryption at rest and strict RBAC
-- **Immutable** ConfigMaps/Secrets prevent drift and reduce kubelet overhead
-- Production teams integrate **External Secrets Operator** with cloud vaults
-- Next: persist data beyond Pod lifecycle in [Persistent Volumes and Storage](persistent-volumes-and-storage.md)
+**ConfigMaps and Secrets** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What is the difference between a ConfigMap and a Secret?
-2. How do you inject a ConfigMap into a Pod as an environment variable?
-3. Why does updating a ConfigMap not automatically update env vars in a running Pod?
-4. Is base64 encoding sufficient to protect Secrets?
-5. What is the maximum size of a ConfigMap?
-6. When would you mount a ConfigMap as a volume instead of using env vars?
-7. What does `immutable: true` on a ConfigMap do?
-8. How do TLS Secrets differ from Opaque Secrets?
-9. Name two tools for managing Secrets in GitOps workflows.
-10. What is `subPath` and how does it affect ConfigMap updates?
+1. How does **ConfigMaps and Secrets** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 3, and 4)"
-
-    **Q1 — ConfigMap vs Secret:** ConfigMaps hold non-sensitive configuration like log levels and config files. Secrets hold sensitive data like passwords and TLS keys. Secrets are base64-encoded and intended for tighter RBAC and optional encryption at rest, but both are API objects stored in etcd.
-
-    **Q3 — Env var updates:** The kubelet sets environment variables when the container starts. It does not re-inject env vars when the ConfigMap changes. Volume mounts can sync file content periodically, but env vars require Pod restart to pick up new values.
-
-    **Q4 — Base64 security:** No. Base64 is encoding for transport, not encryption. Anyone with read access to the Secret can decode values instantly. Enable encryption at rest, restrict RBAC, and use external secret managers for production.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Kubernetes – Category Overview](index.md)
-- [Services and Cluster Networking](services-and-cluster-networking.md) *(previous)*
-- [Persistent Volumes and Storage](persistent-volumes-and-storage.md) *(next)*
-- [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
-- [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
-- [Volumes and Persistent Storage](../docker/volumes-and-persistent-storage.md)
-- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
-- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Resource Quotas and LimitRanges](resource-quotas-and-limit-ranges.md)
 
 ## References
 
-- [ConfigMaps documentation](https://kubernetes.io/docs/concepts/configuration/configmap/)
-- [Secrets documentation](https://kubernetes.io/docs/concepts/configuration/secret/)
-- [Encrypting Secret Data at Rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/)
-- [External Secrets Operator](https://external-secrets.io/)
+- [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/) · [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)

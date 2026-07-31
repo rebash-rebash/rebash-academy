@@ -1,114 +1,88 @@
 ---
 title: Overview
-description: "AWS learning track — 20 tutorials from account foundations through VPC, EC2, S3, load balancing, and a three-tier capstone. Free Tier and LocalStack-friendly labs."
+description: "AWS for Cloud & DevOps Engineers — 16 modules from global infrastructure through IAM, VPC, compute, containers, serverless, security, IaC, cost, and production landing zones."
 difficulty: beginner
-estimated_time: "Varies"
+estimated_time: "12–16 weeks"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-31"
 category: aws
 tags:
   - aws
   - cloud
+  - devops
+  - course
 comments: false
 ---
 
-# AWS
+# AWS for Cloud & DevOps Engineers
 
-Amazon Web Services — compute, storage, networking, IAM, and operations for DevOps engineers.
+**Duration:** 12–16 weeks · **Difficulty:** Beginner → Advanced
+{ .ra-facts }
 
-## Overview
+Production Amazon Web Services (AWS) — design, deploy, secure, operate, and optimise cloud environments for Cloud, DevOps, Platform, and SRE roles.
 
-The REBASH Academy **AWS** track is a structured, 20-tutorial curriculum. It sits **immediately after [Networking](../networking/index.md)** in the [DevOps Engineer path](../career-paths/devops-engineer/index.md). Labs support a real **Free Tier** account and, where CLI-shaped, **LocalStack / dry-run** alternatives. Every resource you create should be destroyed; create a billing alarm before you launch EC2 or RDS.
-
-!!! tip "Prerequisites"
-    Finish [Linux](../linux/index.md) and [Networking](../networking/index.md) first. [Terraform](../terraform/index.md) is the recommended follow-on to automate what you learn here — it is not required for Module 1.
+!!! tip "Course status"
+    Curriculum follows the REBASH AWS technology prompt (**16 modules**). Tutorials use **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Regenerate with `python3 scripts/generate-excalidraw-svg.py`. Start with [AWS Fundamentals](aws-fundamentals-and-global-infrastructure.md).
 
 !!! warning "Cost hygiene"
-    Free Tier has limits. **NAT Gateways**, idle **ALBs**, and **RDS** are common bill surprises. Prefer SSM Session Manager over public SSH, avoid NAT in mandatory labs, and destroy resources at the end of every session.
+    Prefer Free Tier and destroy resources after labs. **NAT Gateways**, idle **ALBs**, and **RDS** are common bill surprises. Create a billing alarm before you launch paid services.
 
-## Modules and tutorials
+## 1. Course overview
 
-### Module 1 – Foundations
+### Purpose
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 1 | [Introduction to AWS and Global Infrastructure](introduction-to-aws-and-global-infrastructure.md) | Beginner | 35 min |
-| 2 | [Accounts, Free Tier, Billing, and Cost Hygiene](accounts-free-tier-billing-and-cost-hygiene.md) | Beginner | 40 min |
-| 3 | [IAM Fundamentals](iam-fundamentals.md) | Beginner | 50 min |
-| 4 | [AWS CLI, Credentials, and Profiles](aws-cli-credentials-and-profiles.md) | Beginner | 40 min |
+Build production AWS fluency: global infrastructure, IAM, VPC design, compute and data services, containers and serverless, observability, security, Infrastructure as Code (IaC), CI/CD, cost control, reliability, and multi-account landing zones.
 
-### Module 2 – VPC Networking
+### Target roles
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 5 | [VPC, Subnets, and Multi-AZ Design](vpc-subnets-and-multi-az-design.md) | Intermediate | 50 min |
-| 6 | [Internet Gateways, Routes, and Egress](internet-gateways-routes-and-egress.md) | Intermediate | 45 min |
-| 7 | [Security Groups and NACLs](security-groups-and-nacls.md) | Intermediate | 45 min |
-| 8 | [VPC Endpoints and Private AWS Access](vpc-endpoints-and-private-aws-access.md) | Intermediate | 45 min |
+Cloud Engineer · DevOps · Platform · SRE · DevSecOps · Infrastructure · Solutions Architect
 
-### Module 3 – Compute
+### Prerequisites
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 9 | [EC2 Fundamentals](ec2-fundamentals.md) | Intermediate | 50 min |
-| 10 | [User Data, IMDS, and SSM Session Manager](user-data-imds-and-ssm-session-manager.md) | Intermediate | 55 min |
-| 11 | [EBS Volumes, Snapshots, and Encryption](ebs-volumes-snapshots-and-encryption.md) | Intermediate | 45 min |
+- [Linux](../linux/index.md) · [Networking](../networking/index.md) · [Git](../git/index.md)
+- [Docker](../docker/index.md)
+- [Kubernetes](../kubernetes/index.md) and [Terraform](../terraform/index.md) recommended for Modules 7 and 11+
 
-### Module 4 – Storage
+### Capstone outcomes
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 12 | [S3 Fundamentals](s3-fundamentals.md) | Beginner | 45 min |
-| 13 | [S3 Security and Static Hosting](s3-security-and-static-hosting.md) | Intermediate | 50 min |
+Secure networking · IAM governance · EKS/ECS · serverless patterns · CI/CD · monitoring · backup/DR · cost optimisation · multi-account landing zone
 
-### Module 5 – Edge and Data
+## 2. Modules
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 14 | [Elastic Load Balancing — ALB and NLB](elastic-load-balancing-alb-and-nlb.md) | Intermediate | 55 min |
-| 15 | [Route 53 DNS and Health Checks](route-53-dns-and-health-checks.md) | Intermediate | 45 min |
-| 16 | [RDS Fundamentals](rds-fundamentals.md) | Intermediate | 50 min |
-| 17 | [Auto Scaling Groups and Launch Templates](auto-scaling-groups-and-launch-templates.md) | Intermediate | 50 min |
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | AWS fundamentals | [Global infrastructure](aws-fundamentals-and-global-infrastructure.md) |
+| 2 | IAM | [Identity & access](iam-identity-access-and-organizations.md) |
+| 3 | Networking | [VPC networking](vpc-networking-on-aws.md) |
+| 4 | Compute | [EC2 · ASG · LB](compute-ec2-asg-and-load-balancing.md) |
+| 5 | Storage | [S3 · EBS · EFS](storage-s3-ebs-efs.md) |
+| 6 | Databases | [RDS · DynamoDB](databases-on-aws.md) |
+| 7 | Containers | [ECS · EKS · ECR](containers-ecs-eks-ecr.md) |
+| 8 | Serverless | [Lambda & events](serverless-on-aws.md) |
+| 9 | Monitoring | [Observability](monitoring-and-observability-on-aws.md) |
+| 10 | Security | [Security services](aws-security-services.md) |
+| 11 | IaC | [Terraform · CFN · CDK](infrastructure-as-code-on-aws.md) |
+| 12 | CI/CD | [Pipelines on AWS](cicd-on-aws.md) |
+| 13 | Cost | [Cost optimisation](cost-optimisation-on-aws.md) |
+| 14 | Reliability | [HA & DR](reliability-and-disaster-recovery.md) |
+| 15 | Production | [Landing zones](production-aws-landing-zones.md) |
+| 16 | Troubleshooting | [Troubleshoot AWS](troubleshooting-aws.md) |
 
-### Module 6 – Ops and Capstone
+## 3. Practice
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 18 | [CloudWatch Metrics, Logs, and Alarms](cloudwatch-metrics-logs-and-alarms.md) | Intermediate | 45 min |
-| 19 | [CloudTrail, Config, and Account Guardrails](cloudtrail-config-and-account-guardrails.md) | Advanced | 50 min |
-| 20 | [Lambda and Three-Tier Capstone](lambda-and-three-tier-capstone.md) | Advanced | 60 min |
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
 
-**Total estimated time:** ~15 hours of hands-on learning
+## Diagrams
 
-## Learning Objectives
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```
 
-After completing this track, you will be able to:
+## Related
 
-- [ ] Navigate Regions, AZs, and the shared responsibility model
-- [ ] Secure an account with MFA, IAM roles, and billing alarms
-- [ ] Design multi-AZ VPCs with security groups and private API access
-- [ ] Run EC2 with SSM (not public SSH) and manage EBS safely
-- [ ] Use S3 with Block Public Access and understand static hosting patterns
-- [ ] Explain ALB vs NLB, Route 53, RDS basics, and Auto Scaling
-- [ ] Use CloudWatch and CloudTrail for operations and audit
-- [ ] Sketch a three-tier architecture and hand off to Terraform
-
-## Who Is This For?
-
-| Audience | Benefit |
-|----------|---------|
-| **DevOps / SRE** | Operate AWS the way production teams do — IAM, VPC, evidence-first triage |
-| **Cloud engineers** | Build Free Tier labs without surprise bills |
-| **Developers** | Understand where apps, load balancers, and data stores live |
-| **Students** | Job-ready AWS fundamentals after Networking |
-
-## Related Sections
-
-- [Networking](../networking/index.md) — VPC concepts before AWS specifics
-- [Linux](../linux/index.md) — host skills for EC2
-- [Terraform](../terraform/index.md) — automate this track next
-- [AWS Cheat Sheet](../cheatsheets/aws.md)
-- [AWS Interview Prep](../interview/aws.md)
-- [AWS Fundamentals Quiz](../quizzes/aws-fundamentals.md)
-- Labs: [IAM + VPC Triage](../labs/aws-iam-vpc-triage.md) · [SSM + S3](../labs/aws-ssm-s3.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [Networking](../networking/index.md) · [Linux](../linux/index.md) · [Docker](../docker/index.md)
+- [Kubernetes](../kubernetes/index.md) · [Terraform](../terraform/index.md)
+- [Azure](../azure/index.md) · [GCP](../gcp/index.md)
+- [Cloud Engineer path](../career-paths/cloud-engineer/index.md)

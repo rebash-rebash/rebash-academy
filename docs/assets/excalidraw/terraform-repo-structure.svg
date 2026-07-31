@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="830" height="180"
+     viewBox="0 0 830 180" role="img" aria-label="terraform-repo-structure">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Production repository structure</text>
+
+  <path d="M 52.2,73.8 L 213.8,73.1 Q 223.8,73.1 223.8,83.1 L 222.5,132.4 Q 222.5,142.4 212.5,142.4 L 52.8,142.3 Q 42.8,142.3 42.8,132.3 L 42.2,83.8 Q 42.2,73.8 52.2,73.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.2,69.8 L 209.3,69.4 Q 219.3,69.4 219.3,79.4 L 220.2,130.0 Q 220.2,140.0 210.2,140.0 L 49.5,140.0 Q 39.5,140.0 39.5,130.0 L 40.2,79.8 Q 40.2,69.8 50.2,69.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="130.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">modules/</text>
+  <text x="130.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">reusable</text>
+
+
+  <path d="M 263.1,73.2 L 423.4,72.3 Q 433.4,72.3 433.4,82.3 L 432.7,132.7 Q 432.7,142.7 422.7,142.7 L 263.0,142.5 Q 253.0,142.5 253.0,132.5 L 253.1,83.2 Q 253.1,73.2 263.1,73.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 259.6,70.3 L 420.5,69.4 Q 430.5,69.4 430.5,79.4 L 429.6,129.7 Q 429.6,139.7 419.6,139.7 L 259.2,139.2 Q 249.2,139.2 249.2,129.2 L 249.6,80.3 Q 249.6,70.3 259.6,70.3 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="340.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">envs/dev|prod</text>
+  <text x="340.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">roots</text>
+
+
+  <path d="M 472.4,72.1 L 612.3,73.3 Q 622.3,73.3 622.3,83.3 L 622.2,132.6 Q 622.2,142.6 612.2,142.6 L 473.6,142.0 Q 463.6,142.0 463.6,132.0 L 462.4,82.1 Q 462.4,72.1 472.4,72.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 470.0,69.7 L 609.4,70.1 Q 619.4,70.1 619.4,80.1 L 620.4,129.4 Q 620.4,139.4 610.4,139.4 L 469.8,139.5 Q 459.8,139.5 459.8,129.5 L 460.0,79.7 Q 460.0,69.7 470.0,69.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="540.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">CI</text>
+  <text x="540.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">plan/apply</text>
+
+
+  <path d="M 663.8,72.6 L 783.3,72.1 Q 793.3,72.1 793.3,82.1 L 793.7,133.7 Q 793.7,143.7 783.7,143.7 L 663.2,143.3 Q 653.2,143.3 653.2,133.3 L 653.8,82.6 Q 653.8,72.6 663.8,72.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 660.9,70.2 L 780.6,69.6 Q 790.6,69.6 790.6,79.6 L 790.4,130.2 Q 790.4,140.2 780.4,140.2 L 659.1,139.4 Q 649.1,139.4 649.1,129.4 L 650.9,80.2 Q 650.9,70.2 660.9,70.2 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="720.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Policy</text>
+  <text x="720.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">gates</text>
+
+</svg>

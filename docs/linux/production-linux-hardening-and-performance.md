@@ -44,34 +44,45 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Production Linux — Hardening and Performance](../assets/images/linux-production-hardening.svg)
+![Architecture diagram for Production Linux — Hardening and Performance](../assets/excalidraw/linux-production.svg)
 
 ## Theory
 
-### Linux hardening
+### What it is
 
-- Patch cadence and reboot windows
-- SSH hardening + host firewall + cloud SG
-- Minimal packages; no compilers on prod if policy says so
-- MAC (SELinux/AppArmor) enforcing
-- Auditd / central logs; time sync (chrony)
-- Separate disks for data; encrypted volumes where required
+**Production hardening** reduces attack surface and increases accountability: patch cadence, SSH and firewall baselines, minimal packages, Mandatory Access Control (MAC) enforcing, audit and central logs, time sync, and encrypted or separated data volumes. **Performance tuning** adjusts kernel and application settings only with evidence — sysctl values, instance sizing, and IOPS classes — recorded in configuration management. **Capacity planning** and operational excellence (golden images, change control, game days) keep systems reliable as load grows.
 
-### Performance tuning
+### Why it matters
 
-Tune only with evidence: sysctl (`vm.swappiness`, network buffers), CPU governor (cloud usually managed), application pools, disk IOPS classes. Document every sysctl in config management.
+Unpatched, snowflake hosts fail audits and fail at 3 a.m. Tuning without metrics creates mysterious regressions. Hardening and performance are not opposites: removing unused services often improves both security and noise. SRE and platform teams need a written baseline so every new image ships sane defaults.
 
-### Capacity planning
+### How it works
 
-Track trends: CPU, memory, disk, inodes, network. Right-size instances; prefer horizontal scale for stateless tiers.
+Patch on a schedule with reboot windows for kernels. Enforce key-only SSH, host firewalls aligned with cloud security groups, and SELinux/AppArmor in enforcing mode. Run chrony for clock sync — TLS and logs depend on it. Separate OS and data disks; encrypt when policy requires. For performance, measure first (`vmstat`, `iostat`, `sar`, app Service Level Indicators (SLIs)), then change one knob (for example `vm.swappiness` or connection pool size) and document rollback. Capacity tracks trends for CPU, memory, disk, inodes, and network; prefer horizontal scale for stateless tiers. Monitor with alerts that link to runbooks; practise restores and failure modes.
 
-### Monitoring and logging
+### Key concepts and comparisons
 
-Host metrics + logs + alerts with runbooks. SLOs beat vanity dashboards.
+| Area | Baseline practise |
+|------|-------------------|
+| Patching | Cadence + reboot policy |
+| Access | SSH hardened, least sudo |
+| MAC / audit | Enforcing + central logs |
+| Performance | Evidence-led sysctl/app tuning |
+| Capacity | Trends + headroom alerts |
+| Ops excellence | Images as code, blameless reviews |
 
-### Operational excellence
+| Tune when | Avoid when |
+|-----------|------------|
+| Clear saturation/error signal | “Folklore” values from blogs |
+| Change is reversible and owned | One-off SSH edits on prod |
 
-Immutable golden images, config as code, change tickets, blameless postmortems, game days for failure modes.
+### Common pitfalls
+
+- Copying sysctl stacks from the internet onto every fleet.
+- Disabling MAC or audit “temporarily” and never re-enabling.
+- Alerting on vanity metrics without runbooks or SLOs.
+- Right-sizing once and never revisiting after traffic growth.
+- Treating golden images as optional while snowflake hosts multiply.
 
 ## Hands-on Lab
 

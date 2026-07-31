@@ -44,51 +44,44 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for SSH and Remote Access](../assets/images/linux-ssh-access.svg)
+![Architecture diagram for SSH and Remote Access](../assets/excalidraw/linux-ssh-access.svg)
 
 ## Theory
 
-### SSH basics
+### What it is
 
-```bash
-ssh user@host
-ssh -i ~/.ssh/id_ed25519 user@host
-ssh -o StrictHostKeyChecking=accept-new user@host
-```
+**Secure Shell (SSH)** is the standard encrypted remote login and command channel for Linux servers. Clients authenticate with keys (preferred) or passwords; the server process `sshd` enforces configuration from `/etc/ssh/sshd_config`. Day-to-day ops also use SSH for file copy (`scp`, `rsync` over SSH) and local port forwarding to reach private services through a bastion.
 
-Client config (`~/.ssh/config`):
+### Why it matters
 
-```text
-Host bastion
-  HostName bastion.example.com
-  User ubuntu
-  IdentityFile ~/.ssh/id_ed25519
-```
+Almost every cloud VM, bastion, and jump host interaction starts with SSH. Weak key hygiene, agent forwarding to untrusted hosts, or ad-hoc `StrictHostKeyChecking=no` habits create lasting security debt. Fluent client configuration (`~/.ssh/config`) reduces errors under pressure and makes automation (`ssh host 'cmd'`) reliable for deploys and incident checks.
 
-### Keys (access fundamentals)
+### How it works
 
-```bash
-ssh-keygen -t ed25519 -a 100 -f ~/.ssh/id_ed25519_lab -C 'rebash-lab'
-ssh-copy-id -i ~/.ssh/id_ed25519_lab.pub user@host
-```
+`ssh user@host` opens a session; `-i` selects an identity file. Generate keys with `ssh-keygen` (Ed25519 is a strong default), install the public key in `~/.ssh/authorized_keys` on the server (`ssh-copy-id` helps). Client `Host` stanzas set hostname aliases, users, and keys. Host key verification protects against impersonation — accept new keys deliberately. `scp`/`rsync -avz` copy files; `ssh -L local:host:port` forwards a local port through the tunnel. Remote one-liners (`ssh host 'hostname; uptime'`) are the basis of many orchestration wrappers. Hardening (disable passwords, restrict users) is covered later; here the goal is correct, key-based access.
 
-Prefer keys over passwords. Agent forwarding is convenient and risky — avoid on untrusted hosts.
+### Key concepts and comparisons
 
-### Copy and tunnels
+| Method | Use |
+|--------|-----|
+| Password auth | Avoid on internet-facing hosts |
+| Public-key auth | Default for production |
+| Certificate auth | Short-lived access at scale (advanced) |
 
-```bash
-scp file user@host:/tmp/
-rsync -avz ./dir/ user@host:/tmp/dir/
-ssh -L 8080:127.0.0.1:80 user@host
-```
+| Tool | Role |
+|------|------|
+| `ssh` | Interactive / remote command |
+| `scp` | Simple file copy |
+| `rsync` over SSH | Efficient sync and resumes |
+| Local forward `-L` | Reach private HTTP/admin ports |
 
-### Server side (preview)
+### Common pitfalls
 
-`sshd` reads `/etc/ssh/sshd_config`. Hardening (disable password auth, restrict users, AllowUsers) is covered in Module 13 — here, verify you can log in and run remote commands:
-
-```bash
-ssh user@host 'hostname; uptime'
-```
+- Disabling host key checks globally “to make CI pass”.
+- Forwarding the agent to hosts you do not fully trust.
+- Leaving private keys world-readable or checking them into git.
+- Confusing bastion access with direct VPC connectivity — routes still matter after login.
+- Editing `sshd_config` and reloading without keeping a second session open.
 
 ## Hands-on Lab
 

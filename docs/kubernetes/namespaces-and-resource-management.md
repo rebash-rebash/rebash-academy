@@ -54,7 +54,7 @@ By the end of this tutorial, you will be able to:
 
 Namespaces sit logically above workloads. The API server enforces quotas at admission time; the scheduler respects requests and limits on each node.
 
-![Architecture diagram for Namespaces and Resource Management](../assets/images/namespaces-and-resource-management.svg)
+![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
 ## Theory
 

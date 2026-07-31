@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="220"
+     viewBox="0 0 840 220" role="img" aria-label="gha-architecture">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">GitHub Actions architecture</text>
+
+  <path d="M 53.4,73.7 L 192.4,72.2 Q 202.4,72.2 202.4,82.2 L 203.7,132.5 Q 203.7,142.5 193.7,142.5 L 53.2,143.0 Q 43.2,143.0 43.2,133.0 L 43.4,83.7 Q 43.4,73.7 53.4,73.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.7,71.0 L 189.7,69.4 Q 199.7,69.4 199.7,79.4 L 200.9,130.3 Q 200.9,140.3 190.9,140.3 L 49.3,140.9 Q 39.3,140.9 39.3,130.9 L 39.7,81.0 Q 39.7,71.0 49.7,71.0 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">GitHub</text>
+  <text x="120.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">events · PRs</text>
+
+
+  <path d="M 253.9,73.6 L 412.4,72.4 Q 422.4,72.4 422.4,82.4 L 422.0,134.0 Q 422.0,144.0 412.0,144.0 L 253.3,142.6 Q 243.3,142.6 243.3,132.6 L 243.9,83.6 Q 243.9,73.6 253.9,73.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 250.6,69.4 L 409.6,69.6 Q 419.6,69.6 419.6,79.6 L 421.0,130.2 Q 421.0,140.2 411.0,140.2 L 249.7,139.1 Q 239.7,139.1 239.7,129.1 L 240.6,79.4 Q 240.6,69.4 250.6,69.4 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="330.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Actions</text>
+  <text x="330.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">workflows</text>
+
+
+  <path d="M 472.4,72.3 L 612.0,73.5 Q 622.0,73.5 622.0,83.5 L 622.7,132.6 Q 622.7,142.6 612.7,142.6 L 473.1,142.5 Q 463.1,142.5 463.1,132.5 L 462.4,82.3 Q 462.4,72.3 472.4,72.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 470.7,69.3 L 610.1,70.1 Q 620.1,70.1 620.1,80.1 L 619.9,130.1 Q 619.9,140.1 609.9,140.1 L 469.7,139.9 Q 459.7,139.9 459.7,129.9 L 460.7,79.3 Q 460.7,69.3 470.7,69.3 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="540.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Runners</text>
+  <text x="540.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">hosted / self</text>
+
+
+  <path d="M 673.9,73.0 L 793.1,73.0 Q 803.1,73.0 803.1,83.0 L 802.4,132.8 Q 802.4,142.8 792.4,142.8 L 672.6,142.7 Q 662.6,142.7 662.6,132.7 L 663.9,83.0 Q 663.9,73.0 673.9,73.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 669.6,69.8 L 790.6,69.9 Q 800.6,69.9 800.6,79.9 L 800.0,129.7 Q 800.0,139.7 790.0,139.7 L 669.2,140.7 Q 659.2,140.7 659.2,130.7 L 659.6,79.8 Q 659.6,69.8 669.6,69.8 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="730.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Targets</text>
+  <text x="730.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cloud · k8s</text>
+
+
+  <path d="M 200.0,105.0 L 213.6,104.8 L 226.3,106.1 L 240.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,105.0 L 233.1,109.0 M 240.0,105.0 L 233.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 420.0,105.0 L 434.4,104.4 L 447.4,105.0 L 460.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 460.0,105.0 L 453.1,109.0 M 460.0,105.0 L 453.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 620.0,105.0 L 633.3,105.2 L 647.0,105.6 L 660.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 660.0,105.0 L 653.1,109.0 M 660.0,105.0 L 653.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="420.0" y="180.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">YAML in .github/workflows drives the whole delivery loop</text>
+</svg>

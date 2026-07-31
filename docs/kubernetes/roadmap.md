@@ -1,6 +1,6 @@
 ---
 title: Learning Roadmap
-description: "Structured learning roadmap for the Kubernetes course."
+description: "Structured 20-module learning roadmap for Kubernetes for Cloud & DevOps Engineers."
 technology_id: kubernetes
 hide:
   - toc
@@ -8,60 +8,54 @@ author: Shaik Basha
 category: kubernetes
 tags:
   - kubernetes
+  - roadmap
 ---
 
 # Kubernetes — Learning Roadmap
 
 Follow the course in order:
 
-1. **Course overview** — understand scope, prerequisites, and outcomes
-2. **Modules** — work through tutorials module by module
-3. **Labs** — hands-on practice after core lessons
-4. **Quizzes** — check understanding before projects
-5. **Projects** — portfolio builds that connect multiple skills
-6. **Capstone** — end-to-end proof of production readiness
-7. **Interview preparation** — role-specific questions and scenarios
-8. **Certifications** — map lessons to industry exams
+1. **Course overview** — scope, prerequisites, outcomes  
+2. **Modules 1–20** — tutorials in sequence  
+3. **Labs / quizzes / projects** — practice  
+4. **Capstone** — production Kubernetes platform  
+5. **Interview & certifications** — KCNA · CKA · CKAD · CKS  
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
+
+![GitOps workflow](../assets/excalidraw/k8s-gitops-workflow.svg)
 
 ## Modules
 
-### Foundations
+| # | Focus | Tutorials |
+|---|-------|-----------|
+| 1 | Fundamentals | [Introduction](introduction-to-kubernetes-and-orchestration.md) · [Architecture](kubernetes-architecture-and-components.md) |
+| 2 | Cluster setup | [Install](installing-kubernetes-and-kubectl.md) · [kubectl](kubectl-essentials-and-workflows.md) |
+| 3 | Objects | [Pods](pods-the-atomic-unit.md) · [Labels & namespaces](kubernetes-objects-labels-and-namespaces.md) |
+| 4 | Workloads | [Deployments](deployments-managing-replicated-pods.md) · [Controllers](workload-controllers-statefulset-daemonset-jobs.md) |
+| 5 | Services | [Services](services-and-cluster-networking.md) |
+| 6 | Ingress | [Ingress & Gateway API](ingress-and-external-access.md) |
+| 7 | Storage | [PV/PVC/CSI](persistent-volumes-and-storage.md) |
+| 8 | Configuration | [ConfigMaps/Secrets](configmaps-and-secrets.md) · [Quotas](resource-quotas-and-limit-ranges.md) |
+| 9 | Scheduling | [Scheduling](kubernetes-scheduling.md) |
+| 10 | Security | [RBAC](rbac-and-kubernetes-security-basics.md) · [Hardening](kubernetes-security-hardening.md) |
+| 11 | Networking deep dive | [CNI/DNS/NetPol](kubernetes-networking-deep-dive.md) |
+| 12 | Observability | [Monitoring & logging](monitoring-and-logging-in-kubernetes.md) |
+| 13 | Autoscaling | [HPA/VPA/CA/KEDA](kubernetes-autoscaling.md) |
+| 14 | Helm | [Package management](helm-package-management.md) |
+| 15 | GitOps | [GitOps & CI/CD](gitops-and-cicd-with-kubernetes.md) |
+| 16 | Platform engineering | [Operators & tenancy](platform-engineering-on-kubernetes.md) |
+| 17 | Production operations | [Upgrades/etcd/DR](kubernetes-production-operations.md) |
+| 18 | Troubleshooting | [Troubleshooting](troubleshooting-kubernetes-workloads.md) |
+| 19 | Managed Kubernetes | [EKS/AKS/GKE](managed-kubernetes-eks-aks-gke.md) |
+| 20 | Production excellence | [Excellence](production-kubernetes-excellence.md) |
 
-- [Introduction To Kubernetes And Orchestration](../introduction-to-kubernetes-and-orchestration/)
-- [Kubernetes Architecture And Components](../kubernetes-architecture-and-components/)
-- [Installing Kubernetes And Kubectl](../installing-kubernetes-and-kubectl/)
+## Related depth
 
-### Workloads
+- [Health checks](health-checks-probes-and-self-healing.md) · [Namespaces](namespaces-and-resource-management.md) · [HPA/PDB/affinity patterns](production-patterns-hpa-pdb-and-affinity.md) · [Capstone](kubernetes-capstone-and-next-steps.md)
 
-- [Kubectl Essentials And Workflows](../kubectl-essentials-and-workflows/)
-- [Pods The Atomic Unit](../pods-the-atomic-unit/)
-- [Deployments Managing Replicated Pods](../deployments-managing-replicated-pods/)
+## Diagrams
 
-### Configuration & Storage
-
-- [Services And Cluster Networking](../services-and-cluster-networking/)
-- [Configmaps And Secrets](../configmaps-and-secrets/)
-- [Persistent Volumes And Storage](../persistent-volumes-and-storage/)
-
-### Networking & Operations
-
-- [Ingress And External Access](../ingress-and-external-access/)
-- [Namespaces And Resource Management](../namespaces-and-resource-management/)
-- [Health Checks Probes And Self Healing](../health-checks-probes-and-self-healing/)
-
-### Security & Tooling
-
-- [Rbac And Kubernetes Security Basics](../rbac-and-kubernetes-security-basics/)
-- [Troubleshooting Kubernetes Workloads](../troubleshooting-kubernetes-workloads/)
-- [Helm Package Management](../helm-package-management/)
-
-### Production
-
-- [Gitops And Cicd With Kubernetes](../gitops-and-cicd-with-kubernetes/)
-- [Production Patterns Hpa Pdb And Affinity](../production-patterns-hpa-pdb-and-affinity/)
-- [Monitoring And Logging In Kubernetes](../monitoring-and-logging-in-kubernetes/)
-- [Kubernetes Security Hardening](../kubernetes-security-hardening/)
-- [Kubernetes Capstone And Next Steps](../kubernetes-capstone-and-next-steps/)
-
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```

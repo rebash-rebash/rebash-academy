@@ -1,479 +1,224 @@
 ---
-title: VPN and Tunneling Basics
-description: Understand site-to-site and remote-access VPNs, IPsec and WireGuard tunnels, TLS VPNs, and hybrid cloud connectivity patterns for secure network extension.
+title: "VPN and Tunneling Basics"
+description: "Understand site-to-site and remote-access VPNs, IPsec and WireGuard concepts, hybrid private connectivity, and when to choose VPN vs Direct Connect-style links."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "40–55 min"
+technology: networking
 category: networking
+module: "Module 16 · Production Networking"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - site-reliability-engineer
+  - platform-engineer
+skills:
+  - vpn
+  - ipsec
+  - wireguard
+  - hybrid-networking
+prerequisites:
+  - networking/cloud-networking-vpc-and-subnets
+next:
+  - networking/network-security-hardening
+related:
+  - networking/routing-fundamentals
+  - networking/network-segmentation-and-trust-boundaries
+labs: []
+projects: []
+interview: interview/networking
+certifications:
+  - AWS SAA
+  - CompTIA Network+
 tags:
   - networking
   - vpn
   - ipsec
   - wireguard
-  - tunneling
-  - openvpn
-  - site-to-site
-prerequisites:
-  - Complete [NAT and Port Forwarding](nat-and-port-forwarding.md) and [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
-  - Understanding of routing and firewalls from Module 2–4 tutorials
-  - Linux VM with sudo access for WireGuard lab
+  - hybrid
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # VPN and Tunneling Basics
 
 ## Overview
 
-A **VPN (Virtual Private Network)** creates an encrypted tunnel over an untrusted network (the internet), making remote hosts appear as if they are on the same private network. Enterprises use **site-to-site VPNs** to connect on-premises data centers to cloud VPCs; **remote-access VPNs** let employees reach internal tools from home; **mesh VPNs** like Tailscale connect distributed servers without manual route configuration.
+Explain site-to-site vs remote-access VPN, compare IPsec and WireGuard at an ops level, and place VPN next to private connectivity options in hybrid designs.
 
-**Tunneling** wraps one protocol inside another — IP packets inside encrypted UDP, Ethernet frames inside GRE. VPNs are the primary mechanism for **hybrid cloud** connectivity when dedicated links (Direct Connect, ExpressRoute) are not yet justified. Misconfigured VPNs cause subtle outages: one-way traffic, MTU black holes, and overlapping CIDR blocks with VPC peering.
+**VPNs** encrypt traffic across untrusted networks so on-prem and cloud private CIDRs can talk — or so admins can reach private ops endpoints. Production also uses **private connectivity** (Direct Connect, ExpressRoute, Interconnect) when bandwidth and SLA matter more than a simple tunnel.
 
-This is **Tutorial 18** in **Module 6: Cloud & Advanced** of the REBASH Academy Networking series. It includes theory, hands-on labs, and interview preparation.
+This is the first tutorial in **Module 16**. Complete [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 16 · Production Networking** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed [NAT and Port Forwarding](nat-and-port-forwarding.md) — SNAT/DNAT and conntrack
-- Completed [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md) — VPC CIDR, route tables, IGW
-- Familiarity with [Routing Fundamentals](routing-fundamentals.md) and [Firewalls and Access Control](firewalls-and-access-control.md)
-- Linux VM with kernel WireGuard support (Ubuntu 22.04+ includes `wireguard` module)
-- Optional: AWS account for VPN Gateway discussion
+### Required
+
+- [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
+- [Routing Fundamentals](routing-fundamentals.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Differentiate site-to-site, remote-access, and mesh VPN architectures
-- [ ] Compare IPsec, WireGuard, OpenVPN, and TLS-based VPN approaches
-- [ ] Configure a basic WireGuard point-to-point tunnel on Linux
-- [ ] Describe AWS Site-to-Site VPN and Customer Gateway setup at a high level
-- [ ] Troubleshoot VPN connectivity including MTU, routing, and phase 1/2 failures
-- [ ] Choose between VPN, VPC peering, and dedicated connectivity for hybrid cloud
+- [ ] Contrast site-to-site and remote-access VPN  
+- [ ] Describe IPsec and WireGuard roles  
+- [ ] Explain split tunnel vs full tunnel  
+- [ ] Place VPN vs dedicated private links  
+- [ ] List common hybrid failure modes (PSK, SA, routes, overlapping CIDR)
 
 ## Architecture
 
-Site-to-site VPN connects on-premises networks to cloud VPCs over encrypted internet tunnels.
+On-prem and cloud private networks join through an encrypted tunnel.
 
-![Architecture diagram for VPN and Tunneling Basics](../assets/images/vpn-and-tunneling-basics.svg)
-
+![VPN tunneling](../assets/excalidraw/vpn-tunneling.svg)
 
 ## Theory
 
-### VPN Types
+### What it is
 
-| Type | Connects | Use case | Example |
-|------|----------|----------|---------|
-| **Site-to-site** | Two networks | Hybrid cloud, branch offices | On-prem ↔ AWS VPC |
-| **Remote-access** | Individual user ↔ network | Work from home, contractor access | OpenVPN, WireGuard client |
-| **Mesh / overlay** | Many nodes ↔ many nodes | Distributed infra, zero-trust | Tailscale, Nebula, Consul mesh |
-| **SSL/TLS VPN** | Browser or client ↔ gateway | Web portal access, vendor VPN | Cisco AnyConnect, AWS Client VPN |
+A Virtual Private Network (VPN) encrypts traffic between sites or users and a private network over the public internet. **Tunnels** (IPsec, WireGuard, Transport Layer Security (TLS)-based Virtual Private Networks) carry inner packets inside outer encrypted packets. Ops care about tunnel state, routing of private Classless Inter-Domain Routing (CIDR) blocks, and whether clients use split or full tunnel — not only “the VPN app connected.”
 
-### Tunneling Concepts
+### Why it matters
 
-A **tunnel** encapsulates packets:
+Hybrid cloud and admin access still depend on tunnels. A tunnel that is “up” but missing routes looks identical to a security-group deny from the user’s point of view. Overlapping `10.0.0.0/8` ranges are the classic hybrid blocker. Choosing VPN when you need sustained high throughput or a regulatory private path sets you up for chronic latency and packet-loss tickets.
 
-1. Original packet (inner) destined for remote private network
-2. VPN endpoint encrypts and wraps it in outer packet
-3. Outer packet routed over internet to peer VPN endpoint
-4. Peer decrypts, delivers inner packet to destination
+### How it works
 
-The tunnel creates a **virtual interface** (e.g., `wg0`, `tun0`) with its own IP address. Routes direct traffic for remote CIDR blocks through this interface.
+**Site-to-site** links a data centre to a Virtual Private Cloud (VPC) continuously. **Remote access** brings an admin laptop into private subnets. **Client mesh** tools (WireGuard/Tailscale-style) emphasise identity-centric access. IPsec (often IKEv2 with pre-shared keys or certificates) dominates cloud VPN gateways — policy-based or route-based. WireGuard uses a simpler key model over User Datagram Protocol (UDP). TLS-based options (OpenVPN and similar) sometimes traverse restrictive egress more easily. After the tunnel is up, **both sides must route** private CIDRs; without routes, encryption alone does nothing useful.
 
-**Split tunnel vs full tunnel:**
+### Key concepts and comparisons
 
-- **Full tunnel** — all traffic routes through VPN (corporate inspection, IP masking)
-- **Split tunnel** — only corporate CIDR routes through VPN; internet traffic exits locally (better performance, less VPN load)
+| Type | Typical use |
+|------|-------------|
+| Site-to-site | DC ↔ VPC always-on |
+| Remote access | Admin laptop → private network |
+| Client mesh | Identity-centric access |
 
-### IPsec VPN
+| Mode | Behaviour |
+|------|-----------|
+| Split tunnel | Only private destinations via VPN |
+| Full tunnel | All client traffic via VPN (control vs cost/latency) |
 
-**IPsec** is the enterprise standard for site-to-site VPNs. Two phases:
+| Need | Prefer |
+|------|--------|
+| Always-on hybrid, moderate volume | Managed IPsec VPN |
+| High sustained throughput / strict SLA | Direct Connect / ExpressRoute / Interconnect (VPN as backup) |
 
-**Phase 1 (IKE)** — establishes secure channel between VPN endpoints:
+### Common pitfalls
 
-- Authentication (pre-shared key or certificates)
-- Encryption and integrity algorithms (AES-256, SHA-256)
-- Diffie-Hellman key exchange
-
-**Phase 2 (IPsec SA)** — negotiates parameters for actual data traffic:
-
-- Which subnets (interesting traffic) to encrypt
-- PFS (Perfect Forward Secrecy) settings
-- SPI and keys for ESP/AH encapsulation
-
-AWS **Site-to-Site VPN** uses IPsec between your **Customer Gateway** (on-prem device or software) and **Virtual Private Gateway** or **Transit Gateway**.
-
-Common IPsec issues:
-
-- **Phase 1 failure** — mismatched pre-shared key, IKE version, or encryption parameters
-- **Phase 2 failure** — mismatched subnet definitions (interesting traffic selectors)
-- **One-way traffic** — missing return route or asymmetric routing
-- **MTU issues** — IPsec overhead requires lower MTU (often 1400 or less)
-
-### WireGuard
-
-**WireGuard** is a modern VPN protocol built into the Linux kernel — simpler than IPsec, faster handshake, fixed crypto suite (Curve25519, ChaCha20, Poly1305).
-
-Configuration uses `wg0.conf`:
-
-```ini
-[Interface]
-PrivateKey = <server-private-key>
-Address = 10.200.0.1/24
-ListenPort = 51820
-
-[Peer]
-PublicKey = <client-public-key>
-AllowedIPs = 10.200.0.2/32, 192.168.50.0/24
-```
-
-Key properties:
-
-- **Cryptokey routing** — `AllowedIPs` defines which destinations route through each peer
-- **Roaming** — clients reconnect seamlessly when IP changes
-- **Minimal attack surface** — ~4,000 lines of code vs OpenVPN's complexity
-
-WireGuard is ideal for server-to-server mesh, remote admin access, and cloud instance interconnect.
-
-### OpenVPN and TLS VPNs
-
-**OpenVPN** uses TLS for key exchange and supports TCP or UDP transport. Mature, widely deployed, but heavier than WireGuard. Runs in userspace (unless using kernel modules).
-
-**TLS/SSL VPNs** (AWS Client VPN, commercial products) authenticate users via SAML/OIDC and assign virtual IPs from a pool. Good for human remote access; less common for automated site-to-site.
-
-### AWS VPN Components
-
-| Component | Role |
-|-----------|------|
-| **Customer Gateway (CGW)** | Represents on-prem VPN endpoint (IP, BGP ASN) |
-| **Virtual Private Gateway (VGW)** | VPN termination on VPC side |
-| **Transit Gateway (TGW)** | Hub connecting multiple VPCs and VPNs |
-| **Site-to-Site VPN Connection** | Two IPsec tunnels for redundancy |
-
-Best practices:
-
-- Always configure **both tunnels** for HA
-- Use **BGP** for dynamic route propagation (preferred over static routes)
-- Ensure **non-overlapping CIDR** between on-prem and VPC
-- Set TCP MSS clamping or lower MTU on tunnel interfaces
-
-### VPN vs Peering vs Direct Connect
-
-| Option | Throughput | Latency | Cost | Best for |
-|--------|------------|---------|------|----------|
-| **Site-to-site VPN** | Up to 1.25 Gbps per tunnel | Variable (internet) | Low | Quick hybrid setup, backup link |
-| **VPC Peering** | No bandwidth cap (same region) | Low | Low | Cloud-to-cloud, non-overlapping CIDR |
-| **Direct Connect / ExpressRoute** | 1 Gbps – 100 Gbps | Consistent low | High | Production hybrid, compliance |
-
-Use VPN for initial hybrid connectivity and disaster recovery backup; migrate to Direct Connect when bandwidth and SLA requirements grow.
-
-### Security Considerations
-
-- Rotate pre-shared keys and certificates on schedule
-- Restrict VPN endpoint access to known peer IPs in firewall rules
-- Use **certificate-based auth** over PSK in production
-- Enable **dead peer detection (DPD)** for fast failover
-- Log VPN events; alert on tunnel down
-- Combine VPN with **zero-trust** — VPN grants network access, not implicit trust; still enforce application auth
+- Declaring success when Phase 1/2 is up but routes are missing.  
+- Overlapping CIDRs across on-prem and cloud.  
+- PSKs in tickets or git; no rotation.  
+- Full tunnel without capacity planning (hairpinning all SaaS).  
+- Using VPN as the only path with no monitoring of tunnel state or bytes.
 
 ## Hands-on Lab
 
-Complete on Ubuntu 22.04+ with sudo. This lab creates a local WireGuard loopback-style tunnel using two network namespaces.
-
-### Step 1 – Install WireGuard tools
-
-**Command:**
+**Focus:** practise the core workflow for VPN and Tunneling Basics
 
 ```bash
-sudo apt-get update && sudo apt-get install -y wireguard-tools
-wg --version
+mkdir -p ~/rebash-networking/module-16
+cd ~/rebash-networking/module-16
 ```
 
-**Explanation:** WireGuard userspace tools manage keys and interfaces. Kernel module loads automatically on supported systems.
-
-**Expected output:**
+### Step 1 – Design a hybrid path
 
 ```text
-wireguard-tools v1.x
+On-prem 10.50.0.0/16 ↔ VPN ↔ VPC 10.20.0.0/16
+Interesting traffic: both CIDRs
+Redundant tunnels: AZ-a + AZ-b
 ```
 
-### Step 2 – Generate key pairs
+### Step 2 – Failure checklist
 
-**Command:**
+Document checks for: IKE/PSK mismatch, phase-2 selectors, missing routes, NAT-T, firewall UDP 500/4500, asymmetric return path.
 
-```bash
-mkdir -p ~/wg-lab && cd ~/wg-lab
-umask 077
-wg genkey | tee server.key | wg pubkey > server.pub
-wg genkey | tee client.key | wg pubkey > client.pub
-echo "Server pub: $(cat server.pub)"
-echo "Client pub: $(cat client.pub)"
-```
+### Step 3 – Compare options
 
-**Explanation:** WireGuard uses Curve25519 key pairs. Private keys must be protected (`umask 077`).
-
-**Expected result:**
-
-```text
--rw------- ... server.key
--rw------- ... client.key
-```
-
-Public `.pub` files accompany private keys.
-
-### Step 3 – Create server configuration
-
-**Command:**
-
-```bash
-SERVER_PRIV=$(cat server.key)
-CLIENT_PUB=$(cat client.pub)
-sudo tee /etc/wireguard/wg0.conf <<EOF
-[Interface]
-PrivateKey = ${SERVER_PRIV}
-Address = 10.200.0.1/24
-ListenPort = 51820
-
-[Peer]
-PublicKey = ${CLIENT_PUB}
-AllowedIPs = 10.200.0.2/32
-EOF
-sudo chmod 600 /etc/wireguard/wg0.conf
-```
-
-**Explanation:** Server listens on UDP 51820. `AllowedIPs` for the peer defines which source IPs are accepted from that peer.
-
-**Expected result:**
-
-`wg0.conf` (server) contains `PrivateKey`, `ListenPort`, and a `[Peer]` AllowedIPs block without pasting keys into chat.
-
-### Step 4 – Create client configuration
-
-**Command:**
-
-```bash
-CLIENT_PRIV=$(cat client.key)
-SERVER_PUB=$(cat server.pub)
-SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || echo "127.0.0.1")
-tee ~/wg-lab/client.conf <<EOF
-[Interface]
-PrivateKey = ${CLIENT_PRIV}
-Address = 10.200.0.2/24
-
-[Peer]
-PublicKey = ${SERVER_PUB}
-Endpoint = ${SERVER_IP}:51820
-AllowedIPs = 10.200.0.0/24
-PersistentKeepalive = 25
-EOF
-```
-
-**Explanation:** Client routes `10.200.0.0/24` through the tunnel. `PersistentKeepalive` maintains NAT mappings for clients behind home routers.
-
-**Expected result:**
-
-Client config contains matching peer public key and endpoint; permissions remain restrictive.
-
-### Step 5 – Start WireGuard and verify
-
-**Command:**
-
-```bash
-sudo wg-quick up wg0
-sudo wg show
-ip addr show wg0
-```
-
-**Explanation:** `wg-quick` creates the interface, sets routes, and configures iptables if specified. `wg show` displays peer handshake status.
-
-**Expected output:**
-
-```text
-interface: wg0
-  public key: ...
-  listening port: 51820
-
-peer: ...
-  allowed ips: 10.200.0.2/32
-```
-
-### Step 6 – Test tunnel connectivity (same-host lab)
-
-For same-machine testing with network namespaces:
-
-```bash
-sudo ip netns add wgclient
-sudo ip link add veth0 type veth peer name veth1
-sudo ip link set veth1 netns wgclient
-sudo ip addr add 192.168.99.1/24 dev veth0
-sudo ip link set veth0 up
-sudo ip netns exec wgclient ip addr add 192.168.99.2/24 dev veth1
-sudo ip netns exec wgclient ip link set veth1 up
-ping -c 2 192.168.99.2
-```
-
-**Explanation:** Namespaces simulate separate hosts. In production, run client.conf on a remote machine and ping `10.200.0.1` through the tunnel.
-
-**Expected result:**
-
-Handshake counters increase (`wg show`) and tunnel ping succeeds across the lab netns or peers.
-
-### Step 7 – Inspect routing and firewall
-
-**Command:**
-
-```bash
-ip route | grep wg0
-sudo ufw status 2>/dev/null | grep 51820 || echo "Ensure UDP 51820 allowed if UFW enabled"
-```
-
-**Explanation:** VPN traffic must pass through firewalls on UDP port 51820 (WireGuard default). Missing firewall rule is a common tunnel failure cause.
-
-**Expected result:**
-
-`ip route` shows `wg0` routes for AllowedIPs; firewall does not drop UDP 51820 unexpectedly.
-
-### Step 8 – Teardown
-
-**Command:**
-
-```bash
-sudo wg-quick down wg0
-sudo ip netns del wgclient 2>/dev/null
-sudo ip link del veth0 2>/dev/null
-rm -rf ~/wg-lab
-sudo rm /etc/wireguard/wg0.conf
-```
+One paragraph: when you would pick managed cloud VPN vs WireGuard bastion vs private circuit.
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Confirm key files exist with restricted permissions and configs render without secrets in Git.
-2. Bring the tunnel up (or complete the netns lab) and verify handshake/ping as documented.
-3. Tear down `wg0`/namespaces so no leftover tunnels remain.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Keys | `server.key`/`client.key` mode `0600` (or equivalent) |
-| Config | `wg-quick` config validates; interface can be brought up |
-| Connectivity | Tunnel ping or handshake counters increment |
-| Routing | `wg0` routes/AllowedIPs match the lab design |
-| Cleanup | `wg-quick down` and netns deleted; keys not committed |
+- [ ] Lab commands run under `~/rebash-networking/module-16/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `wg genkey` | Generate private key | `wg genkey \| tee private.key` |
-| `wg pubkey` | Derive public key | `cat private.key \| wg pubkey` |
-| `wg-quick up` | Start WireGuard interface | `sudo wg-quick up wg0` |
-| `wg show` | Show interface and peers | `sudo wg show` |
-| `ip route` | Verify tunnel routes | `ip route \| grep wg0` |
-| `strongswan` | IPsec daemon (common) | `sudo ipsec statusall` |
+Production practice for **VPN and Tunneling Basics** always combines:
 
-!!! tip "IPsec MTU"
-    Set tunnel interface MTU to 1400–1420 or enable TCP MSS clamping — encryption overhead causes fragmentation black holes on VPN paths.
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Protect private keys (`wg`, IPsec PSKs, TLS client certs) with `0600` permissions and a secrets manager — never commit them
-- Prefer modern tunnels (WireGuard, IKEv2) over obsolete PPTP/L2TP with weak crypto
-- Restrict AllowedIPs / traffic selectors so a compromised peer cannot route into every subnet
-- Disable unused peer configs promptly; stale clients are a common leftover access path
-- Combine VPN access with MFA on identity providers for human users where possible
+- Treat credentials and tokens for networking as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Overlapping CIDR blocks"
-    On-prem `10.0.0.0/16` and VPC `10.0.0.0/16` cannot route over VPN — addresses are ambiguous. Redesign CIDR before connecting.
+!!! warning "Declaring success when Phase 1/2 is up but routes are missing.  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Missing return routes"
-    Traffic reaches cloud but responses take default internet route instead of VPN tunnel. Configure routes on both sides for remote CIDR blocks.
+!!! warning "Overlapping CIDRs across on-prem and cloud.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Blocking UDP 500/4500 or ESP"
-    IPsec requires UDP 500 (IKE), UDP 4500 (NAT-T), and protocol 50 (ESP). Corporate firewalls often block these.
-
-!!! warning "Ignoring MTU overhead"
-    Encryption adds bytes per packet. Standard 1500 MTU causes silent failures. Set tunnel MTU to 1400–1420 and enable MSS clamping.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Always configure redundant tunnels"
-    AWS provides two VPN tunnels per connection. Configure both on-prem endpoints for automatic failover.
-
-!!! tip "Prefer BGP over static routes"
-    BGP propagates route changes automatically when subnets are added. Static routes require manual updates and cause drift.
-
-!!! tip "Use WireGuard for server mesh; IPsec for enterprise edge"
-    Match protocol to use case — WireGuard for DevOps simplicity; IPsec for vendor-supported site-to-site with existing appliances.
-
-!!! tip "Monitor tunnel state"
-    Alert on VPN tunnel down events. AWS CloudWatch `TunnelState` metric; WireGuard `wg show` latest handshake timestamp.
+- Encode VPN and Tunneling Basics changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Phase 1 IKE failure | PSK/algorithm mismatch | Compare IKE proposals on both sides; check CGW config |
-| Phase 2 failure | Subnet selector mismatch | Align interesting traffic / proxy IDs |
-| Tunnel up, no traffic | Missing route | Add routes for remote CIDR via tunnel interface |
-| One-way traffic | Asymmetric routing | Ensure return path uses VPN; check NAT rules |
-| Intermittent drops | DPD timeout / internet instability | Tune DPD intervals; verify both tunnels configured |
-| WireGuard no handshake | Firewall blocks UDP 51820 | Open port; verify Endpoint IP and key exchange |
-| Slow throughput | MTU fragmentation | Lower MTU; enable MSS clamping |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| Tunnel down | PSK/IKE/firewall | Check gateway logs; UDP 500/4500 |
+| Tunnel up, no ping | Routes / selectors | Align CIDRs; check RT |
+| One-way traffic | Asymmetric routing | Fix return routes |
+| Intermittent | Single AZ VPN | Add redundant tunnels |
 
 ## Summary
 
-- **VPNs** encrypt traffic over untrusted networks, connecting sites or remote users to private infrastructure
-- **Site-to-site** VPNs link networks (on-prem ↔ cloud); **remote-access** VPNs link users; **mesh** VPNs connect many nodes
-- **IPsec** dominates enterprise site-to-site (Phase 1 IKE + Phase 2 SA); **WireGuard** offers simpler modern server-to-server tunnels
-- AWS **Site-to-Site VPN** uses Customer Gateway + VPN Gateway/TGW with dual tunnels for HA
-- Debug VPNs with **phase logs**, **routing tables**, **MTU testing**, and **packet capture**
-- Choose VPN for quick hybrid connectivity; **Direct Connect** when bandwidth and SLA demand it
+- VPNs encrypt hybrid paths; routes and CIDRs make them usable  
+- IPsec dominates classic cloud site-to-site; WireGuard dominates modern overlays  
+- Private circuits complement VPN for production scale
 
 ## Interview Questions
 
-1. What is the difference between site-to-site and remote-access VPN?
-2. Explain IPsec Phase 1 and Phase 2 negotiations.
-3. Why does WireGuard require `AllowedIPs` configuration?
-4. How would you connect an on-premises network to an AWS VPC?
-5. What causes VPN tunnel "up" but no traffic flows?
-6. Compare VPN, VPC peering, and Direct Connect for hybrid cloud.
-7. What is split tunneling, and when would you use it?
-8. Why do VPN tunnels often require reduced MTU?
-9. How do you achieve high availability with AWS Site-to-Site VPN?
-10. What security risks remain even when users connect via VPN?
+1. How does **VPN and Tunneling Basics** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 2, 5, and 9)"
-
-    **Q2 — IPsec phases:** Phase 1 (IKE) establishes a secure management channel between VPN endpoints — authenticates peers (PSK or certificates), negotiates encryption/integrity algorithms, and performs key exchange. Phase 2 creates IPsec Security Associations for actual data traffic — defines which subnets to encrypt (interesting traffic), sets up ESP keys, and enables PFS. Phase 1 must succeed before Phase 2 can negotiate.
-
-    **Q5 — Tunnel up, no traffic:** The IPsec SA exists but routing is wrong. Common causes: missing route to remote CIDR via tunnel interface on one side, overlapping CIDR blocks, security group/NACL blocking traffic after decryption, or NAT interfering with interesting traffic selectors. Verify with ping/traceroute across tunnel and check route tables on both endpoints.
-
-    **Q9 — AWS VPN HA:** AWS provides two separate VPN tunnels per connection, terminating on different public IPs. Configure your Customer Gateway with both tunnel endpoints and enable BGP (or static routes) for both. If one tunnel fails, traffic fails over to the second. Also deploy redundant CGW devices on-prem for device-level HA.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Networking – Category Overview](index.md)
-- [NAT and Port Forwarding](nat-and-port-forwarding.md) *(previous in Module 6)*
-- [Network Security Hardening](network-security-hardening.md) *(next in Module 6)*
-- [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
-- [Firewalls and Access Control](firewalls-and-access-control.md)
-- [Linux – Category Overview](../linux/index.md)
-- [Docker – Category Overview](../docker/index.md)
-- Cheat sheet: [Networking Cheat Sheet](../cheatsheets/networking.md)
-- Interview prep: [Networking Interview Prep](../interview/networking.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Network Security Hardening](network-security-hardening.md)
 
 ## References
 
-- [WireGuard whitepaper and documentation](https://www.wireguard.com/)
-- [RFC 4301 — Security Architecture for IP](https://www.rfc-editor.org/rfc/rfc4301)
-- [AWS Site-to-Site VPN documentation](https://docs.aws.amazon.com/vpn/latest/s2svpn/)
-- [StrongSwan IPsec documentation](https://www.strongswan.org/docs.html)
-- [Tailscale — How WireGuard works](https://tailscale.com/blog/how-wireguard-works)
-- [NIST SP 800-77 — Guide to IPsec VPNs](https://csrc.nist.gov/publications/detail/sp/800-77/rev-1/final)
-
-**Expected result:**
-
-`wg show` empty / interface gone; lab netns removed.
+- [AWS Site-to-Site VPN](https://docs.aws.amazon.com/vpn/)  
+- [WireGuard](https://www.wireguard.com/)

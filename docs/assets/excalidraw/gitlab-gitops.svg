@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="200"
+     viewBox="0 0 700 200" role="img" aria-label="gitlab-gitops">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">GitOps with GitLab</text>
+
+  <path d="M 53.6,82.5 L 192.8,83.4 Q 202.8,83.4 202.8,93.4 L 203.8,142.0 Q 203.8,152.0 193.8,152.0 L 53.3,152.5 Q 43.3,152.5 43.3,142.5 L 43.6,92.5 Q 43.6,82.5 53.6,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.1,79.4 L 189.5,79.5 Q 199.5,79.5 199.5,89.5 L 199.8,139.9 Q 199.8,149.9 189.8,149.9 L 49.8,149.2 Q 39.8,149.2 39.8,139.2 L 40.1,89.4 Q 40.1,79.4 50.1,79.4 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">App repo</text>
+  <text x="120.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">CI build</text>
+
+
+  <path d="M 252.3,82.9 L 413.9,84.0 Q 423.9,84.0 423.9,94.0 L 423.9,142.2 Q 423.9,152.2 413.9,152.2 L 253.0,152.6 Q 243.0,152.6 243.0,142.6 L 242.3,92.9 Q 242.3,82.9 252.3,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 250.2,79.7 L 409.2,79.7 Q 419.2,79.7 419.2,89.7 L 419.8,140.8 Q 419.8,150.8 409.8,150.8 L 249.8,149.0 Q 239.8,149.0 239.8,139.0 L 240.2,89.7 Q 240.2,79.7 250.2,79.7 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="330.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Manifest repo</text>
+  <text x="330.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">desired</text>
+
+
+  <path d="M 472.2,82.8 L 633.4,82.7 Q 643.4,82.7 643.4,92.7 L 642.2,142.1 Q 642.2,152.1 632.2,152.1 L 472.8,152.4 Q 462.8,152.4 462.8,142.4 L 462.2,92.8 Q 462.2,82.8 472.2,82.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 470.7,80.7 L 630.6,80.9 Q 640.6,80.9 640.6,90.9 L 640.4,140.9 Q 640.4,150.9 630.4,150.9 L 469.0,149.9 Q 459.0,149.9 459.0,139.9 L 460.7,90.7 Q 460.7,80.7 470.7,80.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="550.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Agent / Flux</text>
+  <text x="550.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">reconcile</text>
+
+
+  <path d="M 200.0,115.0 L 213.7,114.8 L 225.5,116.0 L 240.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,115.0 L 233.1,119.0 M 240.0,115.0 L 233.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 420.0,115.0 L 432.4,115.6 L 446.9,115.3 L 460.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 460.0,115.0 L 453.1,119.0 M 460.0,115.0 L 453.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

@@ -1,213 +1,349 @@
 ---
 title: "Git Automation — GitHub and GitLab"
-description: "Automate Git with GitPython plus GitHub/GitLab APIs for repos, pull requests, and webhooks."
+description: "Automate Git with GitPython and platform APIs — repositories, pull requests, webhooks, and audit CLIs for DevOps workflows."
 difficulty: intermediate
-estimated_time: "55 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "50–65 min"
+technology: python
 category: python
-tags:
+module: "Module 16 · Git Automation"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - cloud-engineer
+skills:
   - python
   - gitpython
+  - github-api
+  - gitlab-api
+prerequisites:
+  - python/cloud-automation-aws-azure-gcp
+next:
+  - python/docker-sdk-automation
+related:
+  - python/rest-apis-requests-auth-and-resilience
+  - labs/python-github-repository-auditor
+labs:
+  - labs/python-github-repository-auditor
+  - labs/python-cicd-automation-tool
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
+tags:
+  - python
+  - git
   - github
   - gitlab
-prerequisites:
-  - Cloud Automation — AWS, Azure, and GCP
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Git Automation — GitHub and GitLab
 
 ## Overview
 
-Repository hygiene and PR automation are high-leverage DevOps Python tasks — always use tokens with least privilege.
+Automate local Git inspection with GitPython (or subprocess git), call GitHub/GitLab HTTP APIs for repo/PR metadata, and design a safe audit CLI that defaults to read-only.
 
-This is **Tutorial 16** in **Module 16: Git Automation** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Platform teams audit branch protection, open PRs, and webhook configs in bulk. Use **tokens from env**, paginate API lists, and prefer dry-run reports over auto-merging.
+
+Complete [Cloud Automation](cloud-automation-aws-azure-gcp.md) (and REST module) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 16 · Git Automation** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Cloud Automation — AWS, Azure, and GCP
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [REST APIs](rest-apis-requests-auth-and-resilience.md)
+- Git installed locally
+- Optional: `GITHUB_TOKEN` / `GITLAB_TOKEN` with **read** scopes
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Git Automation — GitHub and GitLab” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Inspect a local repo with GitPython or `git` subprocess  
+- [ ] Call GitHub/GitLab REST for repo metadata  
+- [ ] List pull/merge requests with pagination awareness  
+- [ ] Describe webhook automation use cases  
+- [ ] Keep mutating PR actions behind explicit flags
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Git Automation — GitHub and GitLab](../assets/images/python-git-automation.svg)
+![Git automation](../assets/excalidraw/python-git-automation.svg)
 
 ## Theory
 
-### GitPython
+### What it is
 
-Programmatic Git operations (clone, status, commit) when you must. Prefer the `git` CLI via subprocess for simple cases; use GitPython for structured inspection.
+Git automation has two layers: **local repository facts** (branch, dirty tree, recent commits) via the `git` CLI or GitPython, and **forge APIs** (GitHub, GitLab) for pull/merge requests, protections, and org audit. Webhooks notify your service when events happen. Python glues these for inventory bots, release helpers, and policy checks — not for silent auto-merge in this course.
 
-### GitHub API
+### Why it matters
 
-REST/GraphQL via `requests`/`httpx` or PyGithub. List repos, branch protection, and workflow runs. Fixture responses in CI.
+Platform work is pull-request-centric. Scripts that list open PRs, verify required checks, or report clone health save hours of console clicking. Tokens with write scope are high-value secrets; treating GitHub/GitLab as just another Hypertext Transfer Protocol (HTTP) API with least privilege prevents a compromised CI job from rewriting `main`.
 
-### GitLab API
+### How it works
 
-Similar patterns with personal/project access tokens. Normalise fields so one auditor can target either forge.
+For local facts, `subprocess` + `git status`/`rev-parse` is easy to reason about; GitPython helps when you need a richer object model in-process. For remotes, call REST with a Bearer token (GitHub) or `PRIVATE-TOKEN` (GitLab), paginate, and never log the token or clone URLs with embedded credentials. Webhook receivers must validate signatures, respond quickly (queue work), and not trust payload-supplied hosts blindly. Outbound hook registration uses least-privilege tokens.
 
-### Repository Automation
+```text
+Authorization: Bearer $GITHUB_TOKEN
+Accept: application/vnd.github+json
+GET /repos/{owner}/{repo}/pulls
+```
 
-Clone mirrors, enforce README/LICENSE presence, check default branch names, and report drift.
+### Key concepts and comparisons
 
-### Pull Requests
+| Approach | Use when |
+|----------|----------|
+| `git` via subprocess | Simple status/log |
+| GitPython | In-process object model |
+| Platform REST | PRs, protections, org audit |
 
-Open/list PRs, require reviews, label risk. Never auto-merge from untrusted events without checks.
+| Safety rule | Practice |
+|-------------|----------|
+| Auditor bots | Read-only tokens |
+| Tutorials | No auto-merge |
+| Logs | Redact tokens and private URLs |
+| Webhooks | Verify signatures; queue work |
 
-### Webhooks
+### Common pitfalls
 
-Validate signatures, reject replayed events, and keep handlers idempotent. Process asynchronously when work is heavy.
+- Fine-grained tokens with admin scope “for convenience.”  
+- Scraping HTML instead of the API.  
+- Logging `git remote -v` that contains embedded credentials.  
+- Processing webhook bodies synchronously for minutes (timeouts, retries, duplicates).  
+- Assuming GitLab project IDs and path-with-namespace are interchangeable without encoding.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Git Automation — GitHub and GitLab
 
 ```bash
-mkdir -p ~/rebash-python/lab16 && cd ~/rebash-python/lab16
+mkdir -p ~/rebash-python/module-16
+cd ~/rebash-python/module-16
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install 'GitPython==3.1.44' 'requests==2.32.3'
 ```
 
-**Focus:** GitHub repository auditor against recorded JSON fixtures; optional live dry-run
-
-### Step 1 – Skeleton
+### Step 1 – Local repo facts
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab16 git-automation-github-and-gitlab")
-EOF
-chmod +x lab.py
-python3 lab.py
-```
+cd ~/rebash-python/module-16
+source .venv/bin/activate
 
-### Step 2 – GitHub repo auditor (fixtures)
+# Use REPO=/path/to/clone or default to current git root / cwd
+REPO="${REPO:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
-```bash
-cat > repos.json << 'EOF'
-[{"name":"app","default_branch":"main","has_license":true},{"name":"legacy","default_branch":"master","has_license":false}]
-EOF
-cat > auditor.py << 'EOF'
+cat > local_git.py << 'EOF'
 #!/usr/bin/env python3
-import json
+from __future__ import annotations
+
+import sys
 from pathlib import Path
 
-repos = json.loads(Path("repos.json").read_text())
-findings = []
-for r in repos:
-    if r["default_branch"] != "main":
-        findings.append(f"{r['name']}: default_branch={r['default_branch']}")
-    if not r["has_license"]:
-        findings.append(f"{r['name']}: missing license")
-print("FINDINGS")
-print("\n".join(findings) or "none")
-print("RESULT ok")
+from git import Repo
+
+
+def main(argv: list[str]) -> int:
+    root = Path(argv[1] if len(argv) > 1 else ".")
+    try:
+        repo = Repo(root, search_parent_directories=True)
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: not a git repo: {exc}", file=sys.stderr)
+        return 1
+    print(f"bare={repo.bare}")
+    print(f"dirty={repo.is_dirty()}")
+    print(f"head={repo.head.commit.hexsha[:12]}")
+    print(f"branch={repo.active_branch.name if not repo.head.is_detached else 'DETACHED'}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))
 EOF
-python3 auditor.py
+
+python local_git.py "$REPO"
 ```
 
-### Final step – Cleanup note
+### Step 2 – GitHub API fixture / live
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+mkdir -p fixtures
+cat > fixtures/repo.json << 'EOF'
+{
+  "full_name": "rebash-in/demo",
+  "default_branch": "main",
+  "private": false,
+  "open_issues_count": 2
+}
+EOF
+
+cat > github_repo.py << 'EOF'
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+
+import requests
+
+
+def from_fixture(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def from_api(owner: str, repo: str) -> dict:
+    token = os.environ.get("GITHUB_TOKEN")
+    if not token:
+        raise RuntimeError("GITHUB_TOKEN required for live mode")
+    url = f"https://api.github.com/repos/{owner}/{repo}"
+    r = requests.get(
+        url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+        },
+        timeout=15,
+    )
+    if r.status_code >= 400:
+        raise RuntimeError(f"GitHub API HTTP {r.status_code}")
+    return r.json()
+
+
+def main() -> int:
+    p = argparse.ArgumentParser()
+    p.add_argument("--fixture", type=Path)
+    p.add_argument("--owner")
+    p.add_argument("--repo")
+    args = p.parse_args()
+    try:
+        data = (
+            from_fixture(args.fixture)
+            if args.fixture
+            else from_api(args.owner, args.repo)
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps({
+        "full_name": data.get("full_name"),
+        "default_branch": data.get("default_branch"),
+        "private": data.get("private"),
+        "open_issues_count": data.get("open_issues_count"),
+    }, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+EOF
+
+python github_repo.py --fixture fixtures/repo.json
+```
+
+### Step 3 – PR list sketch
+
+```bash
+python - <<'PY'
+prs = [{"number": 12, "title": "fix: health check", "user": "dev"}]
+for pr in prs:
+    print(f"#{pr['number']} {pr['title']} (@{pr['user']})")
+print("# live: GET /repos/{owner}/{repo}/pulls?state=open")
+PY
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab16/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-16/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Git Automation — GitHub and GitLab** always combines:
+Production practice for **Git Automation — GitHub and GitLab** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Fine-grained tokens with admin scope “for convenience.”  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Scraping HTML instead of the API.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Git Automation — GitHub and GitLab changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| 401 from GitHub | Bad/missing token | Export `GITHUB_TOKEN`; check scopes |
+| `InvalidGitRepositoryError` | Wrong path | Pass repo root |
+| Rate limit | Unauthenticated or burst | Auth; backoff (Module 14) |
 
 ## Summary
 
-**Git Automation — GitHub and GitLab** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Local Git for clone state; APIs for platform metadata  
+- Fixtures keep CI green without tokens  
+- Auditors stay read-only by default  
+- Lab: [GitHub Repository Auditor](../labs/python-github-repository-auditor.md)
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Git Automation — GitHub and GitLab** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Cloud Automation — AWS, Azure, and GCP](cloud-automation-aws-azure-gcp.md) *(previous)*
-- [Docker SDK Automation](docker-sdk-automation.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Docker SDK Automation](docker-sdk-automation.md)  
+- [GitHub Repository Auditor lab](../labs/python-github-repository-auditor.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [GitPython](https://gitpython.readthedocs.io/)  
+- [GitHub REST API](https://docs.github.com/en/rest)  
+- [GitLab REST API](https://docs.gitlab.com/ee/api/)

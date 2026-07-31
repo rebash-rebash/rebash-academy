@@ -46,11 +46,21 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for File Operations in Shell](../assets/images/shell-file-operations.svg)
+![Architecture diagram for File Operations in Shell](../assets/excalidraw/shell-file-operations.svg)
 
 ## Theory
 
-### Reading Files
+### What it is
+
+Shell scripts spend much of their life reading and writing files: configs, inventories, logs, lock files, and temporary workspaces. Core skills include line-oriented **reading**, safe **writing** and atomic replace, creating **temporary files** with cleanup traps, **file tests** (`-f`, `-d`, and friends), and **directory operations** such as `mkdir -p`, `find`, and `rsync`. Done well, file handling is boring and reliable; done poorly, it races, truncates, or deletes the wrong tree.
+
+### Why it matters
+
+Automation that mutates the filesystem is where Linux administration meets risk. Partial writes leave corrupt configs that services load on the next restart. Fixed paths under `/tmp` collide between users or invite symlink attacks. Recursive deletes without an allow-listed root are a classic outage class. Continuous Integration (CI) and cron jobs that create debris without `trap` cleanup fill disks over time. Safe file patterns are therefore as important as the business logic that uses those files.
+
+### How it works
+
+Read lines without word-splitting:
 
 ```bash
 while IFS= read -r line; do
@@ -58,13 +68,9 @@ while IFS= read -r line; do
 done <"$file"
 ```
 
-Prefer `mapfile`/`readarray` for modest files. Avoid `for line in $(cat file)` — it splits on IFS.
+Prefer `mapfile` / `readarray` for modest files that fit in memory. Avoid `for line in $(cat file)`. Writing uses `printf ... >"$out"` to truncate or `>>` to append. For config updates, write to a temporary file on the same filesystem, then `mv` over the target so readers see either the old or the new file — not a half-written hybrid.
 
-### Writing Files
-
-`printf ... >"$out"` truncates; `>>` appends. Write to a temp file then `mv` for atomic replace on the same filesystem.
-
-### Temporary Files
+Create temps with `mktemp` and always register cleanup:
 
 ```bash
 tmp=$(mktemp)
@@ -72,15 +78,25 @@ tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmp" "$tmpdir"' EXIT
 ```
 
-Never hard-code `/tmp/myjob` — collisions and symlink attacks follow.
+Never hard-code `/tmp/myjob`. Before destructive directory work, test paths (`-e`, `-f`, `-d`, `-L`, permission bits) and keep operations under an allowed root. Use `mkdir -p`, `install -d`, `find`, and `rsync -a` as appropriate for trees.
 
-### File Tests
+### Key concepts
 
-`-e` exists, `-f` regular file, `-d` directory, `-r`/`-w`/`-x` permissions, `-s` non-empty, `-L` symlink.
+| Concern | Practice |
+|---------|----------|
+| Reading | `IFS= read -r` or `mapfile`; never `for $(cat)` |
+| Writing | Redirect carefully; atomic `tmp` + `mv` for replace |
+| Temps | `mktemp` / `mktemp -d` + `trap` on `EXIT` |
+| Tests | `-e` `-f` `-d` `-r` `-w` `-x` `-s` `-L` |
+| Trees | `mkdir -p`, `find`, `rsync`; allow-list before `rm -rf` |
 
-### Directory Operations
+### Common pitfalls
 
-`mkdir -p`, `find`, `install -d`, `rsync -a` for trees. Validate paths stay under an allowed root before `rm -rf`.
+- Truncating a live config with `>` instead of writing via a temp file
+- Hard-coding predictable temp paths that other users can race
+- Forgetting `trap` cleanup so failed runs leave large directories behind
+- Running `rm -rf` on a variable that expanded empty or to `/`
+- Checking only byte free space and ignoring inode exhaustion on the same volume
 
 ## Hands-on Lab
 

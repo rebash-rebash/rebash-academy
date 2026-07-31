@@ -1,391 +1,225 @@
 ---
-title: Branching Fundamentals
-description: Create, switch, list, and delete branches; understand branch pointers, detached HEAD, and branching strategies for DevOps teams.
+title: "Branching Fundamentals"
+description: "Create and switch Git branches, understand HEAD, name branches for DevOps work, and follow safe branching practices."
 difficulty: beginner
-estimated_time: "40 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "40–55 min"
+technology: git
 category: git
-tags:
+module: "Module 5 · Branching"
+career_paths:
+  - beginner
+  - devops-engineer
+  - platform-engineer
+skills:
   - git
   - branching
-  - checkout
-  - switch
 prerequisites:
-  - Viewing History and Diffs
-  - Basic Git Workflow — Add, Commit, Push
+  - git/gitignore-and-gitattributes
+next:
+  - git/merging-and-merge-conflicts
+related:
+  - git/production-git-practices
+labs: []
+projects: []
+interview: interview/git
+certifications:
+  - GitHub Foundations
+tags:
+  - git
+  - branches
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Branching Fundamentals
 
 ## Overview
 
-Branches are Git's killer feature — lightweight movable pointers that let teams work in parallel without stepping on each other. Feature branches for application code, environment branches for Terraform, hotfix branches for production incidents — all use the same mechanics. This tutorial teaches branch creation, switching, listing, deletion, and the mental model behind branch pointers.
+Create, switch, and list branches confidently, explain HEAD, and apply naming conventions used in Cloud/DevOps teams.
 
-This is **Tutorial 7** in **Module 3: Branching** of the REBASH Academy Git series.
+Branches isolate change. Protected `main` plus short-lived `feature/*` or `fix/*` branches is the default for GitHub Flow.
+
+This is a core tutorial in **Module 5 · Branching** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Viewing History and Diffs](viewing-history-and-diffs.md)
-- [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+- [gitignore and gitattributes](gitignore-and-gitattributes.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Create branches with `git branch` and `git switch -c`
-- [ ] Switch branches safely with `git switch` / `git checkout`
-- [ ] List local and remote branches with tracking info
-- [ ] Delete merged and unmerged branches
-- [ ] Understand detached HEAD state and recovery
-- [ ] Name branches following team conventions
-- [ ] Relate branches to CI/CD environment promotion
+- [ ] Create/switch branches (`switch`/`checkout`)  
+- [ ] Explain HEAD  
+- [ ] Name branches consistently  
+- [ ] List and delete local branches safely
 
 ## Architecture
 
-Branches are movable pointers to commits. Multiple branch names can reference the same commit until histories diverge.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Branching Fundamentals](../assets/images/branching-fundamentals.svg)
+![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
 
 ## Theory
 
-### Branches Are Pointers
+### What
 
-A branch is a file in `.git/refs/heads/` containing a 40-character commit SHA. When you commit on a branch, Git moves the pointer forward. Branches cost almost nothing — create liberally.
+A **branch** is a movable pointer to a commit. Creating a branch does not copy files; it creates a new name for a commit ID. **HEAD** usually points at a branch name; when it points at a raw commit you are in **detached HEAD**. Day-to-day work uses `git switch` (and `git switch -c`) rather than older `checkout` habits.
 
-Default branch is typically `main` (formerly `master`). Protected branches on GitHub/GitLab enforce review rules and CI gates.
+### Why
 
-### Creating Branches
+Branches isolate experiments, features, and hotfixes without disturbing `main`. Short-lived branches plus pull requests are the default DevOps collaboration model. Long-lived branches exist for release maintenance but raise merge cost — use them deliberately.
 
-**Modern (Git 2.23+):**
+### How it works
 
-```bash
-git switch -c feature/add-monitoring
-```
-
-**Classic:**
+`git switch -c feature/add-healthcheck` creates a branch at the current commit and checks it out. New commits advance that branch pointer only. `git branch -vv` shows local branches and their upstream tracking. Remote-tracking branches such as `origin/main` are updated by `fetch`. Naming conventions (`feature/…`, `fix/…`, `hotfix/…`, `chore/…`, often with ticket IDs) make automation and CODEOWNERS routing easier.
 
 ```bash
-git checkout -b feature/add-monitoring
-git branch feature/add-monitoring
-git switch feature/add-monitoring
-```
-
-Create from a specific starting point:
-
-```bash
-git switch -c hotfix/patch-1.2.1 v1.2.0
-git switch -c experiment/main origin/main
-```
-
-### Switching Branches
-
-```bash
+git switch -c feature/add-healthcheck
 git switch main
-git switch feature/add-monitoring
+git branch -vv
 ```
 
-Git requires a clean working tree (or forces stash) before switching if changes would be overwritten. Uncommitted changes on tracked files block the switch.
+### Key concepts
 
-**Restore pattern (Git 2.23+):**
+| Idea | Detail |
+|------|--------|
+| Branch = pointer | Cheap to create and delete |
+| Upstream | Local branch linked to `origin/…` |
+| Detached HEAD | HEAD points at a commit, not a branch |
+| Default branch | Usually `main`; protect it on the host |
 
-```bash
-git restore --staged file
-git restore file
-```
+Delete merged local branches with `git branch -d`; prune remote-tracking names after fetch with prune enabled.
 
-### Listing Branches
+### Common pitfalls
 
-```bash
-git branch              # local
-git branch -r           # remote-tracking
-git branch -a           # all
-git branch -vv          # with upstream and last commit
-```
-
-`-vv` shows tracking relationship — essential for knowing if you're ahead/behind remote.
-
-### Deleting Branches
-
-```bash
-git branch -d feature/done    # safe delete (merged)
-git branch -D feature/abandon # force delete
-git push origin --delete feature/done  # remote delete
-```
-
-After merge, delete feature branches to reduce clutter. Many teams automate stale branch cleanup.
-
-### Detached HEAD
-
-Checking out a commit SHA or tag directly puts you in **detached HEAD**:
-
-```bash
-git switch --detach v1.0.0
-```
-
-You can look around and commit, but commits aren't on any branch until you create one:
-
-```bash
-git switch -c fix-from-v1.0.0
-```
-
-Detached HEAD is normal for CI checkout of specific SHAs and for bisect.
-
-### Branch Naming Conventions
-
-| Pattern | Example | Use |
-|---------|---------|-----|
-| `feature/description` | `feature/ingress-tls` | New capability |
-| `fix/description` | `fix/memory-leak` | Bug fix |
-| `hotfix/description` | `hotfix/cve-2026-1234` | Urgent prod fix |
-| `release/x.y` | `release/2.4.0` | Release stabilization |
-| `env/name` | `env/staging` | Environment-specific IaC (GitOps) |
-
-Avoid slashes-only names that confuse tooling; keep names lowercase with hyphens.
-
-### Branching and CI/CD
-
-- **Feature branches** → PR triggers CI on branch push
-- **Main branch** → deploy to staging after merge
-- **Tags on main** → deploy to production
-- **Long-lived env branches** → GitOps sync per environment (less common with trunk-based)
-
-### Branch Housekeeping
-
-Schedule weekly cleanup on shared repos:
-
-```bash
-git fetch --prune
-git branch --merged main | grep -v 'main' | xargs -r git branch -d
-```
-
-Hosting platforms offer stale branch auto-delete after merge — enable in repository settings to prevent hundreds of orphaned `feature/` branches from cluttering branch lists and confusing new team members.
+- Doing real work in detached HEAD and “losing” commits (recover via reflog)  
+- Reusing vague names like `fix` or `update` across tickets  
+- Letting feature branches live for weeks against a moving `main`  
+- Force-deleting (`-D`) shared branches without team agreement
 
 ## Hands-on Lab
 
-### Step 1 – Initialize repo with base commits
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p /tmp/git-branch-lab && cd /tmp/git-branch-lab
+mkdir -p ~/rebash-git/module-05 && cd ~/rebash-git/module-05
+```
+
+**Focus:** hands-on practice for Branching Fundamentals
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Branching Fundamentals"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-git/module-05 && cd ~/rebash-git/module-05
 git init -b main
-echo "v1" > app.txt && git add . && git commit -m "feat: v1 baseline"
-echo "v2" >> app.txt && git add . && git commit -m "feat: v2 update"
-git log --oneline
-```
+git config user.email "lab@rebash.local"; git config user.name "REBASH Lab"
+echo base > README.md && git add README.md && git commit -m "chore: init"
 
-**Expected result:** New branch appears in `git branch`; `git status` shows it as current after switch.
-
-### Step 2 – Create and switch to feature branch
-
-**Command:**
-
-```bash
-git switch -c feature/logging
-echo "log=enabled" >> app.txt && git add . && git commit -m "feat: enable logging"
+git switch -c feature/demo
+echo work > app.txt && git add app.txt && git commit -m "feat: add app.txt"
+git switch main
 git log --oneline --all --graph
+git branch
 ```
 
-**Expected result:** Commits on the feature branch do not move `main` until merged.
-
-### Step 3 – Switch back to main
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-git switch main
-cat app.txt
-git log --oneline -1
+# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** Main does not include logging commit — branches diverged.
-
-**Expected result:** Branch listing includes local (and remote, if practised) names with tracking info.
-
-### Step 4 – List branches with tracking
-
-**Command:**
-
-```bash
-git branch -vv
-git branch -a
-```
-
-**Expected result:** Merged branch deletes cleanly; unmerged delete requires `-D` as documented.
-
-### Step 5 – Detached HEAD experiment
-
-**Command:**
-
-```bash
-git switch --detach HEAD~1
-git status
-echo "detached edit" >> app.txt
-git commit -am "wip: detached commit"
-git switch -c recover-detached
-git log --oneline -3
-```
-
-**Expected result:** Detached HEAD warning appears when checking out a raw commit; recovery branch created.
-
-### Step 6 – Merge feature (preview for next tutorial)
-
-**Command:**
-
-```bash
-git switch main
-git merge feature/logging
-git branch -d feature/logging
-git branch -d recover-detached
-git log --oneline --graph
-```
-
-**Expected result:** Naming convention examples match team style practised in the lab.
-
-### Step 7 – Clean up
-
-**Command:**
-
-```bash
-cd /tmp && rm -rf git-branch-lab
-```
-
-**Expected result:** Lab repository cleaned up.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Create/switch | New branch appears in `git branch` and HEAD points to it when switched |
-| Delete | Merged branch delete succeeds; unmerged delete behaves as documented |
-| Detached HEAD | You enter and recover from detached HEAD per lab |
-| Cleanup | Lab repo removed |
+- [ ] Lab commands run under `~/rebash-git/module-05/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git branch name` | Create branch at HEAD | `git branch feature/x` |
-| `git switch -c name` | Create and switch | `git switch -c feature/x` |
-| `git switch branch` | Switch branch | `git switch main` |
-| `git branch -d name` | Delete merged branch | `git branch -d feature/x` |
-| `git branch -a` | List all branches | `git branch -a` |
-| `git branch -vv` | Verbose with upstream | `git branch -vv` |
-| `git switch --detach REF` | Detached HEAD | `git switch --detach v1.0` |
+Production practice for **Branching Fundamentals** always combines:
 
-### Branch cleanup script
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-#!/usr/bin/env bash
-# git-prune-merged.sh — delete local branches merged into main
-set -euo pipefail
-git fetch --prune
-git switch main
-git pull --ff-only
-git branch --merged main | grep -v '^\* main$' | while read -r b; do
-  git branch -d "$b"
-done
-echo "Merged branches cleaned."
-```
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Name branches without embedding secrets or customer identifiers
-- Delete stale remote branches so abandoned work cannot be mistaken for approved code
-- Protect long-lived environment branches with required checks
-- Avoid pushing experimental branches that contain production data dumps
-- Recover detached HEAD carefully — do not force-push recovery commits onto protected branches
+- Treat credentials and tokens for git as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Working on main directly"
-    Unprotected main commits skip review and CI gates. Use feature branches unless trunk-based with feature flags.
+!!! warning "Doing real work in detached HEAD and “losing” commits (recover via reflog)  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Forgetting to pull before creating branch"
-    Branch from stale main causes unnecessary merge conflicts later. `git pull` on main first.
+!!! warning "Reusing vague names like `fix` or `update` across tickets  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Leaving hundreds of stale branches"
-    Clutter confuses reviewers. Delete after merge; use platform auto-delete settings.
-
-!!! warning "Losing detached HEAD commits"
-    Commits in detached state disappear when switching away without creating a branch. Name branch immediately.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Keep branches short-lived"
-    Target merge within days, not months. Long-lived branches accumulate merge debt.
-
-!!! tip "One branch per ticket"
-    Map `feature/JIRA-1234-add-waf` to traceability in audit logs.
-
-!!! tip "Use git switch over checkout for clarity"
-    `switch` handles branches; `checkout` also restores files — separate concerns reduce errors.
-
-!!! tip "Protect main and production branches"
-    Require PR, CI pass, and code review on hosting platform.
+- Encode Branching Fundamentals changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Cannot switch branch | Uncommitted changes conflict | Commit, stash, or discard changes |
-| Branch already exists | Name collision | Choose new name or delete old |
-| `-d` refuses delete | Unmerged commits | Merge first or use `-D` if intentional |
-| Detached HEAD warning | Checked out commit/tag | `git switch main` or create branch |
-| Remote branch not listed | Not fetched | `git fetch --all` |
-| Wrong base commit | Created branch from wrong ref | Recreate from correct base |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- **Branches** are lightweight pointers to commits — cheap to create and delete
-- Use **git switch -c** to create branches; **git switch** to move between them
-- **Detached HEAD** occurs when checking out a commit directly — create a branch to keep work
-- Follow **naming conventions** (`feature/`, `fix/`, `hotfix/`) for team clarity
-- Delete merged branches locally and remotely to keep repositories manageable
+**Branching Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What is a Git branch at the implementation level?
-2. What is the difference between `git switch` and `git checkout`?
-3. What is detached HEAD, and how do you recover from it?
-4. How do you list all branches including remotes?
-5. What is the difference between `git branch -d` and `-D`?
-6. Why should feature branches be short-lived?
-7. What branch naming conventions work well for DevOps teams?
-8. How do branches relate to CI/CD pipeline triggers?
-9. How do you create a branch from a specific tag or commit?
-10. What happens to commits made in detached HEAD if you switch away without creating a branch?
+1. How does **Branching Fundamentals** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1 and 3)"
-
-    **Q1 — Branch implementation:** A branch is a named reference (ref) stored as a file under `.git/refs/heads/` containing the SHA-1 of the tip commit. Creating a branch only adds this pointer — no file copy occurs. Commits on the branch advance the pointer.
-
-    **Q3 — Detached HEAD:** HEAD points directly to a commit instead of a branch ref. You can read and commit, but new commits aren't on any branch. Recovery: create a branch with `git switch -c new-branch` or merge/cherry-pick commits onto an existing branch before switching away.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Viewing History and Diffs](viewing-history-and-diffs.md) *(previous — Module 2)*
-- [Merging and Merge Conflicts](merging-and-merge-conflicts.md) *(next)*
-- [Advanced Git Workflows](advanced-git-workflows.md)
-- [Working with Remotes](working-with-remotes.md)
-- [Git – Category Overview](index.md)
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Merging and Merge Conflicts](merging-and-merge-conflicts.md)
 
 ## References
 
-- [Pro Git Book – Branching](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell)
-- [git switch documentation](https://git-scm.com/docs/git-switch)
-- [git branch documentation](https://git-scm.com/docs/git-branch)
-- [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow)
-- [REBASH Academy – Git Overview](index.md)
+- [Pro Git — Branching](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell)

@@ -1,125 +1,87 @@
 ---
 title: Overview
-description: "GitLab CI/CD learning track — 20 tutorials from pipeline foundations through secure deploys, production patterns, and a Terraform handoff."
-difficulty: beginner
-estimated_time: "Varies"
+description: "GitLab CI/CD for Cloud & DevOps Engineers — 18 modules covering pipelines, runners, Docker, Kubernetes, Terraform, DevSecOps, and enterprise GitLab."
+difficulty: intermediate
+estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-31"
 category: gitlab
 tags:
-  - cicd
   - gitlab
   - gitlab-ci
+  - cicd
+  - devops
+  - course
 comments: false
 ---
 
-# GitLab CI/CD
+# GitLab CI/CD for Cloud & DevOps Engineers
 
-GitLab CI from pipeline foundations through secure deployment, production patterns, and a Terraform handoff.
+**Duration:** 8–10 weeks · **Difficulty:** Intermediate → Advanced
+{ .ra-facts }
 
-## Overview
+Production GitLab CI/CD — design pipelines, operate runners, ship containers, deploy to Kubernetes and cloud, automate Terraform, and run enterprise DevSecOps platforms.
 
-The REBASH Academy **GitLab CI/CD** track is a structured, 20-tutorial curriculum published under
-`docs/gitlab/`. It teaches **GitLab CI** as the primary platform — `.gitlab-ci.yml`, runners, merge
-request pipelines, and deploy environments — with hands-on labs on **GitLab.com** free tier and local
-**lint / dry-run** paths (`glab ci lint`, `gitlab-ci-local`).
+!!! tip "Course status"
+    Curriculum follows the REBASH GitLab CI technology prompt (**18 modules**). Tutorials use the academy standard with **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Regenerate with `python3 scripts/generate-excalidraw-svg.py`. Start with [GitLab CI/CD Fundamentals](gitlab-ci-fundamentals.md).
 
-Other CI tools exist; Jenkins and GitHub Actions are covered in later REBASH tracks, not as peers in
-this curriculum.
+## 1. Course overview
 
-!!! tip "Prerequisites"
-    Complete the [Git](../git/index.md) track first — branching, merge requests, and branch protection
-    underpin every pipeline trigger. [Docker](../docker/index.md) becomes essential from Module 3 onward.
+### Purpose
 
-## Modules and tutorials
+Build and operate Continuous Integration and Continuous Delivery (CI/CD) on GitLab: `.gitlab-ci.yml`, runners, merge-request pipelines, secure variables, container builds, Kubernetes via the GitLab Agent, Terraform plans, multi-cloud OIDC, and production promotion.
 
-### Module 1 – Foundations
+### Target roles
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 1 | [Introduction to CI/CD and Delivery Models](introduction-to-cicd-and-delivery-models.md) | Beginner | 35 min |
-| 2 | [Pipeline Anatomy — Stages, Jobs, and Artifacts](pipeline-anatomy-stages-jobs-and-artifacts.md) | Beginner | 40 min |
-| 3 | [GitLab CI Fundamentals](gitlab-ci-fundamentals.md) | Beginner | 50 min |
-| 4 | [GitLab Merge Requests and Pipeline Triggers](gitlab-merge-requests-and-pipeline-triggers.md) | Beginner | 45 min |
+DevOps · Cloud · Platform · SRE · DevSecOps · Infrastructure
 
-### Module 2 – Runners and Configuration
+### Prerequisites
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 5 | [GitLab Runners and Executors](gitlab-runners-and-executors.md) | Intermediate | 50 min |
-| 6 | [GitLab Runner Tags and Scaling](gitlab-runner-tags-and-scaling.md) | Intermediate | 45 min |
-| 7 | [Variables, Secrets, and Credentials](variables-secrets-and-credentials.md) | Intermediate | 50 min |
-| 8 | [Triggers, Rules, and Branch Protection](triggers-rules-and-branch-protection.md) | Intermediate | 45 min |
+- [Git](../git/index.md) · [Docker](../docker/index.md)
+- [Kubernetes](../kubernetes/index.md) · [Terraform](../terraform/index.md)
+- Basic cloud knowledge (AWS, Azure, or Google Cloud)
 
-### Module 3 – Build and Quality
+### Capstone outcomes
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 9 | [Building Docker Images in CI](building-docker-images-in-ci.md) | Intermediate | 55 min |
-| 10 | [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md) | Intermediate | 45 min |
-| 11 | [Artifacts, Caches, and Dependencies](artifacts-caches-and-dependencies.md) | Intermediate | 45 min |
-| 12 | [Parallelism, Matrix, and Pipeline DAGs](parallelism-matrix-and-pipeline-dags.md) | Intermediate | 50 min |
+Enterprise pipelines · autoscaling runners · GitLab Agent · Terraform automation · multi-cloud deploys · security scanning · release automation · GitOps · monitoring · DR awareness
 
-### Module 4 – Secure Pipelines
+## 2. Modules
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 13 | [Least-Privilege CI Identities](least-privilege-ci-identities.md) | Intermediate | 45 min |
-| 14 | [Security Scanning in Pipelines](security-scanning-in-pipelines.md) | Intermediate | 50 min |
-| 15 | [Secret Detection and Supply Chain Basics](secret-detection-and-supply-chain-basics.md) | Intermediate | 45 min |
-| 16 | [Protected Environments and Approvals](protected-environments-and-approvals.md) | Intermediate | 45 min |
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | CI/CD fundamentals | [Fundamentals](gitlab-ci-fundamentals.md) |
+| 2 | Projects | [MRs & releases](gitlab-projects-mrs-and-releases.md) |
+| 3 | Runners | [Runners & executors](gitlab-runners-and-executors.md) |
+| 4 | Pipeline syntax | [`.gitlab-ci.yml`](pipeline-syntax-gitlab-ci-yml.md) |
+| 5 | Pipeline design | [DAGs & includes](pipeline-design-dags-and-includes.md) |
+| 6 | Variables & secrets | [Variables · OIDC](variables-secrets-and-oidc.md) |
+| 7 | Artifacts & cache | [Artifacts & cache](artifacts-caches-and-dependencies.md) |
+| 8 | Docker pipelines | [Docker builds](building-docker-images-in-ci.md) |
+| 9 | Kubernetes | [Agent & deploys](kubernetes-deploys-and-gitlab-agent.md) |
+| 10 | Terraform | [TF pipelines](terraform-pipelines-in-gitlab.md) |
+| 11 | Cloud deployments | [AWS · Azure · GCP](multi-cloud-deployments-with-gitlab.md) |
+| 12 | DevSecOps | [Security scanning](security-scanning-and-devsecops.md) |
+| 13 | Testing | [Tests & gates](testing-reports-and-quality-gates.md) |
+| 14 | Releases | [Tags & releases](release-management-and-versioning.md) |
+| 15 | Production | [Promotion & approvals](production-pipelines-and-environments.md) |
+| 16 | Monitoring | [Observability](pipeline-monitoring-and-observability.md) |
+| 17 | Troubleshooting | [Troubleshooting](troubleshooting-gitlab-ci.md) |
+| 18 | Enterprise | [Groups & governance](enterprise-gitlab.md) |
 
-### Module 5 – Deploy and Capstone
+## 3. Practice
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 17 | [GitLab Deployment Patterns](gitlab-deployment-patterns.md) | Intermediate | 50 min |
-| 18 | [Kubernetes Deploys from CI](kubernetes-deploys-from-ci.md) | Advanced | 55 min |
-| 19 | [GitLab CI Production Patterns](gitlab-ci-production-patterns.md) | Advanced | 45 min |
-| 20 | [CI/CD Capstone and Terraform Handoff](cicd-capstone-and-terraform-handoff.md) | Advanced | 60 min |
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
 
-**Total estimated time:** ~16 hours of hands-on learning
+## Diagrams
 
-## Learning Objectives
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```
 
-After completing this track, you will be able to:
+## Related
 
-- [ ] Explain CI, continuous delivery, and deployment models with trunk-based Git workflow
-- [ ] Author production `.gitlab-ci.yml` for merge request and default-branch pipelines
-- [ ] Configure runners, tags, variables, secrets, triggers, and branch protection
-- [ ] Build and scan container images; publish test reports and quality gates
-- [ ] Design parallel jobs, matrix builds, and pipeline DAGs with `needs:`
-- [ ] Apply least-privilege identities, security scanning, and secret detection in MR pipelines
-- [ ] Gate production with protected environments and manual approvals
-- [ ] Deploy to Kubernetes from GitLab CI and operate pipelines at production scale
-- [ ] Complete a capstone pipeline and hand off infrastructure to [Terraform in CI/CD](../terraform/terraform-in-ci-cd-pipelines.md)
-
-## Who Is This For?
-
-| Audience | Benefit |
-|----------|---------|
-| **DevOps / Platform engineers** | Operate GitLab CI the way production teams do |
-| **Software developers** | Understand pipeline triggers, artefacts, and deploy gates on your merge requests |
-| **SREs** | Secure pipelines, observability hooks, and rollback-aware deploy patterns |
-| **Career switchers** | Job-ready GitLab CI after the [Git](../git/index.md) track |
-
-## Related Sections
-
-- [Git](../git/index.md) — branching and merge requests pipelines depend on
-- [Docker](../docker/index.md) — images built and promoted in Module 3
-- [Kubernetes](../kubernetes/index.md) — deploy targets from Module 5
-- [Terraform](../terraform/index.md) — [Terraform in CI/CD Pipelines](../terraform/terraform-in-ci-cd-pipelines.md) after the capstone
-- [AWS](../aws/index.md) — cloud OIDC roles and deployment targets
+- [Git](../git/index.md) · [Docker](../docker/index.md) · [Kubernetes](../kubernetes/index.md)
+- [Terraform](../terraform/index.md) · [Helm](../helm/index.md) · [GitHub Actions](../github-actions/index.md)
 - [DevOps Engineer path](../career-paths/devops-engineer/index.md)
-
-## Labs, Quiz, and Cheatsheet
-
-| Resource | Link |
-|----------|------|
-| Lab — pipeline triage | [CI/CD Pipeline Failure Triage](../labs/cicd-pipeline-triage.md) |
-| Lab — Docker secure gate | [Docker Build, Scan, and Deploy Gate](../labs/cicd-docker-secure-gate.md) |
-| Quiz | [CI/CD Fundamentals](../quizzes/cicd-fundamentals.md) |
-| Cheat sheet | [CI/CD](../cheatsheets/cicd.md) |
-| Interview prep | [CI/CD](../interview/cicd.md) |
-
-Start with [Introduction to CI/CD and Delivery Models](introduction-to-cicd-and-delivery-models.md).

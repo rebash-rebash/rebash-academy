@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200"
+     viewBox="0 0 800 200" role="img" aria-label="linux-cli-workflow">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Essential CLI workflow</text>
+
+  <path d="M 42.0,83.0 L 153.1,83.7 Q 163.1,83.7 163.1,93.7 L 163.5,148.4 Q 163.5,158.4 153.5,158.4 L 43.2,158.4 Q 33.2,158.4 33.2,148.4 L 32.0,93.0 Q 32.0,83.0 42.0,83.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 39.8,80.1 L 150.4,79.9 Q 160.4,79.9 160.4,89.9 L 160.1,144.7 Q 160.1,154.7 150.1,154.7 L 40.3,154.9 Q 30.3,154.9 30.3,144.9 L 29.8,90.1 Q 29.8,80.1 39.8,80.1 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="95.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Navigate</text>
+  <text x="95.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cd · ls · pwd</text>
+
+
+  <path d="M 160.0,118.0 L 166.9,117.8 L 174.3,117.7 L 180.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 180.0,118.0 L 173.1,122.0 M 180.0,118.0 L 173.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 193.6,82.6 L 303.7,82.5 Q 313.7,82.5 313.7,92.5 L 313.6,147.1 Q 313.6,157.1 303.6,157.1 L 192.1,158.8 Q 182.1,158.8 182.1,148.8 L 183.6,92.6 Q 183.6,82.6 193.6,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 190.6,79.2 L 300.4,79.0 Q 310.4,79.0 310.4,89.0 L 309.5,144.4 Q 309.5,154.4 299.5,154.4 L 191.0,155.6 Q 181.0,155.6 181.0,145.6 L 180.6,89.2 Q 180.6,79.2 190.6,79.2 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="245.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Inspect</text>
+  <text x="245.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cat · less</text>
+
+
+  <path d="M 310.0,118.0 L 317.5,118.0 L 323.4,117.8 L 330.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 330.0,118.0 L 323.1,122.0 M 330.0,118.0 L 323.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 342.3,83.2 L 453.5,82.0 Q 463.5,82.0 463.5,92.0 L 462.3,148.2 Q 462.3,158.2 452.3,158.2 L 342.3,159.0 Q 332.3,159.0 332.3,149.0 L 332.3,93.2 Q 332.3,83.2 342.3,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 340.4,80.9 L 450.8,79.6 Q 460.8,79.6 460.8,89.6 L 459.8,145.2 Q 459.8,155.2 449.8,155.2 L 339.4,154.5 Q 329.4,154.5 329.4,144.5 L 330.4,90.9 Q 330.4,80.9 340.4,80.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="395.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Find</text>
+  <text x="395.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">find · grep</text>
+
+
+  <path d="M 460.0,118.0 L 467.6,116.9 L 473.2,116.8 L 480.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 480.0,118.0 L 473.1,122.0 M 480.0,118.0 L 473.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 493.5,82.0 L 602.8,82.4 Q 612.8,82.4 612.8,92.4 L 613.9,148.3 Q 613.9,158.3 603.9,158.3 L 493.1,158.7 Q 483.1,158.7 483.1,148.7 L 483.5,92.0 Q 483.5,82.0 493.5,82.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 490.0,79.8 L 599.2,80.7 Q 609.2,80.7 609.2,90.7 L 609.6,144.8 Q 609.6,154.8 599.6,154.8 L 489.6,154.1 Q 479.6,154.1 479.6,144.1 L 480.0,89.8 Q 480.0,79.8 490.0,79.8 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="545.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Edit</text>
+  <text x="545.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">vim · nano</text>
+
+
+  <path d="M 610.0,118.0 L 616.7,117.1 L 624.2,118.9 L 630.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 630.0,118.0 L 623.1,122.0 M 630.0,118.0 L 623.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 642.0,83.2 L 753.1,82.5 Q 763.1,82.5 763.1,92.5 L 763.1,147.2 Q 763.1,157.2 753.1,157.2 L 643.2,157.3 Q 633.2,157.3 633.2,147.3 L 632.0,93.2 Q 632.0,83.2 642.0,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 640.6,79.7 L 749.6,79.9 Q 759.6,79.9 759.6,89.9 L 760.7,144.2 Q 760.7,154.2 750.7,154.2 L 639.1,155.1 Q 629.1,155.1 629.1,145.1 L 630.6,89.7 Q 630.6,79.7 640.6,79.7 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="695.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Pipe</text>
+  <text x="695.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">| · ></text>
+
+</svg>

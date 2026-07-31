@@ -47,33 +47,42 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Linux Administration Automation](../assets/images/shell-linux-admin.svg)
+![Architecture diagram for Linux Administration Automation](../assets/excalidraw/shell-automation-workflow.svg)
 
 ## Theory
 
-### User Management
+### What it is
 
-Script `useradd`/`usermod`/`id` checks idempotently: create only if missing; never embed passwords in scripts (use SSH keys or a secrets store).
+**Linux admin automation** uses shell scripts to perform repeatable host operations: managing users, installing packages, controlling services, rotating logs, watching disk usage, and running backups. Instead of typing privileged commands by hand on each machine, you encode the desired checks and mutations so the same steps apply in the lab, on a bastion, or across a small fleet. The shell remains the practical interface to `useradd`, package managers, `systemctl`, and filesystem tools.
 
-### Package Management
+### Why it matters
 
-Detect family and call `apt-get`, `dnf`, or `zypper` non-interactively (`DEBIAN_FRONTEND=noninteractive`). Pin versions when reproducibility matters.
+Human-driven administration does not scale and drifts between hosts. An idempotent script that creates a user only when missing, installs a pinned package non-interactively, and verifies a service is active becomes a building block for DevOps and platform workflows. Disk and backup automation protect availability: full volumes and untested backups are still among the most common outage causes. Encoding these tasks with clear exit codes lets Continuous Integration (CI), cron, or configuration management call them safely.
 
-### Service Management
+### How it works
 
-Prefer `systemctl enable --now`, `systemctl is-active`, and `systemctl show`. Parse status; do not scrape unstable English text without care.
+For users, check with `id` before `useradd` / `usermod`. Never embed passwords in scripts — prefer SSH keys or a secrets store. For packages, detect the family and call `apt-get`, `dnf`, or `zypper` non-interactively (`DEBIAN_FRONTEND=noninteractive` on Debian/Ubuntu). Pin versions when reproducibility matters.
 
-### Log Rotation
+Drive services through `systemctl enable --now`, `systemctl is-active`, and `systemctl show` rather than scraping unstable English status text. Configure `logrotate` for system logs; for application logs, compress and prune by age or size in a dedicated script that supports dry-run. Monitor space with `df -h`, `df -i`, and `du -sh` on critical paths — watch inodes as well as bytes. Back up with `tar` or `rsync`, keep retention and checksums, log start and end times, and exit non-zero on failure. Practise a restore dry-run path so backups are not theatre.
 
-Call or configure `logrotate`; for app logs, compress and prune by age/size in a dedicated script with dry-run.
+### Key concepts
 
-### Disk Usage
+| Area | Practice |
+|------|----------|
+| Users | Idempotent create/update; no passwords in git |
+| Packages | Non-interactive installs; pin when needed |
+| Services | `systemctl` status APIs over text scraping |
+| Logs | `logrotate` or scripted compress/prune + dry-run |
+| Disk | Threshold alerts on bytes **and** inodes |
+| Backups | Retention, checksums, tested restore path |
 
-`df -h`, `df -i`, `du -sh` on critical paths; alert when thresholds breach. Check inodes as well as bytes.
+### Common pitfalls
 
-### Backup Automation
-
-`tar`/`rsync` with retention, checksums, and a restore dry-run path. Log start/end and exit non-zero on failure.
+- Running `useradd` blindly every night and failing on “already exists”
+- Interactive package prompts that hang under cron
+- Parsing `systemctl status` English output that changes between versions
+- Alerting only on `df -h` while inodes on a small `/var` are exhausted
+- Taking backups that have never been restored in a drill
 
 ## Hands-on Lab
 

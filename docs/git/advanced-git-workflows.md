@@ -48,7 +48,7 @@ By the end of this tutorial, you will be able to:
 
 Team workflows constrain which branches accept direct commits and how changes promote from development to release.
 
-![Architecture diagram for Advanced Git Workflows](../assets/images/advanced-git-workflows.svg)
+![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
 
 ## Theory
 

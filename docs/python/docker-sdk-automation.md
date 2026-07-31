@@ -1,222 +1,297 @@
 ---
 title: "Docker SDK Automation"
-description: "Automate Docker with the Python SDK — containers, images, networks, volumes, and registry workflows."
+description: "Automate Docker with the Python SDK — images, containers, networks, volumes, and registry cleanup patterns with dry-run defaults."
 difficulty: intermediate
-estimated_time: "55 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "50–65 min"
+technology: python
 category: python
+module: "Module 17 · Docker Automation"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - cloud-engineer
+skills:
+  - python
+  - docker-sdk
+  - containers
+prerequisites:
+  - python/git-automation-github-and-gitlab
+next:
+  - python/kubernetes-python-client-automation
+related:
+  - docker/index
+  - labs/python-docker-cleanup-tool
+labs:
+  - labs/python-docker-cleanup-tool
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
 tags:
   - python
   - docker
-  - sdk
   - containers
-prerequisites:
-  - Git Automation — GitHub and GitLab
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Docker SDK Automation
 
 ## Overview
 
-Cleanup and inventory tools prevent disk fill on build agents — default to report-only.
+Drive the Docker Engine API from Python to list images/containers, sketch cleanup safely with `--apply`, and understand networks, volumes, and registry automation boundaries.
 
-This is **Tutorial 17** in **Module 17: Docker Automation** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+The **Docker SDK for Python** talks to the same API as the Docker CLI. Use it for inventory and controlled cleanup — not for surprise `prune` in production without dry-run.
+
+Complete [Git Automation](git-automation-github-and-gitlab.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 17 · Docker Automation** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Git Automation — GitHub and GitLab
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Linux Automation](linux-automation-subprocess-and-psutil.md) habits (timeouts, exit codes)
+- Docker Engine available **or** use the offline fixture path below
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Docker SDK Automation” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Connect with `docker.from_env()`  
+- [ ] List containers and images  
+- [ ] Explain networks and volumes at an ops level  
+- [ ] Design prune/cleanup with dry-run  
+- [ ] Note registry auth as a separate concern
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Docker SDK Automation](../assets/images/python-docker-sdk-workflow.svg)
+![Docker SDK workflow](../assets/excalidraw/python-docker-sdk-workflow.svg)
 
 ## Theory
 
-### Docker SDK
+### What it is
 
-`docker` PyPI package talks to the local Docker Engine API. Check the daemon is reachable before work.
+The Docker SDK for Python (`docker` package) talks to the Docker Engine API the same way the `docker` CLI does — usually over the Unix socket `unix:///var/run/docker.sock`, or via `DOCKER_HOST` for remote daemons. You get objects for containers, images, networks, and volumes: list, inspect, build, run, stop, and prune, without shelling out and scraping text.
 
-### Containers
+### Why it matters
 
-List/filter containers; stop/remove only with `--apply`. Label lab containers so cleanup is scoped.
+DevOps automation invents containers for tests, cleans stale images on builders, and audits what is running on a host. Subprocess wrappers break when CLI output changes; the SDK returns structured attributes (`status`, tags, labels). In Continuous Integration / Continuous Delivery (CI/CD), Python jobs can assert “only expected containers exist” or pull pinned digests before a deploy smoke test — with the same safety flags you use for kubectl-style tools.
 
-### Images
+### How it works
 
-List dangling images; prune behind apply flags. Prefer digest pins in production deploy tools.
+`docker.from_env()` builds a client from environment and default socket paths. `client.ping()` confirms the daemon is reachable. Listing containers with `all=True` includes stopped ones; images expose tags and IDs. Networks and volumes are separate namespaces — list first, delete only unused resources. Registry operations (login, pull, push) need credentials from the environment or credential helpers; never embed tokens in code. Production promotion should pin by digest (`image@sha256:…`), not only by floating tags like `latest`.
 
-### Networks
+```python
+import docker
+client = docker.from_env()
+client.ping()
+for c in client.containers.list(all=True):
+    print(c.short_id, c.status, c.image.tags)
+```
 
-Inspect custom networks and stale attachments. Avoid deleting networks still in use.
+### Key concepts and comparisons
 
-### Volumes
+| Resource | SDK entry | Typical automation |
+|----------|-----------|--------------------|
+| Containers | `client.containers` | Inventory, stop/remove with `--apply` |
+| Images | `client.images` | List, pull, prune dangling |
+| Networks / volumes | `client.networks` / `volumes` | Cleanup unused lab resources |
+| Swarm / Compose | Separate APIs / tools | Prefer Compose CLI for stacks |
 
-Unused volumes waste disk — report first, delete only when policy allows.
+| Action | Tutorial default |
+|--------|------------------|
+| List / inspect / ping | Allowed |
+| Stop / remove / prune | Require `--apply` |
+| Force remove | Extra confirmation in real tools |
 
-### Registry Automation
+### Common pitfalls
 
-Login, push/pull, and tag promotion. Store registry credentials in env/secret stores — never in scripts.
+- Assuming the script’s user can access the Docker socket (group/`sudo` issues).  
+- Pruning aggressively on shared builders and deleting in-use layers.  
+- Logging registry passwords or auth configs.  
+- Treating tag `latest` as immutable.  
+- Mutating production hosts without dry-run and an allow-list of names.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Docker SDK Automation
 
 ```bash
-mkdir -p ~/rebash-python/lab17 && cd ~/rebash-python/lab17
+mkdir -p ~/rebash-python/module-17
+cd ~/rebash-python/module-17
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install 'docker==7.1.0'
 ```
 
-**Focus:** Docker cleanup tool: report dangling images/containers; --apply optional
-
-### Step 1 – Skeleton
+### Step 1 – Fixture inventory (offline)
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab17 docker-sdk-automation")
+cd ~/rebash-python/module-17
+source .venv/bin/activate
+
+mkdir -p fixtures
+cat > fixtures/containers.json << 'EOF'
+[
+  {"id": "abc123", "status": "exited", "image": "nginx:1.27"},
+  {"id": "def456", "status": "running", "image": "redis:7"}
+]
 EOF
-chmod +x lab.py
-python3 lab.py
-```
 
-### Step 2 – Docker cleanup report
-
-```bash
-cat > docker_clean.py << 'EOF'
+cat > docker_inventory.py << 'EOF'
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, json
 
-FIXTURE = {
-    "containers": [{"id": "c1", "status": "exited", "names": ["lab_old"]}],
-    "images": [{"id": "img1", "dangling": True}],
-}
+import argparse
+import json
+import sys
+from pathlib import Path
+
+
+def from_fixture(path: Path) -> list[dict]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def from_docker() -> list[dict]:
+    import docker
+
+    client = docker.from_env()
+    client.ping()
+    rows = []
+    for c in client.containers.list(all=True):
+        tags = c.image.tags or [""]
+        rows.append({"id": c.short_id, "status": c.status, "image": tags[0]})
+    return rows
+
 
 def main() -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("--apply", action="store_true")
+    p = argparse.ArgumentParser(description="Docker container inventory")
+    p.add_argument("--fixture", type=Path)
+    p.add_argument("--apply-prune-exited", action="store_true", help="dangerous lab flag")
     args = p.parse_args()
-    for c in FIXTURE["containers"]:
-        verb = "REMOVE" if args.apply else "WOULD_REMOVE"
-        print(f"{verb} container {c['id']} {c['names']}")
-    for i in FIXTURE["images"]:
-        if i["dangling"]:
-            verb = "REMOVE" if args.apply else "WOULD_REMOVE"
-            print(f"{verb} image {i['id']}")
-    print("RESULT ok")
+    try:
+        rows = from_fixture(args.fixture) if args.fixture else from_docker()
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: {exc}", file=sys.stderr)
+        print("hint: use --fixture fixtures/containers.json", file=sys.stderr)
+        return 1
+    print(json.dumps(rows, indent=2))
+    exited = [r for r in rows if r["status"] == "exited"]
+    print(f"exited_count={len(exited)}", file=sys.stderr)
+    if args.apply_prune_exited:
+        print("error: prune not implemented in tutorial — use dedicated cleanup lab", file=sys.stderr)
+        return 2
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
 EOF
-python3 docker_clean.py
-python3 docker_clean.py --apply
+
+python docker_inventory.py --fixture fixtures/containers.json
 ```
 
-### Final step – Cleanup note
+### Step 2 – Live ping (optional)
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+try:
+    import docker
+    print("ping", docker.from_env().ping())
+except Exception as exc:
+    print("docker unavailable:", exc)
+PY
 ```
+
+### Step 3 – Cleanup policy notes
+
+Write `cleanup-policy.md`: age threshold, exclude labels (`keep=true`), dry-run JSON plan, then `--apply`.
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab17/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-17/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Docker SDK Automation** always combines:
+Production practice for **Docker SDK Automation** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Assuming the script’s user can access the Docker socket (group/`sudo` issues).  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Pruning aggressively on shared builders and deleting in-use layers.  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Docker SDK Automation changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| Permission denied on socket | User not in `docker` group | Rootless or group membership |
+| API version errors | Old engine/SDK mismatch | Align versions |
+| Accidental wipe | Prune without filter | Labels + dry-run |
 
 ## Summary
 
-**Docker SDK Automation** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- SDK mirrors CLI capabilities over the Engine API  
+- Inventory first; prune only with explicit apply  
+- Lab: [Docker Cleanup Tool](../labs/python-docker-cleanup-tool.md)
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Docker SDK Automation** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Git Automation — GitHub and GitLab](git-automation-github-and-gitlab.md) *(previous)*
-- [Kubernetes Python Client Automation](kubernetes-python-client-automation.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Kubernetes Python Client Automation](kubernetes-python-client-automation.md)  
+- [Docker Cleanup Tool lab](../labs/python-docker-cleanup-tool.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [docker-py](https://docker-py.readthedocs.io/)

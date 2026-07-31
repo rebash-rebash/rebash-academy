@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="200"
+     viewBox="0 0 700 200" role="img" aria-label="terraform-troubleshooting">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="390.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Troubleshooting ladder</text>
+
+  <path d="M 32.1,83.2 L 122.4,83.2 Q 132.4,83.2 132.4,93.2 L 132.7,148.4 Q 132.7,158.4 122.7,158.4 L 33.5,157.8 Q 23.5,157.8 23.5,147.8 L 22.1,93.2 Q 22.1,83.2 32.1,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 31.0,79.7 L 119.8,80.2 Q 129.8,80.2 129.8,90.2 L 129.0,145.3 Q 129.0,155.3 119.0,155.3 L 30.5,155.3 Q 20.5,155.3 20.5,145.3 L 21.0,89.7 Q 21.0,79.7 31.0,79.7 Z" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  
+  <text x="75.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Auth</text>
+  <text x="75.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">creds</text>
+
+
+  <path d="M 130.0,118.0 L 136.5,118.2 L 142.4,118.0 L 150.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 150.0,118.0 L 143.1,122.0 M 150.0,118.0 L 143.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 163.4,83.8 L 252.6,83.2 Q 262.6,83.2 262.6,93.2 L 263.4,148.2 Q 263.4,158.2 253.4,158.2 L 162.2,157.1 Q 152.2,157.1 152.2,147.1 L 153.4,93.8 Q 153.4,83.8 163.4,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 160.7,79.5 L 250.4,80.1 Q 260.4,80.1 260.4,90.1 L 260.6,145.3 Q 260.6,155.3 250.6,155.3 L 159.7,155.3 Q 149.7,155.3 149.7,145.3 L 150.7,89.5 Q 150.7,79.5 160.7,79.5 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="205.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Provider</text>
+  <text x="205.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">versions</text>
+
+
+  <path d="M 260.0,118.0 L 267.5,117.2 L 273.0,117.8 L 280.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 280.0,118.0 L 273.1,122.0 M 280.0,118.0 L 273.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 292.0,82.6 L 383.4,83.5 Q 393.4,83.5 393.4,93.5 L 393.4,147.1 Q 393.4,157.1 383.4,157.1 L 292.9,157.0 Q 282.9,157.0 282.9,147.0 L 282.0,92.6 Q 282.0,82.6 292.0,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 290.8,80.9 L 380.6,80.7 Q 390.6,80.7 390.6,90.7 L 390.9,144.8 Q 390.9,154.8 380.9,154.8 L 290.5,154.3 Q 280.5,154.3 280.5,144.3 L 280.8,90.9 Q 280.8,80.9 290.8,80.9 Z" fill="#ffec99" stroke="#e67700" stroke-width="2"/>
+  
+  <text x="335.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">State</text>
+  <text x="335.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">lock/drift</text>
+
+
+  <path d="M 390.0,118.0 L 395.7,118.2 L 403.5,118.2 L 410.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 410.0,118.0 L 403.1,122.0 M 410.0,118.0 L 403.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 423.0,82.5 L 512.9,82.5 Q 522.9,82.5 522.9,92.5 L 522.9,148.7 Q 522.9,158.7 512.9,158.7 L 424.0,158.9 Q 414.0,158.9 414.0,148.9 L 413.0,92.5 Q 413.0,82.5 423.0,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 419.3,80.1 L 509.4,79.4 Q 519.4,79.4 519.4,89.4 L 520.7,144.1 Q 520.7,154.1 510.7,154.1 L 419.7,155.7 Q 409.7,155.7 409.7,145.7 L 409.3,90.1 Q 409.3,80.1 419.3,80.1 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="465.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Graph</text>
+  <text x="465.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cycles</text>
+
+
+  <path d="M 520.0,118.0 L 525.7,117.8 L 533.1,118.2 L 540.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 540.0,118.0 L 533.1,122.0 M 540.0,118.0 L 533.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 552.6,83.0 L 643.9,82.7 Q 653.9,82.7 653.9,92.7 L 652.4,147.9 Q 652.4,157.9 642.4,157.9 L 552.2,157.7 Q 542.2,157.7 542.2,147.7 L 542.6,93.0 Q 542.6,83.0 552.6,83.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 550.8,79.2 L 639.4,79.6 Q 649.4,79.6 649.4,89.6 L 649.8,146.0 Q 649.8,156.0 639.8,156.0 L 550.5,154.2 Q 540.5,154.2 540.5,144.2 L 540.8,89.2 Q 540.8,79.2 550.8,79.2 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="595.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Fix</text>
+  <text x="595.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">import/move</text>
+
+</svg>

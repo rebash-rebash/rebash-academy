@@ -1,6 +1,6 @@
 ---
 title: Learning Roadmap
-description: "Structured learning roadmap for the GitLab CI/CD course."
+description: "Structured 18-module learning roadmap for GitLab CI/CD for Cloud & DevOps Engineers."
 technology_id: gitlab
 hide:
   - toc
@@ -8,57 +8,49 @@ author: Shaik Basha
 category: gitlab
 tags:
   - gitlab
+  - gitlab-ci
+  - roadmap
 ---
 
 # GitLab CI/CD — Learning Roadmap
 
 Follow the course in order:
 
-1. **Course overview** — understand scope, prerequisites, and outcomes
-2. **Modules** — work through tutorials module by module
-3. **Labs** — hands-on practice after core lessons
-4. **Quizzes** — check understanding before projects
-5. **Projects** — portfolio builds that connect multiple skills
-6. **Capstone** — end-to-end proof of production readiness
-7. **Interview preparation** — role-specific questions and scenarios
-8. **Certifications** — map lessons to industry exams
+1. **Course overview** — scope, prerequisites, outcomes
+2. **Modules 1–18** — tutorials in sequence
+3. **Labs / quizzes / projects** — practice
+4. **Capstone** — production GitLab CI/CD platform
+5. **Interview & certifications** — GitLab CI/CD Associate / DevOps Professional
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![GitLab architecture](../assets/excalidraw/gitlab-architecture.svg)
+
+![Pipeline flow](../assets/excalidraw/gitlab-pipeline-flow.svg)
 
 ## Modules
 
-### Module 1 · Foundations
+| # | Focus | Tutorials |
+|---|-------|-----------|
+| 1 | Fundamentals | [Fundamentals](gitlab-ci-fundamentals.md) |
+| 2 | Projects | [MRs & releases](gitlab-projects-mrs-and-releases.md) |
+| 3 | Runners | [Runners & executors](gitlab-runners-and-executors.md) |
+| 4 | Pipeline syntax | [`.gitlab-ci.yml`](pipeline-syntax-gitlab-ci-yml.md) |
+| 5 | Pipeline design | [DAGs & includes](pipeline-design-dags-and-includes.md) |
+| 6 | Variables & secrets | [Variables · OIDC](variables-secrets-and-oidc.md) |
+| 7 | Artifacts & cache | [Artifacts & cache](artifacts-caches-and-dependencies.md) |
+| 8 | Docker pipelines | [Docker builds](building-docker-images-in-ci.md) |
+| 9 | Kubernetes | [Agent & deploys](kubernetes-deploys-and-gitlab-agent.md) |
+| 10 | Terraform | [TF pipelines](terraform-pipelines-in-gitlab.md) |
+| 11 | Cloud deployments | [AWS · Azure · GCP](multi-cloud-deployments-with-gitlab.md) |
+| 12 | DevSecOps | [Security scanning](security-scanning-and-devsecops.md) |
+| 13 | Testing | [Tests & gates](testing-reports-and-quality-gates.md) |
+| 14 | Releases | [Tags & releases](release-management-and-versioning.md) |
+| 15 | Production | [Promotion & approvals](production-pipelines-and-environments.md) |
+| 16 | Monitoring | [Observability](pipeline-monitoring-and-observability.md) |
+| 17 | Troubleshooting | [Troubleshooting](troubleshooting-gitlab-ci.md) |
+| 18 | Enterprise | [Groups & governance](enterprise-gitlab.md) |
 
-- [Introduction to CI/CD and Delivery Models](../introduction-to-cicd-and-delivery-models/)
-- [Pipeline Anatomy — Stages, Jobs, and Artifacts](../pipeline-anatomy-stages-jobs-and-artifacts/)
-- [GitLab CI Fundamentals](../gitlab-ci-fundamentals/)
-- [GitLab Merge Requests and Pipeline Triggers](../gitlab-merge-requests-and-pipeline-triggers/)
+## Diagrams
 
-### Module 2 · Runners and Configuration
-
-- [GitLab Runners and Executors](../gitlab-runners-and-executors/)
-- [GitLab Runner Tags and Scaling](../gitlab-runner-tags-and-scaling/)
-- [Variables, Secrets, and Credentials](../variables-secrets-and-credentials/)
-- [Triggers, Rules, and Branch Protection](../triggers-rules-and-branch-protection/)
-
-### Module 3 · Build and Quality
-
-- [Building Docker Images in CI](../building-docker-images-in-ci/)
-- [Testing, Reports, and Quality Gates](../testing-reports-and-quality-gates/)
-- [Artifacts, Caches, and Dependencies](../artifacts-caches-and-dependencies/)
-- [Parallelism, Matrix, and Pipeline DAGs](../parallelism-matrix-and-pipeline-dags/)
-
-### Module 4 · Secure Pipelines
-
-- [Least-Privilege CI Identities](../least-privilege-ci-identities/)
-- [Security Scanning in Pipelines](../security-scanning-in-pipelines/)
-- [Secret Detection and Supply Chain Basics](../secret-detection-and-supply-chain-basics/)
-- [Protected Environments and Approvals](../protected-environments-and-approvals/)
-
-### Module 5 · Deploy and Capstone
-
-- [GitLab Deployment Patterns](../gitlab-deployment-patterns/)
-- [Kubernetes Deploys from CI](../kubernetes-deploys-from-ci/)
-- [GitLab CI Production Patterns](../gitlab-ci-production-patterns/)
-- [CI/CD Capstone and Terraform Handoff](../cicd-capstone-and-terraform-handoff/)
-
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```

@@ -45,45 +45,45 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Host Monitoring with vmstat, iostat, and sar](../assets/images/linux-host-monitoring.svg)
+![Architecture diagram for Host Monitoring with vmstat, iostat, and sar](../assets/excalidraw/linux-host-monitoring.svg)
 
 ## Theory
 
-### Instant signals
+### What it is
 
-| Tool | Shows |
-|------|-------|
-| `uptime` | Load averages, users |
-| `free -h` | Memory / swap |
-| `df -h` / `du` | Disk capacity / tree usage |
+**Host monitoring** with classic tools gives immediate and historical views of resource health. Instant signals include `uptime` (load averages), `free` (memory and swap), and `df`/`du` (disk). **vmstat** samples processes, memory, swap, and CPU; **iostat** exposes per-device I/O utilisation and latency; **sar** (System Activity Reporter from the sysstat package) records historical samples you can replay after an incident.
 
-### vmstat
+### Why it matters
 
-```bash
-vmstat 1 5
-```
+Dashboards lag; SSH-plus-sysstat still saves outages. Distinguishing CPU saturation from I/O wait from memory thrashing changes the fix from “add CPUs” to “fix disk” or “stop the leak.” Historical `sar` data answers “was it already bad before the deploy?” without guessing. These skills transfer to interpreting cloud metrics that use the same underlying ideas (utilisation, saturation, errors).
 
-Watch `r` (run queue), `si`/`so` (swap), `wa` (I/O wait).
+### How it works
 
-### iostat
+`vmstat 1 5` prints five one-second samples — watch run queue `r`, swap in/out `si`/`so`, and I/O wait `wa`. `iostat -xz 1 5` highlights util%, await, and queue depth; install sysstat if missing. `sar -u/-r/-d` reports CPU, memory, and disk; enable the sysstat timer or cron so history exists before the next incident. Correlate with `ps` for offenders and with application metrics for user impact. The USE method — utilisation, saturation, errors — keeps interpretation disciplined.
 
-```bash
-iostat -xz 1 5   # sysstat package
-```
+### Key concepts and comparisons
 
-Util%, await, and saturation expose disk bottlenecks.
+| Tool | Primary view |
+|------|----------------|
+| `uptime` / `free` / `df` | Instant capacity signals |
+| `vmstat` | CPU, run queue, swap, I/O wait |
+| `iostat` | Disk util, await, saturation |
+| `sar` | Historical samples across resources |
+| `top`/`ps` | Which PIDs consume CPU/RAM |
 
-### sar
+| Symptom | First counters |
+|---------|----------------|
+| Slow app, low CPU | `wa`, iostat await |
+| High load | `r` vs CPU count; steal time on VMs |
+| Latency spikes | swap `si`/`so`, thrashing |
 
-**System Activity Reporter** (sysstat) retains historical samples:
+### Common pitfalls
 
-```bash
-sar -u 1 5
-sar -r 1 5
-sar -d 1 5
-```
-
-Enable collection via `sysstat` timer/cron for post-incident graphs.
+- Treating load average alone as proof of CPU shortage.
+- Ignoring steal time (`st`) on noisy cloud hypervisors.
+- Looking at a single iostat snapshot during a brief burst.
+- Never enabling sysstat collection — no history when you need it.
+- Tuning sysctl based on one sample without a hypothesis or rollback.
 
 ## Hands-on Lab
 

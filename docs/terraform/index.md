@@ -1,107 +1,88 @@
 ---
 title: Overview
-description: "Terraform learning track — 20 tutorials from Infrastructure as Code fundamentals to production modules, state, and CI/CD."
-difficulty: beginner
-estimated_time: "Varies"
+description: "Terraform for Cloud & DevOps Engineers — 20 modules covering IaC, HCL, state, modules, security, CI/CD, multi-cloud, and production patterns."
+difficulty: intermediate
+estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-07-31"
 category: terraform
 tags:
   - terraform
   - infrastructure-as-code
+  - devops
+  - course
 comments: false
 ---
 
-# Terraform
+# Terraform for Cloud & DevOps Engineers
 
-Define, plan, and apply cloud infrastructure as code — from your first `.tf` file to modules, remote state, and production pipelines.
+**Duration:** 8–10 weeks · **Difficulty:** Intermediate → Advanced
+{ .ra-facts }
 
-## Overview
+Production Infrastructure as Code (IaC) with Terraform — design, plan, apply, secure, and operate cloud infrastructure for Cloud, DevOps, Platform, and SRE roles.
 
-The REBASH Academy **Terraform** track is a structured, 20-tutorial curriculum for DevOps engineers, SREs, and platform teams. Terraform is the industry standard for multi-cloud Infrastructure as Code. Each tutorial includes theory, hands-on labs, HCL walkthroughs, best practices, and interview questions.
+!!! tip "Course status"
+    Curriculum follows the REBASH Terraform technology prompt (**20 modules**). Tutorials use the academy standard with **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Regenerate with `python3 scripts/generate-excalidraw-svg.py`. Start with [Introduction to Terraform and IaC](introduction-to-terraform-and-iac.md).
 
-## Modules and tutorials
+## 1. Course overview
 
-### Module 1 – Foundations
+### Purpose
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 1 | [Introduction to Terraform and Infrastructure as Code](introduction-to-terraform-and-iac.md) | Beginner | 35 min |
-| 2 | [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md) | Beginner | 30 min |
-| 3 | [HCL Fundamentals — Blocks, Arguments, and Expressions](hcl-fundamentals-blocks-arguments-and-expressions.md) | Beginner | 40 min |
-| 4 | [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md) | Beginner | 35 min |
+Treat infrastructure like software: versioned HCL, reviewable plans, remote state, reusable modules, and CI/CD gates — from first `terraform apply` to multi-cloud and Kubernetes platforms.
 
-### Module 2 – Core Building Blocks
+### Target roles
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 5 | [Variables, Locals, and Outputs](variables-locals-and-outputs.md) | Beginner | 40 min |
-| 6 | [Resources and Data Sources](resources-and-data-sources.md) | Beginner | 45 min |
-| 7 | [Dependencies and the Resource Graph](dependencies-and-the-resource-graph.md) | Intermediate | 40 min |
-| 8 | [Terraform State Fundamentals](terraform-state-fundamentals.md) | Intermediate | 45 min |
+Cloud Engineer · DevOps · Platform · SRE · Infrastructure · DevSecOps
 
-### Module 3 – Collaboration and Scale
+### Prerequisites
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 9 | [Remote State and Backends](remote-state-and-backends.md) | Intermediate | 45 min |
-| 10 | [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md) | Intermediate | 40 min |
-| 11 | [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md) | Intermediate | 50 min |
-| 12 | [Registry Modules and Composition](registry-modules-and-composition.md) | Intermediate | 45 min |
+- [Linux](../linux/index.md) · [Networking](../networking/index.md)
+- [Git](../git/index.md) · [Docker](../docker/index.md)
+- Basic cloud knowledge (AWS, Azure, or Google Cloud)
 
-### Module 4 – Language Power Tools
+### Capstone outcomes
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 13 | [Meta-Arguments — count, for_each, and lifecycle](meta-arguments-count-for-each-and-lifecycle.md) | Intermediate | 50 min |
-| 14 | [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md) | Intermediate | 45 min |
-| 15 | [Import, Moved, and Safe Refactors](import-moved-and-safe-refactors.md) | Intermediate | 45 min |
+Reusable modules · remote state · secure secrets · CI/CD plans · multi-cloud roots · Kubernetes platform wiring · production repo layout · troubleshooting
 
-### Module 5 – Quality and Security
+## 2. Modules
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 16 | [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md) | Intermediate | 45 min |
-| 17 | [Secrets and Sensitive Values](secrets-and-sensitive-values.md) | Intermediate | 40 min |
-| 18 | [Policy as Code Overview](policy-as-code-overview.md) | Advanced | 40 min |
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | IaC fundamentals | [Introduction](introduction-to-terraform-and-iac.md) |
+| 2 | Installing Terraform | [Install & CLI](installing-terraform-and-the-cli-workflow.md) |
+| 3 | Terraform basics | [Init · plan · apply](terraform-workflow-init-plan-apply.md) |
+| 4 | HCL fundamentals | [Blocks & expressions](hcl-fundamentals-blocks-arguments-and-expressions.md) |
+| 5 | Providers | [Providers & plugins](providers-and-the-terraform-plugin-model.md) |
+| 6 | Resources | [Resources & meta-arguments](resources-dependencies-and-meta-arguments.md) |
+| 7 | Variables & outputs | [Variables · locals · outputs](variables-locals-and-outputs.md) |
+| 8 | State management | [State](terraform-state-fundamentals.md) · [Remote backends](remote-state-and-backends.md) |
+| 9 | Modules | [Create modules](modules-creating-reusable-infrastructure.md) · [Registry](registry-modules-and-composition.md) |
+| 10 | Expressions & functions | [Functions & dynamic blocks](functions-templates-and-dynamic-blocks.md) |
+| 11 | Data sources | [Data sources](data-sources-and-existing-infrastructure.md) |
+| 12 | Workspaces | [Workspaces & envs](workspaces-and-environment-strategies.md) |
+| 13 | Cloud & Enterprise | [HCP Terraform](terraform-cloud-and-hcp-terraform.md) |
+| 14 | Testing | [Format · validate · test](format-validate-and-terraform-test.md) |
+| 15 | Security | [Secrets & policy](terraform-security-and-secrets.md) |
+| 16 | CI/CD | [Pipelines](terraform-in-ci-cd-pipelines.md) |
+| 17 | Multi-cloud | [AWS · Azure · GCP](multi-cloud-terraform.md) |
+| 18 | Kubernetes | [Clusters & providers](kubernetes-infrastructure-with-terraform.md) |
+| 19 | Production | [Production patterns](production-terraform-patterns.md) |
+| 20 | Troubleshooting | [Troubleshooting](troubleshooting-terraform.md) |
 
-### Module 6 – Production
+## 3. Practice
 
-| # | Tutorial | Level | Time |
-|---|----------|-------|------|
-| 19 | [Terraform in CI/CD Pipelines](terraform-in-ci-cd-pipelines.md) | Advanced | 50 min |
-| 20 | [Production Patterns and Capstone](production-patterns-and-capstone.md) | Advanced | 55 min |
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
 
-**Total estimated time:** ~14 hours of hands-on learning
+## Diagrams
 
-## Learning Objectives
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```
 
-After completing this track, you will be able to:
+## Related
 
-- [ ] Author production-ready Terraform root modules with pinned providers
-- [ ] Manage state safely with remote backends and locking
-- [ ] Build reusable modules and compose Registry modules
-- [ ] Use `for_each`, lifecycle rules, and safe refactor features
-- [ ] Integrate Terraform into CI/CD with plan artifacts and reviews
-- [ ] Apply security practices for secrets, IAM, and policy as code
-
-## Who Is This For?
-
-| Audience | Benefit |
-|----------|---------|
-| **DevOps / SRE** | Provision and change infrastructure with reviewable plans |
-| **Platform engineers** | Standardize modules and environments |
-| **Cloud engineers** | Multi-cloud IaC skills beyond a single console |
-| **Students** | Job-ready Terraform for interviews and labs |
-
-## Related Sections
-
-- [Linux](../linux/index.md) — CLI and filesystem fundamentals
-- [Git](../git/index.md) — version modules and review plans in PRs
-- [Docker](../docker/index.md) — images and registries you may provision
-- [Kubernetes](../kubernetes/index.md) — clusters often managed with Terraform
-- [Career Paths](../career-paths/index.md) — career-shaped roadmaps
-
-- [Terraform Cheat Sheet](../cheatsheets/terraform.md)
-- [Terraform Interview Prep](../interview/terraform.md)
+- [AWS](../aws/index.md) · [Azure](../azure/index.md) · [GCP](../gcp/index.md)
+- [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md) · [Git](../git/index.md)
 - [DevOps Engineer path](../career-paths/devops-engineer/index.md)

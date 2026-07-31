@@ -1,225 +1,323 @@
 ---
 title: "Configuration Management and Secrets"
-description: "Environment variables, dotenv, YAML/JSON/TOML configs, and secret handling for automation."
+description: "Load environment variables, dotenv, YAML, JSON, and TOML safely — and handle secrets without committing them in DevOps Python tools."
 difficulty: intermediate
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "45–60 min"
+technology: python
 category: python
+module: "Module 11 · Configuration"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
+skills:
+  - python
+  - configuration
+  - secrets
+  - dotenv
+prerequisites:
+  - python/logging-and-debugging
+next:
+  - python/cli-applications-argparse-click-typer
+related:
+  - python/file-handling-pathlib-json-yaml-csv
+  - python/security-for-devops-python
+labs:
+  - labs/python-yaml-config-validator
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
 tags:
   - python
   - config
-  - dotenv
   - secrets
-prerequisites:
-  - Logging and Debugging
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - dotenv
+  - toml
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Configuration Management and Secrets
 
 ## Overview
 
-Config belongs in files and env; secrets belong in a secret store — never in Git.
+Load configuration from env vars and files (YAML/JSON/TOML), support local `.env` without committing it, and keep secrets out of git, logs, and defaults.
 
-This is **Tutorial 11** in **Module 11: Configuration Management** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+Twelve-factor style: **config in the environment**, structure in files, secrets in a store or CI variables. Mixing API keys into YAML in the repo is how breaches start.
+
+Complete [Logging and Debugging](logging-and-debugging.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 11 · Configuration** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Logging and Debugging
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [Logging and Debugging](logging-and-debugging.md)
+- [File Handling](file-handling-pathlib-json-yaml-csv.md) — YAML/JSON
+- Project venv
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Configuration Management and Secrets” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Read and validate environment variables  
+- [ ] Use `.env` locally with python-dotenv (optional)  
+- [ ] Merge file config with env overrides  
+- [ ] Parse TOML for tool settings  
+- [ ] List secret-handling rules for ops CLIs  
+- [ ] Fail fast when required secrets are missing
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Configuration Management and Secrets](../assets/images/python-config-secrets.svg)
+![Configuration and secrets](../assets/excalidraw/python-config-secrets.svg)
 
 ## Theory
 
-### Environment Variables
+### Environment variables
 
-Read with `os.environ.get("API_URL")` or `os.environ["REQUIRED"]` (raises KeyError). Document required vars in README. Prefer explicit fail on missing secrets.
+```python
+import os
+region = os.environ.get("AWS_REGION", "eu-west-1")
+token = os.environ.get("API_TOKEN")
+if not token:
+    raise SystemExit("error: API_TOKEN is required")
+```
+
+Booleans: compare to `"1"`/`"true"` — do not use `bool(os.environ.get(...))` alone.
 
 ### dotenv
 
-`python-dotenv` loads `.env` for local labs. Add `.env` to `.gitignore`. Never commit credentials. In CI, inject secrets as masked variables instead.
+`python-dotenv` loads a local `.env` into the process environment for developer machines. **Never commit `.env`.** In CI/production, inject real env vars from the platform.
 
-### YAML
+```python
+from dotenv import load_dotenv
+load_dotenv()  # no-op if file missing
+```
 
-Human-friendly service configs — parse with `safe_load`, validate schema keys, reject unknown dangerous fields.
+### YAML / JSON config files
 
-### JSON
-
-Machine-friendly configs and API fixtures. Same validation rules as Module 7.
+Non-secret structure: replicas, feature flags, endpoint URLs. Override with env when needed (`APP_REPLICAS`).
 
 ### TOML
 
-`tomllib` (3.11+) reads `pyproject.toml` and tool configs. Good for packaging metadata and static tool settings.
+Common for tooling (`pyproject.toml`). Stdlib `tomllib` (3.11+) reads TOML:
 
-### Configuration Files
+```python
+import tomllib
+from pathlib import Path
+data = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+```
 
-Layering: defaults < file < env < CLI flags. Document precedence. Fail if conflicting sources disagree on critical safety flags.
+### Secret handling rules
 
-### Secret Handling
+1. No secrets in git — even “temporary”  
+2. No secrets in logs or exception messages  
+3. Prefer short-lived tokens / IAM roles over long-lived keys  
+4. Pass secrets via env or secret mounts, not CLI flags (shell history)  
+5. Document required variables in README; fail fast if missing  
 
-Load secrets at runtime, keep them in memory briefly, never log them, never write them to world-readable files, rotate tokens, and prefer cloud secret managers in production.
+Module 25 deepens encryption, scanning, and supply chain.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Configuration Management and Secrets
 
 ```bash
-mkdir -p ~/rebash-python/lab11 && cd ~/rebash-python/lab11
+mkdir -p ~/rebash-python/module-11
+cd ~/rebash-python/module-11
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install 'PyYAML==6.0.2' 'python-dotenv==1.0.1'
 ```
 
-**Focus:** layered config (JSON + env); .env gitignore pattern; redact secrets in logs
-
-### Step 1 – Skeleton
+### Step 1 – File config + env override
 
 ```bash
-cat > lab.py << 'EOF'
-#!/usr/bin/env python3
-print("lab11 configuration-management-and-secrets")
-EOF
-chmod +x lab.py
-python3 lab.py
-```
+cd ~/rebash-python/module-11
+source .venv/bin/activate
 
-### Step 2 – Config and secrets hygiene
+mkdir -p config
+cat > config/app.yaml << 'EOF'
+env: lab
+replicas: 2
+api_url: https://api.example.internal
+EOF
 
-```bash
-cat > config.json << 'EOF'
-{"api_url":"https://example.invalid","timeout":5}
-EOF
-cat > .env << 'EOF'
-API_TOKEN=lab-secret-do-not-commit
-EOF
-echo '.env' > .gitignore
-cat > cfg.py << 'EOF'
+cat > load_settings.py << 'EOF'
 #!/usr/bin/env python3
-import json, os, sys
+from __future__ import annotations
+
+import os
+import sys
+from dataclasses import dataclass
 from pathlib import Path
 
-def redact(value: str) -> str:
-    if len(value) <= 4:
-        return "***"
-    return value[:2] + "***" + value[-2:]
+import yaml
+from dotenv import load_dotenv
 
-cfg = json.loads(Path("config.json").read_text())
-token = os.environ.get("API_TOKEN", "")
-# simulate dotenv without dependency:
-for line in Path(".env").read_text().splitlines():
-    if line.startswith("API_TOKEN="):
-        token = line.split("=", 1)[1]
-print(f"api_url={cfg['api_url']}")
-print(f"token={redact(token)}", file=sys.stderr)
-print("RESULT ok")
+
+@dataclass(slots=True)
+class Settings:
+    env: str
+    replicas: int
+    api_url: str
+    api_token: str
+
+
+def load(path: Path) -> Settings:
+    load_dotenv()
+    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    env = os.environ.get("APP_ENV", str(doc.get("env", "lab")))
+    replicas = int(os.environ.get("APP_REPLICAS", doc.get("replicas", 1)))
+    api_url = os.environ.get("APP_API_URL", str(doc.get("api_url", "")))
+    token = os.environ.get("API_TOKEN", "")
+    if not token:
+        raise SystemExit("error: API_TOKEN is required")
+    if not api_url:
+        raise SystemExit("error: api_url missing")
+    return Settings(env=env, replicas=replicas, api_url=api_url, api_token=token)
+
+
+def main() -> int:
+    settings = load(Path("config/app.yaml"))
+    # Never print the token
+    print(f"env={settings.env} replicas={settings.replicas} api_url={settings.api_url}")
+    print("token_set=true", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-python3 cfg.py
 ```
 
-### Final step – Cleanup note
+### Step 2 – Local .env (gitignored pattern)
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+cat > .env << 'EOF'
+API_TOKEN=lab-only-not-for-prod
+APP_REPLICAS=5
+EOF
+
+echo '.env' >> .gitignore
+API_TOKEN= python load_settings.py 2>/dev/null || true
+# With dotenv:
+python load_settings.py
+```
+
+### Step 3 – Override from the real environment
+
+```bash
+APP_REPLICAS=9 API_TOKEN=from-shell python load_settings.py
+```
+
+### Step 4 – TOML read
+
+```bash
+cat > sample.toml << 'EOF'
+[tool.rebash]
+name = "module-11"
+EOF
+
+python - <<'PY'
+import tomllib
+from pathlib import Path
+data = tomllib.loads(Path("sample.toml").read_text(encoding="utf-8"))
+print(data["tool"]["rebash"]["name"])
+PY
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab11/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-11/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Configuration Management and Secrets** always combines:
+Production practice for **Configuration Management and Secrets** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Skipping fundamentals for Configuration Management and Secrets"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Treating lab defaults as production-ready for Configuration Management and Secrets"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Configuration Management and Secrets changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| Token empty in CI | `.env` not used in CI | Set CI secrets as env vars |
+| Wrong replicas | Env vs file precedence unclear | Document order: env wins |
+| Secret in traceback | Included in exception str | Redact; reference var name only |
 
 ## Summary
 
-**Configuration Management and Secrets** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- Structure in files; secrets in env/secret stores  
+- `.env` for local DX only — never commit  
+- Env overrides for deploys; fail fast if required secrets missing  
+- Never log secret values
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Configuration Management and Secrets** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [Logging and Debugging](logging-and-debugging.md) *(previous)*
-- [CLI Applications — argparse, Click, and Typer](cli-applications-argparse-click-typer.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [CLI Applications — argparse, Click, and Typer](cli-applications-argparse-click-typer.md)  
+- [Security for DevOps Python](security-for-devops-python.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [os.environ](https://docs.python.org/3/library/os.html#os.environ)  
+- [python-dotenv](https://saurabh-kumar.com/python-dotenv/)  
+- [tomllib](https://docs.python.org/3/library/tomllib.html)

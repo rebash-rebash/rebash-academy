@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="180"
+     viewBox="0 0 840 180" role="img" aria-label="gha-enterprise-cicd">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Enterprise Actions platform</text>
+
+  <path d="M 53.2,72.4 L 203.6,72.2 Q 213.6,72.2 213.6,82.2 L 212.5,132.8 Q 212.5,142.8 202.5,142.8 L 52.7,143.0 Q 42.7,143.0 42.7,133.0 L 43.2,82.4 Q 43.2,72.4 53.2,72.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.5,70.4 L 200.6,70.1 Q 210.6,70.1 210.6,80.1 L 209.1,129.4 Q 209.1,139.4 199.1,139.4 L 50.3,140.9 Q 40.3,140.9 40.3,130.9 L 39.5,80.4 Q 39.5,70.4 49.5,70.4 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="125.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Org policies</text>
+  <text x="125.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">required workflows</text>
+
+
+  <path d="M 253.6,72.1 L 403.2,74.0 Q 413.2,74.0 413.2,84.0 L 413.0,133.6 Q 413.0,143.6 403.0,143.6 L 253.3,143.1 Q 243.3,143.1 243.3,133.1 L 243.6,82.1 Q 243.6,72.1 253.6,72.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 249.7,69.8 L 400.7,69.9 Q 410.7,69.9 410.7,79.9 L 410.3,130.4 Q 410.3,140.4 400.3,140.4 L 250.0,140.7 Q 240.0,140.7 240.0,130.7 L 239.7,79.8 Q 239.7,69.8 249.7,69.8 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="325.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Runner groups</text>
+  <text x="325.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">isolation</text>
+
+
+  <path d="M 453.7,73.4 L 603.9,73.7 Q 613.9,73.7 613.9,83.7 L 613.3,133.4 Q 613.3,143.4 603.3,143.4 L 452.2,143.7 Q 442.2,143.7 442.2,133.7 L 443.7,83.4 Q 443.7,73.4 453.7,73.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 449.8,70.7 L 600.7,70.6 Q 610.7,70.6 610.7,80.6 L 609.7,130.0 Q 609.7,140.0 599.7,140.0 L 451.0,140.7 Q 441.0,140.7 441.0,130.7 L 439.8,80.7 Q 439.8,70.7 449.8,70.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="525.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Reusable library</text>
+  <text x="525.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">versioned</text>
+
+
+  <path d="M 652.7,73.3 L 792.4,73.1 Q 802.4,73.1 802.4,83.1 L 802.4,133.9 Q 802.4,143.9 792.4,143.9 L 652.2,142.9 Q 642.2,142.9 642.2,132.9 L 642.7,83.3 Q 642.7,73.3 652.7,73.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 649.6,70.7 L 790.3,69.2 Q 800.3,69.2 800.3,79.2 L 800.7,130.3 Q 800.7,140.3 790.7,140.3 L 649.5,139.4 Q 639.5,139.4 639.5,129.4 L 639.6,80.7 Q 639.6,70.7 649.6,70.7 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="720.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Observability</text>
+  <text x="720.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">metrics</text>
+
+</svg>

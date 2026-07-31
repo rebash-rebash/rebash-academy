@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="220"
+     viewBox="0 0 820 220" role="img" aria-label="shell-execution-flow">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="410.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Shell execution flow</text>
+
+  <path d="M 52.4,73.7 L 183.0,73.3 Q 193.0,73.3 193.0,83.3 L 192.6,133.2 Q 192.6,143.2 182.6,143.2 L 52.2,143.9 Q 42.2,143.9 42.2,133.9 L 42.4,83.7 Q 42.4,73.7 52.4,73.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.2,69.7 L 180.6,70.0 Q 190.6,70.0 190.6,80.0 L 190.0,130.6 Q 190.0,140.6 180.0,140.6 L 49.3,139.7 Q 39.3,139.7 39.3,129.7 L 39.2,79.7 Q 39.2,69.7 49.2,69.7 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="115.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Terminal</text>
+  <text x="115.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">TTY</text>
+
+
+  <path d="M 242.6,72.8 L 383.1,72.7 Q 393.1,72.7 393.1,82.7 L 392.5,133.4 Q 392.5,143.4 382.5,143.4 L 243.6,144.0 Q 233.6,144.0 233.6,134.0 L 232.6,82.8 Q 232.6,72.8 242.6,72.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 239.7,69.6 L 381.0,70.0 Q 391.0,70.0 391.0,80.0 L 390.2,130.4 Q 390.2,140.4 380.2,140.4 L 240.0,140.9 Q 230.0,140.9 230.0,130.9 L 229.7,79.6 Q 229.7,69.6 239.7,69.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="310.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Shell</text>
+  <text x="310.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">bash / sh</text>
+
+
+  <path d="M 443.8,74.0 L 583.8,73.9 Q 593.8,73.9 593.8,83.9 L 593.0,133.3 Q 593.0,143.3 583.0,143.3 L 442.3,143.1 Q 432.3,143.1 432.3,133.1 L 433.8,84.0 Q 433.8,74.0 443.8,74.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 440.7,70.0 L 580.4,69.2 Q 590.4,69.2 590.4,79.2 L 589.4,130.5 Q 589.4,140.5 579.4,140.5 L 440.7,139.7 Q 430.7,139.7 430.7,129.7 L 430.7,80.0 Q 430.7,70.0 440.7,70.0 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="510.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Parse/expand</text>
+  <text x="510.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">quotes · globs</text>
+
+
+  <path d="M 643.9,73.4 L 772.5,72.6 Q 782.5,72.6 782.5,82.6 L 783.4,133.0 Q 783.4,143.0 773.4,143.0 L 642.0,143.8 Q 632.0,143.8 632.0,133.8 L 633.9,83.4 Q 633.9,73.4 643.9,73.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 640.5,69.9 L 770.0,69.6 Q 780.0,69.6 780.0,79.6 L 780.6,130.0 Q 780.6,140.0 770.6,140.0 L 639.1,140.0 Q 629.1,140.0 629.1,130.0 L 630.5,79.9 Q 630.5,69.9 640.5,69.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="705.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Exec</text>
+  <text x="705.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">builtins/bin</text>
+
+
+  <path d="M 190.0,105.0 L 203.5,103.9 L 217.4,104.0 L 230.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 230.0,105.0 L 223.1,109.0 M 230.0,105.0 L 223.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 390.0,105.0 L 404.1,104.9 L 416.3,104.7 L 430.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 430.0,105.0 L 423.1,109.0 M 430.0,105.0 L 423.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 590.0,105.0 L 604.1,105.5 L 615.8,104.4 L 630.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 630.0,105.0 L 623.1,109.0 M 630.0,105.0 L 623.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="410.0" y="180.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Bash for scripts · prefer POSIX when portability matters</text>
+</svg>

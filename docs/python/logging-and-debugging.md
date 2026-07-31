@@ -1,213 +1,312 @@
 ---
 title: "Logging and Debugging"
-description: "logging module, log levels, structured logging, pdb, tracebacks, and practical debugging techniques."
+description: "Configure the logging module, log levels, structured logs, pdb, and traceback reading for DevOps Python automation."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-29"
+estimated_time: "45–60 min"
+technology: python
 category: python
+module: "Module 10 · Logging & Debugging"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - python
+  - logging
+  - debugging
+  - pdb
+prerequisites:
+  - python/oop-classes-and-dataclasses
+next:
+  - python/configuration-management-and-secrets
+related:
+  - python/error-handling-and-exceptions
+  - python/production-engineering-patterns
+labs:
+  - labs/python-log-analyser
+projects: []
+interview: interview/python
+certifications:
+  - PCAP
 tags:
   - python
   - logging
   - pdb
-  - debug
-prerequisites:
-  - OOP — Classes and Dataclasses
-  - Python 3.12+ on Linux (WSL2/VM/cloud)
+  - debugging
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Logging and Debugging
 
 ## Overview
 
-CI and cron have no interactive terminal. Logs and disciplined debugging replace print archaeology.
+Emit useful logs at the right levels (including structured JSON for aggregators), read tracebacks quickly, and use `pdb` when a failing path is unclear.
 
-This is **Tutorial 10** in **Module 10: Logging & Debugging** of the REBASH Academy **Python for DevOps Engineers** series — written for DevOps engineers, SREs, platform engineers, and cloud engineers who automate infrastructure with production-quality Python.
+`print` is fine in Module 2 labs. Production automation needs **logging**: levels, correlation fields, no secrets, and stderr by default so stdout stays for data.
+
+Complete [OOP](oop-classes-and-dataclasses.md) first. Diagrams use Excalidraw only.
+
+This is a core tutorial in **Module 10 · Logging & Debugging** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- OOP — Classes and Dataclasses
-- Python 3.12+ on Linux (WSL2/VM/cloud)
+### Required
+
+- [OOP — Classes and Dataclasses](oop-classes-and-dataclasses.md)
+- [Error Handling and Exceptions](error-handling-and-exceptions.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Logging and Debugging” in real ops automation
-- [ ] Use a project venv and avoid relying on system site-packages
-- [ ] Produce clear stderr diagnostics and meaningful exit codes
-- [ ] Prefer safe patterns (pathlib, subprocess list args, dry-run)
-- [ ] Relate this topic to day-to-day DevOps and platform work
+- [ ] Configure `logging` with a basic stderr handler  
+- [ ] Choose DEBUG / INFO / WARNING / ERROR / CRITICAL  
+- [ ] Emit structured key=value or JSON log lines  
+- [ ] Read a traceback to the failing line  
+- [ ] Break into `pdb` on a stubborn bug  
+- [ ] Avoid logging secrets
 
 ## Architecture
 
-Ops Python sits between operators/CI and platforms (files, APIs, CLIs, and cloud control planes). This topic’s control points are shown below.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Logging and Debugging](../assets/images/python-logging-debug.svg)
+![Logging and debugging](../assets/excalidraw/python-logging-debug.svg)
 
 ## Theory
 
-### logging
+### logging basics
 
 ```python
 import logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-log = logging.getLogger("rebash")
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    stream=sys.stderr,
+)
+log = logging.getLogger("inventory")
+log.info("start env=%s", "lab")
 ```
 
-Prefer the logging module over ad-hoc prints for libraries; CLIs may still print RESULT lines to stdout.
+Use `%s` lazy formatting (not f-strings in hot DEBUG loops) so expensive messages are skipped when filtered.
 
-### Log Levels
+### Levels
 
-DEBUG, INFO, WARNING, ERROR, CRITICAL. Default INFO in production; DEBUG behind a `--verbose` flag.
+| Level | Ops meaning |
+|-------|-------------|
+| DEBUG | Detail for authors |
+| INFO | Normal milestones |
+| WARNING | Degraded but continuing |
+| ERROR | Failed operation |
+| CRITICAL | About to exit / page |
 
-### Structured Logging
+### Structured logging
 
-Emit key=value or JSON fields: `host=web01 status=down`. Makes Loki/ELK queries possible. Never log secrets or tokens.
+Prefer stable fields for Loki/CloudWatch/ELK:
 
-### pdb
-
-`python -m pdb script.py` or `breakpoint()` for interactive sessions. Do not leave breakpoints in CI code.
+```python
+log.info("check_done name=%s ok=%s duration_ms=%d", name, ok, ms)
+# or json.dumps({"event": "check_done", "name": name, "ok": ok})
+```
 
 ### Tracebacks
 
-Unhandled exceptions print tracebacks to stderr — good. Catch-and-swallow hides them. Use `logging.exception(...)` inside handlers.
+Unread tracebacks waste incidents. Read **bottom frame first** (your file:line), then causes. `logging.exception("...")` inside `except` attaches the traceback.
 
-### Debugging Techniques
+### pdb
 
-Reproduce with a minimal env, binary-search inputs, add temporary DEBUG logs, run under `pytest -vv`, compare working/failing configs, and capture `repr()` of parsed data.
+```python
+breakpoint()  # Python 3.7+
+# or: python -m pdb script.py
+```
+
+Commands: `l` list, `n` next, `s` step, `c` continue, `p expr`, `q` quit. Remove breakpoints before committing.
+
+### Debugging techniques
+
+1. Reproduce with a fixture  
+2. Add one INFO/DEBUG at the boundary  
+3. Binary-search the failing branch  
+4. `pdb` only when state is unclear  
+5. Fix + add a regression test (Module 22)
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+**Focus:** practise the core workflow for Logging and Debugging
 
 ```bash
-mkdir -p ~/rebash-python/lab10 && cd ~/rebash-python/lab10
+mkdir -p ~/rebash-python/module-10
+cd ~/rebash-python/module-10
+
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-**Focus:** configure logging levels; provoke a traceback; use breakpoint only locally
-
-### Step 1 – Skeleton
+### Step 1 – Configure a module logger
 
 ```bash
-cat > lab.py << 'EOF'
+cd ~/rebash-python/module-10
+source .venv/bin/activate
+
+cat > app_log.py << 'EOF'
 #!/usr/bin/env python3
-print("lab10 logging-and-debugging")
+from __future__ import annotations
+
+import logging
+import sys
+
+
+def setup(level: str = "INFO") -> logging.Logger:
+    logging.basicConfig(
+        level=getattr(logging, level.upper(), logging.INFO),
+        format="%(levelname)s %(name)s %(message)s",
+        stream=sys.stderr,
+    )
+    return logging.getLogger("healthcheck")
+
+
+def main() -> int:
+    log = setup("INFO")
+    log.info("event=start")
+    try:
+        int("nope")
+    except ValueError:
+        log.exception("event=parse_failed field=replicas")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 EOF
-chmod +x lab.py
-python3 lab.py
+
+python app_log.py || true
 ```
 
-### Step 2 – Logging
+### Step 2 – Structured fields
 
 ```bash
-cat > logdemo.py << 'EOF'
-#!/usr/bin/env python3
+python - <<'PY'
 import logging, sys
-
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", stream=sys.stderr)
-log = logging.getLogger("rebash")
-log.info("host=%s status=%s", "web01", "ok")
-try:
-    raise RuntimeError("boom")
-except RuntimeError:
-    log.exception("probe failed")
-print("RESULT ok")
-EOF
-python3 logdemo.py
+logging.basicConfig(level=logging.INFO, stream=sys.stderr, format="%(message)s")
+log = logging.getLogger("inv")
+for host, ok in [("web-a", True), ("web-b", False)]:
+    log.info("event=host_check host=%s ok=%s", host, str(ok).lower())
+PY
 ```
 
-### Final step – Cleanup note
+### Step 3 – Traceback reading
 
 ```bash
-python3 lab.py
-# keep ~/rebash-python for later labs
+python - <<'PY'
+def inner():
+    return 1 / 0
+
+def outer():
+    return inner()
+
+outer()
+PY
+```
+
+Note the bottom frame pointing at `1 / 0`.
+
+### Step 4 – Optional pdb (interactive)
+
+```bash
+# Run only if you can interact with the terminal:
+# python - <<'PY'
+# x = 1
+# breakpoint()
+# print(x)
+# PY
+echo "Use breakpoint() locally when you need a REPL on a frozen value"
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/lab10/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] Dry-run / fixture behaviour is clear for any mutating or cloud action
-- [ ] You can relate this topic to a real DevOps or platform task
+- [ ] Lab commands run under `~/rebash-python/module-10/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-Production Python for **Logging and Debugging** always combines:
+Production practice for **Logging and Debugging** always combines:
 
-1. A clear entry point (`main()` + `if __name__ == "__main__"`)
-2. A project virtual environment and pinned dependencies when third-party libs are used
-3. Explicit error handling and logging (no silent `except Exception: pass`)
-4. Safe I/O: `pathlib`, timeouts on HTTP, `subprocess.run([...])` without `shell=True`
-5. Documented exit codes and dry-run defaults for mutating actions
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Keep modules short enough to review in a single merge request. Prefer stdlib first; add httpx/requests, Typer, pytest, and platform SDKs when the job needs them.
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env, API payloads) as untrusted until validated
-- Never log secrets or `Authorization` headers; prefer masked CI variables and secret stores
-- Prefer least privilege tokens and read-only / dry-run modes by default
-- Avoid `shell=True`, unvalidated path deletes, and committing `.env` files
-- Pin dependencies; review transitive packages for automation that runs in CI
+- Treat credentials and tokens for python as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using system Python without a venv"
-    Global packages drift between laptops and CI. **Fix:** `python3 -m venv .venv` per project and pin dependencies.
+!!! warning "Skipping fundamentals for Logging and Debugging"
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Calling subprocess with shell=True"
-    Untrusted strings become remote code execution. **Fix:** pass a list of arguments; never build a shell string for the happy path.
+!!! warning "Treating lab defaults as production-ready for Logging and Debugging"
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Mutating without dry-run"
-    Cleanup and apply tools destroy shared environments. **Fix:** default to dry-run; require `--apply` for side effects.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- One purpose per command; share helpers in a small library package
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where schedulers and CI may retry
-- Fixture / mock paths for GitHub, Docker, Kubernetes, Terraform, and cloud SDKs in CI
-- Pair every new tool with at least one failing-path test you actually run
+- Encode Logging and Debugging changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `ModuleNotFoundError` in CI | Missing venv / pins | Recreate venv; install from lock/requirements |
-| Works locally, fails in pipeline | Different Python or env | Pin `requires-python`; fingerprint env in the job |
-| Hang on HTTP call | No timeout | Set `timeout=` on requests/httpx clients |
-| Secrets in logs | Debug printing headers | Redact; never log tokens |
-| Accidental prune/delete | No dry-run default | Default dry-run; label lab resources |
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| No log output | Level too high / wrong logger | Set root/basicConfig; check name |
+| Logs on stdout | Handler stream | Use `stream=sys.stderr` |
+| Secret leak | Logged env/headers | Redact; never log `Authorization` |
 
 ## Summary
 
-**Logging and Debugging** is a core skill for DevOps engineers automating real hosts, APIs, and pipelines with Python. Practise the lab until the failure path and dry-run path are as familiar as the happy path, then continue the track.
+- `logging` to stderr with levels and stable fields  
+- `exception()` on unexpected failures  
+- Tracebacks: read the bottom frame first  
+- `pdb` for hard state; tests for regressions
 
 ## Interview Questions
 
-1. When would you choose Python over Bash for this kind of ops task?
-2. What failure mode appears if you skip a venv, pinning, or dry-run here?
-3. How would you test this behaviour in CI without live cloud credentials?
-4. Where could secrets leak in a naive implementation of this topic?
-5. What exit code contract would you document for teammates?
+1. How does **Logging and Debugging** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
 !!! tip "Sample answer — question 2"
-    Floating dependencies and missing dry-run defaults create “works on my machine” automation that either breaks overnight or mutates shared infrastructure unexpectedly. Pin versions and default to report-only.
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Python for DevOps Engineers – Category Overview](index.md)
-- [OOP — Classes and Dataclasses](oop-classes-and-dataclasses.md) *(previous)*
-- [Configuration Management and Secrets](configuration-management-and-secrets.md) *(next)*
-- [Shell Scripting for DevOps Engineers](../shell/index.md)
-- [Learning Paths](../learning-paths/index.md)
+- [Course overview](index.md)
+- - [Configuration Management and Secrets](configuration-management-and-secrets.md)
 
 ## References
 
-- [Python 3 documentation](https://docs.python.org/3/)
-- [requests documentation](https://requests.readthedocs.io/)
-- [httpx documentation](https://www.python-httpx.org/)
-- Track index: [Python for DevOps Engineers](index.md)
+- [logging](https://docs.python.org/3/library/logging.html)  
+- [pdb](https://docs.python.org/3/library/pdb.html)

@@ -44,7 +44,7 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Linux Fundamentals — Distributions and Architecture](../assets/images/linux-architecture.svg)
+![Architecture diagram for Linux Fundamentals — Distributions and Architecture](../assets/excalidraw/linux-architecture.svg)
 
 ## Theory
 
@@ -107,6 +107,14 @@ Everything that is not the kernel: `systemd`, `sshd`, package managers, shells, 
 | **TTY / PTY** | Kernel device pairing the terminal to a login session |
 
 You SSH into a PTY running a shell. Scripts skip the interactive terminal but still need a shell interpreter via the shebang.
+
+### Common pitfalls
+
+- Saying “Linux” when you mean a full distribution — package commands differ across families.
+- Choosing a distro for fashion instead of support window, image availability, and organisational standards.
+- Debugging only in the graphical terminal emulator and assuming the same environment exists under cron or SSH.
+- Treating user-space failures like kernel panics (many daemon issues do not need a reboot).
+- Mixing Alpine-style musl containers with glibc assumptions from Ubuntu/RHEL tooling without testing.
 
 ## Hands-on Lab
 

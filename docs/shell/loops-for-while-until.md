@@ -46,11 +46,21 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Loops — for, while, and until](../assets/images/shell-loops-flow.svg)
+![Architecture diagram for Loops — for, while, and until](../assets/excalidraw/shell-loops-flow.svg)
 
 ## Theory
 
-### for
+### What it is
+
+**Loops** repeat a block of commands over a list, a stream of lines, or until a condition changes. Bash offers `for` (iterate items or a C-style count), `while` (repeat while a command succeeds), and `until` (repeat while a command fails). Inside any loop, `break` leaves early and `continue` skips to the next iteration. Together these constructs drive host inventories, log scans, readiness probes, and batch file processing — everyday DevOps work.
+
+### Why it matters
+
+Manual repetition does not scale: checking twenty hosts or pruning a thousand log files by hand invites mistakes. Loops encode that repetition so Continuous Integration (CI), cron, and admin tooling apply the same steps consistently. The cost of a wrong loop is high: an unbounded `until` can hang a deployment, and an unquoted glob can expand to nothing or to surprising paths. Learning safe patterns — quoted lists, `read -r` line loops, and retry counters — keeps automation both powerful and predictable.
+
+### How it works
+
+A `for` loop walks a fixed list or a glob. Prefer arrays and `"$@"` when inputs are dynamic; when using globs, guard empty matches:
 
 ```bash
 for host in web01 web02 web03; do
@@ -63,9 +73,7 @@ for f in /var/log/*.log; do
 done
 ```
 
-Prefer `"$@"` and arrays over unquoted globs when inputs are dynamic.
-
-### while
+A `while` loop is the classic way to stream files and process output one line at a time:
 
 ```bash
 while IFS= read -r line; do
@@ -73,19 +81,25 @@ while IFS= read -r line; do
 done <"$infile"
 ```
 
-Classic for streaming files and process output.
+`until condition; do ...; done` runs while the condition is false — handy for “wait until ready” probes. Always pair it with a counter or timeout so production jobs cannot loop forever. Keep nested loops shallow; extract the inner body to a function when readability suffers. Use `break 2` only when you intentionally leave an outer loop.
 
-### until
+### Key concepts
 
-`until condition; do ...; done` loops while the condition is false — handy for “wait until ready” probes (with a timeout).
+| Loop | Typical use |
+|------|-------------|
+| `for item in list` | Hosts, files, arguments |
+| `while read -r` | Line-oriented files and pipelines |
+| `until` | Wait-until-ready with a bound |
+| `break` / `continue` | Early exit or skip one iteration |
+| Arrays / `"$@"` | Safer than unquoted globs for dynamic input |
 
-### break and continue
+### Common pitfalls
 
-`break` leaves the loop; `continue` skips to the next iteration. Use `break 2` carefully with nested loops.
-
-### Nested Loops
-
-Keep nesting shallow. Extract the inner body to a function when readability suffers. Always bound retries with a counter to avoid infinite wait loops in production.
+- Writing `for line in $(cat file)` and splitting on spaces inside lines
+- Forgetting `[[ -e "$f" ]]` so a non-matching glob becomes a literal string
+- Infinite `until` readiness loops without a max-attempts counter
+- Deep nesting instead of a function, making `break` targets unclear
+- Ignoring non-zero status from loop bodies when `set -e` is active and a command is allowed to fail
 
 ## Hands-on Lab
 

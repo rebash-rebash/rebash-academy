@@ -1,6 +1,6 @@
 ---
-title: Certification Mapping
-description: "Certification Mapping for the GitHub Actions course — links to the Academy certifications catalog."
+title: Certifications
+description: "Certification mapping for the GitHub Actions course — links to the Academy certifications catalog."
 technology_id: github-actions
 hide:
   - toc
@@ -10,8 +10,8 @@ tags:
   - github-actions
 ---
 
-# Certification Mapping
+# Certifications
 
-Browse certifications for this course from the [Academy certifications catalog](../../certifications/).
+Browse certification mappings for this course from the [Academy certifications catalog](../../certifications/).
 
-Individual items appear here as they are published for the **GitHub Actions** track.
+Maps to **GitHub Foundations**, **GitHub Actions**, and **GitHub Administration** as those pages are published.

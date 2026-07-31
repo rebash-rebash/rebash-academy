@@ -44,39 +44,45 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Logging — syslog, journald, and logrotate](../assets/images/linux-logging.svg)
+![Architecture diagram for Logging — syslog, journald, and logrotate](../assets/excalidraw/linux-logging.svg)
 
 ## Theory
 
-### syslog
+### What it is
 
-Traditional syslog (`rsyslog` / `syslog-ng`) writes text logs under `/var/log` (`syslog`, `auth.log`, `messages`). Apps may still log via syslog API.
+Linux logging typically combines three layers: **syslog** daemons (`rsyslog` or `syslog-ng`) writing classic text files under `/var/log`; **journald** storing structured, indexed logs for systemd units; and **logrotate** preventing those files from filling disks by rotating, compressing, and eventually deleting them. Applications may log via the syslog API, directly to files, or to stdout collected by a supervisor.
 
-```bash
-ls /var/log | head
-tail -n 50 /var/log/syslog 2>/dev/null || tail -n 50 /var/log/messages
-```
+### Why it matters
 
-### journald
+Without logs you cannot reconstruct incidents; without rotation you create the incident (disk full). Enterprises forward both journal and syslog streams to a Security Information and Event Management (SIEM) or central store. Knowing where authentication events land (`auth.log`/`secure` versus `journalctl -u ssh`) speeds investigation. Mis-tuned `postrotate` hooks leave nginx or rsyslog writing to deleted inodes.
 
-systemd’s journal stores structured, indexed logs:
+### How it works
 
-```bash
-journalctl -b -p err
-journalctl -u ssh --since today
-```
+Traditional files include `syslog`/`messages`, `auth.log`/`secure`, and application files under `/var/log`. `tail` and `grep` still matter for quick checks. journald is queried with `journalctl` by boot (`-b`), unit (`-u`), priority (`-p`), and time. Persistence requires `/var/log/journal` (and adequate disk). logrotate reads `/etc/logrotate.conf` and `/etc/logrotate.d/*`; policies set frequency, `compress`, `delaycompress`, retention, and scripts that signal writers to reopen files. Test with `logrotate -d` (debug, no changes). Forwarding configs ship selected facilities to remote collectors over TLS where required.
 
-Forwarding to rsyslog/SIEM is common in enterprises.
+### Key concepts and comparisons
 
-### logrotate
+| System | Strength |
+|--------|----------|
+| syslog files | Simple, widely parsed, easy to tail |
+| journald | Structured fields, unit correlation |
+| Central SIEM | Fleet search, retention, alerting |
+| logrotate | Local disk hygiene for file logs |
 
-Prevents disks filling from growing log files via `/etc/logrotate.conf` and `/etc/logrotate.d/*`:
+| Policy knob | Effect |
+|-------------|--------|
+| rotate / weekly | How often a new file starts |
+| compress | Saves space after rotation |
+| postrotate | Reload the writer safely |
+| maxsize | Rotate early if growth spikes |
 
-```bash
-sudo logrotate -d /etc/logrotate.conf
-```
+### Common pitfalls
 
-Policies set rotation frequency, compress, delaycompress, and postrotate hooks (signal nginx/rsyslog).
+- Assuming the journal survives reboot when it is volatile-only.
+- Rotating files without signalling the daemon — space not freed correctly.
+- Keeping verbose debug logs forever on small cloud root disks.
+- Grepping only `/var/log/syslog` while the service only logs to the journal.
+- Shipping logs without redacting secrets or access tokens.
 
 ## Hands-on Lab
 

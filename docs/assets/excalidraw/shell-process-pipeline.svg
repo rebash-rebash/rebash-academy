@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="200"
+     viewBox="0 0 820 200" role="img" aria-label="shell-process-pipeline">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="410.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Process pipeline</text>
+
+  <path d="M 52.4,83.4 L 182.8,82.1 Q 192.8,82.1 192.8,92.1 L 192.7,143.8 Q 192.7,153.8 182.7,153.8 L 52.7,152.7 Q 42.7,152.7 42.7,142.7 L 42.4,93.4 Q 42.4,83.4 52.4,83.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.1,80.2 L 180.4,79.7 Q 190.4,79.7 190.4,89.7 L 190.3,140.6 Q 190.3,150.6 180.3,150.6 L 51.0,149.4 Q 41.0,149.4 41.0,139.4 L 39.1,90.2 Q 39.1,80.2 49.1,80.2 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Producer</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cmd1</text>
+
+
+  <path d="M 253.5,82.4 L 383.5,82.8 Q 393.5,82.8 393.5,92.8 L 393.4,142.3 Q 393.4,152.3 383.4,152.3 L 252.6,153.0 Q 242.6,153.0 242.6,143.0 L 243.5,92.4 Q 243.5,82.4 253.5,82.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 250.1,79.6 L 379.6,80.5 Q 389.6,80.5 389.6,90.5 L 389.4,139.5 Q 389.4,149.5 379.4,149.5 L 249.6,149.5 Q 239.6,149.5 239.6,139.5 L 240.1,89.6 Q 240.1,79.6 250.1,79.6 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="315.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Filter</text>
+  <text x="315.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cmd2</text>
+
+
+  <path d="M 452.8,83.9 L 583.8,82.1 Q 593.8,82.1 593.8,92.1 L 592.5,142.4 Q 592.5,152.4 582.5,152.4 L 453.0,152.2 Q 443.0,152.2 443.0,142.2 L 442.8,93.9 Q 442.8,83.9 452.8,83.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 449.4,79.5 L 580.2,79.1 Q 590.2,79.1 590.2,89.1 L 590.1,139.2 Q 590.1,149.2 580.1,149.2 L 450.4,149.9 Q 440.4,149.9 440.4,139.9 L 439.4,89.5 Q 439.4,79.5 449.4,79.5 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="515.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Consumer</text>
+  <text x="515.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cmd3</text>
+
+
+  <path d="M 652.7,83.5 L 773.7,83.1 Q 783.7,83.1 783.7,93.1 L 783.3,143.6 Q 783.3,153.6 773.3,153.6 L 653.1,153.6 Q 643.1,153.6 643.1,143.6 L 642.7,93.5 Q 642.7,83.5 652.7,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 650.0,79.3 L 769.9,81.0 Q 779.9,81.0 779.9,91.0 L 779.3,139.5 Q 779.3,149.5 769.3,149.5 L 650.3,151.0 Q 640.3,151.0 640.3,141.0 L 640.0,89.3 Q 640.0,79.3 650.0,79.3 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="710.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Exit</text>
+  <text x="710.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">pipefail</text>
+
+
+  <path d="M 190.0,115.0 L 206.8,114.7 L 224.0,114.6 L 240.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,115.0 L 233.1,119.0 M 240.0,115.0 L 233.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 390.0,115.0 L 407.6,114.6 L 423.3,114.6 L 440.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 440.0,115.0 L 433.1,119.0 M 440.0,115.0 L 433.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 590.0,115.0 L 607.0,115.4 L 624.0,115.8 L 640.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 640.0,115.0 L 633.1,119.0 M 640.0,115.0 L 633.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

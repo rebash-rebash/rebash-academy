@@ -1,589 +1,235 @@
 ---
-title: Troubleshooting Kubernetes Workloads
-description: Systematically diagnose failing pods, scheduling issues, networking problems, and rollout failures using kubectl, events, logs, and a production-grade troubleshooting methodology.
+title: "Troubleshooting Kubernetes Workloads"
+description: "Debug CrashLoopBackOff, ImagePullBackOff, Pending Pods, DNS, scheduling, storage, and networking failures systematically."
 difficulty: advanced
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–70 min"
+technology: kubernetes
 category: kubernetes
+module: "Module 18 · Troubleshooting"
+career_paths:
+  - kubernetes-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+skills:
+  - kubernetes
+  - troubleshooting
+prerequisites:
+  - kubernetes/kubernetes-production-operations
+next:
+  - kubernetes/managed-kubernetes-eks-aks-gke
+related:
+  - kubernetes/kubectl-essentials-and-workflows
+labs: []
+projects: []
+interview: interview/kubernetes
+certifications:
+  - CKA
+  - CKAD
 tags:
   - kubernetes
   - troubleshooting
-  - debugging
-  - kubectl
-  - sre
-  - operations
-prerequisites:
-  - Complete [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
-  - Solid understanding of Pods, Deployments, Services, Ingress, probes, and namespaces
-  - kubectl access to a cluster where you can intentionally break workloads for lab exercises
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Troubleshooting Kubernetes Workloads
 
 ## Overview
 
-When a Deployment fails at 2 AM, you need a **systematic method** — not random `kubectl` commands. Kubernetes exposes rich diagnostic signals: **Pod status**, **Events**, **container logs**, **probe results**, **endpoint state**, and **node conditions**. Advanced troubleshooting connects these layers: is the Pod scheduled? Is the container starting? Is the app healthy? Is the Service routing traffic? Is Ingress configured correctly?
+Apply a fixed playbook: Events → describe → logs → previous logs → exec → node/network — for the common Pending / CrashLoop / ImagePull failures.
 
-This tutorial teaches the **REBASH troubleshooting funnel** — start broad (namespace events), narrow to the failing object (Pod → container), then verify dependencies (Service, DNS, RBAC). You will practice on deliberately broken workloads and build reflexes that SRE and platform engineers use daily.
+Most “cluster down” tickets are workload config. Read **Events** before changing YAML randomly.
 
-This is **Tutorial 14** in **Module 5: Security & Tooling** of the REBASH Academy Kubernetes series. Complete [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md) first.
+This is a core tutorial in **Module 18 · Troubleshooting** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
-- Familiarity with all Module 4 topics: Ingress, namespaces, quotas, and health probes
-- Cluster access (minikube, kind, k3s, or cloud) where you can create failing workloads
-- Comfort with `kubectl describe`, `kubectl logs`, and YAML editing
-- Optional: [Networking Troubleshooting Methodology](../networking/network-troubleshooting-methodology.md) for L3/L4 correlation
+- [Production Operations](kubernetes-production-operations.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply a structured troubleshooting funnel from symptom to root cause
-- [ ] Interpret Pod phases, conditions, and container waiting/terminated reasons
-- [ ] Use Events and `kubectl describe` to diagnose scheduling and admission failures
-- [ ] Debug CrashLoopBackOff, ImagePullBackOff, and probe-induced restart loops
-- [ ] Verify Service → Endpoints → Pod connectivity with kubectl and in-cluster tests
-- [ ] Use `kubectl debug`, ephemeral containers, and port-forward effectively
-- [ ] Correlate Deployment rollout failures with ReplicaSet and revision history
-- [ ] Document incidents with evidence suitable for postmortems
+- [ ] Diagnose CrashLoopBackOff  
+- [ ] Fix ImagePullBackOff (tag/auth)  
+- [ ] Explain Pending (resources/affinity/PVC)  
+- [ ] Debug Service/DNS connectivity
 
 ## Architecture
 
-Troubleshooting flows from the user-visible symptom down through Kubernetes layers to the container process.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for Troubleshooting Kubernetes Workloads](../assets/images/troubleshooting-kubernetes-workloads.svg)
+![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
 ## Theory
 
-### The Troubleshooting Funnel
+### What it is
 
-Follow this order to avoid chasing red herrings:
+**Troubleshooting** is a disciplined path from symptom to cause using the Kubernetes API: object status, **Events**, logs, and previous container instances. Most tickets labelled “cluster down” are workload misconfiguration — bad images, probes, resources, selectors, or mounts. The cluster’s controllers are usually doing exactly what you asked; the job is to discover what you asked for.
 
-| Step | Check | Key commands |
-|------|-------|--------------|
-| 1 | **Scope** — namespace, time, blast radius | `kubectl get pods -A`, alerts |
-| 2 | **Workload status** — Deployment, ReplicaSet | `kubectl rollout status`, `kubectl get rs` |
-| 3 | **Pod phase** — Pending, Running, Failed | `kubectl get pods`, `kubectl describe pod` |
-| 4 | **Container state** — waiting, running, terminated | `describe`, `logs --previous` |
-| 5 | **Networking** — Service, Endpoints, DNS | `kubectl get endpoints`, `nslookup` |
-| 6 | **Node / cluster** — capacity, taints, CNI | `kubectl describe node`, `kubectl get events` |
+### Why it matters
 
-Document findings at each step before diving deeper.
+Random restarts and YAML churn lengthen outages. A fixed playbook — Events → describe → logs → previous logs → exec → node/network — cuts mean time to recovery and teaches juniors transferable habits. CKA scenarios reward this order under time pressure.
 
-### Pod Phases and Conditions
+### How it works (mental model)
 
-| Phase | Meaning |
-|-------|---------|
-| **Pending** | Not yet scheduled or waiting for volumes |
-| **Running** | At least one container started |
-| **Succeeded** | All containers terminated successfully (Jobs) |
-| **Failed** | At least one container failed |
-| **Unknown** | Node communication lost |
+1. **Reproduce scope**: one Pod, one Deployment, one namespace, or many nodes?
+2. **Read status**: `get` Ready/Restarts; `describe` for Conditions and Events.
+3. **Logs**: current and `--previous` for CrashLoop; check init containers too.
+4. **Dependencies**: Secrets/ConfigMaps exist? PVC Bound? Service has endpoints?
+5. **Platform layer**: node NotReady, CNI, CoreDNS, admission webhooks denying creates.
 
-**Conditions** (Ready, PodScheduled, Initialized, ContainersReady) appear in `kubectl describe pod`. `Ready=False` with `Running` phase often indicates readiness probe failure — not a crash.
+Controllers reconcile desired state — if desired state is wrong, they will faithfully keep failing.
 
-### Container Waiting Reasons
+### Key concepts / comparisons
 
-| Reason | Typical cause |
-|--------|---------------|
-| **ContainerCreating** | Pulling image, mounting volumes |
-| **ImagePullBackOff** | Wrong tag, missing registry auth, rate limit |
-| **CrashLoopBackOff** | App exits; liveness restart loop |
-| **CreateContainerConfigError** | Missing Secret/ConfigMap reference |
-| **InvalidImageName** | Malformed image reference in spec |
+| Symptom | First checks |
+|---------|----------------|
+| CrashLoopBackOff | `logs`, `logs --previous`, probes, CMD |
+| ImagePullBackOff | image name, pull secret, registry |
+| Pending | `describe` Events, resources, taints |
+| DNS | CoreDNS pods, NetworkPolicy |
+| PVC Pending | StorageClass, provisioner |
+| Service empty | Selector vs Pod labels, readiness |
 
-### Container Terminated Reasons
+| Layer | Examples |
+|-------|----------|
+| App | Exit code, config, migrations |
+| Manifest | Probes, resources, mounts |
+| Cluster | Scheduler, CNI, DNS, webhooks |
 
-| Reason | Typical cause |
-|--------|---------------|
-| **OOMKilled** | Memory limit exceeded |
-| **Error** | Non-zero exit code |
-| **Completed** | Normal exit (Jobs, init containers) |
-| **Evicted** | Node pressure; see Events for message |
+### Common pitfalls
 
-Check `lastState.terminated.exitCode` in Pod JSON for application-specific codes.
-
-### Events: The First Place to Look
-
-Events are time-ordered, TTL-garbage-collected messages attached to objects:
-
-```bash
-kubectl get events -n <namespace> --sort-by='.lastTimestamp'
-kubectl describe pod <name> -n <namespace>  # Events at bottom
-```
-
-Common event messages:
-
-- `FailedScheduling` — insufficient CPU/memory, taints, affinity rules
-- `FailedMount` — PVC not bound, wrong secret name
-- `Unhealthy` — probe failures
-- `BackOff` — restarting failed container with exponential delay
-
-### Scheduling Failures
-
-When Pods stay **Pending**, the scheduler could not place them:
-
-```bash
-kubectl describe pod <pending-pod> | grep -A5 Events
-kubectl describe nodes | grep -A10 "Allocated resources"
-kubectl get pods -A --field-selector=status.phase=Pending
-```
-
-Causes: resource requests exceed node capacity, **taints** without tolerations, **nodeSelector** / **affinity** mismatches, **ResourceQuota** exhaustion, PVC unbound.
-
-### CrashLoopBackOff Investigation
-
-```bash
-kubectl logs <pod> -c <container> --previous
-kubectl describe pod <pod> | grep -A3 "Last State"
-```
-
-Workflow:
-
-1. Read `--previous` logs from last crashed instance
-2. Check exit code (1 = app error, 137 = SIGKILL/OOM, 143 = SIGTERM)
-3. Verify command, args, env vars, mounted Secrets
-4. Temporarily disable liveness probe to distinguish crash vs probe kill
-5. Run interactively: `kubectl run debug --rm -it --image=<same-image> -- sh`
-
-### Networking Troubleshooting
-
-Traffic path: **Ingress → Service → Endpoints → Pod IP:port**
-
-```bash
-kubectl get ingress,svc,endpoints -n <ns>
-kubectl run tmp --rm -it --image=busybox:1.36 --restart=Never -- \
-  wget -qO- http://<service>.<ns>.svc.cluster.local
-```
-
-| Symptom | Check |
-|---------|-------|
-| Connection refused | Pod not listening on `targetPort` |
-| No endpoints | Readiness failing or label selector mismatch |
-| 404 from Ingress | Path/host rule mismatch |
-| DNS failure | CoreDNS; verify `ndots` and search paths |
-
-Label selector mismatches between Service and Pod are a frequent subtle bug — `app` vs `app.kubernetes.io/name`.
-
-### Deployment Rollout Failures
-
-```bash
-kubectl rollout status deployment/<name> -n <ns>
-kubectl rollout history deployment/<name> -n <ns>
-kubectl get rs -n <ns> -l app=<label>
-```
-
-`ProgressDeadlineExceeded` means new ReplicaSet pods never became Ready within `progressDeadlineSeconds`. Compare old vs new Pod events and image tags.
-
-Rollback: `kubectl rollout undo deployment/<name> -n <ns>`
-
-### Advanced Debug Techniques
-
-| Technique | Use case |
-|-----------|----------|
-| `kubectl debug -it pod/<name> --image=busybox` | Ephemeral debug container (K8s 1.23+) |
-| `kubectl cp` | Copy files from crashed pod before garbage collection |
-| `kubectl port-forward svc/<name> 8080:80` | Local access without Ingress |
-| `kubectl exec -it <pod> -- sh` | Live container inspection |
-| `kubectl get pod <name> -o yaml` | Full spec for diff against working revision |
-
-For distroless images without shell, use debug containers or copy binary with `kubectl debug` node features.
-
-### RBAC and Admission Denials
-
-`Forbidden` errors when applying manifests or from in-cluster clients:
-
-```bash
-kubectl auth can-i create deployments -n <ns> --as=<identity>
-kubectl get validatingwebhookconfigurations
-kubectl get mutatingwebhookconfigurations
-```
-
-Webhook timeouts manifest as intermittent apply failures — check API server logs on managed clusters via cloud console.
+- Deleting Pods before capturing Events and previous logs.
+- Fixating on Deployment status while the PVC is Pending.
+- Ignoring init container failures.
+- Assuming NetworkPolicy cannot be the cause of “DNS broken”.
+- Changing three things at once — lose the causal link.
 
 ## Hands-on Lab
 
-Create a dedicated namespace and break things intentionally.
-
-### Step 1 – Set up troubleshooting namespace
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-kubectl create namespace troubleshoot-lab
-kubectl config set-context --current --namespace=troubleshoot-lab
-kubectl get events --sort-by='.lastTimestamp' | tail -5
+mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
 ```
 
-**Explanation:** Start every incident by confirming namespace context and scanning recent events.
+**Focus:** hands-on practice for Troubleshooting Kubernetes Workloads
 
-**Expected output:**
-
-```text
-namespace/troubleshoot-lab created
-LAST SEEN   TYPE     REASON    OBJECT   MESSAGE
-```
-
-### Step 2 – Diagnose ImagePullBackOff
-
-**Command:**
+### Step 1 – Skeleton
 
 ```bash
-kubectl run bad-image --image=nginx:does-not-exist-tag
-sleep 20
-kubectl get pod bad-image
-kubectl describe pod bad-image | tail -20
-kubectl get events --field-selector involvedObject.name=bad-image
-```
-
-**Explanation:** Image pull failures show in container `waiting.reason` and Events with registry error details.
-
-**Expected output:**
-
-```text
-STATUS    REASON             MESSAGE
-Waiting   ImagePullBackOff   Back-off pulling image "nginx:does-not-exist-tag"
-Warning   Failed             Failed to pull image ...
-```
-
-**Fix:**
-
-```bash
-kubectl set image pod/bad-image bad-image=nginx:1.25-alpine
-# Or delete and recreate — pod spec image is immutable on existing pod
-kubectl delete pod bad-image --force --grace-period=0
-kubectl run bad-image --image=nginx:1.25-alpine
-```
-
-### Step 3 – Diagnose CrashLoopBackOff
-
-**Command:**
-
-```bash
-kubectl run crasher --image=busybox:1.36 -- sh -c "echo starting && exit 1"
-sleep 25
-kubectl get pod crasher
-kubectl logs crasher --previous 2>/dev/null || kubectl logs crasher
-kubectl describe pod crasher | grep -A8 "Last State"
-```
-
-**Explanation:** Exit code 1 in logs confirms application failure. `--previous` captures the crashed instance during BackOff.
-
-**Expected output:**
-
-```text
-starting
-State:     Waiting
-  Reason:  CrashLoopBackOff
-Last State: Terminated
-  Reason:   Error
-  Exit Code: 1
-```
-
-### Step 4 – Diagnose Pending (resource pressure)
-
-**Command:**
-
-```bash
-kubectl run hungry --image=nginx:1.25-alpine \
-  --requests=cpu=999,memory=999Gi \
-  --limits=cpu=999,memory=999Gi
-sleep 10
-kubectl get pod hungry
-kubectl describe pod hungry | grep -A10 Events
-```
-
-**Explanation:** Unschedulable pods emit `FailedScheduling` events with exact resource shortfall.
-
-**Expected output:**
-
-```text
-Warning  FailedScheduling  0/1 nodes are available: 1 Insufficient cpu, 1 Insufficient memory
-```
-
-**Fix:**
-
-```bash
-kubectl delete pod hungry
-kubectl run hungry --image=nginx:1.25-alpine --requests=cpu=50m,memory=64Mi
-```
-
-### Step 5 – Diagnose Service selector mismatch
-
-**Command:**
-
-```bash
-kubectl create deployment web --image=nginx:1.25-alpine --replicas=2
-kubectl expose deployment web --port=80 --target-port=80
-kubectl patch svc web -p '{"spec":{"selector":{"app":"wrong-label"}}}'
-kubectl get endpoints web
-kubectl run curl-test --image=curlimages/curl:8.5.0 --restart=Never -- \
-  curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 http://web/ || true
-sleep 5
-kubectl logs curl-test 2>/dev/null; kubectl describe svc web | grep -A3 Selector
-```
-
-**Explanation:** Empty endpoints mean no Pod matches Service selector — traffic has nowhere to go.
-
-**Expected output:**
-
-```text
-Selector:  app=wrong-label
-Endpoints: <none>
-000  # curl connection failed
-```
-
-**Fix:**
-
-```bash
-kubectl patch svc web -p '{"spec":{"selector":{"app":"web"}}}'
-kubectl get endpoints web
-```
-
-### Step 6 – Diagnose readiness probe failure
-
-**Command:**
-
-```bash
-cat <<'EOF' | kubectl apply -f -
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: probe-fail
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: probe-fail
-  template:
-    metadata:
-      labels:
-        app: probe-fail
-    spec:
-      containers:
-        - name: nginx
-          image: nginx:1.25-alpine
-          readinessProbe:
-            httpGet:
-              path: /nonexistent
-              port: 80
-            periodSeconds: 3
-            failureThreshold: 1
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Troubleshooting Kubernetes Workloads"
 EOF
-
-sleep 15
-kubectl get pods -l app=probe-fail
-kubectl describe pod -l app=probe-fail | grep -A2 Unhealthy
-kubectl get endpoints -l app=probe-fail 2>/dev/null || kubectl get endpoints
+chmod +x lab.sh
+./lab.sh
 ```
 
-**Explanation:** Running but NotReady pods fail readiness — excluded from endpoints despite healthy process.
-
-**Expected output:**
-
-```text
-probe-fail-xxxxx   0/1   Running   0   15s
-Warning  Unhealthy  Readiness probe failed: HTTP probe failed with statuscode: 404
-```
-
-**Fix:** Change probe path to `/` or implement `/ready` endpoint.
-
-### Step 7 – Practice rollback after bad rollout
-
-**Command:**
+### Step 2 – Core exercise
 
 ```bash
-kubectl set image deployment/web web=nginx:1.25-alpine
-kubectl rollout status deployment/web
-kubectl set image deployment/web web=nginx:bad-tag-xyz
-sleep 30
-kubectl rollout status deployment/web --timeout=20s || true
-kubectl get rs -l app=web
-kubectl rollout undo deployment/web
-kubectl rollout status deployment/web
+mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
+kubectl run boom --image=busybox:1.36 --restart=Always -- /bin/false
+sleep 5
+kubectl get pod boom
+kubectl describe pod boom | sed -n '/Events/,$p'
+kubectl logs boom --previous 2>/dev/null || kubectl logs boom
+kubectl delete pod boom
+kubectl run badpull --image=ghcr.io/rebash/does-not-exist:latest --restart=Never || true
+sleep 3
+kubectl describe pod badpull 2>/dev/null | sed -n '/Events/,$p' | head -n 20
+kubectl delete pod badpull --ignore-not-found
 ```
 
-**Explanation:** Failed rollouts leave old ReplicaSet scaled down but available. `rollout undo` reverts to previous revision.
-
-**Expected output:**
-
-```text
-error: deployment "web" exceeded its progress deadline
-deployment.apps/web rolled back
-deployment "web" successfully rolled out
-```
-
-### Step 8 – Clean up and document
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-kubectl delete namespace troubleshoot-lab --wait=false
-kubectl config set-context --current --namespace=default
-echo "Incident template: Symptom → Scope → Pod → Container → Network → Root cause → Fix"
+# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Expected result:** The commands succeed and produce the outcomes described in this step.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Describe/events | You diagnosed a failing Pod from describe/events |
-| Logs | Application or previous container logs retrieved |
-| Fix | Workload returns to Ready after the documented fix |
-| Cleanup | Broken and fixed lab objects deleted |
+- [ ] Lab commands run under `~/rebash-k8s/module-18/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `kubectl describe` | Detailed object state + events | `kubectl describe pod <name>` |
-| `kubectl logs --previous` | Logs from crashed container | `kubectl logs <pod> -c app --previous` |
-| `kubectl get events` | Namespace events sorted by time | `kubectl get events --sort-by='.lastTimestamp'` |
-| `kubectl rollout undo` | Revert failed deployment | `kubectl rollout undo deploy/web` |
-| `kubectl debug` | Attach ephemeral debug container | `kubectl debug -it pod/<name> --image=busybox` |
-| `kubectl top pod` | Live CPU/memory (metrics-server) | `kubectl top pod -n prod` |
+Production practice for **Troubleshooting Kubernetes Workloads** always combines:
 
-### Troubleshooting checklist script
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-Save as `~/bin/k8s-triage.sh`:
-
-```bash
-#!/usr/bin/env bash
-# k8s-triage.sh — quick workload triage
-set -euo pipefail
-NS="${1:-default}"
-APP="${2:-}"
-
-section() { printf '\n=== %s ===\n' "$1"; }
-
-section "Context"
-kubectl config current-context
-kubectl config view --minify -o jsonpath='{.contexts[0].context.namespace}{"\n"}' 2>/dev/null || echo "default"
-
-section "Recent Events ($NS)"
-kubectl get events -n "$NS" --sort-by='.lastTimestamp' | tail -15
-
-section "Problem Pods ($NS)"
-kubectl get pods -n "$NS" --field-selector=status.phase!=Running,status.phase!=Succeeded 2>/dev/null || \
-  kubectl get pods -n "$NS" | grep -vE 'Running|Completed' || echo "None"
-
-if [ -n "$APP" ]; then
-  section "Deployment ($APP)"
-  kubectl get deploy,rs,pods,svc,endpoints -n "$NS" -l "app=$APP" 2>/dev/null || true
-fi
-```
-
-Usage: `chmod +x ~/bin/k8s-triage.sh && ~/bin/k8s-triage.sh troubleshoot-lab web`
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Prefer `describe`, events, and logs before deleting workloads that hide evidence
-- Do not `kubectl exec` into production Pods with broad secrets mounted unless necessary and audited
-- Capture namespace and resource names carefully — pasting wrong cluster context is a common outage cause
-- Avoid privileged debug Pods on shared nodes; use ephemeral debug containers with least privilege
-- Redact Secret and env dumps from incident tickets
-- Clean up debug Deployments/Jobs so they do not remain publicly reachable
-
+- Treat credentials and tokens for kubernetes as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Skipping Events and going straight to logs"
-    Events explain *why* a Pod is Pending or FailedMount — logs are empty when the container never started.
+!!! warning "Deleting Pods before capturing Events and previous logs."
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Debugging the wrong namespace"
-    Always verify `kubectl config view --minify` context. Cross-namespace Service DNS mistakes waste hours.
+!!! warning "Fixating on Deployment status while the PVC is Pending."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Ignoring label selector mismatches"
-    Deployment labels, Service selectors, and NetworkPolicy selectors must align. Typos cause empty endpoints silently.
-
-!!! warning "Restarting pods without capturing --previous logs"
-    CrashLoopBackOff garbage-collects old container logs quickly. Capture evidence before delete or restart.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "Run a pre-incident checklist under calm conditions"
-    Practice `k8s-triage.sh` on healthy clusters so muscle memory exists during outages.
-
-!!! tip "Fix forward with rollout undo only after root cause"
-    Undo restores service but hides the bad change. Capture failing image tag and config diff first.
-
-!!! tip "Use field selectors and labels consistently"
-    Standardize on `app.kubernetes.io/name` and `app.kubernetes.io/instance` — reduces selector drift.
-
-!!! tip "Write postmortems with kubectl evidence"
-    Paste Events timestamps, exit codes, and quota messages — not just "pod crashed."
+- Encode Troubleshooting Kubernetes Workloads changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Pod Pending forever | Scheduling constraints | `describe pod` Events; check quota, taints, affinity |
-| Empty endpoints | Selector mismatch or NotReady | Verify labels; fix readiness probe |
-| Intermittent 502 | Rolling update + bad readiness | Tune probes; check `maxUnavailable` |
-| OOMKilled | Memory limit too low | Increase limit; profile app memory |
-| Forbidden on apply | RBAC | `kubectl auth can-i`; fix RoleBinding |
-| Works via port-forward, not Ingress | Ingress misconfiguration | `describe ingress`; verify host/path/backend |
-| No logs available | Container never started | Check Events for mount/pull errors |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Use a **structured funnel**: scope → workload → pod → container → network → cluster
-- **Events** and `kubectl describe` reveal scheduling, mount, and probe failures before logs help
-- **CrashLoopBackOff** requires `--previous` logs and exit code analysis; distinguish OOM from app errors
-- **Empty endpoints** usually mean label selector mismatch or readiness failure — not Ingress issues
-- **Rollout undo** restores service; always capture failing revision for root cause analysis
-- Advanced tools (`kubectl debug`, port-forward, triage scripts) accelerate diagnosis under pressure
+**Troubleshooting Kubernetes Workloads** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. What is the first command or information source you check when a Deployment is failing?
-2. Explain the difference between Pod phase `Running` and condition `Ready=False`.
-3. How do you retrieve logs from a container that crashed and restarted?
-4. What causes ImagePullBackOff and how do you diagnose it?
-5. A Service exists but has no endpoints. List three possible causes.
-6. What does exit code 137 typically indicate in a terminated container?
-7. Describe the traffic path from Ingress to Pod and where to inspect each hop.
-8. What is ProgressDeadlineExceeded on a Deployment?
-9. When would you use `kubectl debug` instead of `kubectl exec`?
-10. How do ResourceQuota and scheduling failures appear in Pod Events?
+1. How does **Troubleshooting Kubernetes Workloads** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 3, 5, and 7)"
-
-    **Q3 — Crashed container logs:** Use `kubectl logs <pod-name> -c <container-name> --previous`. The `--previous` flag returns logs from the last terminated instance of the container — essential during CrashLoopBackOff. If the container never started (ImagePullBackOff), logs are unavailable; use Events instead.
-
-    **Q5 — No endpoints:** (1) Service selector does not match any Pod labels. (2) All matching Pods fail readiness probes and are excluded. (3) No Pods exist — Deployment scaled to zero or ReplicaSet failed to create pods. Verify with `kubectl get pods --show-labels` and compare to `kubectl describe svc`.
-
-    **Q7 — Ingress to Pod path:** Client hits Ingress controller → controller matches Ingress rules → forwards to Service ClusterIP:port → kube-proxy or CNI routes to Pod IP:targetPort on a Ready endpoint. Inspect: `kubectl describe ingress`, `kubectl get endpoints`, `kubectl get pods -o wide`, and in-cluster curl to Service DNS.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Kubernetes – Category Overview](index.md)
-- [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md) *(previous — Module 5)*
-- [Helm Package Management](helm-package-management.md) *(next in Module 5)*
-- [Health Checks, Probes, and Self-Healing](health-checks-probes-and-self-healing.md)
-- [Networking – Network Troubleshooting Methodology](../networking/network-troubleshooting-methodology.md)
-- Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
-- Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Managed Kubernetes — EKS, AKS, GKE](managed-kubernetes-eks-aks-gke.md)
 
 ## References
 
-- [Debug Running Pods](https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/)
-- [Debug Init Containers](https://kubernetes.io/docs/tasks/debug/debug-application/debug-init-containers/)
-- [Determine Pod Failure Reason](https://kubernetes.io/docs/tasks/debug/debug-application/determine-reason-pod-failure/)
-- [Troubleshoot Applications](https://kubernetes.io/docs/tasks/debug/debug-application/)
-- [kubectl Reference – logs, describe, events](https://kubernetes.io/docs/reference/kubectl/)
-- [Deployment – Rolling Back](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
+- [Debug Pods](https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/)

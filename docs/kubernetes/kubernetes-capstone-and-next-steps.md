@@ -52,7 +52,7 @@ By the end of this capstone, you will be able to:
 
 ## Architecture
 
-![Architecture diagram for Kubernetes Capstone and Next Steps](../assets/images/kubernetes-capstone-and-next-steps.svg)
+![Production cluster](../assets/excalidraw/k8s-production-cluster.svg)
 
 ## Project Overview — VoteStack on Kubernetes
 
@@ -422,7 +422,7 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 
 ### Recommended learning path
 
-![Recommended learning path diagram](../assets/images/kubernetes-capstone-and-next-steps-1.svg)
+![GitOps workflow](../assets/excalidraw/k8s-gitops-workflow.svg)
 
 
 1. Deploy VoteStack capstone as portfolio project
@@ -568,7 +568,7 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 
 ### Recommended learning path
 
-![Capstone diagram](../assets/images/kubernetes-capstone-and-next-steps-1.svg)
+![Production cluster design](../assets/excalidraw/k8s-production-cluster.svg)
 
 
 1. Deploy VoteStack capstone as portfolio project

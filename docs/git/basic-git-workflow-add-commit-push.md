@@ -1,498 +1,232 @@
 ---
-title: Basic Git Workflow — Add, Commit, Push
-description: Master the daily Git cycle — status, add, commit, push, and pull — with staging strategies, commit messages, upstream tracking, and DevOps CI/CD integration patterns.
+title: "Basic Git Workflow — Add, Commit, Push"
+description: "Practise the core Git loop — status, add, commit, log, and push — with clear commit messages for DevOps and IaC changes."
 difficulty: beginner
-estimated_time: "35 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "35–50 min"
+technology: git
 category: git
-tags:
+module: "Module 3 · Git Basics"
+career_paths:
+  - beginner
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+skills:
   - git
-  - workflow
   - commit
   - push
-  - staging
-  - devops
 prerequisites:
-  - Creating and Cloning Repositories
-  - Git Installation and Configuration
-  - Understanding the Git Object Model
+  - git/creating-and-cloning-repositories
+next:
+  - git/viewing-history-and-diffs
+related:
+  - git/working-with-remotes
+labs: []
+projects: []
+interview: interview/git
+certifications:
+  - GitHub Foundations
+tags:
+  - git
+  - commit
+  - workflow
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # Basic Git Workflow — Add, Commit, Push
 
 ## Overview
 
-The daily DevOps rhythm is **`git pull` → edit → `git status` → `git add` → `git commit` → `git push`**. Whether you are updating a Kubernetes manifest, fixing a Terraform variable, or patching an Ansible role, this cycle is identical. Mastery of the **three trees** (working directory, staging area, repository), deliberate **staging**, and **meaningful commit messages** separates clean audit trails from unsearchable history that breaks automated changelogs and code review.
+Run the daily loop: edit → `status` → `add` → `commit` → `log` → `push`, with Conventional-style messages suitable for IaC and apps.
 
-This tutorial walks through the complete workflow, partial staging, commit message conventions, pushing to remotes with upstream tracking, pulling safely before push, and how this cycle triggers CI/CD pipelines in production environments.
+Staging lets you craft commits intentionally. Push publishes history to the remote for CI and teammates.
 
-This is **Tutorial 5** in **Module 2: Essential Workflow** of the REBASH Academy Git series. Complete [Creating and Cloning Repositories](creating-and-cloning-repositories.md) first. Network connectivity for push/pull is covered in the [Networking track](../networking/index.md).
+This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- [Creating and Cloning Repositories](creating-and-cloning-repositories.md) — you can init or clone a repo
-- [Git Installation and Configuration](git-installation-and-configuration.md) — identity configured
-- [Understanding the Git Object Model](understanding-the-git-object-model.md) — three trees mental model
-- A cloned or initialized repository with a configured remote (GitHub/GitLab test repo recommended)
-- SSH or HTTPS authentication working
+- [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Execute the full workflow: status → add → commit → push → pull
-- [ ] Explain the difference between working directory, staging area, and repository
-- [ ] Stage changes selectively using files, directories, patches, and interactive mode
-- [ ] Write commit messages that satisfy team conventions and automated tooling
-- [ ] Push commits to remotes and set upstream tracking branches
-- [ ] Pull remote changes safely before pushing to shared branches
-- [ ] Inspect staged and unstaged diffs before committing
-- [ ] Relate local commits to CI/CD pipeline triggers and deployment traceability
+- [ ] Read `git status` and `git diff`  
+- [ ] Stage with `git add`  
+- [ ] Commit with a clear message  
+- [ ] View `git log`  
+- [ ] Push to `origin` when a remote exists
 
 ## Architecture
 
-The workflow moves changes through three trees before reaching the remote server where CI/CD watches for events.
+This topic’s control points and relationships are shown below.
 
-![Architecture diagram for basic git workflow add commit push](../assets/images/basic-git-workflow-add-commit-push.svg)
-
+![Git workflow](../assets/excalidraw/git-workflow.svg)
 
 ## Theory
 
-### The Three Trees Revisited
+### What
 
-| Tree | Command to inspect | Modified by |
-|------|-------------------|-------------|
-| Working directory | `git status`, `git diff` | File editors, build tools |
-| Staging area (index) | `git diff --staged` | `git add`, `git reset` |
-| Repository | `git log`, `git show` | `git commit` |
+The everyday Git loop is **edit → stage → commit → push**. `git status` shows what changed; `git add` selects content for the next snapshot; `git commit` records that snapshot; `git log` reviews history; `git push` publishes commits to a remote so CI and teammates can see them.
 
-**Unstaged changes** — modified in working directory but not in index.
-**Staged changes** — marked for next commit.
-**Committed changes** — permanent objects in `.git/objects/`.
+### Why
 
-`git status -s` provides porcelain short format used by scripts:
+Staging exists so a commit can be a **coherent unit of work**, not “everything dirty on disk”. In DevOps, a good commit might be one Terraform module change or one pipeline fix — small enough to review and revert. Pushing without committing leaves work trapped on one laptop; committing without reviewing `status` risks secrets and debug junk.
 
-```text
- M README.md      # modified, unstaged
-M  main.tf        # modified, staged
-A  new.yaml       # added, staged
-?? secret.env     # untracked
-```
+### How it works
 
-### `git add` Strategies
+The working tree holds edits. `git add` copies file content into the **index**. `git commit` freezes the index as a new commit object on the current branch and advances the branch pointer. Messages should use an imperative summary (`fix: pin terraform provider`) with an optional body explaining *why*. After local commits exist, `git push` sends missing objects and updates the remote branch. First push of a branch often uses `-u` to set upstream tracking.
 
-| Command | Effect |
-|---------|--------|
-| `git add file.txt` | Stage specific file |
-| `git add directory/` | Stage all changes under directory |
-| `git add .` | Stage all changes in current tree (careful!) |
-| `git add -p` | Interactive patch staging — split hunks |
-| `git add -u` | Stage modifications and deletions (not new files) |
-| `git add -A` | Stage everything including deletions repo-wide |
+| Command | Role |
+|---------|------|
+| `status` | What changed |
+| `add` | Stage |
+| `commit` | Record snapshot |
+| `log` | History |
+| `push` | Publish to remote |
 
-DevOps best practice: **never** `git add .` without reviewing `git status` first. Terraform plans and kubeconfig backups must not enter commits.
+### Key concepts
 
-### Writing Commit Messages
+- **Atomic commits** beat giant “WIP” dumps for review and `git bisect` later  
+- **Upstream tracking** lets bare `git push` / `git pull` know which remote branch to use  
+- **Hooks** (pre-commit, commit-msg) may reject bad messages or secrets — fix the cause, do not bypass casually  
+- Conventional prefixes (`feat:`, `fix:`, `chore:`) help changelogs and automation  
 
-**Conventional Commits** format — widely used for automated changelogs and semantic release:
+### Common pitfalls
 
-```text
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `ci`, `build`, `test`.
-
-Examples for infrastructure:
-
-```text
-feat(terraform): add WAF module for production ALB
-
-Enable AWS WAFv2 with managed rule groups on the public
-load balancer. Closes PLATFORM-442.
-
-fix(k8s): correct resource limits for api deployment
-
-Memory limit was 128Mi causing OOMKills under load.
-Increased to 512Mi based on Prometheus metrics.
-
-ci(github-actions): pin terraform to 1.8.4
-```
-
-Subject line rules:
-
-- Imperative mood: "Add feature" not "Added feature"
-- ≤ 50 characters for subject (72 max for tools)
-- Body explains **why**, not just what diff shows
-- Reference ticket IDs for traceability
-
-### `git commit` Options
-
-| Command | Use case |
-|---------|----------|
-| `git commit -m "msg"` | Single-line message |
-| `git commit` | Opens editor for full message |
-| `git commit -a` | Stage all **tracked** modifications, skip new files |
-| `git commit --amend` | Modify last commit (before push!) |
-| `git commit --no-verify` | Skip hooks (avoid unless emergency) |
-
-Pre-commit hooks (lint, secrets scan) run before commit completes — covered in Module 6.
-
-### `git push` and Upstream Tracking
-
-```bash
-git push origin main           # Push local main to remote main
-git push -u origin feature/x   # Push and set upstream for new branch
-git push                       # Push current branch to tracked upstream
-```
-
-Push sends local commits to remote. Remote rejects if you lack permissions or if remote has commits you don't have (non-fast-forward).
-
-**Protected branches** (GitHub/GitLab) block direct push to `main` — require pull requests. DevOps engineers push feature branches; merge via review.
-
-### `git pull` Before Push
-
-```bash
-git pull origin main    # fetch + merge
-git pull --rebase origin main   # fetch + rebase (cleaner history)
-```
-
-Always pull (or fetch + rebase) before pushing to shared branches to incorporate teammates' commits. Merge conflicts surface here — resolved in working directory, staged, and committed.
-
-### How Commits Trigger CI/CD
-
-| Event | Typical pipeline action |
-|-------|---------------------------|
-| Push to feature branch | Run tests, lint, plan (Terraform) |
-| Open pull request | Full validation + review gates |
-| Merge to `main` | Build artifact, deploy to staging |
-| Tag push `v*` | Production release, signed images |
-
-Commit SHA becomes the correlation ID across logs, Docker tags, and deployment records.
+- `git add .` blindly — stage secrets, build artefacts, or unrelated files  
+- Empty or joke commit messages that waste reviewers  
+- Committing on the wrong branch then force-pushing to “fix” it  
+- Pushing to `main` when policy requires a pull request
 
 ## Hands-on Lab
 
-Use a test repository — create one on GitHub/GitLab or work locally with a bare remote simulation.
-
-### Step 1 – Clone or initialize lab repository
-
-**Command:**
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/lab/git-workflow && cd ~/lab/git-workflow
-git init
-git config user.email "lab@example.com"
-git config user.name "Lab User"
-echo "# Workflow Lab" > README.md
-git add README.md
-git commit -m "docs: initial README"
+mkdir -p ~/rebash-git/module-03/workflow && cd ~/rebash-git/module-03/workflow
+```
+
+**Focus:** hands-on practice for Basic Git Workflow — Add, Commit, Push
+
+### Step 1 – Skeleton
+
+```bash
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: Basic Git Workflow — Add, Commit, Push"
+EOF
+chmod +x lab.sh
+./lab.sh
+```
+
+### Step 2 – Core exercise
+
+```bash
+mkdir -p ~/rebash-git/module-03/workflow && cd ~/rebash-git/module-03/workflow
+git init -b main
+git config user.email "lab@rebash.local"
+git config user.name "REBASH Lab"
+
+echo 'replicas: 2' > app.yaml
+git status
+git add app.yaml
+git diff --cached
+git commit -m "feat: add app.yaml baseline"
 git log --oneline
+
+# Optional remote from previous lab:
+# git remote add origin ../remote-demo.git
+# git push -u origin main
 ```
 
-**Explanation:** Start with one commit baseline. Per-repo config overrides global for isolated lab identity.
-
-**Expected output:**
-
-```text
-abc1234 docs: initial README
-```
-
-### Step 2 – Make changes and inspect status
-
-**Command:**
+### Final step – Cleanup note
 
 ```bash
-echo "replica_count = 2" >> terraform.tfvars.example
-echo "debug = true" >> .env.local
-git status
-git status -s
+# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
+./lab.sh || true
 ```
-
-**Explanation:** `.env.local` should be untracked — we'll add it to `.gitignore` before committing other files.
-
-**Expected output:**
-
-```text
-Untracked files:
-  .env.local
-  terraform.tfvars.example
-```
-
-### Step 3 – Create .gitignore and stage selectively
-
-**Command:**
-
-```bash
-echo ".env.local" >> .gitignore
-git add .gitignore terraform.tfvars.example
-git status
-git diff --staged
-```
-
-**Explanation:** Stage only intended files. `git diff --staged` reviews index vs last commit before committing.
-
-**Expected output:**
-
-```text
-Changes to be committed:
-  new file:   .gitignore
-  new file:   terraform.tfvars.example
-```
-
-### Step 4 – Commit with conventional message
-
-**Command:**
-
-```bash
-git commit -m "feat(terraform): add example tfvars and gitignore
-
-Add terraform.tfvars.example documenting replica_count.
-Ignore .env.local to prevent accidental secret commits."
-git log -1 --format=fuller
-```
-
-**Explanation:** Multi-line `-m` accepts `\n\n` for body. Fuller format shows author vs committer.
-
-**Expected output:**
-
-```text
-def5678 feat(terraform): add example tfvars and gitignore
-Author:     Lab User <lab@example.com>
-Commit:     Lab User <lab@example.com>
-...
-```
-
-### Step 5 – Commit second change and view history
-
-**Command:**
-
-```bash
-echo 'instance_type = "t3.micro"' >> terraform.tfvars.example
-git add terraform.tfvars.example
-git commit -m "feat(terraform): add instance_type to example tfvars"
-git log --oneline --graph
-git show HEAD --stat
-```
-
-**Explanation:** `--stat` summarizes files changed per commit — quick review before push.
-
-**Expected output:**
-
-```text
-* ghi9012 feat(terraform): add instance_type to example tfvars
-* def5678 feat(terraform): add example tfvars and gitignore
-* abc1234 docs: initial README
-```
-
-### Step 6 – Simulate remote with bare repo and push
-
-**Command:**
-
-```bash
-cd ~/lab
-git clone --bare git-workflow workflow-remote.git
-cd ~/lab/git-workflow
-git remote add origin ~/lab/workflow-remote.git
-git push -u origin main
-git branch -vv
-```
-
-**Explanation:** Local bare repo simulates `origin` without network. `-u` sets upstream — enables bare `git push` / `git pull`.
-
-**Expected output:**
-
-```text
-To ~/lab/workflow-remote.git
- * [new branch]      main -> main
-* main abc1234 [origin/main] docs: initial README
-```
-
-Note: push sends **all** commits not on remote — three commits total after push completes.
-
-### Step 7 – Pull, modify, push again
-
-**Command:**
-
-```bash
-echo "## Lab complete" >> README.md
-git add README.md
-git commit -m "docs: mark lab section complete"
-git pull --rebase origin main
-git push origin main
-git log --oneline origin/main
-```
-
-**Explanation:** Pull before push integrates remote changes. `--rebase` replays your commit atop remote tip for linear history.
-
-**Expected output:**
-
-```text
-Successfully rebased and updated refs/heads/main.
-...
-jkl3456 docs: mark lab section complete
-```
-
-### Step 8 – Clean up
-
-**Command:**
-
-```bash
-rm -rf ~/lab/git-workflow ~/lab/workflow-remote.git
-```
-
-**Explanation:** Remove lab artifacts.
-
-**Expected result:** Working tree clean; temporary lab artefacts removed if the tutorial created any.
-
 
 ## Validation
 
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Stage/commit | `git log -1` shows your lab commit |
-| Push/pull | Remote tracking branch updated (or documented dry-run equivalent) |
-| Diff hygiene | You inspected staged diff before commit |
-| Cleanup | Lab repo/remote leftovers removed |
+- [ ] Lab commands run under `~/rebash-git/module-03/workflow/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git status` | Show working tree and staging state | `git status -s` |
-| `git diff` | Unstaged changes | `git diff` |
-| `git diff --staged` | Staged changes vs HEAD | `git diff --staged` |
-| `git add` | Stage changes | `git add -p file` |
-| `git commit` | Create commit from index | `git commit -m "fix: ..."` |
-| `git push` | Send commits to remote | `git push -u origin main` |
-| `git pull` | Fetch and integrate remote | `git pull --rebase` |
-| `git log` | View commit history | `git log --oneline -5` |
+Production practice for **Basic Git Workflow — Add, Commit, Push** always combines:
 
-### Terraform CI-friendly commit check
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
 
-```bash
-#!/usr/bin/env bash
-# verify-no-tfstate.sh — block tfstate from commits
-set -euo pipefail
-
-if git diff --cached --name-only | grep -E '\.tfstate($|\.)'; then
-  echo "ERROR: Terraform state file staged — unstage immediately"
-  exit 1
-fi
-
-echo "OK: no tfstate in staged files"
-```
-
-Install as pre-commit hook: `cp verify-no-tfstate.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Review `git diff --cached` before every commit so secrets do not slip through
-- Prefer small, intentional commits over `git add -A` on dirty trees with credential files
-- Protect `main`/`master` on the remote; require PR reviews for production infrastructure
-- Use pre-commit secret scanners where available
-- Never amend or force-push commits that already reached shared remotes
+- Treat credentials and tokens for git as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Committing without reviewing staged diff"
-    `git add .` followed by immediate commit has leaked production credentials into public repos countless times. Always run `git diff --staged` before commit.
+!!! warning "`git add .` blindly — stage secrets, build artefacts, or unrelated files  "
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Vague commit messages like 'fix' or 'update'"
-    Messages must stand alone in `git log` years later. Include scope and reason: `fix(alb): increase idle timeout for long-running reports`.
+!!! warning "Empty or joke commit messages that waste reviewers  "
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Push without pull on shared branches"
-    Causes non-fast-forward rejections or accidental merge commits. Pull or rebase first; resolve conflicts locally.
-
-!!! warning "Amending commits already pushed to shared branches"
-    Amend creates new SHA; teammates' history diverges. Only amend unpushed local commits unless team agrees on force push protocol.
-
-!!! warning "Using `git commit -a` and expecting new files included"
-    `-a` skips untracked files. New files require explicit `git add`.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-!!! tip "One logical change per commit"
-    Separate Terraform module addition from unrelated README typo fix. Enables clean reverts and accurate `git bisect`.
-
-!!! tip "Pull with rebase on feature branches"
-    `git pull --rebase` keeps history linear before opening pull requests — easier review for senior engineers.
-
-!!! tip "Reference tickets in commit footers"
-    `Closes PLATFORM-442` links VCS history to Jira/Linear — essential for change management audits.
-
-!!! tip "Let CI validate before merging — not instead of local review"
-    Run `terraform fmt`, `ansible-lint`, or `kubectl dry-run` locally; CI confirms in clean environment.
+- Encode Basic Git Workflow — Add, Commit, Push changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `nothing to commit, working tree clean` | No changes or all already committed | Verify edits saved; run `git status` |
-| `Changes not staged for commit` | Modified but not added | `git add` the files |
-| `rejected – non-fast-forward` | Remote has commits you lack | `git pull --rebase` then push |
-| `Permission denied` on push | Auth failure or branch protection | Check SSH/PAT; use feature branch + PR |
-| Wrong files in commit | Over-broad `git add` | `git reset HEAD~1` (if not pushed); recommit selectively |
-| Merge conflict on pull | Same lines edited remotely and locally | Edit conflict markers; `git add`; `git commit` |
-| Empty commit message abort | Editor closed without message | Re-run commit with `-m` |
-| Pre-commit hook failed | Lint or secrets scan blocked commit | Fix issues; never `--no-verify` in production repos |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- Daily workflow: **edit → status → add → commit → pull → push**
-- Changes flow through **working directory → staging area → repository → remote**
-- Stage deliberately with `git add -p`; review with `git diff --staged`
-- Write **conventional commit messages** with type, scope, and ticket references
-- **`git push -u`** sets upstream tracking; **`git pull --rebase`** integrates remote changes cleanly
-- Each push to tracked branches can **trigger CI/CD** — commit SHA links code to pipeline runs and deployments
+**Basic Git Workflow — Add, Commit, Push** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. Explain the three trees in Git and how changes move between them.
-2. What is the difference between `git diff` and `git diff --staged`?
-3. When would you use `git add -p` instead of `git add .`?
-4. Describe the Conventional Commits format with an infrastructure example.
-5. What does `git push -u origin feature/x` do?
-6. Why should you pull before pushing to a shared branch?
-7. What happens when a pre-commit hook fails?
-8. How do commits on `main` relate to CI/CD pipeline triggers?
-9. What is the difference between `git commit -a` and `git add -A && git commit`?
-10. Why should you avoid amending commits that have been pushed?
+1. How does **Basic Git Workflow — Add, Commit, Push** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-??? tip "Sample Answers (Questions 1, 5, and 8)"
-
-    **Q1 — Three trees:** The **working directory** holds files you edit. The **staging area (index)** holds changes selected for the next commit via `git add`. The **repository** stores committed snapshots as objects via `git commit`. Changes flow: edit files (working dir) → `git add` (stage) → `git commit` (persist). `git checkout` or `git restore` can move data from repository/index back to working directory.
-
-    **Q5 — push -u:** Pushes local branch `feature/x` to remote `origin` and sets upstream tracking. Future `git push` and `git pull` without arguments use this remote branch. Required once for new branches; subsequent pushes need only `git push`.
-
-    **Q8 — Commits and CI/CD:** Hosting platforms fire webhooks on push events. CI systems clone at the pushed commit SHA, run defined stages (test, build, scan, deploy), and report status back to the PR or commit. On merge to protected `main`, deployment pipelines promote artifacts tagged with that SHA — enabling traceability from production back to exact source state.
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- [Git – Category Overview](index.md)
-- [Creating and Cloning Repositories](creating-and-cloning-repositories.md) *(previous in Module 2)*
-- [Viewing History and Diffs](viewing-history-and-diffs.md) *(next in Module 2)*
-- [Understanding the Git Object Model](understanding-the-git-object-model.md)
-- [Introduction to Networking](../networking/introduction-to-networking.md)
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course overview](index.md)
+- - [Viewing History and Diffs](viewing-history-and-diffs.md)
 
 ## References
 
-- [Pro Git – Recording Changes](https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository)
-- [Conventional Commits specification](https://www.conventionalcommits.org/)
-- [Git push documentation](https://git-scm.com/docs/git-push)
-- [GitHub Actions – Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)
-- [GitLab CI – Pipeline triggers](https://docs.gitlab.com/ee/ci/pipelines/)
-- [REBASH Academy – Networking Overview](../networking/index.md)
+- [Pro Git — Recording Changes](https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository)

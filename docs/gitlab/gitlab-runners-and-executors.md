@@ -1,377 +1,265 @@
 ---
-title: GitLab Runners and Executors
-description: "GitLab Runners and Executors is essential for engineers who operate GitLab CI in production — not only the team"
+title: "GitLab Runners and Executors"
+description: "Choose shared, group, and project runners; compare shell, Docker, and Kubernetes executors; and use tags and autoscaling safely."
 difficulty: intermediate
-estimated_time: "50 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "40–55 min"
+technology: gitlab
 category: gitlab
-tags:
-  - cicd
-  - gitlab
-  - gitlab-ci
-  - runners
+module: "Module 3 · GitLab Runners"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
+skills:
+  - gitlab-runner
+  - executors
+  - autoscaling
 prerequisites:
-  - Completed tutorial 4 in this track (or equivalent GitLab CI awareness)
-  - Lab repository from prior tutorials or a fresh `git init` workspace
+  - gitlab/gitlab-projects-mrs-and-releases
+next:
+  - gitlab/pipeline-syntax-gitlab-ci-yml
+related:
+  - docker/introduction-to-docker
+  - kubernetes/introduction-to-kubernetes
+labs: []
+projects: []
+interview: interview/gitlab
+certifications:
+  - GitLab Certified CI/CD Associate
+tags:
+  - gitlab
+  - runners
+  - executors
+author: Shaik Basha
+last_updated: "2026-07-31"
 comments: false
 ---
+
 
 # GitLab Runners and Executors
 
 ## Overview
 
-GitLab Runners and Executors is essential for engineers who operate GitLab CI in production — not only the team
-that maintains runners. This lesson covers **GitLab Runner registration, executors (Docker, shell, Kubernetes), and isolation** with practical
-`.gitlab-ci.yml` examples you can lint locally and run on GitLab.com free tier.
+Distinguish shared, group, and project runners; pick an executor for isolation; and use job tags so the right capacity picks up production work.
 
-Other CI platforms exist and are covered in later REBASH tracks; here GitLab CI is the
-focus. You will relate concepts to [Git](../git/index.md) merge requests, and prepare for
-secure deploy patterns connecting to [Docker](../docker/index.md),
-[Kubernetes](../kubernetes/index.md), and
-[Terraform](../terraform/terraform-in-ci-cd-pipelines.md).
+A **GitLab Runner** is the agent that executes jobs. The **executor** decides *how* isolation works (host shell, Docker container, Kubernetes Pod, and others). Scope (instance/shared, group, project) decides *who* can use the runner. Tags bind jobs to capable fleets.
 
-This is **Tutorial 5** in **Module 2: Runners and Configuration** of the REBASH Academy **GitLab CI/CD** track.
-
-!!! tip "Free-tier and local lab options"
-    Use **GitLab.com** free tier for real pipeline runs. Where a cloud runner is optional,
-    each lab includes a **lint / dry-run** path with `glab ci lint`, Python YAML parsing, or
-    **gitlab-ci-local** so you can validate `.gitlab-ci.yml` without spending CI minutes.
-
-
+This is a core tutorial in **Module 3 · GitLab Runners** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-- Completed tutorial 4 in this track (or equivalent GitLab CI awareness)
-- Lab repository from prior tutorials or a fresh `git init` workspace
+- [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain how gitlab runners and executors applies in GitLab CI production pipelines
-- [ ] Author and validate `.gitlab-ci.yml` for the concepts in this tutorial
-- [ ] Choose appropriate runners, tags, and variables for the workload
-- [ ] Connect this topic to merge request workflows and branch protection
-- [ ] Troubleshoot a failed GitLab CI job using logs and lint tools
+- [ ] Contrast shared vs group vs project runners  
+- [ ] Choose shell, Docker, or Kubernetes executors for a workload  
+- [ ] Use `tags` so jobs land on the right fleet  
+- [ ] Outline why autoscaling exists (cost and queue depth)
 
 ## Architecture
 
-![Architecture diagram for GitLab Runners and Executors](../assets/images/gitlab-runners-and-executors.svg)
+This topic’s control points and relationships are shown below.
 
-| Layer | Responsibility |
-|-------|----------------|
-| **Trigger** | Git push, MR, tag, schedule, manual |
-| **Pipeline** | `.gitlab-ci.yml` automation definition in Git |
-| **Runner** | Isolated compute executing job scripts |
-| **Artefacts & cache** | Outputs and dependency acceleration |
-| **Deploy target** | GitLab environment, cluster, or cloud account |
+![Runner architecture](../assets/excalidraw/gitlab-runner-architecture.svg)
 
 ## Theory
 
-### GitLab Runner architecture
+### What it is
 
-The **GitLab Runner** is a separate agent process that polls GitLab for jobs, executes them
-in an isolated environment, and streams logs back. Shared runners on GitLab.com are managed
-by GitLab; self-managed runners register to your instance or project.
-
-### Executors
+GitLab schedules jobs; **runners** claim them over the Runner API. Registration associates a runner with an instance, group, or project (modern registration uses authentication tokens and runner types). The **executor** plugin runs the job:
 
 | Executor | Isolation | Typical use |
 |----------|-----------|-------------|
-| Docker | Container per job | Most CI workloads |
-| Shell | Host filesystem | Bare-metal build agents (use with care) |
-| Kubernetes | Pod per job | Large fleets, autoscaling |
-| SSH | Remote host | Legacy deploy targets |
+| Shell | Process on the runner host | Legacy / carefully locked hosts |
+| Docker | Container per job | Most SaaS and self-managed CI |
+| Kubernetes | Pod per job | Cluster-backed platforms |
+| Docker Machine / autoscaler | Ephemeral VMs | Burst capacity (evolving tooling) |
 
-### Registration
+**Shared (instance) runners** serve many projects (GitLab.com shared runners). **Group runners** serve all projects in a group. **Project runners** are scoped to one project — useful for privileged or regulated workloads.
 
-Register a runner with `gitlab-runner register`, providing the GitLab URL, registration token,
-executor type, and default Docker image. Project-specific runners limit blast radius compared
-to instance-wide runners with broad tags.
+### Why it matters
 
-### Security
+Wrong executor choices create security and reliability debt: shell executors share a host filesystem; untagged “any runner” jobs can land on laptops registered as runners; missing capacity creates hour-long queues. Platform teams treat runners as **product infrastructure** — sized, tagged, monitored, and patched like any other fleet.
 
-Runners execute untrusted code from merge requests. Use Docker or Kubernetes executors,
-disable privileged mode unless required, and isolate production credentials to protected
-runners and protected branches.
+### How it works
 
+1. Admin registers a runner with GitLab (token / runner authentication).
+2. Runner polls for jobs that match its tags and access scope.
+3. For Docker: pull `image:` (or default), mount the build directory, run `script`.
+4. For Kubernetes: create a build Pod in a configured namespace, stream logs, clean up.
+5. Status and artefacts return to GitLab; autoscalers add/remove runner capacity from queue metrics.
 
-        ### Minimal GitLab CI test pipeline
+Job authors select capacity with `tags: [docker, linux]` (example). Without tags, any untagged runner in scope may take the job — usually undesirable in production.
 
-        ```yaml
-        stages:
-  - test
+You can study YAML without owning runners: GitLab.com free tier provides shared runners; **gitlab-ci-local** runs many jobs on your laptop; `glab ci lint` validates syntax.
 
-unit-test:
-  stage: test
-  image: python:3.12-slim
-  script:
-    - pip install -r requirements.txt
-    - pytest -q
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-        ```
+### Key concepts and comparisons
 
+| Scope | Who can use it | Ops note |
+|-------|----------------|----------|
+| Shared / instance | Broad set of projects | Minute quotas, noisy neighbour |
+| Group | Projects under the group | Standard platform fleet |
+| Project | One project | Privileged / air-gapped builds |
 
-### Production notes for GitLab Runners and Executors
+**Autoscaling overview:** idle VMs or cluster nodes cost money; static fleets waste capacity. Autoscaling adds runners when the pending queue grows and removes them when idle — design for warm pools if cold starts hurt MR feedback.
 
-Teams standardise GitLab CI templates but still integrate with external systems — container
-registries, Kubernetes clusters, and cloud OIDC roles. Document **GitLab Runner registration, executors (Docker, shell, Kubernetes), and isolation** in your
-internal runbook: who approves `.gitlab-ci.yml` changes, which runners touch production
-credentials, and how rollbacks interact with [Git](../git/index.md) revert versus forward fix.
+### Common pitfalls
 
-### Related tutorials in this module
-
-Module progression builds depth: earlier tutorials establish vocabulary; later ones add security
-scanning, environment gates, and cloud deploy identities. If a job fails, read the job trace
-top-down and compare `rules:` against `CI_*` predefined variables — avoid deprecated
-`only/except` syntax from older examples.
+- Registering a personal laptop as an unprotected shared runner.
+- Using the shell executor for untrusted open-source MRs.
+- Forgetting tags so GPU or privileged jobs never run (or run everywhere).
+- Equating “Docker executor” with “Docker-in-Docker” — DinD is a separate, higher-risk pattern.
 
 ## Hands-on Lab
 
-### Step 1 — Lab workspace
+Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-cicd/gitlab-runners-and-executors && cd ~/rebash-cicd/gitlab-runners-and-executors
-git init -b main
-echo "# GitLab Runners and Executors" > README.md
+mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
 ```
 
-### Step 2 — GitLab CI configuration
+**Focus:** hands-on practice for GitLab Runners and Executors
 
-Add `.gitlab-ci.yml` using the example in Theory. Tailor scripts to a minimal Python project:
+### Step 1 – Skeleton
 
 ```bash
-echo 'print("ok")' > app.py
-echo 'def test_ok(): assert True' > test_app.py
-pip freeze > requirements.txt 2>/dev/null || echo pytest > requirements.txt
+cat > lab.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "lab: GitLab Runners and Executors"
+EOF
+chmod +x lab.sh
+./lab.sh
 ```
 
-### Step 3 — Push to GitLab.com or dry-run locally
-
-**GitLab.com (free tier):** create a private project, add the remote, push, and open a merge
-request. Confirm pipeline stages in the MR widget.
-
-**Local dry-run:** validate YAML without spending CI minutes (see Lint section below).
-
-### Step 4 — Evidence capture
-
-Save a screenshot or log excerpt to `evidence/notes.md` describing stage order, artefact names,
-runner tags used, and any manual approval you configured.
-
-
-### Step 5 — Runner inspection (optional self-hosted)
-
-If you register a local runner:
+### Step 2 – Core exercise
 
 ```bash
-gitlab-runner list
-gitlab-runner verify
+mkdir -p ~/rebash-gitlab/module-03
+cd ~/rebash-gitlab/module-03
 ```
 
-Assign tags in `.gitlab-ci.yml` and confirm the job lands on your runner in job logs
-(`Running on ...`).
+```bash
+cd ~/rebash-gitlab/module-03
+cat > .gitlab-ci.yml << 'EOF'
+stages: [smoke]
 
+# Prefer explicit tags in production; omit tags only if you rely on shared untagged runners.
+lint_yaml:
+  stage: smoke
+  image: python:3.12-alpine
+  tags:
+    - docker   # remove or change to match your runner; GitLab.com shared often needs no custom tags
+  script:
+    - python -c "import yaml,pathlib; yaml.safe_load(pathlib.Path('.gitlab-ci.yml').read_text()); print('ok')"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - when: never
 
-        ### Lint / dry-run alternative
+document_runner_choice:
+  stage: smoke
+  image: alpine:3.20
+  script:
+    - echo "Project=$CI_PROJECT_PATH Runner=$CI_RUNNER_DESCRIPTION"
+    - echo "Executor hint: prefer Docker/K8s over shell for untrusted code"
+EOF
 
-        Validate pipeline syntax without executing jobs:
+# Local options (no paid GitLab required):
+# glab ci lint .gitlab-ci.yml
+# gitlab-ci-local lint_yaml   # if installed and tagged runners unavailable
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('YAML parse OK')"
+```
 
-        ```bash
-        glab ci lint .gitlab-ci.yml 2>/dev/null || python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
-gitlab-ci-local --file .gitlab-ci.yml 2>/dev/null || echo 'Optional: npm i -g gitlab-ci-local'
-        ```
+### Final step – Cleanup note
 
-        Dry-run paths prove structure and variable references; they do not replace an end-to-end run
-        on a real runner when you are learning job isolation and artefact behaviour.
+```bash
+# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
+./lab.sh || true
+```
 
 ## Validation
 
-| Check | Pass criteria |
-|-------|---------------|
-| `.gitlab-ci.yml` | Valid YAML; `glab ci lint` or equivalent passes |
-| Lint/dry-run | Local validation documented in lab notes |
-| Optional CI run | Pipeline green on MR or default branch |
-| Notes | `evidence/notes.md` explains stages, runners, and credentials used |
+- [ ] Lab commands run under `~/rebash-gitlab/module-03/`
+- [ ] You can explain each Theory section in your own words
+- [ ] You used modern tooling where it applies to this topic
+- [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
 
-| Section | GitLab CI detail |
-|---------|------------------|
-| Entry file | `.gitlab-ci.yml` at repository root |
-| Isolation | `image:` keyword and runner executor |
-| Conditional execution | `rules:` and `workflow:rules` |
-| Manual gate | `when: manual` or protected environment |
-| MR integration | Pipeline widget, test reports, coverage |
+Production practice for **GitLab Runners and Executors** always combines:
 
-Read job traces top-down: clone failure, missing variable, script non-zero exit, artefact
-upload error, runner tag mismatch.
+1. Inspect before you change (status, plan, logs, dry-run)
+2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
+3. Capture evidence (command output, pipeline logs) for handovers
+4. Prefer current tools and APIs over legacy shortcuts
+5. Least privilege — escalate credentials only when required
+
+Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Never print secrets; verify GitLab masking in job logs after first run
-- Scope CI/CD variables to environments and protected branches
-- Pin container images to semver or digest
-- Run untrusted MR jobs on isolated runners without production credentials
-- Rotate tokens used in tutorial labs; they are not production patterns
+- Treat credentials and tokens for gitlab as privileged — never commit them
+- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
+- Validate blast radius before apply/deploy/delete operations
+- Restrict who can approve production changes
+- Collect audit logs; limit who can read sensitive traces
 
 ## Common Mistakes
 
-!!! warning "Using deprecated `only/except`"
-    Breaks on upgrade and confuses reviewers. **Fix:** Use `rules:` and `workflow:rules`.
+!!! warning "Registering a personal laptop as an unprotected shared runner."
+    Validate assumptions against the Theory section and official docs before changing production.
 
-!!! warning "Secrets in Git"
-    Credential leak and audit failure. **Fix:** Use GitLab CI/CD variables and OIDC.
+!!! warning "Using the shell executor for untrusted open-source MRs."
+    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
 
-!!! warning "Skipping lint locally"
-    Wasted runner minutes. **Fix:** Run `glab ci lint` or `gitlab-ci-local` before push.
+!!! warning "Changing production without a rollback path"
+    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
 ## Best Practices
 
-- Pin runner images; schedule periodic base image upgrades
-- Keep pipelines fast — cache dependencies, split slow integration tests
-- Use merge request pipelines for feedback before merging to default branch
-- Document rollback: revert commit vs redeploy previous image digest
-- Align pipeline changes with [Git](../git/index.md) branch protection rules
+- Encode GitLab Runners and Executors changes as code and review them in pull requests
+- Pin versions (images, modules, actions, provider plugins)
+- Separate environments with clear promotion gates
+- Alert on symptoms with runbooks attached
+- Destroy lab resources; tag everything with owner and expiry where possible
 
 ## Troubleshooting
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Job skipped | `rules:` mismatch | Log `CI_PIPELINE_SOURCE` and branch variables |
-| Permission denied | Wrong variable scope or OIDC trust | Fix protected variable or cloud role |
-| Docker daemon error | DinD misconfiguration | Set `DOCKER_TLS_CERTDIR`; verify `services:` |
-| Stuck pending | No runner matches tags | Add tagged runner or fix job `tags:` |
-| MR pipeline missing | `workflow:rules` too strict | Allow `merge_request_event` source |
-
-## Production Patterns and Deep Dive
-
-        ### How `GitLab Runners and Executors` fits in real environments
-
-        Teams shipping through **Module 2: Runners and Configuration** concepts use these patterns in design reviews, pipeline
-        migrations, and incident retrospectives. The lab proves you can author valid GitLab CI
-        configuration; this section connects those files to trade-offs you will defend in interviews
-        and on-call handovers focused on **GitLab Runner registration, executors (Docker, shell, Kubernetes), and isolation**.
-
-        Production GitLab CI programmes typically document:
-
-        | Artefact | Purpose |
-        |----------|---------|
-        | Pipeline architecture diagram | Stages, triggers, credentials, and deploy targets |
-        | Runbook | How to re-run, roll back, or disable a job safely |
-        | Credential rotation procedure | Who rotates tokens, OIDC trust, and protected variables |
-        | Cost / minute budget | Runner sizing, cache strategy, and concurrency limits |
-
-        Always pair automation with **least privilege**, **branch protection**, and **auditable**
-        deploy gates. The REBASH GitLab CI/CD track uses British English and assumes you completed
-        [Git](../git/index.md) fundamentals first.
-
-        ### Extended CLI and validation reference
-
-        The commands below extend the lab — run lint and dry-run variants first, then execute on
-        GitLab.com or a self-hosted runner when you need to observe artefacts, caches, and environment
-        propagation.
-
-        ```bash
-gitlab-runner list 2>/dev/null || echo "Register runner in lab first"
-gitlab-runner verify 2>/dev/null || true
-grep -E 'tags:|image:' .gitlab-ci.yml
-```
-
-        ### Operational scenario (table-top)
-
-        **Scenario:** A teammate merges to `main` and production deploy fails with "permission denied"
-        on a step related to **GitLab Runners and Executors**.
-
-        | Step | Action | Why |
-        |------|--------|-----|
-        | 1 | Open the failed job trace; note stage, image, runner, and identity used | Wrong credential is the top cause |
-        | 2 | Compare branch protection and protected environment rules | Protected branches block secrets or deploys |
-        | 3 | Re-run the job with `CI_DEBUG_TRACE=true` where appropriate | Surfaces masked variable issues |
-        | 4 | Diff `.gitlab-ci.yml` against last green commit | Recent YAML change is likely |
-        | 5 | Roll forward with a fix or revert merge | Document in incident ticket |
-        | 6 | Add a lint gate so the misconfiguration fails in the MR pipeline | Prevents repeat |
-
-        ### Hardening checklist before production
-
-        - [ ] Short-lived credentials (OIDC) preferred over long-lived PATs or access keys
-        - [ ] Secrets in GitLab CI/CD variables — never committed to Git
-        - [ ] Untrusted MR pipelines run on runners without production credentials
-        - [ ] Deploy jobs require manual approval or protected environments
-        - [ ] Container images pinned by digest where feasible
-        - [ ] SBOM or vulnerability scan stage on default branch
-        - [ ] Cross-links reviewed: [Docker](../docker/index.md), [Kubernetes](../kubernetes/index.md), [Terraform](../terraform/index.md)
-
-        ### Terraform handoff note
-
-        Infrastructure changes belong in [Terraform](../terraform/index.md). After this track,
-        reproduce deploy and plan/apply gates using
-        [Terraform in CI/CD Pipelines](../terraform/terraform-in-ci-cd-pipelines.md): plan on merge
-        requests, apply on protected branches with OIDC, and store remote state with locking.
-
-        ### Review questions (self-check)
-
-        Before moving to the next tutorial, answer without looking at notes:
-
-        1. Which `.gitlab-ci.yml` keywords implement this concept?
-        2. What is the least-privilege identity this job should use?
-        3. How would you validate YAML locally before pushing?
-        4. Where do artefacts and caches differ in retention and security?
-        5. Which [Git](../git/index.md) workflow rule prevents broken `main`?
-
-        ### Additional references
-
-        Bookmark official GitLab documentation for **GitLab Runners and Executors**. Note default runner images, quota
-        limits, and which pipeline sources consume shared runner minutes so your team can forecast cost
-        alongside [Docker](../docker/index.md) build times.
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
+| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
+| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
+| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
+| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
 ## Summary
 
-- GitLab Runners and Executors is implemented in GitLab CI through `.gitlab-ci.yml`, runners, and merge request workflows
-- Validate locally with `glab ci lint` or `gitlab-ci-local` before spending runner minutes
-- Security and branch protection are part of pipeline design, not an afterthought
-- Continue sequentially or jump to related [Docker](../docker/index.md) and [Terraform](../terraform/index.md) material when ready
+**GitLab Runners and Executors** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
 
-1. How does GitLab Runners and Executors work in GitLab CI?
-2. Where should secrets live in GitLab CI/CD?
-3. What triggers merge request pipelines vs branch pipelines?
-4. How do artefacts differ from container images in GitLab?
-5. Explain least privilege for a GitLab deploy job.
-6. What is the blast radius of a compromised runner?
-7. How would you roll back a bad deploy in GitLab?
-8. When is matrix parallelism worth the runner cost?
-9. How do protected environments help in GitLab?
-10. What comes after this track in the REBASH curriculum?
+1. How does **GitLab Runners and Executors** show up when operating Cloud or production platforms?
+2. What would you check first if this area misbehaves in production?
+3. Which modern tools or APIs replace older equivalents here?
+4. What security control should accompany this capability?
+5. How would you automate verification of this topic in CI?
 
-!!! tip "Sample answer — question 1"
-    GitLab CI expresses GitLab Runners and Executors through `.gitlab-ci.yml` jobs, `stages`, and `rules:`. Merge request pipelines use `CI_PIPELINE_SOURCE=merge_request_event`; default branch pipelines use push sources. Map each concept to the predefined variables GitLab injects.
-
-
-!!! tip "Sample answer — question 5"
-    Deploy jobs should use protected environment-scoped variables and dedicated runners — never a broad admin cloud key on shared MR runners.
-
+!!! tip "Sample answer — question 2"
+    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
 
 ## Related Tutorials
 
-- Track overview: [GitLab CI/CD](index.md)
-- Previous: [GitLab Merge Requests and Pipeline Triggers](gitlab-merge-requests-and-pipeline-triggers.md)
-- Next: [GitLab Runner Tags and Scaling](gitlab-runner-tags-and-scaling.md)
-
-## Cross-track links
-
-- [Git](../git/index.md) — branching, merge requests, and review workflows pipelines depend on
-- [Docker](../docker/index.md) — images built and scanned in CI
-- [Kubernetes](../kubernetes/index.md) — deploy targets for GitOps and progressive delivery
-- [Terraform](../terraform/index.md) — especially [Terraform in CI/CD Pipelines](../terraform/terraform-in-ci-cd-pipelines.md)
-- [AWS](../aws/index.md) — cloud credentials, OIDC, and deployment targets
+- [Course overview](index.md)
+- - [Pipeline Syntax (.gitlab-ci.yml)](pipeline-syntax-gitlab-ci-yml.md)
 
 ## References
 
-1. [GitLab CI/CD YAML reference](https://docs.gitlab.com/ee/ci/yaml/)
-2. [GitLab Runner documentation](https://docs.gitlab.com/runner/)
-3. [GitLab CI/CD variables](https://docs.gitlab.com/ee/ci/variables/)
-4. [REBASH Terraform in CI/CD](https://rebash.academy/terraform/terraform-in-ci-cd-pipelines/)
+- [GitLab Runner](https://docs.gitlab.com/runner/)  
+- [Executors](https://docs.gitlab.com/runner/executors/)

@@ -47,49 +47,43 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Package Management](../assets/images/linux-package-management.svg)
+![Architecture diagram for Package Management](../assets/excalidraw/linux-package-management.svg)
 
 ## Theory
 
-### Debian / Ubuntu — apt
+### What it is
 
-```bash
-sudo apt update
-sudo apt install -y curl jq
-apt policy curl
-sudo apt upgrade
-dpkg -l | head
-```
+A **package manager** installs, updates, and removes software in a consistent way for your distribution: **apt**/**dpkg** on Debian and Ubuntu; **dnf**/**yum**/**rpm** on Red Hat Enterprise Linux (RHEL) family systems; **zypper** on SUSE. Optional desktop-oriented systems such as **snap** and **Flatpak** sandbox apps but are usually secondary on servers. Packages bring dependencies, version metadata, and file inventories the OS can query and verify.
 
-### RHEL family — dnf / yum
+### Why it matters
 
-```bash
-sudo dnf install -y curl jq    # Fedora/RHEL8+
-sudo yum install -y curl       # older RHEL/CentOS
-rpm -q curl
-```
+Unmanaged manual binaries drift; unpatched kernels and libraries are the main host vulnerability class. Golden images, CI runners, and configuration management all assume a known package state. Knowing how to install a tool, pin or hold a version, and reboot after kernel updates keeps fleets reproducible and secure.
 
-### SUSE — zypper
+### How it works
 
-```bash
-sudo zypper refresh
-sudo zypper install curl
-```
+Refresh metadata (`apt update`, `dnf check-update`, `zypper refresh`), then install (`apt install`, `dnf install`). Query with `apt policy`, `rpm -q`, or `dpkg -l`. Upgrades apply security and bugfix releases; kernel updates typically need a reboot to take effect. Prefer distribution packages for system daemons; use containers or language-specific tools for app runtime isolation. Automate patching carefully (`unattended-upgrades`, `dnf-automatic`) with maintenance windows. Remove unused packages to shrink attack surface. Record critical versions in image build pipelines rather than hand-maintained snowflakes.
 
-### Universal / desktop-oriented — snap / flatpak
+### Key concepts and comparisons
 
-```bash
-snap list 2>/dev/null || true
-flatpak list 2>/dev/null || true
-```
+| Family | Tools | Query |
+|--------|-------|-------|
+| Debian/Ubuntu | apt, dpkg | `apt policy`, `dpkg -l` |
+| RHEL/Fedora/Rocky/Alma | dnf/yum, rpm | `rpm -q`, `dnf list` |
+| SUSE | zypper, rpm | `zypper info` |
 
-Snaps/Flatpaks sandbox desktop apps; servers usually stick to distro packages or containers. Prefer distro packages for system daemons.
+| Approach | Server fit |
+|----------|------------|
+| Distro packages | Best for OS daemons and libs |
+| Containers | App shipping and isolation |
+| snap/Flatpak | Mostly desktop; use sparingly on servers |
 
-### Ops hygiene
+### Common pitfalls
 
-- Pin critical versions in golden images
-- Use unattended-upgrades / dnf-automatic thoughtfully
-- Remove unused packages; reboot when kernel updates require it
+- Running `upgrade` on production without a change window or rollback image.
+- Mixing random third-party apt repos without pinning or trust evaluation.
+- Installing compilers and debug tools on locked-down production hosts against policy.
+- Forgetting that a new kernel is inactive until reboot.
+- Assuming package names match across Debian and RHEL families.
 
 ## Hands-on Lab
 

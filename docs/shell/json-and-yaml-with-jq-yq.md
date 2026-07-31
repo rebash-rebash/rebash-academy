@@ -46,30 +46,48 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for JSON and YAML with jq and yq](../assets/images/shell-json-yaml.svg)
+![Architecture diagram for JSON and YAML with jq and yq](../assets/excalidraw/shell-json-yaml.svg)
 
 ## Theory
 
-### jq
+### What it is
+
+Modern operations speak **JSON** (JavaScript Object Notation) and **YAML** (YAML Ain’t Markup Language) for APIs, Kubernetes manifests, and application config. Shell scripts should not parse those formats with `grep` and hope. **`jq`** is the standard command-line JSON processor; **`yq`** (pin a specific implementation — Mike Farah’s Go tool and Python variants differ) does the same job for YAML. Together they let Bash extract fields, rewrite keys, and validate structure before a deploy continues.
+
+### Why it matters
+
+Cloud APIs, Continuous Integration (CI) artefacts, and GitOps files are structured data. Brittle text scraping breaks when a field moves or a list grows. Using `jq` / `yq` keeps transforms explicit, testable, and reviewable. It also reduces secret leakage: you can extract one non-sensitive field instead of dumping an entire document into logs. For DevOps and platform engineers, fluency with these tools is the difference between a reliable glue script and a fragile one-liner that fails on the next API version.
+
+### How it works
+
+Pipe or redirect JSON into `jq`. Use `-r` for raw strings and `--arg` to pass shell values safely into the filter:
 
 ```bash
 jq -r '.items[].metadata.name' < deploy.json
 jq --arg env "$ENV" '.env = $env' config.json
 ```
 
-Prefer `jq` over `grep`/`sed` for JSON. Fail fast on invalid input.
+Invalid JSON should fail the script (`set -e` plus `jq`’s non-zero status). With `yq`, select keys, convert between YAML and JSON when needed, and merge overlays for environment-specific config. Always **validate before apply**: check required keys exist, extract only what you need, and rewrite files atomically (`tmp` + `mv` on the same filesystem).
 
-### yq
+Treat configuration as versioned data. Document required keys in the script’s usage text. Keep secrets out of shell history, debug dumps, and world-readable files — prefer environment injection or a secrets store over embedding tokens in YAML checked into git.
 
-`yq` (Mike Farah / Python variants exist — pin one) reads and writes YAML. Convert, select keys, and merge overlays for config files.
+### Key concepts
 
-### Parsing JSON and YAML
+| Concern | Practice |
+|---------|----------|
+| JSON | Prefer `jq` over `grep`/`sed` |
+| YAML | Pin one `yq` implementation in docs and CI |
+| Injection | `jq --arg` / `yq` equivalents — not string concat |
+| Validation | Fail fast on missing keys or invalid documents |
+| Rewrite | Atomic temp file + `mv`; never half-written configs |
 
-Validate before apply. Extract only the fields you need. Keep secrets out of shell history and debug dumps.
+### Common pitfalls
 
-### Configuration Files
-
-Treat config as data: version it, validate schema where possible, and rewrite atomically (`tmp` + `mv`). Document required keys in the script’s usage text.
+- Parsing JSON with `grep`/`awk` and breaking on whitespace or key order
+- Mixing incompatible `yq` dialects across developer laptops and CI
+- Concatenating shell variables into filters instead of `--arg`
+- Dumping full documents (with secrets) into CI logs while debugging
+- Overwriting config in place so a crash leaves a truncated file
 
 ## Hands-on Lab
 

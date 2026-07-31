@@ -46,50 +46,52 @@ By the end of this tutorial, you will be able to:
 
 Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
 
-![Architecture diagram for Input, Output, Redirection, and Pipes](../assets/images/shell-io-redirection.svg)
+![Architecture diagram for Input, Output, Redirection, and Pipes](../assets/excalidraw/shell-io-redirection.svg)
 
 ## Theory
 
-### echo
+### What it is
 
-`echo` prints arguments with a trailing newline. Portable enough for simple messages; avoid relying on non-POSIX flags (`-e`, `-n` vary). Prefer `printf` when format matters.
+Every process speaks through three standard streams: **stdin** (input), **stdout** (normal output), and **stderr** (diagnostics). Shell scripting builds on that model with `echo` and `printf` for writing, `read` for consuming lines, **redirection** operators that send streams to files, and **pipes** that connect one command’s stdout to the next command’s stdin. Getting streams right is how ops scripts stay composable — data can flow into the next tool while humans and logs still see clear diagnostics.
 
-### printf
+### Why it matters
+
+Monitoring, Continuous Integration (CI), and health checks often capture only stdout, or merge streams incorrectly. If you print progress messages on stdout, a downstream `jq` or `grep` may parse garbage. If you omit `pipefail`, a pipeline can “succeed” when an early stage failed and the last command happened to exit zero — a classic false green in CI. Separating data from diagnostics, and failing pipelines honestly, keeps automation trustworthy.
+
+### How it works
+
+`echo` prints arguments with a trailing newline. It is fine for simple messages, but non-POSIX flags such as `-e` and `-n` vary across platforms. Prefer `printf` when format or portability matters:
 
 ```bash
 printf 'host=%s status=%s\n' "$host" "$status" >&2
 ```
 
-Use `printf` for structured logs and safe formatting.
+`read -r var` reads a line from stdin into `var`. The `-r` option disables backslash escapes. For raw file lines use `while IFS= read -r line; do ...; done < file`.
 
-### read
+Redirection attaches streams to files or other descriptors. A pipe (`cmd1 | cmd2`) connects stdout of `cmd1` to stdin of `cmd2`. With `set -o pipefail` (included in `set -euo pipefail`), any failing stage fails the whole pipeline — required for honest CI and health checks.
 
-`read -r var` reads a line from stdin into `var`. `-r` disables backslash escapes. Combine with `IFS=` for raw lines: `while IFS= read -r line; do ...; done < file`.
+### Key concepts
 
-### stdin, stdout, stderr
-
-| Stream | FD | Role |
-|--------|----|------|
-| stdin | 0 | Input |
-| stdout | 1 | Data / normal output |
-| stderr | 2 | Diagnostics, progress, errors |
+| Stream / operator | Role |
+|-------------------|------|
+| stdin (FD 0) | Input |
+| stdout (FD 1) | Data / normal output |
+| stderr (FD 2) | Diagnostics, progress, errors |
+| `>` / `>>` | Truncate or append stdout |
+| `2>` / `2>&1` | Redirect stderr; merge into stdout |
+| `&>` | Both streams (Bash) |
+| `<` | Read stdin from a file |
+| `\|` + `pipefail` | Compose commands; fail if any stage fails |
 
 Keep machine-readable results on stdout and human diagnostics on stderr so pipes stay clean.
 
-### Redirection
+### Common pitfalls
 
-| Operator | Meaning |
-|----------|---------|
-| `>` | Truncate and write stdout |
-| `>>` | Append stdout |
-| `2>` | Redirect stderr |
-| `&>` | Both streams (Bash) |
-| `<` | Read stdin from file |
-| `2>&1` | Merge stderr into stdout |
-
-### Pipes
-
-`cmd1 | cmd2` connects stdout of `cmd1` to stdin of `cmd2`. With `set -o pipefail`, any failing stage fails the pipeline — required for honest CI and health checks.
+- Logging to stdout and breaking the next stage in a pipeline
+- Relying on `echo -e` behaviour that differs between Bash and other shells
+- Redirecting with `>` when you meant append (`>>`) and truncating a log
+- Forgetting `pipefail` so `false | true` reports success
+- Using `read` without `-r` and surprising yourself with backslash handling
 
 ## Hands-on Lab
 

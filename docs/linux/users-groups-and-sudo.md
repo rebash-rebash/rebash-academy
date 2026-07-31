@@ -45,47 +45,43 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Users, Groups, and sudo](../assets/images/linux-users-groups-sudo.svg)
+![Architecture diagram for Users, Groups, and sudo](../assets/excalidraw/linux-permission-model.svg)
 
 ## Theory
 
-### Users
+### What it is
 
-Each user has a UID, primary GID, home directory, and login shell — recorded in `/etc/passwd`, secrets in `/etc/shadow`.
+Linux identity is built from **users** (UID, primary group, home, shell) and **groups** (GID membership for shared access). Account records live in `/etc/passwd` with password hashes in `/etc/shadow`; groups in `/etc/group`. **sudo** lets a permitted user run commands as another user (usually root) according to `/etc/sudoers` and files under `/etc/sudoers.d/`. Service accounts often have locked passwords and `nologin` shells so they run daemons without interactive login.
 
-```bash
-id
-getent passwd "$USER"
-sudo useradd -m -s /bin/bash appuser
-sudo passwd appuser   # or prefer SSH keys only
-sudo userdel -r appuser
-```
+### Why it matters
 
-Service accounts often use `nologin`/`false` shells and locked passwords.
+Every privilege escalation path on a host is an identity decision. Over-broad sudo (`ALL=(ALL) NOPASSWD:ALL`) turns a compromised application user into root. Missing group membership breaks deploy pipelines that expect write access to shared directories. Cloud images typically grant the default login user membership of a sudo/wheel/admin group — knowing that model helps you harden bastions and audit who can become root.
 
-### Groups
+### How it works
 
-Groups collect UIDs for shared access. Secondary groups appear in `/etc/group`.
+`id` and `getent passwd` show the effective identity. `useradd`/`adduser` create accounts; `usermod -aG` appends secondary groups (the `-a` matters — without it you may replace the list). `sudo -l` lists your privileges; `sudo -u` runs as a named user. Always edit sudoers with `visudo` so a syntax error does not lock out administration. Prefer command allow-lists and group-based rules over per-human sprawl. Central identity (Lightweight Directory Access Protocol (LDAP), FreeIPA, cloud directory) may back `getent` on enterprise fleets; the local files still matter for break-glass accounts.
 
-```bash
-getent group
-sudo groupadd deployers
-sudo usermod -aG deployers appuser
-```
+### Key concepts and comparisons
 
-Cloud images commonly use a wheel/sudo/admin group for the default login user.
+| Object | Key fields | Files |
+|--------|------------|-------|
+| User | UID, home, shell | `/etc/passwd`, `/etc/shadow` |
+| Group | GID, members | `/etc/group` |
+| sudo rule | Who, as whom, which commands | `/etc/sudoers.d/*` |
 
-### sudo
+| Pattern | Prefer when |
+|---------|-------------|
+| Login user + sudo | Humans on bastions |
+| System user `nologin` | Application daemons |
+| Group-based sudo | Teams sharing the same allow-list |
 
-**sudo** runs a command as another user (usually root) per `/etc/sudoers` and `/etc/sudoers.d/*`.
+### Common pitfalls
 
-```bash
-sudo -l
-sudo -u root id
-sudo visudo -f /etc/sudoers.d/99-rebash-lab
-```
-
-Prefer least privilege: command allow-lists over `ALL=(ALL) NOPASSWD:ALL` on production. Always edit with `visudo`.
+- Using `usermod -G` without `-a` and removing the user from other groups.
+- Editing `/etc/sudoers` with a normal editor and introducing a syntax error.
+- Granting NOPASSWD broadly “for CI” on the same host humans use.
+- Deleting a user without checking processes, cron, and file ownership (`userdel -r` is destructive).
+- Assuming UID numbers match across hosts — NFS and shared storage care about numeric UIDs.
 
 ## Hands-on Lab
 

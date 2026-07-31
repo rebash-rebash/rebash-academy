@@ -227,7 +227,7 @@ build-image:
 ## Related
 
 - Track: [CI/CD](../gitlab/index.md)
-- Start: [Introduction to CI/CD](../gitlab/introduction-to-cicd-and-delivery-models.md)
+- Start: [GitLab CI/CD Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
 - [GitLab CI Fundamentals](../gitlab/gitlab-ci-fundamentals.md)
 - [GitLab Runners and Executors](../gitlab/gitlab-runners-and-executors.md)
 - Lab: [Pipeline Failure Triage](../labs/cicd-pipeline-triage.md)

@@ -1,6 +1,6 @@
 ---
 title: Learning Roadmap
-description: "Structured learning roadmap for the Helm course."
+description: "Structured 12-module learning roadmap for Helm for Kubernetes Engineers."
 technology_id: helm
 hide:
   - toc
@@ -8,22 +8,42 @@ author: Shaik Basha
 category: helm
 tags:
   - helm
+  - roadmap
 ---
 
 # Helm — Learning Roadmap
 
 Follow the course in order:
 
-1. **Course overview** — understand scope, prerequisites, and outcomes
-2. **Modules** — work through tutorials module by module
-3. **Labs** — hands-on practice after core lessons
-4. **Quizzes** — check understanding before projects
-5. **Projects** — portfolio builds that connect multiple skills
-6. **Capstone** — end-to-end proof of production readiness
-7. **Interview preparation** — role-specific questions and scenarios
-8. **Certifications** — map lessons to industry exams
+1. **Course overview** — scope, prerequisites, outcomes  
+2. **Modules 1–12** — tutorials in sequence  
+3. **Labs / quizzes / projects** — practice  
+4. **Capstone** — production Helm platform  
+5. **Interview & certifications** — CKAD / CKA chart skills  
 
-![Course navigation flow](../assets/images/course-navigation.svg)
+![Helm architecture](../assets/excalidraw/helm-architecture.svg)
+
+![Release lifecycle](../assets/excalidraw/helm-release-lifecycle.svg)
 
 ## Modules
 
+| # | Focus | Tutorials |
+|---|-------|-----------|
+| 1 | Fundamentals | [Introduction](introduction-to-helm.md) · [Architecture](helm-architecture-and-components.md) |
+| 2 | Installing Helm | [Install & repos](installing-helm-and-repositories.md) |
+| 3 | Charts | [Working with charts](working-with-helm-charts.md) |
+| 4 | Templates | [Go templating](helm-templates-and-go-templating.md) |
+| 5 | Values | [Values & overrides](helm-values-and-overrides.md) |
+| 6 | Dependencies | [Chart dependencies](helm-chart-dependencies.md) |
+| 7 | Releases | [Release lifecycle](helm-releases-and-lifecycle.md) |
+| 8 | Testing | [Testing & validation](helm-testing-and-validation.md) |
+| 9 | Security | [Helm security](helm-security.md) |
+| 10 | GitOps | [GitOps integration](helm-gitops-integration.md) |
+| 11 | Production | [Production practices](production-helm-practices.md) |
+| 12 | Troubleshooting | [Troubleshooting](troubleshooting-helm.md) |
+
+## Diagrams
+
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```

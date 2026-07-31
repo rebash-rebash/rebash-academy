@@ -45,45 +45,44 @@ By the end of this tutorial, you will be able to:
 
 Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
 
-![Architecture diagram for Containers — Namespaces, cgroups, OverlayFS, and OCI](../assets/images/linux-container-internals.svg)
+![Architecture diagram for Containers — Namespaces, cgroups, OverlayFS, and OCI](../assets/excalidraw/linux-container-internals.svg)
 
 ## Theory
 
-### Namespaces
+### What it is
 
-Namespaces isolate views of the system: PID, NET, MNT, UTS, IPC, USER, CGROUP, TIME.
+Containers are not lightweight VMs; they are ordinary processes given isolated views of the system via **namespaces** and resource limits via **control groups (cgroups)**, usually with a layered root filesystem such as **OverlayFS**. The **Open Container Initiative (OCI)** defines image and runtime specifications so engines (Docker, containerd, CRI-O) can build and run portable images. On Kubernetes, the kubelet talks Container Runtime Interface (CRI) to a runtime that ultimately invokes an OCI runtime such as `runc` or `crun`.
 
-```bash
-lsns
-ps -o pid,ns,cmd
-```
+### Why it matters
 
-A container is usually a process (tree) in multiple namespaces.
+Node disk fill, noisy-neighbour CPU, and “it works in Docker but not in the pod” issues are kernel-feature issues underneath the brand name. Understanding namespaces explains network and PID isolation; cgroups explain Out-Of-Memory (OOM) kills and CPU throttling; OverlayFS explains image layer reuse and why deleted image data may still consume space until garbage collection. Ops and SRE roles debug the host as much as the YAML.
 
-### cgroups
+### How it works
 
-**Control groups** limit/account CPU, memory, I/O, PIDs (v2 unified hierarchy under `/sys/fs/cgroup`).
+Namespaces isolate PID, network, mount, UTS (hostname), Inter-Process Communication (IPC), user, cgroup, and time views (`lsns`). cgroup v2 (unified hierarchy under `/sys/fs/cgroup`) accounts and limits CPU, memory, I/O, and PIDs; systemd and container runtimes both use it. OverlayFS stacks read-only image layers under a writable upper layer for copy-on-write. An OCI image is layers plus config; the runtime creates namespaces/cgroups, sets up the rootfs, and starts the entrypoint. Engines add UX, networking plugins, and image distribution on top of that kernel contract.
 
-```bash
-systemd-cgls | head
-cat /proc/self/cgroup
-```
+### Key concepts and comparisons
 
-### OverlayFS
+| Mechanism | Isolates / limits |
+|-----------|-------------------|
+| Namespaces | What the process can *see* |
+| cgroups | What the process can *consume* |
+| OverlayFS | Layered filesystem view |
+| OCI runtime | Standard create/start lifecycle |
 
-Union filesystem: lower image layers + upper writable layer = container rootfs. Explains thin image pulls and copy-on-write.
+| Stack piece | Role |
+|-------------|------|
+| Engine (Docker/containerd) | Images, API, UX |
+| OCI runtime (runc/crun) | Kernel plumbing |
+| Kernel | Namespaces, cgroups, OverlayFS |
 
-### OCI concepts
+### Common pitfalls
 
-The **Open Container Initiative (OCI)** defines image and runtime specs. Images are tarball layers + config; runtimes (runc, crun) create namespaces/cgroups and start the entrypoint.
-
-### Container runtime basics
-
-High level: container engine (Docker/containerd/CRi-O) → OCI runtime → kernel. On Kubernetes: kubelet → CRI → runtime.
-
-```bash
-command -v docker containerd crictl 2>/dev/null
-```
+- Treating containers as strong security boundaries without MAC, user namespaces, and least privilege.
+- Ignoring cgroup OOM kills while chasing application “random exits”.
+- Filling the node with image layers and container logs under `/var/lib`.
+- Debugging only inside the container when `lsns`/`systemd-cgls` on the host shows the truth.
+- Assuming PID 1 behaviour inside containers matches a full systemd OS.
 
 ## Hands-on Lab
 

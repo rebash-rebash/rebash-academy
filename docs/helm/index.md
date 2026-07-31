@@ -1,63 +1,77 @@
 ---
-title: "Helm"
-description: "Helm track on REBASH Academy — curriculum planned."
+title: Overview
+description: "Helm for Kubernetes Engineers — 12 modules covering charts, templates, values, releases, security, GitOps, and production practices."
+difficulty: intermediate
+estimated_time: "3–4 weeks"
 author: Shaik Basha
+last_updated: "2026-07-31"
 category: helm
 tags:
   - helm
+  - kubernetes
+  - devops
+  - course
+comments: false
 ---
 
-# Helm
+# Helm for Kubernetes Engineers
 
-This technology track is **planned** in the academy curriculum.
+**Duration:** 3–4 weeks · **Difficulty:** Intermediate
+{ .ra-facts }
 
-## Overview
+Production Helm for Kubernetes Administrators, DevOps, Platform, and SRE — create, release, secure, and GitOps-deploy charts.
 
-Helm will be taught as a production-focused course aligned with REBASH Academy career paths.
+!!! tip "Course status"
+    Curriculum follows the REBASH Helm technology prompt (**12 modules**). Tutorials use the academy standard with **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Regenerate with `python3 scripts/generate-excalidraw-svg.py`. Start with [Introduction to Helm](introduction-to-helm.md).
 
-## Learning objectives
+## 1. Course overview
 
-- Understand core Helm concepts used in Cloud and DevOps roles
-- Practise with labs once tutorials ship
-- Connect to related career paths below
+### Purpose
 
-## Prerequisites
+Ship Kubernetes applications as versioned packages — charts you can lint, test, release, roll back, and sync with GitOps.
 
-- Linux fundamentals (recommended)
-- See [Career Paths](../career-paths/index.md) for the recommended order
+### Target roles
 
-## Course modules
+Kubernetes Administrator · DevOps · Platform · SRE · DevSecOps · Cloud Engineer
 
-Modules will appear here when the track moves from planned to ready.
+### Prerequisites
 
-## Tutorial roadmap
+- [Kubernetes](../kubernetes/index.md) · [Docker](../docker/index.md)
+- [Git](../git/index.md) · Linux fundamentals
 
-No published tutorials yet — tracked in the repository curriculum backlog.
+### Capstone outcomes
 
-## Labs roadmap
+Production charts · reusable templates · OCI publishing · multi-env values · GitOps · security validation · troubleshooting
 
-Planned alongside the first modules.
+## 2. Modules
 
-## Projects roadmap
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | Fundamentals | [Introduction](introduction-to-helm.md) · [Architecture](helm-architecture-and-components.md) |
+| 2 | Installing Helm | [Install & repos](installing-helm-and-repositories.md) |
+| 3 | Working with charts | [Chart structure](working-with-helm-charts.md) |
+| 4 | Templates | [Go templating](helm-templates-and-go-templating.md) |
+| 5 | Values | [Values & overrides](helm-values-and-overrides.md) |
+| 6 | Dependencies | [Chart dependencies](helm-chart-dependencies.md) |
+| 7 | Releases | [Release lifecycle](helm-releases-and-lifecycle.md) |
+| 8 | Testing | [Testing & validation](helm-testing-and-validation.md) |
+| 9 | Security | [Helm security](helm-security.md) |
+| 10 | GitOps | [GitOps integration](helm-gitops-integration.md) |
+| 11 | Production | [Production practices](production-helm-practices.md) |
+| 12 | Troubleshooting | [Troubleshooting](troubleshooting-helm.md) |
 
-See [Projects](../projects/index.md) and [Capstones](../capstones/index.md).
+## 3. Practice
 
-## Cheat sheets
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
 
-Coming with the first tutorials.
+## Diagrams
 
-## Interview preparation
+```bash
+python3 scripts/generate-excalidraw-svg.py
+```
 
-See [Interview Guides](../interview/index.md) when this track ships.
+## Related
 
-## Certifications
-
-See [Certifications](../certifications/index.md).
-
-## Related technologies
-
-Browse neighbouring tracks under **Technologies** in the site navigation.
-
-## Related career paths
-
-Browse [Career Paths](../career-paths/index.md).
+- [Kubernetes](../kubernetes/index.md) · [Argo CD](../argocd/index.md) · [GitOps (Git)](../git/gitops-fundamentals.md)
+- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
