@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="230"
+     viewBox="0 0 740 230" role="img" aria-label="gitlab-agent">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="360.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">GitLab Agent for Kubernetes</text>
+
+  <path d="M 52.9,82.6 L 213.6,82.8 Q 223.6,82.8 223.6,92.8 L 223.2,142.2 Q 223.2,152.2 213.2,152.2 L 52.4,152.9 Q 42.4,152.9 42.4,142.9 L 42.9,92.6 Q 42.9,82.6 52.9,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.7,79.1 L 209.4,79.9 Q 219.4,79.9 219.4,89.9 L 220.6,139.9 Q 220.6,149.9 210.6,149.9 L 50.0,149.4 Q 40.0,149.4 40.0,139.4 L 39.7,89.1 Q 39.7,79.1 49.7,79.1 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="130.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">GitLab</text>
+  <text x="130.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">agent config</text>
+
+
+  <path d="M 292.3,83.4 L 452.2,83.9 Q 462.2,83.9 462.2,93.9 L 462.5,143.7 Q 462.5,153.7 452.5,153.7 L 293.9,152.3 Q 283.9,152.3 283.9,142.3 L 282.3,93.4 Q 282.3,83.4 292.3,83.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 290.1,80.0 L 449.0,80.7 Q 459.0,80.7 459.0,90.7 L 460.7,140.1 Q 460.7,150.1 450.7,150.1 L 290.4,150.1 Q 280.4,150.1 280.4,140.1 L 280.1,90.0 Q 280.1,80.0 290.1,80.0 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="370.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">agentk</text>
+  <text x="370.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">in-cluster</text>
+
+
+  <path d="M 532.1,82.3 L 692.3,82.3 Q 702.3,82.3 702.3,92.3 L 702.3,142.4 Q 702.3,152.4 692.3,152.4 L 533.1,152.5 Q 523.1,152.5 523.1,142.5 L 522.1,92.3 Q 522.1,82.3 532.1,82.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 530.4,79.2 L 689.8,79.5 Q 699.8,79.5 699.8,89.5 L 699.4,140.0 Q 699.4,150.0 689.4,150.0 L 530.7,149.9 Q 520.7,149.9 520.7,139.9 L 520.4,89.2 Q 520.4,79.2 530.4,79.2 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="610.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">API server</text>
+  <text x="610.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">deploy/CI</text>
+
+
+  <path d="M 220.0,115.0 L 239.3,115.9 L 258.9,114.9 L 280.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 280.0,115.0 L 273.1,119.0 M 280.0,115.0 L 273.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 460.0,115.0 L 479.0,114.3 L 499.5,114.1 L 520.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 520.0,115.0 L 513.1,119.0 M 520.0,115.0 L 513.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="360.0" y="190.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Prefer Agent over long-lived kubeconfig in CI variables</text>
+</svg>

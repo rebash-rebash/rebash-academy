@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="230"
+     viewBox="0 0 740 230" role="img" aria-label="linux-boot-process">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="370.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Boot process</text>
+
+  <path d="M 33.6,83.8 L 132.8,82.2 Q 142.8,82.2 142.8,92.2 L 144.0,148.5 Q 144.0,158.5 134.0,158.5 L 33.9,158.6 Q 23.9,158.6 23.9,148.6 L 23.6,93.8 Q 23.6,83.8 33.6,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 30.5,80.6 L 129.3,80.8 Q 139.3,80.8 139.3,90.8 L 140.7,145.7 Q 140.7,155.7 130.7,155.7 L 30.4,155.9 Q 20.4,155.9 20.4,145.9 L 20.5,90.6 Q 20.5,80.6 30.5,80.6 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="80.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Firmware</text>
+  <text x="80.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">UEFI/BIOS</text>
+
+
+  <path d="M 140.0,118.0 L 147.8,118.6 L 152.3,118.6 L 160.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 160.0,118.0 L 153.1,122.0 M 160.0,118.0 L 153.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 172.2,82.9 L 273.1,83.2 Q 283.1,83.2 283.1,93.2 L 283.9,147.2 Q 283.9,157.2 273.9,157.2 L 172.9,157.2 Q 162.9,157.2 162.9,147.2 L 162.2,92.9 Q 162.2,82.9 172.2,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 169.8,80.7 L 269.2,80.2 Q 279.2,80.2 279.2,90.2 L 279.5,144.2 Q 279.5,154.2 269.5,154.2 L 170.2,155.8 Q 160.2,155.8 160.2,145.8 L 159.8,90.7 Q 159.8,80.7 169.8,80.7 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="220.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Bootloader</text>
+  <text x="220.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">GRUB</text>
+
+
+  <path d="M 280.0,118.0 L 287.3,118.6 L 293.7,117.2 L 300.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 300.0,118.0 L 293.1,122.0 M 300.0,118.0 L 293.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 312.9,83.3 L 412.7,82.6 Q 422.7,82.6 422.7,92.6 L 423.6,147.5 Q 423.6,157.5 413.6,157.5 L 312.8,158.2 Q 302.8,158.2 302.8,148.2 L 302.9,93.3 Q 302.9,83.3 312.9,83.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 309.9,80.1 L 409.7,79.9 Q 419.7,79.9 419.7,89.9 L 419.4,145.3 Q 419.4,155.3 409.4,155.3 L 310.1,155.6 Q 300.1,155.6 300.1,145.6 L 299.9,90.1 Q 299.9,80.1 309.9,80.1 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="360.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Kernel</text>
+  <text x="360.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">initramfs</text>
+
+
+  <path d="M 420.0,118.0 L 427.6,118.6 L 434.1,119.0 L 440.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 440.0,118.0 L 433.1,122.0 M 440.0,118.0 L 433.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 453.4,83.4 L 553.5,82.3 Q 563.5,82.3 563.5,92.3 L 562.0,147.8 Q 562.0,157.8 552.0,157.8 L 453.5,158.0 Q 443.5,158.0 443.5,148.0 L 443.4,93.4 Q 443.4,83.4 453.4,83.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 449.9,79.4 L 550.0,80.0 Q 560.0,80.0 560.0,90.0 L 560.9,145.6 Q 560.9,155.6 550.9,155.6 L 449.9,155.4 Q 439.9,155.4 439.9,145.4 L 439.9,89.4 Q 439.9,79.4 449.9,79.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="500.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">systemd</text>
+  <text x="500.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">PID 1</text>
+
+
+  <path d="M 560.0,118.0 L 567.8,117.3 L 572.7,118.3 L 580.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 580.0,118.0 L 573.1,122.0 M 580.0,118.0 L 573.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 593.5,82.1 L 692.2,82.1 Q 702.2,82.1 702.2,92.1 L 703.9,147.4 Q 703.9,157.4 693.9,157.4 L 593.5,157.2 Q 583.5,157.2 583.5,147.2 L 583.5,92.1 Q 583.5,82.1 593.5,82.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 589.4,80.5 L 689.8,80.1 Q 699.8,80.1 699.8,90.1 L 700.4,145.2 Q 700.4,155.2 690.4,155.2 L 589.4,154.1 Q 579.4,154.1 579.4,144.1 L 579.4,90.5 Q 579.4,80.5 589.4,80.5 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="640.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Targets</text>
+  <text x="640.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">multi-user</text>
+
+<text x="360.0" y="195.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Failures: firmware → GRUB → kernel panic → unit failures</text>
+</svg>

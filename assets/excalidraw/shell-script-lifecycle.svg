@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="200"
+     viewBox="0 0 750 200" role="img" aria-label="shell-script-lifecycle">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="375.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Bash script lifecycle</text>
+
+  <path d="M 43.9,82.9 L 143.8,83.1 Q 153.8,83.1 153.8,93.1 L 153.5,148.5 Q 153.5,158.5 143.5,158.5 L 43.9,158.5 Q 33.9,158.5 33.9,148.5 L 33.9,92.9 Q 33.9,82.9 43.9,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 40.1,80.1 L 139.6,79.6 Q 149.6,79.6 149.6,89.6 L 149.4,145.8 Q 149.4,155.8 139.4,155.8 L 40.3,155.3 Q 30.3,155.3 30.3,145.3 L 30.1,90.1 Q 30.1,80.1 40.1,80.1 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="90.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Write</text>
+  <text x="90.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">shebang</text>
+
+
+  <path d="M 150.0,118.0 L 157.8,118.1 L 162.5,118.0 L 170.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 170.0,118.0 L 163.1,122.0 M 170.0,118.0 L 163.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 182.8,82.2 L 282.5,82.6 Q 292.5,82.6 292.5,92.6 L 292.9,148.1 Q 292.9,158.1 282.9,158.1 L 182.0,158.4 Q 172.0,158.4 172.0,148.4 L 172.8,92.2 Q 172.8,82.2 182.8,82.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 179.1,80.9 L 279.6,80.1 Q 289.6,80.1 289.6,90.1 L 290.8,145.0 Q 290.8,155.0 280.8,155.0 L 180.5,154.1 Q 170.5,154.1 170.5,144.1 L 169.1,90.9 Q 169.1,80.9 179.1,80.9 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="230.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">chmod +x</text>
+  <text x="230.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">execute bit</text>
+
+
+  <path d="M 290.0,118.0 L 295.6,117.8 L 303.0,118.1 L 310.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 310.0,118.0 L 303.1,122.0 M 310.0,118.0 L 303.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 323.8,83.8 L 423.5,83.4 Q 433.5,83.4 433.5,93.4 L 432.6,147.9 Q 432.6,157.9 422.6,157.9 L 322.7,158.4 Q 312.7,158.4 312.7,148.4 L 313.8,93.8 Q 313.8,83.8 323.8,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 320.8,79.3 L 420.5,80.5 Q 430.5,80.5 430.5,90.5 L 429.3,145.5 Q 429.3,155.5 419.3,155.5 L 319.7,155.6 Q 309.7,155.6 309.7,145.6 L 310.8,89.3 Q 310.8,79.3 320.8,79.3 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="370.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Run</text>
+  <text x="370.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">./script.sh</text>
+
+
+  <path d="M 430.0,118.0 L 437.6,118.2 L 443.2,119.0 L 450.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 450.0,118.0 L 443.1,122.0 M 450.0,118.0 L 443.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 464.0,83.5 L 563.6,83.7 Q 573.6,83.7 573.6,93.7 L 572.7,147.8 Q 572.7,157.8 562.7,157.8 L 463.4,157.5 Q 453.4,157.5 453.4,147.5 L 454.0,93.5 Q 454.0,83.5 464.0,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 459.7,79.8 L 559.4,80.8 Q 569.4,80.8 569.4,90.8 L 569.4,145.7 Q 569.4,155.7 559.4,155.7 L 460.2,154.8 Q 450.2,154.8 450.2,144.8 L 449.7,89.8 Q 449.7,79.8 459.7,79.8 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="510.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Exit code</text>
+  <text x="510.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">0 / non-zero</text>
+
+
+  <path d="M 570.0,118.0 L 577.2,118.4 L 582.9,117.8 L 590.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 590.0,118.0 L 583.1,122.0 M 590.0,118.0 L 583.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 602.5,82.1 L 703.2,83.4 Q 713.2,83.4 713.2,93.4 L 712.2,148.9 Q 712.2,158.9 702.2,158.9 L 603.9,157.8 Q 593.9,157.8 593.9,147.8 L 592.5,92.1 Q 592.5,82.1 602.5,82.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 599.5,79.3 L 700.4,79.2 Q 710.4,79.2 710.4,89.2 L 710.0,145.3 Q 710.0,155.3 700.0,155.3 L 599.2,155.7 Q 589.2,155.7 589.2,145.7 L 589.5,89.3 Q 589.5,79.3 599.5,79.3 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="650.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Logs</text>
+  <text x="650.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">stdout/err</text>
+
+</svg>

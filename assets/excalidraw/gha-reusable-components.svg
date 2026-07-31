@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="270"
+     viewBox="0 0 720 270" role="img" aria-label="gha-reusable-components">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Reusable components</text>
+
+  <path d="M 53.4,83.2 L 213.1,83.1 Q 223.1,83.1 223.1,93.1 L 223.2,143.8 Q 223.2,153.8 213.2,153.8 L 54.0,152.6 Q 44.0,152.6 44.0,142.6 L 43.4,93.2 Q 43.4,83.2 53.4,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.5,79.1 L 209.4,80.3 Q 219.4,80.3 219.4,90.3 L 220.4,140.3 Q 220.4,150.3 210.4,150.3 L 49.6,149.0 Q 39.6,149.0 39.6,139.0 L 39.5,89.1 Q 39.5,79.1 49.5,79.1 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="130.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Composite</text>
+  <text x="130.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">action.yml</text>
+
+
+  <path d="M 272.9,83.4 L 452.0,82.1 Q 462.0,82.1 462.0,92.1 L 463.2,143.2 Q 463.2,153.2 453.2,153.2 L 272.7,153.6 Q 262.7,153.6 262.7,143.6 L 262.9,93.4 Q 262.9,83.4 272.9,83.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 269.2,80.0 L 449.9,81.0 Q 459.9,81.0 459.9,91.0 L 460.0,139.6 Q 460.0,149.6 450.0,149.6 L 269.7,149.2 Q 259.7,149.2 259.7,139.2 L 259.2,90.0 Q 259.2,80.0 269.2,80.0 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="360.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Reusable workflow</text>
+  <text x="360.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">workflow_call</text>
+
+
+  <path d="M 512.2,83.0 L 672.7,83.5 Q 682.7,83.5 682.7,93.5 L 682.5,143.6 Q 682.5,153.6 672.5,153.6 L 513.0,153.8 Q 503.0,153.8 503.0,143.8 L 502.2,93.0 Q 502.2,83.0 512.2,83.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 509.5,80.8 L 670.9,80.6 Q 680.9,80.6 680.9,90.6 L 680.7,139.2 Q 680.7,149.2 670.7,149.2 L 510.3,149.9 Q 500.3,149.9 500.3,139.9 L 499.5,90.8 Q 499.5,80.8 509.5,80.8 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="590.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Marketplace</text>
+  <text x="590.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">pinned SHA</text>
+
+
+  <path d="M 272.5,183.5 L 453.0,182.0 Q 463.0,182.0 463.0,192.0 L 463.7,228.8 Q 463.7,238.8 453.7,238.8 L 273.5,237.1 Q 263.5,237.1 263.5,227.1 L 262.5,193.5 Q 262.5,183.5 272.5,183.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 269.8,179.0 L 449.8,179.4 Q 459.8,179.4 459.8,189.4 L 459.9,225.0 Q 459.9,235.0 449.9,235.0 L 270.3,235.4 Q 260.3,235.4 260.3,225.4 L 259.8,189.0 Q 259.8,179.0 269.8,179.0 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="360.0" y="201.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Internal org actions</text>
+  <text x="360.0" y="221.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">private</text>
+
+</svg>

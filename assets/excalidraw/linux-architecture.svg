@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="290"
+     viewBox="0 0 860 290" role="img" aria-label="linux-architecture">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="430.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Linux architecture</text>
+
+  <path d="M 52.1,62.4 L 193.8,62.3 Q 203.8,62.3 203.8,72.3 L 202.8,122.1 Q 202.8,132.1 192.8,132.1 L 52.6,132.7 Q 42.6,132.7 42.6,122.7 L 42.1,72.4 Q 42.1,62.4 52.1,62.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.5,60.0 L 189.2,60.1 Q 199.2,60.1 199.2,70.1 L 199.5,120.1 Q 199.5,130.1 189.5,130.1 L 51.0,130.1 Q 41.0,130.1 41.0,120.1 L 40.5,70.0 Q 40.5,60.0 50.5,60.0 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="89.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">User space</text>
+  <text x="120.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">apps · shells</text>
+
+
+  <path d="M 253.1,62.9 L 412.9,62.8 Q 422.9,62.8 422.9,72.8 L 422.4,122.4 Q 422.4,132.4 412.4,132.4 L 252.0,133.4 Q 242.0,133.4 242.0,123.4 L 243.1,72.9 Q 243.1,62.9 253.1,62.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 251.0,60.9 L 409.2,60.5 Q 419.2,60.5 419.2,70.5 L 419.5,120.1 Q 419.5,130.1 409.5,130.1 L 250.0,130.1 Q 240.0,130.1 240.0,120.1 L 241.0,70.9 Q 241.0,60.9 251.0,60.9 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="330.0" y="89.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">System libraries</text>
+  <text x="330.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">glibc · systemd</text>
+
+
+  <path d="M 472.9,62.2 L 613.8,63.4 Q 623.8,63.4 623.8,73.4 L 623.5,123.3 Q 623.5,133.3 613.5,133.3 L 472.2,134.0 Q 462.2,134.0 462.2,124.0 L 462.9,72.2 Q 462.9,62.2 472.9,62.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 470.8,61.0 L 610.5,60.4 Q 620.5,60.4 620.5,70.4 L 620.5,120.6 Q 620.5,130.6 610.5,130.6 L 469.5,130.0 Q 459.5,130.0 459.5,120.0 L 460.8,71.0 Q 460.8,61.0 470.8,61.0 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="540.0" y="89.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Kernel</text>
+  <text x="540.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">syscalls</text>
+
+
+  <path d="M 672.6,64.0 L 813.9,63.9 Q 823.9,63.9 823.9,73.9 L 823.0,122.8 Q 823.0,132.8 813.0,132.8 L 673.5,132.1 Q 663.5,132.1 663.5,122.1 L 662.6,74.0 Q 662.6,64.0 672.6,64.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 669.2,60.9 L 809.5,60.0 Q 819.5,60.0 819.5,70.0 L 820.8,119.7 Q 820.8,129.7 810.8,129.7 L 670.8,131.0 Q 660.8,131.0 660.8,121.0 L 659.2,70.9 Q 659.2,60.9 669.2,60.9 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="740.0" y="89.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Hardware</text>
+  <text x="740.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">CPU · disk · NIC</text>
+
+
+  <path d="M 200.0,95.0 L 212.7,94.2 L 227.8,94.0 L 240.0,95.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,95.0 L 233.1,99.0 M 240.0,95.0 L 233.1,91.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 420.0,95.0 L 432.5,95.1 L 446.0,96.0 L 460.0,95.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 460.0,95.0 L 453.1,99.0 M 460.0,95.0 L 453.1,91.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 620.0,95.0 L 634.3,94.4 L 646.7,95.9 L 660.0,95.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 660.0,95.0 L 653.1,99.0 M 660.0,95.0 L 653.1,91.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="430.0" y="170.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Distributions package kernel + userspace for ops roles</text>
+
+  <path d="M 213.7,197.1 L 633.2,198.4 Q 643.2,198.4 643.2,208.4 L 642.2,248.6 Q 642.2,258.6 632.2,258.6 L 214.0,257.1 Q 204.0,257.1 204.0,247.1 L 203.7,207.1 Q 203.7,197.1 213.7,197.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 209.0,195.1 L 629.2,195.5 Q 639.2,195.5 639.2,205.5 L 640.8,244.6 Q 640.8,254.6 630.8,254.6 L 209.1,255.0 Q 199.1,255.0 199.1,245.0 L 199.0,205.1 Q 199.0,195.1 209.0,195.1 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="420.0" y="219.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Cloud / VM / bare metal</text>
+  <text x="420.0" y="239.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">same mental model</text>
+
+</svg>

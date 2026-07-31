@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="200"
+     viewBox="0 0 760 200" role="img" aria-label="shell-arrays-strings">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Arrays & strings</text>
+
+  <path d="M 52.5,83.1 L 233.6,82.0 Q 243.6,82.0 243.6,92.0 L 242.1,143.5 Q 242.1,153.5 232.1,153.5 L 52.1,152.2 Q 42.1,152.2 42.1,142.2 L 42.5,93.1 Q 42.5,83.1 52.5,83.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.7,80.3 L 230.4,79.9 Q 240.4,79.9 240.4,89.9 L 240.9,139.5 Q 240.9,149.5 230.9,149.5 L 49.7,150.0 Q 39.7,150.0 39.7,140.0 L 39.7,90.3 Q 39.7,80.3 49.7,80.3 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="140.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Indexed array</text>
+  <text x="140.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">arr[i]</text>
+
+
+  <path d="M 293.5,83.7 L 473.4,83.1 Q 483.4,83.1 483.4,93.1 L 483.0,143.9 Q 483.0,153.9 473.0,153.9 L 293.5,153.6 Q 283.5,153.6 283.5,143.6 L 283.5,93.7 Q 283.5,83.7 293.5,83.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 290.9,79.4 L 469.5,80.1 Q 479.5,80.1 479.5,90.1 L 479.2,140.2 Q 479.2,150.2 469.2,150.2 L 290.9,149.1 Q 280.9,149.1 280.9,139.1 L 280.9,89.4 Q 280.9,79.4 290.9,79.4 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="380.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Associative</text>
+  <text x="380.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">declare -A</text>
+
+
+  <path d="M 533.0,83.9 L 712.2,83.0 Q 722.2,83.0 722.2,93.0 L 722.8,143.2 Q 722.8,153.2 712.8,153.2 L 532.3,153.1 Q 522.3,153.1 522.3,143.1 L 523.0,93.9 Q 523.0,83.9 533.0,83.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 530.0,79.0 L 709.5,80.8 Q 719.5,80.8 719.5,90.8 L 720.5,140.2 Q 720.5,150.2 710.5,150.2 L 530.8,150.9 Q 520.8,150.9 520.8,140.9 L 520.0,89.0 Q 520.0,79.0 530.0,79.0 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="620.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Expansion</text>
+  <text x="620.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">trim · slice</text>
+
+</svg>

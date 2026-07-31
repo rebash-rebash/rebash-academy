@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="180"
+     viewBox="0 0 800 180" role="img" aria-label="aws-eks-architecture">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">EKS / ECS container platform</text>
+
+  <path d="M 53.8,73.6 L 182.7,72.1 Q 192.7,72.1 192.7,82.1 L 193.6,133.9 Q 193.6,143.9 183.6,143.9 L 53.9,143.6 Q 43.9,143.6 43.9,133.6 L 43.8,83.6 Q 43.8,73.6 53.8,73.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.1,70.3 L 180.7,69.8 Q 190.7,69.8 190.7,79.8 L 190.9,130.9 Q 190.9,140.9 180.9,140.9 L 49.9,140.9 Q 39.9,140.9 39.9,130.9 L 39.1,80.3 Q 39.1,70.3 49.1,70.3 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">ECR</text>
+  <text x="115.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">images</text>
+
+
+  <path d="M 232.1,73.6 L 373.7,72.0 Q 383.7,72.0 383.7,82.0 L 383.0,133.9 Q 383.0,143.9 373.0,143.9 L 233.7,143.3 Q 223.7,143.3 223.7,133.3 L 222.1,83.6 Q 222.1,73.6 232.1,73.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 229.4,70.0 L 370.9,70.8 Q 380.9,70.8 380.9,80.8 L 379.7,129.5 Q 379.7,139.5 369.7,139.5 L 230.6,140.3 Q 220.6,140.3 220.6,130.3 L 219.4,80.0 Q 219.4,70.0 229.4,70.0 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="300.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">ECS / EKS</text>
+  <text x="300.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">orchestrate</text>
+
+
+  <path d="M 422.6,72.0 L 562.5,74.0 Q 572.5,74.0 572.5,84.0 L 572.4,133.6 Q 572.4,143.6 562.4,143.6 L 422.5,143.1 Q 412.5,143.1 412.5,133.1 L 412.6,82.0 Q 412.6,72.0 422.6,72.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 420.5,69.9 L 560.8,70.5 Q 570.8,70.5 570.8,80.5 L 570.2,130.9 Q 570.2,140.9 560.2,140.9 L 419.4,140.3 Q 409.4,140.3 409.4,130.3 L 410.5,79.9 Q 410.5,69.9 420.5,69.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="490.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Fargate/EC2</text>
+  <text x="490.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">compute</text>
+
+
+  <path d="M 614.0,73.5 L 753.3,72.3 Q 763.3,72.3 763.3,82.3 L 763.8,133.3 Q 763.8,143.3 753.8,143.3 L 612.4,143.7 Q 602.4,143.7 602.4,133.7 L 604.0,83.5 Q 604.0,73.5 614.0,73.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 610.9,70.2 L 750.4,69.3 Q 760.4,69.3 760.4,79.3 L 759.3,129.1 Q 759.3,139.1 749.3,139.1 L 610.8,139.3 Q 600.8,139.3 600.8,129.3 L 600.9,80.2 Q 600.9,70.2 610.9,70.2 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="680.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">ALB/Ingress</text>
+  <text x="680.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">traffic</text>
+
+
+  <path d="M 190.0,105.0 L 200.7,104.7 L 209.5,103.9 L 220.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 220.0,105.0 L 213.1,109.0 M 220.0,105.0 L 213.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 380.0,105.0 L 389.6,104.3 L 399.8,104.1 L 410.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 410.0,105.0 L 403.1,109.0 M 410.0,105.0 L 403.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 570.0,105.0 L 580.6,104.5 L 591.1,106.0 L 600.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 600.0,105.0 L 593.1,109.0 M 600.0,105.0 L 593.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

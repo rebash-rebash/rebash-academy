@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="270"
+     viewBox="0 0 660 270" role="img" aria-label="gha-artifacts-cache">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Artifacts & caching</text>
+
+  <path d="M 53.9,82.7 L 193.1,82.8 Q 203.1,82.8 203.1,92.8 L 202.3,142.6 Q 202.3,152.6 192.3,152.6 L 53.8,153.4 Q 43.8,153.4 43.8,143.4 L 43.9,92.7 Q 43.9,82.7 53.9,82.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.3,80.6 L 189.8,80.4 Q 199.8,80.4 199.8,90.4 L 200.3,140.8 Q 200.3,150.8 190.3,150.8 L 49.1,150.7 Q 39.1,150.7 39.1,140.7 L 40.3,90.6 Q 40.3,80.6 50.3,80.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Job A</text>
+  <text x="120.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">build</text>
+
+
+  <path d="M 253.3,82.1 L 393.8,83.9 Q 403.8,83.9 403.8,93.9 L 402.4,142.5 Q 402.4,152.5 392.4,152.5 L 252.8,152.7 Q 242.8,152.7 242.8,142.7 L 243.3,92.1 Q 243.3,82.1 253.3,82.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 250.0,79.8 L 390.7,79.7 Q 400.7,79.7 400.7,89.7 L 399.2,139.1 Q 399.2,149.1 389.2,149.1 L 249.4,150.3 Q 239.4,150.3 239.4,140.3 L 240.0,89.8 Q 240.0,79.8 250.0,79.8 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="320.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Artifact</text>
+  <text x="320.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">upload</text>
+
+
+  <path d="M 453.4,83.1 L 592.3,83.2 Q 602.3,83.2 602.3,93.2 L 603.5,143.2 Q 603.5,153.2 593.5,153.2 L 453.3,153.8 Q 443.3,153.8 443.3,143.8 L 443.4,93.1 Q 443.4,83.1 453.4,83.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 450.4,79.4 L 589.6,79.5 Q 599.6,79.5 599.6,89.5 L 599.6,139.2 Q 599.6,149.2 589.6,149.2 L 449.5,149.5 Q 439.5,149.5 439.5,139.5 L 440.4,89.4 Q 440.4,79.4 450.4,79.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="520.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Job B</text>
+  <text x="520.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">download</text>
+
+
+  <path d="M 253.3,183.9 L 393.9,182.6 Q 403.9,182.6 403.9,192.6 L 403.2,227.3 Q 403.2,237.3 393.2,237.3 L 253.1,237.1 Q 243.1,237.1 243.1,227.1 L 243.3,193.9 Q 243.3,183.9 253.3,183.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 249.1,180.1 L 390.5,180.0 Q 400.5,180.0 400.5,190.0 L 399.8,225.2 Q 399.8,235.2 389.8,235.2 L 249.8,234.6 Q 239.8,234.6 239.8,224.6 L 239.1,190.1 Q 239.1,180.1 249.1,180.1 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="320.0" y="201.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Cache</text>
+  <text x="320.0" y="221.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">deps</text>
+
+
+  <path d="M 200.0,115.0 L 214.2,115.5 L 227.6,115.7 L 240.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,115.0 L 233.1,119.0 M 240.0,115.0 L 233.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 400.0,115.0 L 414.2,114.1 L 427.4,114.7 L 440.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 440.0,115.0 L 433.1,119.0 M 440.0,115.0 L 433.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 320.0,150.0 L 321.2,159.9 L 319.0,170.2 L 320.0,180.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 320.0,180.0 L 316.0,173.1 M 320.0,180.0 L 324.0,173.1"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

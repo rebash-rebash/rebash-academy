@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="770" height="200"
+     viewBox="0 0 770 200" role="img" aria-label="gitlab-testing">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="360.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Testing in pipelines</text>
+
+  <path d="M 53.3,82.6 L 183.5,83.2 Q 193.5,83.2 193.5,93.2 L 192.0,143.8 Q 192.0,153.8 182.0,153.8 L 52.2,152.8 Q 42.2,152.8 42.2,142.8 L 43.3,92.6 Q 43.3,82.6 53.3,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.2,79.6 L 180.9,80.0 Q 190.9,80.0 190.9,90.0 L 190.4,140.5 Q 190.4,150.5 180.4,150.5 L 49.8,149.9 Q 39.8,149.9 39.8,139.9 L 39.2,89.6 Q 39.2,79.6 49.2,79.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Unit</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">fast</text>
+
+
+  <path d="M 233.9,83.2 L 362.1,82.9 Q 372.1,82.9 372.1,92.9 L 373.2,143.7 Q 373.2,153.7 363.2,153.7 L 233.2,152.7 Q 223.2,152.7 223.2,142.7 L 223.9,93.2 Q 223.9,83.2 233.9,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 230.0,79.8 L 359.7,80.3 Q 369.7,80.3 369.7,90.3 L 369.5,139.5 Q 369.5,149.5 359.5,149.5 L 229.1,150.2 Q 219.1,150.2 219.1,140.2 L 220.0,89.8 Q 220.0,79.8 230.0,79.8 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="295.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Integration</text>
+  <text x="295.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">services</text>
+
+
+  <path d="M 412.4,82.5 L 543.6,83.5 Q 553.6,83.5 553.6,93.5 L 553.9,142.1 Q 553.9,152.1 543.9,152.1 L 412.4,152.9 Q 402.4,152.9 402.4,142.9 L 402.4,92.5 Q 402.4,82.5 412.4,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 409.4,80.9 L 539.2,79.4 Q 549.2,79.4 549.2,89.4 L 550.1,140.1 Q 550.1,150.1 540.1,150.1 L 409.8,149.0 Q 399.8,149.0 399.8,139.0 L 399.4,90.9 Q 399.4,80.9 409.4,80.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="475.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">E2E</text>
+  <text x="475.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">slower</text>
+
+
+  <path d="M 593.6,84.0 L 722.7,82.3 Q 732.7,82.3 732.7,92.3 L 733.3,143.5 Q 733.3,153.5 723.3,153.5 L 592.9,153.2 Q 582.9,153.2 582.9,143.2 L 583.6,94.0 Q 583.6,84.0 593.6,84.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 590.1,80.2 L 719.3,80.8 Q 729.3,80.8 729.3,90.8 L 730.0,139.1 Q 730.0,149.1 720.0,149.1 L 590.4,149.9 Q 580.4,149.9 580.4,139.9 L 580.1,90.2 Q 580.1,80.2 590.1,80.2 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="655.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Reports</text>
+  <text x="655.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">JUnit</text>
+
+</svg>

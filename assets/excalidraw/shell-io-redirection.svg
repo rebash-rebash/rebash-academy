@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="230"
+     viewBox="0 0 780 230" role="img" aria-label="shell-io-redirection">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="390.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">I/O redirection & pipes</text>
+
+  <path d="M 53.7,83.5 L 173.2,82.7 Q 183.2,82.7 183.2,92.7 L 183.3,142.4 Q 183.3,152.4 173.3,152.4 L 53.0,153.2 Q 43.0,153.2 43.0,143.2 L 43.7,93.5 Q 43.7,83.5 53.7,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.0,79.9 L 170.9,80.7 Q 180.9,80.7 180.9,90.7 L 179.1,140.7 Q 179.1,150.7 169.1,150.7 L 50.6,149.7 Q 40.6,149.7 40.6,139.7 L 40.0,89.9 Q 40.0,79.9 50.0,79.9 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="110.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">stdin</text>
+  <text x="110.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">fd 0</text>
+
+
+  <path d="M 232.7,82.7 L 373.6,83.2 Q 383.6,83.2 383.6,93.2 L 382.0,143.4 Q 382.0,153.4 372.0,153.4 L 233.4,153.5 Q 223.4,153.5 223.4,143.5 L 222.7,92.7 Q 222.7,82.7 232.7,82.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 229.3,79.1 L 370.3,80.7 Q 380.3,80.7 380.3,90.7 L 380.4,139.1 Q 380.4,149.1 370.4,149.1 L 230.7,149.1 Q 220.7,149.1 220.7,139.1 L 219.3,89.1 Q 219.3,79.1 229.3,79.1 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="300.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Command</text>
+  <text x="300.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">filter</text>
+
+
+  <path d="M 432.7,83.3 L 552.9,82.5 Q 562.9,82.5 562.9,92.5 L 562.7,143.1 Q 562.7,153.1 552.7,153.1 L 433.0,153.5 Q 423.0,153.5 423.0,143.5 L 422.7,93.3 Q 422.7,83.3 432.7,83.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 429.7,80.4 L 550.7,79.4 Q 560.7,79.4 560.7,89.4 L 559.7,141.0 Q 559.7,151.0 549.7,151.0 L 430.8,149.6 Q 420.8,149.6 420.8,139.6 L 419.7,90.4 Q 419.7,80.4 429.7,80.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="490.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">stdout</text>
+  <text x="490.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">fd 1</text>
+
+
+  <path d="M 613.7,83.5 L 733.6,82.5 Q 743.6,82.5 743.6,92.5 L 742.4,142.3 Q 742.4,152.3 732.4,152.3 L 612.1,153.7 Q 602.1,153.7 602.1,143.7 L 603.7,93.5 Q 603.7,83.5 613.7,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 609.0,79.3 L 731.0,80.9 Q 741.0,80.9 741.0,90.9 L 739.6,140.5 Q 739.6,150.5 729.6,150.5 L 609.7,149.9 Q 599.7,149.9 599.7,139.9 L 599.0,89.3 Q 599.0,79.3 609.0,79.3 Z" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  
+  <text x="670.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">stderr</text>
+  <text x="670.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">fd 2</text>
+
+
+  <path d="M 180.0,115.0 L 192.4,114.4 L 205.9,115.2 L 220.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 220.0,115.0 L 213.1,119.0 M 220.0,115.0 L 213.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 380.0,115.0 L 392.9,115.6 L 405.6,114.9 L 420.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 420.0,115.0 L 413.1,119.0 M 420.0,115.0 L 413.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 380.0,130.0 L 454.2,125.7 L 526.2,121.1 L 600.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 600.0,115.0 L 593.4,119.5 M 600.0,115.0 L 592.8,111.5"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="380.0" y="190.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Pipe connects stdout to the next stdin</text>
+</svg>

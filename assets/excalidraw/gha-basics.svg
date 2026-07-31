@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="200"
+     viewBox="0 0 840 200" role="img" aria-label="gha-basics">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Workflow building blocks</text>
+
+  <path d="M 52.8,83.6 L 172.8,82.7 Q 182.8,82.7 182.8,92.7 L 182.3,143.2 Q 182.3,153.2 172.3,153.2 L 53.4,153.8 Q 43.4,153.8 43.4,143.8 L 42.8,93.6 Q 42.8,83.6 52.8,83.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.8,79.9 L 169.9,80.9 Q 179.9,80.9 179.9,90.9 L 180.3,139.4 Q 180.3,149.4 170.3,149.4 L 50.6,149.3 Q 40.6,149.3 40.6,139.3 L 39.8,89.9 Q 39.8,79.9 49.8,79.9 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="110.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">on:</text>
+  <text x="110.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">events</text>
+
+
+  <path d="M 212.9,82.2 L 333.2,83.8 Q 343.2,83.8 343.2,93.8 L 342.4,142.7 Q 342.4,152.7 332.4,152.7 L 213.2,152.1 Q 203.2,152.1 203.2,142.1 L 202.9,92.2 Q 202.9,82.2 212.9,82.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 209.9,79.6 L 330.8,80.7 Q 340.8,80.7 340.8,90.7 L 340.8,140.4 Q 340.8,150.4 330.8,150.4 L 210.3,149.7 Q 200.3,149.7 200.3,139.7 L 199.9,89.6 Q 199.9,79.6 209.9,79.6 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="270.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">jobs</text>
+  <text x="270.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">runners</text>
+
+
+  <path d="M 372.6,84.0 L 492.5,82.5 Q 502.5,82.5 502.5,92.5 L 502.4,142.8 Q 502.4,152.8 492.4,152.8 L 372.4,152.6 Q 362.4,152.6 362.4,142.6 L 362.6,94.0 Q 362.6,84.0 372.6,84.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 370.7,79.4 L 490.7,80.3 Q 500.7,80.3 500.7,90.3 L 501.0,139.4 Q 501.0,149.4 491.0,149.4 L 370.5,149.8 Q 360.5,149.8 360.5,139.8 L 360.7,89.4 Q 360.7,79.4 370.7,79.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="430.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">steps</text>
+  <text x="430.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">run/uses</text>
+
+
+  <path d="M 532.5,83.4 L 653.9,83.5 Q 663.9,83.5 663.9,93.5 L 663.8,142.7 Q 663.8,152.7 653.8,152.7 L 533.8,152.9 Q 523.8,152.9 523.8,142.9 L 522.5,93.4 Q 522.5,83.4 532.5,83.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 529.2,80.6 L 650.0,79.9 Q 660.0,79.9 660.0,89.9 L 659.4,139.4 Q 659.4,149.4 649.4,149.4 L 529.6,150.1 Q 519.6,150.1 519.6,140.1 L 519.2,90.6 Q 519.2,80.6 529.2,80.6 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="590.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">actions</text>
+  <text x="590.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">reuse</text>
+
+
+  <path d="M 692.4,82.3 L 793.1,83.0 Q 803.1,83.0 803.1,93.0 L 803.7,142.4 Q 803.7,152.4 793.7,152.4 L 692.5,152.9 Q 682.5,152.9 682.5,142.9 L 682.4,92.3 Q 682.4,82.3 692.4,82.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 689.6,81.0 L 789.2,80.3 Q 799.2,80.3 799.2,90.3 L 799.6,140.6 Q 799.6,150.6 789.6,150.6 L 690.6,150.3 Q 680.6,150.3 680.6,140.3 L 679.6,91.0 Q 679.6,81.0 689.6,81.0 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="740.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">${{ }}</text>
+  <text x="740.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">expr</text>
+
+</svg>

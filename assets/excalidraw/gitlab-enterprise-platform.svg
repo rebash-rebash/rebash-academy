@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="180"
+     viewBox="0 0 840 180" role="img" aria-label="gitlab-enterprise-platform">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Enterprise GitLab platform</text>
+
+  <path d="M 52.6,72.6 L 192.8,72.9 Q 202.8,72.9 202.8,82.9 L 202.1,133.5 Q 202.1,143.5 192.1,143.5 L 52.4,143.2 Q 42.4,143.2 42.4,133.2 L 42.6,82.6 Q 42.6,72.6 52.6,72.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.2,69.9 L 189.8,69.4 Q 199.8,69.4 199.8,79.4 L 200.6,130.2 Q 200.6,140.2 190.6,140.2 L 49.7,140.0 Q 39.7,140.0 39.7,130.0 L 39.2,79.9 Q 39.2,69.9 49.2,69.9 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Groups</text>
+  <text x="120.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">hierarchy</text>
+
+
+  <path d="M 242.2,73.8 L 383.6,73.8 Q 393.6,73.8 393.6,83.8 L 392.5,132.7 Q 392.5,142.7 382.5,142.7 L 243.7,143.1 Q 233.7,143.1 233.7,133.1 L 232.2,83.8 Q 232.2,73.8 242.2,73.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 239.2,69.3 L 380.6,70.0 Q 390.6,70.0 390.6,80.0 L 390.3,129.0 Q 390.3,139.0 380.3,139.0 L 239.8,139.4 Q 229.8,139.4 229.8,129.4 L 229.2,79.3 Q 229.2,69.3 239.2,69.3 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="310.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Permissions</text>
+  <text x="310.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">roles</text>
+
+
+  <path d="M 432.5,72.8 L 593.5,72.3 Q 603.5,72.3 603.5,82.3 L 602.6,132.2 Q 602.6,142.2 592.6,142.2 L 432.7,142.7 Q 422.7,142.7 422.7,132.7 L 422.5,82.8 Q 422.5,72.8 432.5,72.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 429.4,69.2 L 590.0,70.2 Q 600.0,70.2 600.0,80.2 L 599.4,131.0 Q 599.4,141.0 589.4,141.0 L 430.9,140.8 Q 420.9,140.8 420.9,130.8 L 419.4,79.2 Q 419.4,69.2 429.4,69.2 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="510.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Compliance</text>
+  <text x="510.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">required CI</text>
+
+
+  <path d="M 653.5,73.6 L 793.0,73.6 Q 803.0,73.6 803.0,83.6 L 803.0,133.3 Q 803.0,143.3 793.0,143.3 L 652.9,143.8 Q 642.9,143.8 642.9,133.8 L 643.5,83.6 Q 643.5,73.6 653.5,73.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 649.2,69.2 L 791.0,70.1 Q 801.0,70.1 801.0,80.1 L 799.3,129.7 Q 799.3,139.7 789.3,139.7 L 650.2,140.8 Q 640.2,140.8 640.2,130.8 L 639.2,79.2 Q 639.2,69.2 649.2,69.2 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="720.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Self-managed</text>
+  <text x="720.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">HA · backup</text>
+
+</svg>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="180"
+     viewBox="0 0 800 180" role="img" aria-label="aws-production-platform">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Production AWS platform</text>
+
+  <path d="M 52.3,73.7 L 192.8,73.0 Q 202.8,73.0 202.8,83.0 L 202.0,132.7 Q 202.0,142.7 192.0,142.7 L 52.1,142.3 Q 42.1,142.3 42.1,132.3 L 42.3,83.7 Q 42.3,73.7 52.3,73.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.9,69.1 L 190.7,70.7 Q 200.7,70.7 200.7,80.7 L 200.4,130.9 Q 200.4,140.9 190.4,140.9 L 50.1,139.3 Q 40.1,139.3 40.1,129.3 L 40.9,79.1 Q 40.9,69.1 50.9,69.1 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Identity</text>
+  <text x="120.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">IAM IC</text>
+
+
+  <path d="M 233.0,73.2 L 372.8,72.5 Q 382.8,72.5 382.8,82.5 L 383.9,133.1 Q 383.9,143.1 373.9,143.1 L 232.7,142.4 Q 222.7,142.4 222.7,132.4 L 223.0,83.2 Q 223.0,73.2 233.0,73.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 230.2,69.8 L 370.2,69.0 Q 380.2,69.0 380.2,79.0 L 380.0,130.5 Q 380.0,140.5 370.0,140.5 L 230.3,139.5 Q 220.3,139.5 220.3,129.5 L 220.2,79.8 Q 220.2,69.8 230.2,69.8 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="300.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Network</text>
+  <text x="300.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">hub/spoke</text>
+
+
+  <path d="M 412.1,73.1 L 553.2,72.3 Q 563.2,72.3 563.2,82.3 L 563.5,132.8 Q 563.5,142.8 553.5,142.8 L 412.2,142.1 Q 402.2,142.1 402.2,132.1 L 402.1,83.1 Q 402.1,73.1 412.1,73.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 409.5,69.4 L 549.3,69.1 Q 559.3,69.1 559.3,79.1 L 560.1,129.4 Q 560.1,139.4 550.1,139.4 L 409.8,140.4 Q 399.8,140.4 399.8,130.4 L 399.5,79.4 Q 399.5,69.4 409.5,69.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="480.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Workloads</text>
+  <text x="480.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">EKS/ECS</text>
+
+
+  <path d="M 592.6,72.4 L 753.7,73.8 Q 763.7,73.8 763.7,83.8 L 762.1,133.3 Q 762.1,143.3 752.1,143.3 L 593.9,143.2 Q 583.9,143.2 583.9,133.2 L 582.6,82.4 Q 582.6,72.4 592.6,72.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 589.5,69.1 L 749.1,70.1 Q 759.1,70.1 759.1,80.1 L 760.2,130.0 Q 760.2,140.0 750.2,140.0 L 589.7,139.1 Q 579.7,139.1 579.7,129.1 L 579.5,79.1 Q 579.5,69.1 589.5,69.1 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="670.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Ops</text>
+  <text x="670.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">observe · DR</text>
+
+</svg>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="770" height="200"
+     viewBox="0 0 770 200" role="img" aria-label="gha-testing">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="360.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Testing in Actions</text>
+
+  <path d="M 52.1,83.1 L 183.8,82.2 Q 193.8,82.2 193.8,92.2 L 193.5,143.4 Q 193.5,153.4 183.5,153.4 L 52.1,152.2 Q 42.1,152.2 42.1,142.2 L 42.1,93.1 Q 42.1,83.1 52.1,83.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.1,79.4 L 180.7,79.2 Q 190.7,79.2 190.7,89.2 L 189.0,140.9 Q 189.0,150.9 179.0,150.9 L 49.2,150.1 Q 39.2,150.1 39.2,140.1 L 39.1,89.4 Q 39.1,79.4 49.1,79.4 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Unit</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">fast</text>
+
+
+  <path d="M 232.6,83.6 L 362.7,82.3 Q 372.7,82.3 372.7,92.3 L 373.3,143.6 Q 373.3,153.6 363.3,153.6 L 232.9,152.5 Q 222.9,152.5 222.9,142.5 L 222.6,93.6 Q 222.6,83.6 232.6,83.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 230.8,80.1 L 359.5,80.5 Q 369.5,80.5 369.5,90.5 L 369.3,139.5 Q 369.3,149.5 359.3,149.5 L 230.6,149.6 Q 220.6,149.6 220.6,139.6 L 220.8,90.1 Q 220.8,80.1 230.8,80.1 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="295.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Integration</text>
+  <text x="295.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">services</text>
+
+
+  <path d="M 413.4,83.8 L 542.2,82.9 Q 552.2,82.9 552.2,92.9 L 552.7,143.0 Q 552.7,153.0 542.7,153.0 L 413.6,153.6 Q 403.6,153.6 403.6,143.6 L 403.4,93.8 Q 403.4,83.8 413.4,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 410.5,79.8 L 539.5,80.5 Q 549.5,80.5 549.5,90.5 L 550.5,140.5 Q 550.5,150.5 540.5,150.5 L 410.3,150.4 Q 400.3,150.4 400.3,140.4 L 400.5,89.8 Q 400.5,79.8 410.5,79.8 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="475.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">E2E / smoke</text>
+  <text x="475.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">gates</text>
+
+
+  <path d="M 592.3,82.6 L 723.6,82.8 Q 733.6,82.8 733.6,92.8 L 732.2,143.7 Q 732.2,153.7 722.2,153.7 L 593.7,153.4 Q 583.7,153.4 583.7,143.4 L 582.3,92.6 Q 582.3,82.6 592.3,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 589.5,81.0 L 720.4,79.1 Q 730.4,79.1 730.4,89.1 L 729.9,139.1 Q 729.9,149.1 719.9,149.1 L 589.6,149.7 Q 579.6,149.7 579.6,139.7 L 579.5,91.0 Q 579.5,81.0 589.5,81.0 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="655.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Parallel</text>
+  <text x="655.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">matrix</text>
+
+</svg>

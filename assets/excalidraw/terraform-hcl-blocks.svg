@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="770" height="180"
+     viewBox="0 0 770 180" role="img" aria-label="terraform-hcl-blocks">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">HCL building blocks</text>
+
+  <path d="M 53.0,74.0 L 183.0,73.0 Q 193.0,73.0 193.0,83.0 L 192.8,133.0 Q 192.8,143.0 182.8,143.0 L 52.6,143.5 Q 42.6,143.5 42.6,133.5 L 43.0,84.0 Q 43.0,74.0 53.0,74.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.4,70.8 L 179.6,69.8 Q 189.6,69.8 189.6,79.8 L 190.8,131.0 Q 190.8,141.0 180.8,141.0 L 50.7,139.1 Q 40.7,139.1 40.7,129.1 L 40.4,80.8 Q 40.4,70.8 50.4,70.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Blocks</text>
+  <text x="115.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">resource · var</text>
+
+
+  <path d="M 233.6,73.3 L 362.1,72.4 Q 372.1,72.4 372.1,82.4 L 372.2,132.0 Q 372.2,142.0 362.2,142.0 L 233.1,143.1 Q 223.1,143.1 223.1,133.1 L 223.6,83.3 Q 223.6,73.3 233.6,73.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 230.0,69.3 L 360.8,69.5 Q 370.8,69.5 370.8,79.5 L 369.4,130.2 Q 369.4,140.2 359.4,140.2 L 230.7,139.2 Q 220.7,139.2 220.7,129.2 L 220.0,79.3 Q 220.0,69.3 230.0,69.3 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="295.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Arguments</text>
+  <text x="295.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">key = value</text>
+
+
+  <path d="M 412.7,73.0 L 542.9,72.7 Q 552.9,72.7 552.9,82.7 L 553.0,133.6 Q 553.0,143.6 543.0,143.6 L 412.7,142.9 Q 402.7,142.9 402.7,132.9 L 402.7,83.0 Q 402.7,73.0 412.7,73.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 409.6,69.6 L 539.6,69.0 Q 549.6,69.0 549.6,79.0 L 549.5,130.2 Q 549.5,140.2 539.5,140.2 L 410.8,139.8 Q 400.8,139.8 400.8,129.8 L 399.6,79.6 Q 399.6,69.6 409.6,69.6 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="475.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Expressions</text>
+  <text x="475.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">refs · funcs</text>
+
+
+  <path d="M 592.2,72.3 L 722.7,73.3 Q 732.7,73.3 732.7,83.3 L 732.0,132.6 Q 732.0,142.6 722.0,142.6 L 592.1,142.7 Q 582.1,142.7 582.1,132.7 L 582.2,82.3 Q 582.2,72.3 592.2,72.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 591.0,70.7 L 719.5,70.7 Q 729.5,70.7 729.5,80.7 L 729.7,130.7 Q 729.7,140.7 719.7,140.7 L 589.4,140.3 Q 579.4,140.3 579.4,130.3 L 581.0,80.7 Q 581.0,70.7 591.0,70.7 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="655.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Locals</text>
+  <text x="655.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">computed</text>
+
+</svg>

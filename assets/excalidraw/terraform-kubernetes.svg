@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="220"
+     viewBox="0 0 700 220" role="img" aria-label="terraform-kubernetes">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Kubernetes with Terraform</text>
+
+  <path d="M 53.9,72.8 L 212.1,73.3 Q 222.1,73.3 222.1,83.3 L 223.8,132.1 Q 223.8,142.1 213.8,142.1 L 52.6,142.2 Q 42.6,142.2 42.6,132.2 L 43.9,82.8 Q 43.9,72.8 53.9,72.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.4,70.5 L 209.6,70.1 Q 219.6,70.1 219.6,80.1 L 219.5,129.3 Q 219.5,139.3 209.5,139.3 L 50.9,139.9 Q 40.9,139.9 40.9,129.9 L 40.4,80.5 Q 40.4,70.5 50.4,70.5 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="130.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Cloud provider</text>
+  <text x="130.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">EKS/AKS/GKE</text>
+
+
+  <path d="M 272.5,73.6 L 432.6,73.8 Q 442.6,73.8 442.6,83.8 L 442.5,132.5 Q 442.5,142.5 432.5,142.5 L 272.3,143.5 Q 262.3,143.5 262.3,133.5 L 262.5,83.6 Q 262.5,73.6 272.5,73.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 270.4,69.5 L 430.6,70.8 Q 440.6,70.8 440.6,80.8 L 439.5,129.5 Q 439.5,139.5 429.5,139.5 L 270.7,140.9 Q 260.7,140.9 260.7,130.9 L 260.4,79.5 Q 260.4,69.5 270.4,69.5 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="350.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">kubernetes</text>
+  <text x="350.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">objects</text>
+
+
+  <path d="M 492.7,72.1 L 653.9,73.5 Q 663.9,73.5 663.9,83.5 L 663.8,132.6 Q 663.8,142.6 653.8,142.6 L 493.0,142.8 Q 483.0,142.8 483.0,132.8 L 482.7,82.1 Q 482.7,72.1 492.7,72.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 490.2,69.7 L 650.9,69.4 Q 660.9,69.4 660.9,79.4 L 659.9,129.8 Q 659.9,139.8 649.9,139.8 L 489.3,140.4 Q 479.3,140.4 479.3,130.4 L 480.2,79.7 Q 480.2,69.7 490.2,69.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="570.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">helm provider</text>
+  <text x="570.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">charts</text>
+
+
+  <path d="M 220.0,105.0 L 233.0,106.1 L 246.9,105.4 L 260.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 260.0,105.0 L 253.1,109.0 M 260.0,105.0 L 253.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 440.0,105.0 L 453.9,104.9 L 466.1,105.8 L 480.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 480.0,105.0 L 473.1,109.0 M 480.0,105.0 L 473.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="360.0" y="180.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Prefer GitOps for app deploys; TF for cluster platform</text>
+</svg>

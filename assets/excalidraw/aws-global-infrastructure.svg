@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="810" height="220"
+     viewBox="0 0 810 220" role="img" aria-label="aws-global-infrastructure">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">AWS global infrastructure</text>
+
+  <path d="M 53.7,73.4 L 193.2,72.3 Q 203.2,72.3 203.2,82.3 L 202.7,133.7 Q 202.7,143.7 192.7,143.7 L 52.9,143.2 Q 42.9,143.2 42.9,133.2 L 43.7,83.4 Q 43.7,73.4 53.7,73.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.4,69.7 L 189.8,69.1 Q 199.8,69.1 199.8,79.1 L 200.9,129.2 Q 200.9,139.2 190.9,139.2 L 50.9,139.4 Q 40.9,139.4 40.9,129.4 L 39.4,79.7 Q 39.4,69.7 49.4,69.7 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Region</text>
+  <text x="120.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">geographic</text>
+
+
+  <path d="M 242.8,73.5 L 383.8,72.7 Q 393.8,72.7 393.8,82.7 L 392.9,133.7 Q 392.9,143.7 382.9,143.7 L 243.6,143.7 Q 233.6,143.7 233.6,133.7 L 232.8,83.5 Q 232.8,73.5 242.8,73.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 241.0,69.5 L 380.2,69.1 Q 390.2,69.1 390.2,79.1 L 389.5,130.2 Q 389.5,140.2 379.5,140.2 L 239.5,139.5 Q 229.5,139.5 229.5,129.5 L 231.0,79.5 Q 231.0,69.5 241.0,69.5 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="310.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">AZs</text>
+  <text x="310.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">isolated DCs</text>
+
+
+  <path d="M 432.9,73.1 L 572.6,72.6 Q 582.6,72.6 582.6,82.6 L 582.9,133.2 Q 582.9,143.2 572.9,143.2 L 433.9,142.4 Q 423.9,142.4 423.9,132.4 L 422.9,83.1 Q 422.9,73.1 432.9,73.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 429.1,69.9 L 570.3,70.8 Q 580.3,70.8 580.3,80.8 L 580.3,129.4 Q 580.3,139.4 570.3,139.4 L 430.7,140.5 Q 420.7,140.5 420.7,130.5 L 419.1,79.9 Q 419.1,69.9 429.1,69.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="500.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Edge</text>
+  <text x="500.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">CloudFront/PoPs</text>
+
+
+  <path d="M 622.4,73.7 L 762.9,72.2 Q 772.9,72.2 772.9,82.2 L 772.2,132.7 Q 772.2,142.7 762.2,142.7 L 622.1,143.1 Q 612.1,143.1 612.1,133.1 L 612.4,83.7 Q 612.4,73.7 622.4,73.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 620.8,70.8 L 759.8,69.3 Q 769.8,69.3 769.8,79.3 L 770.4,129.1 Q 770.4,139.1 760.4,139.1 L 620.4,140.3 Q 610.4,140.3 610.4,130.3 L 610.8,80.8 Q 610.8,70.8 620.8,70.8 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="690.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Account</text>
+  <text x="690.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">boundary</text>
+
+
+  <path d="M 200.0,105.0 L 209.6,105.0 L 219.9,105.4 L 230.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 230.0,105.0 L 223.1,109.0 M 230.0,105.0 L 223.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 390.0,105.0 L 400.0,105.5 L 409.3,106.1 L 420.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 420.0,105.0 L 413.1,109.0 M 420.0,105.0 L 413.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 580.0,105.0 L 590.4,105.6 L 601.0,104.1 L 610.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 610.0,105.0 L 603.1,109.0 M 610.0,105.0 L 603.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="400.0" y="180.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Shared responsibility: AWS secures the cloud; you secure in the cloud</text>
+</svg>

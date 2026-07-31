@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="830" height="200"
+     viewBox="0 0 830 200" role="img" aria-label="gitlab-devsecops">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">DevSecOps scanning</text>
+
+  <path d="M 52.5,83.4 L 163.2,82.2 Q 173.2,82.2 173.2,92.2 L 173.7,143.5 Q 173.7,153.5 163.7,153.5 L 53.4,152.5 Q 43.4,152.5 43.4,142.5 L 42.5,93.4 Q 42.5,83.4 52.5,83.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.0,79.5 L 159.1,79.9 Q 169.1,79.9 169.1,89.9 L 170.9,140.2 Q 170.9,150.2 160.9,150.2 L 49.9,150.0 Q 39.9,150.0 39.9,140.0 L 40.0,89.5 Q 40.0,79.5 50.0,79.5 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="105.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">SAST</text>
+  <text x="105.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">code</text>
+
+
+  <path d="M 203.3,82.7 L 312.8,82.1 Q 322.8,82.1 322.8,92.1 L 323.9,143.6 Q 323.9,153.6 313.9,153.6 L 203.7,152.4 Q 193.7,152.4 193.7,142.4 L 193.3,92.7 Q 193.3,82.7 203.3,82.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 200.8,79.7 L 309.7,80.6 Q 319.7,80.6 319.7,90.6 L 319.5,140.8 Q 319.5,150.8 309.5,150.8 L 199.1,149.6 Q 189.1,149.6 189.1,139.6 L 190.8,89.7 Q 190.8,79.7 200.8,79.7 Z" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  
+  <text x="255.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Secrets</text>
+  <text x="255.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">detect</text>
+
+
+  <path d="M 353.5,83.7 L 473.8,82.2 Q 483.8,82.2 483.8,92.2 L 482.4,143.9 Q 482.4,153.9 472.4,153.9 L 353.2,152.9 Q 343.2,152.9 343.2,142.9 L 343.5,93.7 Q 343.5,83.7 353.5,83.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 350.2,79.9 L 469.2,79.4 Q 479.2,79.4 479.2,89.4 L 480.0,139.1 Q 480.0,149.1 470.0,149.1 L 349.1,150.4 Q 339.1,150.4 339.1,140.4 L 340.2,89.9 Q 340.2,79.9 350.2,79.9 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="410.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Deps</text>
+  <text x="410.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">SCA</text>
+
+
+  <path d="M 512.1,83.2 L 632.7,83.3 Q 642.7,83.3 642.7,93.3 L 642.2,142.9 Q 642.2,152.9 632.2,152.9 L 513.1,152.0 Q 503.1,152.0 503.1,142.0 L 502.1,93.2 Q 502.1,83.2 512.1,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 510.4,80.6 L 631.0,80.3 Q 641.0,80.3 641.0,90.3 L 640.3,139.0 Q 640.3,149.0 630.3,149.0 L 510.5,149.6 Q 500.5,149.6 500.5,139.6 L 500.4,90.6 Q 500.4,80.6 510.4,80.6 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="570.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Container</text>
+  <text x="570.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">image</text>
+
+
+  <path d="M 672.8,83.5 L 782.5,82.0 Q 792.5,82.0 792.5,92.0 L 793.2,142.1 Q 793.2,152.1 783.2,152.1 L 673.5,152.2 Q 663.5,152.2 663.5,142.2 L 662.8,93.5 Q 662.8,83.5 672.8,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 669.7,80.1 L 779.3,80.1 Q 789.3,80.1 789.3,90.1 L 790.3,139.1 Q 790.3,149.1 780.3,149.1 L 669.3,150.1 Q 659.3,150.1 659.3,140.1 L 659.7,90.1 Q 659.7,80.1 669.7,80.1 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="725.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">SBOM</text>
+  <text x="725.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">license</text>
+
+</svg>

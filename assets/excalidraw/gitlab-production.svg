@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="200"
+     viewBox="0 0 740 200" role="img" aria-label="gitlab-production">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Production promotion</text>
+
+  <path d="M 32.0,82.6 L 133.0,83.7 Q 143.0,83.7 143.0,93.7 L 143.3,148.2 Q 143.3,158.2 133.3,158.2 L 33.2,157.5 Q 23.2,157.5 23.2,147.5 L 22.0,92.6 Q 22.0,82.6 32.0,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 30.0,80.3 L 129.4,79.2 Q 139.4,79.2 139.4,89.2 L 139.6,144.6 Q 139.6,154.6 129.6,154.6 L 30.5,156.0 Q 20.5,156.0 20.5,146.0 L 20.0,90.3 Q 20.0,80.3 30.0,80.3 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="80.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">dev</text>
+  <text x="80.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">auto</text>
+
+
+  <path d="M 140.0,118.0 L 147.2,117.9 L 152.3,119.2 L 160.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 160.0,118.0 L 153.1,122.0 M 160.0,118.0 L 153.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 172.3,82.8 L 272.6,82.1 Q 282.6,82.1 282.6,92.1 L 283.6,147.6 Q 283.6,157.6 273.6,157.6 L 172.1,158.1 Q 162.1,158.1 162.1,148.1 L 162.3,92.8 Q 162.3,82.8 172.3,82.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 170.3,79.5 L 269.3,80.8 Q 279.3,80.8 279.3,90.8 L 279.2,144.9 Q 279.2,154.9 269.2,154.9 L 169.6,155.1 Q 159.6,155.1 159.6,145.1 L 160.3,89.5 Q 160.3,79.5 170.3,79.5 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="220.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">staging</text>
+  <text x="220.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">gated</text>
+
+
+  <path d="M 280.0,118.0 L 285.6,117.3 L 293.4,117.7 L 300.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 300.0,118.0 L 293.1,122.0 M 300.0,118.0 L 293.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 312.9,83.1 L 413.8,83.4 Q 423.8,83.4 423.8,93.4 L 423.5,147.6 Q 423.5,157.6 413.5,157.6 L 312.6,158.3 Q 302.6,158.3 302.6,148.3 L 302.9,93.1 Q 302.9,83.1 312.9,83.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 310.1,79.8 L 410.9,79.2 Q 420.9,79.2 420.9,89.2 L 419.3,144.6 Q 419.3,154.6 409.3,154.6 L 310.4,154.3 Q 300.4,154.3 300.4,144.3 L 300.1,89.8 Q 300.1,79.8 310.1,79.8 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="360.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Approve</text>
+  <text x="360.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">manual</text>
+
+
+  <path d="M 420.0,118.0 L 426.0,118.1 L 432.2,118.3 L 440.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 440.0,118.0 L 433.1,122.0 M 440.0,118.0 L 433.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 453.3,83.7 L 552.7,83.1 Q 562.7,83.1 562.7,93.1 L 563.8,148.6 Q 563.8,158.6 553.8,158.6 L 453.1,157.9 Q 443.1,157.9 443.1,147.9 L 443.3,93.7 Q 443.3,83.7 453.3,83.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 450.3,79.7 L 550.7,80.7 Q 560.7,80.7 560.7,90.7 L 560.2,145.6 Q 560.2,155.6 550.2,155.6 L 449.3,155.8 Q 439.3,155.8 439.3,145.8 L 440.3,89.7 Q 440.3,79.7 450.3,79.7 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="500.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">prod</text>
+  <text x="500.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">protected</text>
+
+
+  <path d="M 560.0,118.0 L 567.2,117.9 L 573.6,118.1 L 580.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 580.0,118.0 L 573.1,122.0 M 580.0,118.0 L 573.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 593.7,83.7 L 692.9,82.2 Q 702.9,82.2 702.9,92.2 L 702.1,148.2 Q 702.1,158.2 692.1,158.2 L 592.5,157.4 Q 582.5,157.4 582.5,147.4 L 583.7,93.7 Q 583.7,83.7 593.7,83.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 590.6,80.8 L 690.0,79.1 Q 700.0,79.1 700.0,89.1 L 700.8,145.3 Q 700.8,155.3 690.8,155.3 L 590.3,154.5 Q 580.3,154.5 580.3,144.5 L 580.6,90.8 Q 580.6,80.8 590.6,80.8 Z" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  
+  <text x="640.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Rollback</text>
+  <text x="640.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">prior</text>
+
+</svg>

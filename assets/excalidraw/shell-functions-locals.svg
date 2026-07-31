@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="200"
+     viewBox="0 0 740 200" role="img" aria-label="shell-functions-locals">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="370.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Functions & scope</text>
+
+  <path d="M 52.8,83.2 L 212.3,83.6 Q 222.3,83.6 222.3,93.6 L 223.6,143.1 Q 223.6,153.1 213.6,153.1 L 53.9,153.8 Q 43.9,153.8 43.9,143.8 L 42.8,93.2 Q 42.8,83.2 52.8,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.7,79.2 L 209.3,80.6 Q 219.3,80.6 219.3,90.6 L 219.4,139.3 Q 219.4,149.3 209.4,149.3 L 50.8,149.3 Q 40.8,149.3 40.8,139.3 L 39.7,89.2 Q 39.7,79.2 49.7,79.2 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="130.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Caller</text>
+  <text x="130.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">main script</text>
+
+
+  <path d="M 293.0,82.7 L 452.4,82.1 Q 462.4,82.1 462.4,92.1 L 462.7,142.9 Q 462.7,152.9 452.7,152.9 L 292.8,153.8 Q 282.8,153.8 282.8,143.8 L 283.0,92.7 Q 283.0,82.7 293.0,82.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 289.6,80.9 L 449.3,80.7 Q 459.3,80.7 459.3,90.7 L 460.3,139.8 Q 460.3,149.8 450.3,149.8 L 290.4,150.0 Q 280.4,150.0 280.4,140.0 L 279.6,90.9 Q 279.6,80.9 289.6,80.9 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="370.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">function</text>
+  <text x="370.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">params</text>
+
+
+  <path d="M 532.5,83.5 L 693.9,82.4 Q 703.9,82.4 703.9,92.4 L 702.9,142.7 Q 702.9,152.7 692.9,152.7 L 533.4,154.0 Q 523.4,154.0 523.4,144.0 L 522.5,93.5 Q 522.5,83.5 532.5,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 530.0,80.9 L 691.0,79.6 Q 701.0,79.6 701.0,89.6 L 699.7,140.4 Q 699.7,150.4 689.7,150.4 L 529.9,149.1 Q 519.9,149.1 519.9,139.1 L 520.0,90.9 Q 520.0,80.9 530.0,80.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="610.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">local vars</text>
+  <text x="610.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">no leak</text>
+
+
+  <path d="M 220.0,115.0 L 239.6,115.7 L 259.2,115.4 L 280.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 280.0,115.0 L 273.1,119.0 M 280.0,115.0 L 273.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 460.0,115.0 L 479.9,114.0 L 499.6,114.2 L 520.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 520.0,115.0 L 513.1,119.0 M 520.0,115.0 L 513.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

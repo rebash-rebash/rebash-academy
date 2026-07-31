@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="810" height="200"
+     viewBox="0 0 810 200" role="img" aria-label="terraform-expressions">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="390.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Expressions & functions</text>
+
+  <path d="M 53.4,83.8 L 193.1,83.8 Q 203.1,83.8 203.1,93.8 L 202.4,142.3 Q 202.4,152.3 192.4,152.3 L 53.5,152.6 Q 43.5,152.6 43.5,142.6 L 43.4,93.8 Q 43.4,83.8 53.4,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.9,80.8 L 190.7,79.3 Q 200.7,79.3 200.7,89.3 L 199.4,140.0 Q 199.4,150.0 189.4,150.0 L 49.5,150.6 Q 39.5,150.6 39.5,140.6 L 39.9,90.8 Q 39.9,80.8 49.9,80.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Conditionals</text>
+  <text x="120.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">a ? b : c</text>
+
+
+  <path d="M 242.1,82.6 L 383.0,82.3 Q 393.0,82.3 393.0,92.3 L 393.6,142.7 Q 393.6,152.7 383.6,152.7 L 243.0,153.1 Q 233.0,153.1 233.0,143.1 L 232.1,92.6 Q 232.1,82.6 242.1,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 239.2,79.5 L 379.5,80.6 Q 389.5,80.6 389.5,90.6 L 389.1,139.7 Q 389.1,149.7 379.1,149.7 L 240.4,149.9 Q 230.4,149.9 230.4,139.9 L 229.2,89.5 Q 229.2,79.5 239.2,79.5 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="310.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">for</text>
+  <text x="310.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">transform</text>
+
+
+  <path d="M 433.9,83.3 L 572.4,82.8 Q 582.4,82.8 582.4,92.8 L 582.4,143.8 Q 582.4,153.8 572.4,153.8 L 433.8,152.1 Q 423.8,152.1 423.8,142.1 L 423.9,93.3 Q 423.9,83.3 433.9,83.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 429.5,80.7 L 569.3,79.7 Q 579.3,79.7 579.3,89.7 L 579.4,139.6 Q 579.4,149.6 569.4,149.6 L 430.1,150.4 Q 420.1,150.4 420.1,140.4 L 419.5,90.7 Q 419.5,80.7 429.5,80.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="500.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Functions</text>
+  <text x="500.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">join · coalesce</text>
+
+
+  <path d="M 623.9,83.5 L 763.1,83.0 Q 773.1,83.0 773.1,93.0 L 772.8,142.1 Q 772.8,152.1 762.8,152.1 L 622.7,152.4 Q 612.7,152.4 612.7,142.4 L 613.9,93.5 Q 613.9,83.5 623.9,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 619.8,80.0 L 760.4,79.8 Q 770.4,79.8 770.4,89.8 L 770.5,140.6 Q 770.5,150.6 760.5,150.6 L 619.1,150.6 Q 609.1,150.6 609.1,140.6 L 609.8,90.0 Q 609.8,80.0 619.8,80.0 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="690.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">dynamic</text>
+  <text x="690.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">nested blocks</text>
+
+</svg>

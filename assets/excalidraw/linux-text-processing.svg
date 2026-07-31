@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="200"
+     viewBox="0 0 760 200" role="img" aria-label="linux-text-processing">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Text processing pipeline</text>
+
+  <path d="M 53.9,82.2 L 172.1,82.0 Q 182.1,82.0 182.1,92.0 L 182.9,143.3 Q 182.9,153.3 172.9,153.3 L 53.9,153.1 Q 43.9,153.1 43.9,143.1 L 43.9,92.2 Q 43.9,82.2 53.9,82.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.2,79.8 L 169.8,79.5 Q 179.8,79.5 179.8,89.5 L 180.6,139.4 Q 180.6,149.4 170.6,149.4 L 49.5,150.3 Q 39.5,150.3 39.5,140.3 L 40.2,89.8 Q 40.2,79.8 50.2,79.8 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="110.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Input</text>
+  <text x="110.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">logs · files</text>
+
+
+  <path d="M 232.6,83.1 L 352.4,82.4 Q 362.4,82.4 362.4,92.4 L 362.3,143.4 Q 362.3,153.4 352.3,153.4 L 233.9,152.7 Q 223.9,152.7 223.9,142.7 L 222.6,93.1 Q 222.6,83.1 232.6,83.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 229.4,79.4 L 350.6,79.2 Q 360.6,79.2 360.6,89.2 L 359.9,139.9 Q 359.9,149.9 349.9,149.9 L 229.3,149.8 Q 219.3,149.8 219.3,139.8 L 219.4,89.4 Q 219.4,79.4 229.4,79.4 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="290.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">grep</text>
+  <text x="290.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">filter</text>
+
+
+  <path d="M 412.0,83.2 L 532.2,82.8 Q 542.2,82.8 542.2,92.8 L 542.6,142.9 Q 542.6,152.9 532.6,152.9 L 412.9,152.9 Q 402.9,152.9 402.9,142.9 L 402.0,93.2 Q 402.0,83.2 412.0,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 410.5,80.6 L 530.1,79.9 Q 540.1,79.9 540.1,89.9 L 540.7,140.8 Q 540.7,150.8 530.7,150.8 L 409.8,149.6 Q 399.8,149.6 399.8,139.6 L 400.5,90.6 Q 400.5,80.6 410.5,80.6 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="470.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">sed</text>
+  <text x="470.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">transform</text>
+
+
+  <path d="M 592.5,82.4 L 712.3,83.5 Q 722.3,83.5 722.3,93.5 L 722.0,143.0 Q 722.0,153.0 712.0,153.0 L 593.5,152.9 Q 583.5,152.9 583.5,142.9 L 582.5,92.4 Q 582.5,82.4 592.5,82.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 589.4,80.1 L 710.6,80.0 Q 720.6,80.0 720.6,90.0 L 720.5,140.6 Q 720.5,150.6 710.5,150.6 L 590.9,149.7 Q 580.9,149.7 580.9,139.7 L 579.4,90.1 Q 579.4,80.1 589.4,80.1 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="650.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">awk</text>
+  <text x="650.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">fields</text>
+
+
+  <path d="M 180.0,115.0 L 194.3,115.4 L 207.7,114.7 L 220.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 220.0,115.0 L 213.1,119.0 M 220.0,115.0 L 213.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 360.0,115.0 L 373.0,115.5 L 387.2,115.1 L 400.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 400.0,115.0 L 393.1,119.0 M 400.0,115.0 L 393.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 540.0,115.0 L 553.3,114.7 L 567.6,115.7 L 580.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 580.0,115.0 L 573.1,119.0 M 580.0,115.0 L 573.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

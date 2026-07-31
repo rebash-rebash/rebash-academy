@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="230"
+     viewBox="0 0 800 230" role="img" aria-label="helm-release-lifecycle">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Release lifecycle</text>
+
+  <path d="M 42.6,83.0 L 152.4,82.2 Q 162.4,82.2 162.4,92.2 L 162.7,148.8 Q 162.7,158.8 152.7,158.8 L 42.6,157.6 Q 32.6,157.6 32.6,147.6 L 32.6,93.0 Q 32.6,83.0 42.6,83.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 39.1,80.8 L 150.5,79.7 Q 160.5,79.7 160.5,89.7 L 160.4,145.1 Q 160.4,155.1 150.4,155.1 L 40.5,155.9 Q 30.5,155.9 30.5,145.9 L 29.1,90.8 Q 29.1,80.8 39.1,80.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="95.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">install</text>
+  <text x="95.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">rev 1</text>
+
+
+  <path d="M 160.0,118.0 L 167.8,118.8 L 173.1,116.9 L 180.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 180.0,118.0 L 173.1,122.0 M 180.0,118.0 L 173.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 192.7,83.8 L 302.3,82.0 Q 312.3,82.0 312.3,92.0 L 312.8,147.4 Q 312.8,157.4 302.8,157.4 L 193.0,158.6 Q 183.0,158.6 183.0,148.6 L 182.7,93.8 Q 182.7,83.8 192.7,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 189.9,79.4 L 300.4,80.7 Q 310.4,80.7 310.4,90.7 L 309.9,144.9 Q 309.9,154.9 299.9,154.9 L 189.1,154.1 Q 179.1,154.1 179.1,144.1 L 179.9,89.4 Q 179.9,79.4 189.9,79.4 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="245.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">upgrade</text>
+  <text x="245.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">rev 2…n</text>
+
+
+  <path d="M 310.0,118.0 L 317.1,117.7 L 322.6,117.3 L 330.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 330.0,118.0 L 323.1,122.0 M 330.0,118.0 L 323.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 342.7,82.5 L 453.7,83.9 Q 463.7,83.9 463.7,93.9 L 462.6,148.0 Q 462.6,158.0 452.6,158.0 L 342.1,158.5 Q 332.1,158.5 332.1,148.5 L 332.7,92.5 Q 332.7,82.5 342.7,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 340.9,79.7 L 450.9,79.8 Q 460.9,79.8 460.9,89.8 L 460.1,144.9 Q 460.1,154.9 450.1,154.9 L 340.3,155.1 Q 330.3,155.1 330.3,145.1 L 330.9,89.7 Q 330.9,79.7 340.9,79.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="395.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">history</text>
+  <text x="395.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">revisions</text>
+
+
+  <path d="M 460.0,118.0 L 467.4,118.9 L 473.3,117.4 L 480.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 480.0,118.0 L 473.1,122.0 M 480.0,118.0 L 473.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 493.7,82.5 L 602.3,82.4 Q 612.3,82.4 612.3,92.4 L 612.4,148.5 Q 612.4,158.5 602.4,158.5 L 492.9,157.6 Q 482.9,157.6 482.9,147.6 L 483.7,92.5 Q 483.7,82.5 493.7,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 489.1,79.8 L 599.4,79.7 Q 609.4,79.7 609.4,89.7 L 610.5,144.5 Q 610.5,154.5 600.5,154.5 L 489.5,154.8 Q 479.5,154.8 479.5,144.8 L 479.1,89.8 Q 479.1,79.8 489.1,79.8 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="545.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">rollback</text>
+  <text x="545.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">prior rev</text>
+
+
+  <path d="M 610.0,118.0 L 616.9,117.8 L 622.4,119.2 L 630.0,118.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 630.0,118.0 L 623.1,122.0 M 630.0,118.0 L 623.1,114.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 643.3,82.5 L 753.0,82.7 Q 763.0,82.7 763.0,92.7 L 762.3,147.2 Q 762.3,157.2 752.3,157.2 L 642.4,157.0 Q 632.4,157.0 632.4,147.0 L 633.3,92.5 Q 633.3,82.5 643.3,82.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 640.4,79.6 L 749.9,80.5 Q 759.9,80.5 759.9,90.5 L 759.5,144.9 Q 759.5,154.9 749.5,154.9 L 639.2,154.8 Q 629.2,154.8 629.2,144.8 L 630.4,89.6 Q 630.4,79.6 640.4,79.6 Z" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  
+  <text x="695.0" y="111.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">uninstall</text>
+  <text x="695.0" y="131.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cleanup</text>
+
+<text x="400.0" y="195.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Prefer --atomic on risky upgrades · always check helm history</text>
+</svg>

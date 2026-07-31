@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="200"
+     viewBox="0 0 750 200" role="img" aria-label="aws-databases">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="390.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Databases on AWS</text>
+
+  <path d="M 52.5,83.7 L 173.8,82.1 Q 183.8,82.1 183.8,92.1 L 183.8,142.1 Q 183.8,152.1 173.8,152.1 L 53.3,152.1 Q 43.3,152.1 43.3,142.1 L 42.5,93.7 Q 42.5,83.7 52.5,83.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.4,79.1 L 170.7,80.7 Q 180.7,80.7 180.7,90.7 L 179.2,140.1 Q 179.2,150.1 169.2,150.1 L 49.8,150.2 Q 39.8,150.2 39.8,140.2 L 40.4,89.1 Q 40.4,79.1 50.4,79.1 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="110.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">RDS</text>
+  <text x="110.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">SQL</text>
+
+
+  <path d="M 212.3,82.0 L 332.1,82.0 Q 342.1,82.0 342.1,92.0 L 342.8,143.0 Q 342.8,153.0 332.8,153.0 L 212.1,152.7 Q 202.1,152.7 202.1,142.7 L 202.3,92.0 Q 202.3,82.0 212.3,82.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 210.7,79.4 L 329.0,79.5 Q 339.0,79.5 339.0,89.5 L 339.8,140.1 Q 339.8,150.1 329.8,150.1 L 210.8,150.9 Q 200.8,150.9 200.8,140.9 L 200.7,89.4 Q 200.7,79.4 210.7,79.4 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="270.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Aurora</text>
+  <text x="270.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cloud SQL</text>
+
+
+  <path d="M 372.1,83.1 L 503.7,82.5 Q 513.7,82.5 513.7,92.5 L 512.7,142.5 Q 512.7,152.5 502.7,152.5 L 373.2,152.4 Q 363.2,152.4 363.2,142.4 L 362.1,93.1 Q 362.1,83.1 372.1,83.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 369.2,79.3 L 499.5,80.2 Q 509.5,80.2 509.5,90.2 L 510.6,139.4 Q 510.6,149.4 500.6,149.4 L 369.8,149.0 Q 359.8,149.0 359.8,139.0 L 359.2,89.3 Q 359.2,79.3 369.2,79.3 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="435.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">DynamoDB</text>
+  <text x="435.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">NoSQL</text>
+
+
+  <path d="M 542.3,82.3 L 703.3,82.9 Q 713.3,82.9 713.3,92.9 L 713.4,143.6 Q 713.4,153.6 703.4,153.6 L 542.5,152.5 Q 532.5,152.5 532.5,142.5 L 532.3,92.3 Q 532.3,82.3 542.3,82.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 540.9,80.3 L 700.8,79.0 Q 710.8,79.0 710.8,89.0 L 709.1,139.1 Q 709.1,149.1 699.1,149.1 L 539.6,151.0 Q 529.6,151.0 529.6,141.0 L 530.9,90.3 Q 530.9,80.3 540.9,80.3 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="620.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">ElastiCache</text>
+  <text x="620.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">in-memory</text>
+
+</svg>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="770" height="200"
+     viewBox="0 0 770 200" role="img" aria-label="aws-disaster-recovery">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Disaster recovery strategies</text>
+
+  <path d="M 53.2,82.6 L 183.3,82.4 Q 193.3,82.4 193.3,92.4 L 193.4,143.3 Q 193.4,153.3 183.4,153.3 L 52.8,153.9 Q 42.8,153.9 42.8,143.9 L 43.2,92.6 Q 43.2,82.6 53.2,82.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.9,80.6 L 179.8,79.6 Q 189.8,79.6 189.8,89.6 L 190.4,140.8 Q 190.4,150.8 180.4,150.8 L 50.1,149.9 Q 40.1,149.9 40.1,139.9 L 39.9,90.6 Q 39.9,80.6 49.9,80.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Backup</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">AWS Backup</text>
+
+
+  <path d="M 222.3,83.0 L 352.8,83.9 Q 362.8,83.9 362.8,93.9 L 363.0,143.1 Q 363.0,153.1 353.0,153.1 L 222.5,153.9 Q 212.5,153.9 212.5,143.9 L 212.3,93.0 Q 212.3,83.0 222.3,83.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 220.8,79.4 L 349.5,79.8 Q 359.5,79.8 359.5,89.8 L 359.7,139.4 Q 359.7,149.4 349.7,149.4 L 219.1,149.7 Q 209.1,149.7 209.1,139.7 L 210.8,89.4 Q 210.8,79.4 220.8,79.4 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="285.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Pilot light</text>
+  <text x="285.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">warm core</text>
+
+
+  <path d="M 392.5,83.5 L 523.9,82.2 Q 533.9,82.2 533.9,92.2 L 533.5,144.0 Q 533.5,154.0 523.5,154.0 L 392.7,152.0 Q 382.7,152.0 382.7,142.0 L 382.5,93.5 Q 382.5,83.5 392.5,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 389.2,80.1 L 520.5,79.5 Q 530.5,79.5 530.5,89.5 L 529.4,140.8 Q 529.4,150.8 519.4,150.8 L 390.3,150.3 Q 380.3,150.3 380.3,140.3 L 379.2,90.1 Q 379.2,80.1 389.2,80.1 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="455.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Warm standby</text>
+  <text x="455.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">scaled down</text>
+
+
+  <path d="M 562.5,83.2 L 723.4,83.6 Q 733.4,83.6 733.4,93.6 L 733.8,143.0 Q 733.8,153.0 723.8,153.0 L 563.0,152.4 Q 553.0,152.4 553.0,142.4 L 552.5,93.2 Q 552.5,83.2 562.5,83.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 559.2,81.0 L 719.3,79.7 Q 729.3,79.7 729.3,89.7 L 729.8,140.9 Q 729.8,150.9 719.8,150.9 L 561.0,150.7 Q 551.0,150.7 551.0,140.7 L 549.2,91.0 Q 549.2,81.0 559.2,81.0 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="640.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Multi-region</text>
+  <text x="640.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">active/active</text>
+
+</svg>

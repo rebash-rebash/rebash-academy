@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="200"
+     viewBox="0 0 700 200" role="img" aria-label="gitlab-release">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="360.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Release management</text>
+
+  <path d="M 52.9,83.8 L 193.0,83.0 Q 203.0,83.0 203.0,93.0 L 203.2,143.2 Q 203.2,153.2 193.2,153.2 L 52.4,153.2 Q 42.4,153.2 42.4,143.2 L 42.9,93.8 Q 42.9,83.8 52.9,83.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.7,79.8 L 189.7,80.1 Q 199.7,80.1 199.7,90.1 L 200.3,140.3 Q 200.3,150.3 190.3,150.3 L 49.7,150.0 Q 39.7,150.0 39.7,140.0 L 39.7,89.8 Q 39.7,79.8 49.7,79.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">SemVer tag</text>
+  <text x="120.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">v1.2.3</text>
+
+
+  <path d="M 253.3,82.4 L 412.5,83.2 Q 422.5,83.2 422.5,93.2 L 422.7,143.5 Q 422.7,153.5 412.7,153.5 L 252.3,152.7 Q 242.3,152.7 242.3,142.7 L 243.3,92.4 Q 243.3,82.4 253.3,82.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 249.7,79.7 L 410.8,79.7 Q 420.8,79.7 420.8,89.7 L 419.6,140.2 Q 419.6,150.2 409.6,150.2 L 250.6,150.5 Q 240.6,150.5 240.6,140.5 L 239.7,89.7 Q 239.7,79.7 249.7,79.7 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="330.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Release job</text>
+  <text x="330.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">assets</text>
+
+
+  <path d="M 473.2,82.2 L 632.1,83.9 Q 642.1,83.9 642.1,93.9 L 642.8,143.0 Q 642.8,153.0 632.8,153.0 L 472.9,152.3 Q 462.9,152.3 462.9,142.3 L 463.2,92.2 Q 463.2,82.2 473.2,82.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 470.6,79.8 L 630.7,80.1 Q 640.7,80.1 640.7,90.1 L 640.7,140.2 Q 640.7,150.2 630.7,150.2 L 470.5,149.4 Q 460.5,149.4 460.5,139.4 L 460.6,89.8 Q 460.6,79.8 470.6,79.8 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="550.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Changelog</text>
+  <text x="550.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">notes</text>
+
+
+  <path d="M 200.0,115.0 L 212.5,114.2 L 227.3,113.9 L 240.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,115.0 L 233.1,119.0 M 240.0,115.0 L 233.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 420.0,115.0 L 434.3,114.8 L 447.8,114.9 L 460.0,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 460.0,115.0 L 453.1,119.0 M 460.0,115.0 L 453.1,111.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

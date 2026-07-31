@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="280"
+     viewBox="0 0 660 280" role="img" aria-label="shell-loops-flow">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="330.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Loops</text>
+
+  <path d="M 53.7,82.9 L 192.8,82.5 Q 202.8,82.5 202.8,92.5 L 203.0,142.5 Q 203.0,152.5 193.0,152.5 L 52.4,154.0 Q 42.4,154.0 42.4,144.0 L 43.7,92.9 Q 43.7,82.9 53.7,82.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.8,79.0 L 189.6,79.6 Q 199.6,79.6 199.6,89.6 L 200.8,140.6 Q 200.8,150.6 190.8,150.6 L 49.9,149.2 Q 39.9,149.2 39.9,139.2 L 40.8,89.0 Q 40.8,79.0 50.8,79.0 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">for</text>
+  <text x="120.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">lists · globs</text>
+
+
+  <path d="M 253.1,82.3 L 393.4,83.0 Q 403.4,83.0 403.4,93.0 L 403.9,142.2 Q 403.9,152.2 393.9,152.2 L 253.8,152.4 Q 243.8,152.4 243.8,142.4 L 243.1,92.3 Q 243.1,82.3 253.1,82.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 249.1,79.4 L 389.8,80.6 Q 399.8,80.6 399.8,90.6 L 400.7,139.7 Q 400.7,149.7 390.7,149.7 L 249.4,150.8 Q 239.4,150.8 239.4,140.8 L 239.1,89.4 Q 239.1,79.4 249.1,79.4 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="320.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">while</text>
+  <text x="320.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">until false</text>
+
+
+  <path d="M 453.3,82.7 L 592.2,82.8 Q 602.2,82.8 602.2,92.8 L 602.3,142.9 Q 602.3,152.9 592.3,152.9 L 453.7,153.6 Q 443.7,153.6 443.7,143.6 L 443.3,92.7 Q 443.3,82.7 453.3,82.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 449.6,80.4 L 589.8,79.3 Q 599.8,79.3 599.8,89.3 L 599.4,139.3 Q 599.4,149.3 589.4,149.3 L 450.1,149.4 Q 440.1,149.4 440.1,139.4 L 439.6,90.4 Q 439.6,80.4 449.6,80.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="520.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">until</text>
+  <text x="520.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">until true</text>
+
+
+  <path d="M 212.9,193.0 L 473.8,193.7 Q 483.8,193.7 483.8,203.7 L 483.4,238.7 Q 483.4,248.7 473.4,248.7 L 212.3,247.4 Q 202.3,247.4 202.3,237.4 L 202.9,203.0 Q 202.9,193.0 212.9,193.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 209.8,190.5 L 469.6,190.1 Q 479.6,190.1 479.6,200.1 L 480.5,235.0 Q 480.5,245.0 470.5,245.0 L 209.8,245.5 Q 199.8,245.5 199.8,235.5 L 199.8,200.5 Q 199.8,190.5 209.8,190.5 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="340.0" y="211.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">break · continue</text>
+  <text x="340.0" y="231.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">careful with IFS</text>
+
+</svg>
