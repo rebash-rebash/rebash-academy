@@ -143,6 +143,7 @@ mkdir -p ~/rebash-helm/module-08 && cd ~/rebash-helm/module-08
 
 ### Step 1 – Add a simple test Pod hook
 
+{% raw %}
 ```bash
 kubectl create namespace rebash-helm
 helm create test-demo
@@ -169,6 +170,7 @@ PY
 helm lint test-demo
 helm template demo ./test-demo -n rebash-helm >/dev/null
 ```
+{% endraw %}
 
 ### Step 2 – Install and run helm test
 

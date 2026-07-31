@@ -147,6 +147,7 @@ mkdir -p ~/rebash-helm/module-04 && cd ~/rebash-helm/module-04
 
 ### Step 1 – Customise a ConfigMap template
 
+{% raw %}
 ```bash
 kubectl create namespace rebash-helm
 helm create tmpl-demo
@@ -164,6 +165,7 @@ data:
 print(Path('tmpl-demo/templates/configmap.yaml').read_text())
 PY
 ```
+{% endraw %}
 
 ### Step 2 – Lint, template, and install
 
