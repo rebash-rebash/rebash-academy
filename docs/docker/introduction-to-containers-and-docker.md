@@ -104,53 +104,35 @@ You build or pull an image (layered filesystem plus config), then create a conta
 - Skipping the image vs container distinction in incidents
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-docker/module-01 && cd ~/rebash-docker/module-01
 ```
 
-**Focus:** hands-on practice for Introduction to Containers and Docker
+**Focus:** prove process isolation with Docker vs the host
 
-### Step 1 – Skeleton
+### Step 1 – Host vs container view
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Introduction to Containers and Docker"
-EOF
-chmod +x lab.sh
-./lab.sh
+hostname
+uname -a
+docker version
+docker run --rm alpine:3.20 sh -c 'hostname; uname -a; cat /etc/os-release | head -n 5'
 ```
 
-### Step 2 – Core exercise
+### Step 2 – List and inspect runtime pieces
 
 ```bash
-mkdir -p ~/rebash-docker/module-01
-cd ~/rebash-docker/module-01
-```
-
-Docker install is Module 2 — this lab is conceptual plus optional `docker version` if already installed.
-
-```bash
-cd ~/rebash-docker/module-01
-cat > notes.md << 'EOF'
-# Module 1 notes
-- Image = template (layers)
-- Container = running instance
-- OCI = portable standard
-EOF
-# If Docker is installed:
-docker version 2>/dev/null || echo "Install in Module 2"
+docker info 2>/dev/null | sed -n '1,25p'
+docker images
+docker ps -a
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 ## Validation

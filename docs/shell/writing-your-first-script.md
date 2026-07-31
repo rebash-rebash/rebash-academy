@@ -111,19 +111,7 @@ mkdir -p ~/rebash-shell/lab02 && cd ~/rebash-shell/lab02
 
 **Focus:** create shebang script; chmod +x; exit codes; strict-mode skeleton
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab02 writing-your-first-script on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – First strict-mode script
+### Step 1 – First strict-mode script
 
 ```bash
 cat > hello-ops.sh << 'EOF'
@@ -139,11 +127,10 @@ chmod +x hello-ops.sh
 bash -c './hello-ops.sh; echo exit=$?'
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

@@ -111,19 +111,7 @@ mkdir -p ~/rebash-helm/module-03 && cd ~/rebash-helm/module-03
 
 **Focus:** hands-on practice for Working with Helm Charts
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Working with Helm Charts"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-helm/module-03 && cd ~/rebash-helm/module-03
@@ -137,8 +125,7 @@ helm lint ./rebash-app
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

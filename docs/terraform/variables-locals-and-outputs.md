@@ -120,19 +120,7 @@ mkdir -p ~/rebash-terraform/module-07 && cd ~/rebash-terraform/module-07
 
 **Focus:** hands-on practice for Variables, Locals, and Outputs
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Variables, Locals, and Outputs"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-terraform/module-07 && cd ~/rebash-terraform/module-07
@@ -200,8 +188,7 @@ terraform destroy -var-file=dev.tfvars -auto-approve
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

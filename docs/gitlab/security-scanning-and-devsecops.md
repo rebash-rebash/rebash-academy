@@ -123,81 +123,44 @@ Treat false positives with tracked allowlists — not by disabling scanners glob
 - Generating an SBOM not attached to the released digest.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-12 && cd ~/rebash-gitlab/module-12
+git init -q
 ```
 
-**Focus:** hands-on practice for Security Scanning and DevSecOps
+**Focus:** author and validate CI config for Security Scanning and DevSecOps
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Security Scanning and DevSecOps"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Feature availability varies by GitLab tier — learn the job shape here. Credentials are not required.
-
-```bash
-mkdir -p ~/rebash-gitlab/module-12 && cd ~/rebash-gitlab/module-12
-echo 'def ping(): return "ok"' > app.py
-```
-
-{% raw %}
-```yaml
-# .gitlab-ci.yml
-stages: [test, build, secure]
-
-include:
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
-  # Add Dependency-Scanning, Container-Scanning, DAST, License-Scanning as tier allows
-
-build-image:
-  stage: build
-  image: docker:27-cli
-  services: [docker:27-dind]
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
-  script:
-    - echo "Build $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA then scan that digest"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-security-policy-note:
-  stage: secure
+cat > .gitlab-ci.yml << 'EOF'
+stages: [validate]
+validate:
+  stage: validate
   image: alpine:3.20
   script:
-    - echo "Fail on Critical findings; attach SBOM to release"
+    - echo "pipeline ok"
+    - uname -a
+EOF
+ls -la
+sed -n '1,80p' .gitlab-ci.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-cat > sec-policy.md << 'EOF'
-Order: secrets → SAST → build → dependency/container → DAST on review app
-Gate: block Critical/High on default branch
-SBOM: CycloneDX tied to image digest
-Secrets: rotate on confirmed leak; never only allowlist
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .gitlab-ci.yml
+grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

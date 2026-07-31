@@ -114,19 +114,7 @@ mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
 
 **Focus:** hands-on practice for Production Git Practices
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Production Git Practices"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
@@ -156,8 +144,7 @@ cat > .github/pull_request_template.md << 'EOF'
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

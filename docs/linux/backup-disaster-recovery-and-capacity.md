@@ -92,19 +92,7 @@ mkdir -p ~/rebash-linux/lab25 && cd ~/rebash-linux/lab25
 
 **Focus:** script a local backup+restore drill; document RTO/RPO assumptions
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab25 backup-disaster-recovery-and-capacity on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Backup and restore drill
+### Step 1 – Backup and restore drill
 
 ```bash
 mkdir -p data restore
@@ -124,8 +112,7 @@ ls -l backup-data.tgz restore
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

@@ -113,19 +113,7 @@ mkdir -p ~/rebash-terraform/module-11/data-sources/{seed,out} && cd ~/rebash-ter
 
 **Focus:** hands-on practice for Data Sources and Existing Infrastructure
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Data Sources and Existing Infrastructure"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-terraform/module-11/data-sources/{seed,out}
@@ -174,8 +162,7 @@ test -f seed/source.txt && echo "seed preserved (not managed)"
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

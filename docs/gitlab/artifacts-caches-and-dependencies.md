@@ -115,85 +115,44 @@ Prefer short retention for intermediate binaries; keep release artefacts on tags
 - Confusing job artefacts with Container Registry images.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-07 && cd ~/rebash-gitlab/module-07
+git init -q
 ```
 
-**Focus:** hands-on practice for Artifacts, Caches, and Dependencies
+**Focus:** author and validate CI config for Artifacts, Caches, and Dependencies
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Artifacts, Caches, and Dependencies"
+cat > .gitlab-ci.yml << 'EOF'
+stages: [validate]
+validate:
+  stage: validate
+  image: alpine:3.20
+  script:
+    - echo "pipeline ok"
+    - uname -a
 EOF
-chmod +x lab.sh
-./lab.sh
+ls -la
+sed -n '1,80p' .gitlab-ci.yml
 ```
 
-### Step 2 – Core exercise
-
-Credentials are not required to learn this pattern — validate YAML locally; push only if you have a GitLab project.
+### Step 2 – Static checks before push
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-07 && cd ~/rebash-gitlab/module-07
-```
-
-{% raw %}
-```yaml
-# .gitlab-ci.yml
-stages: [build, test]
-
-variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-
-build:
-  stage: build
-  image: python:3.12-slim
-  script:
-    - mkdir -p dist
-    - echo "build-$CI_COMMIT_SHORT_SHA" > dist/app.txt
-  artifacts:
-    paths: [dist/]
-    expire_in: 1 day
-
-test:
-  stage: test
-  image: python:3.12-slim
-  needs: [build]
-  cache:
-    key:
-      files: [requirements.txt]
-    paths: [.cache/pip]
-  script:
-    - test -f dist/app.txt
-    - pip install --quiet pytest
-    - echo "ok" > junit.xml
-  artifacts:
-    when: always
-    reports:
-      junit: junit.xml
-    expire_in: 1 week
-```
-{% endraw %}
-
-```bash
-printf 'pytest\n' > requirements.txt
-# Copy the YAML above to .gitlab-ci.yml
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
-glab ci lint .gitlab-ci.yml 2>/dev/null || true
+# Syntax / structure sanity (no runner required)
+test -s .gitlab-ci.yml
+grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

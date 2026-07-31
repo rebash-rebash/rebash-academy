@@ -111,19 +111,7 @@ mkdir -p ~/rebash-docker/module-04 && cd ~/rebash-docker/module-04
 
 **Focus:** hands-on practice for Working with Docker Images
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Working with Docker Images"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-docker/module-04 && cd ~/rebash-docker/module-04
@@ -141,8 +129,7 @@ rm -f alpine-lab.tar
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

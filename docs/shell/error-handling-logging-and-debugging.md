@@ -92,19 +92,7 @@ mkdir -p ~/rebash-shell/lab16 && cd ~/rebash-shell/lab16
 
 **Focus:** exit taxonomy; ERR/EXIT traps; log levels; bash -x drill
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab16 error-handling-logging-and-debugging on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Logging and debug
+### Step 1 – Logging and debug
 
 ```bash
 cat > robust.sh << 'EOF'
@@ -122,11 +110,10 @@ chmod +x robust.sh
 bash -x ./robust.sh lab16 2>&1 | tail -n 15
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

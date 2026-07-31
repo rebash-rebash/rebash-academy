@@ -96,19 +96,7 @@ mkdir -p ~/rebash-linux/lab10 && cd ~/rebash-linux/lab10
 
 **Focus:** inspect units; read journal; create a simple user service
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab10 systemd-services-and-journalctl on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – systemd and journal
+### Step 1 – systemd and journal
 
 ```bash
 systemctl list-units --type=service --state=running | head | tee services.txt
@@ -129,8 +117,7 @@ systemctl --user start rebash-lab.service 2>/dev/null || true
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

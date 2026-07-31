@@ -115,84 +115,57 @@ Cache mounts and registry pull-through caches accelerate rebuilds; they do not r
 - Rebuilding for production instead of promoting the tested digest.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-08 && cd ~/rebash-gitlab/module-08
 ```
 
-**Focus:** hands-on practice for Building Docker Images in CI
+**Focus:** build a local image in CI-shaped steps, then author a GitLab Docker job
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Building Docker Images in CI"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Credentials are not required to learn this pattern — the YAML shows registry variables GitLab injects when you run on a real project.
+### Step 1 – Local image (same Dockerfile CI will use)
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-08 && cd ~/rebash-gitlab/module-08
-```
-
-```dockerfile
-# Dockerfile
-FROM python:3.12-slim AS build
-WORKDIR /src
-COPY app.py .
-RUN python -m compileall app.py
-
-FROM python:3.12-slim
+mkdir -p app
+cat > app/Dockerfile << 'EOF'
+FROM alpine:3.20
+RUN apk add --no-cache curl
 WORKDIR /app
-COPY --from=build /src/app.py .
-CMD ["python", "app.py"]
+COPY hello.txt .
+CMD ["cat", "hello.txt"]
+EOF
+echo 'hello from rebash gitlab docker lab' > app/hello.txt
+docker build -t rebash/gitlab-lab:dev ./app
+docker run --rm rebash/gitlab-lab:dev
 ```
 
-{% raw %}
-```yaml
-# .gitlab-ci.yml
+### Step 2 – GitLab CI job that builds (DinD or shell runner)
+
+```bash
+cat > .gitlab-ci.yml << 'EOF'
 stages: [build]
-
-variables:
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_BUILDKIT: "1"
-
 build-image:
   stage: build
-  image: docker:27-cli
+  image: docker:27
   services:
     - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker info
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" ./app
+    - docker run --rm "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-```
-{% endraw %}
-
-```bash
-echo 'print("hello from ci image")' > app.py
-# Copy Dockerfile and .gitlab-ci.yml above
-docker build -t rebash-module-08:local . 2>/dev/null || echo "Optional: local docker build"
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+    - if: $CI_COMMIT_BRANCH
+EOF
+sed -n '1,80p' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+docker rmi rebash/gitlab-lab:dev 2>/dev/null || true
+# Keep ~/rebash-gitlab/ for later tutorials; do not commit registry credentials
 ```
 
 ## Validation

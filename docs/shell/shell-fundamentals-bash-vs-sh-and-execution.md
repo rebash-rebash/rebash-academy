@@ -102,18 +102,7 @@ mkdir -p ~/rebash-shell/lab01 && cd ~/rebash-shell/lab01
 
 **Focus:** fingerprint shell/bash/sh; compare interactive vs script env; inspect PATH
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-echo "lab01 shell-fundamentals-bash-vs-sh-and-execution on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Fingerprint shells and environment
+### Step 1 – Fingerprint shells and environment
 
 ```bash
 cat > fingerprint.sh << 'EOF'
@@ -129,11 +118,10 @@ chmod +x fingerprint.sh
 env -i PATH=/usr/bin:/bin HOME="$HOME" bash ./fingerprint.sh | tee fingerprint-min.txt
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

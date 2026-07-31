@@ -95,19 +95,7 @@ mkdir -p ~/rebash-linux/lab03 && cd ~/rebash-linux/lab03
 
 **Focus:** navigate lab tree; practise cp/mv/rm safely; use less/stat/history
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab03 essential-linux-commands on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Command workout
+### Step 1 – Command workout
 
 ```bash
 mkdir -p docs/bin
@@ -128,8 +116,7 @@ ls -la docs
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

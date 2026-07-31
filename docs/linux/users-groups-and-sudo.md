@@ -93,19 +93,7 @@ mkdir -p ~/rebash-linux/lab06 && cd ~/rebash-linux/lab06
 
 **Focus:** inspect id/passwd; create lab user/group; practise sudo -l
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab06 users-groups-and-sudo on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Identity inventory
+### Step 1 – Identity inventory
 
 ```bash
 id | tee id.txt
@@ -118,8 +106,7 @@ echo "Create users only on disposable lab VMs with sudo."
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

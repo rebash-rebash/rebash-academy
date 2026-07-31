@@ -115,107 +115,46 @@ Prefer apply-of-saved-plan for production. If you must re-plan at apply time, do
 - Fork pull requests with write-level cloud roles (use `pull_request_target` carefully — prefer OIDC subject conditions that exclude forks).
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-09/.github/workflows && cd ~/rebash-github-actions/module-09/.github/workflows
+git init -q
 ```
 
-**Focus:** hands-on practice for Terraform Pipelines with GitHub Actions
+**Focus:** author and validate CI config for Terraform Pipelines with GitHub Actions
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Terraform Pipelines with GitHub Actions"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Cloud credentials are not required — run local Terraform with the `local` provider; the workflow is the CI pattern.
-
-```bash
-mkdir -p ~/rebash-github-actions/module-09/.github/workflows
-cd ~/rebash-github-actions/module-09
-
-cat > main.tf << 'EOF'
-terraform {
-  required_version = ">= 1.9.0"
-  required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
-  }
-}
-resource "local_file" "marker" {
-  filename = "${path.module}/ci-marker.txt"
-  content  = "planned-in-github-actions\n"
-}
-EOF
-```
-
-{% raw %}
-```yaml
-# .github/workflows/terraform.yml
-name: Terraform
-on:
-  pull_request:
-  push:
-    branches: [main]
-  workflow_dispatch: # destroy: separate protected job — never on PR
-
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write
-
-env:
-  TF_IN_AUTOMATION: "true"
-  TF_INPUT: "false"
-
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on: workflow_dispatch
 jobs:
-  plan:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-        with: { terraform_version: 1.9.8 }
-      - run: terraform init -input=false
-      - run: terraform validate
-      - run: terraform plan -out=tfplan -input=false
-      - uses: actions/upload-artifact@v4
-        with: { name: tfplan, path: tfplan, retention-days: 5 }
-
-  apply:
-    needs: plan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-        with: { terraform_version: 1.9.8 }
-      - run: terraform init -input=false
-      - uses: actions/download-artifact@v4
-        with: { name: tfplan }
-      - run: terraform apply -input=false tfplan
+      - run: echo "workflow ok"
+EOF
+ls -la
+sed -n '1,80p' .github/workflows/lab.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-terraform init -input=false && terraform plan -out=tfplan -input=false
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .github/workflows/lab.yml
+grep -E 'script:|runs-on:|steps:' .github/workflows/lab.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-github-actions/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

@@ -98,19 +98,7 @@ mkdir -p ~/rebash-linux/lab09 && cd ~/rebash-linux/lab09
 
 **Focus:** inspect ps/top; job control; nice/nohup a background task
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab09 process-management on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Process control
+### Step 1 – Process control
 
 ```bash
 ps aux --sort=-%cpu | head -n 8 | tee top-cpu.txt
@@ -128,8 +116,7 @@ cat nohup-lab.out
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

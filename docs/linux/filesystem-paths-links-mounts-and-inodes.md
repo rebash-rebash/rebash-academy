@@ -94,19 +94,7 @@ mkdir -p ~/rebash-linux/lab04 && cd ~/rebash-linux/lab04
 
 **Focus:** create hard/symlink pairs; inspect inodes; explore findmnt
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab04 filesystem-paths-links-mounts-and-inodes on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Links and inodes
+### Step 1 – Links and inodes
 
 ```bash
 echo payload > original.txt
@@ -121,8 +109,7 @@ findmnt | head | tee mounts.txt
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

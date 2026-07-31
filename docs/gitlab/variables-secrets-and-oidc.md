@@ -122,19 +122,7 @@ mkdir -p ~/rebash-gitlab/module-06 && cd ~/rebash-gitlab/module-06
 
 **Focus:** hands-on practice for Variables, Secrets, and OIDC
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Variables, Secrets, and OIDC"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-06
@@ -185,8 +173,7 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('YAML par
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

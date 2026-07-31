@@ -72,9 +72,10 @@ Cover **every** concept from the technology prompt module. British English. Prod
 
 - Title casing: `## Hands-on Lab` (not “lab”).
 - Workspace: `~/rebash-<technology>/labNN` (zero-padded) **or** `module-NN` consistently within a course — prefer `labNN` to match Linux/Shell.
-- Line: `**Focus:** …`
-- Numbered steps: `### Step 1 – Skeleton`, `### Step 2 – …`, `### Final step – Cleanup note`
-- Skeleton uses `set -euo pipefail` where shell is used.
+- Line: `**Focus:** …` (what the learner will practise)
+- Numbered steps with **topic-relevant** titles: `### Step 1 – …`, `### Step 2 – …`, `### Final step – Cleanup note`
+- **Never** use a placeholder “Skeleton” step that only echoes the tutorial name — every step must teach the module skill.
+- Use `set -euo pipefail` in shell labs where appropriate.
 - Escape `${{` / `{#` for mkdocs-macros (`{% raw %}`).
 
 ### Validation

@@ -111,19 +111,7 @@ mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
 
 **Focus:** hands-on practice for Dockerfile Best Practices and Multi-Stage Builds
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Dockerfile Best Practices and Multi-Stage Builds"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
@@ -167,8 +155,7 @@ docker run --rm rebash-opt:slim
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

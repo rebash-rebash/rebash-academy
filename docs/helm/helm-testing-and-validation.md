@@ -120,19 +120,7 @@ mkdir -p ~/rebash-helm/module-08 && cd ~/rebash-helm/module-08
 
 **Focus:** hands-on practice for Helm Testing and Validation
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Helm Testing and Validation"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-helm/module-08 && cd ~/rebash-helm/module-08
@@ -148,8 +136,7 @@ head -n 40 rendered.yaml
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

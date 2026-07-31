@@ -126,19 +126,7 @@ mkdir -p ~/rebash-linux/lab01 && cd ~/rebash-linux/lab01
 
 **Focus:** fingerprint distro/kernel; map layers; prove shell vs terminal
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab01 linux-fundamentals-distributions-and-architecture on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Fingerprint the host
+### Step 1 – Fingerprint the host
 
 ```bash
 cat > fingerprint.sh << 'EOF'
@@ -160,8 +148,7 @@ chmod +x fingerprint.sh
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

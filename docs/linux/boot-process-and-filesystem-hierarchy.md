@@ -98,19 +98,7 @@ mkdir -p ~/rebash-linux/lab02 && cd ~/rebash-linux/lab02
 
 **Focus:** trace boot with systemd-analyze; map FHS directories; document mounts
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab02 boot-process-and-filesystem-hierarchy on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Boot and FHS map
+### Step 1 – Boot and FHS map
 
 ```bash
 systemd-analyze 2>/dev/null || true
@@ -128,8 +116,7 @@ findmnt -T / | tee root-mount.txt
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

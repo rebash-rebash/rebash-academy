@@ -108,19 +108,7 @@ mkdir -p ~/rebash-shell/lab09 && cd ~/rebash-shell/lab09
 
 **Focus:** read/write atomically; mktemp + trap; file tests; safe mkdir
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab09 file-operations-in-shell on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Safe file ops
+### Step 1 – Safe file ops
 
 ```bash
 cat > files.sh << 'EOF'
@@ -141,11 +129,10 @@ chmod +x files.sh
 ./files.sh
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

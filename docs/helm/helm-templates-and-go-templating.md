@@ -124,19 +124,7 @@ mkdir -p ~/rebash-helm/module-04 && cd ~/rebash-helm/module-04
 
 **Focus:** hands-on practice for Helm Templates and Go Templating
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Helm Templates and Go Templating"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-helm/module-04 && cd ~/rebash-helm/module-04
@@ -176,8 +164,7 @@ helm lint ./rebash-tpl
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

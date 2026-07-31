@@ -99,19 +99,7 @@ mkdir -p ~/rebash-linux/lab12 && cd ~/rebash-linux/lab12
 
 **Focus:** map lsblk; practise mount options on a loop file; draft fstab line
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab12 storage-disks-partitions-and-filesystems on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Loopback filesystem drill
+### Step 1 – Loopback filesystem drill
 
 ```bash
 lsblk -f | tee lsblk.txt
@@ -128,8 +116,7 @@ blkid disk.img | tee blkid.txt || true
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

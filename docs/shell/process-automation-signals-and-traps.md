@@ -102,19 +102,7 @@ mkdir -p ~/rebash-shell/lab11 && cd ~/rebash-shell/lab11
 
 **Focus:** ps/pkill safely; background + wait; trap cleanup on EXIT
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab11 process-automation-signals-and-traps on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Trap and wait
+### Step 1 – Trap and wait
 
 ```bash
 cat > trap-demo.sh << 'EOF'
@@ -132,11 +120,10 @@ chmod +x trap-demo.sh
 ./trap-demo.sh
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

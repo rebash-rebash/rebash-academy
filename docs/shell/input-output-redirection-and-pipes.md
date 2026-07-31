@@ -103,19 +103,7 @@ mkdir -p ~/rebash-shell/lab04 && cd ~/rebash-shell/lab04
 
 **Focus:** printf/read; redirect logs; pipefail demo; stderr vs stdout
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab04 input-output-redirection-and-pipes on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Streams, redirect, pipefail
+### Step 1 – Streams, redirect, pipefail
 
 ```bash
 cat > io-demo.sh << 'EOF'
@@ -132,11 +120,10 @@ set -o pipefail
 if false | true; then echo 'unexpected'; else echo 'pipefail ok'; fi
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

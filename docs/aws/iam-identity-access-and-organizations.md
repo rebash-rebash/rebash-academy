@@ -146,19 +146,7 @@ mkdir -p ~/rebash-aws/module-02 && cd ~/rebash-aws/module-02
 
 **Focus:** hands-on practice for IAM, Identity Access, and Organizations
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: IAM, Identity Access, and Organizations"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-aws/module-02
@@ -216,8 +204,7 @@ Optional console (read-only): Identity Center and Organizations — do not restr
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

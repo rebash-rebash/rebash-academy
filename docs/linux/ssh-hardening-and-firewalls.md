@@ -95,19 +95,7 @@ mkdir -p ~/rebash-linux/lab20 && cd ~/rebash-linux/lab20
 
 **Focus:** audit sshd settings; review ufw/firewalld; draft hardened snippets
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab20 ssh-hardening-and-firewalls on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – SSH and firewall audit
+### Step 1 – SSH and firewall audit
 
 ```bash
 {
@@ -127,8 +115,7 @@ EOF
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

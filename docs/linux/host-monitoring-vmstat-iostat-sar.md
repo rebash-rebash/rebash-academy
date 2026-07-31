@@ -95,19 +95,7 @@ mkdir -p ~/rebash-linux/lab19 && cd ~/rebash-linux/lab19
 
 **Focus:** capture uptime/free/df; run vmstat/iostat/sar samples; summarise
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab19 host-monitoring-vmstat-iostat-sar on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Host sample
+### Step 1 – Host sample
 
 ```bash
 {
@@ -124,8 +112,7 @@ chmod +x lab.sh
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

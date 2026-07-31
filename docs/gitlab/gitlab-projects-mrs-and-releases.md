@@ -124,19 +124,7 @@ mkdir -p ~/rebash-gitlab/module-02 && cd ~/rebash-gitlab/module-02
 
 **Focus:** hands-on practice for GitLab Projects, Merge Requests, and Releases
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: GitLab Projects, Merge Requests, and Releases"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-02
@@ -190,8 +178,7 @@ Push this file to a free-tier GitLab.com project when ready; early learning does
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

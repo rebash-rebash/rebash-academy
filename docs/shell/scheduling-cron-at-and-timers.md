@@ -99,19 +99,7 @@ mkdir -p ~/rebash-shell/lab15 && cd ~/rebash-shell/lab15
 
 **Focus:** cron-ready wrapper; PATH fingerprint; timer vs cron notes
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab15 scheduling-cron-at-and-timers on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Scheduler-ready wrapper
+### Step 1 – Scheduler-ready wrapper
 
 ```bash
 cat > nightly.sh << 'EOF'
@@ -133,11 +121,10 @@ chmod +x nightly.sh
 # Prefer a systemd timer + service pair on modern hosts.
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

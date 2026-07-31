@@ -94,19 +94,7 @@ mkdir -p ~/rebash-linux/lab22 && cd ~/rebash-linux/lab22
 
 **Focus:** explore lsns/cgroups; sketch OCI stack; inspect a running container if available
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab22 containers-namespaces-cgroups-and-oci on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Container internals
+### Step 1 – Container internals
 
 ```bash
 {
@@ -122,8 +110,7 @@ chmod +x lab.sh
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

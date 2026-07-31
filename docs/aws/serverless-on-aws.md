@@ -133,72 +133,36 @@ Keep secrets in Secrets Manager or Systems Manager Parameter Store, not plaintex
 - Leaving rules, APIs, queues, and log groups after labs
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-08 && cd ~/rebash-aws/module-08
 ```
 
-**Focus:** hands-on practice for Serverless on AWS — Lambda, APIs, and Eventing
+**Focus:** read-only AWS CLI checks for Serverless on AWS — Lambda, APIs, and Eventing (no create unless you intend to pay)
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Serverless on AWS — Lambda, APIs, and Eventing"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Create a **minimal** function and tear it down the same session. Prefer zip upload over containers for labs.
+### Step 1 – Identity and region hygiene
 
 ```bash
-mkdir -p ~/rebash-aws/module-08 && cd ~/rebash-aws/module-08
-export LAB_REGION="${LAB_REGION:-eu-west-1}"
-
-cat > handler.py <<'EOF'
-def handler(event, context):
-    return {"statusCode": 200, "body": '{"ok": true}'}
-EOF
-zip -q function.zip handler.py
-
-# Role needs lambda.amazonaws.com trust + AWSLambdaBasicExecutionRole
-ROLE_ARN=$(aws iam get-role --role-name rebash-lab-lambda-role \
-  --query 'Role.Arn' --output text)
-
-aws lambda create-function --function-name rebash-lab-hello \
-  --runtime python3.12 --role "$ROLE_ARN" --handler handler.handler \
-  --zip-file fileb://function.zip --timeout 10 --memory-size 128 \
-  --region "$LAB_REGION"
-
-aws lambda invoke --function-name rebash-lab-hello --payload '{}' \
-  --cli-binary-format raw-in-base64-out --region "$LAB_REGION" out.json && cat out.json
-
-cat > eventing-notes.md <<'EOF'
-API Gateway → Lambda (sync)
-EventBridge schedule → Lambda (cron)
-SNS → SQS → Lambda (buffer)
-Step Functions → Lambda (orchestration)
-EOF
-
-aws lambda delete-function --function-name rebash-lab-hello --region "$LAB_REGION"
-rm -f function.zip out.json
+aws sts get-caller-identity
+aws configure get region || true
+echo "Use a sandbox account. Prefer --dry-run / read-only APIs first."
 ```
 
-!!! warning "Cost hygiene"
-    Delete functions, APIs, rules, topics, and queues after validation. Avoid provisioned concurrency in labs. Large Step Functions Express vs Standard choice affects pricing — start with Standard and short executions.
+### Step 2 – Topic inspection
+
+```bash
+# Adapt to the service in this tutorial — examples:
+aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head
+aws s3api list-buckets --query 'Buckets[].Name' --output table 2>/dev/null | head || true
+# Document which API maps to the Theory section for: Serverless on AWS — Lambda, APIs, and Eventing
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Destroy anything you created; leave IAM/roles tagged and time-boxed
+# Keep ~/rebash-aws/ notes for later tutorials
 ```
 
 ## Validation

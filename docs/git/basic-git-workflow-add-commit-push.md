@@ -112,19 +112,7 @@ mkdir -p ~/rebash-git/module-03/workflow && cd ~/rebash-git/module-03/workflow
 
 **Focus:** hands-on practice for Basic Git Workflow — Add, Commit, Push
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Basic Git Workflow — Add, Commit, Push"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-git/module-03/workflow && cd ~/rebash-git/module-03/workflow
@@ -147,8 +135,7 @@ git log --oneline
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

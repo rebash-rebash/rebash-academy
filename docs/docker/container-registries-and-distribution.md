@@ -115,19 +115,7 @@ mkdir -p ~/rebash-docker/module-10 && cd ~/rebash-docker/module-10
 
 **Focus:** hands-on practice for Container Registries and Distribution
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Container Registries and Distribution"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-docker/module-10 && cd ~/rebash-docker/module-10
@@ -151,8 +139,7 @@ EOF
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

@@ -94,19 +94,7 @@ mkdir -p ~/rebash-linux/lab24 && cd ~/rebash-linux/lab24
 
 **Focus:** audit hardening checklist; capture baseline metrics; draft sysctl notes
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab24 production-linux-hardening-and-performance on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Production baseline
+### Step 1 – Production baseline
 
 ```bash
 cat > harden-checklist.md << 'EOF'
@@ -129,8 +117,7 @@ EOF
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

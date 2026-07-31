@@ -145,78 +145,36 @@ Site Reliability Engineering (SRE) and DevOps need golden signals, change correl
 - Treating Parameter Store as a database.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-09 && cd ~/rebash-aws/module-09
 ```
 
-**Focus:** hands-on practice for Monitoring and Observability on AWS
+**Focus:** read-only AWS CLI checks for Monitoring and Observability on AWS (no create unless you intend to pay)
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Monitoring and Observability on AWS"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Use **existing** metrics where possible — avoid creating always-on fleets just to graph them.
+### Step 1 – Identity and region hygiene
 
 ```bash
-mkdir -p ~/rebash-aws/module-09 && cd ~/rebash-aws/module-09
-export LAB_REGION="${LAB_REGION:-eu-west-1}"
-
 aws sts get-caller-identity
-aws cloudwatch list-metrics --namespace AWS/Lambda --region "$LAB_REGION" \
-  --query 'Metrics[0:5]' --output table || true
-
-cat > observability-checklist.md <<'EOF'
-- [ ] CloudTrail enabled (org or account)
-- [ ] Config recorder only in regions you use
-- [ ] Log retention set (labs: 7 days)
-- [ ] Alarms page to SNS you watch
-- [ ] Health Dashboard bookmarked
-- [ ] Prefer SSM Session Manager over SSH
-EOF
-
-# Optional alarm only if a function already exists — do not create fleets for graphs
-FN=$(aws lambda list-functions --region "$LAB_REGION" \
-  --query 'Functions[0].FunctionName' --output text 2>/dev/null || true)
-if [[ -n "$FN" && "$FN" != "None" ]]; then
-  ALARM="rebash-lab-lambda-errors-${FN}"
-  aws cloudwatch put-metric-alarm --alarm-name "$ALARM" \
-    --namespace AWS/Lambda --metric-name Errors \
-    --dimensions Name=FunctionName,Value="$FN" \
-    --statistic Sum --period 300 --evaluation-periods 1 --threshold 1 \
-    --comparison-operator GreaterThanOrEqualToThreshold \
-    --treat-missing-data notBreaching --region "$LAB_REGION"
-  aws cloudwatch delete-alarms --alarm-names "$ALARM" --region "$LAB_REGION"
-fi
-
-aws cloudtrail describe-trails --region "$LAB_REGION" \
-  --query 'trailList[].Name' --output table || true
-aws configservice describe-configuration-recorders --region "$LAB_REGION" \
-  --output table || true
-aws ssm describe-instance-information --region "$LAB_REGION" \
-  --query 'InstanceInformationList[].InstanceId' --output table || true
+aws configure get region || true
+echo "Use a sandbox account. Prefer --dry-run / read-only APIs first."
 ```
 
-!!! warning "Cost hygiene"
-    Custom metrics, detailed monitoring, Container Insights, and long log retention cost money. Prefer standard metrics, short retention for labs, and delete test alarms. Do not enable multi-region Config recorders casually.
+### Step 2 – Topic inspection
+
+```bash
+# Adapt to the service in this tutorial — examples:
+aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head
+aws s3api list-buckets --query 'Buckets[].Name' --output table 2>/dev/null | head || true
+# Document which API maps to the Theory section for: Monitoring and Observability on AWS
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Destroy anything you created; leave IAM/roles tagged and time-boxed
+# Keep ~/rebash-aws/ notes for later tutorials
 ```
 
 ## Validation

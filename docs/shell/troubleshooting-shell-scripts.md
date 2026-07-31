@@ -96,19 +96,7 @@ mkdir -p ~/rebash-shell/lab18 && cd ~/rebash-shell/lab18
 
 **Focus:** reproduce cron env; fix quoting bug; bash -x; time a hot loop
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab18 troubleshooting-shell-scripts on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Troubleshoot checklist
+### Step 1 – Troubleshoot checklist
 
 ```bash
 cat > broken.sh << 'EOF'
@@ -132,11 +120,10 @@ EOF
 time bash -c 'n=0; while (( n < 1000 )); do n=$((n+1)); done'
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

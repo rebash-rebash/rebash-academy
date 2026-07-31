@@ -110,19 +110,7 @@ mkdir -p ~/rebash-shell/lab03 && cd ~/rebash-shell/lab03
 
 **Focus:** break/fix spaced names; defaults; arithmetic counters; quote drills
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab03 variables-quoting-and-arithmetic on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Quoting and arithmetic
+### Step 1 – Quoting and arithmetic
 
 ```bash
 cat > quoting-demo.sh << 'EOF'
@@ -142,11 +130,10 @@ chmod +x quoting-demo.sh
 ./quoting-demo.sh
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

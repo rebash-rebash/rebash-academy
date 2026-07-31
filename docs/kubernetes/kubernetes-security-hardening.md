@@ -119,19 +119,7 @@ mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
 
 **Focus:** hands-on practice for Kubernetes Security Hardening
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Kubernetes Security Hardening"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
@@ -170,8 +158,7 @@ kubectl delete ns rebash-sec
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

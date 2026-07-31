@@ -101,19 +101,7 @@ mkdir -p ~/rebash-shell/lab17 && cd ~/rebash-shell/lab17
 
 **Focus:** shellcheck clean script; flock; retry helper; idempotent mkdir/user check
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab17 production-shell-scripting on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Production patterns
+### Step 1 – Production patterns
 
 ```bash
 cat > prod.sh << 'EOF'
@@ -140,11 +128,10 @@ chmod +x prod.sh
 command -v shellcheck >/dev/null && shellcheck prod.sh || echo 'shellcheck optional'
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

@@ -119,99 +119,46 @@ Reuse Module 7 digests across clouds for the same commit — do not rebuild a di
 - Redeploying different image digests per cloud for the same commit.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-10/.github/workflows && cd ~/rebash-github-actions/module-10/.github/workflows
+git init -q
 ```
 
-**Focus:** hands-on practice for Multi-Cloud Deployments with GitHub Actions
+**Focus:** author and validate CI config for Multi-Cloud Deployments with GitHub Actions
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Multi-Cloud Deployments with GitHub Actions"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Cloud accounts are not required — capture the federation pattern and role sketch locally.
-
-```bash
-mkdir -p ~/rebash-github-actions/module-10/.github/workflows
-cd ~/rebash-github-actions/module-10
-```
-
-{% raw %}
-```yaml
-# .github/workflows/multi-cloud.yml — pattern sketch (adapt role ARNs / IDs)
-name: Multi-cloud deploy
-on:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-  id-token: write
-
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on: workflow_dispatch
 jobs:
-  aws-ecs:
+  validate:
     runs-on: ubuntu-latest
-    environment: staging
     steps:
       - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
-      - run: echo "Update ECS service to ghcr.io/${{ github.repository }}:${{ github.sha }}"
-        # aws ecs update-service … --force-new-deployment
-
-  azure-aks:
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - run: echo "az aks get-credentials + kubectl set image …:${{ github.sha }}"
-
-  gcp-run:
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-      - run: echo "gcloud run deploy … --image=…@sha256:DIGEST"
+      - run: echo "workflow ok"
+EOF
+ls -la
+sed -n '1,80p' .github/workflows/lab.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-cat > cloud-identity-notes.md << 'EOF'
-AWS: IAM OIDC provider → role trust on repo/ref/env → ECS/EKS
-Azure: App registration federated credential → azure/login → AKS
-GCP: Workload Identity Federation → GKE / Cloud Run
-All: protect production environments; never commit cloud keys
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/multi-cloud.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .github/workflows/lab.yml
+grep -E 'script:|runs-on:|steps:' .github/workflows/lab.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-github-actions/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

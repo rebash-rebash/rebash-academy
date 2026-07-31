@@ -109,86 +109,50 @@ Workspace = state + runs + variables; run = remote plan/apply; variable sets sha
 - Local execution while assuming credentials never touch laptops.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-13/hcp-terraform && cd ~/rebash-terraform/module-13/hcp-terraform
 ```
 
-**Focus:** hands-on practice for Terraform Cloud and HCP Terraform
+**Focus:** local Terraform workflow for Terraform Cloud and HCP Terraform (no cloud spend)
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Terraform Cloud and HCP Terraform"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-This lab documents the `cloud` block and practises a local stand-in so you can learn without an organisation. When you have access, replace the stub with a real org/workspace and run `terraform login`.
+### Step 1 – Minimal configuration
 
 ```bash
-mkdir -p ~/rebash-terraform/module-13/hcp-terraform
-cd ~/rebash-terraform/module-13/hcp-terraform
-
-cat > cloud.tf.example << 'EOF'
-# Enable when you have an HCP Terraform organisation:
-# terraform {
-#   cloud {
-#     organization = "rebash-lab"
-#     workspaces {
-#       name = "module-13-demo"
-#     }
-#   }
-# }
-EOF
-
-cat > versions.tf << 'EOF'
+cat > main.tf << 'EOF'
 terraform {
-  required_version = ">= 1.9.0"
-  required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.9" }
+  required_version = ">= 1.5.0"
+}
+
+resource "null_resource" "lab" {
+  triggers = {
+    topic = "Terraform Cloud and HCP Terraform"
+  }
+  provisioner "local-exec" {
+    command = "echo lab-ok"
   }
 }
 EOF
+terraform init
+terraform validate
+terraform plan -out=tfplan
+```
 
-cat > main.tf << 'EOF'
-resource "local_file" "runbook" {
-  filename = "${path.module}/RUNBOOK.md"
-  content  = <<-EOT
-    # HCP Terraform checklist
-    - [ ] Organisation + workspace created
-    - [ ] cloud block enabled; terraform login; terraform init
-    - [ ] Variable sets for non-secret defaults; secrets as sensitive vars
-    - [ ] Team permissions: plan vs apply separation
-    - [ ] Policy set attached (tag enforcement / deny public buckets)
-    - [ ] VCS or CI triggers speculative plans on PR
-  EOT
-}
+### Step 2 – Apply, inspect state, destroy
 
-output "next_step" {
-  value = "Review RUNBOOK.md, then enable cloud.tf.example when ready"
-}
-EOF
-
-terraform init -input=false
-terraform apply -input=false -auto-approve
-cat RUNBOOK.md
-terraform destroy -input=false -auto-approve
+```bash
+terraform apply -auto-approve tfplan
+terraform state list
+terraform show | sed -n '1,40p'
+terraform destroy -auto-approve
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
-./lab.sh || true
+rm -f tfplan
+# Keep ~/rebash-terraform/ for later tutorials; never leave remote state unlocked
 ```
 
 ## Validation

@@ -93,19 +93,7 @@ mkdir -p ~/rebash-linux/lab17 && cd ~/rebash-linux/lab17
 
 **Focus:** add a user crontab entry; queue an at job; inspect systemd timers
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab17 scheduling-cron-at-and-timers on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Schedule safely
+### Step 1 – Schedule safely
 
 ```bash
 crontab -l 2>/dev/null | tee crontab-before.txt || true
@@ -119,8 +107,7 @@ command -v at && echo 'echo lab-at | at now + 1 minute' || echo 'at not installe
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

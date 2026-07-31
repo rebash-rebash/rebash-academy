@@ -117,85 +117,44 @@ Keep production behind protected environments and manual or approval gates.
 - Skipping `helm history` / revision notes so rollback targets are unclear.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09/manifests
+git init -q
 ```
 
-**Focus:** hands-on practice for Kubernetes Deploys and GitLab Agent
+**Focus:** author and validate CI config for Kubernetes Deploys and GitLab Agent
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Kubernetes Deploys and GitLab Agent"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Credentials and a live cluster are not required — this lab captures the pattern and policy notes.
-
-```bash
-mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09
-```
-
-{% raw %}
-```yaml
-# .gitlab-ci.yml
-stages: [deploy]
-
-deploy-staging:
-  stage: deploy
-  image: bitnami/kubectl:latest
-  environment:
-    name: staging
-    kubernetes:
-      agent: path/to/agent:agent-name
+cat > .gitlab-ci.yml << 'EOF'
+stages: [validate]
+validate:
+  stage: validate
+  image: alpine:3.20
   script:
-    - kubectl -n staging set image deployment/demo app="$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
-    - kubectl -n staging rollout status deployment/demo --timeout=120s
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  # Production: protected environment + when: manual
+    - echo "pipeline ok"
+    - uname -a
+EOF
+ls -la
+sed -n '1,80p' .gitlab-ci.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-cat > manifests/deployment.yaml << 'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata: { name: demo }
-spec:
-  replicas: 2
-  selector: { matchLabels: { app: demo } }
-  template:
-    metadata: { labels: { app: demo } }
-    spec:
-      containers:
-        - name: app
-          image: registry.example.com/demo:REPLACE_SHA
-EOF
-
-cat > deploy-notes.md << 'EOF'
-Agent over kubeconfig · promote Module 8 SHA · canary needs metrics
-GitOps: CI updates Git; controller syncs (gitlab-gitops concept)
-Rollback: helm rollback N or prior digest
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .gitlab-ci.yml
+grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

@@ -112,19 +112,7 @@ mkdir -p ~/rebash-git/module-11/.github/workflows && cd ~/rebash-git/module-11/.
 
 **Focus:** hands-on practice for GitHub Actions for DevOps
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: GitHub Actions for DevOps"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-git/module-11/.github/workflows
@@ -158,8 +146,7 @@ git add . && git commit -m "ci: add validate workflow"
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

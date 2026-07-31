@@ -94,19 +94,7 @@ mkdir -p ~/rebash-linux/lab05 && cd ~/rebash-linux/lab05
 
 **Focus:** compare df vs du; find largest dirs; capture stat attributes
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab05 disk-usage-and-file-attributes on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Usage and attributes
+### Step 1 – Usage and attributes
 
 ```bash
 dd if=/dev/zero of=blob.bin bs=1M count=5 status=none
@@ -119,8 +107,7 @@ ls -l blob.bin
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

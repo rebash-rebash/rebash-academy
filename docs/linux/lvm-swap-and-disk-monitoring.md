@@ -97,19 +97,7 @@ mkdir -p ~/rebash-linux/lab13 && cd ~/rebash-linux/lab13
 
 **Focus:** inspect pvs/vgs/lvs if present; review swap; script a df alert stub
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab13 lvm-swap-and-disk-monitoring on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – LVM/swap/monitor snapshot
+### Step 1 – LVM/swap/monitor snapshot
 
 ```bash
 {
@@ -128,8 +116,7 @@ chmod +x lab.sh
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

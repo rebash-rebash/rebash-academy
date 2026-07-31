@@ -118,97 +118,58 @@ Pin base images by digest in production Dockerfiles. Cache accelerates rebuilds;
 - Rebuilding for production instead of promoting the tested digest.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-07/.github/workflows && cd ~/rebash-github-actions/module-07/.github/workflows
+mkdir -p ~/rebash-github-actions/docker-lab && cd ~/rebash-github-actions/docker-lab
 ```
 
-**Focus:** hands-on practice for Docker Pipelines with GitHub Actions
+**Focus:** Dockerfile + GitHub Actions build workflow for this module
 
-### Step 1 – Skeleton
+### Step 1 – App and Dockerfile
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Docker Pipelines with GitHub Actions"
+mkdir -p app
+echo 'hello from rebash gha docker lab' > app/hello.txt
+cat > app/Dockerfile << 'EOF'
+FROM alpine:3.20
+COPY hello.txt /hello.txt
+CMD ["cat", "/hello.txt"]
 EOF
-chmod +x lab.sh
-./lab.sh
+docker build -t rebash/gha-lab:dev ./app
+docker run --rm rebash/gha-lab:dev
 ```
 
-### Step 2 – Core exercise
-
-GHCR credentials are not required locally — Buildx builds the image; the workflow shows the production pattern.
+### Step 2 – Workflow that builds on push
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-07/.github/workflows
-cd ~/rebash-github-actions/module-07
-
-cat > Dockerfile << 'EOF'
-FROM python:3.12-slim AS build
-WORKDIR /src
-COPY app.py .
-RUN python -m compileall app.py
-
-FROM python:3.12-slim
-WORKDIR /app
-COPY --from=build /src/app.py .
-CMD ["python", "app.py"]
-EOF
-
-echo 'print("hello from gha image")' > app.py
-```
-
-{% raw %}
-```yaml
-# .github/workflows/docker.yml
-name: Docker pipeline
+mkdir -p .github/workflows
+cat > .github/workflows/docker.yml << 'EOF'
+name: docker-lab
 on:
   push:
-    branches: [main]
-  pull_request:
-
-permissions:
-  contents: read
-  packages: write
-
+    paths: ['app/**', '.github/workflows/docker.yml']
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        if: github.event_name != 'pull_request'
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-          platforms: linux/amd64,linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-```
-{% endraw %}
-
-```bash
-docker buildx version || docker buildx create --use
-docker buildx build -t rebash-module-07:local --load .
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/docker.yml'))"
+          context: ./app
+          push: false
+          tags: rebash/gha-lab:ci
+EOF
+sed -n '1,80p' .github/workflows/docker.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
-./lab.sh || true
+docker rmi rebash/gha-lab:dev 2>/dev/null || true
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 ## Validation

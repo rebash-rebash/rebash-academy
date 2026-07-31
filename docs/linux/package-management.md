@@ -95,19 +95,7 @@ mkdir -p ~/rebash-linux/lab16 && cd ~/rebash-linux/lab16
 
 **Focus:** detect package manager; install a CLI tool; query package metadata
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab16 package-management on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Package manager detect
+### Step 1 – Package manager detect
 
 ```bash
 {
@@ -125,8 +113,7 @@ chmod +x lab.sh
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

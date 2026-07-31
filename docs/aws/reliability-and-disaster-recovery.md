@@ -154,19 +154,7 @@ mkdir -p ~/rebash-aws/module-14 && cd ~/rebash-aws/module-14
 
 **Focus:** hands-on practice for Reliability and Disaster Recovery
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Reliability and Disaster Recovery"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-aws/module-14
@@ -204,8 +192,7 @@ aws backup list-backup-plans --output table 2>/dev/null \
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-aws/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

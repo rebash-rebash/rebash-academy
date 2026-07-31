@@ -119,19 +119,7 @@ mkdir -p ~/rebash-helm/module-09 && cd ~/rebash-helm/module-09
 
 **Focus:** hands-on practice for Helm Security
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Helm Security"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-helm/module-09 && cd ~/rebash-helm/module-09
@@ -151,8 +139,7 @@ grep -n -i 'password\|secret\|token' rebash-sec/values.yaml || echo "No obvious 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

@@ -106,19 +106,7 @@ mkdir -p ~/rebash-shell/lab13 && cd ~/rebash-shell/lab13
 
 **Focus:** curl with timeouts; dig/nc probes; SSH BatchMode; rsync dry-run
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab13 networking-automation-with-shell on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Network probes
+### Step 1 – Network probes
 
 ```bash
 cat > net.sh << 'EOF'
@@ -137,11 +125,10 @@ chmod +x net.sh
 ./net.sh
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

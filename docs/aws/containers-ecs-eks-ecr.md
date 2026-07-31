@@ -132,61 +132,36 @@ Prefer **task roles** (ECS) and **IAM Roles for Service Accounts (IRSA) / pod id
 - Granting cluster-admin to every CI identity
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-07 && cd ~/rebash-aws/module-07
 ```
 
-**Focus:** hands-on practice for Containers on AWS — ECS, EKS, ECR, and App Runner
+**Focus:** read-only AWS CLI checks for Containers on AWS — ECS, EKS, ECR, and App Runner (no create unless you intend to pay)
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Containers on AWS — ECS, EKS, ECR, and App Runner"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Prefer **ECR + dry-run sketches**. Do **not** create a full EKS cluster unless you can delete it in the same session.
+### Step 1 – Identity and region hygiene
 
 ```bash
-mkdir -p ~/rebash-aws/module-07 && cd ~/rebash-aws/module-07
-export LAB_REGION="${LAB_REGION:-eu-west-1}"
-
-aws ecr create-repository --repository-name rebash-lab/hello \
-  --image-scanning-configuration scanOnPush=true --region "$LAB_REGION"
-aws ecs list-clusters --region "$LAB_REGION"
-aws ecr describe-repositories --region "$LAB_REGION" \
-  --query 'repositories[?repositoryName==`rebash-lab/hello`]'
-
-cat > decision-notes.md <<'EOF'
-# Platform choice
-- Simple HTTP → App Runner
-- AWS-native services → ECS (+ Fargate for labs)
-- Helm/operators → EKS
-- Rule: destroy cluster capacity same day; prefer ECR-only labs
-EOF
-
-aws ecr delete-repository --repository-name rebash-lab/hello \
-  --force --region "$LAB_REGION"
+aws sts get-caller-identity
+aws configure get region || true
+echo "Use a sandbox account. Prefer --dry-run / read-only APIs first."
 ```
 
-!!! warning "Cost hygiene"
-    EKS control planes and ECS EC2 capacity bill while they exist. For learning, stay on **ECR + documentation sketches**, or use **Fargate** with a single short-lived task and delete the service/cluster immediately. Confirm [billing alarms](cost-optimisation-on-aws.md) before any cluster create.
+### Step 2 – Topic inspection
+
+```bash
+# Adapt to the service in this tutorial — examples:
+aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head
+aws s3api list-buckets --query 'Buckets[].Name' --output table 2>/dev/null | head || true
+# Document which API maps to the Theory section for: Containers on AWS — ECS, EKS, ECR, and App Runner
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Destroy anything you created; leave IAM/roles tagged and time-boxed
+# Keep ~/rebash-aws/ notes for later tutorials
 ```
 
 ## Validation

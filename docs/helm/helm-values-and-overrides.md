@@ -116,19 +116,7 @@ mkdir -p ~/rebash-helm/module-05 && cd ~/rebash-helm/module-05
 
 **Focus:** hands-on practice for Helm Values and Overrides
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Helm Values and Overrides"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-helm/module-05 && cd ~/rebash-helm/module-05
@@ -148,8 +136,7 @@ helm template demo ./rebash-vals -f values-prod.yaml --set replicaCount=2 \
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-helm/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-helm/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

@@ -78,36 +78,42 @@ The shell exports variables into the environment (`export NAME=value`). Login sh
 - Printing env in CI logs without redaction.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-linux/lab01 && cd ~/rebash-linux/lab01
 ```
 
-**Focus:** hands-on practice for Environment Variables and Shell Configuration
+**Focus:** practise Environment Variables and Shell Configuration with inspect → change → verify
 
-### Step 1 – Skeleton
+### Step 1 – Inspect current state
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Environment Variables and Shell Configuration"
-EOF
-chmod +x lab.sh
-./lab.sh
+pwd
+whoami
+uname -a
+echo "PATH=$PATH"
+ls -la
 ```
 
-### Step 2 – Core exercise
+### Step 2 – Hands-on for this topic
 
-
+```bash
+cat > practise.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "topic: Environment Variables and Shell Configuration"
+date -u +"utc=%Y-%m-%dT%H:%M:%SZ"
+EOF
+chmod +x practise.sh
+./practise.sh | tee practise.out
+test -s practise.out
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-linux/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-linux/ for later tutorials
 ```
 
 ## Validation

@@ -125,19 +125,7 @@ mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows
 
 **Focus:** hands-on practice for Composite Actions and Reusable Workflows
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Composite Actions and Reusable Workflows"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows}
@@ -212,8 +200,7 @@ print('Pin marketplace actions by full SHA in production')"
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

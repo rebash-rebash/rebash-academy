@@ -140,73 +140,36 @@ Most incidents involve leaked credentials, missing encryption, unpatched softwar
 - Confusing GuardDuty (behaviour), Inspector (CVEs), and Macie (data discovery).
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-10 && cd ~/rebash-aws/module-10
 ```
 
-**Focus:** hands-on practice for AWS Security Services — Keys, Secrets, and Detection
+**Focus:** read-only AWS CLI checks for AWS Security Services — Keys, Secrets, and Detection (no create unless you intend to pay)
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: AWS Security Services — Keys, Secrets, and Detection"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Create a **parameter or secret**, read it, delete it. Treat GuardDuty/Security Hub as **read/enable awareness**, not a permanent paid sprawl across unused regions.
+### Step 1 – Identity and region hygiene
 
 ```bash
-mkdir -p ~/rebash-aws/module-10 && cd ~/rebash-aws/module-10
-export LAB_REGION="${LAB_REGION:-eu-west-1}"
-
-aws ssm put-parameter --name /rebash-lab/module-10/demo \
-  --type SecureString --value "lab-only-not-a-real-secret" \
-  --overwrite --region "$LAB_REGION"
-aws ssm get-parameter --name /rebash-lab/module-10/demo \
-  --with-decryption --region "$LAB_REGION" --query 'Parameter.Value' --output text
-
-aws secretsmanager create-secret --name rebash-lab/module-10/demo \
-  --secret-string '{"user":"lab","password":"ChangeMeLabOnly"}' \
-  --region "$LAB_REGION"
-aws secretsmanager get-secret-value --secret-id rebash-lab/module-10/demo \
-  --region "$LAB_REGION" --query 'SecretString' --output text
-
-aws guardduty list-detectors --region "$LAB_REGION" --output table || true
-aws securityhub describe-hub --region "$LAB_REGION" 2>/dev/null || \
-  echo "Security Hub not enabled (OK for sandbox review)."
-
-cat > security-notes.md <<'EOF'
-1. IAM least privilege + SCPs
-2. KMS at rest
-3. Secrets Manager / SSM — never Git
-4. GuardDuty + Inspector → Security Hub
-5. Macie on sensitive buckets
-6. WAF + Shield on public HTTP
-EOF
-
-aws ssm delete-parameter --name /rebash-lab/module-10/demo --region "$LAB_REGION"
-aws secretsmanager delete-secret --secret-id rebash-lab/module-10/demo \
-  --force-delete-without-recovery --region "$LAB_REGION"
+aws sts get-caller-identity
+aws configure get region || true
+echo "Use a sandbox account. Prefer --dry-run / read-only APIs first."
 ```
 
-!!! warning "Cost hygiene"
-    GuardDuty, Macie, Inspector, and Security Hub incur charges. Enable deliberately in regions you use; disable lab-only detectors when finished if your organisation allows. Secrets Manager charges per secret per month — delete lab secrets with `--force-delete-without-recovery` only in non-production.
+### Step 2 – Topic inspection
+
+```bash
+# Adapt to the service in this tutorial — examples:
+aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head
+aws s3api list-buckets --query 'Buckets[].Name' --output table 2>/dev/null | head || true
+# Document which API maps to the Theory section for: AWS Security Services — Keys, Secrets, and Detection
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Destroy anything you created; leave IAM/roles tagged and time-boxed
+# Keep ~/rebash-aws/ notes for later tutorials
 ```
 
 ## Validation

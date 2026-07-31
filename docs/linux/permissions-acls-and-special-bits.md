@@ -97,19 +97,7 @@ mkdir -p ~/rebash-linux/lab07 && cd ~/rebash-linux/lab07
 
 **Focus:** set modes/umask; ACL grant; sticky/SGID directory demo
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab07 permissions-acls-and-special-bits on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Modes and ACL demo
+### Step 1 – Modes and ACL demo
 
 ```bash
 umask 0027
@@ -128,8 +116,7 @@ ls -ld shared | tee sticky.txt
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

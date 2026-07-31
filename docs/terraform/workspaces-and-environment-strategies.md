@@ -120,19 +120,7 @@ mkdir -p ~/rebash-terraform/module-12/workspaces/out && cd ~/rebash-terraform/mo
 
 **Focus:** hands-on practice for Workspaces and Environment Strategies
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Workspaces and Environment Strategies"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-terraform/module-12/workspaces/out
@@ -180,8 +168,7 @@ terraform workspace delete staging
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-terraform/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-terraform/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

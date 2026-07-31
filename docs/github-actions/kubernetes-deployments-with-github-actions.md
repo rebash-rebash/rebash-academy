@@ -119,95 +119,46 @@ Keep production behind manual approval on the environment. Prefer GitOps when ma
 - Skipping `helm history` so rollback targets are unclear.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-08/{.github/workflows,manifests} && cd ~/rebash-github-actions/module-08/{.github/workflows,manifests}
+git init -q
 ```
 
-**Focus:** hands-on practice for Kubernetes Deployments with GitHub Actions
+**Focus:** author and validate CI config for Kubernetes Deployments with GitHub Actions
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Kubernetes Deployments with GitHub Actions"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-A live cluster is not required — capture the deploy pattern, validation, and GitOps boundary notes.
-
-```bash
-mkdir -p ~/rebash-github-actions/module-08/{.github/workflows,manifests}
-cd ~/rebash-github-actions/module-08
-```
-
-{% raw %}
-```yaml
-# .github/workflows/deploy-k8s.yml
-name: Deploy Kubernetes
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  id-token: write   # when using OIDC to cloud + EKS/AKS/GKE
-
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on: workflow_dispatch
 jobs:
-  deploy-staging:
+  validate:
     runs-on: ubuntu-latest
-    environment: staging
     steps:
       - uses: actions/checkout@v4
-      # Authenticate to cluster (OIDC / kubeconfig) — see Module 10
-      - name: Roll out SHA image
-        run: |
-          kubectl -n staging set image deployment/demo \
-            app="ghcr.io/${{ github.repository }}:${{ github.sha }}"
-          kubectl -n staging rollout status deployment/demo --timeout=120s
-      # Production: separate job, environment: production, required reviewers
+      - run: echo "workflow ok"
+EOF
+ls -la
+sed -n '1,80p' .github/workflows/lab.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-cat > manifests/deployment.yaml << 'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata: { name: demo }
-spec:
-  replicas: 2
-  selector: { matchLabels: { app: demo } }
-  template:
-    metadata: { labels: { app: demo } }
-    spec:
-      containers:
-        - name: app
-          image: ghcr.io/example/demo:REPLACE_SHA
-EOF
-
-cat > deploy-notes.md << 'EOF'
-Push CD: kubectl/Helm with OIDC or scoped kubeconfig
-Validate: rollout status / helm --wait
-Rollback: helm rollback N or prior digest
-GitOps: CI updates Git; controller syncs — do not dual-write
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/deploy-k8s.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .github/workflows/lab.yml
+grep -E 'script:|runs-on:|steps:' .github/workflows/lab.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-github-actions/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

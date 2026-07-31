@@ -93,19 +93,7 @@ mkdir -p ~/rebash-linux/lab15 && cd ~/rebash-linux/lab15
 
 **Focus:** generate lab keypair; write SSH config Host entry; test remote command
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab15 ssh-and-remote-access on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – SSH client prep
+### Step 1 – SSH client prep
 
 ```bash
 mkdir -p ~/.ssh
@@ -125,8 +113,7 @@ ssh -G -F ssh_config.snippet rebash-lab | egrep 'user |hostname |identityfile ' 
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

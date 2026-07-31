@@ -119,85 +119,44 @@ Never print tokens. Prefer environment-scoped variables for account IDs and clus
 - Redeploying different image digests per cloud “environment” for the same commit.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
+git init -q
 ```
 
-**Focus:** hands-on practice for Multi-Cloud Deployments with GitLab
+**Focus:** author and validate CI config for Multi-Cloud Deployments with GitLab
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Multi-Cloud Deployments with GitLab"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Cloud accounts are not required — capture the federation pattern and role sketch locally.
-
-```bash
-mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
-```
-
-{% raw %}
-```yaml
-# .gitlab-ci.yml — pattern sketch (adapt issuer/role ARNs for your org)
-stages: [deploy]
-
-.aws_oidc:
-  id_tokens:
-    GITLAB_OIDC_TOKEN:
-      aud: https://gitlab.com
-  before_script:
-    - >
-      aws sts assume-role-with-web-identity
-      --role-arn "$AWS_ROLE_ARN"
-      --role-session-name "gitlab-$CI_PROJECT_ID-$CI_PIPELINE_ID"
-      --web-identity-token "$GITLAB_OIDC_TOKEN"
-      --duration-seconds 3600
-      > /tmp/creds.json
-    # Export AccessKeyId / SecretAccessKey / SessionToken from /tmp/creds.json in real jobs
-
-deploy-aws-ecs:
-  extends: .aws_oidc
-  stage: deploy
-  image: amazon/aws-cli:2.17.0
-  environment: staging
+cat > .gitlab-ci.yml << 'EOF'
+stages: [validate]
+validate:
+  stage: validate
+  image: alpine:3.20
   script:
-    - echo "Update ECS service to $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-# Azure: az login --service-principal --tenant … with federated credential
-# GCP: gcloud auth login --cred-file=<(workload identity federation)
+    - echo "pipeline ok"
+    - uname -a
+EOF
+ls -la
+sed -n '1,80p' .gitlab-ci.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-cat > cloud-identity-notes.md << 'EOF'
-AWS: IAM OIDC provider → role trust on project/ref → EKS/ECS deploy
-Azure: App registration federated credential → az login → AKS
-GCP: Workload Identity Federation → GKE / Cloud Run
-All: protect production environments; never commit cloud keys
-EOF
-
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .gitlab-ci.yml
+grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

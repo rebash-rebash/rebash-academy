@@ -118,19 +118,7 @@ mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
 
 **Focus:** hands-on practice for Kubernetes Scheduling
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Kubernetes Scheduling"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
@@ -166,8 +154,7 @@ kubectl label node "$NODE" disk-
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

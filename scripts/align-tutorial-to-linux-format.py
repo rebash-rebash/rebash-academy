@@ -122,27 +122,14 @@ mkdir -p {lab_dir} && cd {lab_dir}
 
 {focus}
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: {title}"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 {code}
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-{tech}/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-{tech}/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 """
 

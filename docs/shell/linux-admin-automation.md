@@ -94,19 +94,7 @@ mkdir -p ~/rebash-shell/lab12 && cd ~/rebash-shell/lab12
 
 **Focus:** idempotent user check; disk report; mini backup with retention
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab12 linux-admin-automation on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Admin toolkit slice
+### Step 1 – Admin toolkit slice
 
 ```bash
 cat > admin.sh << 'EOF'
@@ -127,11 +115,10 @@ chmod +x admin.sh
 ./admin.sh
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

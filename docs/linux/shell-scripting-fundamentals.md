@@ -78,36 +78,42 @@ A script is executed by the interpreter named in the shebang (or passed explicit
 - Stopping at this gateway page instead of completing the Shell Scripting track.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-linux/lab01 && cd ~/rebash-linux/lab01
 ```
 
-**Focus:** hands-on practice for Shell Scripting Fundamentals
+**Focus:** practise Shell Scripting Fundamentals with inspect → change → verify
 
-### Step 1 – Skeleton
+### Step 1 – Inspect current state
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Shell Scripting Fundamentals"
-EOF
-chmod +x lab.sh
-./lab.sh
+pwd
+whoami
+uname -a
+echo "PATH=$PATH"
+ls -la
 ```
 
-### Step 2 – Core exercise
+### Step 2 – Hands-on for this topic
 
-
+```bash
+cat > practise.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "topic: Shell Scripting Fundamentals"
+date -u +"utc=%Y-%m-%dT%H:%M:%SZ"
+EOF
+chmod +x practise.sh
+./practise.sh | tee practise.out
+test -s practise.out
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-linux/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-linux/ for later tutorials
 ```
 
 ## Validation

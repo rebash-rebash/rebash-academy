@@ -137,19 +137,7 @@ mkdir -p ~/rebash-github-actions/module-05/.github/workflows && cd ~/rebash-gith
 
 **Focus:** hands-on practice for Secrets, Variables, and OIDC
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Secrets, Variables, and OIDC"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-05/.github/workflows
@@ -224,8 +212,7 @@ jobs:
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-github-actions/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

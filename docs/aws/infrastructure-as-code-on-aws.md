@@ -143,86 +143,36 @@ ClickOps fails audits and does not scale. IaC makes VPC, IAM, and compute peer-r
 - Treating Terraform and CloudFormation as mutually exclusive.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-11 && cd ~/rebash-aws/module-11
 ```
 
-**Focus:** hands-on practice for Infrastructure as Code on AWS
+**Focus:** read-only AWS CLI checks for Infrastructure as Code on AWS (no create unless you intend to pay)
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Infrastructure as Code on AWS"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-**Validate and plan — do not require paid always-on infrastructure.** CloudFormation validate is free of stack cost; Terraform plan against an empty root with the `local` or null-style resources avoids AWS spend. Only apply if you will destroy immediately.
+### Step 1 – Identity and region hygiene
 
 ```bash
-mkdir -p ~/rebash-aws/module-11 && cd ~/rebash-aws/module-11
-export LAB_REGION="${LAB_REGION:-eu-west-1}"
-
-cat > lab-bucket.yaml <<'EOF'
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Rebash lab — validate only unless you delete same day
-Resources:
-  LabBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-EOF
-
-aws cloudformation validate-template \
-  --template-body file://lab-bucket.yaml --region "$LAB_REGION"
-
-cat > iac-choice.md <<'EOF'
-- Terraform: multi-cloud / existing modules
-- CloudFormation: AWS-only, StackSets
-- CDK: typed constructs — always review synth
-- Service Catalog: platform products for builders
-Lab: validate/plan first; never leave NAT/EKS overnight
-EOF
-
-# Optional local Terraform (no AWS spend)
-if command -v terraform >/dev/null; then
-  mkdir -p tf && cd tf
-  cat > main.tf <<'EOF'
-terraform {
-  required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
-  }
-}
-resource "local_file" "marker" {
-  filename = "${path.module}/iac-ok.txt"
-  content  = "module-11 local only\n"
-}
-EOF
-  terraform init -input=false && terraform apply -input=false -auto-approve
-  terraform destroy -input=false -auto-approve && cd ..
-fi
+aws sts get-caller-identity
+aws configure get region || true
+echo "Use a sandbox account. Prefer --dry-run / read-only APIs first."
 ```
 
-!!! warning "Cost hygiene"
-    NAT Gateways, ALBs, and EKS created via IaC are the usual bill shock. For this module, **validate-template** and **terraform plan** are enough. If you deploy a stack, delete it before you stop; enable termination protection only on production stacks, never on forgotten labs.
+### Step 2 – Topic inspection
+
+```bash
+# Adapt to the service in this tutorial — examples:
+aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head
+aws s3api list-buckets --query 'Buckets[].Name' --output table 2>/dev/null | head || true
+# Document which API maps to the Theory section for: Infrastructure as Code on AWS
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-aws/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Destroy anything you created; leave IAM/roles tagged and time-boxed
+# Keep ~/rebash-aws/ notes for later tutorials
 ```
 
 ## Validation

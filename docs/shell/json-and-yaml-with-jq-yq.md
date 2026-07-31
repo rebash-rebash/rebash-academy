@@ -99,19 +99,7 @@ mkdir -p ~/rebash-shell/lab14 && cd ~/rebash-shell/lab14
 
 **Focus:** jq extract/transform; yq read YAML; validate config keys
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab14 json-and-yaml-with-jq-yq on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – jq (and yq if present)
+### Step 1 – jq (and yq if present)
 
 ```bash
 cat > sample.json << 'EOF'
@@ -137,11 +125,10 @@ chmod +x parse.sh
 ./parse.sh
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

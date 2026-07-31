@@ -111,19 +111,7 @@ mkdir -p ~/rebash-git/module-13/{modules/network,envs/dev} && cd ~/rebash-git/mo
 
 **Focus:** hands-on practice for Git for Infrastructure as Code
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Git for Infrastructure as Code"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-git/module-13/{modules/network,envs/dev}
@@ -165,8 +153,7 @@ git check-ignore -v fake.tfstate || echo "*.tfstate" >> .gitignore
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-git/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-git/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

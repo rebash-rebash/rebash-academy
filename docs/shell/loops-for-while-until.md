@@ -111,19 +111,7 @@ mkdir -p ~/rebash-shell/lab06 && cd ~/rebash-shell/lab06
 
 **Focus:** for over hosts; while read lines; until ready; break/continue drills
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab06 loops-for-while-until on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Loops and control
+### Step 1 – Loops and control
 
 ```bash
 cat > loops.sh << 'EOF'
@@ -148,11 +136,10 @@ chmod +x loops.sh
 ./loops.sh
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

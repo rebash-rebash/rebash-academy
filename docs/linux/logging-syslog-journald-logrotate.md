@@ -94,19 +94,7 @@ mkdir -p ~/rebash-linux/lab18 && cd ~/rebash-linux/lab18
 
 **Focus:** query journal and /var/log; dry-run logrotate; draft a rotate stanza
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab18 logging-syslog-journald-logrotate on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Logging paths
+### Step 1 – Logging paths
 
 ```bash
 journalctl -b -n 10 --no-pager 2>/dev/null | tee journal.txt || true
@@ -126,8 +114,7 @@ EOF
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

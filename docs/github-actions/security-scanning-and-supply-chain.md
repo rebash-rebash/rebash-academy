@@ -127,98 +127,46 @@ Treat false positives with tracked allowlists — not by disabling scanners glob
 - Broad `permissions: write-all` on every workflow.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-11/.github/workflows && cd ~/rebash-github-actions/module-11/.github/workflows
+git init -q
 ```
 
-**Focus:** hands-on practice for Security Scanning and Supply Chain
+**Focus:** author and validate CI config for Security Scanning and Supply Chain
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Security Scanning and Supply Chain"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Feature availability varies by GitHub plan — learn the job shape here. Credentials are not required.
-
-```bash
-mkdir -p ~/rebash-github-actions/module-11/.github/workflows
-cd ~/rebash-github-actions/module-11
-echo 'def ping(): return "ok"' > app.py
-```
-
-{% raw %}
-```yaml
-# .github/workflows/security.yml
-name: Security
-on:
-  pull_request:
-  push:
-    branches: [main]
-  schedule:
-    - cron: "0 6 * * 1"
-
-permissions:
-  contents: read
-  security-events: write
-  pull-requests: read
-
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on: workflow_dispatch
 jobs:
-  dependency-review:
-    if: github.event_name == 'pull_request'
+  validate:
     runs-on: ubuntu-latest
     steps:
-      # Production: resolve each tag to a full commit SHA and pin that SHA
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - uses: actions/dependency-review-action@v4
-
-  codeql:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - uses: github/codeql-action/init@v3
-        with:
-          languages: python
-      - uses: github/codeql-action/analyze@v3
-
-  container-and-sbom:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Policy note
-        run: |
-          echo "Trivy scan Module 7 SHA image; fail on CRITICAL"
-          echo "Emit CycloneDX SBOM tied to image digest"
-          echo "Pin dependency-review and codeql-action by full commit SHA"
+      - uses: actions/checkout@v4
+      - run: echo "workflow ok"
+EOF
+ls -la
+sed -n '1,80p' .github/workflows/lab.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-cat > sec-policy.md << 'EOF'
-Order: secrets/push-protection → dependency review → CodeQL → build → Trivy → SBOM
-Gate: block Critical/High on default branch
-Supply chain: pin actions by SHA; least-privilege permissions
-Secrets: rotate on confirmed leak; never only allowlist
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/security.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .github/workflows/lab.yml
+grep -E 'script:|runs-on:|steps:' .github/workflows/lab.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-github-actions/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-github-actions/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

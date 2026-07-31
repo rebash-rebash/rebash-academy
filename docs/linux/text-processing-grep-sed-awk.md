@@ -96,19 +96,7 @@ mkdir -p ~/rebash-linux/lab08 && cd ~/rebash-linux/lab08
 
 **Focus:** build a log pipeline with grep/sed/awk/sort/uniq/xargs
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab08 text-processing-grep-sed-awk on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Log pipeline
+### Step 1 – Log pipeline
 
 ```bash
 cat > sample.log << 'EOF'
@@ -129,8 +117,7 @@ echo errors.txt | xargs wc -l
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

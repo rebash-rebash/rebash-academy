@@ -111,19 +111,7 @@ mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
 
 **Focus:** hands-on practice for Docker Security Hardening
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Docker Security Hardening"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
@@ -147,8 +135,7 @@ docker rm -f rebash-sec
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-docker/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-docker/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

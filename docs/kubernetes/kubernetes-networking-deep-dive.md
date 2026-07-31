@@ -120,19 +120,7 @@ mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
 
 **Focus:** hands-on practice for Kubernetes Networking Deep Dive
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Kubernetes Networking Deep Dive"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
@@ -148,8 +136,7 @@ kubectl delete deploy/dns-demo svc/dns-demo
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

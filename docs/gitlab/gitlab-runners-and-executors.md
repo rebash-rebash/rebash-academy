@@ -125,19 +125,7 @@ mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
 
 **Focus:** hands-on practice for GitLab Runners and Executors
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: GitLab Runners and Executors"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-03
@@ -179,8 +167,7 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('YAML par
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

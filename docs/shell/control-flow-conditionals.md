@@ -115,19 +115,7 @@ mkdir -p ~/rebash-shell/lab05 && cd ~/rebash-shell/lab05
 
 **Focus:** [[ vs [; guard preconditions; case CLI verbs; logical chains
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab05 control-flow-conditionals on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Guards and case
+### Step 1 – Guards and case
 
 ```bash
 cat > guard.sh << 'EOF'
@@ -154,11 +142,10 @@ echo ok > sample.cfg
 ./guard.sh sample.cfg status
 ```
 
-### Final step – Trace and cleanup note
+### Final step – Cleanup note
 
 ```bash
-bash -x ./lab.sh 2>&1 | tail -n 20 || true
-# keep ~/rebash-shell for later labs
+# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

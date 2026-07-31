@@ -123,19 +123,7 @@ mkdir -p ~/rebash-gitlab/module-05/{templates,generated} && cd ~/rebash-gitlab/m
 
 **Focus:** hands-on practice for Pipeline Design: DAGs and Includes
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Pipeline Design: DAGs and Includes"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-05/{templates,generated}
@@ -201,8 +189,7 @@ python3 -c "import yaml,pathlib; [yaml.safe_load(pathlib.Path(p).read_text()) fo
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

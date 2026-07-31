@@ -96,19 +96,7 @@ mkdir -p ~/rebash-linux/lab21 && cd ~/rebash-linux/lab21
 
 **Focus:** check MAC status; inspect pam.d/sshd; review fail2ban/audit if present
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab21 selinux-apparmor-fail2ban-auditd-pam on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – MAC / PAM / audit probe
+### Step 1 – MAC / PAM / audit probe
 
 ```bash
 {
@@ -123,8 +111,7 @@ chmod +x lab.sh
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

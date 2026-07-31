@@ -122,19 +122,7 @@ mkdir -p ~/rebash-k8s/module-01 && cd ~/rebash-k8s/module-01
 
 **Focus:** hands-on practice for Introduction to Kubernetes and Orchestration
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Introduction to Kubernetes and Orchestration"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
+### Step 1 – Core exercise
 
 ```bash
 mkdir -p ~/rebash-k8s/module-01
@@ -154,8 +142,7 @@ kubectl version --client 2>/dev/null || echo "Install kubectl in Module 2"
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-kubernetes/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-kubernetes/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation

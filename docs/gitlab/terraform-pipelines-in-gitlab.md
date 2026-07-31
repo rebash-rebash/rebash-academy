@@ -108,100 +108,44 @@ Prefer apply-of-saved-plan for production.
 - One shared state key for all environments; fork MRs with apply roles.
 
 ## Hands-on Lab
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-10 && cd ~/rebash-gitlab/module-10
+git init -q
 ```
 
-**Focus:** hands-on practice for Terraform Pipelines in GitLab
+**Focus:** author and validate CI config for Terraform Pipelines in GitLab
 
-### Step 1 – Skeleton
+### Step 1 – Write a minimal pipeline
 
 ```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab: Terraform Pipelines in GitLab"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Core exercise
-
-Cloud credentials are not required — run local Terraform with the `local` provider; the YAML is the CI pattern.
-
-```bash
-mkdir -p ~/rebash-gitlab/module-10 && cd ~/rebash-gitlab/module-10
-
-cat > main.tf << 'EOF'
-terraform {
-  required_version = ">= 1.9.0"
-  required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
-  }
-}
-resource "local_file" "marker" {
-  filename = "${path.module}/ci-marker.txt"
-  content  = "planned-in-gitlab-ci\n"
-}
-EOF
-```
-
-{% raw %}
-```yaml
-# .gitlab-ci.yml
-stages: [validate, plan, apply]
-variables:
-  TF_IN_AUTOMATION: "true"
-  TF_INPUT: "false"
-
-.terraform_base:
-  image: hashicorp/terraform:1.9.8
-  before_script: [terraform init -input=false]
-
+cat > .gitlab-ci.yml << 'EOF'
+stages: [validate]
 validate:
-  extends: .terraform_base
   stage: validate
-  script: [terraform validate]
-
-plan:
-  extends: .terraform_base
-  stage: plan
+  image: alpine:3.20
   script:
-    - terraform plan -out=tfplan -input=false
-    - terraform show -no-color tfplan
-  artifacts:
-    paths: [tfplan]
-    expire_in: 5 days
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-apply:
-  extends: .terraform_base
-  stage: apply
-  environment: { name: production }
-  script: [terraform apply -input=false tfplan]
-  needs: [plan]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
+    - echo "pipeline ok"
+    - uname -a
+EOF
+ls -la
+sed -n '1,80p' .gitlab-ci.yml
 ```
-{% endraw %}
+
+### Step 2 – Static checks before push
 
 ```bash
-terraform init -input=false && terraform plan -out=tfplan -input=false
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+# Syntax / structure sanity (no runner required)
+test -s .gitlab-ci.yml
+grep -E 'script:|runs-on:|steps:' .gitlab-ci.yml
+# When a runner is available, push a branch and confirm the job is green
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep ~/rebash-gitlab/ for later labs; destroy cloud resources you created
-./lab.sh || true
+# Keep ~/rebash-gitlab-ci/ for later tutorials; delete remote test branches when finished
 ```
 
 ## Validation

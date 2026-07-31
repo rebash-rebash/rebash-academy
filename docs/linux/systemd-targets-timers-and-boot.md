@@ -93,19 +93,7 @@ mkdir -p ~/rebash-linux/lab11 && cd ~/rebash-linux/lab11
 
 **Focus:** list timers/targets; write a oneshot+timer pair; analyse boot chain
 
-### Step 1 – Skeleton
-
-```bash
-cat > lab.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "lab11 systemd-targets-timers-and-boot on $(hostname -s)"
-EOF
-chmod +x lab.sh
-./lab.sh
-```
-
-### Step 2 – Targets and timers
+### Step 1 – Targets and timers
 
 ```bash
 systemctl get-default | tee default-target.txt
@@ -134,8 +122,7 @@ systemctl --user list-timers 2>/dev/null | head || true
 ### Final step – Cleanup note
 
 ```bash
-./lab.sh
-# keep ~/rebash-linux for later labs
+# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
 ```
 
 ## Validation
