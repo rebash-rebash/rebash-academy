@@ -43,6 +43,7 @@ comments: false
 
 
 
+
 Open a PR with a clear description, understand required reviews and CODEOWNERS, and review changes with an ops risk lens (secrets, blast radius, rollback).
 
 PRs are the change-control gate for `main`. Branch protection + required checks beat informal “just push.”
@@ -55,12 +56,14 @@ This is a core tutorial in **Module 10 · Collaboration** of the REBASH Academy 
 
 
 
+
 - [GitHub Fundamentals](github-fundamentals.md)
 - [Branching](branching-fundamentals.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -78,6 +81,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
@@ -85,6 +89,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -134,43 +139,49 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-10 && cd ~/rebash-git/module-10
 ```
 
-**Focus:** practise Git skills for: Pull Requests and Code Review
+**Focus:** prepare a small PR with conventional commits and review checklist
 
-### Step 1 – Init repository
+### Step 1 – Feature branch + review checklist
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo base > app.txt
+git add app.txt && git commit -m "chore: base"
+git switch -c feature/rate-limit
+printf 'rate_limit: 100
+' > policy.yaml
+git add policy.yaml
+git commit -m "feat: add rate limit policy"
+cat > REVIEW.md << 'EOF'
+## PR checklist
+- [ ] Title summarises intent
+- [ ] Commits are reviewable units
+- [ ] No secrets
+- [ ] Rollback noted
+EOF
+git add REVIEW.md && git commit -m "docs: add PR checklist"
+git log --oneline main..HEAD
 ```
 
-### Step 2 – Review-ready branch
+### Step 2 – Show PR diff range
 
 ```bash
-git switch -c pr/demo
-echo 'change' > feature.txt
-git add feature.txt
-git commit -m 'feat: demo change'
-git log main..HEAD --oneline
-tee REVIEW.txt << 'EOF'
-Open a pull/merge request with a clear summary, test plan, and small diff.
-EOF
-cat REVIEW.txt
+git diff main...HEAD
+git status
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -182,6 +193,7 @@ cat REVIEW.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -201,6 +213,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -210,6 +223,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -228,6 +242,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Pull Requests and Code Review changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -237,6 +252,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -254,6 +270,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Demo doc change
 
 
@@ -261,21 +278,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Pull Requests and Code Review** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. What makes a high-quality PR for infrastructure?
+2. How do you review Terraform/Kubernetes changes safely?
+3. Draft PRs — when useful?
+4. How should CODEOWNERS be used without bottlenecks?
+5. What is rubber-stamp review risk?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Read the diff and risk areas first (IAM, network, data loss), then ask for tests/rollback notes. Block on secrets immediately.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Require reviews for sensitive paths and never approve changes you do not understand.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -285,6 +303,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

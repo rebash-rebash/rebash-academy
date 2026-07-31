@@ -40,6 +40,8 @@ comments: false
 
 
 
+
+
 Manage images end to end: pull, inspect layers, tag for a registry, save/load for air-gapped moves, and prune safely.
 
 Images are layered, content-addressed artefacts. Tags (`:latest`, `:1.2.3`) are mutable pointers — production prefers digests or immutable tags.
@@ -52,11 +54,15 @@ This is a core tutorial in **Module 4 · Images** of the REBASH Academy **Docker
 
 
 
+
+
 - [Running Your First Container](running-your-first-container.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -74,6 +80,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Image layers](../assets/excalidraw/docker-image-layers.svg)
@@ -81,6 +89,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -130,27 +140,40 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-04 && cd ~/rebash-docker/module-04
 ```
 
-**Focus:** pull, tag, inspect, and history an image
+**Focus:** pull, tag, save/load, and remove images
 
-### Step 1 – Image workflow
+### Step 1 – Image operations
 
 ```bash
 docker pull alpine:3.20
 docker images alpine
-docker tag alpine:3.20 rebash-lab:local
-docker image inspect rebash-lab:local --format '{{ "{{" }}.Id{{ "}}" }} {{ "{{" }}.Os{{ "}}" }}/{{ "{{" }}.Architecture{{ "}}" }}'
-docker history rebash-lab:local | head -n 15 | tee history.txt
+docker tag alpine:3.20 rebash-alpine:lab
+docker save rebash-alpine:lab -o rebash-alpine.tar
+docker rmi rebash-alpine:lab
+docker load -i rebash-alpine.tar
+docker images rebash-alpine
+```
+
+### Step 2 – Cleanup local artifacts
+
+```bash
+rm -f rebash-alpine.tar
+docker rmi rebash-alpine:lab
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi rebash-lab:local 2>/dev/null || true
+rm -f rebash-alpine.tar
+docker rmi rebash-alpine:lab 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -162,6 +185,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -181,6 +206,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -190,6 +217,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -208,6 +237,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Working with Docker Images changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -217,6 +248,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -234,6 +267,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Working with Docker Images** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -241,21 +276,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Working with Docker Images** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. What does an image tag represent?
+2. How do save/load help air-gapped environments?
+3. Why pin digests in production?
+4. What does docker images not tell you about vulnerabilities?
+5. How do you delete dangling images safely?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Verify tags with docker image inspect and confirm the digest you expect.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Only pull from trusted registries; scan before promoting.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -265,6 +302,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

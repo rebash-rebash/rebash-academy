@@ -51,6 +51,7 @@ comments: false
 
 
 
+
 Choose and operate the right managed database on AWS: Relational Database Service (RDS), Amazon Aurora, DynamoDB, ElastiCache, and DocumentDB — with clear decision criteria for Cloud, DevOps, and platform work.
 
 Self-managing databases on Amazon Elastic Compute Cloud (EC2) is rarely the first choice: patching, failover, and backups dominate toil. AWS managed services trade some control for Multi-AZ resilience and automation. Picking the wrong engine (or leaving a large RDS instance running) is expensive; this module focuses on **fit** and **safe labs**.
@@ -66,6 +67,7 @@ This is a core tutorial in **Module 6 · Databases** of the REBASH Academy **AWS
 
 
 
+
 - [Storage: S3, EBS, and EFS](storage-s3-ebs-efs.md)
 - [VPC Networking on AWS](vpc-networking-on-aws.md) — private subnets and security groups
 - Basic Structured Query Language (SQL) or NoSQL awareness
@@ -73,6 +75,7 @@ This is a core tutorial in **Module 6 · Databases** of the REBASH Academy **AWS
 
 
 ## Learning Objectives
+
 
 
 
@@ -90,6 +93,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![AWS databases](../assets/excalidraw/aws-databases.svg)
@@ -97,6 +101,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -157,36 +162,43 @@ Pipelines need test databases; production needs encryption, parameter groups, an
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-06 && cd ~/rebash-aws/module-06
 ```
 
-**Focus:** describe RDS/DynamoDB inventory read-only
+**Focus:** describe RDS/DynamoDB without creating paid databases
 
-### Step 1 – Data stores
+### Step 1 – Read-only database inventory
 
 ```bash
-aws rds describe-db-instances --query 'DBInstances[].{Id:DBInstanceIdentifier,Engine:Engine,Class:DBInstanceClass}' --output table 2>/dev/null | tee rds.txt || true
-aws dynamodb list-tables --output text 2>/dev/null | tr '\t' '\n' | head | tee dynamo.txt || true
-tee db-notes.txt << 'EOF'
-Backups, Multi-AZ, encryption, and least-privilege app roles are non-negotiable.
+aws sts get-caller-identity
+aws rds describe-db-instances --query 'DBInstances[].{Id:DBInstanceIdentifier,Engine:Engine,MultiAZ:MultiAZ}' --output table
+aws dynamodb list-tables --output table
+```
+
+### Step 2 – Design notes instead of creating RDS
+
+```bash
+cat > db-notes.md << 'EOF'
+- Prefer Multi-AZ for HA; know backup windows
+- Do not create RDS in labs without tagging + destroy alarm
+- Secrets Manager / IAM auth over passwords in apps
 EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -198,6 +210,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -217,6 +230,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -226,6 +240,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -244,6 +259,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Databases on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -253,6 +269,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -270,6 +287,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Databases on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -277,21 +295,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Databases on AWS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. Multi-AZ RDS versus read replicas?
+2. When is DynamoDB a better fit than RDS?
+3. What does PITR give you?
+4. How do you rotate database secrets?
+5. Why is creating RDS in labs risky for cost?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Check instance/cluster status, subnet groups, and security group rules to the DB port.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Encrypt storage, restrict security groups, and delete lab databases the same day.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -301,6 +320,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

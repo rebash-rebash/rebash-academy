@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Define a team-ready Git operating model: branching strategy, protected `main`, PR quality bar, release tags, and GitOps-friendly repo layout.
 
 Production Git is less about clever commands and more about **defaults that keep delivery safe**: short-lived branches, required checks, signed commits where policy demands, and IaC/GitOps paths owned by the right teams.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 17 · Production Git Practices** of the REBA
 
 
 
+
 - Modules 9–16 (GitHub through troubleshooting)
 - [GitOps Fundamentals](gitops-fundamentals.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -82,6 +85,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
@@ -89,6 +93,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -133,46 +138,48 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
 ```
 
-**Focus:** practise Git skills for: Production Git Practices
+**Focus:** encode protected-branch practices: CODEOWNERS + conventional commits
 
-### Step 1 – Init repository
+### Step 1 – Production practices files
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+mkdir -p .github
+cat > .github/CODEOWNERS << 'EOF'
+* @platform-team
+/terraform/ @platform-team @sre-team
+EOF
+cat > CONTRIBUTING.md << 'EOF'
+- Conventional commits: feat|fix|docs|chore
+- No force-push to main
+- PR required; CI green
+EOF
+git add .github CONTRIBUTING.md
+git commit -m "docs: production git practices"
 ```
 
-### Step 2 – Protected-branch habits
+### Step 2 – Branch protection reminder commit
 
 ```bash
-tee production-git.txt << 'EOF'
-- trunk-based or short-lived branches
-- required reviews + CI
-- signed commits where mandated
-- no force-push to main
+cat > protect-main.md << 'EOF'
+Enable branch protection: require PR, status checks, disallow force push
 EOF
-git switch -c hotfix/typo
-echo 'fix' >> README.md
-git commit -am 'fix: typo'
-git switch main
-git merge hotfix/typo
-cat production-git.txt
+git add protect-main.md && git commit -m "docs: branch protection reminder"
+git log --oneline -n 3
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -184,6 +191,7 @@ cat production-git.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -203,6 +211,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -212,6 +221,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -230,6 +240,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Production Git Practices changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -239,6 +250,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -256,6 +268,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 You can stand up a repository that matches how Cloud and DevOps teams ship: protected trunk, automated checks, clear ownership, and GitOps-friendly history.
 
 
@@ -263,21 +276,22 @@ You can stand up a repository that matches how Cloud and DevOps teams ship: prot
 ## Interview Questions
 
 
-1. Explain **Production Git Practices** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. List branch protection settings you enable on main.
+2. How do you handle hotfixes under protected branches?
+3. Why ban force-push on production branches?
+4. What audit trail should a production change leave in git?
+5. How do you onboard contractors with least privilege?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Confirm protection rules, required checks, and that the merge used the expected strategy.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Enforce SSO, 2FA, CODEOWNERS on sensitive paths, and short-lived access.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -288,6 +302,7 @@ You can stand up a repository that matches how Cloud and DevOps teams ship: prot
 
 
 ## References
+
 
 
 

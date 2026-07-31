@@ -45,6 +45,7 @@ comments: false
 
 
 
+
 Place non-secret configuration in variables, scope secrets correctly (repository, environment, organisation), and outline OpenID Connect (OIDC) so jobs obtain short-lived cloud credentials without long-lived access keys.
 
 Pipelines need configuration and credentials. GitHub provides **configuration variables** (`vars.*`) and **secrets** (`secrets.*`) at repository, organisation, and **environment** scopes. Production Cloud and DevOps teams prefer **OIDC federation** to AWS, Azure, or Google Cloud: GitHub mints a JWT for the job; the cloud trusts that JWT and returns temporary credentials. That removes static keys from the Actions UI.
@@ -57,12 +58,14 @@ This is a core tutorial in **Module 5 · Secrets & Variables** of the REBASH Aca
 
 
 
+
 - [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
 - Optional: an AWS, Azure, or Google Cloud sandbox for a live OIDC exchange later
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -80,6 +83,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Secrets and OIDC](../assets/excalidraw/gha-secrets-oidc.svg)
@@ -87,6 +91,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -156,45 +161,96 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-05/.github/workflows && cd ~/rebash-github-actions/module-05/.github/workflows
 ```
 
-**Focus:** OIDC permissions workflow without embedding cloud keys
+**Focus:** separate vars/secrets and author an OIDC-ready job (file-only)
 
-### Step 1 – OIDC workflow
+### Step 1 – Checklist + OIDC workflow
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/oidc.yml << 'EOF'
-name: oidc-deploy
+cat > oidc-checklist.md << 'EOF'
+- [ ] vars for non-secrets (DEMO_REGION)
+- [ ] environment: staging for deploy secrets
+- [ ] permissions: contents: read, id-token: write on OIDC jobs
+- [ ] cloud trust on sub claim (repo + ref + environment)
+- [ ] never echo secrets
+EOF
+
+{% raw %}
+```yaml
+# .github/workflows/secrets-and-oidc.yml
+name: Secrets and OIDC
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 permissions:
-  id-token: write
   contents: read
 jobs:
-  deploy:
+  show-config:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Configure cloud creds via OIDC
-        run: echo "Use cloud-specific OIDC action; never echo secrets"
-EOF
-tee oidc-notes.txt << 'EOF'
-permissions.id-token: write is required for OIDC. Bind GitHub subject claims to a least-privilege cloud role.
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/oidc.yml')); print('OK')"
-cat oidc-notes.txt
+      - name: Non-secret configuration
+        env:
+          DEMO_REGION: ${{ vars.DEMO_REGION }}
+        run: |
+          test -f oidc-checklist.md
+          echo "DEMO_REGION=${DEMO_REGION:-unset}"
+  staging-shape:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: OIDC-ready placeholder
+        run: echo "Add aws-actions/configure-aws-credentials when cloud trust exists"
 ```
 {% endraw %}
+
+# Persist a macros-safe copy without expressions for local tree checks:
+cat > .github/workflows/secrets-and-oidc.yml << 'EOF'
+name: Secrets and OIDC
+on: [workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  show-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: test -f oidc-checklist.md
+  staging-shape:
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - run: echo "OIDC-ready job has id-token: write"
+EOF
+```
+
+### Step 2 – File-only validation
+
+```bash
+grep -E 'id-token: write|environment: staging' .github/workflows/secrets-and-oidc.yml
+test -f oidc-checklist.md
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# No cloud resources
+# File-only OIDC lab — no cloud resources
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -206,6 +262,7 @@ cat oidc-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -225,6 +282,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -234,6 +292,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -252,6 +311,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Secrets, Variables, and OIDC changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -261,6 +321,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -278,6 +339,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Secrets, Variables, and OIDC** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -285,21 +347,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Secrets, Variables, and OIDC** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Difference between vars and secrets?
+2. OIDC cloud login fails — which trust settings do you inspect?
+3. Why use environments for production secrets?
+4. What does id-token write enable?
+5. Why avoid pull_request_target with secrets?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Validate GitHub OIDC subject claims against the cloud IAM trust policy. Missing id-token write or wrong audience is frequent.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Prefer OIDC short-lived roles over long-lived cloud keys in repository secrets.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -309,6 +372,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

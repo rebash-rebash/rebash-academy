@@ -48,6 +48,7 @@ comments: false
 
 
 
+
 Diagnose failed jobs, runner problems, authentication errors, cache misses, deploy failures, and slow workflows with a fixed order: trigger → permissions → runner → credentials → cache → deploy target → performance.
 
 Most “Actions is broken” tickets are skipped jobs, missing permissions, offline self-hosted runners, expired OIDC trust, or poisoned caches — not mysterious GitHub bugs. Separate **definition** failures (workflow never ran the job you expected) from **execution** failures before changing production secrets.
@@ -60,12 +61,14 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 
 
 
+
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
 - Runner, secrets/OIDC, and cache modules completed (or equivalent)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -82,6 +85,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Troubleshooting ladder](../assets/excalidraw/gha-troubleshooting.svg)
@@ -89,6 +93,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -151,46 +156,56 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-16/.github/workflows && cd ~/rebash-github-actions/module-16/.github/workflows
 ```
 
-**Focus:** introduce a failing step locally and fix the workflow
+**Focus:** capture a failing step pattern and local reproduction
 
-### Step 1 – Fail then fix
+### Step 1 – Broken vs fixed workflow pair
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/bad.yml << 'EOF'
-name: bad
-on: workflow_dispatch
+cat > triage.md << 'EOF'
+1. Open the failed step log — first error
+2. Confirm action version
+3. Check permissions for GITHUB_TOKEN
+4. Re-run failed jobs; debug logging only in private forks
+5. Reproduce steps in a clean container
+EOF
+cat > .github/workflows/troubleshoot.yml << 'EOF'
+name: Troubleshoot
+on: [workflow_dispatch]
+permissions:
+  contents: read
 jobs:
-  j:
+  broken_shape:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - run: curl --fail https://example.invalid/missing
+  fixed_shape:
     runs-on: ubuntu-latest
     steps:
-      - run: exit 1
+      - run: curl --fail -I https://example.com | head -n 5
 EOF
-# Local analogue of a failing step:
-(false) 2>&1 | tee fail.txt || true
-cat > .github/workflows/bad.yml << 'EOF'
-name: bad
-on: workflow_dispatch
-jobs:
-  j:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo fixed && exit 0
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/bad.yml')); print('fixed')"
 ```
-{% endraw %}
+
+### Step 2 – Reproduce with Docker
+
+```bash
+docker run --rm curlimages/curl:8.10.1 curl --fail -I https://example.com | head -n 5
+test -f triage.md
+docker rmi curlimages/curl:8.10.1 2>/dev/null || true
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+docker rmi curlimages/curl:8.10.1 2>/dev/null || true
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -202,6 +217,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/bad.yml')); prin
 
 
 ## Code Walkthrough
+
 
 
 
@@ -221,6 +237,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -230,6 +247,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -248,6 +266,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Troubleshooting GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -257,6 +276,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -274,6 +294,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 You can design, secure, promote, and troubleshoot production GitHub Actions pipelines end to end.
 
 
@@ -281,21 +302,22 @@ You can design, secure, promote, and troubleshoot production GitHub Actions pipe
 ## Interview Questions
 
 
-1. How does **Troubleshooting GitHub Actions** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Give a step-by-step triage for a red workflow.
+2. When is Actions debug logging appropriate?
+3. How do expression evaluation bugs show up?
+4. What local tools help reproduce workflows?
+5. How do you handle a compromised third-party action?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Open the failed step log first, confirm action versions and permissions, then re-run a single job after fixing.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Debug logs can leak secrets — enable briefly on private repos only and rotate credentials if exposure is possible.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -305,6 +327,7 @@ You can design, secure, promote, and troubleshoot production GitHub Actions pipe
 
 
 ## References
+
 
 
 

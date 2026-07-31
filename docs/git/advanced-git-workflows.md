@@ -25,6 +25,7 @@ comments: false
 
 
 
+
 Branching strategy shapes how fast you ship and how painful merges become. GitFlow's long-lived branches suit scheduled releases; trunk-based development suits continuous deployment; GitHub Flow balances simplicity and review. Platform and application teams often need different models — this tutorial helps you choose and implement the right one.
 
 This is **Tutorial 17** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
@@ -35,6 +36,7 @@ This is **Tutorial 17** in **Module 6: Advanced & DevOps** of the REBASH Academy
 
 
 
+
 - [Git Hooks and Automation](git-hooks-and-automation.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
@@ -42,6 +44,7 @@ This is **Tutorial 17** in **Module 6: Advanced & DevOps** of the REBASH Academy
 
 
 ## Learning Objectives
+
 
 
 
@@ -61,6 +64,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 Team workflows constrain which branches accept direct commits and how changes promote from development to release.
 
 ![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
@@ -68,6 +72,7 @@ Team workflows constrain which branches accept direct commits and how changes pr
 
 
 ## Theory
+
 
 
 
@@ -208,40 +213,48 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/advanced-git-workflows && cd ~/rebash-git/advanced-git-workflows
 ```
 
-**Focus:** practise Git skills for: Advanced Git Workflows
+**Focus:** practise worktrees and sparse checkout
 
-### Step 1 – Init repository
+### Step 1 – Worktree for a hotfix
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+mkdir -p services/a services/b
+echo a > services/a/app.txt
+echo b > services/b/app.txt
+git add services && git commit -m "chore: monorepo baseline"
+git worktree add ../hotfix-wt -b hotfix/log
+cd ../hotfix-wt
+echo fix >> services/a/app.txt
+git add services/a/app.txt
+git commit -m "fix: a logging"
+cd -
+git log --oneline hotfix/log -n 2
 ```
 
-### Step 2 – Cherry-pick + rebase combo
+### Step 2 – Sparse checkout cone
 
 ```bash
-git switch -c topic
-echo t > t.txt && git add t.txt && git commit -m 'topic'
-git switch main
-echo m > m.txt && git add m.txt && git commit -m 'mainline'
-git cherry-pick topic
-git log --oneline --graph --all | tee advanced.txt
+git sparse-checkout init --cone
+git sparse-checkout set services/a
+ls services
+git sparse-checkout disable
+git worktree remove ../hotfix-wt 2>/dev/null || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+git worktree remove ../hotfix-wt 2>/dev/null || true
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -264,6 +277,7 @@ Confirm the lab before moving on:
 
 
 
+
 | Command | Description | Example |
 |---------|-------------|---------|
 | `git tag -a v1.0.0 -m "msg"` | Annotated release tag | Production deploy trigger |
@@ -281,6 +295,7 @@ Confirm the lab before moving on:
 ## Branching
 
 
+
 - Branch from `main`: `feature/`, `fix/`, `hotfix/`
 - Keep branches < 2 days (trunk-based)
 - Open PR when ready; require 1 approval + CI pass
@@ -289,6 +304,7 @@ Confirm the lab before moving on:
 
 
 ## Releases
+
 
 
 - Tag `main` with `vX.Y.Z` for production deploy
@@ -301,6 +317,7 @@ Confirm the lab before moving on:
 
 
 
+
 - Document which branches are force-pushable; treat `main` and release lines as immutable history
 - Separate build identities from human identities for auditable releases
 - Gate promotion between environments on signed tags or attested builds
@@ -310,6 +327,7 @@ Confirm the lab before moving on:
 
 
 ## Common Mistakes
+
 
 
 
@@ -331,6 +349,7 @@ Confirm the lab before moving on:
 
 
 
+
 !!! tip "Optimise for merge frequency, not branch count"
     Integrate to main daily; reduce merge conflict cost.
 
@@ -349,6 +368,7 @@ Confirm the lab before moving on:
 
 
 
+
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | develop/main divergence | GitFlow without back-merge | Regular merges both directions |
@@ -364,6 +384,7 @@ Confirm the lab before moving on:
 
 
 
+
 - **GitHub Flow:** main + feature PRs — simple, continuous deployment friendly
 - **Trunk-based:** very short branches, feature flags — highest merge frequency
 - **GitFlow:** main + develop + release/hotfix — scheduled releases, higher overhead
@@ -376,21 +397,22 @@ Confirm the lab before moving on:
 ## Interview Questions
 
 
-1. Explain **Advanced Git Workflows** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. When do worktrees beat multiple clones?
+2. What problems does sparse checkout solve?
+3. Partial clone options for huge repos?
+4. Risks of custom merge drivers?
+5. How do you keep advanced workflows teachable for a team?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Check worktree list and sparse-checkout status when files appear missing.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Document team workflows; keep hooks and custom drivers reviewed like production automation.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -406,6 +428,7 @@ Confirm the lab before moving on:
 
 
 ## References
+
 
 
 

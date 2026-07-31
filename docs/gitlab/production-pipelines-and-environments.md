@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Design environment promotion (dev → staging → production) with protected environments, manual approvals, rollback paths, progressive delivery, and feature-flag controls.
 
 Production CI/CD is controlled promotion of an **immutable artefact** through named **environments**, not “run deploy on every push to main”. GitLab environments, protection rules, and `when: manual` jobs encode who may promote and how you recover.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 15 · Production Pipelines** of the REBASH A
 
 
 
+
 - [Release Management and Versioning](release-management-and-versioning.md)
 - Deploy awareness from [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md) or equivalent
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitLab production](../assets/excalidraw/gitlab-production.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -150,38 +155,52 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-15 && cd ~/rebash-gitlab/module-15
 ```
 
-**Focus:** environments, manual gates, and protected-branch style rules
+**Focus:** model staging/production environments with manual production gate
 
-### Step 1 – Prod gate pipeline
+### Step 1 – Environment-aware deploy jobs
 
 ```bash
 cat > .gitlab-ci.yml << 'EOF'
-stages: [deploy]
-deploy_lab:
+stages: [build, deploy]
+build:
+  stage: build
+  image: alpine:3.20
+  script: ["mkdir -p dist && echo $CI_COMMIT_SHA > dist/REVISION"]
+  artifacts: {paths: [dist/]}
+deploy_staging:
   stage: deploy
-  script: ["echo deploy lab"]
-  environment: lab
-deploy_prod:
+  image: alpine:3.20
+  environment: {name: staging, url: https://staging.example.invalid}
+  script: ["test -f dist/REVISION", "echo deploy staging"]
+deploy_production:
   stage: deploy
-  script: ["echo deploy prod"]
-  environment:
-    name: production
-  when: manual
+  image: alpine:3.20
+  environment: {name: production, url: https://www.example.invalid}
+  needs: [deploy_staging]
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  script: ["echo production requires manual approval"]
 EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['deploy_prod']['when']=='manual'; print('manual prod gate OK')"
+```
+
+### Step 2 – Confirm environment blocks
+
+```bash
+grep -A3 'environment:' .gitlab-ci.yml
+grep -A2 'when: manual' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -193,6 +212,7 @@ python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['dep
 
 
 ## Code Walkthrough
+
 
 
 
@@ -212,6 +232,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -221,6 +242,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -239,6 +261,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Production Pipelines and Environments changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -248,6 +271,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -265,6 +289,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Production Pipelines and Environments** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -272,21 +297,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Production Pipelines and Environments** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. How do GitLab environments help track deployments?
+2. Why make production deploy when manual even if staging is automatic?
+3. What should stop an automatic promote from staging to production?
+4. How do protected environments reduce risk?
+5. What evidence do you keep for a production change?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Check environment name/url, deployment job rules, and whether the commit is on the allowed branch. Read the job log and app health next.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Limit who can run production jobs, require approvals on protected environments, and inject production secrets only into those jobs.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -296,6 +322,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

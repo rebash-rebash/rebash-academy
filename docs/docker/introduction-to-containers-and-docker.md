@@ -43,6 +43,8 @@ comments: false
 
 
 
+
+
 Explain containers vs virtual machines (VMs), name the Open Container Initiative (OCI) pieces, and state why Docker matters for Cloud and DevOps delivery.
 
 Containers package an application with its dependencies and share the host kernel. Teams get portable builds from laptop → CI → cloud. This course is **Docker for Cloud & DevOps Engineers** — production packaging, not Docker trivia.
@@ -55,12 +57,16 @@ This is a core tutorial in **Module 1 · Container Fundamentals** of the REBASH 
 
 
 
+
+
 - [Linux Fundamentals](../linux/index.md)
 - Comfort with a terminal; [Git](../git/index.md) helpful
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -78,6 +84,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
@@ -85,6 +93,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -132,29 +142,40 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-01 && cd ~/rebash-docker/module-01
 ```
 
-**Focus:** run, inspect, curl, and remove a container
+**Focus:** run a container, inspect it, and clean up completely
 
-### Step 1 – Run nginx
+### Step 1 – Run and inspect
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 20
+docker version
+docker run -d --name rebash-intro -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-intro
+curl -sI http://127.0.0.1:18080 | head -n 5
+docker logs rebash-intro 2>&1 | head -n 20
+docker inspect rebash-intro --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}'
+```
+
+### Step 2 – Exec and cleanup
+
+```bash
+docker exec rebash-intro nginx -v
+docker stop rebash-intro
+docker rm rebash-intro
+docker ps -a --filter name=rebash-intro
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
-docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rm -f rebash-intro 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -166,6 +187,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -185,6 +208,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -194,6 +219,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -212,6 +239,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Introduction to Containers and Docker changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -221,6 +250,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -238,6 +269,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Introduction to Containers and Docker** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -245,21 +278,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Introduction to Containers and Docker** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. How does a container differ from a virtual machine?
+2. Container exits immediately — what do you check first?
+3. What is an image versus a container?
+4. Why is cleanup (docker rm) part of every lab?
+5. Where do containers fit in Cloud/DevOps workflows?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Check docker ps -a for exit code, then docker logs and the container command.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Prefer official images, avoid privileged mode, and never put secrets in image layers.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -269,6 +304,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

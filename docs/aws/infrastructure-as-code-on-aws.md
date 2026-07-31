@@ -51,6 +51,7 @@ comments: false
 
 
 
+
 Compare HashiCorp Terraform, AWS CloudFormation, the AWS Cloud Development Kit (CDK), and AWS Service Catalog so you can pick an Infrastructure as Code (IaC) approach for a team and practise a **zero-cost or near-zero-cost** template validate/plan loop.
 
 **Infrastructure as Code** defines cloud resources in files reviewed through Git, applied by pipelines, and reconciled to a desired state. On AWS you commonly meet four options: **Terraform** (multi-cloud HCL, huge ecosystem), **CloudFormation** (native declarative templates/stacks), **CDK** (TypeScript/Python/etc. that synthesise CloudFormation), and **Service Catalog** (governed products for end users). The “best” tool is the one your organisation can secure, review, and operate — not the newest blog post.
@@ -63,6 +64,7 @@ This is a core tutorial in **Module 11 · Infrastructure as Code** of the REBASH
 
 
 
+
 - [AWS Security Services](aws-security-services.md)
 - Git and AWS CLI fundamentals
 - Helpful: prior Terraform or CloudFormation exposure
@@ -70,6 +72,7 @@ This is a core tutorial in **Module 11 · Infrastructure as Code** of the REBASH
 
 
 ## Learning Objectives
+
 
 
 
@@ -87,6 +90,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![IaC on AWS](../assets/excalidraw/aws-iac.svg)
@@ -94,6 +98,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -165,37 +170,54 @@ ClickOps fails audits and does not scale. IaC makes VPC, IAM, and compute peer-r
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-11 && cd ~/rebash-aws/module-11
 ```
 
-**Focus:** list CloudFormation stacks / document IaC entrypoints
+**Focus:** CloudFormation validate a tiny template; optional create/delete
 
-### Step 1 – IaC inventory
+### Step 1 – Template validate
 
 ```bash
-aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE \
-  --query 'StackSummaries[].StackName' --output text 2>/dev/null | tr '\t' '\n' | head -n 20 | tee stacks.txt || true
-tee iac-notes.txt << 'EOF'
-Prefer Terraform/CloudFormation/CDK with plan reviews. No click-ops on prod.
+aws sts get-caller-identity
+cat > bucket.yaml << 'EOF'
+AWSTemplateFormatVersion: '2010-09-09'
+Description: rebash lab bucket
+Resources:
+  LabBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: rebash
+          Value: lab
+Outputs:
+  BucketName:
+    Value: !Ref LabBucket
 EOF
-aws sts get-caller-identity | tee identity.json
+aws cloudformation validate-template --template-body file://bucket.yaml
+```
+
+### Step 2 – Optional create/delete stack skipped by default
+
+```bash
+echo "Validated template only by default"
+echo "If created: aws cloudformation delete-stack --stack-name <name>"
+aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE --query 'StackSummaries[0:5].StackName' --output table
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -207,6 +229,7 @@ aws sts get-caller-identity | tee identity.json
 
 
 ## Code Walkthrough
+
 
 
 
@@ -226,6 +249,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -235,6 +259,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -253,6 +278,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Infrastructure as Code on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -262,6 +288,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -279,6 +306,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Infrastructure as Code on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -286,21 +314,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Infrastructure as Code on AWS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. CloudFormation versus Terraform/CDK trade-offs?
+2. Why validate templates before create-stack?
+3. How do you recover from a ROLLBACK_COMPLETE stack?
+4. Change sets — when required?
+5. How do you keep credentials out of templates?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Read stack events for the first failing resource. Delete failed lab stacks so names can be reused.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Use roles for deployment and never hardcode secrets in templates.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -310,6 +339,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

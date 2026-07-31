@@ -49,6 +49,7 @@ comments: false
 
 
 
+
 Describe how the GitLab Agent connects CI to a cluster, sketch a Helm or kubectl deploy job, and contrast push deploys with GitOps pull controllers — including canary, blue-green, and rollback.
 
 Pipelines that **push** manifests with `kubectl` or **Helm** need a secure path into the cluster. The **GitLab Agent for Kubernetes** (`agentk`) establishes a reverse tunnel so runners never hold long-lived kubeconfigs in CI variables. Progressive delivery (canary, blue-green) and rollbacks sit on top of Deployments or Helm releases. **GitOps** (Flux/Argo CD) inverts the model: the cluster pulls desired state from Git (conceptual flow in `gitlab-gitops.svg`).
@@ -61,11 +62,13 @@ This is a core tutorial in **Module 9 · Kubernetes Deployments** of the REBASH 
 
 
 
+
 - [Building Docker Images in CI](building-docker-images-in-ci.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -83,6 +86,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Kubernetes deploy from GitLab](../assets/excalidraw/gitlab-kubernetes-deploy.svg)
@@ -90,6 +94,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -145,13 +150,13 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09/manifests
 ```
 
-**Focus:** produce manifests + a GitLab deploy job outline for the agent
+**Focus:** GitLab Agent-style deploy job with kubectl dry-run manifests
 
-### Step 1 – Manifests and deploy job
+### Step 1 – Manifests + agent deploy job
 
 ```bash
-mkdir -p k8s
-cat > k8s/deploy.yaml << 'EOF'
+mkdir -p manifests
+cat > manifests/deploy.yaml << 'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -159,39 +164,51 @@ metadata:
   namespace: rebash-lab
 spec:
   replicas: 1
-  selector:
-    matchLabels: { app: demo }
+  selector: {matchLabels: {app: demo}}
   template:
-    metadata:
-      labels: { app: demo }
+    metadata: {labels: {app: demo}}
     spec:
       containers:
-        - name: nginx
-          image: nginx:1.27-alpine
+        - name: web
+          image: nginx:alpine
+          ports: [{containerPort: 80}]
 EOF
 cat > .gitlab-ci.yml << 'EOF'
+stages: [validate, deploy]
+validate:
+  stage: validate
+  image: bitnami/kubectl:latest
+  script: ["kubectl apply --dry-run=client -f manifests/"]
 deploy:
   stage: deploy
   image: bitnami/kubectl:latest
-  script:
-    - kubectl apply -f k8s/deploy.yaml
-  environment:
-    name: lab
+  environment: {name: staging}
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  script:
+    - echo "GitLab Agent injects kubectl context"
+    - kubectl apply -f manifests/
 EOF
-kubectl apply --dry-run=client -f k8s/deploy.yaml | tee dryrun.txt || echo 'Install kubectl to dry-run; YAML written'
+```
+
+### Step 2 – Client-side validate if kubectl exists
+
+```bash
+command -v kubectl >/dev/null && kubectl apply --dry-run=client -f manifests/ || echo "kubectl optional"
+grep -E 'kubectl|environment:' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# No cluster changes required for dry-run-only
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -203,6 +220,7 @@ kubectl apply --dry-run=client -f k8s/deploy.yaml | tee dryrun.txt || echo 'Inst
 
 
 ## Code Walkthrough
+
 
 
 
@@ -222,6 +240,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -231,6 +250,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -249,6 +269,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Kubernetes Deploys and GitLab Agent changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -258,6 +279,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -275,6 +297,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Kubernetes Deploys and GitLab Agent** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -282,21 +305,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Kubernetes Deploys and GitLab Agent** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. What problem does the GitLab Agent solve versus storing kubeconfig in CI?
+2. How do you validate manifests before a real apply?
+3. Why scope agent access per environment/namespace?
+4. What RBAC should a deploy job assume in-cluster?
+5. How do you roll back a bad GitLab-driven deploy?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Start with kubectl dry-run/client validation and agent connectivity: wrong context, namespace, or missing RBAC explains most failures.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Prefer short-lived agent sessions and least-privilege ServiceAccounts per environment.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -306,6 +330,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

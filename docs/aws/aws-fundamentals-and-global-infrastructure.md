@@ -51,6 +51,7 @@ comments: false
 
 
 
+
 Build a clear mental map of Amazon Web Services (AWS): Regions, Availability Zones (AZs), edge locations, the shared responsibility model, and safe first use of the AWS Command Line Interface (CLI) and CloudShell.
 
 AWS is a global public cloud platform. Before you launch compute or open a Virtual Private Cloud (VPC), you need to know **where** resources live, **who** is responsible for security, and **how** you authenticate to the Application Programming Interface (API). Wrong Region choices create latency, compliance, and cost surprises; misunderstanding shared responsibility creates security gaps.
@@ -68,6 +69,7 @@ This is a core tutorial in **Module 1 · AWS Fundamentals** of the REBASH Academ
 
 
 
+
 - [Linux Fundamentals](../linux/index.md) — terminal comfort
 - [Networking Fundamentals](../networking/index.md) — IP, DNS, HTTPS basics
 - An AWS account (Free Tier eligible) or read-only access for discovery commands
@@ -75,6 +77,7 @@ This is a core tutorial in **Module 1 · AWS Fundamentals** of the REBASH Academ
 
 
 ## Learning Objectives
+
 
 
 
@@ -92,6 +95,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![AWS global infrastructure](../assets/excalidraw/aws-global-infrastructure.svg)
@@ -99,6 +103,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -158,38 +163,44 @@ Cloud and DevOps work is Regional by default. Pipelines, Terraform state, EC2, a
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-01 && cd ~/rebash-aws/module-01
 ```
 
-**Focus:** verify identity with STS and record account/region facts
+**Focus:** verify identity and explore regions with describe APIs
 
-### Step 1 – Caller identity
+### Step 1 – Caller identity and regions
 
 ```bash
-aws sts get-caller-identity | tee identity.json
+aws sts get-caller-identity
 aws configure get region || true
-aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '\t' '\n' | head -n 10 | tee regions.txt
-tee safety.txt << 'EOF'
-Use a sandbox account. Enable budgets/alerts. Never commit access keys.
+aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '	' '
+' | head
+```
+
+### Step 2 – Record lab notes (no create)
+
+```bash
+cat > notes.md << 'EOF'
+- Region choice affects latency, services, and data residency
+- AZ codes are account-mapped
+- Prefer STS/OIDC over long-lived access keys
 EOF
-cat safety.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only — revoke any temporary lab keys you exported
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -201,6 +212,7 @@ cat safety.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -220,6 +232,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -229,6 +242,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -247,6 +261,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode AWS Fundamentals and Global Infrastructure changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -256,6 +271,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -273,6 +289,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **AWS Fundamentals and Global Infrastructure** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -280,21 +297,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **AWS Fundamentals and Global Infrastructure** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. Region versus Availability Zone versus Local Zone?
+2. How do you choose a region for a new workload?
+3. What does sts get-caller-identity prove?
+4. Why are AZ names account-specific?
+5. How does global infrastructure affect DR design?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Confirm identity/region with STS and CLI config first — many “outages” are wrong account/region.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Prefer short-lived credentials (SSO/OIDC). Limit allowed regions via SCP where appropriate.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -304,6 +322,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

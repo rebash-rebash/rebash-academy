@@ -41,6 +41,7 @@ comments: false
 
 
 
+
 Choose a sensible repo boundary, tag a release with SemVer, and document what belongs in a GitHub Release.
 
 Teams fail when everything is one mega-repo without ownership — or when fifty repos have no shared standards. Releases make versions discoverable for ops and consumers.
@@ -53,11 +54,13 @@ This is a core tutorial in **Module 14 · Repository Management** of the REBASH 
 
 
 
+
 - [Git for Infrastructure as Code](git-for-infrastructure-as-code.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -74,6 +77,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
@@ -81,6 +85,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -130,39 +135,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-14 && cd ~/rebash-git/module-14
 ```
 
-**Focus:** practise Git skills for: Repository Management and Releases
+**Focus:** practise release branches, tags, and bundle archive
 
-### Step 1 – Init repository
+### Step 1 – Release branch and tag
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo "app" > README.md
+git add README.md && git commit -m "chore: init"
+git switch -c release/1.2
+echo "1.2.0" > VERSION
+git add VERSION && git commit -m "release: 1.2.0"
+git tag -a v1.2.0 -m "1.2.0"
+git switch -
+git merge release/1.2 -m "merge: release 1.2"
+git tag -l 'v*'
+git branch -a
 ```
 
-### Step 2 – Tag a release
+### Step 2 – Bundle for archive
 
 ```bash
-echo '1.0.0' > VERSION
-git add VERSION && git commit -m 'Release 1.0.0'
-git tag -a v1.0.0 -m 'v1.0.0'
-git tag -l | tee tags.txt
-git show v1.0.0 --no-patch | tee tag-show.txt
+git bundle create repo.bundle --all
+git bundle verify repo.bundle
+ls -lh repo.bundle
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -174,6 +184,7 @@ git show v1.0.0 --no-patch | tee tag-show.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -193,6 +204,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -202,6 +214,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -220,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Repository Management and Releases changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -229,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -246,6 +261,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Repository Management and Releases** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -253,21 +269,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Repository Management and Releases** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Release branch versus tagging on main?
+2. How do you yank a bad release safely?
+3. What belongs in a release checklist?
+4. How do bundles/archives help disaster recovery?
+5. Who should have permission to create release tags?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Verify tag points at the intended SHA (git show), artifacts match that SHA, and release notes are complete.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Protect tags, restrict releasers, and store checksums.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -277,6 +294,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

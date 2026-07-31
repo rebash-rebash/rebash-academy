@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Distinguish shared, group, and project runners; pick an executor for isolation; and use job tags so the right capacity picks up production work.
 
 A **GitLab Runner** is the agent that executes jobs. The **executor** decides *how* isolation works (host shell, Docker container, Kubernetes Pod, and others). Scope (instance/shared, group, project) decides *who* can use the runner. Tags bind jobs to capable fleets.
@@ -56,11 +57,13 @@ This is a core tutorial in **Module 3 · GitLab Runners** of the REBASH Academy 
 
 
 
+
 - [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -77,6 +80,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Runner architecture](../assets/excalidraw/gitlab-runner-architecture.svg)
@@ -84,6 +88,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -144,35 +149,52 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
 ```
 
-**Focus:** document runner/executor choices and a tags-based job
+**Focus:** compare executor tags and pin a runner tag on a job
 
-### Step 1 – Runner tags
+### Step 1 – Document executors and pin tags
 
 ```bash
+cat > runner-notes.md << 'EOF'
+# Runner executors
+- shell: fast, weak isolation
+- docker: clean images (common)
+- kubernetes: elastic; needs RBAC
+Prefer tags over untagged shared runners for production jobs
+EOF
 cat > .gitlab-ci.yml << 'EOF'
-build:
-  tags: [docker, linux]
+stages: [probe]
+probe_docker:
+  stage: probe
   image: alpine:3.20
+  tags: [docker]
   script:
     - uname -a
-    - echo "Job expects a runner with tags docker+linux"
+    - echo "executor expected: docker"
+probe_shell:
+  stage: probe
+  tags: [shell]
+  rules: [{when: manual}]
+  script: ["echo manual shell-tagged job"]
 EOF
-tee runner-notes.txt << 'EOF'
-Shell vs Docker vs Kubernetes executors trade isolation, speed, and ops cost.
-Register runners with least privilege and ephemeral environments where possible.
-EOF
-cat runner-notes.txt
+```
+
+### Step 2 – Validate tags
+
+```bash
+grep -E 'tags:|image:' .gitlab-ci.yml
+test -f runner-notes.md
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -184,6 +206,7 @@ cat runner-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -203,6 +226,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -212,6 +236,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -230,6 +255,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitLab Runners and Executors changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -239,6 +265,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -256,6 +283,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitLab Runners and Executors** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -263,21 +291,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **GitLab Runners and Executors** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. Compare shell, Docker, and Kubernetes executors for isolation and cost.
+2. Jobs stuck in pending — what runner factors do you verify first?
+3. Why tag runners instead of relying on shared untagged runners?
+4. What security risk does a privileged Docker runner introduce?
+5. How do protected runners interact with protected branches/variables?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Check runner online status, matching tags, concurrent job limits, and whether the project may use that runner. Pending almost always means no eligible runner.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Privileged mode and Docker socket mounts can let jobs escape to the host. Prefer unprivileged executors and dedicated tags for production.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -287,6 +316,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

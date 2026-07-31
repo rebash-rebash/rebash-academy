@@ -49,6 +49,7 @@ comments: false
 
 
 
+
 Author a GitHub Actions workflow that builds a multi-stage Dockerfile with Buildx, produces multi-architecture images, and pushes immutable SHA tags to GitHub Container Registry (GHCR) — ready for later Kubernetes or cloud promotion.
 
 CI builds containers so every merge produces a **reproducible Open Container Initiative (OCI) image**. Prefer **Docker Buildx** over ad-hoc `docker build` on a laptop. Tag with the commit SHA (and optionally a digest); promote that same image through staging and production. **GHCR** (`ghcr.io/<owner>/<image>`) is the natural home for GitHub-native pipelines; the same pattern works for Docker Hub, Amazon Elastic Container Registry (ECR), and others with different login steps.
@@ -61,11 +62,13 @@ This is a core tutorial in **Module 7 · Docker Pipelines** of the REBASH Academ
 
 
 
+
 - [Artifacts and Caching](artifacts-and-caching.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -83,6 +86,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Docker build pipeline](../assets/excalidraw/gha-docker-pipeline.svg)
@@ -90,6 +94,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -146,44 +151,83 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/docker-lab && cd ~/rebash-github-actions/docker-lab
 ```
 
-**Focus:** Dockerfile + Actions job that builds locally first
+**Focus:** Dockerfile plus build-push workflow (local build; push disabled)
 
-### Step 1 – Local build + workflow
+### Step 1 – Dockerfile and workflow
+
+```bash
+mkdir -p .github/workflows
+cat > Dockerfile << 'EOF'
+FROM python:3.12-alpine
+WORKDIR /app
+COPY app.py .
+USER nobody
+CMD ["python", "app.py"]
+EOF
+echo 'print("gha docker lab")' > app.py
 
 {% raw %}
-```bash
-cat > Dockerfile << 'EOF'
-FROM alpine:3.20
-COPY hi.txt /hi.txt
-CMD ["cat","/hi.txt"]
-EOF
-echo hi > hi.txt
-docker build -t rebash-gha-lab:local .
-docker run --rm rebash-gha-lab:local
-mkdir -p .github/workflows
-cat > .github/workflows/docker.yml << 'EOF'
-name: docker
-on: push
+```yaml
+# .github/workflows/docker.yml
+name: Docker pipelines
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+  packages: write
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t demo:${{ github.sha }} .
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/docker.yml')); print('OK')"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ghcr.io/example/demo:lab
+          # production tags often use: ghcr.io/${{ github.repository }}/demo:${{ github.sha }}
 ```
 {% endraw %}
+
+cat > .github/workflows/docker.yml << 'EOF'
+name: Docker pipelines
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ghcr.io/example/demo:lab
+EOF
+```
+
+### Step 2 – Local docker build proof
+
+```bash
+docker build -t rebash-gha-lab:local .
+docker run --rm rebash-gha-lab:local
+docker rmi rebash-gha-lab:local
+grep -E 'build-push-action|push: false' .github/workflows/docker.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
 docker rmi rebash-gha-lab:local 2>/dev/null || true
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -195,6 +239,7 @@ docker rmi rebash-gha-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
 
 
 
@@ -214,6 +259,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -223,6 +269,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -241,6 +288,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Docker Pipelines with GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -250,6 +298,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -267,6 +316,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Docker Pipelines with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -274,21 +324,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Docker Pipelines with GitHub Actions** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Why keep push false until registry auth is ready?
+2. How should image tags incorporate git SHA?
+3. What permissions are needed to push to ghcr.io?
+4. How does Buildx help multi-platform builds?
+5. How do you avoid storing registry passwords in the Dockerfile?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Check Dockerfile context, Buildx setup, and whether push/tags match registry permissions.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Use OIDC or GITHUB_TOKEN/registry login actions; never bake credentials into layers.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -298,6 +349,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

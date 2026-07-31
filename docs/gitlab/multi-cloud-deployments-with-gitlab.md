@@ -50,6 +50,7 @@ comments: false
 
 
 
+
 Sketch OIDC-oriented GitLab CI patterns for AWS (IAM / EKS / ECS), Azure (login / AKS), and Google Cloud (Workload Identity / GKE / Cloud Run) without embedding long-lived cloud keys in the repository.
 
 Modern GitLab deploy jobs **federate identity**: the job presents a GitLab-issued OIDC token; the cloud exchanges it for a short-lived role. That role then updates EKS/ECS, AKS, GKE, or Cloud Run. Patterns differ by cloud, but the CI shape is the same — authenticate, deploy immutable artefact, protect production.
@@ -62,11 +63,13 @@ This is a core tutorial in **Module 11 · Cloud Deployments** of the REBASH Acad
 
 
 
+
 - [Terraform Pipelines in GitLab](terraform-pipelines-in-gitlab.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -84,6 +87,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Multi-cloud GitLab deployments](../assets/excalidraw/gitlab-multi-cloud.svg)
@@ -91,6 +95,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -147,36 +152,58 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
 ```
 
-**Focus:** matrix-like parallel deploy stubs for two clouds
+**Focus:** parameterise deploy jobs per cloud with OIDC-ready stubs (file-only)
 
-### Step 1 – Multi-cloud jobs
+### Step 1 – Multi-cloud job matrix
 
 ```bash
 cat > .gitlab-ci.yml << 'EOF'
-.deploy:
-  image: alpine:3.20
-  script:
-    - echo "Deploy to $CLOUD using OIDC — no static keys"
-
+stages: [deploy]
+.oidc_aws:
+  id_tokens:
+    GITLAB_OIDC_TOKEN: {aud: https://gitlab.com}
+  variables: {CLOUD: aws}
+.oidc_gcp:
+  id_tokens:
+    GITLAB_OIDC_TOKEN: {aud: https://gitlab.com}
+  variables: {CLOUD: gcp}
 deploy_aws:
-  extends: .deploy
-  variables: { CLOUD: aws }
+  extends: .oidc_aws
+  stage: deploy
+  image: alpine:3.20
+  rules:
+    - if: $CLOUD_TARGET == "aws"
+      when: manual
+  script: ["echo Assume AWS role via OIDC — file-only", "echo cloud=$CLOUD"]
 deploy_gcp:
-  extends: .deploy
-  variables: { CLOUD: gcp }
+  extends: .oidc_gcp
+  stage: deploy
+  image: alpine:3.20
+  rules:
+    - if: $CLOUD_TARGET == "gcp"
+      when: manual
+  script: ["echo Exchange OIDC for GCP WIF — file-only", "echo cloud=$CLOUD"]
 EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); print(sorted(k for k in d if k.startswith('deploy')))"
+```
+
+### Step 2 – Confirm separate cloud jobs
+
+```bash
+grep -c 'id_tokens:' .gitlab-ci.yml
+grep -E 'deploy_aws:|deploy_gcp:|CLOUD_TARGET' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# File-only — no cloud credentials
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -188,6 +215,7 @@ python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); print(sorted(
 
 
 ## Code Walkthrough
+
 
 
 
@@ -207,6 +235,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -216,6 +245,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -234,6 +264,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Multi-Cloud Deployments with GitLab changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -243,6 +274,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -260,6 +292,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Multi-Cloud Deployments with GitLab** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -267,21 +300,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Multi-Cloud Deployments with GitLab** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. How do you parameterise one pipeline for AWS and GCP deploys?
+2. What OIDC claim conditions should differ per cloud role?
+3. When is a matrix job better than separate deploy jobs?
+4. How do you avoid cross-cloud credential mix-ups in logs?
+5. What shared gates should every cloud deploy still pass?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Verify the job's cloud selector variables, matching OIDC trust, and that the correct provider CLI is in the image.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Isolate roles per cloud and environment; keep deploy jobs manual for production. File-only validation is enough until cloud trusts exist.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -291,6 +325,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

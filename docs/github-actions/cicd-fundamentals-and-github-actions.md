@@ -45,6 +45,7 @@ comments: false
 
 
 
+
 Explain what Continuous Integration (CI) and Continuous Delivery / Deployment (CD) solve, place GitHub Actions in that model, and describe the workflow lifecycle from event to completion.
 
 **Continuous Integration (CI)** builds and tests every meaningful change in Git so defects surface in minutes, not at release time. **Continuous Delivery** keeps every successful build *ready* to ship with human or automated gates. **Continuous Deployment** goes further and promotes to production automatically when those gates pass. **GitHub Actions** implements that automation as YAML workflows under `.github/workflows/`, so review, history, and pull requests share one system with your code.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 1 · CI/CD Fundamentals** of the REBASH Acad
 
 
 
+
 - [Git](../git/index.md) — commits, branches, and pull requests
 - Comfortable editing YAML in a terminal editor
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitHub Actions architecture](../assets/excalidraw/gha-architecture.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -158,40 +163,58 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-01 && cd ~/rebash-github-actions/module-01
 ```
 
-**Focus:** end-to-end CI workflow: checkout, test, artefact
+**Focus:** first workflow with checkout, test, and artifact upload
 
-### Step 1 – CI path
+### Step 1 – Scaffold app + workflow without expressions
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows src
-echo 'print("ci")' > src/app.py
-cat > .github/workflows/cicd.yml << 'EOF'
-name: cicd
-on: [push, pull_request]
+cat > src/add.py << 'EOF'
+def add(a, b):
+    return a + b
+EOF
+cat > .github/workflows/ci.yml << 'EOF'
+name: CI fundamentals
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
 jobs:
-  ci:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - run: python src/app.py
+        with:
+          python-version: "3.12"
+      - name: Test
+        run: python -c "import sys; sys.path.insert(0,'src'); from add import add; assert add(1,2)==3"
+      - name: Package
+        run: tar czf app.tgz -C src add.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-tgz
+          path: app.tgz
 EOF
-python src/app.py
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/cicd.yml')); print('OK')"
 ```
-{% endraw %}
+
+### Step 2 – Validate workflow and run assertion locally
+
+```bash
+test -f .github/workflows/ci.yml
+python3 -c "import sys; sys.path.insert(0,'src'); from add import add; assert add(1,2)==3; print('local-ok')"
+grep -E 'upload-artifact|setup-python|permissions:' .github/workflows/ci.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -203,6 +226,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/cicd.yml')); pri
 
 
 ## Code Walkthrough
+
 
 
 
@@ -222,6 +246,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -231,6 +256,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -249,6 +275,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode CI/CD Fundamentals and GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -258,6 +285,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -275,6 +303,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **CI/CD Fundamentals and GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -282,21 +311,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **CI/CD Fundamentals and GitHub Actions** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. What is the relationship between a workflow, a job, and a step?
+2. A workflow is not starting on push — what do you verify first?
+3. Why set top-level permissions even for simple CI?
+4. How should secrets be referenced in GitHub Actions?
+5. When do you choose workflow_dispatch over push triggers?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Check the on filters (branches/paths), whether Actions is enabled, and the Actions tab for skipped workflows. YAML indentation errors often prevent registration.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Default to read-only contents and open write permissions only where needed. Store secrets in GitHub Secrets/Environments and never print secret values.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -306,6 +336,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

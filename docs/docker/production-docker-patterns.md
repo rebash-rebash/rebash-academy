@@ -43,6 +43,8 @@ comments: false
 
 
 
+
+
 Assemble a production checklist: immutable tags, hardened images, registry retention, volume backup, health/resources, and a path to orchestrators.
 
 Production Docker is a set of defaults: small scanned images, non-root, limits, health checks, CI promotion, and documented rollback. Compose may run small fleets; Kubernetes owns large scale.
@@ -55,12 +57,16 @@ This is a core tutorial in **Module 17 · Production Docker** of the REBASH Acad
 
 
 
+
+
 - Modules 9–16 (Compose through troubleshooting)
 - [Docker Security Hardening](docker-security-hardening.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -78,6 +84,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Production platform](../assets/excalidraw/docker-production-platform.svg)
@@ -85,6 +93,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -132,35 +142,42 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
 ```
 
-**Focus:** production-minded image: non-root, healthcheck, pinned tag
+**Focus:** production-minded flags: restart policy, healthcheck
 
-### Step 1 – Prod-shaped Dockerfile
+### Step 1 – Production-shaped run
 
 ```bash
 cat > Dockerfile << 'EOF'
-FROM nginx:1.27-alpine
-RUN adduser -D -u 10001 appuser || true
-HEALTHCHECK CMD wget -qO- http://127.0.0.1/ || exit 1
+FROM nginx:alpine
+HEALTHCHECK --interval=5s --timeout=2s --retries=3 CMD wget -qO- http://127.0.0.1/ || exit 1
 EOF
-docker build -t rebash-lab:local .
-docker run -d --name rebash-lab -p 18080:80 rebash-lab:local
-sleep 2
-curl -sI http://127.0.0.1:18080 | head -n 3
-docker inspect rebash-lab --format '{{ "{{" }}json .State.Health{{ "}}" }}' | tee health.json || true
+docker build -t rebash-prod:lab .
+docker run -d --name rebash-prod --restart=on-failure:3 -p 18085:80 rebash-prod:lab
+sleep 6
+docker inspect rebash-prod --format 'health={{ "{{" }}if .State.Health{{ "}}" }}{{ "{{" }}.State.Health.Status{{ "}}" }}{{ "{{" }}else{{ "}}" }}none{{ "{{" }}end{{ "}}" }}'
+curl -sI http://127.0.0.1:18085 | head -n 3
+```
+
+### Step 2 – Cleanup
+
+```bash
+docker rm -f rebash-prod
+docker rmi rebash-prod:lab
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
-docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rm -f rebash-prod 2>/dev/null || true
+docker rmi rebash-prod:lab 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -172,6 +189,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -191,6 +210,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -200,6 +221,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -218,6 +241,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Production Docker Patterns changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -227,6 +252,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -244,6 +271,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 You can ship and operate containers with production discipline and hand off cleanly to Kubernetes.
 
 
@@ -251,21 +280,23 @@ You can ship and operate containers with production discipline and hand off clea
 ## Interview Questions
 
 
-1. What production problem does **Production Docker Patterns** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Restart policies you use in production?
+2. Healthchecks — what should they verify?
+3. Immutable infrastructure with containers means what?
+4. How do you handle config changes safely?
+5. Resource requests/limits mindset even on Docker hosts?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Inspect restart policy and health state, then application logs.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Non-root, minimal images, scanned bases, no secrets in images.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -275,6 +306,8 @@ You can ship and operate containers with production discipline and hand off clea
 
 
 ## References
+
+
 
 
 

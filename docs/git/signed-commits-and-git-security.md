@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Configure commit signing (SSH preferred for simplicity), verify signatures, and apply Git/GitHub security baselines: branch protection, secret hygiene, and least-privilege access.
 
 Author email in Git is forgeable. **Signed commits** prove the committer held a key tied to a verified identity. Pair signing with branch protection, secret scanning, and never committing credentials.
@@ -56,12 +57,14 @@ This is a core tutorial in **Module 15 · Security** of the REBASH Academy **Git
 
 
 
+
 - [Repository Management and Releases](repository-management-and-releases.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -79,6 +82,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![PR / review gate](../assets/excalidraw/git-pr-lifecycle.svg)
@@ -86,6 +90,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -134,42 +139,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-15 && cd ~/rebash-git/module-15
 ```
 
-**Focus:** practise Git skills for: Signed Commits and Git Security
+**Focus:** document SSH signing setup and inspect commit metadata
 
-### Step 1 – Init repository
+### Step 1 – Signing checklist + baseline commit
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+cat > signing-notes.md << 'EOF'
+# Signed commits
+- git config gpg.format ssh
+- git config user.signingkey ~/.ssh/id_ed25519.pub
+- git config commit.gpgsign true
+- Verify with: git log --show-signature
+EOF
+echo "signed-lab" > README.md
+git add README.md signing-notes.md
+git commit -m "docs: signing notes (enable SSH signing when keys exist)"
+git log -1 --format='%H %G? %s'
 ```
 
-### Step 2 – Signing readiness
+### Step 2 – Inspect commit headers
 
 ```bash
-git config --get user.name
-git config --get user.email
-tee signing-notes.txt << 'EOF'
-Production: enable commit signing (GPG/SSH) and require signed commits on protected branches.
-Lab: confirm identity config is correct before enabling signing keys.
-EOF
-git log -1 --pretty=fuller | tee last.txt
-cat signing-notes.txt
+git cat-file -p HEAD | sed -n '1,12p'
+test -f signing-notes.md
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -181,6 +188,7 @@ cat signing-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -200,6 +208,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -209,6 +218,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -227,6 +237,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Signed Commits and Git Security changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -236,6 +247,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -253,6 +265,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Signed Commits and Git Security** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -260,21 +273,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Signed Commits and Git Security** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Why sign commits/tags in an enterprise?
+2. SSH signing versus GPG — trade-offs?
+3. How do you verify signatures in git log?
+4. What does commit signing not prove?
+5. How do web-of-trust / key directories fit?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Check user.signingkey, gpg.format, and whether the public key is registered on the host.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Signing keys are high value — protect them and revoke promptly on loss. Signing does not replace code review.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -284,6 +298,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

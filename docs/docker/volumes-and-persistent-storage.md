@@ -40,6 +40,8 @@ comments: false
 
 
 
+
+
 Persist data with named volumes, use bind mounts for live code, know when `tmpfs` fits, and back up a volume.
 
 Container filesystems are ephemeral. **Volumes** survive container removal; **bind mounts** map host paths; **tmpfs** keeps data in memory.
@@ -52,11 +54,15 @@ This is a core tutorial in **Module 7 · Volumes & Storage** of the REBASH Acade
 
 
 
+
+
 - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -73,6 +79,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Volume architecture](../assets/excalidraw/docker-volume-architecture.svg)
@@ -80,6 +88,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -126,26 +136,36 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07/host-data
 ```
 
-**Focus:** persist data with a named volume
+**Focus:** persist data with a named volume across container recreate
 
-### Step 1 – Volume round-trip
+### Step 1 – Write then recreate
 
 ```bash
-docker volume create rebash-vol
-docker run --rm -v rebash-vol:/data alpine:3.20 sh -c 'echo persist > /data/note.txt'
-docker run --rm -v rebash-vol:/data alpine:3.20 cat /data/note.txt | tee note.txt
-docker volume inspect rebash-vol | tee vol.json
+docker volume create rebash-data
+docker run --rm -v rebash-data:/data alpine:3.20 sh -c 'echo persisted > /data/note.txt'
+docker run --rm -v rebash-data:/data alpine:3.20 cat /data/note.txt
+docker volume inspect rebash-data --format '{{ "{{" }}.Mountpoint{{ "}}" }}'
+```
+
+### Step 2 – Remove volume
+
+```bash
+docker volume rm rebash-data
+docker volume ls | grep rebash || echo "volume removed"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker volume rm rebash-vol 2>/dev/null || true
+docker volume rm rebash-data 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -157,6 +177,8 @@ docker volume rm rebash-vol 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -176,6 +198,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -185,6 +209,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -203,6 +229,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Volumes and Persistent Storage changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -212,6 +240,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -229,6 +259,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Volumes and Persistent Storage** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -236,21 +268,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Volumes and Persistent Storage** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Named volume versus bind mount trade-offs?
+2. What happens to a named volume on docker rm?
+3. How do permissions problems show up with mounts?
+4. Backup approach for volume data?
+5. Security risks of bind-mounting docker.sock?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Confirm the mount in docker inspect and file paths inside the container.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Never mount docker.sock into untrusted containers.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -260,6 +294,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

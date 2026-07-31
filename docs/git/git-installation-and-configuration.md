@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Install a current Git, set global identity and defaults, and prepare SSH or HTTPS auth for GitHub/GitLab without committing secrets.
 
 Wrong `user.name`/`user.email` pollutes audit trails. Broken SSH blocks every clone in CI. Configure once, verify, then never commit tokens.
@@ -58,12 +59,14 @@ This is a core tutorial in **Module 2 · Installing Git** of the REBASH Academy 
 
 
 
+
 - Linux/macOS/WSL with package install rights  
 - [Object model](understanding-the-git-object-model.md) recommended
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Git Installation and Configuration](../assets/excalidraw/git-workflow.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -141,28 +146,38 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-02 && cd ~/rebash-git/module-02
 ```
 
-**Focus:** verify Git install and set safe lab identity
+**Focus:** set useful local defaults and verify with git config --list
 
-### Step 1 – Config
+### Step 1 – Local config for this lab
 
 ```bash
-git --version | tee version.txt
-git config --global --get user.name || true
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-git config --list --local | egrep 'user.|init.defaultBranch' | tee local-config.txt
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+git config core.editor "true"
+git config pull.rebase false
+git config --local --list | sort
+```
+
+### Step 2 – Compare identity and aliases
+
+```bash
+git config --get user.name
+git config --get user.email
+git config alias.st status
+git st
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Local config only inside lab repo
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -174,6 +189,7 @@ git config --list --local | egrep 'user.|init.defaultBranch' | tee local-config.
 
 
 ## Code Walkthrough
+
 
 
 
@@ -193,6 +209,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -202,6 +219,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -220,6 +238,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Git Installation and Configuration changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -229,6 +248,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -246,6 +266,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Install Git; set identity correctly  
 - SSH keys for daily work; short-lived tokens for CI  
 - Document team defaults (`pull.rebase`, default branch)
@@ -255,21 +276,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Git Installation and Configuration** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Which Git config scopes exist (system/global/local)?
+2. Commits show the wrong author — how do you fix it going forward?
+3. Why set pull.rebase or merge explicitly?
+4. What risks come from sharing a machine Git identity?
+5. How do credential helpers interact with HTTPS remotes?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Check git config --show-origin user.name/user.email to see which scope wins.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Do not put PATs in plain config files. Prefer SSH keys or OS keychain-backed helpers.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -279,6 +301,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

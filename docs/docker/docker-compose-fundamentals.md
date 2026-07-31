@@ -39,6 +39,8 @@ comments: false
 
 
 
+
+
 Author a `compose.yaml` with services, a shared network, a volume, environment variables, and a health check — then bring the stack up and down.
 
 **Compose** declares multi-container apps as code. Ideal for local DevOps stacks and simple single-host deploys before Kubernetes.
@@ -51,11 +53,15 @@ This is a core tutorial in **Module 9 · Docker Compose** of the REBASH Academy 
 
 
 
+
+
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -73,6 +79,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Docker Compose](../assets/excalidraw/docker-compose.svg)
@@ -80,6 +88,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -132,37 +142,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
 ```
 
-**Focus:** Compose file with network and healthcheck
+**Focus:** run a two-service Compose stack and tear it down
 
-### Step 1 – Compose up
+### Step 1 – Compose file up
 
 ```bash
 cat > compose.yaml << 'EOF'
 services:
   web:
     image: nginx:alpine
-    ports: ["18080:80"]
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+    ports: ["18082:80"]
+  redis:
+    image: redis:7-alpine
 EOF
 docker compose up -d
 docker compose ps
-curl -sI http://127.0.0.1:18080 | head -n 3
-docker compose down
+curl -sI http://127.0.0.1:18082 | head -n 5
+docker compose exec redis redis-cli PING
+```
+
+### Step 2 – Down and remove
+
+```bash
+docker compose down -v
+docker compose ps -a
 ```
 
 ### Final step – Cleanup note
 
 ```bash
 docker compose down -v 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -174,6 +191,8 @@ docker compose down -v 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -193,6 +212,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -202,6 +223,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -220,6 +243,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Docker Compose Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -229,6 +254,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -246,6 +273,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Docker Compose Fundamentals** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -253,21 +282,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Docker Compose Fundamentals** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. What problem does Compose solve locally?
+2. How do you tear down including volumes?
+3. Service DNS names in Compose?
+4. Compose versus Swarm/Kubernetes for production?
+5. How do you override config per environment?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Run docker compose ps and docker compose logs for the failing service.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Do not commit .env secrets.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -277,6 +308,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

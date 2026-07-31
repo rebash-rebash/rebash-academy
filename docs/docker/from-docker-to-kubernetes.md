@@ -26,6 +26,8 @@ comments: false
 
 
 
+
+
 If you understand Docker, you already know half of Kubernetes. Containers become **Pods**, `docker run` flags become **Pod specs**, Compose services become **Deployments** and **Services**, and Swarm overlay networks become **ClusterIP** routing. This tutorial builds a explicit concept map so you can read Kubernetes manifests confidently and migrate workloads incrementally.
 
 This is **Tutorial 19** in **Module 6: Production & Beyond** of the REBASH Academy Docker track.
@@ -33,6 +35,8 @@ This is **Tutorial 19** in **Module 6: Production & Beyond** of the REBASH Acade
 
 
 ## Prerequisites
+
+
 
 
 
@@ -45,6 +49,8 @@ This is **Tutorial 19** in **Module 6: Production & Beyond** of the REBASH Acade
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -63,11 +69,15 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 ![Production container platform](../assets/excalidraw/docker-production-platform.svg)
 
 
 
 ## Theory
+
+
 
 
 
@@ -292,37 +302,51 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/from-docker-to-kubernetes && cd ~/rebash-docker/from-docker-to-kubernetes
 ```
 
-**Focus:** export a Compose-like app and note the Kubernetes mapping
+**Focus:** map a running container to Kubernetes YAML (dry-run if kubectl exists)
 
-### Step 1 – From Compose thinking to k8s
+### Step 1 – Docker run vs Deployment YAML
 
 ```bash
-cat > compose.yaml << 'EOF'
-services:
-  web:
-    image: nginx:alpine
-    ports: ["18080:80"]
+docker run -d --name rebash-bridge -p 18084:80 nginx:alpine
+cat > deploy.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-lab
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: web}}
+  template:
+    metadata: {labels: {app: web}}
+    spec:
+      containers:
+        - name: web
+          image: nginx:alpine
+          ports: [{containerPort: 80}]
 EOF
-docker compose config | tee compose-config.txt
-tee map.txt << 'EOF'
-Compose service -> Deployment+Service
-Compose volume -> PVC
-Compose env/files -> ConfigMap/Secret
-EOF
-docker compose up -d
-curl -sI http://127.0.0.1:18080 | head -n 3
-docker compose down
+command -v kubectl >/dev/null && kubectl apply --dry-run=client -f deploy.yaml || true
+curl -sI http://127.0.0.1:18084 | head -n 3
+```
+
+### Step 2 – Cleanup docker side
+
+```bash
+docker rm -f rebash-bridge
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker compose down -v 2>/dev/null || true
+docker rm -f rebash-bridge 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -342,6 +366,8 @@ Confirm the lab before moving on:
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -367,6 +393,8 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 
 
 
+
+
 - Do not translate Compose `privileged: true` or host mounts into Kubernetes without a security review
 - Map Compose secrets to Kubernetes Secrets or an external secret store — not plain ConfigMaps
 - Replace host port publishes with Services/Ingress and network policies
@@ -377,6 +405,8 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -401,6 +431,8 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 
 
 
+
+
 !!! tip "Migrate stateless services first"
     API, workers, frontends — then tackle databases with proper operators.
 
@@ -422,6 +454,8 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 
 
 
+
+
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | ImagePullBackOff | Private registry auth | imagePullSecrets |
@@ -437,6 +471,8 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 
 
 
+
+
 - **Pods** wrap containers; **Deployments** manage replica count and rollouts (like Swarm services)
 - **Services** provide stable DNS and load balancing (like overlay service names + VIP)
 - **ConfigMaps/Secrets**, **PVCs**, and **probes** map directly from Compose and Dockerfile patterns
@@ -449,21 +485,23 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 ## Interview Questions
 
 
-1. What production problem does **From Docker to Kubernetes** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Map Docker run flags to Kubernetes fields.
+2. Why isn't Compose a production orchestrator for most enterprises?
+3. What stays the same when moving images to Kubernetes?
+4. How do probes differ from Docker HEALTHCHECK?
+5. What operational skills transfer directly?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Compare the working docker run/compose config to Deployment/Service YAML. Client dry-run catches API mistakes early.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Keep image supply-chain controls; move secrets to Kubernetes Secret/CSI providers.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -480,6 +518,8 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 
 
 ## References
+
+
 
 
 

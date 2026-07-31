@@ -50,6 +50,7 @@ comments: false
 
 
 
+
 Design a production-shaped Amazon Virtual Private Cloud (VPC): Classless Inter-Domain Routing (CIDR) plan, public and private subnets across Availability Zones (AZs), routing, Internet Gateway (IGW), Network Address Translation (NAT), security groups, network access control lists (NACLs), and when to use peering, Transit Gateway (TGW), endpoints, and Amazon Route 53.
 
 Almost every AWS workload sits in a **VPC** — your isolated network in a Region. Poor CIDR planning and “open to `0.0.0.0/0`” security groups cause outages and breaches. This module builds the mental model Cloud, DevOps, and platform engineers use daily.
@@ -65,12 +66,14 @@ This is a core tutorial in **Module 3 · Networking** of the REBASH Academy **AW
 
 
 
+
 - [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
 - [Networking Fundamentals](../networking/index.md) — CIDR, routing, TCP/UDP
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -88,6 +91,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![AWS VPC architecture](../assets/excalidraw/aws-vpc-architecture.svg)
@@ -95,6 +99,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -160,35 +165,44 @@ Path: client → Route 53 → public LB → private app → DB SG; egress via NA
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-03 && cd ~/rebash-aws/module-03
 ```
 
-**Focus:** describe VPCs/subnets/route tables (read-only)
+**Focus:** describe existing VPCs/subnets/route tables (read-only)
 
 ### Step 1 – Network inventory
 
 ```bash
-aws sts get-caller-identity >/dev/null
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock,IsDefault:IsDefault}' --output table | tee vpcs.txt
-aws ec2 describe-subnets --query 'Subnets[].{Id:SubnetId,Vpc:VpcId,Cidr:CidrBlock,Az:AvailabilityZone}' --output table | head -n 40 | tee subnets.txt
-aws ec2 describe-route-tables --query 'RouteTables[0].Routes' --output table 2>/dev/null | head | tee routes.txt || true
+aws sts get-caller-identity
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock,Default:IsDefault}' --output table
+aws ec2 describe-subnets --query 'Subnets[].{Id:SubnetId,Vpc:VpcId,Az:AvailabilityZone,Cidr:CidrBlock}' --output table
+aws ec2 describe-route-tables --query 'RouteTables[0:3].{Id:RouteTableId,Vpc:VpcId}' --output table
+```
+
+### Step 2 – Design notes only
+
+```bash
+cat > vpc-design.md << 'EOF'
+Public subnet: route to IGW
+Private subnet: NAT is costly while idle — avoid in labs without destroy plan
+Security groups: stateful allow-lists
+EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -200,6 +214,7 @@ aws ec2 describe-route-tables --query 'RouteTables[0].Routes' --output table 2>/
 
 
 ## Code Walkthrough
+
 
 
 
@@ -219,6 +234,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -228,6 +244,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -246,6 +263,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode VPC Networking on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -255,6 +273,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -272,6 +291,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **VPC Networking on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -279,21 +299,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **VPC Networking on AWS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. Public versus private subnet routing?
+2. Security group versus NACL?
+3. Why are NAT gateways a cost surprise?
+4. How do you troubleshoot no route to host for EC2?
+5. VPC endpoints — when do they help?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Trace route tables, subnet association, security groups, and NACLs in that order.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Avoid 0.0.0.0/0 SSH from the world. Prefer SSM Session Manager.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -303,6 +324,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

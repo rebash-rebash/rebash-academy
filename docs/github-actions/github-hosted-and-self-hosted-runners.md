@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Decide when GitHub-hosted runners are enough, when self-hosted capacity is required, and how labels, runner groups, and autoscaling keep jobs on the right fleet.
 
 A **runner** is the machine that executes a job. **GitHub-hosted** runners are ephemeral VMs (or containers) GitHub operates — labelled `ubuntu-latest`, `windows-latest`, `macos-latest`, plus larger and GPU SKUs on paid plans. **Self-hosted** runners are machines *you* register; they can reach private networks, use custom images, and scale under your cloud account. **Runner groups** and **labels** control which repositories may use which capacity.
@@ -56,12 +57,14 @@ This is a core tutorial in **Module 3 · Runners** of the REBASH Academy **GitHu
 
 
 
+
 - [GitHub Actions Basics: Workflows, Jobs, and Steps](github-actions-basics-workflows-jobs-steps.md)
 - Basic Linux administration helps for self-hosted labs
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -79,6 +82,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Runner architecture](../assets/excalidraw/gha-runner-architecture.svg)
@@ -86,6 +90,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -152,43 +157,53 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-03/.github/workflows && cd ~/rebash-github-actions/module-03/.github/workflows
 ```
 
-**Focus:** contrast hosted vs self-hosted with labels in a workflow
+**Focus:** contrast github-hosted labels with a self-hosted tagged job
 
-### Step 1 – Runner labels
+### Step 1 – Hosted vs self-hosted definitions
 
-{% raw %}
 ```bash
-mkdir -p .github/workflows
+mkdir -p .github/workflows notes
+cat > notes/runners.md << 'EOF'
+# Runner notes
+- github-hosted: ubuntu-latest — patched by GitHub, ephemeral
+- self-hosted: you patch OS, scale, isolate secrets
+- Prefer labels like [self-hosted, linux, rebash]
+EOF
 cat > .github/workflows/runners.yml << 'EOF'
-name: runners
-on: workflow_dispatch
+name: Runner shapes
+on: [workflow_dispatch]
+permissions:
+  contents: read
 jobs:
   hosted:
     runs-on: ubuntu-latest
     steps:
       - run: uname -a
-  # self_hosted:
-  #   runs-on: [self-hosted, linux, x64]
-  #   steps:
-  #     - run: uname -a
+  self_hosted_shape:
+    runs-on: [self-hosted, linux, rebash]
+    if: false
+    steps:
+      - run: echo "Enable when a labelled runner exists"
 EOF
-tee runner-notes.txt << 'EOF'
-Self-hosted runners need patching, isolation, and untrusted-PR hardening.
-Prefer GitHub-hosted for open-source and simple CI; self-hosted for special hardware/network.
-EOF
-cat runner-notes.txt
 ```
-{% endraw %}
+
+### Step 2 – Validate labels
+
+```bash
+grep -E 'ubuntu-latest|self-hosted' .github/workflows/runners.yml
+test -f notes/runners.md
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -200,6 +215,7 @@ cat runner-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -219,6 +235,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -228,6 +245,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -246,6 +264,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitHub-Hosted and Self-Hosted Runners changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -255,6 +274,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -272,6 +292,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitHub-Hosted and Self-Hosted Runners** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -279,21 +300,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **GitHub-Hosted and Self-Hosted Runners** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Pros and cons of github-hosted versus self-hosted runners?
+2. Jobs queued forever on self-hosted — what do you check?
+3. Why are labels important for runner pools?
+4. What isolation risks do self-hosted runners have with public forks?
+5. How do you patch and monitor self-hosted fleets?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Verify the runner is online, labels match runs-on, and the repository is allowed to use the runner group.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Never use self-hosted runners for untrusted public fork PRs without hard isolation.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -303,6 +325,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

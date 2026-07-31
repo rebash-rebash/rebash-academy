@@ -42,6 +42,7 @@ comments: false
 
 
 
+
 Explain blobs, trees, commits, and tags, and use `git cat-file` / `rev-parse` to inspect how history is stored — so reset, rebase, and recovery later make sense.
 
 Git is a **content-addressed** object database. Commands move pointers; objects are rarely rewritten in place. That mental model unlocks reflog recovery and “detached HEAD” incidents.
@@ -56,6 +57,7 @@ This is a core tutorial in **Module 1 · Version Control Fundamentals** of the R
 
 
 
+
 ### Required
 
 - [Introduction to Git and Version Control](introduction-to-git-and-version-control.md)
@@ -64,6 +66,7 @@ This is a core tutorial in **Module 1 · Version Control Fundamentals** of the R
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Git object model](../assets/excalidraw/git-object-model.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -137,41 +142,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 ```
 
-**Focus:** practise Git skills for: Understanding the Git Object Model
+**Focus:** inspect blobs/trees/commits with cat-file and rev-parse
 
-### Step 1 – Init repository
+### Step 1 – Create objects and inspect
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo hello > hello.txt
+git add hello.txt
+git commit -m "chore: hello"
+COMMIT=$(git rev-parse HEAD)
+TREE=$(git rev-parse 'HEAD^{tree}')
+echo "commit=$COMMIT"
+echo "tree=$TREE"
+git cat-file -t "$COMMIT"
+git cat-file -p "$COMMIT"
+git cat-file -p "$TREE"
 ```
 
-### Step 2 – Inspect objects
+### Step 2 – Blob content
 
 ```bash
-echo 'payload' > blob.txt
-git add blob.txt
-git commit -m 'blob'
-git rev-parse HEAD
-git cat-file -t HEAD
-git cat-file -p HEAD | tee commit-obj.txt
+BLOB=$(git rev-parse HEAD:hello.txt)
+git cat-file -p "$BLOB"
 git rev-list --objects --all | head
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -183,6 +191,7 @@ git rev-list --objects --all | head
 
 
 ## Code Walkthrough
+
 
 
 
@@ -202,6 +211,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -211,6 +221,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -229,6 +240,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Understanding the Git Object Model changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -238,6 +250,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -252,6 +265,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Objects are immutable and hashed  
 - Branches are pointers; commits are snapshots  
 - Plumbing commands reveal the real model
@@ -261,21 +275,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Understanding the Git Object Model** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Explain blob, tree, commit, and tag objects.
+2. How does a commit point to a tree?
+3. What makes Git content-addressed?
+4. How do you inspect an object with plumbing commands?
+5. Why does rewriting history change commit hashes?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Use git rev-parse and git cat-file -p on HEAD and its tree to see the object graph.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Signed commits/tags bind identity to hashes. Rewriting published history breaks signatures.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -285,6 +300,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

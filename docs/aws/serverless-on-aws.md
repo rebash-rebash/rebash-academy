@@ -53,6 +53,7 @@ comments: false
 
 
 
+
 Assemble a small event-driven design using AWS Lambda, Amazon API Gateway, Amazon EventBridge, Amazon Simple Notification Service (SNS), Amazon Simple Queue Service (SQS), and AWS Step Functions — and tear it down so idle resources do not linger.
 
 **Serverless** on AWS means you deploy code or workflows and pay primarily for invocations, duration, and messages — not for always-on virtual machines. **Lambda** runs functions. **API Gateway** exposes HTTP/WebSocket APIs. **EventBridge** routes events from AWS services and custom buses. **SNS** fans out notifications; **SQS** buffers work for consumers. **Step Functions** orchestrate multi-step workflows with retries and branching. Together they form the backbone of many Cloud DevOps automation and product backends.
@@ -65,6 +66,7 @@ This is a core tutorial in **Module 8 · Serverless** of the REBASH Academy **AW
 
 
 
+
 - [Containers on AWS](containers-ecs-eks-ecr.md) (when to choose serverless vs containers)
 - IAM roles and least-privilege policies
 - AWS CLI configured; optional Python or Node.js for a tiny handler
@@ -72,6 +74,7 @@ This is a core tutorial in **Module 8 · Serverless** of the REBASH Academy **AW
 
 
 ## Learning Objectives
+
 
 
 
@@ -88,6 +91,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Serverless architecture](../assets/excalidraw/aws-serverless.svg)
@@ -95,6 +99,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -155,36 +160,53 @@ Keep secrets in Secrets Manager or Systems Manager Parameter Store, not plaintex
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-08 && cd ~/rebash-aws/module-08
 ```
 
-**Focus:** list Lambda functions and an API Gateway sketch (read-only)
+**Focus:** list Lambda resources; optional tiny function only if role exists
 
 ### Step 1 – Serverless inventory
 
 ```bash
-aws lambda list-functions --query 'Functions[].{Name:FunctionName,Runtime:Runtime}' --output table 2>/dev/null | head -n 30 | tee lambda.txt || true
-aws apigateway get-rest-apis --query 'items[].name' --output text 2>/dev/null | tee apis.txt || true
-tee serverless-notes.txt << 'EOF'
-Watch concurrency, timeouts, IAM roles, and cold starts. Use budgets for account-level spend.
+aws sts get-caller-identity
+aws lambda list-functions --query 'Functions[].{Name:FunctionName,Runtime:Runtime}' --output table
+aws apigatewayv2 get-apis --query 'Items[].{Name:Name,Id:ApiId}' --output table 2>/dev/null || true
+```
+
+### Step 2 – Optional hello Lambda (destroy after)
+
+```bash
+ROLE_ARN=$(aws iam get-role --role-name lab-lambda-basic --query Role.Arn --output text 2>/dev/null || true)
+if [ -n "${ROLE_ARN:-}" ]; then
+  cat > function.py << 'EOF'
+def handler(event, context):
+    return {"ok": True}
 EOF
+  zip -q function.zip function.py
+  FN="rebash-lab-$(date +%s)"
+  aws lambda create-function --function-name "$FN" --runtime python3.12 --role "$ROLE_ARN" --handler function.handler --zip-file fileb://function.zip
+  aws lambda invoke --function-name "$FN" out.json && cat out.json && echo
+  aws lambda delete-function --function-name "$FN"
+  rm -f function.zip function.py out.json
+else
+  echo "No lab-lambda-basic role — describe-only path is fine"
+fi
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -196,6 +218,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -215,6 +238,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -224,6 +248,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -242,6 +267,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Serverless on AWS — Lambda, APIs, and Eventing changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -251,6 +277,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -268,6 +295,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Serverless on AWS — Lambda, APIs, and Eventing** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -275,21 +303,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Serverless on AWS — Lambda, APIs, and Eventing** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. Lambda concurrency and timeout pitfalls?
+2. API Gateway versus Lambda Function URLs?
+3. How do you diagnose a failing Lambda?
+4. Cold starts — mitigations?
+5. IAM for Lambda least privilege patterns?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Read CloudWatch logs for the function and confirm the role can write logs and reach dependencies.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Least-privilege function roles and delete unused functions after labs.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -299,6 +328,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

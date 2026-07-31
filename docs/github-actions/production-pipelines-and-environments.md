@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Design environment promotion (dev → staging → production) with protected environments, required reviewers, rollback paths, and progressive delivery patterns (blue/green and canary).
 
 Production CI/CD is controlled promotion of an **immutable artefact** through named **environments**, not “deploy on every push to main”. GitHub **Environments** encode wait timers, required reviewers, and environment secrets so only approved identities promote to production.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 15 · Production Pipelines** of the REBASH A
 
 
 
+
 - [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md)
 - Deploy awareness from Kubernetes or multi-cloud modules (or equivalent)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Production pipelines](../assets/excalidraw/gha-production.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -148,41 +153,56 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-15/.github/workflows && cd ~/rebash-github-actions/module-15/.github/workflows
 ```
 
-**Focus:** environment protection pattern in workflow YAML
+**Focus:** staging auto-deploy and production environment with concurrency gate
 
-### Step 1 – Environments
+### Step 1 – Environment promotion workflow
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/prod.yml << 'EOF'
-name: prod
+cat > .github/workflows/production.yml << 'EOF'
+name: Production pipelines
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
 jobs:
-  deploy:
+  deploy_staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "deploy staging"
+  deploy_production:
+    needs: deploy_staging
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Requires environment approvals/secrets in GitHub settings"
+      - run: echo "production requires environment reviewers"
 EOF
-tee env-notes.txt << 'EOF'
-Use GitHub Environments for required reviewers, wait timers, and scoped secrets.
-EOF
-cat env-notes.txt
 ```
-{% endraw %}
+
+### Step 2 – Validate concurrency and environments
+
+```bash
+grep -E 'concurrency:|environment: production|needs: deploy_staging' .github/workflows/production.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -194,6 +214,7 @@ cat env-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -213,6 +234,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -222,6 +244,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -240,6 +263,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Production Pipelines and Environments changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -249,6 +273,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -266,6 +291,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Production Pipelines and Environments** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -273,21 +299,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Production Pipelines and Environments** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. What protections do GitHub Environments provide?
+2. Why use concurrency groups for production deploys?
+3. How do you model staging then production promotion?
+4. What evidence should a production deploy leave behind?
+5. How do wait timers / reviewers change change management?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Check environment protection rules, required reviewers, and whether the job targeted the intended environment.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Store production secrets only on the production environment and require reviews.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -297,6 +324,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

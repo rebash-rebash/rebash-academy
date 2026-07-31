@@ -42,6 +42,7 @@ comments: false
 
 
 
+
 Structure an Infrastructure as Code (IaC) repository for safe Git reviews: clear modules, `.gitignore` for state/secrets, and plan-on-PR as the change process.
 
 IaC without Git discipline is risky. Treat Terraform/Ansible like production code: small PRs, CODEOWNERS on `prod/`, never commit `.tfstate` or secrets.
@@ -54,12 +55,14 @@ This is a core tutorial in **Module 13 · Git for IaC** of the REBASH Academy **
 
 
 
+
 - [GitOps Fundamentals](gitops-fundamentals.md)
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -76,6 +79,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
@@ -83,6 +87,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -130,44 +135,47 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-13/{modules/network,envs/dev} && cd ~/rebash-git/module-13/{modules/network,envs/dev}
 ```
 
-**Focus:** practise Git skills for: Git for Infrastructure as Code
+**Focus:** structure an IaC-friendly repo with modules layout and ignore state
 
-### Step 1 – Init repository
-
-```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
-```
-
-### Step 2 – IaC repo hygiene
+### Step 1 – IaC layout and ignores
 
 ```bash
-mkdir -p infra
-echo 'resource "null_resource" "x" {}' > infra/main.tf
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+mkdir -p modules/network envs/dev
 cat > .gitignore << 'EOF'
 .terraform/
-*.tfstate*
-.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
 EOF
-git add infra .gitignore
-git commit -m 'Add infra scaffold'
-git status --ignored | tee ignored.txt
+echo '# network module stub' > modules/network/main.tf
+echo '# root module for dev' > envs/dev/main.tf
+echo "local mock state — must not commit" > terraform.tfstate
+git add .gitignore modules envs
+git status
+git check-ignore -v terraform.tfstate
+git commit -m "chore: IaC layout with state ignored"
+```
+
+### Step 2 – Prove state is not tracked
+
+```bash
+git ls-files | grep -i tfstate && exit 1 || echo "state not tracked"
+git ls-files
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -179,6 +187,7 @@ git status --ignored | tee ignored.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -198,6 +207,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -207,6 +217,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -225,6 +236,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Git for Infrastructure as Code changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -234,6 +246,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -251,6 +264,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Git for Infrastructure as Code** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -258,21 +272,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Git for Infrastructure as Code** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Which IaC files must never be committed?
+2. How do you structure envs versus modules in Git?
+3. Why are small commits valuable for terraform plan review?
+4. How do CODEOWNERS help IaC paths?
+5. What remote state considerations pair with Git workflows?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Confirm .gitignore excludes state and .terraform/, then review git status before commit.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Protect main, require plans in CI, and keep cloud credentials out of the repo.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -282,6 +297,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

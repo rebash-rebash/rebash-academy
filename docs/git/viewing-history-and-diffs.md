@@ -41,6 +41,7 @@ comments: false
 
 
 
+
 Use `git log`, `git show`, and `git diff` to answer “what changed?” during incidents and reviews.
 
 This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
@@ -51,11 +52,13 @@ This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Gi
 
 
 
+
 - [Basic Git Workflow](basic-git-workflow-add-commit-push.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -72,6 +75,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Viewing History and Diffs](../assets/excalidraw/git-object-model.svg)
@@ -79,6 +83,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -131,39 +136,39 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-03/hist && cd ~/rebash-git/module-03/hist
 ```
 
-**Focus:** practise Git skills for: Viewing History and Diffs
+**Focus:** read history with log/diff/show
 
-### Step 1 – Init repository
+### Step 1 – Build history worth inspecting
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo a > file.txt && git add file.txt && git commit -m "chore: add file"
+echo b >> file.txt && git add file.txt && git commit -m "feat: append b"
+echo c >> file.txt && git add file.txt && git commit -m "feat: append c"
+git log --oneline --graph -n 5
+git show HEAD --stat
+git diff HEAD~2 HEAD
 ```
 
-### Step 2 – History and diffs
+### Step 2 – Search history
 
 ```bash
-echo v1 > file.txt && git add file.txt && git commit -m 'v1'
-echo v2 > file.txt && git commit -am 'v2'
-git log --oneline --decorate | tee hist.txt
-git show HEAD | tee show.txt
-git diff HEAD~1 HEAD | tee diff.txt
+git log -S'b' --oneline
+git log -p -n 1
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -175,6 +180,7 @@ git diff HEAD~1 HEAD | tee diff.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -194,6 +200,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -203,6 +210,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -221,6 +229,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Viewing History and Diffs changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -230,6 +239,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -247,6 +257,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Viewing History and Diffs** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -254,21 +265,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Viewing History and Diffs** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. When do you use git show versus git diff?
+2. How do you find which commit introduced a string?
+3. What does git log -p give you in an incident?
+4. How do path filters help in monorepos?
+5. Binary files break diffs — what options help?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Start with git log --oneline on the affected path, then git show on the suspicious commit. Use -S/-G to search history.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Avoid pasting sensitive diffs into tickets; redact secrets.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -278,6 +290,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

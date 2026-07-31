@@ -40,6 +40,7 @@ comments: false
 
 
 
+
 Rebase a feature onto `main`, squash commits interactively, and follow the rule: do not rebase commits already pushed to shared branches without coordination.
 
 Rebase replays commits onto a new base — cleaner linear history, **new SHAs**. Use on local feature branches; prefer merge commits on protected `main` via PR settings.
@@ -52,11 +53,13 @@ This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Acad
 
 
 
+
 - [Merging and Merge Conflicts](merging-and-merge-conflicts.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -73,6 +76,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Merge/rebase process](../assets/excalidraw/git-merge-process.svg)
@@ -80,6 +84,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -133,41 +138,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-07 && cd ~/rebash-git/module-07
 ```
 
-**Focus:** practise Git skills for: Rebasing and Interactive Rebase
+**Focus:** rebase a feature branch onto main and inspect reflog
 
-### Step 1 – Init repository
+### Step 1 – Create divergent history and rebase
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo base > app.txt
+git add app.txt && git commit -m "chore: base"
+git switch -c feature/x
+echo feature >> app.txt
+git add app.txt && git commit -m "feat: feature line"
+git switch -
+echo main >> app.txt
+git add app.txt && git commit -m "fix: main line"
+git switch feature/x
+git rebase main
+git log --oneline --graph --all -n 10
 ```
 
-### Step 2 – Rebase practice
+### Step 2 – Safety check with reflog
 
 ```bash
-git switch -c feature/rebase
-echo a > a.txt && git add a.txt && git commit -m 'a'
-git switch main
-echo m > m.txt && git add m.txt && git commit -m 'm'
-git switch feature/rebase
-git rebase main
-git log --oneline --graph --all | tee rebase.txt
+git reflog -n 10
+git status
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -179,6 +187,7 @@ git log --oneline --graph --all | tee rebase.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -198,6 +207,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -207,6 +217,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -225,6 +236,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Rebasing and Interactive Rebase changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -234,6 +246,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -251,6 +264,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Rebasing and Interactive Rebase** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -258,21 +272,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Rebasing and Interactive Rebase** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. What does rebase rewrite, and when is that dangerous?
+2. Golden rule of rebasing shared history?
+3. Interactive rebase uses — squash/fixup/edit/reword?
+4. How do you abort a painful rebase?
+5. Rebase versus merge for feature branches?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    If conflicts explode, git rebase --abort returns you to the pre-rebase state. Use reflog if you already completed a bad rebase.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Do not rebase commits already pushed to shared branches without team agreement.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -282,6 +297,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

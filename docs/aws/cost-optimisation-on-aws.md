@@ -51,6 +51,7 @@ comments: false
 
 
 
+
 Read Amazon Web Services (AWS) bills with intent: know pricing models, use Cost Explorer and Budgets, and apply Savings Plans, Reserved Instances (RIs), Spot, and Trusted Advisor recommendations without breaking reliability.
 
 Cloud cost is an engineering problem. Idle NAT Gateways, oversized Amazon Elastic Compute Cloud (EC2) instances, unattached Elastic Block Store (EBS) volumes, and forgotten load balancers dominate surprise invoices. **FinOps** (cloud financial operations) means visibility, ownership via tags, and continuous right-sizing — not a once-a-year discount purchase.
@@ -66,6 +67,7 @@ This is a core tutorial in **Module 13 · Cost Optimisation** of the REBASH Acad
 
 
 
+
 - [CI/CD on AWS](cicd-on-aws.md)
 - Billing access (or a read-only billing view) in a sandbox or shared account
 - Familiarity with EC2, Amazon Simple Storage Service (S3), and networking cost drivers from earlier modules
@@ -73,6 +75,7 @@ This is a core tutorial in **Module 13 · Cost Optimisation** of the REBASH Acad
 
 
 ## Learning Objectives
+
 
 
 
@@ -90,6 +93,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Cost optimisation loop](../assets/excalidraw/aws-cost.svg)
@@ -97,6 +101,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -163,39 +168,43 @@ Platforms that ignore unit cost become unaffordable. SRE balances Multi-AZ relia
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-13 && cd ~/rebash-aws/module-13
 ```
 
-**Focus:** fetch cost-and-usage style signals if permitted (otherwise document)
+**Focus:** hunt idle resources; Cost Explorer when permitted
 
-### Step 1 – Cost awareness
+### Step 1 – Cost and idle resource hunt
 
 ```bash
-aws ce get-cost-and-usage \
-  --time-period Start=$(date -u -v-7d +%F 2>/dev/null || date -u -d '7 days ago' +%F),End=$(date -u +%F) \
-  --granularity DAILY --metrics UnblendedCost \
-  --query 'ResultsByTime[].{Date:TimePeriod.Start,Amount:Total.UnblendedCost.Amount}' \
-  --output table 2>/dev/null | tee cost.txt || echo 'Cost Explorer not permitted — enable budgets anyway' | tee cost.txt
-tee finops.txt << 'EOF'
-Tag owners, turn off idle NAT/ELB/EC2, use budgets + anomaly detection.
+aws sts get-caller-identity
+aws ce get-cost-and-usage --time-period Start=$(date -u -v-7d +%F 2>/dev/null || date -u -d '7 days ago' +%F),End=$(date -u +%F) --granularity DAILY --metrics UnblendedCost --query 'ResultsByTime[-3:].Total.UnblendedCost' --output table 2>/dev/null || echo "ce:GetCostAndUsage not permitted — continue with idle checks"
+aws ec2 describe-addresses --query 'Addresses[?AssociationId==null].PublicIp' --output table
+aws elbv2 describe-load-balancers --query 'LoadBalancers[].LoadBalancerName' --output table 2>/dev/null || true
+```
+
+### Step 2 – Tagging standard notes
+
+```bash
+cat > cost-tags.md << 'EOF'
+Required tags: Owner, Project, Environment, Expiry
+Hunt weekly: unattached EIPs, idle ALBs, old EBS, unused NAT
 EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -207,6 +216,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -226,6 +236,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -235,6 +246,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -253,6 +265,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Cost Optimisation on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -262,6 +275,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -279,6 +293,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Cost Optimisation on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -286,21 +301,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Cost Optimisation on AWS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. Top idle resources you hunt weekly?
+2. What tags enable showback?
+3. Savings Plans versus Reserved Instances — conceptual difference?
+4. How do you attribute CI/CD costs?
+5. NAT gateway cost control ideas?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Start with Cost Explorer by service, then inventory unattached EIPs, idle LBs, old volumes, and oversized idle EC2.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Enforce tagging, budget alarms, and destroy lab stacks with expiry tags.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -310,6 +326,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

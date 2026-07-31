@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Compose maintainable pipelines with multi-stage flows, `needs` DAGs, parent-child and multi-project pipelines, dynamic child pipelines, and `include` templates.
 
 Linear stages work until feedback time explodes. **DAG pipelines** (`needs`) start independent jobs early. **Includes** share templates across projects. **Parent-child** and **multi-project** pipelines split ownership; **dynamic pipelines** generate YAML when the graph depends on the change set.
@@ -56,11 +57,13 @@ This is a core tutorial in **Module 5 · Pipeline Design** of the REBASH Academy
 
 
 
+
 - [Pipeline Syntax (.gitlab-ci.yml)](pipeline-syntax-gitlab-ci-yml.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -77,6 +80,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Parent-child pipelines](../assets/excalidraw/gitlab-parent-child.svg)
@@ -84,6 +88,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -142,36 +147,58 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-05/{templates,generated} && cd ~/rebash-gitlab/module-05/{templates,generated}
 ```
 
-**Focus:** includes and parent/child pipeline layout
+**Focus:** split CI with include files and needs DAG edges
 
-### Step 1 – Includes
+### Step 1 – Create includes and parent pipeline
 
 ```bash
 mkdir -p ci
 cat > ci/lint.yml << 'EOF'
 lint:
-  script: ["echo lint"]
+  stage: lint
+  image: alpine:3.20
+  script: ["echo lint ok"]
+EOF
+cat > ci/test.yml << 'EOF'
+unit:
+  stage: test
+  image: alpine:3.20
+  needs: [lint]
+  script: ["echo unit ok"]
 EOF
 cat > .gitlab-ci.yml << 'EOF'
+stages: [lint, test, deploy]
 include:
   - local: ci/lint.yml
-stages: [lint, test]
-test:
-  stage: test
-  script: ["echo test"]
+  - local: ci/test.yml
+deploy:
+  stage: deploy
+  image: alpine:3.20
+  needs: [unit]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  script: ["echo deploy after DAG"]
 EOF
-python3 -c "import yaml; print(yaml.safe_load(open('.gitlab-ci.yml'))['include'])"
+```
+
+### Step 2 – Verify includes and needs
+
+```bash
+test -f ci/lint.yml && test -f ci/test.yml
+grep -E 'include:|needs:|local:' -n .gitlab-ci.yml ci/*.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -183,6 +210,7 @@ python3 -c "import yaml; print(yaml.safe_load(open('.gitlab-ci.yml'))['include']
 
 
 ## Code Walkthrough
+
 
 
 
@@ -202,6 +230,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -211,6 +240,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -229,6 +259,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Pipeline Design: DAGs and Includes changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -238,6 +269,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -255,6 +287,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Pipeline Design: DAGs and Includes** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -262,21 +295,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Pipeline Design: DAGs and Includes** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. When do you choose include local versus project/remote includes?
+2. A child job never runs after a refactor — what DAG mistakes are common?
+3. How do hidden jobs help reuse?
+4. What is the blast radius of a shared include owned by another team?
+5. How do you version shared pipeline templates safely?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Trace needs edges and stage membership: a job can be skipped by rules or waiting on a renamed dependency. Confirm includes expanded as expected.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Pin shared templates to tags/SHAs and review changes like application code.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -286,6 +320,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -40,6 +40,8 @@ comments: false
 
 
 
+
+
 Author a clear Dockerfile for a small app: choose a base image, install deps, copy code, set `USER`, and define `CMD`/`ENTRYPOINT`.
 
 A **Dockerfile** is a build recipe. Each instruction can create a layer — order matters for cache and size (optimisation is Module 6).
@@ -52,11 +54,15 @@ This is a core tutorial in **Module 5 · Dockerfile** of the REBASH Academy **Do
 
 
 
+
+
 - [Working with Docker Images](working-with-docker-images.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -73,6 +79,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Image layers](../assets/excalidraw/docker-image-layers.svg)
@@ -80,6 +88,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -131,32 +141,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
 ```
 
-**Focus:** write a Dockerfile, build, run, and verify output
+**Focus:** write a Dockerfile, build a tagged image, and run it
 
-### Step 1 – Build and run
+### Step 1 – Dockerfile build
 
 ```bash
-cat > Dockerfile << 'EOF'
-FROM alpine:3.20
-WORKDIR /app
-COPY message.txt .
-CMD ["cat", "message.txt"]
+cat > app.py << 'EOF'
+print("hello from dockerfile lab")
 EOF
-echo 'hello from dockerfile' > message.txt
-docker build -t rebash-lab:local .
-docker run --rm rebash-lab:local | tee out.txt
-test "$(cat out.txt)" = 'hello from dockerfile'
+cat > Dockerfile << 'EOF'
+FROM python:3.12-alpine
+WORKDIR /app
+COPY app.py .
+USER nobody
+CMD ["python", "app.py"]
+EOF
+docker build -t rebash-df:lab .
+docker run --rm rebash-df:lab
+```
+
+### Step 2 – Inspect image and cleanup
+
+```bash
+docker image inspect rebash-df:lab --format '{{ "{{" }}.Config.User{{ "}}" }}'
+docker rmi rebash-df:lab
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rmi rebash-df:lab 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -168,6 +190,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -187,6 +211,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -196,6 +222,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -214,6 +242,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Building Images with Dockerfile changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -223,6 +253,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -240,6 +272,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Building Images with Dockerfile** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -247,21 +281,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Building Images with Dockerfile** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. What do FROM/COPY/RUN/CMD/ENTRYPOINT each do?
+2. Build context is huge — how do you shrink it?
+3. Why avoid running as root in the final image?
+4. Difference between CMD and ENTRYPOINT?
+5. How do build args differ from runtime env?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Read the Dockerfile and docker history; rebuild with --progress=plain to see failing RUN lines.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Do not COPY secrets into layers. Use multi-stage builds and non-root users.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -271,6 +307,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

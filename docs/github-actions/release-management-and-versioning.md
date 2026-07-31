@@ -46,6 +46,7 @@ comments: false
 
 
 
+
 Create annotated git tags, publish GitHub Releases with notes and assets, and apply Semantic Versioning (SemVer) with changelog discipline from GitHub Actions.
 
 A **release** is more than a green workflow: it is an immutable Git reference, human-readable notes, and optional binaries or package links. GitHub ties **tags**, **Releases**, and Actions so the same SHA you tested becomes the version you promote through environments.
@@ -58,12 +59,14 @@ This is a core tutorial in **Module 13 · Release Management** of the REBASH Aca
 
 
 
+
 - [Testing in GitHub Actions](testing-in-github-actions.md)
 - Comfortable with protected branches and `contents` / `packages` permissions
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -80,6 +83,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Release pipeline](../assets/excalidraw/gha-release-pipeline.svg)
@@ -87,6 +91,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -152,41 +157,59 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-13/.github/workflows && cd ~/rebash-github-actions/module-13/.github/workflows
 ```
 
-**Focus:** tag-driven release workflow stub
+**Focus:** tag-driven release workflow publishing a changelog artifact
 
 ### Step 1 – Release workflow
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-echo '0.1.0' > VERSION
+cat > CHANGELOG.md << 'EOF'
+# Changelog
+## Unreleased
+- GHA release lab
+EOF
 cat > .github/workflows/release.yml << 'EOF'
-name: release
+name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Build and publish artefacts for ${{ github.ref_name }}"
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp CHANGELOG.md dist/
+          echo "VERSION" > dist/VERSION
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-dist
+          path: dist/
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml')); print('OK')"
 ```
-{% endraw %}
+
+### Step 2 – Check tag trigger and packaging
+
+```bash
+grep -E 'tags:|VERSION|CHANGELOG' .github/workflows/release.yml
+test -f CHANGELOG.md
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -198,6 +221,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml')); 
 
 
 ## Code Walkthrough
+
 
 
 
@@ -217,6 +241,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -226,6 +251,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -244,6 +270,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Release Management and Versioning changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -253,6 +280,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -270,6 +298,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Release Management and Versioning** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -277,21 +306,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Release Management and Versioning** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. How do tag triggers differ from branch pushes?
+2. What should a release artifact include for traceability?
+3. Immutable tags — why do they matter?
+4. How do you automate changelog generation safely?
+5. Who should be allowed to publish releases?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Confirm the workflow ran on the tag ref, artifacts uploaded, and the release points at the expected commit.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Restrict contents write, protect release tags, and sign/attest artifacts when required.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -301,6 +331,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

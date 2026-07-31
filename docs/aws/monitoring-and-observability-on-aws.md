@@ -52,6 +52,7 @@ comments: false
 
 
 
+
 Wire the AWS observability spine — Amazon CloudWatch, AWS CloudTrail, AWS Config, AWS X-Ray, AWS Health Dashboard, and AWS Systems Manager — so you can detect, investigate, and act without drowning in alarms or log ingestion cost.
 
 **Observability** answers: is the system healthy, what changed, and why? On AWS, **CloudWatch** holds metrics, logs, alarms, and dashboards. **CloudTrail** records API activity (who did what). **Config** records resource configuration and compliance over time. **X-Ray** traces requests across services. **Health Dashboard** surfaces AWS service events affecting your accounts. **Systems Manager (SSM)** provides operational actions — Session Manager, Parameter Store (ops config), Run Command, Patch Manager, and Inventory. Together they support SRE-style detect → diagnose → remediate loops.
@@ -64,6 +65,7 @@ This is a core tutorial in **Module 9 · Monitoring & Observability** of the REB
 
 
 
+
 - [Serverless on AWS](serverless-on-aws.md)
 - AWS CLI access to a sandbox account
 - Familiarity with IAM and basic EC2 or Lambda resources
@@ -71,6 +73,7 @@ This is a core tutorial in **Module 9 · Monitoring & Observability** of the REB
 
 
 ## Learning Objectives
+
 
 
 
@@ -88,6 +91,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Observability on AWS](../assets/excalidraw/aws-monitoring.svg)
@@ -95,6 +99,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -167,36 +172,41 @@ Site Reliability Engineering (SRE) and DevOps need golden signals, change correl
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-09 && cd ~/rebash-aws/module-09
 ```
 
-**Focus:** list CloudWatch alarm names and recent metrics availability
+**Focus:** list CloudWatch alarms/log groups (read-only)
 
-### Step 1 – CloudWatch signals
+### Step 1 – Observability inventory
 
 ```bash
-aws cloudwatch describe-alarms --query 'MetricAlarms[].{Name:AlarmName,State:StateValue}' --output table 2>/dev/null | head -n 40 | tee alarms.txt || true
-aws logs describe-log-groups --query 'logGroups[].logGroupName' --output text 2>/dev/null | tr '\t' '\n' | head -n 20 | tee log-groups.txt || true
-tee o11y-notes.txt << 'EOF'
-Alarms need runbooks. Prefer metrics that track user symptoms (latency/errors) over only host CPU.
-EOF
+aws sts get-caller-identity
+aws cloudwatch describe-alarms --query 'MetricAlarms[0:10].{Name:AlarmName,State:StateValue}' --output table
+aws logs describe-log-groups --limit 10 --query 'logGroups[].logGroupName' --output table
+```
+
+### Step 2 – Alarm design notes
+
+```bash
+cat > monitoring-notes.md << 'EOF'
+Alert on symptoms customers feel; attach runbooks
+Avoid paging on raw CPU without SLO context
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -208,6 +218,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -227,6 +238,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -236,6 +248,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -254,6 +267,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Monitoring and Observability on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -263,6 +277,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -280,6 +295,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Monitoring and Observability on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -287,21 +303,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Monitoring and Observability on AWS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. Metric versus log versus trace?
+2. What makes a good CloudWatch alarm?
+3. How do you stop alarm fatigue?
+4. Log retention versus cost?
+5. How do runbooks link to alerts?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Check alarm state history, underlying metric, and related logs for the same time window.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Avoid putting secrets in logs; control who can read log groups.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -311,6 +328,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

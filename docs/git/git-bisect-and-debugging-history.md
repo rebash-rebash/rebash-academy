@@ -41,6 +41,7 @@ comments: false
 
 
 
+
 Run `git bisect` to binary-search history for the first bad commit, and use `blame` / pickaxe (`-S`) when you know the change shape.
 
 When “it worked last week,” bisect beats scrolling `git log`. Mark a known good and known bad commit; Git checks out midpoints until the culprit is found.
@@ -53,11 +54,13 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 
 
 
+
 - [Git Troubleshooting](git-troubleshooting.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -74,6 +77,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Object model / history](../assets/excalidraw/git-object-model.svg)
@@ -81,6 +85,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -126,42 +131,48 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-16-bisect && cd ~/rebash-git/module-16-bisect
 ```
 
-**Focus:** practise Git skills for: Git Bisect and Debugging History
+**Focus:** use git bisect to find the commit that broke a script
 
-### Step 1 – Init repository
+### Step 1 – Create good→bad history
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+cat > check.sh << 'EOF'
+#!/usr/bin/env bash
+grep -q OK data.txt
+EOF
+chmod +x check.sh
+echo OK > data.txt
+git add check.sh data.txt && git commit -m "chore: good"
+for i in 1 2 3 4; do echo "noise $i" >> noise.txt; git add noise.txt && git commit -m "chore: noise $i"; done
+echo BAD > data.txt
+git add data.txt && git commit -m "fix: accidentally break data"
+for i in 5 6; do echo "noise $i" >> noise.txt; git add noise.txt && git commit -m "chore: noise $i"; done
 ```
 
-### Step 2 – Bisect demo
+### Step 2 – Bisect to the breaking commit
 
 ```bash
-for i in 1 2 3 4 5; do echo $i > n.txt; git add n.txt; git commit -m "n$i"; done
-echo 'broken' > n.txt; git add n.txt; git commit -m 'broken'
 git bisect start
-git bisect bad
-git bisect good HEAD~5
-git bisect run sh -c 'grep -q broken n.txt && exit 1 || exit 0' || true
+git bisect bad HEAD
+git bisect good HEAD~7
+git bisect run ./check.sh
 git bisect reset
-git log --oneline | head
+git log --oneline -n 12
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -173,6 +184,7 @@ git log --oneline | head
 
 
 ## Code Walkthrough
+
 
 
 
@@ -192,6 +204,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -201,6 +214,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -219,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Git Bisect and Debugging History changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -228,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -245,6 +261,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Git Bisect and Debugging History** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -252,21 +269,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Git Bisect and Debugging History** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. How does bisect find a bad commit?
+2. What makes a good automated bisect run script?
+3. Limitations of bisect with flaky tests?
+4. How do you mark skip commits?
+5. What do you do after bisect names a commit?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Ensure you can script a deterministic good/bad test, then git bisect reset after collecting the SHA.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Do not bisect on production data stores. Keep repro scripts free of credentials.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -276,6 +294,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

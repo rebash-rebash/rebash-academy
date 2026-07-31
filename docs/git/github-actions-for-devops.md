@@ -42,6 +42,7 @@ comments: false
 
 
 
+
 Author a minimal GitHub Actions workflow that runs on pull requests: checkout, validate, and report status — the CI gate for Git-based delivery.
 
 **GitHub Actions** runs workflows on events (`push`, `pull_request`). Jobs use runners; secrets never belong in Git history.
@@ -54,12 +55,14 @@ This is a core tutorial in **Module 11 · GitHub Actions** of the REBASH Academy
 
 
 
+
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - GitHub repository with Actions enabled
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -77,6 +80,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitHub Actions flow](../assets/excalidraw/git-github-actions.svg)
@@ -84,6 +88,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -131,46 +136,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-11/.github/workflows && cd ~/rebash-git/module-11/.github/workflows
 ```
 
-**Focus:** practise Git skills for: GitHub Actions for DevOps
+**Focus:** add a minimal GitHub Actions workflow to a git repo
 
-### Step 1 – Init repository
-
-```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
-```
-
-### Step 2 – CI trigger layout
+### Step 1 – Repo + workflow
 
 ```bash
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
 mkdir -p .github/workflows
 cat > .github/workflows/ci.yml << 'EOF'
-name: ci
+name: CI
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
-  unit:
+  probe:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ok
+      - uses: actions/checkout@v4
+      - run: test -f README.md
 EOF
-git add .github && git commit -m 'Add CI workflow stub'
-git log --oneline | tee commits.txt
+echo "# devops git lab" > README.md
+git add .
+git commit -m "ci: add minimal workflow"
+git log --oneline -n 3
+```
+
+### Step 2 – Validate workflow present in git tree
+
+```bash
+git ls-files .github/workflows/ci.yml
+grep -E 'checkout@v4|permissions:' .github/workflows/ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -182,6 +191,7 @@ git log --oneline | tee commits.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -201,6 +211,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -210,6 +221,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -228,6 +240,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitHub Actions for DevOps changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -237,6 +250,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -254,6 +268,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitHub Actions for DevOps** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -261,21 +276,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **GitHub Actions for DevOps** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. How does a git push start CI on GitHub?
+2. Why keep workflow YAML in the same repo as code?
+3. What permissions should a basic CI workflow use?
+4. How do required status checks relate to branch protection?
+5. Where do you look when CI is green but deploy failed?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Open the Actions run for the commit SHA and confirm the workflow file path. Required checks must match actual job names.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Least-privilege permissions, pinned actions, and no secrets in forks.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -286,6 +302,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

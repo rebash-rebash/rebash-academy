@@ -41,6 +41,8 @@ comments: false
 
 
 
+
+
 Apply CPU and memory limits, observe container stats, and relate storage drivers and lifecycle to performance.
 
 Unlimited containers can starve the host. Set `--memory` / `--cpus` (or Compose `deploy.resources`) so noisy neighbours fail safely. Know your storage driver (`overlay2`) and prune policy.
@@ -53,11 +55,15 @@ This is a core tutorial in **Module 14 · Performance** of the REBASH Academy **
 
 
 
+
+
 - [Container Logging and Monitoring](container-logging-and-monitoring.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -75,6 +81,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
@@ -82,6 +90,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -131,28 +141,34 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
 ```
 
-**Focus:** apply CPU/memory limits and observe docker stats
+**Focus:** apply CPU/memory limits and observe with docker stats
 
-### Step 1 – Resource limits
+### Step 1 – Constrained container
 
 ```bash
-docker run -d --name rebash-lab --memory=64m --cpus=0.5 nginx:alpine
-docker stats rebash-lab --no-stream | tee stats.txt
-docker inspect rebash-lab --format 'mem={{ "{{" }}.HostConfig.Memory{{ "}}" }} cpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}'
+docker run -d --name rebash-lim --memory=64m --cpus=0.50 nginx:alpine
+docker stats rebash-lim --no-stream
+docker inspect rebash-lim --format 'mem={{ "{{" }}.HostConfig.Memory{{ "}}" }} nano_cpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}'
+```
+
+### Step 2 – Cleanup
+
+```bash
+docker rm -f rebash-lim
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
-docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rm -f rebash-lim 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -164,6 +180,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -183,6 +201,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -192,6 +212,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -210,6 +232,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Docker Performance and Resource Limits changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -219,6 +243,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -236,6 +262,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Docker Performance and Resource Limits** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -243,21 +271,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Docker Performance and Resource Limits** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. How do --memory and --cpus protect a host?
+2. What does docker stats show you?
+3. OOM kills — how do you confirm?
+4. When do limits cause false failures?
+5. How do cgroups relate to containers?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Use docker stats and inspect OOM fields / exit codes.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Set limits in shared environments so one container cannot starve neighbours.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -267,6 +297,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

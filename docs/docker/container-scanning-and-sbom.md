@@ -44,6 +44,8 @@ comments: false
 
 
 
+
+
 Scan an image for CVEs, produce a Software Bill of Materials (SBOM), and decide fix vs accept risk for a release gate.
 
 **Trivy**, **Docker Scout**, and registry scanners find known vulnerabilities. An **SBOM** inventories packages for compliance and incident response. Scanning without a triage process becomes noise.
@@ -56,11 +58,15 @@ This is a core tutorial in **Module 12 · Container Scanning** of the REBASH Aca
 
 
 
+
+
 - [Docker Security Hardening](docker-security-hardening.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -77,6 +83,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![CI/CD pipeline with scan](../assets/excalidraw/docker-cicd-pipeline.svg)
@@ -84,6 +92,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -133,29 +143,45 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-12 && cd ~/rebash-docker/module-12
 ```
 
-**Focus:** build an image and produce a simple SBOM-ish inventory
+**Focus:** build an image and run a vulnerability scan when tools exist
 
-### Step 1 – Inventory
+### Step 1 – Build + scan attempt
 
 ```bash
 cat > Dockerfile << 'EOF'
 FROM alpine:3.20
 RUN apk add --no-cache curl
+USER nobody
+CMD ["curl", "--version"]
 EOF
-docker build -t rebash-lab:local .
-docker run --rm rebash-lab:local sh -c 'apk info -v' | head -n 20 | tee pkgs.txt
-echo 'In CI: run trivy/grype + attach SBOM (spdx/cyclonedx).' | tee scan-notes.txt
+docker build -t rebash-scan:lab .
+if command -v trivy >/dev/null; then
+  trivy image --severity HIGH,CRITICAL rebash-scan:lab || true
+else
+  echo "Install Trivy or Docker Scout for CVE scanning"
+  docker image inspect rebash-scan:lab --format '{{ "{{" }}.Id{{ "}}" }}'
+fi
+echo "Generate SBOMs in CI and store as artefacts" > sbom-notes.md
+```
+
+### Step 2 – Cleanup image
+
+```bash
+docker rmi rebash-scan:lab
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rmi rebash-scan:lab 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -167,6 +193,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -186,6 +214,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -195,6 +225,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -213,6 +245,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Container Scanning and SBOM changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -222,6 +256,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -239,6 +275,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Container Scanning and SBOM** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -246,21 +284,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Container Scanning and SBOM** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. What is an SBOM and why store it in CI?
+2. How do you triage a CRITICAL CVE in a base image?
+3. Scanner false positives — how do you handle them?
+4. When should a pipeline fail on findings?
+5. Difference between image scan and runtime detection?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Confirm the package is present in the final image and whether a fixed base exists.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Gate production on policy and keep SBOMs as artifacts for incident response.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -270,6 +310,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

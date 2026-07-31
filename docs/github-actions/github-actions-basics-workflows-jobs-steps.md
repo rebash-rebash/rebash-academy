@@ -46,6 +46,7 @@ comments: false
 
 
 
+
 Write a working workflow that checks out code, uses an action, sets a variable, evaluates an expression, and prints useful run context — the building blocks of every later module.
 
 Workflow files live in **`.github/workflows/`**. Each file defines **`on:`** (when it runs), **`jobs:`** (what runs where), and under each job a list of **`steps:`**. Steps are either **`run:`** shell commands or **`uses:`** references to actions. **Expressions** ({% raw %}`${{ … }}`{% endraw %}) and **contexts** (`github`, `env`, `vars`, `secrets`) parameterise behaviour without hard-coding every branch name.
@@ -58,12 +59,14 @@ This is a core tutorial in **Module 2 · GitHub Actions Basics** of the REBASH A
 
 
 
+
 - [CI/CD Fundamentals and GitHub Actions](cicd-fundamentals-and-github-actions.md)
 - A GitHub repository you can push to (public is fine for learning)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitHub Actions basics](../assets/excalidraw/gha-basics.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -159,41 +164,61 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-02/.github/workflows && cd ~/rebash-github-actions/module-02/.github/workflows
 ```
 
-**Focus:** author a workflow with jobs/steps and validate YAML structure
+**Focus:** map workflow → jobs → steps with needs between jobs
 
-### Step 1 – First workflow
+### Step 1 – Write multi-job workflow
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/ci.yml << 'EOF'
-name: ci
-on:
-  push:
-  pull_request:
+cat > .github/workflows/basics.yml << 'EOF'
+name: Jobs and steps
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Compile check
-        run: |
-          echo ok > out.txt
-          test -s out.txt
+      - id: meta
+        run: echo "stamp=$(date -u +%Y%m%dT%H%M%SZ)" >> "$GITHUB_OUTPUT"
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - run: mkdir -p out && echo ok > out/marker.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marker
+          path: out/marker.txt
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('workflow OK')"
+
+{% raw %}
+```yaml
+# Example with outputs (expressions documented raw for mkdocs-macros)
+# outputs:
+#   stamp: ${{ steps.meta.outputs.stamp }}
+# build job can read: ${{ needs.prepare.outputs.stamp }}
 ```
 {% endraw %}
+```
+
+### Step 2 – Confirm needs and steps
+
+```bash
+grep -E 'needs:|steps:|upload-artifact' .github/workflows/basics.yml
+test -f .github/workflows/basics.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only; push to GitHub to execute on hosted runners
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -205,6 +230,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print
 
 
 ## Code Walkthrough
+
 
 
 
@@ -224,6 +250,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -233,6 +260,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -251,6 +279,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitHub Actions Basics: Workflows, Jobs, and Steps changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -260,6 +289,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -277,6 +307,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitHub Actions Basics: Workflows, Jobs, and Steps** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -284,21 +315,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **GitHub Actions Basics: Workflows, Jobs, and Steps** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. How do needs and job outputs pass data between jobs?
+2. Why might a step that works locally fail in Actions?
+3. What is GITHUB_OUTPUT used for?
+4. How can overly broad permissions write-all hurt you?
+5. When should jobs be split versus one large job?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Confirm the upstream job published outputs, the downstream job declares needs, and expression syntax matches. Also check runner OS path differences.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Least-privilege tokens limit blast radius if a supply-chain step is compromised.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -308,6 +340,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

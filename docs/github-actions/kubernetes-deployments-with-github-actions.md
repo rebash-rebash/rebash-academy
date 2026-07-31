@@ -49,6 +49,7 @@ comments: false
 
 
 
+
 Sketch a GitHub Actions deploy job that applies a SHA-tagged image with `kubectl` or Helm, waits for rollout success, documents rollback, and draws a clear boundary between push Continuous Delivery (CD) and GitOps pull controllers.
 
 Pipelines that **push** manifests need a secure path into the cluster. Prefer short-lived credentials — OpenID Connect (OIDC) to a cloud Identity and Access Management (IAM) role that can call the Kubernetes API, or a narrowly scoped kubeconfig stored as an environment secret — never a cluster-admin key in unprotected repository secrets. Progressive delivery and rollbacks sit on Deployments or Helm releases. **GitOps** (Flux / Argo CD) inverts the model: the cluster pulls desired state from Git; CI updates Git rather than talking to the API directly.
@@ -61,11 +62,13 @@ This is a core tutorial in **Module 8 · Kubernetes Deployments** of the REBASH 
 
 
 
+
 - [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -83,6 +86,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Kubernetes deployment pipeline](../assets/excalidraw/gha-kubernetes-pipeline.svg)
@@ -90,6 +94,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -147,45 +152,66 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-08/{.github/workflows,manifests} && cd ~/rebash-github-actions/module-08/{.github/workflows,manifests}
 ```
 
-**Focus:** kubectl apply dry-run with a deploy workflow stub
+**Focus:** kubectl dry-run deploy workflow with environment protection
 
-### Step 1 – Manifest + workflow
+### Step 1 – Manifests + deploy workflow
 
-{% raw %}
 ```bash
-mkdir -p k8s .github/workflows
-cat > k8s/deploy.yaml << 'EOF'
+mkdir -p .github/workflows manifests
+cat > manifests/deploy.yaml << 'EOF'
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: demo
-  namespace: default
+  namespace: rebash-lab
 data:
-  ok: "yes"
+  note: github-actions-k8s-lab
 EOF
-kubectl apply --dry-run=client -f k8s/deploy.yaml | tee dryrun.txt || true
 cat > .github/workflows/k8s.yml << 'EOF'
-name: k8s
-on: workflow_dispatch
+name: Kubernetes deploy shape
+on: [workflow_dispatch]
+permissions:
+  contents: read
+  id-token: write
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: kubectl apply -f k8s/deploy.yaml
+      - name: Client dry-run when kubectl exists
+        run: |
+          if command -v kubectl >/dev/null; then
+            kubectl apply --dry-run=client -f manifests/
+          else
+            test -f manifests/deploy.yaml
+          fi
+  deploy_staging:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Wire cloud OIDC + kubectl apply for a real cluster"
 EOF
 ```
-{% endraw %}
+
+### Step 2 – Validate manifests file
+
+```bash
+test -f manifests/deploy.yaml
+grep -E 'environment: staging|dry-run' .github/workflows/k8s.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# No live cluster required for dry-run
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -197,6 +223,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -216,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -225,6 +253,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -243,6 +272,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Kubernetes Deployments with GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -252,6 +282,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -269,6 +300,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Kubernetes Deployments with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -276,21 +308,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Kubernetes Deployments with GitHub Actions** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. How do you authenticate kubectl from GitHub Actions safely?
+2. Why dry-run before apply in CI?
+3. What role should a deploy job have in-cluster?
+4. How do GitHub environments help Kubernetes promotions?
+5. How do you roll back a bad deploy triggered by Actions?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Validate kubeconfig/OIDC exchange, namespace context, and client dry-run results before blaming the cluster.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Prefer short-lived credentials via OIDC, namespace-scoped Roles, and environment reviewers for production.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -300,6 +333,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -43,6 +43,7 @@ comments: false
 
 
 
+
 Pick the correct undo tool: `restore` for files, `stash` for WIP, `reset` for local history, `revert` for published commits.
 
 **Reset** moves branch pointers (dangerous if pushed). **Revert** adds a new commit that undoes a previous one — safe on `main`. **Stash** shelves WIP.
@@ -55,11 +56,13 @@ This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Acad
 
 
 
+
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -76,6 +79,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Undoing Changes — Reset, Revert, and Stash](../assets/excalidraw/git-workflow.svg)
@@ -83,6 +87,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -131,40 +136,45 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-07-undo && cd ~/rebash-git/module-07-undo
 ```
 
-**Focus:** practise Git skills for: Undoing Changes — Reset, Revert, and Stash
+**Focus:** practise stash, restore, and revert
 
-### Step 1 – Init repository
+### Step 1 – Stash and restore
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo v1 > file.txt
+git add file.txt && git commit -m "chore: v1"
+echo dirty >> file.txt
+git stash push -m "wip dirty"
+git status
+git stash list
+git stash pop
+git restore file.txt
+git status
 ```
 
-### Step 2 – Reset / stash / revert
+### Step 2 – Revert a commit
 
 ```bash
-echo dirty > wip.txt
-git stash push -m 'wip' -- wip.txt
-git stash list
-echo bad > bad.txt && git add bad.txt && git commit -m 'bad'
-git revert --no-edit HEAD
-git log --oneline | tee undo.txt
+echo v2 > file.txt
+git add file.txt && git commit -m "feat: v2"
+git revert HEAD --no-edit
+git log --oneline -n 5
+cat file.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -176,6 +186,7 @@ git log --oneline | tee undo.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -195,6 +206,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -204,6 +216,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -222,6 +235,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Undoing Changes — Reset, Revert, and Stash changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -231,6 +245,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -248,6 +263,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Undoing Changes — Reset, Revert, and Stash** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -255,21 +271,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Undoing Changes — Reset, Revert, and Stash** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. reset vs revert vs restore — when each?
+2. You need to undo a commit already on main — safest option?
+3. What does stash not include by default?
+4. Hard reset risks?
+5. How do you recover a commit after reset?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    For published main history prefer git revert. Use reflog to find SHAs after a local reset.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Hard reset can delete uncommitted work. Coordinate before rewriting shared branches.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -279,6 +296,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -42,6 +42,8 @@ comments: false
 
 
 
+
+
 Follow container logs, configure a logging mindset for production, add HEALTHCHECK, and know how metrics reach Prometheus/Grafana.
 
 Stdout/stderr is the default log stream. Drivers ship logs to journald, Fluentd, cloud sinks. Health checks and metrics tell you when to restart or scale.
@@ -54,11 +56,15 @@ This is a core tutorial in **Module 13 · Logging & Monitoring** of the REBASH A
 
 
 
+
+
 - [Container Scanning and SBOM](container-scanning-and-sbom.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -75,6 +81,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Production observability](../assets/excalidraw/docker-production-platform.svg)
@@ -82,6 +90,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -131,29 +141,36 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
 ```
 
-**Focus:** inspect container logs and docker events
+**Focus:** generate logs, fetch with docker logs, inspect logging driver
 
-### Step 1 – Logs
+### Step 1 – Logging exercises
 
 ```bash
-docker run -d --name rebash-lab nginx:alpine
-docker logs rebash-lab 2>&1 | head -n 20 | tee logs.txt
-docker inspect rebash-lab --format '{{ "{{" }}.HostConfig.LogConfig.Type{{ "}}" }}'
-docker events --since 1m --until 0s --filter container=rebash-lab | head || true
+docker run -d --name rebash-log alpine:3.20 sh -c 'for i in 1 2 3 4 5; do echo "tick=$i"; sleep 0.2; done; sleep 30'
+sleep 2
+docker logs rebash-log
+docker logs --since 1m rebash-log
+docker inspect rebash-log --format '{{ "{{" }}.HostConfig.LogConfig.Type{{ "}}" }}'
+```
+
+### Step 2 – Cleanup
+
+```bash
+docker rm -f rebash-log
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
-docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rm -f rebash-log 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -165,6 +182,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -184,6 +203,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -193,6 +214,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -211,6 +234,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Container Logging and Monitoring changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -220,6 +245,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -237,6 +264,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Container Logging and Monitoring** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -244,21 +273,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Container Logging and Monitoring** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Default Docker logging driver behaviour?
+2. How do you avoid disk fill from container logs?
+3. What should app logs include for operations?
+4. Logs disappear after container rm — implications?
+5. How does this change on Kubernetes?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Check logging driver in inspect, docker logs, and host disk usage.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Do not log secrets. Centralise logs with retention/access controls.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -268,6 +299,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

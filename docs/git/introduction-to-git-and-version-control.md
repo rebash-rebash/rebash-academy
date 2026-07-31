@@ -43,6 +43,7 @@ comments: false
 
 
 
+
 Explain why version control is the system of record for DevOps, compare VCS models, and use Git vocabulary (repo, commit, branch, remote) correctly before installing tools.
 
 Incidents ask “what changed?” Compliance asks “who approved?” Git answers both. This course is **Git & GitHub for Cloud & DevOps Engineers** — workflows for IaC, GitOps, and CI/CD, not Git as trivia.
@@ -55,6 +56,7 @@ This is a core tutorial in **Module 1 · Version Control Fundamentals** of the R
 
 
 
+
 ### Required
 
 - [Linux Fundamentals](../linux/index.md)
@@ -63,6 +65,7 @@ This is a core tutorial in **Module 1 · Version Control Fundamentals** of the R
 
 
 ## Learning Objectives
+
 
 
 
@@ -80,6 +83,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 Daily Git flow from edits to remotes and pipelines:
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
@@ -87,6 +91,7 @@ Daily Git flow from edits to remotes and pipelines:
 
 
 ## Theory
+
 
 
 
@@ -140,40 +145,42 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 ```
 
-**Focus:** practise Git skills for: Introduction to Git and Version Control
+**Focus:** initialise a repo and make your first commit
 
-### Step 1 – Init repository
+### Step 1 – Init and first commit
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+printf '# Git lab
+' > README.md
 git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git status
+git commit -m "docs: add README for git introduction lab"
+git log --oneline -n 3
 ```
 
-### Step 2 – Add commit cycle
+### Step 2 – Inspect working tree vs last commit
 
 ```bash
-echo 'hello' > app.txt
+echo "note=$(date -u +%Y-%m-%d)" >> README.md
 git status
-git add app.txt
-git commit -m 'Add app.txt'
+git diff
+git checkout -- README.md
 git status
-git log -1 --stat
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -185,6 +192,7 @@ git log -1 --stat
 
 
 ## Code Walkthrough
+
 
 
 
@@ -204,6 +212,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -213,6 +222,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -231,6 +241,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Introduction to Git and Version Control changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -240,6 +251,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -257,6 +269,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Git is the DevOps system of record  
 - Distributed clones enable offline work and collaboration  
 - Next: object model, then install
@@ -266,21 +279,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Introduction to Git and Version Control** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. What problem does version control solve for infrastructure teams?
+2. Working tree dirty unexpectedly — what commands do you run first?
+3. Difference between distributed VCS and centralised VCS?
+4. Why commit small, reviewable changes in DevOps repos?
+5. What should never be committed even in a private repo?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Run git status and git diff to see whether changes are staged, unstaged, or untracked.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Exclude secrets, state files, and credentials with .gitignore and secret scanning.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -291,6 +305,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

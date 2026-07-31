@@ -46,6 +46,7 @@ comments: false
 
 
 
+
 Diagnose failed jobs, runner problems, auth errors, cache misses, and slow pipelines with a fixed order: lint → config → runner → credentials → cache → performance.
 
 Most “CI is broken” tickets are YAML `rules`, missing tags, expired tokens, or poisoned caches — not mysterious GitLab bugs. Separate **definition** failures from **execution** failures before changing production variables.
@@ -58,12 +59,14 @@ This is a core tutorial in **Module 17 · Troubleshooting** of the REBASH Academ
 
 
 
+
 - [Pipeline Monitoring and Observability](pipeline-monitoring-and-observability.md)
 - Runner and variables modules completed (or equivalent)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -80,6 +83,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitLab troubleshooting](../assets/excalidraw/gitlab-troubleshooting.svg)
@@ -87,6 +91,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -148,32 +153,51 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-17 && cd ~/rebash-gitlab/module-17
 ```
 
-**Focus:** break YAML syntax and practise CI lint recovery
+**Focus:** reproduce a failing job locally and capture triage checklist
 
-### Step 1 – Broken then fixed
+### Step 1 – Broken job + triage notes
 
 ```bash
 cat > .gitlab-ci.yml << 'EOF'
-test
-  script: ["echo broken"]
+stages: [broken, fixed]
+broken_example:
+  stage: broken
+  image: alpine:3.20
+  script: ["curl --version"]
+  allow_failure: true
+fixed_example:
+  stage: fixed
+  image: curlimages/curl:8.10.1
+  script: ["curl --version"]
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))" 2>&1 | tee err.txt || true
-cat > .gitlab-ci.yml << 'EOF'
-test:
-  script: ["echo fixed"]
+cat > triage.md << 'EOF'
+1. First error in job log
+2. Confirm image/tag and entrypoint
+3. Check rules/needs
+4. Verify variables on unprotected branches
+5. CI_DEBUG_TRACE only in secure sandbox
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('fixed OK')"
+```
+
+### Step 2 – Simulate fix with Docker
+
+```bash
+docker run --rm alpine:3.20 sh -c 'command -v curl || echo curl-missing'
+docker run --rm curlimages/curl:8.10.1 curl --version | head -n 1
+test -f triage.md
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+docker rmi alpine:3.20 curlimages/curl:8.10.1 2>/dev/null || true
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -185,6 +209,7 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('fixed OK
 
 
 ## Code Walkthrough
+
 
 
 
@@ -204,6 +229,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -213,6 +239,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -231,6 +258,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Troubleshooting GitLab CI changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -240,6 +268,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -257,6 +286,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Troubleshooting GitLab CI** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -264,21 +294,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Troubleshooting GitLab CI** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. Give a systematic order for debugging a red pipeline.
+2. How do image entrypoints break scripts that work locally?
+3. When is CI_DEBUG_TRACE appropriate — and when dangerous?
+4. What runner vs project configuration mismatches look like?
+5. How do you reproduce a CI failure on a laptop safely?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Read the first failing script line, confirm image/tag, then check rules/needs and variable availability.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Debug tracing can print secrets; use it only in isolated projects and rotate any credentials that may have been exposed.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -288,6 +319,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

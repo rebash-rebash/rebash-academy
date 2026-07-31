@@ -45,6 +45,7 @@ comments: false
 
 
 
+
 Explain what CI/CD solves, map GitLab’s architecture to pipelines and runners, and define stage, job, and pipeline in ops language.
 
 **Continuous Integration (CI)** builds and tests every change in Git. **Continuous Delivery / Deployment (CD)** promotes those builds toward production with gates you control. **GitLab CI/CD** stores the automation definition as `.gitlab-ci.yml` next to the application code, so review, history, and merge requests share one system.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 1 · GitLab CI/CD Fundamentals** of the REBA
 
 
 
+
 - [Git](../git/index.md) — commits, branches, and merge requests
 - [Linux](../linux/index.md) — comfortable terminal and YAML editing
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitLab architecture](../assets/excalidraw/gitlab-architecture.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -149,49 +154,54 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-01 && cd ~/rebash-gitlab/module-01
 ```
 
-**Focus:** author a valid .gitlab-ci.yml and validate stages locally
+**Focus:** author a minimal .gitlab-ci.yml with stages and a real verify job
 
-### Step 1 – Pipeline skeleton
+### Step 1 – Scaffold app and pipeline
 
 ```bash
-mkdir -p src
-echo 'print("ok")' > src/hello.py
+cat > app.py << 'EOF'
+def add(a, b):
+    return a + b
+if __name__ == "__main__":
+    print(add(2, 3))
+EOF
 cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-
-lint:
-  stage: lint
+stages: [verify, package]
+verify:
+  stage: verify
   image: python:3.12-alpine
   script:
-    - python -m py_compile src/hello.py
-
-test:
-  stage: test
-  image: python:3.12-alpine
+    - python -m pip install pytest
+    - python -c "from app import add; assert add(2,3)==5"
+package:
+  stage: package
+  image: alpine:3.20
   script:
-    - python src/hello.py
+    - tar czf app.tgz app.py
+  artifacts:
+    paths: [app.tgz]
+    expire_in: 1 day
 EOF
-python3 - <<'PY'
-import yaml,sys
-with open('.gitlab-ci.yml') as f:
-    data=yaml.safe_load(f)
-assert 'stages' in data and 'lint' in data
-print('gitlab-ci.yml parsed OK; stages=', data['stages'])
-PY
-tee NOTES.txt << 'EOF'
-Push to GitLab to run on a shared/runner. Use CI Lint in the UI for deeper validation.
-EOF
+```
+
+### Step 2 – Validate locally
+
+```bash
+python3 -c "from app import add; assert add(2,3)==5; print('ok')"
+grep -E '^(stages:|verify:|package:)' .gitlab-ci.yml
+wc -l .gitlab-ci.yml app.py
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Keep the YAML; no cloud resources created
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -203,6 +213,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -222,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -231,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -249,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitLab CI/CD Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -258,6 +272,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -275,6 +290,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitLab CI/CD Fundamentals** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -282,21 +298,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **GitLab CI/CD Fundamentals** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. What are stages versus jobs in GitLab CI, and why does order matter?
+2. A pipeline is green in your mind but red on GitLab — what do you check first?
+3. When would you split verify and package into separate stages?
+4. How should secrets be handled in a first GitLab CI pipeline?
+5. How do artifacts help downstream jobs without rebuilding everything?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Compare the job image and script with your laptop: missing packages, wrong shell, and different CI variables explain most first-pipeline failures. Open the failing job log at the first error line.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Keep non-secrets in YAML variables; put credentials in masked/protected CI variables or OIDC. Never commit tokens, and never echo secret values in job logs.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -306,6 +323,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

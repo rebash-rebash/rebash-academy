@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Observe pipeline health with analytics, job logs, runner and pipeline metrics, and actionable notifications — without drowning the team in noise.
 
 CI/CD is a production system. **Observability** means you can answer: Are pipelines slower? Which jobs fail most? Are runners saturated? GitLab provides pipeline analytics and logs; runners and external metrics complete the picture.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 16 · Monitoring & Observability** of the RE
 
 
 
+
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
 - [GitLab Runners and Executors](gitlab-runners-and-executors.md) (runner capacity awareness)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitLab monitoring](../assets/excalidraw/gitlab-monitoring.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -150,34 +155,46 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-16 && cd ~/rebash-gitlab/module-16
 ```
 
-**Focus:** add a pipeline metrics/notes job and local timing evidence
+**Focus:** emit pipeline metrics and observe duration
 
-### Step 1 – Observability notes
+### Step 1 – Observability-friendly pipeline
 
 ```bash
 cat > .gitlab-ci.yml << 'EOF'
-observe:
+stages: [build, observe]
+build:
+  stage: build
   image: alpine:3.20
   script:
-    - echo "Emit job duration/metrics to your observability backend"
-    - date -u +%Y-%m-%dT%H:%M:%SZ | tee job-start.txt
+    - START=$(date +%s); sleep 1; END=$(date +%s)
+    - echo "job=build duration_s=$((END-START)) sha=$CI_COMMIT_SHA" | tee metrics.txt
+  artifacts: {paths: [metrics.txt], expire_in: 1 week}
+observe:
+  stage: observe
+  image: alpine:3.20
+  needs: [build]
+  script: ["test -f metrics.txt", "cat metrics.txt", "grep duration_s metrics.txt"]
 EOF
-date -u +%Y-%m-%dT%H:%M:%SZ | tee job-start.txt
-tee monitor-notes.txt << 'EOF'
-Track fail rates, queue time, and flaky jobs. Alert on sustained pipeline red rates.
-EOF
-cat monitor-notes.txt
+```
+
+### Step 2 – Local metrics dry-run
+
+```bash
+START=$(date +%s); sleep 1; END=$(date +%s)
+echo "job=build duration_s=$((END-START)) sha=local" | tee metrics.txt
+grep duration_s metrics.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -189,6 +206,7 @@ cat monitor-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -208,6 +226,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -217,6 +236,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -235,6 +255,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Pipeline Monitoring and Observability changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -244,6 +265,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -261,6 +283,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Pipeline Monitoring and Observability** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -268,21 +291,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Pipeline Monitoring and Observability** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. Which pipeline metrics matter for platform teams?
+2. Job duration doubled overnight — where do you look first?
+3. How can artifacts support auditability of CI behaviour?
+4. What should you alert on versus only dashboard?
+5. How do you keep observability from leaking secrets?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Compare recent commits to the job definition, runner load, and external dependency latency before changing timeouts blindly.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Redact tokens from exported logs/metrics and limit who can read job traces with secrets.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -292,6 +316,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -40,6 +40,8 @@ comments: false
 
 
 
+
+
 Use the core Docker CLI to run, inspect, exec into, log, stop, and remove containers confidently.
 
 Daily ops is CLI fluency: `run`, `ps`, `logs`, `exec`, `stop`, `rm`. Lifecycle awareness prevents orphan containers and surprise disk use.
@@ -52,11 +54,15 @@ This is a core tutorial in **Module 3 · Docker CLI** of the REBASH Academy **Do
 
 
 
+
+
 - [Docker Installation and Setup](docker-installation-and-setup.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -74,6 +80,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
@@ -81,6 +89,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -130,29 +140,37 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-03 && cd ~/rebash-docker/module-03
 ```
 
-**Focus:** run, inspect, curl, and remove a container
+**Focus:** run, publish ports, view logs, and remove the container
 
-### Step 1 – Run nginx
+### Step 1 – Foreground then detached
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 20
+docker run --rm alpine:3.20 echo "hello from alpine"
+docker run -d --name rebash-first -p 18081:80 nginx:alpine
+curl -s http://127.0.0.1:18081 | head -n 3
+docker logs rebash-first --tail 20
+```
+
+### Step 2 – Stop and remove
+
+```bash
+docker stop rebash-first
+docker rm rebash-first
+docker ps -a --filter name=rebash-first
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
-docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rm -f rebash-first 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -164,6 +182,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -183,6 +203,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -192,6 +214,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -210,6 +234,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Running Your First Container — Docker CLI changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -219,6 +245,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -236,6 +264,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Running Your First Container — Docker CLI** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -243,21 +273,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Running Your First Container — Docker CLI** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. What do -d, --name, and -p do?
+2. Port publish fails — typical causes?
+3. How do you get a shell in a running container?
+4. Difference between stop and rm?
+5. Why prefer --rm for ephemeral experiments?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Confirm the container is running, the published port mapping, and that nothing else bound the host port.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Do not publish administrative ports to 0.0.0.0 on untrusted networks.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -267,6 +299,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

@@ -41,6 +41,8 @@ comments: false
 
 
 
+
+
 Describe the Docker client–daemon path and the roles of `dockerd`, `containerd`, and the OCI runtime so you can debug “where did my request fail?”
 
 You talk to the **Docker CLI**; it calls the **Docker Engine API** on `dockerd`. The daemon uses **containerd** and **runc** to create containers on the host kernel.
@@ -53,11 +55,15 @@ This is a core tutorial in **Module 1 · Container Fundamentals** of the REBASH 
 
 
 
+
+
 - [Introduction to Containers and Docker](introduction-to-containers-and-docker.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -74,6 +80,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Docker architecture](../assets/excalidraw/docker-architecture.svg)
@@ -81,6 +89,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -129,26 +139,37 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-01-arch && cd ~/rebash-docker/module-01-arch
 ```
 
-**Focus:** map client/daemon/images/containers with docker info
+**Focus:** map client/daemon/images/containers with inspect output
 
-### Step 1 – Architecture signals
+### Step 1 – Explore architecture objects
 
 ```bash
-docker version
-docker info | tee info.txt
-docker system df | tee df.txt
-printf '%s\n' 'CLI -> API -> dockerd -> containerd/runc + image graph driver' | tee model.txt
+docker pull nginx:alpine
+docker create --name rebash-arch nginx:alpine
+docker inspect rebash-arch --format 'image={{ "{{" }}.Image{{ "}}" }}'
+docker image inspect nginx:alpine --format 'id={{ "{{" }}.Id{{ "}}" }}'
+docker system df
+```
+
+### Step 2 – Cleanup create-only container
+
+```bash
+docker rm rebash-arch
+docker ps -a --filter name=rebash-arch
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Inspection only
+docker rm -f rebash-arch 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -160,6 +181,8 @@ printf '%s\n' 'CLI -> API -> dockerd -> containerd/runc + image graph driver' | 
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -179,6 +202,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -188,6 +213,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -206,6 +233,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Docker Architecture and Components changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -215,6 +244,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -232,6 +263,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Docker Architecture and Components** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -239,21 +272,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Docker Architecture and Components** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Role of dockerd versus the CLI?
+2. What storage driver concerns matter on Linux?
+3. How do containerd/runc fit the stack?
+4. Why does architecture knowledge help troubleshooting?
+5. What is the difference between create and run?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Use docker info and inspect to see driver/runtime details.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Limit who can talk to the daemon socket.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -263,6 +298,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

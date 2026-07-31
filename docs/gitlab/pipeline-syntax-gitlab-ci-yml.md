@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Write clear `.gitlab-ci.yml` using variables, `workflow` and job `rules`, and understand `needs` vs `dependencies` for ordering and artefact flow.
 
 GitLab reads **`.gitlab-ci.yml`** (or an alternate CI config path) to define pipelines. Prefer **`rules`** over legacy `only` / `except`. Use **`workflow:rules`** to decide whether a pipeline is created at all. Use **`needs`** for DAG edges; use **`dependencies`** to control which job artefacts download.
@@ -56,11 +57,13 @@ This is a core tutorial in **Module 4 · Pipeline Syntax** of the REBASH Academy
 
 
 
+
 - [GitLab Runners and Executors](gitlab-runners-and-executors.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -77,6 +80,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Pipeline syntax](../assets/excalidraw/gitlab-pipeline-syntax.svg)
@@ -84,6 +88,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -145,41 +150,59 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-04 && cd ~/rebash-gitlab/module-04
 ```
 
-**Focus:** practise rules, needs, and artefacts in .gitlab-ci.yml
+**Focus:** exercise rules, needs, and parallel matrix syntax
 
-### Step 1 – DAG-friendly pipeline
+### Step 1 – Write advanced syntax pipeline
 
 ```bash
 cat > .gitlab-ci.yml << 'EOF'
-stages: [build, test]
-
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+stages: [lint, test, build]
+lint:
+  stage: lint
+  image: alpine:3.20
+  script: ["echo linting $CI_COMMIT_SHA"]
+unit:
+  stage: test
+  image: python:3.12-alpine
+  parallel:
+    matrix:
+      - PYTHON: ["3.11", "3.12"]
+  script: ["echo matrix python=$PYTHON"]
 build:
   stage: build
-  script:
-    - mkdir -p dist && echo artefact > dist/app.txt
+  image: alpine:3.20
+  needs: [lint, unit]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+  script: ["mkdir -p dist && echo ok > dist/marker.txt"]
   artifacts:
     paths: [dist/]
-    expire_in: 1 hour
-
-test:
-  stage: test
-  needs: [build]
-  script:
-    - test -f dist/app.txt && cat dist/app.txt
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
-grep -n 'needs:\|artifacts:' .gitlab-ci.yml
+```
+
+### Step 2 – Inspect keywords
+
+```bash
+grep -E '^(workflow:|parallel:|needs:|rules:)' -n .gitlab-ci.yml
+grep -A3 'needs:' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only lab
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -191,6 +214,7 @@ grep -n 'needs:\|artifacts:' .gitlab-ci.yml
 
 
 ## Code Walkthrough
+
 
 
 
@@ -210,6 +234,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -219,6 +244,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -237,6 +263,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Pipeline Syntax (.gitlab-ci.yml) changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -246,6 +273,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -263,6 +291,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Pipeline Syntax (.gitlab-ci.yml)** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -270,21 +299,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Pipeline Syntax (.gitlab-ci.yml)** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. What does needs change compared with stage-only ordering?
+2. How do rules differ from only/except, and why prefer rules?
+3. When is parallel matrix the right tool?
+4. How can a malicious merge request abuse overly broad rules?
+5. What is workflow rules for at the pipeline level?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Confirm whether the job was skipped by rules, blocked by needs on a failed dependency, or never created because workflow rules prevented the pipeline.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Prefer least-privilege rules: block pipelines from untrusted forks where secrets are available, keep production deploys manual on the default branch.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -294,6 +324,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

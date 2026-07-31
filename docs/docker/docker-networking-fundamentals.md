@@ -42,6 +42,8 @@ comments: false
 
 
 
+
+
 Create a user-defined bridge network, connect containers by name, publish ports, and know when host/overlay/macvlan apply.
 
 Default **bridge** isolates containers; user-defined bridges add DNS. **Host** shares the host stack. **Overlay** spans Swarm/multi-host. Port mapping publishes container ports to the host.
@@ -54,12 +56,16 @@ This is a core tutorial in **Module 8 · Networking** of the REBASH Academy **Do
 
 
 
+
+
 - [Volumes and Persistent Storage](volumes-and-persistent-storage.md)
 - Networking basics from the [Networking](../networking/index.md) track help
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -77,6 +83,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Docker networking](../assets/excalidraw/docker-networking.svg)
@@ -84,6 +92,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -132,29 +142,37 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-08 && cd ~/rebash-docker/module-08
 ```
 
-**Focus:** user bridge network DNS between containers
+**Focus:** create a user-defined bridge network and connect two containers
 
-### Step 1 – User-defined network
+### Step 1 – Network and DNS by name
 
 ```bash
 docker network create rebash-net
-docker run -d --name rebash-lab --network rebash-net nginx:alpine
-docker run --rm --network rebash-net curlimages/curl:8.5.0 -sS -o /dev/null -w '%{http_code}\n' http://rebash-lab/
-docker network inspect rebash-net --format '{{ "{{" }}len .Containers{{ "}}" }} containers'
+docker run -d --name rebash-web --network rebash-net nginx:alpine
+docker run --rm --network rebash-net curlimages/curl:8.10.1 curl -sI http://rebash-web/ | head -n 5
+docker network inspect rebash-net --format '{{ "{{" }}json .Containers{{ "}}" }}' | head -c 400; echo
+```
+
+### Step 2 – Cleanup network resources
+
+```bash
+docker rm -f rebash-web
+docker network rm rebash-net
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
+docker rm -f rebash-web 2>/dev/null || true
 docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -166,6 +184,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -185,6 +205,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -194,6 +216,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -212,6 +236,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Docker Networking Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -221,6 +247,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -238,6 +266,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Docker Networking Fundamentals** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -245,21 +275,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Docker Networking Fundamentals** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Bridge versus host versus none networks?
+2. How do containers resolve each other by name?
+3. Published ports versus container ports?
+4. When do custom networks beat the default bridge?
+5. How do you inspect connectivity failures?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Use docker network inspect and confirm both containers share the network.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Avoid host networking unless required; it weakens isolation.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -269,6 +301,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

@@ -56,6 +56,7 @@ comments: false
 
 
 
+
 Diagnose Amazon Web Services (AWS) production failures with a fixed order: confirm identity and blast radius, then walk the **EC2 → IAM → VPC → DNS → storage → Lambda → EKS → cost** ladder without random console clicking.
 
 Most “AWS is down” tickets are permission denials, security group / route mistakes, DNS mispoints, or exhausted quotas — not Region-wide outages. Separate **control-plane errors** (API denied, wrong Region) from **data-plane symptoms** (timeouts, 5xx, CrashLoop). Capture evidence before you change anything.
@@ -71,6 +72,7 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 
 
 
+
 - [Production AWS Landing Zones](production-aws-landing-zones.md)
 - Working knowledge of Modules 2–11 (IAM, VPC, compute, storage, containers, serverless, observability)
 - AWS CLI v2 and read access to the affected account
@@ -78,6 +80,7 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 
 
 ## Learning Objectives
+
 
 
 
@@ -97,6 +100,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Troubleshooting ladder](../assets/excalidraw/aws-troubleshooting.svg)
@@ -104,6 +108,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -189,38 +194,46 @@ Method per layer: symptom → evidence → decide → next action.
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-16 && cd ~/rebash-aws/module-16
 ```
 
-**Focus:** practise an AWS auth/network triage loop with read-only calls
+**Focus:** practise triage: identity → region → API error → CloudTrail
 
-### Step 1 – Triage loop
+### Step 1 – Triage commands
 
 ```bash
-aws sts get-caller-identity | tee identity.json
-aws ec2 describe-vpcs --output table | tee vpcs.txt
-aws ec2 describe-security-groups --query 'SecurityGroups[:5].{Id:GroupId,Name:GroupName,Vpc:VpcId}' --output table | tee sgs.txt
-tee triage.txt << 'EOF'
-Auth -> Region -> Network path (SG/NACL/route) -> Service quotas -> CloudTrail recent denials
+aws sts get-caller-identity
+echo "region=$(aws configure get region)"
+aws ec2 describe-instances --max-items 1 >/tmp/aws-out.json 2>/tmp/aws-err.txt || true
+head -n 20 /tmp/aws-err.txt || true
+aws cloudtrail lookup-events --max-results 5 --query 'Events[].{Time:EventTime,Name:EventName}' --output table 2>/dev/null || echo "CloudTrail lookup not permitted"
+```
+
+### Step 2 – Incident notes template
+
+```bash
+cat > triage.md << 'EOF'
+1. Who am I (STS ARN)? Which region?
+2. Exact error code/message
+3. Recent CloudTrail events for that API
+4. Blast radius / rollback
 EOF
-cat triage.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -232,6 +245,7 @@ cat triage.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -251,6 +265,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -260,6 +275,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -278,6 +294,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Troubleshooting AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -287,6 +304,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -304,6 +322,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 Sixteen modules cover design, security, automation, cost, recovery — and on-call debugging with a shared playbook.
 
 
@@ -311,21 +330,22 @@ Sixteen modules cover design, security, automation, cost, recovery — and on-ca
 ## Interview Questions
 
 
-1. How does **Troubleshooting AWS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. Your standard AWS incident triage order?
+2. How does CloudTrail help API failures?
+3. Wrong region symptoms?
+4. Throttling versus access denied — how to tell?
+5. How do you capture evidence for a post-incident review?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    STS identity → region → exact error → CloudTrail/event history → blast radius.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Limit who can disable logging during incidents; use temporary elevated roles with expiry.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -335,6 +355,7 @@ Sixteen modules cover design, security, automation, cost, recovery — and on-ca
 
 
 ## References
+
 
 
 

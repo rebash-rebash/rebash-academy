@@ -24,6 +24,7 @@ comments: false
 
 
 
+
 Platform teams reuse Terraform modules, Helm charts, and shared libraries across repositories. **Submodules** pin exact commits of nested repos; **subtrees** merge external history into a subdirectory. Both solve dependency management — with different tradeoffs in complexity, clone experience, and update workflows.
 
 This is **Tutorial 18** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
@@ -34,6 +35,7 @@ This is **Tutorial 18** in **Module 6: Advanced & DevOps** of the REBASH Academy
 
 
 
+
 - [Advanced Git Workflows](advanced-git-workflows.md)
 - [Working with Remotes](working-with-remotes.md)
 - Understanding of commit SHAs and remotes
@@ -41,6 +43,7 @@ This is **Tutorial 18** in **Module 6: Advanced & DevOps** of the REBASH Academy
 
 
 ## Learning Objectives
+
 
 
 
@@ -60,6 +63,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 Submodules pin an external repository at a commit; subtrees vendor history into a subdirectory of the parent project.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
@@ -67,6 +71,7 @@ Submodules pin an external repository at a commit; subtrees vendor history into 
 
 
 ## Theory
+
 
 
 
@@ -231,41 +236,53 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/git-submodules-and-subtrees && cd ~/rebash-git/git-submodules-and-subtrees
 ```
 
-**Focus:** practise Git skills for: Git Submodules and Subtrees
+**Focus:** add a submodule from a local bare repo and update it
 
-### Step 1 – Init repository
+### Step 1 – Create dependency repo and add submodule
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+mkdir -p modules
+git init --bare modules/lib.git
+git clone modules/lib.git modules/lib-work
+cd modules/lib-work
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo "lib-v1" > VERSION
+git add VERSION && git commit -m "chore: lib v1"
+git push origin HEAD
+cd ../..
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+git submodule add ./modules/lib.git third_party/lib
+git commit -m "chore: add lib submodule"
+git submodule status
 ```
 
-### Step 2 – Subtree alternative demo
+### Step 2 – Update submodule pointer
 
 ```bash
-mkdir -p vendor/lib
-echo 'lib' > vendor/lib/README.md
-git add vendor && git commit -m 'Vendor lib (subtree-style folder)'
-tee submodule-notes.txt << 'EOF'
-Submodules pin external Git SHAs; subtrees vendor history. Prefer package managers when possible.
-EOF
-cat submodule-notes.txt
+cd modules/lib-work
+echo "lib-v2" > VERSION
+git add VERSION && git commit -m "chore: lib v2"
+git push origin HEAD
+cd ../..
+cd third_party/lib && git pull && cd ../..
+git add third_party/lib
+git commit -m "chore: bump lib submodule"
+git submodule status
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -288,6 +305,7 @@ Confirm the lab before moving on:
 
 
 
+
 | Command | Description | Example |
 |---------|-------------|---------|
 | `git submodule add URL path` | Add submodule | `git submodule add URL modules/x` |
@@ -304,6 +322,7 @@ Confirm the lab before moving on:
 
 
 
+
 - Pin submodule commits; floating `main` tips invite supply-chain surprises
 - Verify remote URLs for submodules — typosquatting is a real risk
 - Update submodules deliberately and run their tests in your CI
@@ -313,6 +332,7 @@ Confirm the lab before moving on:
 
 
 ## Common Mistakes
+
 
 
 
@@ -334,6 +354,7 @@ Confirm the lab before moving on:
 
 
 
+
 !!! tip "Prefer module registry over submodules for Terraform"
     `source = "app.terraform.io/org/vpc/aws"` with version constraint.
 
@@ -352,6 +373,7 @@ Confirm the lab before moving on:
 
 
 
+
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | Empty submodule dir | Not initialized | `git submodule update --init --recursive` |
@@ -367,6 +389,7 @@ Confirm the lab before moving on:
 
 
 
+
 - **Submodules** pin external repos at specific commits — separate clone, explicit updates
 - **Subtrees** merge external code into a subdirectory — simpler clone, complex push-back
 - **`.gitmodules`** configures submodule paths and URLs
@@ -378,21 +401,22 @@ Confirm the lab before moving on:
 ## Interview Questions
 
 
-1. Explain **Git Submodules and Subtrees** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Submodule versus subtree — operational differences?
+2. Why do clones miss submodule content by default?
+3. How do you bump a submodule pointer safely?
+4. Common CI pitfalls with submodules?
+5. When would you vendor instead?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Check .gitmodules, that git submodule update --init ran, and that the parent commit points at an existing submodule SHA.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Pin submodule URLs to trusted sources and review pointer bumps like dependency upgrades.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -408,6 +432,7 @@ Confirm the lab before moving on:
 
 
 ## References
+
 
 
 

@@ -51,6 +51,7 @@ comments: false
 
 
 
+
 Design least-privilege access on AWS using Identity and Access Management (IAM) principals, roles, policies, multi-factor authentication (MFA), Security Token Service (STS), cross-account patterns, IAM Identity Center, and AWS Organizations.
 
 Every API call is authorised by **identity + policy evaluation**. Misconfigured IAM is the most common cause of both outages (“AccessDenied”) and breaches (over-privileged keys). This module teaches the production model: humans use federated SSO; workloads assume **roles**; long-lived access keys are rare and rotated.
@@ -66,12 +67,14 @@ This is a core tutorial in **Module 2 · Identity & Access Management** of the R
 
 
 
+
 - [AWS Fundamentals and Global Infrastructure](aws-fundamentals-and-global-infrastructure.md)
 - Comfortable with JSON and the AWS CLI
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -89,6 +92,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![AWS IAM model](../assets/excalidraw/aws-iam-model.svg)
@@ -96,6 +100,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -159,37 +164,44 @@ Workload → Instance role or OIDC → AssumeRoleWithWebIdentity → APIs
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-02 && cd ~/rebash-aws/module-02
 ```
 
-**Focus:** inspect IAM identity and simulate policy evaluation read-only
+**Focus:** inspect caller identity and IAM (read-only)
 
-### Step 1 – IAM inventory
+### Step 1 – Identity inventory
 
 ```bash
-aws sts get-caller-identity | tee identity.json
-aws iam get-user 2>/dev/null | tee user.json || echo 'Using a role session (normal for SSO)'
-aws iam list-attached-user-policies --user-name "$(jq -r .Arn identity.json | awk -F/ '{print $NF}')" 2>/dev/null | tee policies.json || true
-tee iam-notes.txt << 'EOF'
-Prefer IAM Identity Center / roles over long-lived users. Least privilege + SCPs in Organizations.
+aws sts get-caller-identity
+aws iam list-account-aliases --output text || true
+aws iam get-user --output json 2>/dev/null | head -c 400 || echo "likely using a role — expected with SSO"
+```
+
+### Step 2 – Least-privilege checklist
+
+```bash
+cat > iam-checklist.md << 'EOF'
+- Prefer roles + STS / OIDC over access keys
+- SCPs for organisation guardrails
+- MFA on humans; separate break-glass
 EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
+# No IAM users/keys created
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -201,6 +213,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -220,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -229,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -247,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode IAM, Identity Access, and Organizations changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -256,6 +272,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -273,6 +290,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **IAM, Identity Access, and Organizations** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -280,21 +298,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **IAM, Identity Access, and Organizations** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. User versus role versus group versus policy?
+2. Access denied on a describe call — how do you diagnose?
+3. Why are long-lived access keys discouraged?
+4. What are SCPs for in AWS Organizations?
+5. How does IAM Access Analyzer help?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Decode the ARN from STS, check applicable policies/SCPs, and confirm the action/resource in the error.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Use roles with MFA/SSO, least privilege, and rotate/delete unused keys immediately.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -304,6 +323,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

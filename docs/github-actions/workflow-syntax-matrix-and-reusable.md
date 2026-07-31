@@ -45,6 +45,7 @@ comments: false
 
 
 
+
 Write maintainable workflow YAML using `strategy.matrix`, job and step `if:` conditionals, job outputs, and a first **reusable workflow** call pattern.
 
 Beyond a single job, production workflows need **fan-out** (test on multiple OS or language versions), **selective execution** (`if:` on jobs and steps), and **reuse** so fifty repositories do not diverge. A **matrix** expands one job definition into many. **Outputs** pass data between jobs. **Reusable workflows** (`workflow_call`) let a platform team own a canonical CI definition that callers invoke with inputs.
@@ -57,11 +58,13 @@ This is a core tutorial in **Module 4 · Workflow Syntax** of the REBASH Academy
 
 
 
+
 - [GitHub-Hosted and Self-Hosted Runners](github-hosted-and-self-hosted-runners.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -79,6 +82,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Workflow syntax](../assets/excalidraw/gha-workflow-syntax.svg)
@@ -86,6 +90,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -157,39 +162,80 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-04/.github/workflows && cd ~/rebash-github-actions/module-04/.github/workflows
 ```
 
-**Focus:** build a matrix workflow and reusable workflow stub
+**Focus:** matrix workflow and reusable workflow caller/callee
 
-### Step 1 – Matrix + reusable
+### Step 1 – Create reusable + matrix workflows
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/matrix.yml << 'EOF'
-name: matrix
-on: workflow_dispatch
+cat > .github/workflows/reusable-test.yml << 'EOF'
+name: Reusable test
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
 jobs:
   test:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python --version
+EOF
+cat > .github/workflows/matrix.yml << 'EOF'
+name: Matrix and reusable
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  matrix_probe:
+    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - run: echo "python ${{ matrix.python }}"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python --version
+  call_reusable:
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: "3.12"
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/matrix.yml')); print('matrix OK')"
+
+{% raw %}
+```yaml
+# When wiring matrix python version dynamically use:
+# python-version: ${{ matrix.python }}
+# inputs: ${{ inputs.python-version }}
+# Wrap workflow files containing those expressions in {% raw %} on docs pages.
 ```
 {% endraw %}
+```
+
+### Step 2 – Check matrix and workflow_call
+
+```bash
+grep -E 'matrix:|workflow_call:|uses: \./' -n .github/workflows/*.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -201,6 +247,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/matrix.yml')); p
 
 
 ## Code Walkthrough
+
 
 
 
@@ -220,6 +267,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -229,6 +277,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -247,6 +296,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Workflow Syntax: Matrix and Reusable Workflows changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -256,6 +306,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -273,6 +324,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Workflow Syntax: Matrix and Reusable Workflows** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -280,21 +332,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Workflow Syntax: Matrix and Reusable Workflows** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. When is a build matrix the right tool?
+2. How does workflow_call differ from workflow_run?
+3. What does fail-fast false change in a matrix?
+4. How do you version reusable workflows safely across repos?
+5. What inputs/secrets patterns keep reusable workflows least-privileged?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Check matrix expansion in the UI, cancelled siblings from fail-fast, and whether the reusable workflow path/ref resolves.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Pin reusable workflows to tags/SHAs and pass only required secrets.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -304,6 +357,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

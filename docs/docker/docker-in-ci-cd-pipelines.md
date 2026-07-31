@@ -43,6 +43,8 @@ comments: false
 
 
 
+
+
 Design a build → scan → push → promote pipeline using Buildx for multi-architecture images and immutable tags.
 
 CI builds images from Git; never “docker build on a laptop then scp.” **Buildx** enables `linux/amd64` + `linux/arm64`. Promote by retagging digests across environments.
@@ -55,12 +57,16 @@ This is a core tutorial in **Module 15 · Docker in CI/CD** of the REBASH Academ
 
 
 
+
+
 - [Docker Performance and Resource Limits](docker-performance-and-resource-limits.md)
 - [Container Scanning and SBOM](container-scanning-and-sbom.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -77,6 +83,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![CI/CD pipeline](../assets/excalidraw/docker-cicd-pipeline.svg)
@@ -84,6 +92,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -136,34 +146,47 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-15/.github/workflows && cd ~/rebash-docker/module-15/.github/workflows
 ```
 
-**Focus:** Dockerfile built in a CI-shaped script
+**Focus:** Dockerfile plus CI-shaped local build script tagged with git SHA
 
-### Step 1 – CI build script
+### Step 1 – Build script mimicking CI
 
 ```bash
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
 cat > Dockerfile << 'EOF'
 FROM alpine:3.20
-CMD ["echo","ci-ok"]
+COPY VERSION /VERSION
+CMD ["cat", "/VERSION"]
 EOF
-cat > ci-build.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-docker build -t rebash-lab:local .
-docker run --rm rebash-lab:local
-EOF
-chmod +x ci-build.sh
-./ci-build.sh | tee ci.txt
+echo "0.1.0" > VERSION
+git add Dockerfile VERSION
+git commit -m "chore: docker ci lab"
+SHA=$(git rev-parse --short HEAD)
+docker build -t rebash-ci:$SHA .
+docker run --rm rebash-ci:$SHA
+echo "built rebash-ci:$SHA" | tee build.out
+```
+
+### Step 2 – Cleanup tags
+
+```bash
+SHA=$(git rev-parse --short HEAD)
+docker rmi rebash-ci:$SHA
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rmi $(docker images -q rebash-ci) 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -175,6 +198,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -194,6 +219,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -203,6 +230,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -221,6 +250,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Docker in CI/CD Pipelines changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -230,6 +261,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -247,6 +280,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Docker in CI/CD Pipelines** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -254,21 +289,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Docker in CI/CD Pipelines** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Why tag CI images with git SHA?
+2. DinD versus Kaniko/Buildah trade-offs?
+3. How do you cache layers safely in CI?
+4. What should not be in CI build contexts?
+5. How do you prove provenance of an image?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Check Dockerfile path/context, registry login, and whether the job ran on the expected commit SHA.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Never use long-lived registry passwords in clear logs. Prefer OIDC.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -278,6 +315,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

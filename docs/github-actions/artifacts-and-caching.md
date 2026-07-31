@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Configure artefact upload/download so a build job produces a shareable package a test job consumes, and add a lockfile-keyed dependency cache without treating cache as a correctness guarantee.
 
 **Artefacts** (GitHub spelling in the product UI: *artifacts*) are job outputs GitHub stores for download, retention, and sharing across jobs in a workflow run — packages, binaries, test reports, and logs. **Caching** restores dependency directories between runs to cut install time; cache is **best-effort** and must never replace pinned lockfiles. Confusing the two causes flaky pipelines and bloated storage bills.
@@ -56,11 +57,13 @@ This is a core tutorial in **Module 6 · Artifacts & Caching** of the REBASH Aca
 
 
 
+
 - [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -78,6 +81,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Artifacts and caching](../assets/excalidraw/gha-artifacts-cache.svg)
@@ -85,6 +89,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -152,50 +157,63 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-06/.github/workflows && cd ~/rebash-github-actions/module-06/.github/workflows
 ```
 
-**Focus:** upload/download artefacts and cache pattern in workflow YAML
+**Focus:** actions/cache patterns and upload/download-artifact across jobs
 
-### Step 1 – Artefacts workflow
+### Step 1 – Cache + artifact workflow
 
-{% raw %}
 ```bash
-mkdir -p .github/workflows dist
-echo build > dist/app.txt
+mkdir -p .github/workflows src
+echo 'print(1)' > src/app.py
 cat > .github/workflows/artifacts.yml << 'EOF'
-name: artifacts
-on: workflow_dispatch
+name: Artifacts and caching
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir -p dist && echo build > dist/app.txt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: |
+          pip install pyyaml
+          mkdir -p dist && cp src/app.py dist/
+          echo "revision" > dist/REVISION
       - uses: actions/upload-artifact@v4
         with:
-          name: app
+          name: dist
           path: dist/
-  use:
+  verify:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: app
+          name: dist
           path: dist
-      - run: cat dist/app.txt
+      - run: test -f dist/REVISION && cat dist/REVISION
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/artifacts.yml')); print('OK')"
 ```
-{% endraw %}
+
+### Step 2 – Confirm cache and artifact actions
+
+```bash
+grep -E 'upload-artifact|download-artifact|cache:' .github/workflows/artifacts.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-rm -rf dist
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -207,6 +225,7 @@ rm -rf dist
 
 
 ## Code Walkthrough
+
 
 
 
@@ -226,6 +245,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -235,6 +255,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -253,6 +274,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Artifacts and Caching changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -262,6 +284,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -279,6 +302,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Artifacts and Caching** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -286,21 +310,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Artifacts and Caching** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Cache vs artifact — which is authoritative for build outputs?
+2. Cache restores but builds still slow — what else matters?
+3. How do you pass files from job A to job B reliably?
+4. What security caution applies to caches?
+5. When should artifact retention be short?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Confirm upload/download names match and the producer job succeeded. Caches are best-effort acceleration, not a contract between jobs.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Do not cache secrets or writable shared directories across untrusted branches without careful keying.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -310,6 +335,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

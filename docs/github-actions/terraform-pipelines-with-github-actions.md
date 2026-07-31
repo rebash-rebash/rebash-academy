@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Design a GitHub Actions pipeline that runs `init` → `validate` → `plan` on pull requests (with a plan artefact) and a protected `apply` on `main` — with remote state outside the runner workspace and clear notes on destroy.
 
 Terraform in Actions automates Infrastructure as Code (IaC): every change is planned in review, then applied under gates. Store **remote state** with locking (for example Amazon Simple Storage Service (S3) + DynamoDB, Azure Storage, or Google Cloud Storage). Upload the binary **plan** as a workflow artefact so apply executes what reviewers saw. Never leave state only on the runner disk. Prefer OpenID Connect (OIDC) cloud roles (Modules 5 and 10) over static access keys.
@@ -59,11 +60,13 @@ This is a core tutorial in **Module 9 · Terraform Pipelines** of the REBASH Aca
 
 
 
+
 - [Kubernetes Deployments with GitHub Actions](kubernetes-deployments-with-github-actions.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Terraform pipeline](../assets/excalidraw/gha-terraform-pipeline.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -143,49 +148,82 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-09/.github/workflows && cd ~/rebash-github-actions/module-09/.github/workflows
 ```
 
-**Focus:** Terraform plan workflow + local validate
+**Focus:** plan/apply workflow with artifact plan and manual apply environment
 
-### Step 1 – TF plan workflow
+### Step 1 – Terraform null provider + workflow
 
-{% raw %}
 ```bash
-mkdir -p infra .github/workflows
-cat > infra/main.tf << 'EOF'
+mkdir -p .github/workflows
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
     null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-resource "null_resource" "x" {}
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { note = "gha-tf-lab" }
+}
 EOF
 cat > .github/workflows/terraform.yml << 'EOF'
-name: terraform
-on: pull_request
+name: Terraform
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+  id-token: write
 jobs:
   plan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
+      - run: terraform init -backend=false
+      - run: terraform plan -out=plan.cache
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plan
+          path: plan.cache
+  apply:
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: plan
       - run: |
-          cd infra
-          terraform init -input=false
-          terraform plan -input=false
+          terraform init -backend=false
+          terraform apply -auto-approve plan.cache
 EOF
-cd infra && terraform init -backend=false && terraform validate && cd ..
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform.yml')); print('OK')"
 ```
-{% endraw %}
+
+### Step 2 – Local plan/destroy if terraform installed
+
+```bash
+if command -v terraform >/dev/null; then
+  terraform init -backend=false
+  terraform plan -out=plan.cache
+  terraform apply -auto-approve plan.cache
+  terraform destroy -auto-approve
+fi
+grep -E 'plan.cache|environment: production' .github/workflows/terraform.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-rm -rf infra/.terraform
+terraform destroy -auto-approve 2>/dev/null || true
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -197,6 +235,7 @@ rm -rf infra/.terraform
 
 
 ## Code Walkthrough
+
 
 
 
@@ -216,6 +255,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -225,6 +265,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -243,6 +284,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Terraform Pipelines with GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -252,6 +294,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -269,6 +312,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Terraform Pipelines with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -276,21 +320,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Terraform Pipelines with GitHub Actions** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Why apply the exact plan artifact from the same workflow run?
+2. What state backend considerations matter in CI?
+3. When should apply require a GitHub environment approval?
+4. How do you pass cloud credentials to Terraform in Actions?
+5. How do you destroy experimental stacks created in labs?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Confirm init backend, matching variables between plan/apply, and that the plan artifact downloaded correctly.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Use OIDC-mapped least-privilege roles, protect state, and never commit tfstate. Destroy lab resources in the same session.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -300,6 +345,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -40,6 +40,8 @@ comments: false
 
 
 
+
+
 Apply a systematic playbook: status → logs → inspect → exec → host resources — for the common Docker failure modes.
 
 Most incidents are config or resource issues, not “Docker is broken.” Reproduce locally with the same image digest when possible.
@@ -52,11 +54,15 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 
 
 
+
+
 - [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -74,6 +80,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
@@ -81,6 +89,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -130,31 +140,39 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-16 && cd ~/rebash-docker/module-16
 ```
 
-**Focus:** debug a failing container with logs and inspect
+**Focus:** debug a failing container with logs, inspect, and a corrected run
 
-### Step 1 – Broken CMD
+### Step 1 – Broken then fixed
 
 ```bash
-docker run --name rebash-lab alpine:3.20 /bin/does-not-exist || true
-docker ps -a --filter name=rebash-lab
-docker logs rebash-lab 2>&1 | tee boom.log || true
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.State.ExitCode{{ "}}" }} {{ "{{" }}.State.Error{{ "}}" }}'
-docker rm rebash-lab
-docker run --rm --name rebash-lab alpine:3.20 echo recovered
+docker run -d --name rebash-bad alpine:3.20 sh -c 'echo boom; exit 1'
+sleep 1
+docker ps -a --filter name=rebash-bad
+docker logs rebash-bad
+docker inspect rebash-bad --format 'exit={{ "{{" }}.State.ExitCode{{ "}}" }}'
+docker rm -f rebash-bad
+docker run -d --name rebash-good alpine:3.20 sh -c 'echo ok; sleep 30'
+docker logs rebash-good
+```
+
+### Step 2 – Cleanup
+
+```bash
+docker rm -f rebash-bad rebash-good
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
-docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rm -f rebash-bad rebash-good 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -166,6 +184,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -185,6 +205,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -194,6 +216,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -212,6 +236,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Troubleshooting Docker Containers changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -221,6 +247,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -238,6 +266,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Troubleshooting Docker Containers** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -245,21 +275,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Troubleshooting Docker Containers** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Give a triage order for a failing container.
+2. How do you copy files out for offline analysis?
+3. When does docker diff help?
+4. Name resolution fails inside a container — steps?
+5. Disk full on Docker host — what do you reclaim first?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Status/exit code → logs → inspect config/mounts/networks → run an interactive replacement with the same flags.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Do not paste secret-bearing env dumps into tickets.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -269,6 +301,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

@@ -27,6 +27,8 @@ comments: false
 
 
 
+
+
 You have built images, wired networks, secured containers, integrated CI/CD, and mapped Docker to Kubernetes. This capstone ties it together: deploy a **multi-service voting application** — web frontend, API, worker, Redis, and PostgreSQL — using production Docker patterns, observability hooks, and a documented path to [Kubernetes](../kubernetes/index.md).
 
 This is **Tutorial 20** — the finale of **Module 6: Production & Beyond** and the complete REBASH Academy **Docker track**.
@@ -34,6 +36,8 @@ This is **Tutorial 20** — the finale of **Module 6: Production & Beyond** and 
 
 
 ## Prerequisites
+
+
 
 
 
@@ -48,6 +52,8 @@ This is **Tutorial 20** — the finale of **Module 6: Production & Beyond** and 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -66,11 +72,15 @@ By the end of this capstone, you will be able to:
 
 
 
+
+
 ![Production container platform](../assets/excalidraw/docker-production-platform.svg)
 
 
 
 ## Project Overview — VoteStack
+
+
 
 
 
@@ -90,6 +100,8 @@ You will clone or create the project structure, containerize each service, and r
 
 
 ## Project Structure
+
+
 
 
 
@@ -120,6 +132,8 @@ votestack/
 
 
 ## Theory
+
+
 
 
 
@@ -174,35 +188,46 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/docker-capstone-and-next-steps && cd ~/rebash-docker/docker-capstone-and-next-steps
 ```
 
-**Focus:** production-minded image: non-root, healthcheck, pinned tag
+**Focus:** compose a small stack with volume, then full teardown
 
-### Step 1 – Prod-shaped Dockerfile
+### Step 1 – Capstone stack
 
 ```bash
-cat > Dockerfile << 'EOF'
-FROM nginx:1.27-alpine
-RUN adduser -D -u 10001 appuser || true
-HEALTHCHECK CMD wget -qO- http://127.0.0.1/ || exit 1
+cat > compose.yaml << 'EOF'
+services:
+  web:
+    image: nginx:alpine
+    ports: ["18086:80"]
+    volumes: ["rebash-cap:/usr/share/nginx/html:ro"]
+volumes:
+  rebash-cap:
 EOF
-docker build -t rebash-lab:local .
-docker run -d --name rebash-lab -p 18080:80 rebash-lab:local
-sleep 2
-curl -sI http://127.0.0.1:18080 | head -n 3
-docker inspect rebash-lab --format '{{ "{{" }}json .State.Health{{ "}}" }}' | tee health.json || true
+docker volume create rebash-cap
+docker run --rm -v rebash-cap:/data alpine:3.20 sh -c 'echo "<h1>capstone</h1>" > /data/index.html'
+docker compose up -d
+curl -s http://127.0.0.1:18086 | head -n 5
+```
+
+### Step 2 – Full teardown
+
+```bash
+docker compose down -v
+docker volume rm rebash-cap 2>/dev/null || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rm -f rebash-lab rebash-lab2 2>/dev/null || true
-docker network rm rebash-net 2>/dev/null || true
-docker volume rm rebash-vol 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+docker volume rm rebash-cap 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -225,6 +250,8 @@ Confirm the lab before moving on:
 
 
 
+
+
 ```bash
 # Smoke test (scripts/smoke-test.sh)
 curl -sf "$BASE_URL/api/health" | grep -q ok && curl -sf "$BASE_URL/" -o /dev/null
@@ -242,6 +269,8 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 
 
+
+
 - Treat the capstone stack like production: non-root, healthchecks, limits, and no committed secrets
 - Use distinct credentials per environment; never reuse lab Postgres passwords in real deployments
 - Scan and sign the images you build before any registry push outside your laptop
@@ -252,6 +281,8 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -276,6 +307,8 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 
 
+
+
 !!! tip "One Dockerfile per service"
     Independent build and deploy cycles — matches microservice CI matrices.
 
@@ -297,6 +330,8 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 
 
+
+
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | api stuck unhealthy | Postgres not ready | Check depends_on; extend start_period |
@@ -311,6 +346,8 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 
 
+
+
 - The **VoteStack capstone** combines multi-service architecture, Compose orchestration, and production patterns from the full Docker track
 - **Edge nginx**, **health-gated depends_on**, **resource limits**, and **secrets** mirror real production stacks
 - **CI/CD** builds per-service images with SHA tags — same artifacts deploy to Compose today and Kubernetes tomorrow
@@ -322,21 +359,23 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 ## Interview Questions
 
 
-1. What production problem does **Docker Capstone and Next Steps** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Which Docker skills are prerequisites for Kubernetes?
+2. How would you demonstrate production readiness of an image?
+3. What cleanup habits prevent lab debt?
+4. When do you graduate from Compose to an orchestrator?
+5. What personal lab project would you build next?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Re-run the capstone stack from a clean directory and confirm teardown leaves no containers/volumes.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Carry forward non-root images, scanning, and secret hygiene into Kubernetes/Helm/GitOps next steps.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -358,6 +397,8 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 
 
+
+
 - [Docker – Awesome Compose examples](https://github.com/docker/awesome-compose)
 - [Compose – Production guide](https://docs.docker.com/compose/how-tos/production/)
 - [The Twelve-Factor App](https://12factor.net/)
@@ -368,6 +409,8 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 
 
 ## Congratulations
+
+
 
 
 

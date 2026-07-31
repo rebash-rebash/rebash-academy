@@ -50,6 +50,7 @@ comments: false
 
 
 
+
 Select the right AWS storage service for each workload — Amazon Simple Storage Service (S3), Elastic Block Store (EBS), Elastic File System (EFS), and a brief Amazon FSx overview — and apply storage classes, lifecycle rules, and encryption correctly.
 
 Cloud storage is not one product. **Block**, **file**, and **object** models solve different problems. Using EBS like a shared drive, or S3 like a POSIX disk, creates outages and surprise bills. This module gives Cloud and DevOps engineers a decision framework used in production architectures.
@@ -65,12 +66,14 @@ This is a core tutorial in **Module 5 · Storage** of the REBASH Academy **AWS f
 
 
 
+
 - [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
 - Comfortable with Linux filesystems and the AWS CLI
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -88,6 +91,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![AWS storage](../assets/excalidraw/aws-storage.svg)
@@ -95,6 +99,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -153,39 +158,51 @@ Lifecycle sketch: Standard → IA (30d) → Glacier Flexible (90d) → expire (3
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-05 && cd ~/rebash-aws/module-05
 ```
 
-**Focus:** list S3 buckets and inspect one bucket's encryption/public-access block
+**Focus:** create a uniquely named lab bucket, prove put/get, then delete everything
 
-### Step 1 – S3 hygiene check
+### Step 1 – S3 lab bucket lifecycle
 
 ```bash
-aws s3api list-buckets --query 'Buckets[].Name' --output text | tr '\t' '\n' | head -n 20 | tee buckets.txt
-BUCKET=$(head -n 1 buckets.txt)
-if [ -n "$BUCKET" ]; then
-  aws s3api get-public-access-block --bucket "$BUCKET" 2>/dev/null | tee pab.json || echo 'No PAB or no permission'
-  aws s3api get-bucket-encryption --bucket "$BUCKET" 2>/dev/null | tee enc.json || echo 'No encryption config visible'
-else
-  echo 'No buckets visible — still record the commands.' | tee buckets.txt
-fi
+aws sts get-caller-identity
+ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+BUCKET="rebash-lab-${ACCOUNT}-$(date +%s)"
+echo "$BUCKET" > bucket-name.txt
+REGION=$(aws configure get region || echo eu-west-1)
+aws s3 mb "s3://${BUCKET}" --region "$REGION"
+echo "hello rebash" > hello.txt
+aws s3 cp hello.txt "s3://${BUCKET}/hello.txt"
+aws s3 ls "s3://${BUCKET}/"
+aws s3 cp "s3://${BUCKET}/hello.txt" hello-down.txt
+cat hello-down.txt
+```
+
+### Step 2 – Destroy bucket contents and bucket
+
+```bash
+BUCKET=$(cat bucket-name.txt)
+aws s3 rm "s3://${BUCKET}" --recursive
+aws s3 rb "s3://${BUCKET}"
+rm -f hello.txt hello-down.txt bucket-name.txt
+aws ec2 describe-volumes --query 'Volumes[].{Id:VolumeId,Size:Size,State:State}' --output table | head
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -197,6 +214,7 @@ fi
 
 
 ## Code Walkthrough
+
 
 
 
@@ -216,6 +234,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -225,6 +244,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -243,6 +263,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Storage: S3, EBS, and EFS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -252,6 +273,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -269,6 +291,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Storage: S3, EBS, and EFS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -276,21 +299,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Storage: S3, EBS, and EFS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. S3 consistency model basics you rely on?
+2. EBS versus EFS versus S3 for different workloads?
+3. How do you prevent accidental public buckets?
+4. What is versioning useful for?
+5. Unattached EBS volumes — cost impact?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    For access issues check bucket policy, Block Public Access, IAM, and the exact object key/region.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Block public access by default, encrypt where required, and delete lab buckets/objects when finished.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -300,6 +324,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

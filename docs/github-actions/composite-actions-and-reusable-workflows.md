@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Factor repeated CI into composite actions and reusable workflows, pin marketplace actions by commit SHA, and outline how platform teams publish internal actions.
 
 Copy-pasted workflow YAML drifts. **Composite actions** package a sequence of steps with inputs and outputs. **Reusable workflows** (`workflow_call`) share whole jobs — often lint, test, build, and deploy contracts — across repositories. The **marketplace** accelerates delivery; **pinning by SHA** and **internal actions** keep the supply chain under your control.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 14 · Reusable Components** of the REBASH Ac
 
 
 
+
 - [Release Management and Versioning](release-management-and-versioning.md)
 - [Workflow Syntax, Matrix, and Reusable](workflow-syntax-matrix-and-reusable.md) (or equivalent)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Reusable components](../assets/excalidraw/gha-reusable-components.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -144,39 +149,67 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows} && cd ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows}
 ```
 
-**Focus:** build a matrix workflow and reusable workflow stub
+**Focus:** author a composite action and call it from a workflow
 
-### Step 1 – Matrix + reusable
+### Step 1 – Composite action + caller
 
-{% raw %}
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/matrix.yml << 'EOF'
-name: matrix
-on: workflow_dispatch
+mkdir -p .github/actions/hello .github/workflows
+cat > .github/actions/hello/action.yml << 'EOF'
+name: Hello composite
+description: Greet and write an output file
+inputs:
+  name:
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        echo "Hello from composite"
+        echo "ok" > "${GITHUB_WORKSPACE}/hello.out"
+EOF
+cat > .github/workflows/use-composite.yml << 'EOF'
+name: Use composite
+on: [workflow_dispatch, push]
+permissions:
+  contents: read
 jobs:
-  test:
+  greet:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - run: echo "python ${{ matrix.python }}"
+      - uses: ./.github/actions/hello
+        with:
+          name: rebash
+      - run: test -f hello.out && cat hello.out
 EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/matrix.yml')); print('matrix OK')"
+
+{% raw %}
+```yaml
+# Composite steps may use: echo "Hello ${{ inputs.name }}"
+# Keep that expression inside {% raw %} when documenting on MkDocs pages.
 ```
 {% endraw %}
+```
+
+### Step 2 – Validate composite action schema
+
+```bash
+grep -E 'using: composite|inputs:' .github/actions/hello/action.yml
+grep 'uses: ./' .github/workflows/use-composite.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -188,6 +221,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/matrix.yml')); p
 
 
 ## Code Walkthrough
+
 
 
 
@@ -207,6 +241,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -216,6 +251,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -234,6 +270,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Composite Actions and Reusable Workflows changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -243,6 +280,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -260,6 +298,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Composite Actions and Reusable Workflows** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -267,21 +306,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Composite Actions and Reusable Workflows** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Composite action vs reusable workflow — when each?
+2. How do inputs differ between the two?
+3. Why can nested actions amplify supply-chain risk?
+4. How do you test a composite action before publishing?
+5. What metadata belongs in action.yml?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Confirm runs.using/workflow_call, input names, and relative uses paths. Most local composite failures are wrong working directory or missing shell on steps.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Pin dependencies inside shared actions and limit secrets passed into shared units.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -291,6 +331,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

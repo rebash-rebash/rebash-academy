@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Connect repositories, branches, merge requests, protected branches, tags, and releases to how pipelines start and what they are allowed to change.
 
 GitLab CI/CD is useless without a clear **project** model. A project owns the Git repository, CI settings, protected branches, variables, and release records. Merge requests (MRs) are the review surface; tags and **Releases** mark shippable versions.
@@ -56,11 +57,13 @@ This is a core tutorial in **Module 2 · GitLab Projects** of the REBASH Academy
 
 
 
+
 - [GitLab CI/CD Fundamentals](gitlab-ci-fundamentals.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -77,6 +80,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Projects and merge requests](../assets/excalidraw/gitlab-projects-mr.svg)
@@ -84,6 +88,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -143,14 +148,53 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-02 && cd ~/rebash-gitlab/module-02
 ```
 
-**Focus:** model release/version jobs with a changelog stub
+**Focus:** model MR pipelines with merge request rules
 
-### Step 1 – Release metadata
+### Step 1 – MR-centric workflow rules
 
 ```bash
-echo '# Changelog
+echo '# Demo MR pipelines' > README.md
+cat > .gitlab-ci.yml << 'EOF'
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+stages: [verify]
+mr_verify:
+  stage: verify
+  image: alpine:3.20
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script: ["echo MR !$CI_MERGE_REQUEST_IID", "test -f README.md"]
+branch_verify:
+  stage: verify
+  image: alpine:3.20
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
+  script: ["echo branch pipeline for $CI_COMMIT_BRANCH"]
+EOF
+```
+
+### Step 2 – Validate workflow rules
+
+```bash
+grep -A6 'workflow:' .gitlab-ci.yml
+grep 'merge_request_event' .gitlab-ci.yml
+```
+
+### Final step – Cleanup note
+
+```bash
+# Keep ~/rebash-gitlab/ for later tutorials
+```
+
+
 
 ## 0.1.0
+
+
 - Lab release' > CHANGELOG.md
 cat > .gitlab-ci.yml << 'EOF'
 release:
@@ -174,6 +218,7 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
 
 
 ## 0.1.0
+
 
 - Lab release' > CHANGELOG.md
 cat > .gitlab-ci.yml << 'EOF'
@@ -201,6 +246,7 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
 
 
 
+
 - [ ] Lab commands run under `~/rebash-gitlab/module-02/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
@@ -209,6 +255,7 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
 
 
 ## Code Walkthrough
+
 
 
 
@@ -228,6 +275,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -237,6 +285,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -255,6 +304,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitLab Projects, Merge Requests, and Releases changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -264,6 +314,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -281,6 +332,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitLab Projects, Merge Requests, and Releases** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -288,21 +340,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **GitLab Projects, Merge Requests, and Releases** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. Why prefer merge request pipelines over duplicate branch pipelines?
+2. What is detached merge request pipeline behaviour?
+3. How do draft MRs change your required checks strategy?
+4. Who should be allowed to merge to protected branches?
+5. How do releases relate to tags and permissions?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Check workflow rules and whether both branch and MR pipelines fired. Confirm required status checks match jobs that run on merge_request_event.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Protected branches, CODEOWNERS, and required pipelines enforce review. Keep secret variables away from untrusted fork MRs.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -312,6 +365,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

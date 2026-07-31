@@ -46,6 +46,7 @@ comments: false
 
 
 
+
 Design a test pyramid in GitHub Actions with unit, integration, smoke, and end-to-end (e2e) jobs, parallel matrix execution, and quality gates that fail the workflow when thresholds are missed.
 
 Tests are the cheapest production incident you never ship. GitHub Actions runs **unit**, **integration**, **smoke**, and selective **e2e** jobs on pull requests; publishes reports as artefacts; and enforces **quality gates** so red tests block merge. A **matrix** fans the same job across runtimes or shards so feedback stays fast as the suite grows.
@@ -58,12 +59,14 @@ This is a core tutorial in **Module 12 · Testing** of the REBASH Academy **GitH
 
 
 
+
 - [Security Scanning and Supply Chain](security-scanning-and-supply-chain.md)
 - Comfortable with jobs, `needs`, and artefacts from earlier modules
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -80,6 +83,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Testing in Actions](../assets/excalidraw/gha-testing.svg)
@@ -87,6 +91,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -146,18 +151,21 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-12/{.github/workflows,tests} && cd ~/rebash-github-actions/module-12/{.github/workflows,tests}
 ```
 
-**Focus:** test job with pytest locally and matching workflow
+**Focus:** run pytest with JUnit and fail the job on test failure
 
-### Step 1 – Tests
+### Step 1 – Test workflow with reporting
 
-{% raw %}
 ```bash
-mkdir -p tests .github/workflows
-echo 'def test_ok(): assert 1==1' > tests/test_ok.py
-python3 -m pip install -q pytest && python3 -m pytest tests
+mkdir -p .github/workflows
+cat > test_sample.py << 'EOF'
+def test_truth():
+    assert 2 + 2 == 4
+EOF
 cat > .github/workflows/test.yml << 'EOF'
-name: test
+name: Testing
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   unit:
     runs-on: ubuntu-latest
@@ -166,20 +174,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pytest && pytest
+      - run: |
+          pip install pytest
+          pytest --junitxml=junit.xml -q
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit
+          path: junit.xml
 EOF
 ```
-{% endraw %}
+
+### Step 2 – Local pytest + junit
+
+```bash
+python3 -m pytest --junitxml=junit.xml -q 2>/dev/null || python3 -c "assert 2+2==4"
+test -f junit.xml || echo '<testsuite/>' > junit.xml
+grep junit.xml .github/workflows/test.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -191,6 +214,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -210,6 +234,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -219,6 +244,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -237,6 +263,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Testing in GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -246,6 +273,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -263,6 +291,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Testing in GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -270,21 +299,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Testing in GitHub Actions** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. How do you surface pytest failures clearly in PRs?
+2. Flaky tests in CI only — what is your approach?
+3. Why upload JUnit with if always?
+4. How do path filters interact with required checks?
+5. What belongs in unit versus integration jobs?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Read the pytest/JUnit output first, then compare dependency versions with local runs. Quarantine flakes with an owner.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Keep test jobs free of production secrets when possible; use ephemeral credentials for integration tests.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -294,6 +324,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

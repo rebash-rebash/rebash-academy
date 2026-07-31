@@ -51,6 +51,7 @@ comments: false
 
 
 
+
 Assemble a security stage that runs secret scanning and Dependency Review early, CodeQL for Static Application Security Testing (SAST), Trivy on container images, publishes a Software Bill of Materials (SBOM), and hardens the supply chain by pinning third-party Actions to commit SHAs.
 
 **DevSecOps** embeds scanners into the same workflows that build and deploy. GitHub provides secret scanning, Dependency Review (for pull requests), CodeQL, and ecosystem tooling for container scanning (for example Trivy) and SBOM export (CycloneDX / SPDX). Fail the pipeline on policy severity — do not treat scanners as optional decoration. Pin marketplace Actions by full commit SHA so a tagged release cannot silently change under you.
@@ -63,11 +64,13 @@ This is a core tutorial in **Module 11 · Security** of the REBASH Academy **Git
 
 
 
+
 - [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -85,6 +88,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Security and supply chain](../assets/excalidraw/gha-security.svg)
@@ -92,6 +96,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -155,43 +160,58 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-11/.github/workflows && cd ~/rebash-github-actions/module-11/.github/workflows
 ```
 
-**Focus:** pin actions and add a checkout-safe pull_request workflow
+**Focus:** secret hygiene job and supply-chain checklist
 
-### Step 1 – Supply-chain hygiene
+### Step 1 – Security workflow skeleton
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/secure.yml << 'EOF'
-name: secure
+cat > SECURITY-CI.md << 'EOF'
+- Enable secret scanning / push protection
+- Pin actions to SHAs for high-assurance repos
+- Least privilege permissions on workflows
+- Review Dependabot PRs weekly
+EOF
+cat > .github/workflows/security.yml << 'EOF'
+name: Security scanning
 on:
+  push:
+    branches: [main]
   pull_request:
 permissions:
   contents: read
+  security-events: write
 jobs:
-  lint:
+  secret_hygiene:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Guard
-        run: echo "Pin actions; least privileges; no secrets on fork PRs"
+      - name: Basic secret grep
+        run: |
+          if grep -RInE '(AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' .; then
+            echo "Potential secret pattern found"; exit 1
+          fi
+          test -f SECURITY-CI.md
 EOF
-tee supply-chain.txt << 'EOF'
-Pin actions by SHA for high assurance. Limit permissions: {}. Use environments for prod secrets.
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/secure.yml')); print('OK')"
 ```
-{% endraw %}
+
+### Step 2 – Run local secret grep
+
+```bash
+grep -RInE '(AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' . || echo "clean"
+grep -E 'security-events|secret_hygiene' .github/workflows/security.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -203,6 +223,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/secure.yml')); p
 
 
 ## Code Walkthrough
+
 
 
 
@@ -222,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -231,6 +253,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -249,6 +272,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Security Scanning and Supply Chain changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -258,6 +282,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -275,6 +300,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Security Scanning and Supply Chain** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -282,21 +308,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Security Scanning and Supply Chain** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. Why pin third-party actions to commit SHAs?
+2. What does dependency review add on pull requests?
+3. How should teams handle a critical CVE in a base action/image?
+4. What repository settings help prevent secret leaks?
+5. How do workflow permissions reduce supply-chain impact?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Identify whether the finding is in direct dependencies, transitive packages, or the Action itself. Prefer patched versions and temporary exceptions with expiry.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Enable push protection/secret scanning and least-privilege permissions. Treat workflow YAML as production code.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -306,6 +333,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

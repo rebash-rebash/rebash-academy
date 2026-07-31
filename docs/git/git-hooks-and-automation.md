@@ -24,6 +24,7 @@ comments: false
 
 
 
+
 Git hooks are scripts Git runs automatically at lifecycle events — before commit, after merge, before push. They enforce team standards locally (format, lint, secrets scan) and on the server (reject non-compliant pushes). For DevOps teams, hooks are the first line of defense before CI minutes are spent.
 
 This is **Tutorial 16** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
@@ -34,6 +35,7 @@ This is **Tutorial 16** in **Module 6: Advanced & DevOps** of the REBASH Academy
 
 
 
+
 - [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
 - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
 - Shell scripting basics from the Linux track
@@ -41,6 +43,7 @@ This is **Tutorial 16** in **Module 6: Advanced & DevOps** of the REBASH Academy
 
 
 ## Learning Objectives
+
 
 
 
@@ -60,6 +63,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 Hooks run scripts around Git events so teams can enforce policy locally and on the server before history is accepted.
 
 ![Git workflow and hooks around commit](../assets/excalidraw/git-workflow.svg)
@@ -67,6 +71,7 @@ Hooks run scripts around Git events so teams can enforce policy locally and on t
 
 
 ## Theory
+
 
 
 
@@ -221,43 +226,47 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/git-hooks-and-automation && cd ~/rebash-git/git-hooks-and-automation
 ```
 
-**Focus:** practise Git skills for: Git Hooks and Automation
+**Focus:** install a pre-commit hook that blocks .env files
 
-### Step 1 – Init repository
-
-```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
-```
-
-### Step 2 – Client hook
+### Step 1 – Local hook
 
 ```bash
-mkdir -p .git/hooks
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
 cat > .git/hooks/pre-commit << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-! grep -RniE 'AKIA[0-9A-Z]{16}' --exclude-dir=.git . || { echo 'Blocked potential AWS key'; exit 1; }
+if git diff --cached --name-only | grep -E '(^|/)\.env$|\.pem$'; then
+  echo "Refuse to commit secrets (.env/.pem)" >&2
+  exit 1
+fi
 EOF
 chmod +x .git/hooks/pre-commit
-echo 'safe' > ok.txt && git add ok.txt && git commit -m 'hook ok'
-echo 'Hook installed for this lab repo only.'
+echo ok > ok.txt
+git add ok.txt && git commit -m "chore: ok file"
+```
+
+### Step 2 – Prove the hook blocks secrets
+
+```bash
+echo SECRET=1 > .env
+git add .env
+if git commit -m "bad"; then echo "hook failed to block"; exit 1; else echo "hook blocked secret commit"; fi
+git reset HEAD .env
+rm -f .env
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -277,6 +286,7 @@ Confirm the lab before moving on:
 
 
 ## Code Walkthrough
+
 
 
 
@@ -313,6 +323,7 @@ repos:
 
 
 
+
 - Never install hooks from untrusted repos without reading them — hooks run as your user
 - Prefer managed hook frameworks (pre-commit) with pinned versions over ad-hoc curl installs
 - Do not put secrets in hook scripts; read them from the environment or a vault at runtime
@@ -322,6 +333,7 @@ repos:
 
 
 ## Common Mistakes
+
 
 
 
@@ -343,6 +355,7 @@ repos:
 
 
 
+
 !!! tip "Fast pre-commit, thorough CI"
     Pre-commit: format + secrets. CI: full test suite + plan.
 
@@ -361,6 +374,7 @@ repos:
 
 
 
+
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | Hook not running | Not executable or wrong name | chmod +x; verify filename |
@@ -376,6 +390,7 @@ repos:
 
 
 
+
 - **Git hooks** automate validation at commit, push, and receive events
 - **Client hooks** enforce local quality; **server hooks** enforce org policy
 - **pre-commit framework** shares versioned hook configs across the team
@@ -387,21 +402,22 @@ repos:
 ## Interview Questions
 
 
-1. Explain **Git Hooks and Automation** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Client-side versus server-side hooks?
+2. Why aren't .git/hooks committed by default?
+3. What should a pre-commit hook check in DevOps repos?
+4. How do hooks fail closed without blocking emergencies?
+5. Risks of downloading hook scripts from the internet?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Confirm the hook is executable and runs in the expected shell. Reproduce by running the hook script directly.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Do not bypass hooks on production repos without audit. Prefer managed frameworks pinned to reviewed versions.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -417,6 +433,7 @@ repos:
 
 
 ## References
+
 
 
 

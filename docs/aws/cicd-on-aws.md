@@ -52,6 +52,7 @@ comments: false
 
 
 
+
 Design a secure delivery path on Amazon Web Services (AWS): source → build → test → deploy, using native Code* services and/or GitHub Actions / GitLab CI with OpenID Connect (OIDC), including a blue/green promotion pattern.
 
 Continuous Integration and Continuous Delivery (CI/CD) turns every merge into a reviewed, automated path to an environment. On AWS you can stay native (**CodePipeline**, **CodeBuild**, **CodeDeploy**) or keep the pipeline in GitHub/GitLab and assume temporary AWS roles via **OIDC** — preferred over long-lived access keys. Deployments should be reversible: rolling, canary, or **blue/green**.
@@ -67,6 +68,7 @@ This is a core tutorial in **Module 12 · CI/CD** of the REBASH Academy **AWS fo
 
 
 
+
 - [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md)
 - Comfort with Git branches, pull/merge requests, and Docker image builds
 - Optional: [GitHub Actions](../github-actions/index.md) or [GitLab CI](../gitlab/index.md)
@@ -74,6 +76,7 @@ This is a core tutorial in **Module 12 · CI/CD** of the REBASH Academy **AWS fo
 
 
 ## Learning Objectives
+
 
 
 
@@ -91,6 +94,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![CI/CD pipeline on AWS](../assets/excalidraw/aws-cicd-pipeline.svg)
@@ -98,6 +102,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -174,37 +179,45 @@ Platform and SRE teams own change failure rate and recovery time. Manual deploy 
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-12 && cd ~/rebash-aws/module-12
 ```
 
-**Focus:** list CodePipeline/CodeBuild if present; otherwise document OIDC deploy pattern
+**Focus:** inventory CodePipeline/CodeBuild; OIDC trust checklist (file-only)
 
-### Step 1 – CI/CD inventory
+### Step 1 – CI/CD service inventory
 
 ```bash
-aws codepipeline list-pipelines --query 'pipelines[].name' --output text 2>/dev/null | tr '\t' '\n' | head | tee pipelines.txt || true
-aws codebuild list-projects --output text 2>/dev/null | tr '\t' '\n' | head | tee builds.txt || true
-tee cicd-notes.txt << 'EOF'
-GitHub Actions / GitLab OIDC to IAM roles beats static AKIA keys in CI.
+aws sts get-caller-identity
+aws codepipeline list-pipelines --query 'pipelines[].name' --output table 2>/dev/null || true
+aws codebuild list-projects --output table 2>/dev/null || true
+aws iam list-open-id-connect-providers --output table 2>/dev/null || true
+```
+
+### Step 2 – OIDC trust checklist
+
+```bash
+cat > oidc-aws-checklist.md << 'EOF'
+- IdP: token.actions.githubusercontent.com or GitLab issuer
+- Condition on sub: repo + ref + environment
+- Role permissions least privilege for deploy
+- No long-lived AKIA keys in CI variables
 EOF
-cat cicd-notes.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -216,6 +229,7 @@ cat cicd-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -235,6 +249,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -244,6 +259,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -262,6 +278,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode CI/CD on AWS changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -271,6 +288,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -288,6 +306,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **CI/CD on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -295,21 +314,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **CI/CD on AWS** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. CodePipeline versus GitHub Actions deploying to AWS?
+2. Why OIDC to IAM roles beats AKIA keys in CI?
+3. What should a deploy role be allowed to do?
+4. How do you promote across accounts?
+5. Artifact integrity between stages?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Check the pipeline stage error, the deploy role’s trust policy, and whether the commit SHA matches the artifact.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Scope roles per environment/account and forbid long-lived keys in CI.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -319,6 +339,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

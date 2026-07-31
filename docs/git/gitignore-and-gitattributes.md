@@ -42,6 +42,7 @@ comments: false
 
 
 
+
 Keep secrets, caches, and build outputs out of Git with `.gitignore`, understand `.git/` layout at a practical level, and set useful `.gitattributes`.
 
 Tracked `.env` files and `node_modules` are classic incidents. Ignore early; use secret scanning in CI (Module 15).
@@ -54,11 +55,13 @@ This is a core tutorial in **Module 4 · Working with Repositories** of the REBA
 
 
 
+
 - [Viewing History and Diffs](viewing-history-and-diffs.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -75,6 +78,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
@@ -82,6 +86,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -142,42 +147,51 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-04 && cd ~/rebash-git/module-04
 ```
 
-**Focus:** practise Git skills for: Working with Repositories — gitignore and gitattributes
+**Focus:** write .gitignore / .gitattributes and prove ignored files stay out
 
-### Step 1 – Init repository
+### Step 1 – Ignore secrets and set attributes
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+cat > .gitignore << 'EOF'
+.env
+*.pem
+__pycache__/
+dist/
+EOF
+cat > .gitattributes << 'EOF'
+*.sh text eol=lf
+*.tf text eol=lf
+EOF
+echo "SECRET=do-not-commit" > .env
+echo "print('x')" > app.py
+git add .gitignore .gitattributes app.py
+git status
+git check-ignore -v .env
+git commit -m "chore: ignore secrets and set attributes"
 ```
 
-### Step 2 – gitignore
+### Step 2 – Demonstrate force-add danger then undo
 
 ```bash
-cat > .gitignore << 'EOF'
-*.env
-__pycache__/
-.DS_Store
-EOF
-echo SECRET=1 > local.env
-git status --ignored | tee status.txt
-git check-ignore -v local.env
+git add -f .env || true
+git reset HEAD .env 2>/dev/null || true
+rm -f .env
+git status
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -189,6 +203,7 @@ git check-ignore -v local.env
 
 
 ## Code Walkthrough
+
 
 
 
@@ -208,6 +223,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -217,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -235,6 +252,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Working with Repositories — gitignore and gitattributes changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -244,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -261,6 +280,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Working with Repositories — gitignore and gitattributes** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -268,21 +288,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Working with Repositories — gitignore and gitattributes** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. How do you ignore a file already tracked?
+2. What is .gitattributes useful for in cross-platform teams?
+3. Why ignore Terraform state?
+4. How do you verify ignore rules?
+5. Can ignore rules protect secrets by themselves?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Use git check-ignore -v and git status --ignored. Untrack with git rm --cached if needed.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Ignore rules are not security controls — use secret scanning and rotate if leaked.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -292,6 +313,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

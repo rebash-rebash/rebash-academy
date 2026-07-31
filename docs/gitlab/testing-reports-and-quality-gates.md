@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Design a test pyramid in GitLab CI with parallel jobs, JUnit and coverage reports in merge requests, and quality gates that fail the pipeline when thresholds are missed.
 
 Tests are the cheapest production incident you never ship. GitLab CI runs **unit**, **integration**, **end-to-end (e2e)**, and optional **performance** jobs; publishes **JUnit** and coverage artefacts into the merge request (MR); and enforces **quality gates** so red tests block merge.
@@ -59,12 +60,14 @@ This is a core tutorial in **Module 13 · Testing** of the REBASH Academy **GitL
 
 
 
+
 - [Security Scanning and DevSecOps](security-scanning-and-devsecops.md)
 - Comfortable with stages, `needs`, and artefacts from earlier modules
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitLab testing](../assets/excalidraw/gitlab-testing.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -148,38 +153,61 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-13 && cd ~/rebash-gitlab/module-13
 ```
 
-**Focus:** JUnit-style report job and a local pytest/compile gate
+**Focus:** pytest JUnit reports and a quality gate job
 
-### Step 1 – Quality gate
+### Step 1 – Tests + junit artifacts
 
 ```bash
-mkdir -p tests
-echo 'def test_ok(): assert True' > tests/test_ok.py
+cat > calc.py << 'EOF'
+def mul(a, b):
+    return a * b
+EOF
+cat > test_calc.py << 'EOF'
+from calc import mul
+def test_mul():
+    assert mul(3, 4) == 12
+EOF
 cat > .gitlab-ci.yml << 'EOF'
-test:
+stages: [test, gate]
+unit:
+  stage: test
   image: python:3.12-alpine
   script:
     - pip install pytest
-    - pytest --junitxml=report.xml
+    - pytest --junitxml=report.xml -q
   artifacts:
     when: always
     reports:
       junit: report.xml
+    paths: [report.xml]
+coverage_gate:
+  stage: gate
+  image: alpine:3.20
+  needs: [unit]
+  script:
+    - test -f report.xml
+    - grep -q testcase report.xml
 EOF
-python3 -m pip install -q pytest && python3 -m pytest tests --junitxml=report.xml
-head -n 20 report.xml
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
+```
+
+### Step 2 – Run tests locally
+
+```bash
+python3 -c "from calc import mul; assert mul(3,4)==12; print('ok')"
+echo '<?xml version="1.0"?><testsuite><testcase name="test_mul"/></testsuite>' > report.xml
+grep -E 'junit:|reports:' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-rm -f report.xml
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -191,6 +219,7 @@ rm -f report.xml
 
 
 ## Code Walkthrough
+
 
 
 
@@ -210,6 +239,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -219,6 +249,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -237,6 +268,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Testing, Reports, and Quality Gates changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -246,6 +278,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -263,6 +296,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Testing, Reports, and Quality Gates** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -270,21 +304,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Testing, Reports, and Quality Gates** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. How do JUnit report artifacts improve merge request feedback?
+2. A quality gate flakes intermittently — what evidence do you gather?
+3. Where should coverage thresholds live: CI job or shared policy?
+4. Why keep allow_failure rare on security/unit gates?
+5. How do you prevent skipped tests from counting as green?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Open the JUnit report and job log together: distinguish assertion failures from environment errors. Quarantine flakes with an owner rather than silently allow_failure.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Gates that protect production should fail closed. Ensure forks cannot skip required jobs while consuming protected variables.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -294,6 +329,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

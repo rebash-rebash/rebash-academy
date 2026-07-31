@@ -43,6 +43,7 @@ comments: false
 
 
 
+
 Explain GitOps in one paragraph and sketch a repo layout where a reconciler (for example Argo CD) applies desired state from Git.
 
 **GitOps** keeps the desired state of systems in Git. An agent compares live state to Git and reconciles. Changes go through PRs — audit trail and rollback by git revert.
@@ -55,12 +56,14 @@ This is a core tutorial in **Module 12 · GitOps** of the REBASH Academy **Git f
 
 
 
+
 - [GitHub Actions for DevOps](github-actions-for-devops.md)
 - Familiarity with containers/Kubernetes helps
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -77,6 +80,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitOps flow](../assets/excalidraw/git-gitops-flow.svg)
@@ -84,6 +88,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -129,43 +134,62 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-12/{apps/demo,clusters/dev} && cd ~/rebash-git/module-12/{apps/demo,clusters/dev}
 ```
 
-**Focus:** practise Git skills for: GitOps Fundamentals
+**Focus:** env-repo style declarative manifests and image tag bump
 
-### Step 1 – Init repository
+### Step 1 – Env repo style commit
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+mkdir -p apps/demo overlays/prod
+cat > apps/demo/deployment.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: demo}}
+  template:
+    metadata: {labels: {app: demo}}
+    spec:
+      containers:
+        - name: demo
+          image: ghcr.io/example/demo:1.0.0
+EOF
+cat > overlays/prod/kustomization.yaml << 'EOF'
+resources:
+  - ../../apps/demo
+images:
+  - name: ghcr.io/example/demo
+    newTag: 1.0.0
+EOF
+git add apps overlays
+git commit -m "gitops: add demo deployment at 1.0.0"
 ```
 
-### Step 2 – Desired-state folder
+### Step 2 – Bump image tag as a GitOps change
 
 ```bash
-mkdir -p desired/app
-cat > desired/app/deploy.yaml << 'EOF'
-apiVersion: v1
-kind: ConfigMap
-metadata: { name: demo }
-data: { ok: "yes" }
-EOF
-git add desired && git commit -m 'Add desired state'
-git ls-tree -r HEAD --name-only | tee tree.txt
+sed -i.bak 's/1.0.0/1.0.1/g' overlays/prod/kustomization.yaml apps/demo/deployment.yaml
+rm -f overlays/prod/kustomization.yaml.bak apps/demo/deployment.yaml.bak
+git diff
+git add apps overlays
+git commit -m "gitops: bump demo to 1.0.1"
+git log --oneline -n 3
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -177,6 +201,7 @@ git ls-tree -r HEAD --name-only | tee tree.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -196,6 +221,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -205,6 +231,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -223,6 +250,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitOps Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -232,6 +260,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -249,6 +278,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitOps Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -256,21 +286,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **GitOps Fundamentals** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. What does desired state in Git mean operationally?
+2. App repo versus env repo patterns?
+3. How do image tag bumps become deployments?
+4. What happens if someone kubectl-edits live cluster state?
+5. Security controls for who can merge to env repos?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Compare Git desired manifests to live cluster state and controller sync status. Drift often means manual changes or failed reconciles.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Protect env repos with strong reviews and least-privilege deploy identities for controllers.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -281,6 +312,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

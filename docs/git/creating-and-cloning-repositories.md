@@ -41,6 +41,7 @@ comments: false
 
 
 
+
 Initialise a local repository, clone a remote, and inspect `.git` so you know where history lives before first commits.
 
 `git init` starts history locally; `git clone` copies a remote including objects and remotes. IaC and app work both start here.
@@ -53,11 +54,13 @@ This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Gi
 
 
 
+
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -74,6 +77,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
@@ -81,6 +85,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -133,31 +138,41 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-03 && cd ~/rebash-git/module-03
 ```
 
-**Focus:** create a bare remote and clone it
+**Focus:** create a bare remote and practise clone/fetch
 
-### Step 1 – Clone workflow
+### Step 1 – Bare remote + clone
 
 ```bash
-git init -b main seed && cd seed
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# seed' > README.md
-git add README.md && git commit -m 'seed'
-cd ..
-git clone --bare seed remote.git
-git clone remote.git workspace
-cd workspace && git log --oneline && pwd
+mkdir -p remote work
+git init --bare remote/app.git
+git clone remote/app.git work/app
+cd work/app
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo "v1" > VERSION
+git add VERSION && git commit -m "chore: initial VERSION"
+git push -u origin HEAD
+```
+
+### Step 2 – Second clone and pull
+
+```bash
+git clone remote/app.git work/app2
+cd work/app2
+git log --oneline -n 3
+cat VERSION
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-rm -rf seed remote.git workspace
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -169,6 +184,7 @@ rm -rf seed remote.git workspace
 
 
 ## Code Walkthrough
+
 
 
 
@@ -188,6 +204,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -197,6 +214,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -215,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Creating and Cloning Repositories changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -224,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -241,6 +261,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Creating and Cloning Repositories** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -248,21 +269,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Creating and Cloning Repositories** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Difference between git init and git clone?
+2. Clone succeeds but push is denied — what do you verify?
+3. What is a bare repository used for?
+4. How do you clone only a single branch for a large repo?
+5. Why verify remote URL before first push?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Confirm remote permissions, SSH keys/auth, and that you are pushing to the intended URL (git remote -v).
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Use least-privilege deploy keys. Never embed tokens in remote URLs that might be logged.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -272,6 +294,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

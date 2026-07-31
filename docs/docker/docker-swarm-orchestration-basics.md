@@ -25,6 +25,8 @@ comments: false
 
 
 
+
+
 **Docker Swarm** turns a pool of Docker engines into a single virtual cluster. You declare desired state — which image, how many replicas, which network — and Swarm schedules tasks, restarts failures, and rolling-updates services. Swarm is built into Docker Engine, simpler than Kubernetes, and ideal for small-to-medium deployments or edge clusters.
 
 This is **Tutorial 18** in **Module 6: Production & Beyond** of the REBASH Academy Docker track.
@@ -32,6 +34,8 @@ This is **Tutorial 18** in **Module 6: Production & Beyond** of the REBASH Acade
 
 
 ## Prerequisites
+
+
 
 
 
@@ -44,6 +48,8 @@ This is **Tutorial 18** in **Module 6: Production & Beyond** of the REBASH Acade
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -62,11 +68,15 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 ![Docker networking / multi-host](../assets/excalidraw/docker-networking.svg)
 
 
 
 ## Theory
+
+
 
 
 
@@ -192,28 +202,38 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/docker-swarm-orchestration-basics && cd ~/rebash-docker/docker-swarm-orchestration-basics
 ```
 
-**Focus:** inspect Swarm mode availability without leaving a manager up
+**Focus:** initialise a local swarm, deploy a service, then leave swarm
 
-### Step 1 – Swarm awareness
+### Step 1 – Swarm service lab
 
 ```bash
-docker info --format 'swarm={{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}'
-tee swarm-notes.txt << 'EOF'
-Prefer Kubernetes for most new orchestration. If you init Swarm in a lab, leave with: docker swarm leave --force
-EOF
-cat swarm-notes.txt
-docker run --rm alpine:3.20 echo 'orchestration-agnostic container still runs'
+docker swarm init || docker info --format '{{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}'
+docker service create --name rebash-web --publish 18083:80 --replicas 2 nginx:alpine
+docker service ls
+docker service ps rebash-web
+curl -sI http://127.0.0.1:18083 | head -n 5
+```
+
+### Step 2 – Remove service and leave swarm
+
+```bash
+docker service rm rebash-web
+docker swarm leave --force || true
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Do not leave Swarm enabled on shared machines
+docker service rm rebash-web 2>/dev/null || true
+docker swarm leave --force 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -233,6 +253,8 @@ Confirm the lab before moving on:
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -283,6 +305,8 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
 
 
+
+
 - Enable Swarm with TLS mutual authentication between managers and workers
 - Store Swarm secrets in Docker secrets — not as service environment variables
 - Restrict manager node access; managers hold cluster control-plane material
@@ -293,6 +317,8 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -317,6 +343,8 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
 
 
+
+
 !!! tip "Odd number of managers"
     Maintain raft quorum — 3 managers for most production Swarm clusters.
 
@@ -338,6 +366,8 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
 
 
+
+
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | `docker swarm init` fails | Wrong advertise-addr | Use reachable IP, not 127.0.0.1 |
@@ -353,6 +383,8 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
 
 
+
+
 - **Docker Swarm** provides native clustering with services, tasks, and overlay networking
 - **Managers** run Raft consensus; use **3 or 5** for production quorum
 - **`docker service`** declares replicated or global workloads with rolling updates
@@ -365,21 +397,23 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 ## Interview Questions
 
 
-1. What production problem does **Docker Swarm Orchestration Basics** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Swarm service versus standalone container?
+2. How do you publish ports for a service?
+3. When would you still choose Swarm vs Kubernetes?
+4. How do you drain a node?
+5. Secret handling differences in Swarm?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Inspect docker service ps for task failures and node availability.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Protect manager nodes and use Swarm secrets.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -396,6 +430,8 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
 
 ## References
+
+
 
 
 

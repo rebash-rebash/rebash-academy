@@ -48,6 +48,7 @@ comments: false
 
 
 
+
 Assemble a DevSecOps stage that runs secret detection and SAST early, dependency and container scanning on build outputs, and documents where DAST, licence policies, and Software Bill of Materials (SBOM) fit before production deploy.
 
 **DevSecOps** embeds security scanners into the same pipeline that builds and deploys. GitLab analysers cover Static Application Security Testing (SAST), Dynamic Application Security Testing (DAST), dependency scanning, container scanning, secret detection, licence compliance, and SBOM export. Fail the pipeline on policy severity — do not treat scanners as optional decoration.
@@ -60,11 +61,13 @@ This is a core tutorial in **Module 12 · DevSecOps** of the REBASH Academy **Gi
 
 
 
+
 - [Multi-Cloud Deployments with GitLab](multi-cloud-deployments-with-gitlab.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -82,6 +85,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![GitLab DevSecOps scanning](../assets/excalidraw/gitlab-devsecops.svg)
@@ -89,6 +93,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -151,46 +156,52 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-12 && cd ~/rebash-gitlab/module-12
 ```
 
-**Focus:** add a SAST/secret-scan shaped job and a local secret grep gate
+**Focus:** SAST/secret-detection style jobs and a security gate
 
-### Step 1 – Security jobs
+### Step 1 – Security scanning pipeline
 
 ```bash
-echo 'password = "not-a-real-secret"' > bad.env.example
+echo 'PASSWORD_PLACEHOLDER = "replace-me"' > app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [secure, test]
-secret_hygiene:
-  stage: secure
-  image: alpine:3.20
-  script:
-    - !reference [.never_commit]
-.never_commit:
-  script:
-    - echo "Use GitLab Secret Detection / SAST templates in real projects"
-
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+stages: [test, security, gate]
 unit:
   stage: test
   image: alpine:3.20
-  script: ["echo ok"]
+  script: ["echo unit"]
+secret_review:
+  stage: security
+  image: alpine:3.20
+  script:
+    - echo "Review Security tab reports"
+    - test -f app.py
+security_gate:
+  stage: gate
+  image: alpine:3.20
+  needs: [secret_review]
+  script: ["echo Fail when critical findings exceed policy"]
 EOF
-# Local gate:
-if grep -RniE 'api[_-]?key|secret|password\s*=' --exclude='*.example' . 2>/dev/null | grep -v bad.env.example; then
-  echo 'Found suspicious strings'
-else
-  echo 'Hygiene check passed for tracked lab files'
-fi
-ls -la
+```
+
+### Step 2 – Hunt for accidental secrets
+
+```bash
+grep -RInE '(AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' . || echo "no obvious secrets"
+grep -E 'Secret-Detection|SAST|security_gate' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-rm -f bad.env.example
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -202,6 +213,7 @@ rm -f bad.env.example
 
 
 ## Code Walkthrough
+
 
 
 
@@ -221,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -230,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -248,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Security Scanning and DevSecOps changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -257,6 +272,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -274,6 +290,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Security Scanning and DevSecOps** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -281,21 +298,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Security Scanning and DevSecOps** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. What is the difference between SAST and secret detection?
+2. Security job is red on a dependency CVE — how do you respond in CI?
+3. When is an allowlist acceptable for scanner findings?
+4. How do you stop developers from disabling scanners on their branch?
+5. What belongs in the pipeline versus a central security platform?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Triage by severity and exploitability: confirm the component is shipped, check for a fixed version, document temporary exceptions with expiry.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Keep scanners required on protected branches and never commit secrets to “fix” the detector.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -305,6 +323,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

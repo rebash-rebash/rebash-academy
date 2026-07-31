@@ -47,6 +47,7 @@ comments: false
 
 
 
+
 Design a GitLab pipeline that runs `init` → `validate` → `plan` on merge requests (with a plan artefact) and a protected `apply` on the default branch — with remote state outside the runner workspace.
 
 Terraform in GitLab CI automates Infrastructure as Code (IaC): every change is planned in review, then applied under gates. Store **remote state** with locking. Attach the binary **plan** as a job artefact so apply executes what reviewers saw. Never leave state only on the runner disk.
@@ -59,11 +60,13 @@ This is a core tutorial in **Module 10 · Terraform Pipelines** of the REBASH Ac
 
 
 
+
 - [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -81,6 +84,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Terraform pipeline in GitLab](../assets/excalidraw/gitlab-terraform-pipeline.svg)
@@ -88,6 +92,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -136,43 +141,67 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-10 && cd ~/rebash-gitlab/module-10
 ```
 
-**Focus:** GitLab Terraform plan job with local Terraform validation
+**Focus:** plan/apply GitLab jobs with artefact plan (local backend)
 
-### Step 1 – Plan job + local terraform
+### Step 1 – Minimal Terraform + CI jobs
 
 ```bash
-mkdir -p infra
-cat > infra/main.tf << 'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
     null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-resource "null_resource" "x" {}
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { note = "gitlab-terraform-lab" }
+}
 EOF
 cat > .gitlab-ci.yml << 'EOF'
+stages: [validate, plan, apply]
+image: {name: hashicorp/terraform:1.9, entrypoint: [""]}
+variables: {TF_IN_AUTOMATION: "true"}
+validate:
+  stage: validate
+  script: ["terraform init -backend=false", "terraform validate"]
 plan:
-  image: hashicorp/terraform:1.7
-  script:
-    - cd infra
-    - terraform init -input=false
-    - terraform plan -input=false -out=tfplan
-  artifacts:
-    paths: [infra/tfplan]
+  stage: plan
+  script: ["terraform init -backend=false", "terraform plan -out=plan.cache"]
+  artifacts: {paths: [plan.cache], expire_in: 1 day}
+apply:
+  stage: apply
+  needs: [plan]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  script: ["terraform init -backend=false", "terraform apply -auto-approve plan.cache"]
 EOF
-cd infra && terraform init -backend=false && terraform validate && cd ..
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('CI OK')"
+```
+
+### Step 2 – Local validate/plan/destroy
+
+```bash
+if command -v terraform >/dev/null; then
+  terraform init -backend=false && terraform validate
+  terraform plan -out=plan.cache && terraform apply -auto-approve plan.cache
+  terraform destroy -auto-approve
+fi
+grep -E 'plan.cache|when: manual' .gitlab-ci.yml
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-rm -rf infra/.terraform
+terraform destroy -auto-approve 2>/dev/null || true
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -184,6 +213,7 @@ rm -rf infra/.terraform
 
 
 ## Code Walkthrough
+
 
 
 
@@ -203,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -212,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -230,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Terraform Pipelines in GitLab changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -239,6 +272,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -256,6 +290,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Terraform Pipelines in GitLab** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -263,21 +298,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Terraform Pipelines in GitLab** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. Why store terraform plan as an artifact before apply?
+2. What does TF_IN_AUTOMATION change about Terraform CLI behaviour?
+3. How do you keep state safe when plans run in CI?
+4. Why is apply usually manual on the default branch?
+5. How do you destroy lab infrastructure created in a pipeline experiment?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Confirm init backend config and that apply uses the exact plan artifact from the same pipeline. Drift and different variable sets between plan/apply are common.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    Protect state with remote backends and restricted IAM/OIDC roles. Destroy experimental stacks in the same change window.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -287,6 +323,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

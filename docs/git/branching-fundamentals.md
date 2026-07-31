@@ -39,6 +39,7 @@ comments: false
 
 
 
+
 Create, switch, and list branches confidently, explain HEAD, and apply naming conventions used in Cloud/DevOps teams.
 
 Branches isolate change. Protected `main` plus short-lived `feature/*` or `fix/*` branches is the default for GitHub Flow.
@@ -51,11 +52,13 @@ This is a core tutorial in **Module 5 · Branching** of the REBASH Academy **Git
 
 
 
+
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -72,6 +75,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
@@ -79,6 +83,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -129,41 +134,43 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-05 && cd ~/rebash-git/module-05
 ```
 
-**Focus:** practise Git skills for: Branching Fundamentals
+**Focus:** create topic branches, switch, merge, delete
 
-### Step 1 – Init repository
+### Step 1 – Branch workflow
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo main > README.md
+git add README.md && git commit -m "chore: main baseline"
+git branch feature/login
+git switch feature/login
+echo "login" > login.txt
+git add login.txt && git commit -m "feat: login stub"
+git switch -
+git branch -vv
+git log --oneline --decorate --graph --all
 ```
 
-### Step 2 – Branch and merge
+### Step 2 – Merge feature to main
 
 ```bash
-git switch -c feature/note
-echo 'feature' > note.txt
-git add note.txt
-git commit -m 'Add note'
-git switch main
-git merge feature/note
-git log --oneline --graph --all | tee log.txt
+git merge feature/login -m "merge: feature/login"
+git branch --merged
+git branch -d feature/login
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -175,6 +182,7 @@ git log --oneline --graph --all | tee log.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -194,6 +202,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -203,6 +212,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -221,6 +231,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Branching Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -230,6 +241,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -247,6 +259,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Branching Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -254,21 +267,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Branching Fundamentals** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. What is a branch in Git's data model?
+2. How do you list merged versus unmerged branches?
+3. Feature branch naming conventions you recommend?
+4. When is deleting a branch safe?
+5. How do long-lived branches create risk?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Use git branch --merged/--no-merged and compare SHAs with main before deleting.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Protect main/release branches and require PRs.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -278,6 +292,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -41,6 +41,7 @@ comments: false
 
 
 
+
 Diagnose the most common Git failure modes in delivery work and recover without destroying shared history.
 
 Most “Git is broken” moments are state problems: wrong branch, dirty tree, divergent remotes, or detached HEAD. Read status and reflog before rewriting.
@@ -53,12 +54,14 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 
 
 
+
 - [Signed Commits and Git Security](signed-commits-and-git-security.md)
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -76,6 +79,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
@@ -83,6 +87,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -132,41 +137,43 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-16 && cd ~/rebash-git/module-16
 ```
 
-**Focus:** practise Git skills for: Git Troubleshooting
+**Focus:** recover from detached HEAD and run fsck/gc
 
-### Step 1 – Init repository
+### Step 1 – Detached HEAD recovery
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo 1 > f.txt && git add f.txt && git commit -m "chore: 1"
+echo 2 > f.txt && git add f.txt && git commit -m "chore: 2"
+git switch --detach HEAD~1
+echo "detached work" > detached.txt
+git add detached.txt && git commit -m "wip: detached"
+git switch -c recover/detached
+git switch main
+git merge recover/detached -m "merge: recover detached work"
+git log --oneline --graph -n 8
 ```
 
-### Step 2 – Diagnose divergence
+### Step 2 – Refresh index after messy state
 
 ```bash
-git switch -c other
-echo o > o.txt && git add o.txt && git commit -m 'other'
-git switch main
-echo m2 > m2.txt && git add m2.txt && git commit -m 'm2'
-git merge other || true
-git status | tee status.txt
-git log --oneline --graph --all | tee graph.txt
+git status
+git fsck --no-full
+git gc --quiet
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -178,6 +185,7 @@ git log --oneline --graph --all | tee graph.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -197,6 +205,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -206,6 +215,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -224,6 +234,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Git Troubleshooting changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -233,6 +244,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -250,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Git Troubleshooting** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -257,21 +270,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Git Troubleshooting** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Detached HEAD — what happened and how do you keep work?
+2. Index lock file errors — causes?
+3. How do you approach possible object corruption?
+4. Authentication loops with HTTPS remotes?
+5. How do you recover a deleted branch?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Create a branch from the detached SHA immediately if you have commits to keep, then merge back.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Do not run experimental fsck repairs on the only copy of a production repo — clone/mirror first.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -281,6 +295,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

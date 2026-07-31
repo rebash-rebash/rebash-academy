@@ -40,6 +40,7 @@ comments: false
 
 
 
+
 Use GitHub as the collaboration hub: repos, settings, Issues, Releases — and know where security and Actions settings live.
 
 Git is the tool; **GitHub** (or GitLab) is where teams review, track work, and ship. DevOps owns templates, permissions, and release artefacts.
@@ -52,12 +53,14 @@ This is a core tutorial in **Module 9 · GitHub Fundamentals** of the REBASH Aca
 
 
 
+
 - [Working with Remotes](working-with-remotes.md)
 - GitHub account (free tier OK)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -75,6 +78,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
@@ -82,6 +86,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -130,43 +135,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-09 && cd ~/rebash-git/module-09
 ```
 
-**Focus:** practise Git skills for: GitHub Fundamentals
+**Focus:** model a fork/PR workflow locally with two remotes
 
-### Step 1 – Init repository
+### Step 1 – Upstream + fork remotes
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+mkdir -p upstream.git fork.git
+git init --bare upstream.git
+git init --bare fork.git
+git clone upstream.git product
+cd product
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo "api" > README.md
+git add README.md && git commit -m "chore: readme"
+git push origin HEAD
+git remote add fork ../fork.git
+git push fork HEAD
+git remote -v
 ```
 
-### Step 2 – GitHub collaboration notes
+### Step 2 – Feature branch ready for PR
 
 ```bash
-tee github-notes.txt << 'EOF'
-Issues + PRs + Actions form the collaboration loop.
-Protect default branch; use CODEOWNERS for critical paths.
+cd product
+git switch -c feature/docs
+echo "more" >> README.md
+git add README.md && git commit -m "docs: expand readme"
+git push -u fork HEAD
+git log --oneline --decorate -n 5
+cat > pr-notes.md << 'EOF'
+Open a Pull Request from fork/feature/docs into upstream/main
 EOF
-mkdir -p .github
-echo '* @platform-team' > .github/CODEOWNERS
-git add .github github-notes.txt
-git commit -m 'Add CODEOWNERS scaffold'
-cat github-notes.txt
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -178,6 +190,7 @@ cat github-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -197,6 +210,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -206,6 +220,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -224,6 +239,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode GitHub Fundamentals changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -233,6 +249,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -250,6 +267,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **GitHub Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -257,21 +275,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **GitHub Fundamentals** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. Fork versus branch in the same remote?
+2. What does origin usually mean after clone?
+3. How do GitHub permissions map to push/merge rights?
+4. SSH versus HTTPS authentication trade-offs?
+5. What is a good first repository hygiene checklist?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Verify remotes, default branch, and whether you have write access. SSO authorisation on SSH keys is a frequent enterprise gotcha.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Enable branch protection, 2FA, and secret scanning.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -281,6 +300,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

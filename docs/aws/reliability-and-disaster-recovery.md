@@ -52,6 +52,7 @@ comments: false
 
 
 
+
 Design for failure on Amazon Web Services (AWS): high availability (HA) with Multi-AZ, decide when Multi-Region is justified, pick a disaster recovery (DR) strategy with clear Recovery Time Objective (RTO) and Recovery Point Objective (RPO), and use AWS Backup plus Well-Architected reviews.
 
 Reliability means the workload performs its intended function correctly and consistently. **Availability Zones (AZs)** are your first failure domain; **Regions** are for rare but severe events and data residency. DR is not “we have backups” — it is a tested runbook with measured RTO/RPO. The AWS **Well-Architected Framework** Reliability pillar turns these ideas into design questions you can audit.
@@ -67,6 +68,7 @@ This is a core tutorial in **Module 14 · Reliability** of the REBASH Academy **
 
 
 
+
 - [Cost Optimisation on AWS](cost-optimisation-on-aws.md)
 - [VPC Networking on AWS](vpc-networking-on-aws.md) and [Databases on AWS](databases-on-aws.md)
 - Basic CloudWatch alarms from Module 9
@@ -74,6 +76,7 @@ This is a core tutorial in **Module 14 · Reliability** of the REBASH Academy **
 
 
 ## Learning Objectives
+
 
 
 
@@ -91,6 +94,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Disaster recovery strategies](../assets/excalidraw/aws-disaster-recovery.svg)
@@ -98,6 +102,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -167,36 +172,44 @@ SRE owns error budgets; platforms own HA defaults. An untested restore is not a 
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-14 && cd ~/rebash-aws/module-14
 ```
 
-**Focus:** inventory backup vaults / AMI snapshots signals read-only
+**Focus:** map Multi-AZ resources and backup settings
 
-### Step 1 – DR signals
+### Step 1 – HA/DR signals
 
 ```bash
-aws backup list-backup-vaults --query 'BackupVaultList[].BackupVaultName' --output text 2>/dev/null | tr '\t' '\n' | head | tee vaults.txt || true
-aws ec2 describe-snapshots --owner-ids self --query 'Snapshots[:5].[SnapshotId,VolumeSize,StartTime]' --output table 2>/dev/null | tee snaps.txt || true
-tee dr-notes.txt << 'EOF'
-Define RTO/RPO per service. Test restore paths; backups that are never restored are fiction.
+aws sts get-caller-identity
+aws rds describe-db-instances --query 'DBInstances[].{Id:DBInstanceIdentifier,MultiAZ:MultiAZ}' --output table
+aws backup list-backup-vaults --query 'BackupVaultList[].BackupVaultName' --output table 2>/dev/null || true
+aws ec2 describe-availability-zones --query 'AvailabilityZones[].ZoneName' --output text
+```
+
+### Step 2 – DR checklist file
+
+```bash
+cat > dr-checklist.md << 'EOF'
+- Define RTO/RPO before choosing DR pattern
+- Test restores — backups that never restore are fiction
+- Multi-AZ ≠ Multi-Region
 EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -208,6 +221,7 @@ EOF
 
 
 ## Code Walkthrough
+
 
 
 
@@ -227,6 +241,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -236,6 +251,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -254,6 +270,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Reliability and Disaster Recovery changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -263,6 +280,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -280,6 +298,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Reliability and Disaster Recovery** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -287,21 +306,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Reliability and Disaster Recovery** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. RTO versus RPO?
+2. Multi-AZ versus Multi-Region?
+3. Why test restores?
+4. Pilot light versus warm standby?
+5. How do backups interact with ransomware scenarios?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Clarify which failure mode you are designing for. Check Multi-AZ flags and last successful backup/restore test evidence.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Protect backup vaults and practise recovery — permissions included.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -311,6 +331,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

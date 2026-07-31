@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Add and inspect remotes, fetch/pull/push safely, set upstreams, and understand when multiple remotes appear in fork workflows.
 
 **origin** is a convention, not magic. `fetch` updates remote-tracking refs; `pull` = fetch + integrate; `push` publishes local commits.
@@ -56,12 +57,14 @@ This is a core tutorial in **Module 8 · Remote Repositories** of the REBASH Aca
 
 
 
+
 - [Basic Git Workflow](basic-git-workflow-add-commit-push.md)
 - Auth from [Install/Configure](git-installation-and-configuration.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -79,6 +82,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
@@ -86,6 +90,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -138,40 +143,46 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-08 && cd ~/rebash-git/module-08
 ```
 
-**Focus:** practise Git skills for: Working with Remotes
+**Focus:** add remotes, fetch, track branches, and prune
 
-### Step 1 – Init repository
+### Step 1 – Local bare remote simulation
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+mkdir -p origin.git workspace
+git init --bare origin.git
+git init workspace
+cd workspace
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo r1 > README.md
+git add README.md && git commit -m "chore: readme"
+git remote add origin ../origin.git
+git push -u origin HEAD
+git remote -v
+git fetch origin
+git branch -vv
 ```
 
-### Step 2 – Remote simulation
+### Step 2 – Prune deleted remote branch
 
 ```bash
-mkdir -p /tmp/rebash-git-remote.git
-git init --bare /tmp/rebash-git-remote.git
-git remote add origin /tmp/rebash-git-remote.git
-git push -u origin main
-git remote -v
-git ls-remote origin
+cd workspace
+git push origin HEAD:refs/heads/temp
+git push origin --delete temp
+git fetch --prune
+git branch -r
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -183,6 +194,7 @@ git ls-remote origin
 
 
 ## Code Walkthrough
+
 
 
 
@@ -202,6 +214,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -211,6 +224,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -229,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Working with Remotes changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -238,6 +253,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -255,6 +271,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Working with Remotes** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -262,21 +279,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Working with Remotes** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. What do fetch, pull, and push each do?
+2. Upstream tracking branch — why set it?
+3. How does fetch --prune help?
+4. Multiple remotes — typical fork workflow?
+5. Force-with-lease versus force push?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Inspect git remote -v and git status -sb. Auth failures and non-fast-forward rejects are common push blockers.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Prefer --force-with-lease over --force and avoid force-pushing protected branches.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -286,6 +304,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

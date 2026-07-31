@@ -41,6 +41,7 @@ comments: false
 
 
 
+
 Cherry-pick a hotfix commit onto another branch and use `reflog` to find a “lost” commit after a reset.
 
 This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
@@ -51,11 +52,13 @@ This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Acad
 
 
 
+
 - [Undoing Changes](undoing-changes-reset-revert-stash.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -71,6 +74,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Cherry-pick and Reflog](../assets/excalidraw/git-object-model.svg)
@@ -78,6 +82,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -123,39 +128,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-git/module-07-cherry && cd ~/rebash-git/module-07-cherry
 ```
 
-**Focus:** practise Git skills for: Cherry-pick and Reflog
+**Focus:** cherry-pick a commit and recover via reflog
 
-### Step 1 – Init repository
+### Step 1 – Cherry-pick across branches
 
 ```bash
-git init -b main
-git config user.email 'lab@rebash.local'
-git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline
+git init
+git config user.name "REBASH Learner"
+git config user.email "learner@rebash.local"
+echo main > a.txt && git add a.txt && git commit -m "chore: main"
+git switch -c feature/hotfix
+echo fix > fix.txt && git add fix.txt && git commit -m "fix: critical hotfix"
+HOTFIX=$(git rev-parse HEAD)
+git switch -
+git cherry-pick "$HOTFIX"
+git log --oneline -n 5
 ```
 
-### Step 2 – Reflog recovery
+### Step 2 – Recover with reflog after hard reset
 
 ```bash
-echo x > x.txt && git add x.txt && git commit -m 'x'
+echo oops > oops.txt && git add oops.txt && git commit -m "chore: oops"
+OOPS=$(git rev-parse HEAD)
 git reset --hard HEAD~1
-git reflog | tee reflog.txt
-git checkout -b recovered HEAD@{1}
-git log --oneline | tee recovered.txt
+git reflog -n 8
+git cherry-pick "$OOPS"
+git log --oneline -n 6
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Safe local repo under the lab directory; delete the folder when finished
+# Keep ~/rebash-git/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -167,6 +177,7 @@ git log --oneline | tee recovered.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -186,6 +197,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for git as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -195,6 +207,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -213,6 +226,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Cherry-pick and Reflog changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -222,6 +236,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -239,6 +254,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Cherry-pick and Reflog** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -246,21 +262,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. Explain **Cherry-pick and Reflog** as you would in a senior engineer interview.
-2. You rebased a shared branch and teammates are blocked — what now?
-3. How do you recover a commit that seems lost?
-4. What Git security controls belong in a production org?
-5. How should Git history look for Infrastructure as Code (IaC) repos?
+1. When is cherry-pick better than merging a whole branch?
+2. What does reflog record that git log does not?
+3. Cherry-pick conflict handling?
+4. How long is reflog kept by default roughly?
+5. Dangers of cherry-picking the same fix twice?
 
 !!! tip "Sample answer — question 2"
-    Stop force-pushing; communicate; use `reflog` to recover; prefer revert on shared main. Reset/rebase only on private branches.
+    Use git reflog to find the pre-change HEAD and cherry-pick or branch from that SHA.
 
 !!! tip "Sample answer — question 4"
-    Signed commits, protected branches, secret scanning, least-privilege tokens, and signed tags for releases.
+    Cherry-picking hotfixes into multiple release branches needs clear tracking to avoid duplicate fixes.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -271,6 +288,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

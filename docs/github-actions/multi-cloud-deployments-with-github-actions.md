@@ -50,6 +50,7 @@ comments: false
 
 
 
+
 Sketch OpenID Connect (OIDC)–oriented GitHub Actions patterns for Amazon Web Services (AWS) Identity and Access Management (IAM) / Elastic Container Service (ECS) / Elastic Kubernetes Service (EKS), Azure service principals / Azure Kubernetes Service (AKS), and Google Cloud Workload Identity Federation / Google Kubernetes Engine (GKE) / Cloud Run — without embedding long-lived cloud keys in the repository.
 
 Modern deploy jobs **federate identity**: the job requests an OIDC token (`id-token: write`); the cloud exchanges it for a short-lived role. That role then updates ECS/EKS, AKS, GKE, or Cloud Run. Patterns differ by cloud, but the Actions shape is the same — authenticate, deploy an immutable artefact from Module 7, protect production with environments.
@@ -62,11 +63,13 @@ This is a core tutorial in **Module 10 · Cloud Deployments** of the REBASH Acad
 
 
 
+
 - [Terraform Pipelines with GitHub Actions](terraform-pipelines-with-github-actions.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -84,6 +87,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Multi-cloud with OIDC](../assets/excalidraw/gha-multi-cloud.svg)
@@ -91,6 +95,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -147,42 +152,54 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-github-actions/module-10/.github/workflows && cd ~/rebash-github-actions/module-10/.github/workflows
 ```
 
-**Focus:** parallel cloud deploy jobs with OIDC permissions
+**Focus:** OIDC-ready jobs for AWS and Azure shapes (file-only)
 
-### Step 1 – Multi-cloud stub
+### Step 1 – Multi-cloud workflow
 
-{% raw %}
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/multi.yml << 'EOF'
-name: multi
-on: workflow_dispatch
+cat > .github/workflows/multi-cloud.yml << 'EOF'
+name: Multi-cloud deploy shapes
+on: [workflow_dispatch]
 permissions:
-  id-token: write
   contents: read
 jobs:
-  aws:
+  aws_oidc:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: aws-staging
     steps:
-      - run: echo "AWS OIDC deploy"
-  azure:
+      - run: echo "configure-aws-credentials when trust exists"
+  azure_oidc:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: azure-staging
     steps:
-      - run: echo "Azure OIDC deploy"
+      - run: echo "azure/login with OIDC when federated credential exists"
 EOF
-python3 -c "import yaml; print(list(yaml.safe_load(open('.github/workflows/multi.yml'))['jobs']))"
 ```
-{% endraw %}
+
+### Step 2 – Confirm separate environments and id-token
+
+```bash
+grep -E 'id-token: write|aws-staging|azure-staging' .github/workflows/multi-cloud.yml
+```
 
 ### Final step – Cleanup note
 
 ```bash
-# File-only
+# File-only — no cloud calls
+# Keep ~/rebash-github-actions/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -194,6 +211,7 @@ python3 -c "import yaml; print(list(yaml.safe_load(open('.github/workflows/multi
 
 
 ## Code Walkthrough
+
 
 
 
@@ -213,6 +231,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for github-actions as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -222,6 +241,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -240,6 +260,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Multi-Cloud Deployments with GitHub Actions changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -249,6 +270,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -266,6 +288,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Multi-Cloud Deployments with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -273,21 +296,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Multi-Cloud Deployments with GitHub Actions** fit into a GitHub Actions delivery model?
-2. A workflow fails only on `pull_request` — what differences do you inspect?
-3. Why pin Actions and limit `permissions`?
-4. How should production secrets and OIDC cloud access be designed?
-5. How do you keep workflows reusable without copy-paste sprawl?
+1. How do you structure workflows for AWS and Azure without duplication?
+2. What OIDC settings differ per cloud provider?
+3. When are reusable workflows better than copy-paste jobs?
+4. How do you prevent credential mix-ups across clouds?
+5. Which checks should every cloud deploy share?
 
 !!! tip "Sample answer — question 2"
-    Compare event payloads, checkout ref for fork PRs, secrets availability, and required environments. Read the failing step log and re-run with debug logging if needed.
+    Verify environment names, id-token permissions, and the cloud-specific login action configuration.
 
 !!! tip "Sample answer — question 4"
-    Use `permissions` least privilege, environment protection for prod, and OIDC (`id-token: write`) instead of long-lived cloud keys.
+    Isolate roles per cloud/environment and keep production approvals separate.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -297,6 +321,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -27,6 +27,8 @@ comments: false
 
 
 
+
+
 Applications need **configuration** — database URLs, API keys, feature flags, log levels — that changes between environments without rebuilding the image. The [Twelve-Factor App](https://12factor.net/config) principle states: store config in the **environment**, not in code. Docker provides several mechanisms to inject configuration at runtime: **environment variables**, **env files**, **secrets**, **bind mounts**, and integration with external **secret managers**.
 
 This tutorial explains when to use each approach, how to avoid leaking credentials into image layers and logs, and how to wire secrets through **Docker Compose** and production patterns. You will configure a sample web application with non-sensitive env vars and sensitive credentials using Docker's recommended secret primitives.
@@ -39,6 +41,8 @@ This is **Tutorial 12** in **Module 4: Networking & Registry** of the REBASH Aca
 
 
 
+
+
 - Docker Engine and Docker Compose plugin installed
 - Completion of [Docker Compose Fundamentals](docker-compose-fundamentals.md)
 - Familiarity with [Environment Variables and Shell Config](../linux/environment-variables-shell-config.md) on Linux
@@ -47,6 +51,8 @@ This is **Tutorial 12** in **Module 4: Networking & Registry** of the REBASH Aca
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -65,6 +71,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 Configuration flows from sources of truth into the container process environment or mounted files — never through rebuilt image layers for secrets.
 
 ![Compose and configuration](../assets/excalidraw/docker-compose.svg)
@@ -72,6 +80,8 @@ Configuration flows from sources of truth into the container process environment
 
 
 ## Theory
+
+
 
 
 
@@ -189,30 +199,44 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/environment-variables-and-secrets && cd ~/rebash-docker/environment-variables-and-secrets
 ```
 
-**Focus:** pass env files without baking secrets into the image
+**Focus:** pass env files safely and avoid baking secrets into images
 
-### Step 1 – Env file run
+### Step 1 – Env file runtime inject
 
 ```bash
 cat > app.env << 'EOF'
 APP_MODE=lab
+GREETING=hello
 EOF
-docker run --rm --env-file app.env alpine:3.20 sh -c 'echo APP_MODE=$APP_MODE' | tee env-out.txt
-tee secrets-notes.txt << 'EOF'
-Never COPY .env with production secrets into images. Prefer runtime injection / orchestrator secrets.
+cat > Dockerfile << 'EOF'
+FROM alpine:3.20
+CMD ["sh", "-c", "echo mode=$APP_MODE greeting=$GREETING"]
 EOF
-cat secrets-notes.txt
+docker build -t rebash-env:lab .
+docker run --rm --env-file app.env rebash-env:lab
+docker image inspect rebash-env:lab --format '{{ "{{" }}json .Config.Env{{ "}}" }}'
+```
+
+### Step 2 – Cleanup
+
+```bash
+rm -f app.env
+docker rmi rebash-env:lab
 ```
 
 ### Final step – Cleanup note
 
 ```bash
 rm -f app.env
+docker rmi rebash-env:lab 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -232,6 +256,8 @@ Confirm the lab before moving on:
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -278,6 +304,8 @@ DATABASE_HOST=localhost
 
 
 
+
+
 - Never commit `.env` files containing real credentials; provide `.env.example` with placeholders only
 - Prefer Docker secrets / external secret managers over plain `environment:` for production
 - Remember environment variables are visible via `docker inspect` to anyone who can talk to the daemon
@@ -288,6 +316,8 @@ DATABASE_HOST=localhost
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -309,6 +339,8 @@ DATABASE_HOST=localhost
 
 
 
+
+
 !!! tip "Separate config repos from secret delivery"
     Version Compose and Dockerfiles in Git; deliver secrets from vaults or cloud secret managers at deploy time.
 
@@ -327,6 +359,8 @@ DATABASE_HOST=localhost
 
 
 
+
+
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | App sees empty env var | Typo in key name or wrong precedence | Check `docker inspect` Env section; verify Compose override order |
@@ -342,6 +376,8 @@ DATABASE_HOST=localhost
 
 
 
+
+
 - **Configuration** belongs in the environment; **secrets** need stronger protection than plain env vars
 - Use Dockerfile `ENV` for safe defaults; override at runtime with `-e` and `--env-file`
 - **Docker secrets** (Swarm) and **read-only bind mounts** deliver credentials as files under `/run/secrets/`
@@ -354,21 +390,23 @@ DATABASE_HOST=localhost
 ## Interview Questions
 
 
-1. What production problem does **Environment Variables and Secrets** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. Why are ENV instructions in Dockerfiles risky for secrets?
+2. Runtime --env-file versus build-time ARG?
+3. How can secrets still leak via docker inspect?
+4. Better secret patterns for Swarm/Kubernetes?
+5. How do you rotate a secret used by containers?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Inspect the image config and container env to see whether a secret was baked in.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Use secret managers / orchestrator secret objects and short rotation intervals.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -384,6 +422,8 @@ DATABASE_HOST=localhost
 
 
 ## References
+
+
 
 
 

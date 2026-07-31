@@ -44,6 +44,7 @@ comments: false
 
 
 
+
 Use CI/CD variables correctly (masked, protected, environment-scoped), avoid long-lived cloud keys where possible, and outline OIDC and Vault-style secret patterns for production.
 
 Pipelines need configuration and credentials. GitLab provides **CI/CD variables** at project, group, and instance levels, plus predefined `$CI_*` variables. Production teams prefer **short-lived cloud credentials via OpenID Connect (OIDC)** and external secret managers over static keys in the UI.
@@ -56,11 +57,13 @@ This is a core tutorial in **Module 6 · Variables & Secrets** of the REBASH Aca
 
 
 
+
 - [Pipeline Design: DAGs and Includes](pipeline-design-dags-and-includes.md)
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -77,6 +80,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![Variables and secrets](../assets/excalidraw/gitlab-variables-secrets.svg)
@@ -84,6 +88,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -141,40 +146,62 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-gitlab/module-06 && cd ~/rebash-gitlab/module-06
 ```
 
-**Focus:** model CI variables and OIDC notes without storing secrets
+**Focus:** separate non-secrets from masked vars; shape OIDC job (file-only validation)
 
-### Step 1 – Variables map
+### Step 1 – Author variables + id_tokens pipeline
 
 ```bash
+cat > oidc-checklist.md << 'EOF'
+- [ ] Non-secrets in YAML variables only
+- [ ] Masked+protected secrets in CI/CD settings
+- [ ] id_tokens with explicit aud
+- [ ] Never echo tokens
+EOF
 cat > .gitlab-ci.yml << 'EOF'
-deploy:
+stages: [verify, deploy]
+variables:
+  APP_ENV: "ci"
+show_predefined:
+  stage: verify
+  image: alpine:3.20
+  script:
+    - echo "project=$CI_PROJECT_PATH ref=$CI_COMMIT_REF_NAME"
+    - echo "APP_ENV=$APP_ENV"
+oidc_ready_deploy:
+  stage: deploy
   image: alpine:3.20
   id_tokens:
     GITLAB_OIDC_TOKEN:
-      aud: https://sts.amazonaws.com
+      aud: https://gitlab.com
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
   script:
-    - echo "Exchange GITLAB_OIDC_TOKEN for cloud role — do not print the token"
-    - test -n "$RUNTIME_ENV"
-  variables:
-    RUNTIME_ENV: lab
+    - test -n "${GITLAB_OIDC_TOKEN:-}" && echo "OIDC token present (do not print)" || echo "Token only on GitLab runners"
+    - echo "Exchange JWT via cloud STS — not long-lived keys"
 EOF
-tee oidc-notes.txt << 'EOF'
-Prefer OIDC/id_tokens over long-lived cloud keys in GitLab CI/CD variables.
-Mask + protect secrets; scope to environments.
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
-cat oidc-notes.txt
+```
+
+### Step 2 – File-only validation
+
+```bash
+grep -A6 'id_tokens:' .gitlab-ci.yml
+grep 'GITLAB_OIDC_TOKEN' .gitlab-ci.yml
+test -f oidc-checklist.md
+# No cloud API calls — structure only
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# No secrets created
+# File-only OIDC lab — no cloud resources
+# Keep ~/rebash-gitlab/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -186,6 +213,7 @@ cat oidc-notes.txt
 
 
 ## Code Walkthrough
+
 
 
 
@@ -205,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for gitlab as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -214,6 +243,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -232,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Variables, Secrets, and OIDC changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -241,6 +272,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -258,6 +290,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Variables, Secrets, and OIDC** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -265,21 +298,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Variables, Secrets, and OIDC** show up in a real GitLab delivery workflow?
-2. A pipeline is stuck / red — what do you check first?
-3. How do `needs`, stages, and artefacts interact?
-4. How should secrets and cloud credentials be handled in GitLab CI?
-5. How would you keep merge-request pipelines fast but still safe?
+1. Where should non-secret configuration live versus secret values?
+2. OIDC job cannot assume a cloud role — what claims and settings do you verify?
+3. What does masking actually guarantee in GitLab job logs?
+4. Why prefer OIDC over long-lived cloud access keys in CI?
+5. How do protected variables change merge request pipeline behaviour?
 
 !!! tip "Sample answer — question 2"
-    Open the failing job log, confirm runner tags/executor, then validate `.gitlab-ci.yml` with CI Lint. Check rules that skipped jobs and artefact dependencies.
+    Verify id_tokens audience, the cloud identity provider trust policy (subject/ref/project), and that the job context may receive the token. Claim mismatches dominate.
 
 !!! tip "Sample answer — question 4"
-    Prefer masked/protected variables and OIDC (`id_tokens`) over long-lived keys. Limit who can run protected-branch pipelines.
+    OIDC issues short-lived credentials scoped by trust conditions, removing standing keys from GitLab variables. Never print the JWT.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -289,6 +323,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

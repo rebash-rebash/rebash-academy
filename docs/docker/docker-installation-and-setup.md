@@ -40,6 +40,8 @@ comments: false
 
 
 
+
+
 Install a working Docker Engine (or Desktop), verify with `docker version` / `hello-world`, and know when rootless Docker and contexts matter.
 
 **Docker Engine** on Linux is the production-like path. **Docker Desktop** bundles Engine + UI on macOS/Windows. **Rootless** reduces privilege; **contexts** point the CLI at remote engines.
@@ -52,12 +54,16 @@ This is a core tutorial in **Module 2 · Installing Docker** of the REBASH Acade
 
 
 
+
+
 - [Docker Architecture and Components](docker-architecture-and-components.md)
 - Admin rights on your machine (or a cloud VM)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -75,6 +81,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Docker architecture](../assets/excalidraw/docker-architecture.svg)
@@ -82,6 +90,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -129,25 +139,41 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-02 && cd ~/rebash-docker/module-02
 ```
 
-**Focus:** verify Docker Engine install and permissions
+**Focus:** verify Docker Engine install and daemon connectivity
 
-### Step 1 – Doctor
+### Step 1 – Daemon and client checks
 
 ```bash
-docker version | tee version.txt
-docker info | egrep 'Server Version|Cgroup|Logging Driver|Swarm' | tee info.txt
-docker run --rm hello-world | tee hello.txt
+docker version
+docker info --format '{{ "{{" }}.ServerVersion{{ "}}" }} {{ "{{" }}.Driver{{ "}}" }}'
+docker pull alpine:3.20
+docker run --rm alpine:3.20 uname -a
+```
+
+### Step 2 – Permission / context notes
+
+```bash
+docker context ls
+id
+cat > install-notes.md << 'EOF'
+- Prefer Docker Engine from official docs for your OS
+- docker group is root-equivalent — grant carefully
+- Consider rootless mode when isolation requires it
+EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi hello-world 2>/dev/null || true
+docker rmi alpine:3.20 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -159,6 +185,8 @@ docker rmi hello-world 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -178,6 +206,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -187,6 +217,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -205,6 +237,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Docker Installation and Setup changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -214,6 +248,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -231,6 +267,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Docker Installation and Setup** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -238,21 +276,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Docker Installation and Setup** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. What does membership in the docker group imply on Linux?
+2. Client works but daemon errors — where do you look?
+3. Rootless Docker — when would you choose it?
+4. How do you verify Engine versus Compose plugin install?
+5. What is a Docker context used for?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Run docker version/docker info and inspect daemon logs. Permission denied on the socket usually means group/context issues.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Treat docker.sock access as root-equivalent.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -262,6 +302,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

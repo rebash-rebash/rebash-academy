@@ -53,6 +53,7 @@ comments: false
 
 
 
+
 Place AWS Key Management Service (KMS), Secrets Manager, Systems Manager Parameter Store, GuardDuty, Inspector, Security Hub, Macie, Shield, and AWS WAF into a coherent defence-in-depth model — and practise secret/parameter hygiene without leaving paid detectors unreviewed.
 
 Identity (IAM) is necessary but not sufficient. **KMS** manages encryption keys. **Secrets Manager** and **Parameter Store** distribute secrets and configuration. **GuardDuty** detects threats from logs and findings. **Inspector** scans for software vulnerabilities. **Security Hub** aggregates findings and standards. **Macie** discovers sensitive data in S3. **Shield** protects against Distributed Denial of Service (DDoS); **AWS WAF** filters Layer 7 web exploits. Production platforms combine encryption, least privilege, continuous detection, and edge protection — with clear ownership for triage.
@@ -65,6 +66,7 @@ This is a core tutorial in **Module 10 · Security** of the REBASH Academy **AWS
 
 
 
+
 - [Monitoring and Observability on AWS](monitoring-and-observability-on-aws.md)
 - Solid IAM (roles, policies, MFA, Organisations SCPs)
 - CloudTrail enabled in the account you use for labs
@@ -72,6 +74,7 @@ This is a core tutorial in **Module 10 · Security** of the REBASH Academy **AWS
 
 
 ## Learning Objectives
+
 
 
 
@@ -88,6 +91,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![AWS security services](../assets/excalidraw/aws-security.svg)
@@ -95,6 +99,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -162,35 +167,45 @@ Most incidents involve leaked credentials, missing encryption, unpatched softwar
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-10 && cd ~/rebash-aws/module-10
 ```
 
-**Focus:** read GuardDuty/Security Hub availability and IAM auth details
+**Focus:** read-only tour of CloudTrail/GuardDuty/Security Hub/Config
 
 ### Step 1 – Security services probe
 
 ```bash
-aws sts get-caller-identity | tee identity.json
-aws guardduty list-detectors --output text 2>/dev/null | tee gd.txt || echo 'GuardDuty not enabled/visible'
-aws securityhub describe-hub 2>/dev/null | tee sh.json || echo 'Security Hub not enabled/visible'
-aws iam get-account-password-policy 2>/dev/null | tee pwd-policy.json || true
+aws sts get-caller-identity
+aws cloudtrail describe-trails --query 'trailList[].{Name:Name,MultiRegion:IsMultiRegionTrail}' --output table 2>/dev/null || true
+aws guardduty list-detectors --output table 2>/dev/null || echo "GuardDuty not enabled or no permission"
+aws securityhub describe-hub 2>/dev/null || echo "Security Hub not enabled or no permission"
+aws configservice describe-configuration-recorders --output table 2>/dev/null || true
+```
+
+### Step 2 – Control checklist
+
+```bash
+cat > security-controls.md << 'EOF'
+- CloudTrail organisation trail + log file validation
+- GuardDuty + Security Hub aggregation
+- Config rules for required tags / public access blocks
+EOF
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -202,6 +217,7 @@ aws iam get-account-password-policy 2>/dev/null | tee pwd-policy.json || true
 
 
 ## Code Walkthrough
+
 
 
 
@@ -221,6 +237,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -230,6 +247,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -248,6 +266,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode AWS Security Services — Keys, Secrets, and Detection changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -257,6 +276,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -274,6 +294,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **AWS Security Services — Keys, Secrets, and Detection** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -281,21 +302,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **AWS Security Services — Keys, Secrets, and Detection** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. CloudTrail versus CloudWatch Logs versus Config?
+2. What does GuardDuty detect at a high level?
+3. Security Hub’s role in a multi-account org?
+4. How do you respond to a public snapshot finding?
+5. Why organisation trails matter?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Confirm the service is enabled in the account/region and that you are looking at the right aggregator account.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Centralise trails/findings and restrict who can disable logging.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -305,6 +327,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

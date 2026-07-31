@@ -41,6 +41,8 @@ comments: false
 
 
 
+
+
 Shrink and harden images with multi-stage builds, sensible bases, BuildKit cache, and ordered layers.
 
 Smaller images pull faster, scan cleaner, and attack less surface. **Multi-stage** builds compile in a fat stage and copy artefacts into a slim runtime stage.
@@ -53,11 +55,15 @@ This is a core tutorial in **Module 6 · Image Optimisation** of the REBASH Acad
 
 
 
+
+
 - [Building Images with Dockerfile](building-images-with-dockerfile.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -75,6 +81,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Image layers](../assets/excalidraw/docker-image-layers.svg)
@@ -82,6 +90,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -130,33 +140,50 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
 ```
 
-**Focus:** multi-stage build that keeps the final image small
+**Focus:** build a multi-stage image and compare history
 
-### Step 1 – Multi-stage
+### Step 1 – Multi-stage Dockerfile
 
 ```bash
-cat > Dockerfile << 'EOF'
-FROM alpine:3.20 AS build
-WORKDIR /src
-RUN echo 'compiled-artefact' > app.txt
-FROM alpine:3.20
-COPY --from=build /src/app.txt /app.txt
-CMD ["cat","/app.txt"]
+cat > hello.go << 'EOF'
+package main
+import "fmt"
+func main() { fmt.Println("multi-stage ok") }
 EOF
-docker build -t rebash-lab:local .
-docker run --rm rebash-lab:local
-docker image inspect rebash-lab:local --format '{{ "{{" }}.Size{{ "}}" }}' | tee size.txt
+cat > Dockerfile << 'EOF'
+FROM golang:1.22-alpine AS build
+WORKDIR /src
+COPY hello.go .
+RUN go build -o /out/hello hello.go
+FROM alpine:3.20
+COPY --from=build /out/hello /usr/local/bin/hello
+USER nobody
+ENTRYPOINT ["/usr/local/bin/hello"]
+EOF
+docker build -t rebash-ms:lab .
+docker run --rm rebash-ms:lab
+docker images rebash-ms:lab
+```
+
+### Step 2 – Show layers / cleanup
+
+```bash
+docker history rebash-ms:lab | head -n 15
+docker rmi rebash-ms:lab
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi rebash-lab:local 2>/dev/null || true
+docker rmi rebash-ms:lab 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -168,6 +195,8 @@ docker rmi rebash-lab:local 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -187,6 +216,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -196,6 +227,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -214,6 +247,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Dockerfile Best Practices and Multi-Stage Builds changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -223,6 +258,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -240,6 +277,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Dockerfile Best Practices and Multi-Stage Builds** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -247,21 +286,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Dockerfile Best Practices and Multi-Stage Builds** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. How do multi-stage builds improve security and size?
+2. What should the final stage contain?
+3. Layer caching tips that actually help CI?
+4. Why order Dockerfile instructions carefully?
+5. When is distroless a good final base?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Compare image sizes and docker history before/after multi-stage.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Keep build tools out of production images and pin base digests.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -271,6 +312,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 

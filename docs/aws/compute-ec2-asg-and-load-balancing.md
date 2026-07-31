@@ -49,6 +49,7 @@ comments: false
 
 
 
+
 Provision and scale Amazon Elastic Compute Cloud (EC2) safely: Amazon Machine Images (AMIs), launch templates, Auto Scaling groups (ASGs), placement, Elastic IP (EIP) awareness, and Elastic Load Balancing with Application Load Balancer (ALB) and Network Load Balancer (NLB).
 
 EC2 is virtual servers in your Virtual Private Cloud (VPC). Production systems rarely run a single instance: you use **launch templates**, **ASGs** across Availability Zones (AZs), and a **load balancer** for health checks and traffic distribution. This module connects compute to the networking patterns from Module 3.
@@ -64,12 +65,14 @@ This is a core tutorial in **Module 4 · Compute** of the REBASH Academy **AWS f
 
 
 
+
 - [VPC Networking on AWS](vpc-networking-on-aws.md)
 - IAM rights to describe (and optionally run) EC2 / ELB APIs
 
 
 
 ## Learning Objectives
+
 
 
 
@@ -87,6 +90,7 @@ By the end of this tutorial, you will be able to:
 
 
 
+
 This topic’s control points and relationships are shown below.
 
 ![AWS compute](../assets/excalidraw/aws-compute.svg)
@@ -94,6 +98,7 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
 
 
 
@@ -152,34 +157,41 @@ Keep user data short and idempotent; prefer baked images for production.
 ## Hands-on Lab
 
 
-!!! warning "Cost and account safety"
-    Prefer read-only `describe`/`get` calls. Create resources only in a sandbox account and destroy them in the cleanup step.
-
 Create a workspace for this tutorial.
 
 ```bash
 mkdir -p ~/rebash-aws/module-04 && cd ~/rebash-aws/module-04
 ```
 
-**Focus:** describe EC2/ASG/ELB inventory without launching instances
+**Focus:** inventory EC2/ASG/ELB with describe APIs
 
-### Step 1 – Compute inventory
+### Step 1 – Describe compute landscape
 
 ```bash
-aws ec2 describe-instances --query 'Reservations[].Instances[].{Id:InstanceId,Type:InstanceType,State:State.Name}' --output table | tee instances.txt
-aws elbv2 describe-load-balancers --query 'LoadBalancers[].{Name:LoadBalancerName,Type:Type,DNS:DNSName}' --output table 2>/dev/null | tee elbs.txt || true
-aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[].{Name:AutoScalingGroupName,Desired:DesiredCapacity}' --output table 2>/dev/null | tee asg.txt || true
+aws sts get-caller-identity
+aws ec2 describe-instances --query 'Reservations[].Instances[].{Id:InstanceId,State:State.Name,Type:InstanceType}' --output table
+aws elbv2 describe-load-balancers --query 'LoadBalancers[].{Name:LoadBalancerName,Type:Type}' --output table 2>/dev/null || true
+aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[].{Name:AutoScalingGroupName,Desired:DesiredCapacity}' --output table 2>/dev/null || true
+```
+
+### Step 2 – Optional create skipped by default
+
+```bash
+echo "Skipped create by default — describe-only is enough"
+echo "If you launch an instance: aws ec2 terminate-instances --instance-ids <id>"
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-# Read-only — do not leave lab instances running
+# COST WARNING: prefer describe/list APIs. Destroy anything you create.
+# Keep ~/rebash-aws/ for later tutorials
 ```
 
 
 
 ## Validation
+
 
 
 
@@ -191,6 +203,7 @@ aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[].{Name:
 
 
 ## Code Walkthrough
+
 
 
 
@@ -210,6 +223,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Treat credentials and tokens for aws as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -219,6 +233,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
 
 
 
@@ -237,6 +252,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 - Encode Compute: EC2, ASG, and Load Balancing changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -246,6 +262,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
 
 
 
@@ -263,6 +280,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
 **Compute: EC2, ASG, and Load Balancing** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -270,21 +288,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. How does **Compute: EC2, ASG, and Load Balancing** appear in a well-run AWS landing zone?
-2. Users report timeouts to a service — what is your AWS-oriented triage order?
-3. How do IAM roles and least privilege change your design for this topic?
-4. What cost or blast-radius controls should wrap experiments in this area?
-5. How would you prove correctness with read-only AWS APIs in an interview whiteboard?
+1. ASG desired/min/max — what do they mean?
+2. ALB versus NLB versus CLB?
+3. Instance unhealthy behind ALB — checks?
+4. Implications of stopping versus terminating?
+5. How do launch templates improve consistency?
 
 !!! tip "Sample answer — question 2"
-    Confirm identity/region, then path: DNS, SG/NACL, routes, target health, and CloudWatch/CloudTrail signals before changing infrastructure.
+    Check instance state, status checks, and load balancer target health before resizing.
 
 !!! tip "Sample answer — question 4"
-    Sandbox accounts, budgets, tags, destroy-after-lab, and no long-lived keys in CI — use OIDC/roles.
+    Use IMDSv2, least-privilege instance roles, and terminate lab instances promptly.
 
 
 
 ## Related Tutorials
+
 
 
 
@@ -294,6 +313,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
 
 
 

@@ -41,6 +41,8 @@ comments: false
 
 
 
+
+
 Tag and push an image to a registry workflow you can repeat in CI — understand Hub vs cloud registries (GHCR, ECR, ACR, GAR).
 
 Registries store and distribute images. Production uses private registries, immutable tags, and retention policies.
@@ -53,12 +55,16 @@ This is a core tutorial in **Module 10 · Registries** of the REBASH Academy **D
 
 
 
+
+
 - [Docker Compose Fundamentals](docker-compose-fundamentals.md)
 - [Working with Docker Images](working-with-docker-images.md)
 
 
 
 ## Learning Objectives
+
+
 
 
 
@@ -75,6 +81,8 @@ By the end of this tutorial, you will be able to:
 
 
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Registry workflow](../assets/excalidraw/docker-registry-workflow.svg)
@@ -82,6 +90,8 @@ This topic’s control points and relationships are shown below.
 
 
 ## Theory
+
+
 
 
 
@@ -134,30 +144,42 @@ Create a workspace for this tutorial.
 mkdir -p ~/rebash-docker/module-10 && cd ~/rebash-docker/module-10
 ```
 
-**Focus:** tag images for a registry and document push auth hygiene
+**Focus:** tag for a registry path and practise save/load offline distribution
 
-### Step 1 – Tag for registry
+### Step 1 – Registry tagging patterns
 
 ```bash
 docker pull alpine:3.20
-docker tag alpine:3.20 localhost:5000/rebash/alpine:lab
-docker images localhost:5000/rebash/alpine
-tee registry-notes.txt << 'EOF'
-Use credential helpers; prefer short-lived tokens; enable vulnerability scanning on the registry.
-Do not docker login with tokens on shared lab machines without cleanup.
+docker tag alpine:3.20 ghcr.io/example/rebash-alpine:lab
+docker image inspect ghcr.io/example/rebash-alpine:lab --format '{{ "{{" }}.RepoTags{{ "}}" }}'
+docker save ghcr.io/example/rebash-alpine:lab -o image.tar
+ls -lh image.tar
+cat > registry-notes.md << 'EOF'
+- Prefer digest pins for production
+- Auth via credential helpers / OIDC in CI
 EOF
-cat registry-notes.txt
+```
+
+### Step 2 – Cleanup
+
+```bash
+rm -f image.tar
+docker rmi ghcr.io/example/rebash-alpine:lab
 ```
 
 ### Final step – Cleanup note
 
 ```bash
-docker rmi localhost:5000/rebash/alpine:lab 2>/dev/null || true
+rm -f image.tar
+docker rmi ghcr.io/example/rebash-alpine:lab 2>/dev/null || true
+# Keep ~/rebash-docker/ for later tutorials
 ```
 
 
 
 ## Validation
+
+
 
 
 
@@ -169,6 +191,8 @@ docker rmi localhost:5000/rebash/alpine:lab 2>/dev/null || true
 
 
 ## Code Walkthrough
+
+
 
 
 
@@ -188,6 +212,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Treat credentials and tokens for docker as privileged — never commit them
 - Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
 - Validate blast radius before apply/deploy/delete operations
@@ -197,6 +223,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Common Mistakes
+
+
 
 
 
@@ -215,6 +243,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 - Encode Container Registries and Distribution changes as code and review them in pull requests
 - Pin versions (images, modules, actions, provider plugins)
 - Separate environments with clear promotion gates
@@ -224,6 +254,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## Troubleshooting
+
+
 
 
 
@@ -241,6 +273,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 
+
+
 **Container Registries and Distribution** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 
@@ -248,21 +282,23 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 ## Interview Questions
 
 
-1. What production problem does **Container Registries and Distribution** address in container platforms?
-2. A container restarts continually — how do you triage?
-3. Why are mutable `latest` tags risky in production?
-4. Which container security controls do you insist on before prod?
-5. How do you keep images small and builds fast in CI?
+1. What is a content digest?
+2. How do you authenticate to a private registry in CI?
+3. Tag mutation risks?
+4. Promotion patterns between registries?
+5. How do mirrors/caches help enterprises?
 
 !!! tip "Sample answer — question 2"
-    Check `docker ps -a`, logs, exit code, and `inspect` for OOM/restarts. Confirm command/entrypoint and volume permissions.
+    Verify digests and repository permissions. Auth errors dominate first-push failures.
 
 !!! tip "Sample answer — question 4"
-    Non-root, minimal base, no secrets in layers, scanning, read-only rootfs where possible, and least capabilities.
+    Use short-lived CI credentials/OIDC and immutable tags/digests for prod.
 
 
 
 ## Related Tutorials
+
+
 
 
 
@@ -272,6 +308,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 ## References
+
+
 
 
 
