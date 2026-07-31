@@ -1153,11 +1153,75 @@
          <lastmod>2026-07-31</lastmod>
     </url>
     <url>
+         <loc>https://rebash.in/jenkins/agents-nodes-and-executors/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/docker-with-jenkins-pipeline/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
          <loc>https://rebash.in/jenkins/faq/</loc>
          <lastmod>2026-07-31</lastmod>
     </url>
     <url>
+         <loc>https://rebash.in/jenkins/installing-jenkins-lts/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/introduction-to-jenkins-and-ci-cd/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/jcasc-scaling-and-operations/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/jenkinsfile-in-scm/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/kubernetes-agents-and-deploys/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/managing-jenkins-plugins-tools-and-cli/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/multibranch-pipelines-and-prs/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/pipeline-fundamentals-declarative/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
          <loc>https://rebash.in/jenkins/roadmap/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/securing-jenkins/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/shared-libraries/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/terraform-pipelines-in-jenkins/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/testing-reports-and-quality-gates/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/troubleshooting-and-upgrades/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/using-jenkins-jobs-views-and-folders/</loc>
          <lastmod>2026-07-31</lastmod>
     </url>
     <url>
@@ -1174,6 +1238,10 @@
     </url>
     <url>
          <loc>https://rebash.in/jenkins/interview/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/jenkins/labs/</loc>
          <lastmod>2026-07-31</lastmod>
     </url>
     <url>
