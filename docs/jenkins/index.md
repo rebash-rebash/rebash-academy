@@ -1,63 +1,94 @@
 ---
-title: "Jenkins"
-description: "Jenkins track on REBASH Academy — curriculum planned."
+title: Overview
+description: "Jenkins for Cloud & DevOps Engineers — 16 modules from CI/CD and LTS install through Declarative Pipeline, agents, Docker, shared libraries, security, Kubernetes, Terraform, JCasC, and operations."
+difficulty: beginner
+estimated_time: "8–10 weeks"
 author: Shaik Basha
+last_updated: "2026-07-31"
 category: jenkins
 tags:
   - jenkins
+  - cicd
+  - devops
+  - course
+comments: false
 ---
 
-# Jenkins
+# Jenkins for Cloud & DevOps Engineers
 
-This technology track is **planned** in the academy curriculum.
+**Duration:** 8–10 weeks · **Difficulty:** Beginner → Advanced
+{ .ra-facts }
 
-## Overview
+Production Continuous Integration and Continuous Delivery (CI/CD) with Jenkins Long-Term Support (LTS) — install and operate a controller, author Declarative Pipelines, isolate agents, reuse shared libraries, secure credentials, and integrate Docker, Kubernetes, and Terraform.
 
-Jenkins will be taught as a production-focused course aligned with REBASH Academy career paths.
+!!! tip "Course status"
+    Curriculum follows the REBASH Jenkins technology prompt (**16 modules**) and the official [Jenkins User Documentation](https://www.jenkins.io/doc/) (User Handbook, Pipeline syntax, and tutorials). Tutorials use the academy standard with **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Blue Ocean is legacy UI only — Declarative Pipeline is the path. Start with [Introduction to Jenkins and CI/CD](introduction-to-jenkins-and-ci-cd.md).
 
-## Learning objectives
+## 1. Course overview
 
-- Understand core Jenkins concepts used in Cloud and DevOps roles
-- Practise with labs once tutorials ship
-- Connect to related career paths below
+### Purpose
 
-## Prerequisites
+Treat delivery as software: Jenkinsfiles in source control, agents that protect the controller, reviewable Pipeline changes, and configuration you can recreate with Jenkins Configuration as Code (JCasC).
 
-- Linux fundamentals (recommended)
-- See [Career Paths](../career-paths/index.md) for the recommended order
+### Target roles
 
-## Course modules
+DevOps · Cloud · Platform · SRE · DevSecOps · Infrastructure Engineer
 
-Modules will appear here when the track moves from planned to ready.
+### Prerequisites
 
-## Tutorial roadmap
+- [Git](../git/index.md) (required)
+- [Docker](../docker/index.md) (required for labs)
+- [Kubernetes](../kubernetes/index.md) before Module 13
+- [Terraform](../terraform/index.md) before Module 14
+- Basic cloud knowledge
 
-No published tutorials yet — tracked in the repository curriculum backlog.
+### Learning arc
 
-## Labs roadmap
+| Phase | Modules | Level |
+|-------|---------|-------|
+| Foundations | 1–3 | Beginner |
+| Pipeline core | 4–7 | Intermediate |
+| Delivery patterns | 8–10 | Intermediate |
+| Hardening & quality | 11–12 | Intermediate → Advanced |
+| Platforms & ops | 13–16 | Advanced |
 
-Planned alongside the first modules.
+### Capstone outcomes
 
-## Projects roadmap
+LTS install · Declarative Jenkinsfiles · agent isolation · shared libraries · security · Docker builds · Kubernetes agents · Terraform plan gates · JCasC · upgrade runbooks
 
-See [Projects](../projects/index.md) and [Capstones](../capstones/index.md).
+## 2. Modules
 
-## Cheat sheets
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | CI/CD and Jenkins | [Introduction](introduction-to-jenkins-and-ci-cd.md) |
+| 2 | Install LTS | [Docker Compose LTS](installing-jenkins-lts.md) |
+| 3 | Jobs, views, folders | [Using Jenkins](using-jenkins-jobs-views-and-folders.md) |
+| 4 | Declarative Pipeline | [Pipeline fundamentals](pipeline-fundamentals-declarative.md) |
+| 5 | Jenkinsfile in SCM | [SCM Pipelines](jenkinsfile-in-scm.md) |
+| 6 | Agents and executors | [Agents · nodes](agents-nodes-and-executors.md) |
+| 7 | Multibranch and PRs | [Multibranch](multibranch-pipelines-and-prs.md) |
+| 8 | Docker agents | [Docker Pipeline](docker-with-jenkins-pipeline.md) |
+| 9 | Shared libraries | [Shared libraries](shared-libraries.md) |
+| 10 | Plugins, tools, CLI | [Managing Jenkins](managing-jenkins-plugins-tools-and-cli.md) |
+| 11 | Security | [Securing Jenkins](securing-jenkins.md) |
+| 12 | Tests and gates | [Testing · reports](testing-reports-and-quality-gates.md) |
+| 13 | Kubernetes | [K8s agents · deploys](kubernetes-agents-and-deploys.md) |
+| 14 | Terraform | [Terraform Pipelines](terraform-pipelines-in-jenkins.md) |
+| 15 | JCasC and scale | [JCasC · ops](jcasc-scaling-and-operations.md) |
+| 16 | Troubleshoot · upgrades | [Troubleshooting](troubleshooting-and-upgrades.md) |
 
-Coming with the first tutorials.
+## 3. Practice
 
-## Interview preparation
+- [Labs](labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
 
-See [Interview Guides](../interview/index.md) when this track ships.
+## Diagrams
 
-## Certifications
+Excalidraw SVGs live under `docs/assets/excalidraw/` (for example `jenkins-architecture.svg`).
 
-See [Certifications](../certifications/index.md).
+## Related
 
-## Related technologies
-
-Browse neighbouring tracks under **Technologies** in the site navigation.
-
-## Related career paths
-
-Browse [Career Paths](../career-paths/index.md).
+- [Git](../git/index.md) · [Docker](../docker/index.md) · [Kubernetes](../kubernetes/index.md)
+- [Terraform](../terraform/index.md) · [GitHub Actions](../github-actions/index.md) · [GitLab CI/CD](../gitlab/index.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)

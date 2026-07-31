@@ -1,6 +1,6 @@
 ---
 title: Quizzes
-description: "Quizzes for the Jenkins course — links to the Academy quizzes catalog."
+description: "Quizzes for the Jenkins course — check understanding after each module."
 technology_id: jenkins
 hide:
   - toc
@@ -12,6 +12,6 @@ tags:
 
 # Quizzes
 
-Browse quizzes for this course from the [Academy quizzes catalog](../../quizzes/).
+Use quizzes after finishing a module to check Pipeline, agent, and security understanding.
 
-Individual items appear here as they are published for the **Jenkins** track.
+Browse published items in the [Academy quizzes catalog](../../quizzes/). Follow the [roadmap](../roadmap.md) for the recommended order.

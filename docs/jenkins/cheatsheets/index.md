@@ -1,6 +1,6 @@
 ---
 title: Cheat Sheets
-description: "Cheat Sheets for the Jenkins course — links to the Academy cheatsheets catalog."
+description: "Cheat sheets for the Jenkins course — CLI, Declarative syntax, credentials, and JCasC."
 technology_id: jenkins
 hide:
   - toc
@@ -12,6 +12,15 @@ tags:
 
 # Cheat Sheets
 
-Browse cheatsheets for this course from the [Academy cheatsheets catalog](../../cheatsheets/).
+Planned cheat sheets for this track:
 
-Individual items appear here as they are published for the **Jenkins** track.
+- Jenkins CLI
+- Declarative Pipeline syntax
+- Jenkinsfile patterns
+- Shared libraries
+- Credentials and security checklist
+- Kubernetes agent snippets
+- Jenkins Configuration as Code (JCasC) starters
+- Troubleshooting commands
+
+Browse published items in the [Academy cheatsheets catalog](../../cheatsheets/). Tutorials start from the [course overview](../index.md).

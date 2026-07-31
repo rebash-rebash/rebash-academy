@@ -1,6 +1,6 @@
 ---
 title: Capstone
-description: "Capstone for the Jenkins course — links to the Academy capstones catalog."
+description: "Capstone for the Jenkins course — production Jenkins platform with JCasC, agents, and security."
 technology_id: jenkins
 hide:
   - toc
@@ -12,6 +12,6 @@ tags:
 
 # Capstone
 
-Browse capstones for this course from the [Academy capstones catalog](../../capstones/).
+The track capstone targets a production-style Jenkins platform: Jenkins Configuration as Code (JCasC), agent isolation, Docker builds, Terraform plan gates, security hardening, monitoring hooks, and a backup/restore drill.
 
-Individual items appear here as they are published for the **Jenkins** track.
+Complete Modules 1–16 from the [course overview](../index.md) first. Browse published capstones in the [Academy capstones catalog](../../capstones/).

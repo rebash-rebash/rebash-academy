@@ -1,3 +1,37 @@
 title: Jenkins
+icon: material/jenkins
+
 nav:
-  - Overview: index.md
+  - index.md
+  - Module 1 · Introduction to Jenkins and CI/CD:
+    - introduction-to-jenkins-and-ci-cd.md
+  - Module 2 · Installing Jenkins LTS:
+    - installing-jenkins-lts.md
+  - Module 3 · Using Jenkins:
+    - using-jenkins-jobs-views-and-folders.md
+  - Module 4 · Pipeline Fundamentals:
+    - pipeline-fundamentals-declarative.md
+  - Module 5 · Jenkinsfile in SCM:
+    - jenkinsfile-in-scm.md
+  - Module 6 · Agents, Nodes, and Executors:
+    - agents-nodes-and-executors.md
+  - Module 7 · Multibranch and PRs:
+    - multibranch-pipelines-and-prs.md
+  - Module 8 · Docker with Pipeline:
+    - docker-with-jenkins-pipeline.md
+  - Module 9 · Shared Libraries:
+    - shared-libraries.md
+  - Module 10 · Managing Jenkins:
+    - managing-jenkins-plugins-tools-and-cli.md
+  - Module 11 · Securing Jenkins:
+    - securing-jenkins.md
+  - Module 12 · Testing and Quality Gates:
+    - testing-reports-and-quality-gates.md
+  - Module 13 · Kubernetes Agents:
+    - kubernetes-agents-and-deploys.md
+  - Module 14 · Terraform Pipelines:
+    - terraform-pipelines-in-jenkins.md
+  - Module 15 · JCasC, Scaling, and Operations:
+    - jcasc-scaling-and-operations.md
+  - Module 16 · Troubleshooting and Upgrades:
+    - troubleshooting-and-upgrades.md

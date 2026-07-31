@@ -19,6 +19,7 @@ DOCS = ROOT / "docs"
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from enrichment import banks_cicd_git_docker_aws as banks_b  # noqa: E402
+from enrichment import banks_jenkins as banks_j  # noqa: E402
 from enrichment import banks_k8s_tf_helm as banks_a  # noqa: E402
 from enrichment.formatters import interview_body, lab_body, bash  # noqa: E402
 
@@ -32,6 +33,7 @@ PRIORITY = [
     "git",
     "docker",
     "aws",
+    "jenkins",
 ]
 
 GENERIC_IQ = re.compile(
@@ -109,14 +111,14 @@ def lab_dir_for(tech: str, slug: str, existing_lab: str, fm: str) -> str:
 
 
 def lookup_lab(tech: str, slug: str, title: str, lab_dir: str) -> str | None:
-    for mod in (banks_a, banks_b):
+    for mod in (banks_a, banks_b, banks_j):
         if tech in mod.supported_techs():
             return mod.lab_for(tech, slug, title, lab_dir)
     return None
 
 
 def lookup_iq(tech: str, slug: str, title: str) -> str | None:
-    for mod in (banks_a, banks_b):
+    for mod in (banks_a, banks_b, banks_j):
         if tech in mod.supported_techs():
             return mod.interview_for(tech, slug, title)
     return None
