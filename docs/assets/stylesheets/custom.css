@@ -1834,6 +1834,33 @@ body[data-md-color-scheme="slate"] {
   flex-wrap: wrap;
 }
 
+/* Legal links under copyright */
+.rebash-footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.rebash-footer-legal a {
+  color: var(--md-footer-fg-color--lighter, inherit);
+  text-decoration: none;
+}
+
+.rebash-footer-legal a:hover,
+.rebash-footer-legal a:focus-visible {
+  color: var(--md-footer-fg-color, inherit);
+  text-decoration: underline;
+}
+
+.rebash-footer-legal__sep {
+  opacity: 0.55;
+  user-select: none;
+}
+
 /* Architecture diagrams — rounded frame hugs content, not the full column */
 .md-typeset .mermaid,
 .md-typeset figure.rebash-diagram {

@@ -1,0 +1,23 @@
+{#-
+  REBASH Academy: copyright row plus legal footer links.
+-#}
+<div class="md-copyright">
+  {% if config.copyright %}
+    <div class="md-copyright__highlight">
+      {{ config.copyright }}
+    </div>
+  {% endif %}
+  <nav class="rebash-footer-legal" aria-label="Legal">
+    <a href="{{ 'legal/privacy-policy/' | url }}">Privacy Policy</a>
+    <span class="rebash-footer-legal__sep" aria-hidden="true">·</span>
+    <a href="{{ 'legal/terms-and-conditions/' | url }}">Terms &amp; Conditions</a>
+    <span class="rebash-footer-legal__sep" aria-hidden="true">·</span>
+    <a href="{{ 'legal/disclaimer/' | url }}">Disclaimer</a>
+  </nav>
+  {% if not config.extra.generator == false %}
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  {% endif %}
+</div>
