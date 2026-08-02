@@ -1,0 +1,41 @@
+# Networking glossary
+
+Curated terms for the REBASH Networking course book.
+
+- **ACL** — Access Control List; permit/deny rules on firewalls, routers, or security groups.
+- **ARP** — Address Resolution Protocol; maps an IPv4 address to a MAC address on a LAN.
+- **ASN** — Autonomous System Number; identity of a network on the public Internet (BGP).
+- **BGP** — Border Gateway Protocol; routing protocol between autonomous systems.
+- **CIDR** — Classless Inter-Domain Routing; prefix notation such as `10.0.0.0/24`.
+- **DHCP** — Dynamic Host Configuration Protocol; assigns IP address, gateway, and DNS to clients.
+- **DNS** — Domain Name System; maps names to addresses (and other records).
+- **egress** — Traffic leaving a network, VPC, or host toward an outside destination.
+- **firewall** — Filter that allows or denies traffic by policy (host or network).
+- **gateway** — Next hop that forwards traffic out of a subnet (default route).
+- **HTTP / HTTPS** — Application protocols for the web; HTTPS adds TLS encryption.
+- **ICMP** — Internet Control Message Protocol; used by tools such as `ping` and some path errors.
+- **ingress** — Traffic entering a network, VPC, service, or Kubernetes Ingress resource.
+- **IP** — Internet Protocol; addressing and forwarding at the network layer (IPv4/IPv6).
+- **LAN** — Local Area Network; typically a switched Ethernet segment or VLAN.
+- **latency** — Time delay for a packet or request to travel (one-way or round-trip).
+- **load balancer** — Distributes connections or requests across multiple backends.
+- **MAC address** — Hardware address on an Ethernet interface (Layer 2).
+- **MTU** — Maximum Transmission Unit; largest packet/frame payload a link accepts.
+- **NAT** — Network Address Translation; rewrites addresses/ports (often private to public).
+- **OSI model** — Seven-layer reference model for describing network functions.
+- **packet** — Unit of data at the network/transport stack (context-dependent).
+- **port** — 16-bit transport endpoint number used by TCP and UDP.
+- **reverse proxy** — Proxy that terminates client traffic and forwards to upstream servers.
+- **route** — Rule that decides the next hop for a destination prefix.
+- **RTT** — Round-Trip Time; latency for a request and its response.
+- **security group** — Cloud firewall rules attached to instances or ENIs (vendor term).
+- **subnet** — Contiguous block of addresses within a larger network or VPC.
+- **TCP** — Transmission Control Protocol; reliable, connection-oriented transport.
+- **TLS** — Transport Layer Security; encrypts application traffic (HTTPS, and others).
+- **TTL** — Time To Live; hop limit on IP packets, or cache lifetime on DNS records.
+- **UDP** — User Datagram Protocol; connectionless transport without built-in reliability.
+- **VLAN** — Virtual LAN; Layer-2 segmentation on a switched network.
+- **VPC** — Virtual Private Cloud; isolated virtual network in a cloud provider.
+- **VPN** — Virtual Private Network; encrypted tunnel between networks or users.
+- **VXLAN** — Virtual Extensible LAN; overlay encapsulation common in cloud and Kubernetes.
+- **WAN** — Wide Area Network; links sites or regions across longer distances.

@@ -53,6 +53,8 @@ comments: false
 
 
 
+
+
 Design a production-ready Amazon Web Services (AWS) **landing zone**: multi-account layout with AWS Organizations, guardrails, tagging standards, operational excellence habits, and security automation that scales with teams.
 
 A landing zone is the *foundational* cloud environment — accounts, identity, networking, logging, and security baselines — onto which product teams deploy workloads. One shared “everything” account collapses under audit and blast-radius pressure. Production AWS means **separation of duties**, automated compliance, and boring, repeatable account vending.
@@ -62,9 +64,9 @@ A landing zone is the *foundational* cloud environment — accounts, identity, n
 
 This is a core tutorial in **Module 15 · Production AWS** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -73,9 +75,9 @@ This is a core tutorial in **Module 15 · Production AWS** of the REBASH Academy
 - [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
 - [AWS Security Services](aws-security-services.md) and [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -88,9 +90,9 @@ By the end of this tutorial, you will be able to:
 - [ ] List operational excellence practices (runbooks, IaC, small reversible change)  
 - [ ] Outline security best practices and automation (baselines, Config, Security Hub, EventBridge)
 
-
-
 ## Architecture
+
+
 
 
 
@@ -99,9 +101,9 @@ This topic’s control points and relationships are shown below.
 
 ![Landing zone / multi-account](../assets/excalidraw/aws-landing-zone.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -177,47 +179,98 @@ Platform and DevSecOps win when engineers self-serve into safe defaults. One fla
 - No account factory → immediate baseline drift.
 - “Temporary” shared workload accounts that become permanent.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **Production AWS Landing Zones** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-15`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-15 && cd ~/rebash-aws/module-15
 ```
 
-**Focus:** inspect Organisations layout when permitted; document OU intent
+### Real-world scenario
 
-### Step 1 – Org read-only probe
+Security asks for evidence that **Production AWS Landing Zones** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
-aws organizations describe-organization 2>/dev/null || echo "No org access — use notes path"
-aws organizations list-accounts --query 'Accounts[].{Id:Id,Name:Name}' --output table 2>/dev/null || true
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Step 2 – Landing zone sketch
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-cat > landing-zone.md << 'EOF'
-OUs: Security, Infrastructure, Sandbox, Workloads
-Security account: Log Archive, Audit
-SCP: deny leave org, deny disable CloudTrail
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
+cat notes.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -227,9 +280,9 @@ EOF
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -244,9 +297,9 @@ Production practice for **Production AWS Landing Zones** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -257,9 +310,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -273,9 +326,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -286,9 +339,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -301,18 +354,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Production AWS Landing Zones** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. What accounts belong in a security OU?
@@ -327,9 +380,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Separate duties across accounts and keep break-glass credentials offline with dual control.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -337,9 +390,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Troubleshooting AWS](troubleshooting-aws.md)
 
-
-
 ## References
+
+
 
 
 

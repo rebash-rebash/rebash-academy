@@ -161,10 +161,20 @@ See the public **[Roadmap](../roadmap.md)** for what is published versus planned
 
 ## About the author
 
+![Shaik Khadar Basha](../assets/images/authors/shaik-khadar-basha.jpg){ width="160" }
+
+**Shaik Khadar Basha** — Cloud & Platform Architect · Founder, REBASH Academy
+
+Cloud & Platform Architect with more than a decade of experience designing, automating, and operating cloud-native platforms across Amazon Web Services (AWS), Google Cloud Platform (GCP), Microsoft Azure, Kubernetes, Terraform, DevSecOps, platform engineering, and AI infrastructure.
+
+He currently works as Cloud Architect at BreachLock Inc in Hyderabad, leading delivery across engineering teams that build secure, cloud-native applications. Earlier roles at Wipro, Unisys, Orcapod, Nyletech Solutions, and Netskope covered observability, continuous integration and continuous delivery (CI/CD), Infrastructure as Code (IaC), and SaaS security.
+
+Credentials include Red Hat Certified Engineer (RHCE), Red Hat Certified System Administrator (RHCSA), Oracle Cloud Infrastructure Architect Associate, ISO 27001 Cyber Security Expert, and Certified Ethical Hacker (CEH). Education: Master's in Computer Science (JNTUK) and Bachelor's in Mathematics (Acharya Nagarjuna University).
+
 | | |
 |--|--|
 | **Name** | Shaik Khadar Basha |
-| **Role** | Founder · DevOps and Cloud engineer |
+| **Role** | Cloud & Platform Architect · Founder, REBASH Academy |
 | **Focus** | Hands-on platform skills — Linux, Kubernetes, Terraform, CI/CD, and cloud operations |
 | **LinkedIn** | [shaikkhadarbasha](https://www.linkedin.com/in/shaikkhadarbasha/) |
 | **GitHub** | [rebash-rebash/rebash-academy](https://github.com/rebash-rebash/rebash-academy) |

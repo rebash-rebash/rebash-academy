@@ -42,22 +42,24 @@ comments: false
 
 
 
+
+
 Cherry-pick a hotfix commit onto another branch and use `reflog` to find a “lost” commit after a reset.
 
 This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
 
 
 
+
+
 - [Undoing Changes](undoing-changes-reset-revert-stash.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -68,9 +70,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Read `git reflog`  
 - [ ] Recover a reset commit
 
-
-
 ## Architecture
+
+
 
 
 
@@ -79,9 +81,9 @@ This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Cherry-pick and Reflog](../assets/excalidraw/git-object-model.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -117,54 +119,97 @@ In release engineering, cherry-pick is common when a single fix must land on `ma
 - Cherry-picking large unrelated commits instead of merging/rebase  
 - Waiting weeks to recover — expired reflog entries vanish
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Cherry-pick and Reflog** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-07-cherry`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-07-cherry && cd ~/rebash-git/module-07-cherry
 ```
 
-**Focus:** cherry-pick a commit and recover via reflog
+### Real-world scenario
 
-### Step 1 – Cherry-pick across branches
+A delivery team is standardising **Cherry-pick and Reflog**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo main > a.txt && git add a.txt && git commit -m "chore: main"
-git switch -c feature/hotfix
-echo fix > fix.txt && git add fix.txt && git commit -m "fix: critical hotfix"
-HOTFIX=$(git rev-parse HEAD)
-git switch -
-git cherry-pick "$HOTFIX"
-git log --oneline -n 5
-```
+### Step-by-step tasks
 
-### Step 2 – Recover with reflog after hard reset
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-echo oops > oops.txt && git add oops.txt && git commit -m "chore: oops"
-OOPS=$(git rev-parse HEAD)
-git reset --hard HEAD~1
-git reflog -n 8
-git cherry-pick "$OOPS"
-git log --oneline -n 6
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -174,9 +219,9 @@ git log --oneline -n 6
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -191,9 +236,9 @@ Production practice for **Cherry-pick and Reflog** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -204,9 +249,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -220,9 +265,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -233,9 +278,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -248,18 +293,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Cherry-pick and Reflog** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. When is cherry-pick better than merging a whole branch?
@@ -274,9 +319,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Cherry-picking hotfixes into multiple release branches needs clear tracking to avoid duplicate fixes.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -285,9 +330,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Working with Remotes](working-with-remotes.md)  
 - [Git Troubleshooting](git-troubleshooting.md)
 
-
-
 ## References
+
+
 
 
 

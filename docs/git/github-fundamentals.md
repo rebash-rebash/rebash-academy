@@ -41,15 +41,17 @@ comments: false
 
 
 
+
+
 Use GitHub as the collaboration hub: repos, settings, Issues, Releases — and know where security and Actions settings live.
 
 Git is the tool; **GitHub** (or GitLab) is where teams review, track work, and ship. DevOps owns templates, permissions, and release artefacts.
 
 This is a core tutorial in **Module 9 · GitHub Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -57,9 +59,9 @@ This is a core tutorial in **Module 9 · GitHub Fundamentals** of the REBASH Aca
 - [Working with Remotes](working-with-remotes.md)
 - GitHub account (free tier OK)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -72,9 +74,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Publish a Release from a tag  
 - [ ] Use Wikis carefully (prefer docs-as-code in-repo)
 
-
-
 ## Architecture
+
+
 
 
 
@@ -83,9 +85,9 @@ This topic’s control points and relationships are shown below.
 
 ![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -124,60 +126,97 @@ Repositories live under a user or organisation. The **default branch** (usually 
 - Leaving Actions enabled on repos that should not run untrusted workflows  
 - Ignoring organisation-required two-factor authentication (2FA)
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **GitHub Fundamentals** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-09`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-09 && cd ~/rebash-git/module-09
 ```
 
-**Focus:** model a fork/PR workflow locally with two remotes
+### Real-world scenario
 
-### Step 1 – Upstream + fork remotes
+A delivery team is standardising **GitHub Fundamentals**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-mkdir -p upstream.git fork.git
-git init --bare upstream.git
-git init --bare fork.git
-git clone upstream.git product
-cd product
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo "api" > README.md
-git add README.md && git commit -m "chore: readme"
-git push origin HEAD
-git remote add fork ../fork.git
-git push fork HEAD
-git remote -v
-```
+### Step-by-step tasks
 
-### Step 2 – Feature branch ready for PR
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-cd product
-git switch -c feature/docs
-echo "more" >> README.md
-git add README.md && git commit -m "docs: expand readme"
-git push -u fork HEAD
-git log --oneline --decorate -n 5
-cat > pr-notes.md << 'EOF'
-Open a Pull Request from fork/feature/docs into upstream/main
-EOF
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -187,9 +226,9 @@ EOF
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -204,9 +243,9 @@ Production practice for **GitHub Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -217,9 +256,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -233,9 +272,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -246,9 +285,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -261,18 +300,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **GitHub Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Fork versus branch in the same remote?
@@ -287,9 +326,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Enable branch protection, 2FA, and secret scanning.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -297,9 +336,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 
-
-
 ## References
+
+
 
 
 

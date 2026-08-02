@@ -1,23 +1,19 @@
 ---
 title: "CLI Applications — argparse, Click, and Typer"
-description: "Build operator-friendly CLIs with argparse, Click, and Typer — including Rich output, progress bars, and clean exit codes for DevOps tools."
+description: "Build an operator-friendly DevOps CLI with argparse or Typer — subcommands, --help, and CI-friendly exit codes."
 difficulty: intermediate
-estimated_time: "50–65 min"
-technology: python
+estimated_time: "50–60 min"
+author: Shaik Basha
+last_updated: "2026-08-02"
 category: python
+technology: python
 module: "Module 12 · CLI Applications"
-career_paths:
-  - beginner
-  - devops-engineer
-  - cloud-engineer
-  - platform-engineer
-  - site-reliability-engineer
-skills:
+tags:
   - python
+  - cli
   - argparse
-  - click
   - typer
-  - rich
+  - click
 prerequisites:
   - python/configuration-management-and-secrets
 next:
@@ -25,280 +21,437 @@ next:
 related:
   - python/functions-parameters-and-scope
   - python/packaging-pyproject-and-wheels
-labs: []
+  - projects/python-infra-inventory-cli
 projects:
   - projects/python-infra-inventory-cli
 interview: interview/python
-certifications:
-  - PCAP
-tags:
-  - python
-  - cli
-  - argparse
-  - typer
-  - click
-author: Shaik Basha
-last_updated: "2026-07-31"
 comments: false
 ---
-
 
 # CLI Applications — argparse, Click, and Typer
 
 ## Overview
 
-Ship a small ops CLI with subcommands, `--dry-run`, clear help text, Rich-friendly output, and exit codes that CI can trust.
+DevOps tools are Command-Line Interfaces (CLIs) first. A good ops CLI has clear **`--help`**, **subcommands** for different jobs, honest **exit codes** for Continuous Integration (CI), and a habit of sending human messages to stderr while keeping stdout free for data.
 
-DevOps tools are CLIs first. **argparse** is stdlib and enough for many wrappers. **Click** and **Typer** speed up subcommands and help. Keep stdout for data and stderr for humans.
+**argparse** is in the Python standard library and is enough for many wrappers. **Click** and **Typer** reduce boilerplate for larger command trees and type-driven help. Rich can add tables and progress bars when you need them — keep it optional so thin environments still work.
 
-Complete [Configuration Management and Secrets](configuration-management-and-secrets.md) first. Diagrams use Excalidraw only.
-
-This is a core tutorial in **Module 12 · CLI Applications** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 12** in **Module 12: CLI Applications** of the REBASH Academy **Python for Cloud & DevOps Engineers** series. It is written for DevOps, Cloud, Platform, and Site Reliability Engineering (SRE) engineers. By the end, you will ship a small inventory CLI with `check` and `list` under `~/rebash-python/lab12`.
 
 ## Prerequisites
 
-### Required
-
 - [Configuration Management and Secrets](configuration-management-and-secrets.md)
-- Project venv with Python 3.12+
+- Python 3.12+ with a project virtual environment (venv)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Build a CLI with argparse (flags, subcommands)  
-- [ ] Contrast argparse vs Click vs Typer  
-- [ ] Add `--dry-run` as a keyword-safe default  
-- [ ] Use Rich for tables/progress (optional dependency)  
+- [ ] Build a CLI with argparse (flags and subcommands)
+- [ ] Contrast argparse vs Click vs Typer for ops tools
+- [ ] Implement `--help`, `check`, and `list` behaviours
 - [ ] Return meaningful exit codes from `main`
+- [ ] Keep stdout/stderr roles clear for CI pipelines
 
 ## Architecture
 
-This topic’s control points and relationships are shown below.
+The user invokes a command. The CLI parser selects a subcommand. Business logic runs. Exit codes and streams tell CI and operators what happened.
 
-![CLI applications](../assets/excalidraw/python-cli-apps.svg)
+![Architecture diagram for Python CLI applications](../assets/excalidraw/python-cli-apps.svg)
 
 ## Theory
 
 ### What it is
 
-A Command-Line Interface (CLI) is how operators run your automation: flags, subcommands, help text, and exit codes. Python’s stdlib **`argparse`** builds parsers by hand. **Click** uses decorators for groups and options. **Typer** builds on Click with type hints — a strong default for new internal tools. **Rich** (optional) adds tables and progress for humans, not for machine-readable pipes.
+A **CLI** parses `sys.argv`, runs a function, and exits with a status code.
 
-### Why it matters
-
-DevOps tools are invoked by humans and by CI. Clear `--help`, predictable exit codes, and a default **dry-run** with explicit `--apply` prevent accidental deletes. Choosing a framework early keeps flag names and JSON-vs-human output consistent across your inventory, SSH, and cloud scripts.
-
-### How it works
-
-Define arguments (paths, booleans, choices), parse `sys.argv`, then call `main()` that returns an integer exit code. Pattern: dry-run on by default; `--apply` enables mutation. Print human summaries to stderr or a TTY; print JSON to stdout when `--format json` so scripts can pipe. Typer maps annotated parameters to options automatically; Click is similar with more explicit decorators. Use Rich only when stdout is interactive — never colourise JSON meant for `jq`.
+**argparse** example shape:
 
 ```python
 import argparse
-parser = argparse.ArgumentParser(description="Inventory helper")
-parser.add_argument("--dry-run", action="store_true", default=True)
-parser.add_argument("--apply", action="store_true", help="disable dry-run")
+
+parser = argparse.ArgumentParser(prog="inv")
+sub = parser.add_subparsers(dest="command", required=True)
+sub.add_parser("list", help="list hosts")
+p_check = sub.add_parser("check", help="check inventory file")
+p_check.add_argument("--path", required=True)
+args = parser.parse_args()
 ```
+
+**Click** uses decorators for commands and options. **Typer** builds on type hints and feels natural with modern Python. All three should expose `--help` and support subcommands.
+
+**Exit codes:** `0` success; non-zero for usage errors, missing files, or failed checks. Document them.
+
+**Streams:** stdout for machine-readable output; stderr for logs and errors. Add `--dry-run` when a command would change systems.
+
+### Why it matters
+
+CI calls your tool non-interactively. If `--help` is broken, onboarding fails. If every failure exits `0`, pipelines stay green. If logs go to stdout, `tool | jq` breaks.
+
+### How it works
+
+1. **Define the parser** — program name, description, subcommands.  
+2. **Parse args** — fail with usage on bad input (usually exit `2` for argparse).  
+3. **Dispatch** — call `list_cmd` / `check_cmd`.  
+4. **Return int** from `main` and `raise SystemExit(main())`.  
+5. **Grow** — move to Click/Typer when the command tree hurts in argparse.  
+
+| Library | Pros | Cons |
+|---------|------|------|
+| argparse | Stdlib, no deps | Verbose for large trees |
+| Click | Mature, many plugins | Extra dependency |
+| Typer | Type hints, fast to write | Extra dependency; teach the team |
 
 ### Key concepts and comparisons
 
-| Framework | Pros | Trade-off |
-|-----------|------|-----------|
-| argparse | Stdlib, no deps | More boilerplate |
-| Click | Mature, groups | Slightly more ceremony |
-| Typer | Type hints → CLI | Extra dependency |
-
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Operational failure |
-| 2 | Usage / bad arguments |
+| Feature | Why operators care |
+|---------|--------------------|
+| `--help` | Discover flags without reading source |
+| Subcommands | `check` vs `list` vs `apply` |
+| Exit codes | CI pass/fail |
+| `--dry-run` | Safe preview of changes |
+| Rich (optional) | Readable tables; keep optional |
 
 ### Common pitfalls
 
-- Defaulting to apply/mutate instead of dry-run.  
-- Mixing JSON and banners on the same stdout stream.  
-- Exit code 0 on partial failure (CI thinks green).  
-- Required secrets as positional args (visible in `ps` / history).  
-- Huge dependency trees for a ten-line wrapper — argparse is enough.
+- Forgetting `required=True` on subparsers (Python 3.7+ supports it).
+- Printing errors to stdout.
+- Catching all exceptions and exiting 0.
+- Building Click/Typer apps that cannot run without Rich in minimal images.
+- Hiding the real failure behind a generic “error” with no path or host name.
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for CLI Applications — argparse, Click, and Typer
+### Objective
+
+Build an inventory CLI (`invcli.py`) with argparse: `--help`, subcommands `list` and `check`, and distinct exit codes. Prove help text and both subcommands. Workspace: `~/rebash-python/lab12`.
+
+### Prerequisites
+
+- Python 3.12+ (argparse is standard library)
+- Write access under your home directory
+
+### Lab environment
+
+Workspace: `~/rebash-python/lab12`
 
 ```bash
-mkdir -p ~/rebash-python/module-12
-cd ~/rebash-python/module-12
-
+mkdir -p ~/rebash-python/lab12 && cd ~/rebash-python/lab12
+set -euo pipefail
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install 'typer==0.15.1' 'rich==13.9.4'
+python -c "import argparse; print('ok')"
 ```
 
-### Step 1 – argparse inventory CLI
+**Expected output:** `ok`
+
+### Real-world scenario
+
+Your team wants a tiny inventory helper for CI: `list` prints host names from a CSV, and `check` validates that the file exists and has at least one data row. The pipeline must fail with a non-zero exit when the file is missing or empty.
+
+### Step-by-step tasks
+
+#### Task 1 – Sample inventory and CLI skeleton
 
 ```bash
-cd ~/rebash-python/module-12
+cd ~/rebash-python/lab12
+set -euo pipefail
 source .venv/bin/activate
 
-cat > inv_argparse.py << 'EOF'
-#!/usr/bin/env python3
+mkdir -p data
+cat > data/hosts.csv << 'EOF'
+name,env,ip
+web-01,prod,10.0.1.11
+web-02,prod,10.0.1.12
+db-01,prod,10.0.2.11
+EOF
+
+cat > invcli.py << 'PY'
 from __future__ import annotations
 
 import argparse
-import json
+import csv
 import sys
+from pathlib import Path
 
-HOSTS = [{"name": "web-a", "ip": "10.0.1.10"}, {"name": "web-b", "ip": "10.0.1.11"}]
+
+def cmd_list(path: Path) -> int:
+    if not path.is_file():
+        print(f"missing inventory: {path}", file=sys.stderr)
+        return 2
+    with path.open(encoding="utf-8", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    for row in rows:
+        print(row["name"])
+    return 0
+
+
+def cmd_check(path: Path) -> int:
+    if not path.is_file():
+        print(f"missing inventory: {path}", file=sys.stderr)
+        return 2
+    with path.open(encoding="utf-8", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    if not rows:
+        print(f"empty inventory: {path}", file=sys.stderr)
+        return 3
+    required = {"name", "env", "ip"}
+    missing = required - set(rows[0].keys())
+    if missing:
+        print(f"missing columns: {sorted(missing)}", file=sys.stderr)
+        return 3
+    print(f"ok hosts={len(rows)}", file=sys.stderr)
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="invcli",
+        description="Small inventory CLI for REBASH lab12",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_list = sub.add_parser("list", help="list host names")
+    p_list.add_argument(
+        "--path",
+        type=Path,
+        default=Path("data/hosts.csv"),
+        help="path to inventory CSV",
+    )
+
+    p_check = sub.add_parser("check", help="validate inventory CSV")
+    p_check.add_argument(
+        "--path",
+        type=Path,
+        default=Path("data/hosts.csv"),
+        help="path to inventory CSV",
+    )
+    return parser
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Tiny inventory CLI")
-    sub = p.add_subparsers(dest="cmd", required=True)
-    list_p = sub.add_parser("list", help="list hosts")
-    list_p.add_argument("--format", choices=("table", "json"), default="table")
-    args = p.parse_args(argv)
-    if args.cmd == "list":
-        if args.format == "json":
-            print(json.dumps(HOSTS))
-        else:
-            for h in HOSTS:
-                print(f"{h['name']:8} {h['ip']}", file=sys.stderr)
-            print(json.dumps([h["name"] for h in HOSTS]))
-    return 0
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    path: Path = args.path
+    if args.command == "list":
+        return cmd_list(path)
+    if args.command == "check":
+        return cmd_check(path)
+    print("unknown command", file=sys.stderr)
+    return 1
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
-
-python inv_argparse.py list --format json
-python inv_argparse.py list --format table
-```
-
-### Step 2 – Typer + dry-run
-
-```bash
-cat > inv_typer.py << 'EOF'
-#!/usr/bin/env python3
-from __future__ import annotations
-
-import typer
-
-app = typer.Typer(help="Inventory CLI (Typer)")
-
-
-@app.command()
-def delete(
-    name: str,
-    apply: bool = typer.Option(False, "--apply", help="actually delete"),
-) -> None:
-    """Delete a host record (lab stub)."""
-    if not apply:
-        typer.secho(f"DRY-RUN delete {name}", err=True)
-        raise typer.Exit(code=0)
-    typer.secho(f"DELETED {name}", err=True)
-    raise typer.Exit(code=0)
-
-
-if __name__ == "__main__":
-    app()
-EOF
-
-python inv_typer.py delete web-a
-python inv_typer.py delete web-a --apply
-```
-
-### Step 3 – Rich progress (optional feel)
-
-```bash
-python - <<'PY'
-from rich.progress import track
-import time
-for _ in track(range(5), description="scanning"):
-    time.sleep(0.05)
 PY
+```
+
+**Expected output:** `data/hosts.csv` and `invcli.py` exist.
+
+#### Task 2 – Prove --help and happy-path subcommands
+
+```bash
+cd ~/rebash-python/lab12
+set -euo pipefail
+source .venv/bin/activate
+
+python invcli.py --help | tee help-main.txt
+grep -E 'list|check' help-main.txt
+
+python invcli.py list --help | tee help-list.txt
+grep -F '--path' help-list.txt
+
+python invcli.py check --help | tee help-check.txt
+grep -F '--path' help-check.txt
+
+python invcli.py list --path data/hosts.csv | tee list-out.txt
+test "$(wc -l < list-out.txt | tr -d ' ')" -eq 3
+
+python invcli.py check --path data/hosts.csv 2>check-ok.txt
+test "$(python invcli.py check --path data/hosts.csv >/dev/null; echo $?)" -eq 0
+grep -F 'ok hosts=3' check-ok.txt
+```
+
+**Expected output:** Help mentions `list` and `check`; list prints three names; check exits 0 with `ok hosts=3` on stderr.
+
+#### Task 3 – Prove failure exit codes
+
+```bash
+cd ~/rebash-python/lab12
+set -euo pipefail
+source .venv/bin/activate
+
+set +e
+python invcli.py check --path data/missing.csv 2>check-missing.err
+code_missing=$?
+set -e
+test "$code_missing" -eq 2
+grep -F 'missing inventory' check-missing.err
+
+: > data/empty.csv
+printf 'name,env,ip\n' > data/empty.csv
+set +e
+python invcli.py check --path data/empty.csv 2>check-empty.err
+code_empty=$?
+set -e
+test "$code_empty" -eq 3
+grep -F 'empty inventory' check-empty.err
+
+echo "exit-codes missing=$code_missing empty=$code_empty" | tee task3-ok.txt
+```
+
+**Expected output:** Missing file → exit 2; header-only CSV → exit 3; `task3-ok.txt` records both codes.
+
+### Validation steps
+
+- [ ] `python invcli.py --help` shows `list` and `check`
+- [ ] `list` prints three host names to stdout
+- [ ] `check` succeeds (exit 0) on `data/hosts.csv`
+- [ ] Missing file exits 2; empty inventory exits 3
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `the following arguments are required: command` | No subcommand | Pass `list` or `check` |
+| Exit 0 on failure | Forgot `return` / `SystemExit` | Return non-zero from `main` |
+| Names mixed with logs | Printed status on stdout | Use stderr for status (`check`) |
+| Wrong default path | Ran outside lab dir | Pass `--path` explicitly |
+
+### Challenge exercise
+
+Add a Typer (or Click) alternative `invcli_typer.py` with the same `list` and `check` subcommands and the same exit codes. Prove `python invcli_typer.py --help` works after `pip install typer`. Keep argparse `invcli.py` as the primary lab artefact.
+
+Example install:
+
+```bash
+python -m pip install 'typer>=0.12'
+```
+
+### Learning outcomes
+
+- Built argparse subcommands with `--help`
+- Separated stdout data from stderr status
+- Proved CI-friendly exit codes for missing and empty inventory
+
+### Cleanup
+
+```bash
+cd ~/rebash-python/lab12
+set -euo pipefail
+# rm -rf .venv __pycache__ data *.py *.txt *.err
+deactivate 2>/dev/null || true
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/module-12/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-python/lab12/`
+- [ ] You can explain argparse vs Typer trade-offs
+- [ ] You document exit codes for operators
+- [ ] You know why `--dry-run` matters for mutating commands
 
 ## Code Walkthrough
 
-Production practice for **CLI Applications — argparse, Click, and Typer** always combines:
+Production habits for CLIs:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Help first** — every subcommand usable from `--help` alone  
+2. **Subcommands by verb** — `check`, `list`, `apply`  
+3. **Exit codes** — stable numbers documented in README  
+4. **stderr vs stdout** — never break pipes  
+5. **Grow dependencies carefully** — argparse until Click/Typer pays for itself  
 
 ## Security Considerations
 
-- Treat credentials and tokens for python as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Prefer env for secrets (argv is visible in `ps`)
+- Validate `--path` under an allowed directory when the tool is privileged
+- Avoid interactive prompts in CI
+- Avoid `shell=True` wrappers behind CLI args
+- Prefer `--dry-run` for destructive commands when practical
 
 ## Common Mistakes
 
-!!! warning "Defaulting to apply/mutate instead of dry-run.  "
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "One giant script with no subcommands"
+    Flags collide and help becomes hard to read. **Fix:** subcommands per verb.
 
-!!! warning "Mixing JSON and banners on the same stdout stream.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Exiting 0 after printing an error"
+    CI stays green. **Fix:** `return 2` / `raise SystemExit(code)`.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Required Rich for basic --help"
+    Thin images fail. **Fix:** optional pretty output; core path stdlib-only when possible.
+
+!!! warning "Secrets as CLI flags"
+    Visible in process lists and shell history. **Fix:** environment variables (Module 11).
 
 ## Best Practices
 
-- Encode CLI Applications — argparse, Click, and Typer changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- `prog` name matches the console script you will ship later  
+- Prefer keyword flags (`--path`) over many positionals  
+- Add `--dry-run` before any mutate/apply command  
+- Smoke-test that `--help` exits 0  
+- Package with `pyproject.toml` entry points when the tool stabilises  
 
 ## Troubleshooting
 
-| Symptom | Likely cause | What to do |
-|---------|--------------|------------|
-| JSON mixed with tables | Printing both on stdout | Humans → stderr |
-| Accidental delete | No dry-run default | Default safe; require `--apply` |
-| Typer not found | Wrong venv | Activate; reinstall |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Help missing subcommands | Parser misbuilt | Use `add_subparsers` |
+| Argparse exits 2 on bad args | Expected for usage errors | Document; do not hide |
+| `list` empty | Wrong CSV path / cwd | Pass absolute `--path` |
+| Typer not found | Dep not installed | `pip install typer` in venv |
+| CI cannot parse output | Logs on stdout | Move status to stderr |
 
 ## Summary
 
-- argparse for stdlib CLIs; Typer/Click for richer tools  
-- Dry-run by default for mutating commands  
-- Exit codes and stdout/stderr discipline
+Operator-friendly CLIs need discoverable help, clear subcommands, and honest exit codes. Start with argparse; move to Click or Typer when the command tree grows. Next, drive Linux tools safely in [Linux Automation — subprocess and psutil](linux-automation-subprocess-and-psutil.md).
 
 ## Interview Questions
 
-1. How does **CLI Applications — argparse, Click, and Typer** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. When do you choose argparse over Typer or Click?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    Choose **argparse** when you want zero third-party dependencies and a small command surface. Choose **Typer/Click** when you have many subcommands, want type-driven options, or faster iteration. Explain the trade-off: stdlib stability vs developer speed.
+
+**2. Why do exit codes matter for a DevOps CLI?**
+
+??? success "Reveal answer"
+    CI and shell scripts use the process exit status to decide pass/fail. Exit `0` means success. Non-zero must mean failure modes you document (missing file, validation error). Tools that print errors but exit 0 cause false greens.
+
+**3. How should stdout and stderr be used in an ops tool?**
+
+??? success "Reveal answer"
+    **stdout** for data that may be piped (`list` of names, JSON). **stderr** for human status, logs, and errors. That way `invcli list | wc -l` stays reliable.
+
+**4. What belongs in `--help` for a production CLI?**
+
+??? success "Reveal answer"
+    Short description, subcommands, important flags, and examples of safe usage. Operators should not need to open the source. Mention exit codes in README or extended help when they are part of the contract.
+
+**5. How do you add a destructive `apply` command safely?**
+
+??? success "Reveal answer"
+    Require an explicit subcommand, support `--dry-run` (prefer dry-run default or confirmation for high risk), log what would change, and keep secrets out of argv. Test the dry-run path in CI.
+
+**6. Argparse gives exit code 2 on bad usage. How do you handle that in tests?**
+
+??? success "Reveal answer"
+    Treat usage errors as expected failures. In unit tests, call `main([...])` and assert the return code, or use `pytest.raises(SystemExit)` carefully. Do not wrap `parse_args` in a bare except that forces exit 0.
+
+**7. How would you evolve this lab CLI toward a packaged tool?**
+
+??? success "Reveal answer"
+    Keep `main()` importable, add tests for help/list/check, then declare a console script entry point in `pyproject.toml`. Stable exit codes and `--help` become part of the public interface.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [Linux Automation — subprocess and psutil](linux-automation-subprocess-and-psutil.md)
+- [Python for Cloud & DevOps – Overview](index.md)
+- [Configuration Management and Secrets](configuration-management-and-secrets.md) *(previous)*
+- [Linux Automation — subprocess and psutil](linux-automation-subprocess-and-psutil.md) *(next)*
+- [Functions — Parameters and Scope](functions-parameters-and-scope.md)
+- [Packaging — pyproject.toml and Wheels](packaging-pyproject-and-wheels.md)
 
 ## References
 
-- [argparse](https://docs.python.org/3/library/argparse.html)  
-- [Typer](https://typer.tiangolo.com/)  
-- [Click](https://click.palletsprojects.com/)  
-- [Rich](https://rich.readthedocs.io/)
+- [argparse — Parser for command-line options](https://docs.python.org/3/library/argparse.html) — Python docs  
+- [Typer documentation](https://typer.tiangolo.com/) — Typer  
+- [Click documentation](https://click.palletsprojects.com/) — Click  
+- Track index: [Python for Cloud & DevOps Engineers](index.md)

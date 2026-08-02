@@ -41,13 +41,13 @@ comments: false
 
 
 
+
+
 Author a `compose.yaml` with services, a shared network, a volume, environment variables, and a health check — then bring the stack up and down.
 
 **Compose** declares multi-container apps as code. Ideal for local DevOps stacks and simple single-host deploys before Kubernetes.
 
 This is a core tutorial in **Module 9 · Docker Compose** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
@@ -55,11 +55,13 @@ This is a core tutorial in **Module 9 · Docker Compose** of the REBASH Academy 
 
 
 
+
+
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Use profiles for optional services  
 - [ ] `compose up` / `down` / `logs`
 
-
-
 ## Architecture
+
+
 
 
 
@@ -85,9 +87,9 @@ This topic’s control points and relationships are shown below.
 
 ![Docker Compose](../assets/excalidraw/docker-compose.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -131,53 +133,104 @@ Keep Compose files readable: one service per concern, explicit image tags or dig
 - Relying on `depends_on` without health conditions  
 - Hard-coding hostpaths that only exist on one laptop
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Docker Compose Fundamentals** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-09`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
 ```
 
-**Focus:** run a two-service Compose stack and tear it down
+### Real-world scenario
 
-### Step 1 – Compose file up
+You are validating **Docker Compose Fundamentals** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+
+### Step-by-step tasks
+
+#### Task 1 – Write Compose file and start stack
+
+Compose is how many teams run multi-container apps locally and in CI.
 
 ```bash
 cat > compose.yaml << 'EOF'
 services:
   web:
     image: nginx:alpine
-    ports: ["18082:80"]
-  redis:
-    image: redis:7-alpine
+    ports: ["18080:80"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 5s
+      retries: 5
 EOF
 docker compose up -d
 docker compose ps
-curl -sI http://127.0.0.1:18082 | head -n 5
-docker compose exec redis redis-cli PING
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
 ```
 
-### Step 2 – Down and remove
+**Expected output:** Service healthy/running; headers show HTTP/1.1 200.
+
+#### Task 2 – Inspect and stop cleanly
+
+Always tear down Compose projects so ports and networks do not leak.
 
 ```bash
-docker compose down -v
-docker compose ps -a
+docker compose logs --tail=20 web | tee compose.log
+docker compose down
+test ! -z "$(cat headers.txt)"
 ```
 
-### Final step – Cleanup note
+**Expected output:** Logs captured; containers removed after down.
+
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
 
 ```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
 docker compose down -v 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -188,9 +241,9 @@ docker compose down -v 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -206,9 +259,9 @@ Production practice for **Docker Compose Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -220,9 +273,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -237,9 +290,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -251,9 +304,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -267,9 +320,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -277,9 +330,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 **Docker Compose Fundamentals** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. What problem does Compose solve locally?
@@ -294,9 +347,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Do not commit .env secrets.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -305,9 +358,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Container Registries and Distribution](container-registries-and-distribution.md)
 
-
-
 ## References
+
+
 
 
 

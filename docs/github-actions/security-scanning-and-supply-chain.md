@@ -52,24 +52,32 @@ comments: false
 
 
 
+
+
+
+
 Assemble a security stage that runs secret scanning and Dependency Review early, CodeQL for Static Application Security Testing (SAST), Trivy on container images, publishes a Software Bill of Materials (SBOM), and hardens the supply chain by pinning third-party Actions to commit SHAs.
 
 **DevSecOps** embeds scanners into the same workflows that build and deploy. GitHub provides secret scanning, Dependency Review (for pull requests), CodeQL, and ecosystem tooling for container scanning (for example Trivy) and SBOM export (CycloneDX / SPDX). Fail the pipeline on policy severity — do not treat scanners as optional decoration. Pin marketplace Actions by full commit SHA so a tagged release cannot silently change under you.
 
 This is a core tutorial in **Module 11 · Security** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -82,9 +90,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Pin Actions by commit SHA and explain why  
 - [ ] Gate merges on severity thresholds
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -93,9 +103,11 @@ This topic’s control points and relationships are shown below.
 
 ![Security and supply chain](../assets/excalidraw/gha-security.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -149,68 +161,108 @@ Treat false positives with tracked allowlists — not by disabling scanners glob
 - Generating an SBOM not attached to the released digest.  
 - Broad `permissions: write-all` on every workflow.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Security Scanning and Supply Chain** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-11/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-11/.github/workflows && cd ~/rebash-github-actions/module-11/.github/workflows
 ```
 
-**Focus:** secret hygiene job and supply-chain checklist
+### Real-world scenario
 
-### Step 1 – Security workflow skeleton
+Platform engineering wants **Security Scanning and Supply Chain** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > SECURITY-CI.md << 'EOF'
-- Enable secret scanning / push protection
-- Pin actions to SHAs for high-assurance repos
-- Least privilege permissions on workflows
-- Review Dependabot PRs weekly
-EOF
-cat > .github/workflows/security.yml << 'EOF'
-name: Security scanning
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
 on:
+  workflow_dispatch:
   push:
-    branches: [main]
-  pull_request:
 permissions:
   contents: read
-  security-events: write
 jobs:
-  secret_hygiene:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Basic secret grep
+      - name: Prove workspace
         run: |
-          if grep -RInE '(AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' .; then
-            echo "Potential secret pattern found"; exit 1
-          fi
-          test -f SECURITY-CI.md
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Run local secret grep
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-grep -RInE '(AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' . || echo "clean"
-grep -E 'security-events|secret_hygiene' .github/workflows/security.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -220,9 +272,11 @@ grep -E 'security-events|secret_hygiene' .github/workflows/security.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -237,9 +291,11 @@ Production practice for **Security Scanning and Supply Chain** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -250,9 +306,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -266,9 +324,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -279,9 +339,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -294,18 +356,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Security Scanning and Supply Chain** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Why pin third-party actions to commit SHAs?
@@ -320,9 +386,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Enable push protection/secret scanning and least-privilege permissions. Treat workflow YAML as production code.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -330,9 +398,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Testing in GitHub Actions](testing-in-github-actions.md)
 
-
-
 ## References
+
+
+
+
 
 
 

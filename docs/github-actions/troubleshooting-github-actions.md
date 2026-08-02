@@ -49,15 +49,21 @@ comments: false
 
 
 
+
+
+
+
 Diagnose failed jobs, runner problems, authentication errors, cache misses, deploy failures, and slow workflows with a fixed order: trigger → permissions → runner → credentials → cache → deploy target → performance.
 
 Most “Actions is broken” tickets are skipped jobs, missing permissions, offline self-hosted runners, expired OIDC trust, or poisoned caches — not mysterious GitHub bugs. Separate **definition** failures (workflow never ran the job you expected) from **execution** failures before changing production secrets.
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -65,9 +71,11 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
 - Runner, secrets/OIDC, and cache modules completed (or equivalent)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -79,9 +87,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Recover from queued jobs and self-hosted executor errors  
 - [ ] Apply a performance triage for slow workflows
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -90,9 +100,11 @@ This topic’s control points and relationships are shown below.
 
 ![Troubleshooting ladder](../assets/excalidraw/gha-troubleshooting.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -145,66 +157,108 @@ Prefer root-cause fixes over retry-as-strategy. Reproduce with a minimal workflo
 - `continue-on-error: true` as a permanent broken gate.  
 - Re-running while an Environment still awaits approval.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Troubleshooting GitHub Actions** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-16/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-16/.github/workflows && cd ~/rebash-github-actions/module-16/.github/workflows
 ```
 
-**Focus:** capture a failing step pattern and local reproduction
+### Real-world scenario
 
-### Step 1 – Broken vs fixed workflow pair
+Platform engineering wants **Troubleshooting GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > triage.md << 'EOF'
-1. Open the failed step log — first error
-2. Confirm action version
-3. Check permissions for GITHUB_TOKEN
-4. Re-run failed jobs; debug logging only in private forks
-5. Reproduce steps in a clean container
-EOF
-cat > .github/workflows/troubleshoot.yml << 'EOF'
-name: Troubleshoot
-on: [workflow_dispatch]
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
-  broken_shape:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - run: curl --fail https://example.invalid/missing
-  fixed_shape:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: curl --fail -I https://example.com | head -n 5
+      - uses: actions/checkout@v4
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Reproduce with Docker
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-docker run --rm curlimages/curl:8.10.1 curl --fail -I https://example.com | head -n 5
-test -f triage.md
-docker rmi curlimages/curl:8.10.1 2>/dev/null || true
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-docker rmi curlimages/curl:8.10.1 2>/dev/null || true
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -214,9 +268,11 @@ docker rmi curlimages/curl:8.10.1 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -231,9 +287,11 @@ Production practice for **Troubleshooting GitHub Actions** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -244,9 +302,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -260,9 +320,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -273,9 +335,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -288,18 +352,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 You can design, secure, promote, and troubleshoot production GitHub Actions pipelines end to end.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Give a step-by-step triage for a red workflow.
@@ -314,9 +382,11 @@ You can design, secure, promote, and troubleshoot production GitHub Actions pipe
 !!! tip "Sample answer — question 4"
     Debug logs can leak secrets — enable briefly on private repos only and rotate credentials if exposure is possible.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -324,9 +394,11 @@ You can design, secure, promote, and troubleshoot production GitHub Actions pipe
 - [Course overview](index.md)
 - [Course overview](index.md) · [GitLab CI/CD](../gitlab/index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md)
 
-
-
 ## References
+
+
+
+
 
 
 

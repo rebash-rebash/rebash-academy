@@ -45,6 +45,8 @@ comments: false
 
 
 
+
+
 Install a current Git, set global identity and defaults, and prepare SSH or HTTPS auth for GitHub/GitLab without committing secrets.
 
 Wrong `user.name`/`user.email` pollutes audit trails. Broken SSH blocks every clone in CI. Configure once, verify, then never commit tokens.
@@ -53,9 +55,9 @@ Diagrams: [git-workflow](../assets/excalidraw/git-workflow.svg).
 
 This is a core tutorial in **Module 2 · Installing Git** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -63,9 +65,9 @@ This is a core tutorial in **Module 2 · Installing Git** of the REBASH Academy 
 - Linux/macOS/WSL with package install rights  
 - [Object model](understanding-the-git-object-model.md) recommended
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -78,9 +80,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Configure SSH keys for hosting  
 - [ ] Know when HTTPS + credential helper / PAT applies
 
-
-
 ## Architecture
+
+
 
 
 
@@ -89,9 +91,9 @@ This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Git Installation and Configuration](../assets/excalidraw/git-workflow.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -135,48 +137,97 @@ SSH checklist: `ssh-keygen -t ed25519`, add the public key to GitHub/GitLab, the
 - Skipping logout/login after adding an SSH key to the agent  
 - Leaving `pull` behaviour undefined so juniors get inconsistent histories
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Git Installation and Configuration** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-02`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-02 && cd ~/rebash-git/module-02
 ```
 
-**Focus:** set useful local defaults and verify with git config --list
+### Real-world scenario
 
-### Step 1 – Local config for this lab
+A delivery team is standardising **Git Installation and Configuration**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-git config core.editor "true"
-git config pull.rebase false
-git config --local --list | sort
-```
+### Step-by-step tasks
 
-### Step 2 – Compare identity and aliases
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git config --get user.name
-git config --get user.email
-git config alias.st status
-git st
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -186,9 +237,9 @@ git st
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -203,9 +254,9 @@ Production practice for **Git Installation and Configuration** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -216,9 +267,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -232,9 +283,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -245,9 +296,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -260,9 +311,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -271,9 +322,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - SSH keys for daily work; short-lived tokens for CI  
 - Document team defaults (`pull.rebase`, default branch)
 
-
-
 ## Interview Questions
+
+
 
 
 1. Which Git config scopes exist (system/global/local)?
@@ -288,9 +339,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Do not put PATs in plain config files. Prefer SSH keys or OS keychain-backed helpers.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -298,9 +349,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
 
-
-
 ## References
+
+
 
 
 

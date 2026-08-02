@@ -1,6 +1,6 @@
 ---
 title: "Linux Automation — subprocess and psutil"
-description: "Automate Linux with subprocess, os, pathlib, shutil, signals, and psutil — safe process management and permissions for DevOps Python."
+description: "Run host commands safely with subprocess, capture output, and sample CPU/memory with psutil for DevOps health checks."
 difficulty: intermediate
 estimated_time: "50–65 min"
 technology: python
@@ -38,63 +38,55 @@ tags:
   - psutil
   - linux
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-02"
 comments: false
 ---
-
 
 # Linux Automation — subprocess and psutil
 
 ## Overview
 
-Run host commands safely with `subprocess` (no `shell=True` on the happy path), inspect processes with `psutil`, and combine pathlib/shutil for file automation.
+DevOps scripts often need facts from the Linux host: kernel name, listening ports, disk pressure, or whether a process is alive. In Python you get those facts by running safe commands with **`subprocess`**, reading paths with **pathlib**, and (optionally) sampling CPU and memory with **`psutil`**. You are not replacing systemd or the package manager — you wrap the same tools operators already trust, with timeouts and structured exit handling.
 
-Python orchestrates Linux: package checks, disk thresholds, service restarts (carefully), and wrapping CLIs. Prefer list args, timeouts, and captured output.
+A common mistake is `shell=True` plus string concatenation. That pattern can turn user input into a shell injection. Prefer an **argument list**, always set a **timeout**, and capture stdout/stderr as text when you need to parse it. Check `returncode` instead of assuming success. Use pathlib and shutil for file copy and disk usage. Register short handlers for `SIGINT` / `SIGTERM` so long jobs can exit cleanly in Continuous Integration (CI).
 
-Complete [CLI Applications](cli-applications-argparse-click-typer.md) first. Diagrams use Excalidraw only.
+On jump servers, cloud virtual machines (VMs), and CI runners, hung commands without timeouts waste minutes; scripts that run as root “to make CI green” create security risk. Good automation fails closed when permissions are missing, writes evidence to a file, and stays readable for the next engineer on call.
 
-This is a core tutorial in **Module 13 · Linux Automation** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 13** in **Module 13: Linux Automation** of the REBASH Academy **Python for DevOps Engineers** series. It is written for Cloud, DevOps, Platform, Linux, and Site Reliability Engineering (SRE) engineers. By the end you will have a small host probe that writes JSON evidence you can attach to a change ticket or interview portfolio.
 
 ## Prerequisites
 
-### Required
-
-- [CLI Applications](cli-applications-argparse-click-typer.md)
-- Linux lab host with Python 3.12+
+- [CLI Applications — argparse, Click, and Typer](cli-applications-argparse-click-typer.md)
+- Python 3.10+ on Linux, Windows Subsystem for Linux (WSL), or macOS
+- Ability to create a virtual environment (`python3 -m venv`)
+- Optional: package `iproute2` on Linux for `ip` / `ss` (the lab falls back to `uname`)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Call `subprocess.run` with list args and timeout  
-- [ ] Handle non-zero return codes explicitly  
-- [ ] Use pathlib/shutil for file ops  
-- [ ] Inspect CPU/memory/process lists with psutil  
-- [ ] Avoid `shell=True` unless strictly justified  
-- [ ] Note signal handling for graceful shutdown
+- [ ] Call `subprocess.run` with a list of arguments, timeout, and captured stdout
+- [ ] Handle non-zero return codes without hiding failures
+- [ ] Use pathlib and shutil for paths and disk usage checks
+- [ ] Optionally sample CPU and memory with `psutil` inside a venv
+- [ ] Explain why `shell=True` is dangerous with untrusted input
+- [ ] Write host facts to a JSON evidence file for tickets or CI
 
 ## Architecture
 
-This topic’s control points and relationships are shown below.
+Python sits between your automation and the host: subprocess starts CLIs; pathlib/shutil touch the filesystem; psutil reads `/proc`-style counters without scraping text by hand.
 
-![Linux automation](../assets/excalidraw/python-linux-automation.svg)
+![Architecture diagram for Linux automation with subprocess and psutil](../assets/excalidraw/python-linux-automation.svg)
 
 ## Theory
 
 ### What it is
 
-Linux automation in Python means driving the host safely: run commands via **`subprocess`**, inspect the process and environment with **`os`** / **pathlib** / **shutil**, sample resources with **`psutil`**, and shut down cleanly on **signals**. You are not rewriting systemd — you are wrapping the same tools operators already trust, with timeouts and structured exit handling.
-
-### Why it matters
-
-Cloud SDKs do not replace “is nginx active?”, disk pressure, or collecting `uname` across bastions. Shell scripts grow fragile; Python wrappers add parsing, retries, and tests. Done badly (`shell=True`, no timeout, assume root), they become injection bugs and hung Continuous Integration (CI) jobs. Done well, they are the backbone of agentless host checks.
-
-### How it works
-
-Pass **argument lists** to `subprocess.run` — never build a shell string from untrusted input. Always set **`timeout`**. Use `capture_output=True` and `text=True` when you need to parse stdout. `check=True` raises on non-zero when failure is exceptional; otherwise inspect `returncode`. Read `os.environ` and `os.getuid()` for context; use pathlib for paths and shutil for copy/move/`disk_usage`. **psutil** samples CPU, memory, and disk without scraping `/proc` by hand. Register short handlers for `SIGINT`/`SIGTERM` to flush and clean temp files. Do not assume root — check access and fail with a clear message.
+**`subprocess`** starts another program, waits (with a timeout), and returns a result object with `returncode`, `stdout`, and `stderr`. **`os`** and **pathlib** describe the process environment and paths. **`shutil`** copies trees and reports `disk_usage`. **`psutil`** samples CPU percent, memory, and process tables. **Signals** (`signal` module) let you shut down cooperatively when CI cancels a job.
 
 ```python
 import subprocess
+
 r = subprocess.run(
     ["uname", "-a"],
     check=False,
@@ -102,106 +94,168 @@ r = subprocess.run(
     text=True,
     timeout=10,
 )
+print(r.returncode, r.stdout.strip())
+```
+
+### Why it matters
+
+Cloud SDKs do not answer “is this bastion out of disk?” or “what kernel is on the build agent?”. Shell one-liners grow fragile; Python wrappers add parsing, tests, and JSON reports. Done badly (no timeout, `shell=True`, assume root), they become hung runners and injection bugs. Done well, they are the backbone of agentless health checks and inventory bots.
+
+### How it works
+
+1. **Choose argv** — pass a list: `["ss", "-tln"]`, never `f"ss {user_flag}"` through a shell.
+2. **Run with bounds** — set `timeout=…`, `capture_output=True`, `text=True`.
+3. **Inspect result** — use `check=True` when failure is exceptional; otherwise branch on `returncode`.
+4. **File facts** — `Path.home()`, `shutil.disk_usage("/")`.
+5. **Optional metrics** — `psutil.cpu_percent(interval=0.1)`, `psutil.virtual_memory().percent`.
+6. **Signals** — register a handler that sets a flag; avoid heavy work inside the handler.
+
+```python
+from pathlib import Path
+import shutil
+
+usage = shutil.disk_usage(Path("/"))
+free_pct = 100 * usage.free / usage.total
 ```
 
 ### Key concepts and comparisons
 
 | Tool | Job |
 |------|-----|
-| subprocess | Run CLIs with timeout and captured output |
-| pathlib / shutil | Paths, copy, disk usage |
-| psutil | CPU, memory, process tables |
-| Signals | Cooperative shutdown |
+| `subprocess` | Run CLIs with timeout and captured output |
+| `pathlib` / `shutil` | Paths, copy, disk usage |
+| `psutil` | CPU, memory, process tables |
+| `signal` | Cooperative shutdown on SIGTERM |
 
 | Practice | Prefer | Avoid |
 |----------|--------|--------|
-| Invocation | Argv list | `shell=True` + user input |
-| Permissions | Fail closed | `chmod 0777` |
-| Long jobs | SIGTERM handler | Ignore signals |
+| Invocation | Argument list | `shell=True` + user input |
+| Timeouts | Always set | Infinite wait on NFS / hung CLI |
+| Permissions | Fail closed with a clear error | Silent `sudo` everywhere |
+| Output | Machine-friendly flags / JSON | Locale-dependent human text only |
 
 ### Common pitfalls
 
-- Omitting `timeout` on mounts or remote CLIs.  
-- Parsing locale-dependent human output instead of machine flags.  
-- Running as root “to make CI green.”  
-- Heavy work inside signal handlers.  
-- Treating `returncode == 0` as “healthy” when stdout says degraded.
+- Omitting `timeout` on mounts, package managers, or remote CLIs.
+- Parsing locale-dependent human output instead of stable flags (`-b`, `--json` when available).
+- Running as root “to make CI green” instead of fixing permissions.
+- Heavy work inside signal handlers (keep them short).
+- Treating `returncode == 0` as healthy when stdout clearly says degraded.
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Linux Automation — subprocess and psutil
+### Objective
+
+Build a small host probe under `~/rebash-python/lab13` that runs `uname` (and `ip`/`ss` when present) via `subprocess`, optionally samples CPU/memory with `psutil`, and writes `host-evidence.json`.
+
+### Prerequisites
+
+- Python 3.10+
+- `python3 -m venv` available
+- Practice host (not a shared production server)
+
+### Lab environment
+
+Workspace: `~/rebash-python/lab13`
 
 ```bash
-mkdir -p ~/rebash-python/module-13
-cd ~/rebash-python/module-13
-
+mkdir -p ~/rebash-python/lab13 && cd ~/rebash-python/lab13
+set -euo pipefail
 python3 -m venv .venv
+# shellcheck disable=SC1091
 source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install 'psutil==6.1.1'
+python -m pip install -U pip
+python -m pip install 'psutil>=5.9,<7'
+python -c "import sys; print(sys.version)" | tee python-version.txt
 ```
 
-### Step 1 – Safe command wrapper
+**Expected output:** `python-version.txt` exists; `psutil` installs in the venv (if pip fails, continue — Task 2 treats psutil as optional).
+
+### Real-world scenario
+
+Your platform team wants a lightweight agentless check on new Ubuntu build VMs: kernel string, whether `ss` works, free disk, and a CPU/memory sample. Security asks for no shell injection and a JSON artefact for the change ticket. You implement the probe locally first.
+
+### Step-by-step tasks
+
+#### Task 1 – Safe subprocess probe (uname / ip / ss)
 
 ```bash
-cd ~/rebash-python/module-13
+cd ~/rebash-python/lab13
+set -euo pipefail
+# shellcheck disable=SC1091
 source .venv/bin/activate
 
-cat > run_cmd.py << 'EOF'
+cat > host_probe.py << 'EOF'
 #!/usr/bin/env python3
+"""Safe host facts via subprocess — no shell=True."""
 from __future__ import annotations
 
+import json
+import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 
-def run(cmd: list[str], timeout: float = 15) -> int:
+def run_cmd(argv: list[str], timeout: float = 10.0) -> dict:
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        completed = subprocess.run(
+            argv,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError:
+        return {
+            "argv": argv,
+            "ok": False,
+            "returncode": None,
+            "stdout": "",
+            "stderr": "command not found",
+        }
     except subprocess.TimeoutExpired:
-        print(f"error: timeout running {cmd!r}", file=sys.stderr)
-        return 124
-    if proc.stdout:
-        sys.stdout.write(proc.stdout)
-    if proc.stderr:
-        sys.stderr.write(proc.stderr)
-    return proc.returncode
+        return {
+            "argv": argv,
+            "ok": False,
+            "returncode": None,
+            "stdout": "",
+            "stderr": "timeout",
+        }
+    return {
+        "argv": argv,
+        "ok": completed.returncode == 0,
+        "returncode": completed.returncode,
+        "stdout": (completed.stdout or "").strip(),
+        "stderr": (completed.stderr or "").strip(),
+    }
 
 
 def main() -> int:
-    return run(["uname", "-s"])
+    out_dir = Path(__file__).resolve().parent
+    commands: list[list[str]] = [["uname", "-a"]]
+    if shutil.which("ip"):
+        commands.append(["ip", "-br", "addr"])
+    if shutil.which("ss"):
+        commands.append(["ss", "-tln"])
 
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-EOF
-
-python run_cmd.py
-```
-
-### Step 2 – Health snapshot with psutil
-
-```bash
-cat > health.py << 'EOF'
-#!/usr/bin/env python3
-from __future__ import annotations
-
-import shutil
-import sys
-
-import psutil
-
-
-def main() -> int:
-    cpu = psutil.cpu_percent(interval=0.2)
-    mem = psutil.virtual_memory().percent
-    disk = shutil.disk_usage("/").used / shutil.disk_usage("/").total * 100
-    print(f"cpu_percent={cpu:.1f}")
-    print(f"mem_percent={mem:.1f}")
-    print(f"disk_percent={disk:.1f}")
-    # exit 1 if any over lab thresholds
-    if cpu > 95 or mem > 95 or disk > 95:
-        print("error: threshold exceeded", file=sys.stderr)
+    results = [run_cmd(cmd) for cmd in commands]
+    usage = shutil.disk_usage(str(Path.home()))
+    payload = {
+        "commands": results,
+        "disk_home": {
+            "total": usage.total,
+            "used": usage.used,
+            "free": usage.free,
+        },
+        "python": sys.version.split()[0],
+    }
+    evidence = out_dir / "host-evidence.json"
+    evidence.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {evidence}")
+    # At least uname must succeed
+    if not results or not results[0]["ok"]:
+        print("uname failed", file=sys.stderr)
         return 1
     return 0
 
@@ -210,110 +264,238 @@ if __name__ == "__main__":
     raise SystemExit(main())
 EOF
 
-python health.py
+python host_probe.py | tee probe-run.txt
+test -s host-evidence.json
+python -c 'import json; d=json.load(open("host-evidence.json")); assert d["commands"][0]["ok"]; print("uname_ok")'
 ```
 
-### Step 3 – Anti-pattern reminder
+**Expected output:** `wrote …/host-evidence.json`; assert prints `uname_ok`; `host-evidence.json` is non-empty.
+
+#### Task 2 – Optional psutil CPU/memory sample
 
 ```bash
-python - <<'PY'
-# Never do this with untrusted input:
-# subprocess.run(f"echo {user}", shell=True)
-print("use list args: subprocess.run(['echo', user])")
-PY
+cd ~/rebash-python/lab13
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
+
+cat > metrics_sample.py << 'EOF'
+#!/usr/bin/env python3
+"""Optional psutil sample; degrades cleanly if missing."""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+
+def sample() -> dict:
+    try:
+        import psutil  # type: ignore
+    except ImportError:
+        return {"psutil": False, "reason": "not installed"}
+    return {
+        "psutil": True,
+        "cpu_percent": psutil.cpu_percent(interval=0.2),
+        "memory_percent": psutil.virtual_memory().percent,
+        "process_count": len(psutil.pids()),
+    }
+
+
+def main() -> int:
+    path = Path(__file__).resolve().parent / "metrics.json"
+    data = sample()
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(data))
+    return 0 if data.get("psutil") or data.get("reason") else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+EOF
+
+python metrics_sample.py | tee metrics-run.txt
+test -s metrics.json
+python -c 'import json; d=json.load(open("metrics.json")); assert "psutil" in d; print("metrics_ok", d["psutil"])'
 ```
 
-### Step 4 – Process list peek
+**Expected output:** `metrics.json` exists; if `psutil` installed, `"psutil": true` with numeric samples; otherwise a clear `reason`.
+
+#### Task 3 – Merge evidence pack
 
 ```bash
-python - <<'PY'
-import psutil
-for p in psutil.process_iter(["pid", "name"]):
-    if p.info["name"] and "python" in p.info["name"]:
-        print(p.info)
-        break
-PY
+cd ~/rebash-python/lab13
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
+
+python - << 'EOF'
+import json
+from pathlib import Path
+
+base = Path(".")
+host = json.loads((base / "host-evidence.json").read_text(encoding="utf-8"))
+metrics = json.loads((base / "metrics.json").read_text(encoding="utf-8"))
+merged = {"host": host, "metrics": metrics}
+(base / "lab13-evidence.json").write_text(json.dumps(merged, indent=2) + "\n", encoding="utf-8")
+print("merged ok")
+assert host["commands"][0]["ok"]
+EOF
+
+ls -l lab13-evidence.json host-evidence.json metrics.json | tee evidence-ls.txt
+```
+
+**Expected output:** `lab13-evidence.json` exists; `evidence-ls.txt` lists the three JSON files.
+
+### Validation steps
+
+- [ ] `host_probe.py` uses argument lists and `timeout` (no `shell=True`)
+- [ ] `host-evidence.json` contains a successful `uname` result
+- [ ] `metrics.json` records psutil present or an honest fallback
+- [ ] `lab13-evidence.json` merges both artefacts under `~/rebash-python/lab13`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `command not found` for `ss`/`ip` | Package not installed | Lab already falls back to `uname` only — continue |
+| `ModuleNotFoundError: psutil` | venv not activated or pip skipped | `source .venv/bin/activate` then `pip install psutil` |
+| Hang forever | Missing timeout | Always pass `timeout=` to `subprocess.run` |
+| `Permission denied` | Non-root reading restricted paths | Probe only home/disk and public CLIs |
+
+### Challenge exercise
+
+Extend `host_probe.py` with a `--json-path` CLI flag (use `argparse`) that writes evidence to a custom path, and add a negative test: call `run_cmd(["false"])` and assert `ok` is `False` in a small `test_probe.py` run with `python -m pytest` (install pytest in the venv). Keep `shell=True` unused.
+
+### Learning outcomes
+
+- Ran host CLIs safely with `subprocess` lists and timeouts
+- Captured stdout into JSON evidence
+- Sampled or stubbed metrics with `psutil`
+- Packed artefacts suitable for a change ticket
+
+### Cleanup
+
+```bash
+cd ~/rebash-python/lab13
+set -euo pipefail
+deactivate 2>/dev/null || true
+# Keep evidence JSON if you want it for a portfolio; remove the venv when done:
+# rm -rf .venv
+# Optional full wipe:
+# rm -rf ~/rebash-python/lab13
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/module-13/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-python/lab13/` with JSON evidence
+- [ ] You can explain why argument lists beat `shell=True`
+- [ ] You always set timeouts on external commands
+- [ ] You can describe one production failure: hung CI job without timeout
 
 ## Code Walkthrough
 
-Production practice for **Linux Automation — subprocess and psutil** always combines:
+In real servers, Linux automation with Python usually follows this order:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
+1. **Inspect** — `uname`, `ip`/`ss`, disk usage, process list  
+2. **Bound the call** — argv list, timeout, capture text  
+3. **Parse and assert** — return codes and structured fields, not hope  
+4. **Evidence** — write JSON/logs for handovers  
+5. **Least privilege** — never require root for a simple health probe  
 
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+Keep runbooks short. Automate checks; keep humans for judgement.
 
 ## Security Considerations
 
-- Treat credentials and tokens for python as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Never build shell strings from untrusted input (`shell=True` risk)  
+- Prefer list argv and fixed binaries on `PATH` you control  
+- Do not run inventory scripts as root unless required  
+- Avoid logging secrets from environment variables next to host facts  
+- Treat CI runners as hostile: timeouts and resource limits matter  
 
 ## Common Mistakes
 
-!!! warning "Omitting `timeout` on mounts or remote CLIs.  "
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "Using `shell=True` with f-strings"
+    User-controlled text can become a second command. **Fix:** pass a list of arguments; validate inputs before use.
 
-!!! warning "Parsing locale-dependent human output instead of machine flags.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Omitting `timeout`"
+    A stuck NFS mount or hung CLI blocks the whole pipeline. **Fix:** always set `timeout=` and handle `TimeoutExpired`.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Parsing human-only CLI output"
+    Locale and version changes break scrapers. **Fix:** prefer machine flags (`-br`, `--json`) or stable fields.
+
+!!! warning "Assuming root"
+    Permission errors become mysterious “flakes”. **Fix:** fail with a clear message; document required capabilities.
 
 ## Best Practices
 
-- Encode Linux Automation — subprocess and psutil changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Pin `psutil` in `requirements.txt` when you depend on it  
+- Write evidence files next to the script for ticket attachments  
+- Prefer pathlib over string path concatenation  
+- Register SIGTERM handlers for long probes in CI  
+- Unit-test the parser with fixture stdout, not only live hosts  
 
 ## Troubleshooting
 
-| Symptom | Likely cause | What to do |
-|---------|--------------|------------|
-| `FileNotFoundError` | Binary not on PATH | Full path or document dependency |
-| Hang | Missing timeout | Always set timeout |
-| Permission denied | Non-root | Drop privilege needs; clearer errors |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Hang | Missing timeout | Add `timeout=` |
+| `FileNotFoundError` | Binary not on PATH | Use `shutil.which` and degrade |
+| Empty stdout | Forgot `text=True` / capture | Set `capture_output=True, text=True` |
+| Wrong disk numbers | Measured wrong path | Use `Path.home()` or `/` deliberately |
+| psutil import fails in CI | System Python vs venv | Install into the job’s venv |
 
 ## Summary
 
-- `subprocess` with lists + timeouts  
-- psutil for host signals in health checks  
-- pathlib/shutil for files; no casual `shell=True`  
-- Pair with the [Linux Health Checker](../labs/python-linux-health-checker.md) lab
+Safe Linux automation in Python means **subprocess with lists and timeouts**, clear return-code handling, pathlib/shutil for files, and optional **psutil** metrics — all written to evidence you can show. Next, call HTTP APIs with timeouts and retries in [REST APIs — requests, Auth, and Resilience](rest-apis-requests-auth-and-resilience.md).
 
 ## Interview Questions
 
-1. How does **Linux Automation — subprocess and psutil** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. Why should DevOps Python prefer an argument list over `shell=True`?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    An argument list is passed directly to the program. `shell=True` asks `/bin/sh` to parse a string, so characters like `;`, `|`, or `` ` `` from untrusted input can run extra commands. Prefer lists, fixed binaries, and validated inputs. Use a shell only when you truly need shell features, and never with raw user text.
+
+**2. A CI job hangs on `subprocess.run(["apt-get", "update"])`. What do you check first?**
+
+??? success "Reveal answer"
+    Check for a missing **timeout**, waiting on locks (`/var/lib/dpkg`), or needing a TTY/confirmation. Add `timeout=`, capture stderr, and fail clearly. For package work, prefer non-interactive flags and run on disposable agents — not as an unbounded step.
+
+**3. When is `psutil` better than scraping `/proc` or calling `top`?**
+
+??? success "Reveal answer"
+    `psutil` gives structured numbers (CPU percent, memory, PIDs) across platforms with fewer fragile text parsers. Scraping `top` breaks with locale and version changes. Use `psutil` for metrics; use `subprocess` when you must call a specific CLI the team already trusts (`ss`, `systemctl`).
+
+**4. How do you prove a host probe is safe enough for a shared jump server?**
+
+??? success "Reveal answer"
+    Show no `shell=True`, timeouts on every external call, no requirement for root, no secrets in logs, and a read-only style of commands (`uname`, `ss -tln`, disk usage). Attach JSON evidence. Negative tests (failed command path) show you handle errors.
+
+**5. What is the difference between `check=True` and inspecting `returncode` yourself?**
+
+??? success "Reveal answer"
+    `check=True` raises `CalledProcessError` on any non-zero exit — good when failure is exceptional. Inspecting `returncode` is better when non-zero is expected (for example `grep` with no match, or probing optional tools). Choose based on whether “not found” is an error or a branch.
+
+**6. How would you shut down a long probe when Kubernetes sends SIGTERM to the Pod?**
+
+??? success "Reveal answer"
+    Register a `signal` handler for `SIGTERM` that sets a flag or event; the main loop checks the flag, flushes evidence, and exits with a non-zero or special code. Do not run heavy I/O inside the handler. This matches how CI and orchestrators cancel work.
+
+**7. Disk looks fine in `df` but your script alarms — what might be wrong?**
+
+??? success "Reveal answer"
+    You may have measured a different mount (`Path.home()` vs `/`), used inode exhaustion (df -i), or compared bytes without reserving root’s 5% on ext filesystems. Align the path with the service’s data directory and document the threshold logic.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [REST APIs — requests, Auth, and Resilience](rest-apis-requests-auth-and-resilience.md)  
-- [Linux Health Checker lab](../labs/python-linux-health-checker.md)
+- [Python for DevOps Engineers – Overview](index.md)
+- [CLI Applications — argparse, Click, and Typer](cli-applications-argparse-click-typer.md) *(previous)*
+- [REST APIs — requests, Auth, and Resilience](rest-apis-requests-auth-and-resilience.md) *(next)*
+- [Lab — Linux Health Checker](../labs/python-linux-health-checker.md) *(more practice)*
 
 ## References
 
-- [subprocess](https://docs.python.org/3/library/subprocess.html)  
-- [psutil](https://psutil.readthedocs.io/)
+- [subprocess — Python docs](https://docs.python.org/3/library/subprocess.html)  
+- [psutil documentation](https://psutil.readthedocs.io/)  
+- [pathlib — Python docs](https://docs.python.org/3/library/pathlib.html)  
+- Track index: [Python for DevOps Engineers](index.md)

@@ -1,252 +1,401 @@
 ---
 title: "Linux Networking Toolkit"
-description: "Operational Linux networking for Cloud and DevOps — ip, ss, ping, traceroute, dig, curl, tcpdump, netcat, and socat with production triage patterns."
+description: "Use ip, ss, dig, traceroute/tracepath, and curl as one diagnostic toolkit, and produce a reusable evidence tarball for networking incidents."
 difficulty: intermediate
-estimated_time: "60–75 min"
-technology: networking
+estimated_time: "50–60 min"
+author: Shaik Basha
+last_updated: "2026-08-02"
 category: networking
+technology: networking
 module: "Module 12 · Linux Networking"
-career_paths:
-  - devops-engineer
-  - cloud-engineer
-  - linux-administrator
-  - site-reliability-engineer
-  - platform-engineer
-skills:
-  - linux-networking-tools
-  - packet-triage
-prerequisites:
-  - networking/routing-fundamentals
-  - networking/icmp-arp-dhcp-and-network-services
-next:
-  - networking/load-balancing-fundamentals
-related:
-  - linux/linux-networking-tools
-  - networking/packet-analysis-tcpdump-wireshark
-interview: interview/networking
-certifications:
-  - RHCSA
-  - CompTIA Network+
 tags:
   - networking
   - linux
   - ip
   - ss
-  - tcpdump
-author: Shaik Basha
-last_updated: "2026-07-31"
+  - dig
+  - curl
+prerequisites:
+  - networking/firewalls-and-access-control
+next:
+  - networking/load-balancing-fundamentals
+related:
+  - linux/linux-networking-tools
+  - networking/packet-analysis-tcpdump-wireshark
+  - networking/network-troubleshooting-methodology
+interview: interview/networking
 comments: false
 ---
-
 
 # Linux Networking Toolkit
 
 ## Overview
 
-Use the core Linux networking CLI as a single triage toolkit: identity → route → port → DNS → HTTP → capture.
+When an application “cannot connect”, the console shows a symptom. The **Linux networking toolkit** shows the truth on the host: addresses, routes, sockets, Domain Name System (DNS), path, and Hypertext Transfer Protocol (HTTP). The core tools are `ip`, `ss`, `dig` (or `host`), `traceroute`/`tracepath`, and `curl`.
 
-Consoles show symptoms; the host shows truth. This module is the operator’s toolbox named in the Networking course prompt: `ip`, `ss`, `ping`, `traceroute`, `tracepath`, `dig`, `host`, `nslookup`, `curl`, `wget`, `tcpdump`, `tshark`, `netcat`, `socat`.
+Operators who jump randomly between tools waste time. A fixed order — **identity → route → port → DNS → HTTP → path** — turns panic into a checklist. In this tutorial you will run that sequence and wrap it in a small script that builds an **evidence tarball** under `~/rebash-networking/lab15` for tickets and post-incident reviews.
 
-This is a core tutorial in **Module 12 · Linux Networking** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+Cloud agents, Kubernetes nodes, and Continuous Integration (CI) runners are still Linux underneath. The same commands work on a practice Ubuntu VM and on a production bastion (with care about captures and secrets). Prefer modern tools (`ip` over deprecated `ifconfig`, `ss` over `netstat` when available).
+
+This is the core tutorial in **Module 12: Linux Networking** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for DevOps, Cloud, SRE, and platform engineers.
 
 ## Prerequisites
 
-- Modules 1–7 recommended  
-- Ubuntu lab with `sudo`
+- [Firewalls and Access Control](firewalls-and-access-control.md)
+- Comfort with [Routing Fundamentals](routing-fundamentals.md) and [DNS Fundamentals](dns-fundamentals.md)
+- Ubuntu practice VM with network access (lab uses public DNS-friendly targets; replace if offline)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Inspect addresses, links, and routes with `ip`  
-- [ ] List sockets with `ss`  
-- [ ] Test DNS with `dig` / `host`  
-- [ ] Probe ports with `nc`  
-- [ ] Capture traffic safely with `tcpdump`  
-- [ ] Run a repeatable triage sequence
+- [ ] Inspect addresses and routes with `ip`
+- [ ] List listening and established sockets with `ss`
+- [ ] Query DNS with `dig` and explain the answer section
+- [ ] Probe reachability with `ping` and path with `traceroute`/`tracepath`
+- [ ] Debug HTTP with `curl -v` / `-I`
+- [ ] Run a cohesive diagnostic script that produces an evidence tarball
 
 ## Architecture
 
-Use Excalidraw path thinking: client tools interrogate each layer of the stack on the local host.
+Each tool interrogates a layer of the local stack and the path beyond. Your script collects the same layers into one artefact for humans and tickets.
 
-![Path reminder](../assets/excalidraw/what-is-networking.svg)
+![Architecture diagram for Linux Networking Toolkit](../assets/excalidraw/linux-networking-stack.svg)
 
 ## Theory
 
 ### What it is
 
-The Linux networking toolkit is the set of command-line tools you use on a host to answer: Who am I on the network? Can I reach them? Which process is listening? What does Domain Name System (DNS) say? What do packets look like? Core tools include `ip`, `ss`, `ping`, `traceroute`/`tracepath`, `dig`/`host`, `curl`/`wget`, `nc`/`socat`, and `tcpdump`/`tshark`. Consoles and dashboards show symptoms; the host often shows truth.
+| Tool | Question it answers |
+|------|---------------------|
+| `ip addr` / `ip route` | Who am I on the network, and where do packets go next? |
+| `ss` | What is listening, and what is connected? |
+| `dig` / `host` | Does the name resolve, and to which records? |
+| `ping` | Does Internet Control Message Protocol (ICMP) echo work? |
+| `traceroute` / `tracepath` | Where does the path fail or slow down? |
+| `curl` | Does the application protocol succeed (HTTP status, TLS)? |
+
+```bash
+ip -br addr
+ip route
+ss -lntu
+dig +short example.com A
+```
 
 ### Why it matters
 
-Cloud tickets rarely start with “the VPC is wrong” — they start with timeouts and 502s. A repeatable triage sequence (identity → route → port → DNS → HTTP → capture) stops random tool hopping and produces evidence you can paste into an incident channel. Every later production module (load balancers, DNS ops, packet analysis) assumes you can run this ladder under pressure.
+Incidents often mix DNS, firewall, and application failures. Without a toolkit order, teams bounce between “restart the pod” and “flush DNS” with no evidence. A tarball of command output is what on-call and vendors ask for. It also trains juniors to show proof, not guesses.
 
 ### How it works
 
-Start with **identity and routing**: `ip -br addr`, `ip route`. Check **sockets** with `ss -tulpn` to see listeners. Test **reachability** with `ping` only when Internet Control Message Protocol (ICMP) is allowed; otherwise move to Transmission Control Protocol (TCP) probes (`nc -vz`) and Hypertext Transfer Protocol (HTTP) (`curl -sI`). Resolve names with `dig`/`host` against the resolvers the host actually uses. Capture with `tcpdump` using tight filters and a packet count so you do not flood disks. Script the sequence so every engineer runs the same checks.
+1. **Identity** — hostname, `ip -br addr`, default route.  
+2. **Sockets** — `ss -lntup` (needs sudo for process names).  
+3. **DNS** — `dig` against a known name; note server and status.  
+4. **Path** — `ping -c 3`, then `tracepath` or `traceroute`.  
+5. **App** — `curl -I` / `curl -v` to the URL.  
+6. **Pack** — tar the text outputs for the ticket.
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' https://example.com/
+```
 
 ### Key concepts and comparisons
 
-| Tool | Job |
-|------|-----|
-| `ip` | Links, addresses, routes, neighbours |
-| `ss` | Sockets / listeners (prefer over legacy `netstat`) |
-| `ping` / `traceroute` / `tracepath` | Reachability and path (ICMP/UDP) |
-| `dig` / `host` / `nslookup` | DNS |
-| `curl` / `wget` | HTTP(S) clients |
-| `nc` / `socat` | Port probes / relays |
-| `tcpdump` / `tshark` | Packet capture / decode |
-
-| Step | Question |
-|------|----------|
-| Identity | Which addresses and default route? |
-| Socket | Is anything listening on the port? |
-| DNS | Does the name resolve as expected? |
-| L4/L7 | Does TCP/HTTP succeed with a timeout? |
-| Capture | What is on the wire when it fails? |
+| Old habit | Prefer | Why |
+|-----------|--------|-----|
+| `ifconfig` | `ip addr` | Maintained, scriptable |
+| `netstat` | `ss` | Faster, modern |
+| `nslookup` only | `dig` | Clear sections, scripting |
+| Random `tcpdump` first | Toolkit then capture | Narrow the filter |
 
 ### Common pitfalls
 
-- Declaring a host “down” because ICMP is filtered.  
-- Using `curl` without `--max-time` and hanging the triage.  
-- Capturing `any` with no filter until the disk fills.  
-- Trusting laptop DNS when the failing workload uses different resolvers.  
-- Skipping `ss` and blaming the load balancer when nothing listens locally.
+- Trusting `ping` alone (ICMP may be blocked while TCP works).  
+- Forgetting `sudo` on `ss -p` and misreading process owners.  
+- Using `curl` without `-v` when TLS or redirects matter.  
+- Pasting secrets from `curl -v` Authorization headers into tickets.  
+- Running long `tcpdump` on production without a filter or time limit.
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Linux Networking Toolkit
+### Objective
+
+Build and run `netdiag.sh` that collects `ip`, `ss`, `dig`, path, and `curl` evidence into `evidence.tgz` under `~/rebash-networking/lab15`.
+
+### Prerequisites
+
+- Ubuntu with `iproute2`, `iputils-ping`, `curl`
+- `dnsutils` (`dig`) recommended: `sudo apt-get update && sudo apt-get install -y dnsutils`
+- `iputils-tracepath` or `traceroute` (script falls back gracefully)
+
+### Lab environment
+
+Workspace: `~/rebash-networking/lab15`
 
 ```bash
-mkdir -p ~/rebash-networking/module-12
-cd ~/rebash-networking/module-12
-sudo apt-get update
-sudo apt-get install -y iproute2 iputils-ping traceroute dnsutils curl wget \
-  tcpdump netcat-openbsd socat
+mkdir -p ~/rebash-networking/lab15 && cd ~/rebash-networking/lab15
+set -euo pipefail
+whoami | tee admin-user.txt
+uname -a | tee uname.txt
 ```
 
-### Step 1 — Identity
+**Expected output:** workspace exists; identity files written.
+
+### Real-world scenario
+
+A teammate reports “the API is down”. You are on a jump host and must produce a structured evidence pack in five minutes: addresses, sockets, DNS, path, and HTTP headers — without changing production config.
+
+### Step-by-step tasks
+
+#### Task 1 – Manual toolkit pass
 
 ```bash
-ip -br link
-ip -br addr
-ip route
+cd ~/rebash-networking/lab15
+set -euo pipefail
+
+ip -br addr | tee 01-ip-addr.txt
+ip route show | tee 02-ip-route.txt
+ss -lntu | tee 03-ss-listen.txt
+
+if command -v dig >/dev/null 2>&1; then
+  dig example.com A +noall +answer | tee 04-dig.txt
+else
+  getent hosts example.com | tee 04-dig.txt
+fi
+
+ping -c 3 example.com 2>&1 | tee 05-ping.txt || true
+
+if command -v tracepath >/dev/null 2>&1; then
+  tracepath -n example.com 2>&1 | head -n 20 | tee 06-path.txt || true
+elif command -v traceroute >/dev/null 2>&1; then
+  traceroute -n -m 10 example.com 2>&1 | tee 06-path.txt || true
+else
+  echo "no traceroute/tracepath" | tee 06-path.txt
+fi
+
+curl -sSI --max-time 10 https://example.com/ 2>&1 | tee 07-curl-headers.txt || true
 ```
 
-### Step 2 — Sockets
+**Expected output:** files `01`–`07` exist; dig/curl may vary with network policy but commands must run.
+
+#### Task 2 – Cohesive diagnostic script
 
 ```bash
-ss -tulpn
-```
+cd ~/rebash-networking/lab15
+set -euo pipefail
 
-### Step 3 — DNS
-
-```bash
-dig +short example.com A
-host example.com
-```
-
-### Step 4 — Port & HTTP
-
-```bash
-nc -vz example.com 443
-curl -sI --max-time 10 https://example.com/ | head
-```
-
-### Step 5 — Controlled capture
-
-```bash
-sudo tcpdump -ni any -c 20 host example.com and port 443
-```
-
-Run a curl in another terminal while capturing.
-
-### Step 6 — Toolkit script
-
-```bash
-cat > linux-net-triage.sh <<'EOF'
+cat > netdiag.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-t="${1:-example.com}"
-echo "== ip =="; ip -br addr; ip route show default
-echo "== dns =="; dig +short "$t" A | head
-echo "== tcp =="; nc -vz -w 5 "$t" 443
-echo "== http =="; curl -sI --max-time 10 "https://$t/" | head -n 5
+TARGET_HOST="${1:-example.com}"
+TARGET_URL="${2:-https://example.com/}"
+OUT="${3:-./diag-out}"
+mkdir -p "$OUT"
+{
+  echo "ts=$(date -Is)"
+  echo "host=$(hostname)"
+  echo "target_host=$TARGET_HOST"
+  echo "target_url=$TARGET_URL"
+} | tee "$OUT/meta.txt"
+
+ip -br addr | tee "$OUT/ip-addr.txt"
+ip route | tee "$OUT/ip-route.txt"
+ss -lntu | tee "$OUT/ss-listen.txt"
+(ss -s 2>/dev/null || true) | tee "$OUT/ss-summary.txt"
+
+if command -v dig >/dev/null 2>&1; then
+  dig "$TARGET_HOST" A +noall +answer +stats | tee "$OUT/dig.txt"
+else
+  getent hosts "$TARGET_HOST" | tee "$OUT/dig.txt"
+fi
+
+ping -c 3 "$TARGET_HOST" 2>&1 | tee "$OUT/ping.txt" || true
+
+if command -v tracepath >/dev/null 2>&1; then
+  tracepath -n "$TARGET_HOST" 2>&1 | head -n 25 | tee "$OUT/path.txt" || true
+elif command -v traceroute >/dev/null 2>&1; then
+  traceroute -n -m 12 "$TARGET_HOST" 2>&1 | tee "$OUT/path.txt" || true
+else
+  echo "path-tool=missing" | tee "$OUT/path.txt"
+fi
+
+curl -sSI --max-time 15 "$TARGET_URL" 2>&1 | tee "$OUT/curl-head.txt" || true
+curl -sS -o /dev/null -w 'http_code=%{http_code} time=%{time_total}\n' \
+  --max-time 15 "$TARGET_URL" 2>&1 | tee "$OUT/curl-timing.txt" || true
+
+tar -czf "$OUT/../evidence.tgz" -C "$OUT" .
+ls -l "$OUT/../evidence.tgz"
 EOF
-chmod +x linux-net-triage.sh
-./linux-net-triage.sh example.com | tee triage-out.txt
+
+chmod +x netdiag.sh
+./netdiag.sh example.com https://example.com/ ./diag-out
+test -s evidence.tgz
+ls -l evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** `netdiag.sh` is executable; `evidence.tgz` is non-empty.
+
+#### Task 3 – Quick asserts on the pack
+
+```bash
+cd ~/rebash-networking/lab15
+set -euo pipefail
+
+tar -tzf evidence.tgz | tee evidence-list.txt
+grep -E 'ip-addr|ss-listen|dig|curl' evidence-list.txt
+test -f netdiag.sh
+```
+
+**Expected output:** tarball listing includes the core artefact names.
+
+### Validation steps
+
+- [ ] Manual `01`–`07` files exist
+- [ ] `./netdiag.sh` runs without syntax errors
+- [ ] `evidence.tgz` lists `ip-addr.txt`, `ss-listen.txt`, DNS and curl outputs
+- [ ] You can explain the toolkit order from memory
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `dig: command not found` | `dnsutils` missing | `sudo apt-get install -y dnsutils` or use `getent` |
+| `ping: Name or service not known` | DNS/offline | Use an IP target or fix resolvers (`resolvectl status`) |
+| Empty `curl` output | Proxy/TLS/firewall | Read `curl-head.txt` errors; try `-v` offline notes |
+| `ss` shows no process | Need sudo for `-p` | Optional: `sudo ss -lntup` |
+
+### Challenge exercise
+
+Extend `netdiag.sh` to accept `TARGET_HOST` and write an extra `ss -tn state established | head` snapshot to `ss-established.txt` inside the tarball. Re-run and confirm the new file appears in `tar -tzf evidence.tgz`.
+
+### Learning outcomes
+
+- Ran a fixed triage order with modern Linux tools
+- Built a reusable `netdiag.sh` evidence producer
+- Separated ICMP path checks from HTTP success
+- Produced a ticket-ready `evidence.tgz`
+
+### Cleanup
+
+```bash
+cd ~/rebash-networking/lab15
+# Keep netdiag.sh and evidence.tgz for your notes; remove temp dir if desired:
+# rm -rf diag-out
+# Optional: rm -f 0*.txt
 ```
 
 ## Validation
 
-- [ ] `ss` shows listeners  
-- [ ] `dig` returns answers  
-- [ ] Capture shows TCP/443 traffic  
-- [ ] `triage-out.txt` saved
+- [ ] Lab finished under `~/rebash-networking/lab15/`
+- [ ] You can run the toolkit without looking up every flag
+- [ ] You know when ping lies and curl tells the truth
+- [ ] You redact secrets before sharing tarballs
 
 ## Code Walkthrough
 
-Production practice for **Linux Networking Toolkit** always combines:
+Production triage often looks like:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
+1. **Confirm the host** — right VM/pod node?  
+2. **`ip` / route** — wrong interface or missing default route  
+3. **`ss`** — nothing listening / wrong port  
+4. **`dig`** — wrong answer or SERVFAIL  
+5. **`curl`** — TLS, HTTP status, redirects  
+6. **Path / capture** — only if still unclear  
 
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+Your script should stay **read-only**. Never put passwords in command lines that land in shell history or tarballs.
 
 ## Security Considerations
 
-- Treat credentials and tokens for networking as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Redact `Authorization` and cookie headers from `curl -v` before sharing  
+- Avoid unrestricted `tcpdump` on production without change control  
+- Prefer least privilege: diagnostics rarely need permanent root shells  
+- Do not disable firewalls “to test” on shared hosts  
+- Store evidence in ticket systems with proper access control  
 
 ## Common Mistakes
 
-!!! warning "Declaring a host “down” because ICMP is filtered.  "
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "Declaring the network down because ping failed"
+    Many networks block ICMP. **Fix:** test the real TCP/TLS port with `curl` or `nc`.
 
-!!! warning "Using `curl` without `--max-time` and hanging the triage.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Skipping DNS when the URL ‘looks fine’"
+    Stale or split-horizon DNS is common. **Fix:** always `dig` the exact hostname clients use.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Pasting full `curl -v` with tokens into Slack"
+    Secrets leak. **Fix:** scrub headers; share status lines and timings.
+
+!!! warning "Changing sysctl during first triage"
+    You destroy evidence and may cause outages. **Fix:** collect first; change only with rollback.
 
 ## Best Practices
 
-- Encode Linux Networking Toolkit changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Keep a personal `netdiag.sh` and version it in your team’s runbooks  
+- Use the same order every time  
+- Capture timestamps and hostname in every pack  
+- Prefer `ss` and `ip` on modern distros  
+- Escalate to packet capture only after toolkit gaps remain  
 
 ## Troubleshooting
 
-Order: address → route → neighbour → DNS → port → HTTP → capture.
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| No default route | DHCP/VPC misconfig | Fix route/gateway |
+| Listen socket missing | App down / wrong ns | Restart app; check netns/containers |
+| DNS SERVFAIL | Resolver/policy | Try alternate resolver; check `/etc/resolv.conf` |
+| HTTP 502/504 | Upstream/proxy | Move to load balancer / reverse proxy modules |
+| Tracepath all `*` | ICMP filtered | Rely on TCP/`curl`; ask network team |
 
 ## Summary
 
-Linux tools are the production networking IDE. Automate the triage order; capture last.
+The Linux networking toolkit turns vague “network issues” into layered evidence. Master `ip`, `ss`, `dig`, path tools, and `curl`, then automate the pack. Next, apply traffic distribution ideas in [Load Balancing Fundamentals](load-balancing-fundamentals.md).
 
 ## Interview Questions
 
-1. How does **Linux Networking Toolkit** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. Walk through your first five commands on a host where users say “the site is down”.**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    Typical order: `ip -br addr` and `ip route` (identity/routing), `ss -lntu` (listen ports), `dig` for the hostname, `curl -I` to the URL, then path (`tracepath`/`traceroute`) if still unclear. Interviewers want a **stable method**, not a random tool dump.
+
+**2. Why might `ping` fail while `curl https://service` works?**
+
+??? success "Reveal answer"
+    ICMP echo can be **blocked** by firewalls while TCP 443 is allowed. Ping proves only ICMP reachability. Always test the application protocol and port that clients use.
+
+**3. What is the difference between `dig` and `getent hosts` for troubleshooting?**
+
+??? success "Reveal answer"
+    **`dig`** queries DNS directly and shows records/status/server. **`getent hosts`** uses the Name Service Switch (NSS) path (`files`, DNS, possibly others) — closer to what some apps resolve, but less detailed. Use both when results disagree.
+
+**4. How do you get the process holding a port on Linux?**
+
+??? success "Reveal answer"
+    `sudo ss -lntup` (or `ss -lntup`) shows the process (PID/program) for listening sockets. `lsof -i :port` is an alternative. Without privileges, process columns may be blank.
+
+**5. What belongs in a networking evidence tarball for a vendor ticket?**
+
+??? success "Reveal answer"
+    Timestamp, hostname, `ip addr`/`ip route`, `ss` listen/summary, DNS answer for the failing name, ping/path if allowed, and `curl -I`/`-w` timings — **with secrets redacted**. Avoid huge unfiltered packet captures unless requested.
+
+**6. When do you escalate from this toolkit to `tcpdump`?**
+
+??? success "Reveal answer"
+    When sockets, DNS, and HTTP still disagree with client reports — for example TCP SYN seen but no ACK, or TLS alerts. Use a **tight filter** and short duration. Toolkit first keeps captures small and purposeful.
+
+**7. `ip route` shows a default via the wrong gateway after a cloud change. What is the user impact?**
+
+??? success "Reveal answer"
+    Packets leave via the wrong next hop: blackholes, asymmetric paths, or wrong NAT. Apps may hang or become one-way. Fix the route table/DHCP options/cloud route, then re-validate with `ip route` and `curl`.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [Load Balancing Fundamentals](load-balancing-fundamentals.md)
+- [Networking for Cloud & DevOps – Overview](index.md)
+- [Firewalls and Access Control](firewalls-and-access-control.md) *(previous)*
+- [Load Balancing Fundamentals](load-balancing-fundamentals.md) *(next)*
+- [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md)
+- [Linux networking tools (Linux track)](../linux/linux-networking-tools.md)
 
 ## References
 
-- [ip(8)](https://man7.org/linux/man-pages/man8/ip.8.html) · [ss(8)](https://man7.org/linux/man-pages/man8/ss.8.html) · [tcpdump](https://www.tcpdump.org/)
+- [`ip(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip.8.html) — iproute2  
+- [`ss(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ss.8.html) — sockets  
+- [dig — BIND9](https://manpages.ubuntu.com/manpages/jammy/en/man1/dig.1.html) — DNS queries  
+- Track index: [Networking for Cloud & DevOps Engineers](index.md)

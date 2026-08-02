@@ -45,15 +45,17 @@ comments: false
 
 
 
+
+
 Explain containers vs virtual machines (VMs), name the Open Container Initiative (OCI) pieces, and state why Docker matters for Cloud and DevOps delivery.
 
 Containers package an application with its dependencies and share the host kernel. Teams get portable builds from laptop → CI → cloud. This course is **Docker for Cloud & DevOps Engineers** — production packaging, not Docker trivia.
 
 This is a core tutorial in **Module 1 · Container Fundamentals** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -62,9 +64,9 @@ This is a core tutorial in **Module 1 · Container Fundamentals** of the REBASH 
 - [Linux Fundamentals](../linux/index.md)
 - Comfort with a terminal; [Git](../git/index.md) helpful
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -78,9 +80,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Name OCI image and runtime standards  
 - [ ] Sketch create → start → stop → remove
 
-
-
 ## Architecture
+
+
 
 
 
@@ -90,9 +92,9 @@ This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -131,49 +133,94 @@ You build or pull an image (layered filesystem plus config), then create a conta
 - Ignoring OCI portability and locking into non-standard image formats  
 - Skipping the image vs container distinction in incidents
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Introduction to Containers and Docker** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-01`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-01 && cd ~/rebash-docker/module-01
 ```
 
-**Focus:** run a container, inspect it, and clean up completely
+### Real-world scenario
 
-### Step 1 – Run and inspect
+You are validating **Introduction to Containers and Docker** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-docker version
-docker run -d --name rebash-intro -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-intro
-curl -sI http://127.0.0.1:18080 | head -n 5
-docker logs rebash-intro 2>&1 | head -n 20
-docker inspect rebash-intro --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}'
-```
+### Step-by-step tasks
 
-### Step 2 – Exec and cleanup
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-docker exec rebash-intro nginx -v
-docker stop rebash-intro
-docker rm rebash-intro
-docker ps -a --filter name=rebash-intro
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker rm -f rebash-intro 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -184,9 +231,9 @@ docker rm -f rebash-intro 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -202,9 +249,9 @@ Production practice for **Introduction to Containers and Docker** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -216,9 +263,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -233,9 +280,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -247,9 +294,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -263,9 +310,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -273,9 +320,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 **Introduction to Containers and Docker** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. How does a container differ from a virtual machine?
@@ -290,9 +337,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Prefer official images, avoid privileged mode, and never put secrets in image layers.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -301,9 +348,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Docker Architecture and Components](docker-architecture-and-components.md)
 
-
-
 ## References
+
+
 
 
 

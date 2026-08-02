@@ -28,13 +28,15 @@ comments: false
 
 
 
+
+
 If you understand Docker, you already know half of Kubernetes. Containers become **Pods**, `docker run` flags become **Pod specs**, Compose services become **Deployments** and **Services**, and Swarm overlay networks become **ClusterIP** routing. This tutorial builds a explicit concept map so you can read Kubernetes manifests confidently and migrate workloads incrementally.
 
 This is **Tutorial 19** in **Module 6: Production & Beyond** of the REBASH Academy Docker track.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -46,9 +48,9 @@ This is **Tutorial 19** in **Module 6: Production & Beyond** of the REBASH Acade
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 - Optional: local cluster via [minikube](https://minikube.sigs.k8s.io/) or [kind](https://kind.sigs.k8s.io/)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -63,9 +65,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Plan an incremental migration path from Docker Compose to Kubernetes
 - [ ] Know when to continue with the [Kubernetes track](../kubernetes/index.md)
 
-
-
 ## Architecture
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 
 ![Production container platform](../assets/excalidraw/docker-production-platform.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -291,60 +293,94 @@ Get into the habit of watching state while commands run: `docker events` / `kube
 
 Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **From Docker to Kubernetes** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/from-docker-to-kubernetes`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/from-docker-to-kubernetes && cd ~/rebash-docker/from-docker-to-kubernetes
 ```
 
-**Focus:** map a running container to Kubernetes YAML (dry-run if kubectl exists)
+### Real-world scenario
 
-### Step 1 – Docker run vs Deployment YAML
+You are validating **From Docker to Kubernetes** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-docker run -d --name rebash-bridge -p 18084:80 nginx:alpine
-cat > deploy.yaml << 'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web
-  namespace: rebash-lab
-spec:
-  replicas: 1
-  selector: {matchLabels: {app: web}}
-  template:
-    metadata: {labels: {app: web}}
-    spec:
-      containers:
-        - name: web
-          image: nginx:alpine
-          ports: [{containerPort: 80}]
-EOF
-command -v kubectl >/dev/null && kubectl apply --dry-run=client -f deploy.yaml || true
-curl -sI http://127.0.0.1:18084 | head -n 3
-```
+### Step-by-step tasks
 
-### Step 2 – Cleanup docker side
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-docker rm -f rebash-bridge
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker rm -f rebash-bridge 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -363,9 +399,9 @@ Confirm the lab before moving on:
 | Config/secret | Env/volume concerns mapped to ConfigMap/Secret/Volume patterns |
 | Review | You listed at least two security differences Compose→Kubernetes |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -387,9 +423,9 @@ Confirm the lab before moving on:
 
 Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes track](../kubernetes/index.md).
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -402,9 +438,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - Apply Pod Security standards early; “it worked in Compose” is not a security model
 - Limit kubeconfig privileges used during migration labs to a dedicated namespace
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -425,9 +461,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 !!! warning "Ignoring resource requests"
     Without requests, scheduler overcommits nodes — worse than missing Docker `--memory` limits.
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -448,9 +484,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 !!! tip "Continue on the Kubernetes track"
     This tutorial maps concepts — [Kubernetes](../kubernetes/index.md) tutorials go deep on operations.
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -465,9 +501,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 | Probe failures | Wrong port/path | Align with HEALTHCHECK from Docker image |
 | PVC pending | No storage class | Define StorageClass or use hostPath in lab only |
 
-
-
 ## Summary
+
+
 
 
 
@@ -480,9 +516,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - Continue learning on the [Kubernetes track](../kubernetes/index.md)
 - Finish the Docker series with [Docker Capstone and Next Steps](docker-capstone-and-next-steps.md)
 
-
-
 ## Interview Questions
+
+
 
 
 1. Map Docker run flags to Kubernetes fields.
@@ -497,9 +533,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 !!! tip "Sample answer — question 4"
     Keep image supply-chain controls; move secrets to Kubernetes Secret/CSI providers.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -515,9 +551,9 @@ Ingress replaces manual nginx routing in Compose stacks — see the [Kubernetes 
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 

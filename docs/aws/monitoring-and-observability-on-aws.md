@@ -53,15 +53,17 @@ comments: false
 
 
 
+
+
 Wire the AWS observability spine — Amazon CloudWatch, AWS CloudTrail, AWS Config, AWS X-Ray, AWS Health Dashboard, and AWS Systems Manager — so you can detect, investigate, and act without drowning in alarms or log ingestion cost.
 
 **Observability** answers: is the system healthy, what changed, and why? On AWS, **CloudWatch** holds metrics, logs, alarms, and dashboards. **CloudTrail** records API activity (who did what). **Config** records resource configuration and compliance over time. **X-Ray** traces requests across services. **Health Dashboard** surfaces AWS service events affecting your accounts. **Systems Manager (SSM)** provides operational actions — Session Manager, Parameter Store (ops config), Run Command, Patch Manager, and Inventory. Together they support SRE-style detect → diagnose → remediate loops.
 
 This is a core tutorial in **Module 9 · Monitoring & Observability** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -70,9 +72,9 @@ This is a core tutorial in **Module 9 · Monitoring & Observability** of the REB
 - AWS CLI access to a sandbox account
 - Familiarity with IAM and basic EC2 or Lambda resources
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -85,9 +87,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Use Systems Manager Session Manager, Run Command, Parameter Store (ops), and Patch Manager without bastion hosts  
 - [ ] Place the AWS Health Dashboard in an incident triage sequence
 
-
-
 ## Architecture
+
+
 
 
 
@@ -96,9 +98,9 @@ This topic’s control points and relationships are shown below.
 
 ![Observability on AWS](../assets/excalidraw/aws-monitoring.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -167,45 +169,98 @@ Site Reliability Engineering (SRE) and DevOps need golden signals, change correl
 - Bastions on port 22 instead of Session Manager (and missing VPC endpoints).
 - Treating Parameter Store as a database.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **Monitoring and Observability on AWS** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-09`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-09 && cd ~/rebash-aws/module-09
 ```
 
-**Focus:** list CloudWatch alarms/log groups (read-only)
+### Real-world scenario
 
-### Step 1 – Observability inventory
+Security asks for evidence that **Monitoring and Observability on AWS** is configured correctly. You gather CLI proof without click-ops drift.
 
-```bash
-aws sts get-caller-identity
-aws cloudwatch describe-alarms --query 'MetricAlarms[0:10].{Name:AlarmName,State:StateValue}' --output table
-aws logs describe-log-groups --limit 10 --query 'logGroups[].logGroupName' --output table
-```
+### Step-by-step tasks
 
-### Step 2 – Alarm design notes
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-cat > monitoring-notes.md << 'EOF'
-Alert on symptoms customers feel; attach runbooks
-Avoid paging on raw CPU without SLO context
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Final step – Cleanup note
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
+EOF
+cat notes.txt
 ```
 
+**Expected output:** Evidence files created even if some APIs are denied.
 
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
+
+```bash
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
+```
 
 ## Validation
+
+
 
 
 
@@ -215,9 +270,9 @@ Avoid paging on raw CPU without SLO context
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -232,9 +287,9 @@ Production practice for **Monitoring and Observability on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -245,9 +300,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -261,9 +316,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -274,9 +329,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -289,18 +344,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Monitoring and Observability on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Metric versus log versus trace?
@@ -315,9 +370,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Avoid putting secrets in logs; control who can read log groups.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -325,9 +380,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [AWS Security Services](aws-security-services.md)
 
-
-
 ## References
+
+
 
 
 

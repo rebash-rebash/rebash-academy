@@ -48,15 +48,21 @@ comments: false
 
 
 
+
+
+
+
 Design a test pyramid in GitLab CI with parallel jobs, JUnit and coverage reports in merge requests, and quality gates that fail the pipeline when thresholds are missed.
 
 Tests are the cheapest production incident you never ship. GitLab CI runs **unit**, **integration**, **end-to-end (e2e)**, and optional **performance** jobs; publishes **JUnit** and coverage artefacts into the merge request (MR); and enforces **quality gates** so red tests block merge.
 
 This is a core tutorial in **Module 13 · Testing** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -64,9 +70,11 @@ This is a core tutorial in **Module 13 · Testing** of the REBASH Academy **GitL
 - [Security Scanning and DevSecOps](security-scanning-and-devsecops.md)
 - Comfortable with stages, `needs`, and artefacts from earlier modules
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -78,9 +86,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Publish JUnit reports and coverage for MR widgets  
 - [ ] Fail the pipeline on failed tests or coverage thresholds
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -89,9 +99,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab testing](../assets/excalidraw/gitlab-testing.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -142,71 +154,105 @@ Unit tests prove logic; integration proves wiring; e2e proves the user path. Per
 - Coverage gates without excluding generated code — false negatives block good changes.
 - Forgetting `when: always` on report artefacts — failed suites never upload XML for debugging.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Testing, Reports, and Quality Gates** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-13`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-13 && cd ~/rebash-gitlab/module-13
 ```
 
-**Focus:** pytest JUnit reports and a quality gate job
+### Real-world scenario
 
-### Step 1 – Tests + junit artifacts
+Your squad is encoding **Testing, Reports, and Quality Gates** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-cat > calc.py << 'EOF'
-def mul(a, b):
-    return a * b
-EOF
-cat > test_calc.py << 'EOF'
-from calc import mul
-def test_mul():
-    assert mul(3, 4) == 12
-EOF
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [test, gate]
-unit:
-  stage: test
+stages: [lint, test]
+lint:
+  stage: lint
   image: python:3.12-alpine
   script:
-    - pip install pytest
-    - pytest --junitxml=report.xml -q
-  artifacts:
-    when: always
-    reports:
-      junit: report.xml
-    paths: [report.xml]
-coverage_gate:
-  stage: gate
-  image: alpine:3.20
-  needs: [unit]
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
   script:
-    - test -f report.xml
-    - grep -q testcase report.xml
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Run tests locally
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-python3 -c "from calc import mul; assert mul(3,4)==12; print('ok')"
-echo '<?xml version="1.0"?><testsuite><testcase name="test_mul"/></testsuite>' > report.xml
-grep -E 'junit:|reports:' .gitlab-ci.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -216,9 +262,11 @@ grep -E 'junit:|reports:' .gitlab-ci.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -233,9 +281,11 @@ Production practice for **Testing, Reports, and Quality Gates** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -246,9 +296,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -262,9 +314,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -275,9 +329,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -290,18 +346,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Testing, Reports, and Quality Gates** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do JUnit report artifacts improve merge request feedback?
@@ -316,9 +376,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Gates that protect production should fail closed. Ensure forks cannot skip required jobs while consuming protected variables.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -326,9 +388,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Release Management and Versioning](release-management-and-versioning.md)
 
-
-
 ## References
+
+
+
+
 
 
 

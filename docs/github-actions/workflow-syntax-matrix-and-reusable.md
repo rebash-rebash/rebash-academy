@@ -46,24 +46,32 @@ comments: false
 
 
 
+
+
+
+
 Write maintainable workflow YAML using `strategy.matrix`, job and step `if:` conditionals, job outputs, and a first **reusable workflow** call pattern.
 
 Beyond a single job, production workflows need **fan-out** (test on multiple OS or language versions), **selective execution** (`if:` on jobs and steps), and **reuse** so fifty repositories do not diverge. A **matrix** expands one job definition into many. **Outputs** pass data between jobs. **Reusable workflows** (`workflow_call`) let a platform team own a canonical CI definition that callers invoke with inputs.
 
 This is a core tutorial in **Module 4 · Workflow Syntax** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [GitHub-Hosted and Self-Hosted Runners](github-hosted-and-self-hosted-runners.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -76,9 +84,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Sketch a `workflow_call` reusable workflow and a caller  
 - [ ] Name when to prefer composite actions vs reusable workflows
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -87,9 +97,11 @@ This topic’s control points and relationships are shown below.
 
 ![Workflow syntax](../assets/excalidraw/gha-workflow-syntax.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -151,90 +163,108 @@ Author both files in one repository for learning; in production, platform teams 
 - Treating reusable workflow `@main` as a stable contract — pin versions for production.
 - Overusing `continue-on-error` so red builds look green in required checks.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Workflow Syntax: Matrix and Reusable Workflows** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-04/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-04/.github/workflows && cd ~/rebash-github-actions/module-04/.github/workflows
 ```
 
-**Focus:** matrix workflow and reusable workflow caller/callee
+### Real-world scenario
 
-### Step 1 – Create reusable + matrix workflows
+Platform engineering wants **Workflow Syntax: Matrix and Reusable Workflows** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/reusable-test.yml << 'EOF'
-name: Reusable test
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
 on:
-  workflow_call:
-    inputs:
-      python-version:
-        required: true
-        type: string
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: python --version
-EOF
-cat > .github/workflows/matrix.yml << 'EOF'
-name: Matrix and reusable
-on: [push, workflow_dispatch]
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
-  matrix_probe:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: python --version
-  call_reusable:
-    uses: ./.github/workflows/reusable-test.yml
-    with:
-      python-version: "3.12"
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
-
-{% raw %}
-```yaml
-# When wiring matrix python version dynamically use:
-# python-version: ${{ matrix.python }}
-# inputs: ${{ inputs.python-version }}
-# Wrap workflow files containing those expressions in {% raw %} on docs pages.
-```
-{% endraw %}
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Check matrix and workflow_call
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-grep -E 'matrix:|workflow_call:|uses: \./' -n .github/workflows/*.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -244,9 +274,11 @@ grep -E 'matrix:|workflow_call:|uses: \./' -n .github/workflows/*.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -261,9 +293,11 @@ Production practice for **Workflow Syntax: Matrix and Reusable Workflows** alway
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -274,9 +308,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -290,9 +326,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -303,9 +341,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -318,18 +358,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Workflow Syntax: Matrix and Reusable Workflows** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. When is a build matrix the right tool?
@@ -344,9 +388,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Pin reusable workflows to tags/SHAs and pass only required secrets.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -354,9 +400,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -26,13 +26,23 @@ comments: false
 
 
 
+
+
+
+
+
+
 You have progressed from your first Pod to GitOps delivery, autoscaling, observability, and cluster hardening. This capstone deploys **VoteStack** — the multi-service poll application from the [Docker capstone](../docker/docker-capstone-and-next-steps.md) — on a production-style Kubernetes cluster. You will wire every layer from the Module 6 tutorials into one cohesive project and document a roadmap to [Terraform](../terraform/index.md) for infrastructure and [GitLab CI/CD](../gitlab/index.md) for enterprise pipelines.
 
 This is **Tutorial 20** — the finale of **Module 6: Production** and the complete REBASH Academy **Kubernetes track**.
 
-
-
 ## Prerequisites
+
+
+
+
+
+
 
 
 
@@ -46,9 +56,13 @@ This is **Tutorial 20** — the finale of **Module 6: Production** and the compl
 - Cluster with ingress controller, metrics-server, and Helm 3
 - Container images from Docker track or GitOps CI pipeline
 
-
-
 ## Learning Objectives
+
+
+
+
+
+
 
 
 
@@ -61,17 +75,25 @@ By the end of this capstone, you will be able to:
 - [ ] Apply Pod Security Standards and Kyverno policies to the stack
 - [ ] Document operational runbooks and a learning path to Terraform and GitLab
 
-
-
 ## Architecture
+
+
+
+
+
+
 
 
 
 ![Production cluster](../assets/excalidraw/k8s-production-cluster.svg)
 
-
-
 ## Project Overview — VoteStack on Kubernetes
+
+
+
+
+
+
 
 
 
@@ -88,9 +110,13 @@ VoteStack mirrors the Docker capstone with Kubernetes-native primitives:
 
 Same container images built in the Docker track — only deployment manifests change.
 
-
-
 ## Project Structure
+
+
+
+
+
+
 
 
 
@@ -125,9 +151,13 @@ votestack-gitops/
 └── README.md
 ```
 
-
-
 ## Theory
+
+
+
+
+
+
 
 
 
@@ -165,92 +195,98 @@ Get into the habit of watching state while commands run: `docker events` / `kube
 
 Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Kubernetes Capstone and Next Steps** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-kubernetes/kubernetes-capstone-and-next-steps`
+
+### Lab environment
+
+Workspace: `~/rebash-kubernetes/kubernetes-capstone-and-next-steps`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-kubernetes/kubernetes-capstone-and-next-steps && cd ~/rebash-kubernetes/kubernetes-capstone-and-next-steps
 ```
 
-**Focus:** Assemble a miniature production-shaped stack: Deploy, Service, probes, and resources
+### Real-world scenario
 
-### Step 1 – Apply a multi-resource application bundle
+Your platform team is rolling out **Kubernetes Capstone and Next Steps** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-cat > capstone.yaml <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: shop
-  namespace: rebash-lab
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: shop
-  template:
-    metadata:
-      labels:
-app: shop
-    spec:
-      containers:
-      - name: web
-image: nginx:1.27-alpine
-ports:
-- containerPort: 80
-resources:
-  requests:
-    cpu: 50m
-    memory: 64Mi
-  limits:
-    memory: 128Mi
-readinessProbe:
-  httpGet:
-    path: /
-    port: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: shop
-  namespace: rebash-lab
-spec:
-  selector:
-    app: shop
-  ports:
-  - port: 80
-EOF
-kubectl apply -f capstone.yaml
-kubectl -n rebash-lab rollout status deploy/shop
-```
+### Step-by-step tasks
 
-### Step 2 – Validate and document readiness for next learning
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **Capstone production checklist** against a live API.
 
 ```bash
-kubectl -n rebash-lab get deploy,svc,pods -o wide
-kubectl -n rebash-lab get endpoints shop
-cat > NOTES.md <<'EOF'
-Capstone checklist: replicas ready, Service endpoints populated, probes green.
-Next: GitOps, HPA, network policies, and managed Kubernetes offerings.
-EOF
-cat NOTES.md
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Kubernetes Capstone and Next Steps
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
+
+
 
 
 
@@ -299,9 +335,13 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 4. Optional: [GitLab CI/CD Overview](../gitlab/index.md) — enterprise pipeline patterns
 5. Follow [DevOps Engineer Learning Path](../learning-paths/index.md) for role certification goals
 
-
-
 ## Code Walkthrough
+
+
+
+
+
+
 
 
 
@@ -320,9 +360,13 @@ kubectl describe pod -n votestack -l app=votestack-api
 kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 ```
 
-
-
 ## Security Considerations
+
+
+
+
+
+
 
 
 
@@ -333,9 +377,13 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 - Scan images and fail the pipeline on critical CVEs before promoting tags
 - Tear down or lock the lab namespace when finished so demos do not remain internet-facing
 
-
-
 ## Common Mistakes
+
+
+
+
+
+
 
 
 
@@ -354,9 +402,13 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 !!! warning "No resource requests on any tier"
     HPA and scheduling break — every container needs requests.
 
-
-
 ## Best Practices
+
+
+
+
+
+
 
 
 
@@ -375,9 +427,13 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 !!! tip "Continue the platform path"
     Kubernetes completes orchestration — [Terraform](../terraform/index.md) provisions the cluster itself.
 
-
-
 ## Troubleshooting
+
+
+
+
+
+
 
 
 
@@ -390,9 +446,13 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 | NetworkPolicy blocks traffic | Missing DNS/ingress rule | Add egress UDP 53; allow ingress namespace |
 | PVC Pending | No StorageClass | `kubectl get sc`; set default class |
 
-
-
 ## Summary
+
+
+
+
+
+
 
 
 
@@ -402,9 +462,13 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 - **Production reality** swaps in-cluster databases for managed services and clusters for Terraform-provisioned infrastructure
 - You have finished all **20 Kubernetes tutorials** — continue to [Terraform](../terraform/index.md), [GitLab CI/CD](../gitlab/index.md), and [Learning Paths](../learning-paths/index.md)
 
-
-
 ## Interview Questions
+
+
+
+
+
+
 
 
 1. Which Kubernetes primitives form a minimal production-ready web service?
@@ -419,9 +483,13 @@ kubectl get events -n votestack --sort-by='.lastTimestamp' | tail -10
 !!! tip "Sample answer — question 4"
     Production readiness needs RBAC least privilege, network policy, secret hygiene, resource requests, observability, backup/upgrade plans, and restricted privileged workloads—not only green Deployments.
 
-
-
 ## Next Steps — Terraform and GitLab
+
+
+
+
+
+
 
 
 
@@ -468,9 +536,13 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 4. Optional: [GitLab CI/CD Overview](../gitlab/index.md) — enterprise pipeline patterns
 5. Follow [DevOps Engineer Learning Path](../learning-paths/index.md) for role certification goals
 
-
-
 ## Related Tutorials
+
+
+
+
+
+
 
 
 
@@ -488,9 +560,13 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
+
+
+
+
 
 
 
@@ -502,9 +578,13 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 - [REBASH Academy – GitLab Overview](../gitlab/index.md)
 - [REBASH Academy – Roadmap](../roadmap.md)
 
-
-
 ## Congratulations
+
+
+
+
+
+
 
 
 

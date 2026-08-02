@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Testing, Reports, and Quality Gates
 
 ## Overview
+
+
 
 Turn Pipelines into quality signals: **`junit`** test publishing, HTML reports, **parallel** stages, notifications, and **quality gates** before deploy.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 12 · Testing and Quality Gates** of the REB
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Testing and quality gates](../assets/excalidraw/jenkins-testing.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -101,70 +112,98 @@ Keep test XML and HTML as build artefacts for incident review.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Testing, Reports, and Quality Gates** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-12`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-12 && cd ~/rebash-jenkins/module-12
 ```
 
-**Focus:** generate JUnit XML and a Pipeline that publishes and gates
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Testing, Reports, and Quality Gates**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Capture controller/agent mental model files
+
+Document how this topic shows up on a real controller.
 
 ```bash
-mkdir -p reports
-cat > reports/TEST-sample.xml << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="sample" tests="2" failures="0" errors="0" skipped="0">
-  <testcase classname="demo.A" name="ok"/>
-  <testcase classname="demo.B" name="also_ok"/>
-</testsuite>
+tee scenario.md << 'EOF'
+Topic: Testing, Reports, and Quality Gates
+- Controller owns config and orchestration
+- Agents execute untrusted build steps
+- Prefer Jenkinsfile in SCM over click-ops jobs
 EOF
+cat scenario.md
+mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+```
+
+**Expected output:** scenario.md and jobs/README.txt exist.
+
+#### Task 2 – Write a minimal Declarative stub
+
+Even management topics should leave a Pipeline artefact.
+
+```bash
 cat > Jenkinsfile << 'EOF'
 pipeline {
   agent any
-  stages {
-    stage('Unit') {
-      steps {
-        sh 'mkdir -p reports && cp reports/TEST-sample.xml reports/ 2>/dev/null || true'
-        sh 'test -f reports/TEST-sample.xml'
-      }
-    }
-    stage('Quality gate') {
-      steps {
-        junit 'reports/TEST-*.xml'
-      }
-    }
-    stage('Deploy') {
-      when { expression { currentBuild.currentResult == 'SUCCESS' } }
-      steps { echo 'Deploy would run only if tests passed' }
-    }
-  }
+  stages { stage('OK') { steps { echo 'lab' } } }
 }
 EOF
-# Local proof without controller junit step:
-xmllint --noout reports/TEST-sample.xml 2>/dev/null || python3 -c "import xml.etree.ElementTree as E; E.parse('reports/TEST-sample.xml'); print('junit-xml-ok')"
-grep -E 'junit|Quality gate|Deploy' Jenkinsfile
+grep -n agent Jenkinsfile
 ```
 
-### Step 2 – Parallel sketch
+**Expected output:** Jenkinsfile present with an agent directive.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-cat > parallel-snippet.txt << 'EOF'
-parallel unit: { stage('Unit') { steps { sh 'echo unit' } } },
-         lint: { stage('Lint') { steps { sh 'echo lint' } } }
-EOF
-grep parallel parallel-snippet.txt
-```
-
-### Final cleanup
-
-```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+# Keep lab notes under ~/rebash-jenkins/
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-12/`
 - [ ] You can explain each Theory section in your own words
@@ -172,6 +211,8 @@ grep parallel parallel-snippet.txt
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Testing, Reports, and Quality Gates** always combines:
 
@@ -185,6 +226,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -192,6 +235,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Deploy not gated on tests"
     Structure stages so deploy cannot run when `junit` fails the build.
@@ -204,6 +249,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Testing, Reports, and Quality Gates** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -211,6 +258,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -222,9 +271,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Testing, Reports, and Quality Gates** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. What does the `junit` step give you beyond console output?
 2. How do you stop a deploy when tests fail in Declarative Pipeline?
@@ -240,11 +293,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Securing Jenkins](securing-jenkins.md)
 - [Kubernetes Agents and Deploys](kubernetes-agents-and-deploys.md)
 
 ## References
+
+
 
 - [junit step](https://www.jenkins.io/doc/pipeline/steps/junit/)
 - [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)

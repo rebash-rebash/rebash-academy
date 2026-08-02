@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Installing Jenkins LTS
 
 ## Overview
+
+
 
 Install **Jenkins Long-Term Support (LTS)** for labs using Docker Compose, complete the initial setup wizard, and know what lives under **`JENKINS_HOME`**.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 2 · Installing Jenkins LTS** of the REBASH 
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Installing Jenkins LTS](../assets/excalidraw/jenkins-install.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -106,52 +117,99 @@ Official install guides cover packages and WAR; see [Installing Jenkins](https:/
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Installing Jenkins LTS** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-02`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-02 && cd ~/rebash-jenkins/module-02
 ```
 
-**Focus:** bring up Jenkins LTS with Compose and prove JENKINS_HOME persists
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Installing Jenkins LTS**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Start Jenkins LTS with Docker Compose
+
+Controllers should be reproducible — Compose pins the LTS image.
 
 ```bash
-cat > docker-compose.yml << 'EOF'
+cat > compose.yaml << 'EOF'
 services:
   jenkins:
-    image: jenkins/jenkins:lts
-    ports:
-      - "8080:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-    restart: unless-stopped
+    image: jenkins/jenkins:lts-jdk17
+    ports: ["8080:8080", "50000:50000"]
+    volumes: ["jenkins_home:/var/jenkins_home"]
 volumes:
   jenkins_home:
 EOF
 docker compose up -d
-sleep 5
-docker compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+docker compose ps
+docker compose logs --tail=30 jenkins | tee boot.log
 ```
 
-Complete the setup wizard in the browser at `http://localhost:8080` (unlock → suggested plugins → admin user → Jenkins URL).
+**Expected output:** Service running; logs show Jenkins starting.
 
-### Step 2 – Prove persistence
+#### Task 2 – Read initial admin password from the container
+
+The setup wizard requires the one-time password from JENKINS_HOME.
 
 ```bash
-docker compose exec jenkins ls /var/jenkins_home | head
-curl -sf -o /dev/null -w "%{http_code}\n" http://localhost:8080/login
+sleep 15
+docker compose exec -T jenkins bash -lc 'test -f /var/jenkins_home/secrets/initialAdminPassword && cat /var/jenkins_home/secrets/initialAdminPassword' | tee initialAdminPassword.txt || \
+  docker compose logs jenkins | tee boot2.log
+ls -l initialAdminPassword.txt boot.log 2>/dev/null || true
 ```
 
-### Final cleanup
+**Expected output:** Password file present (or logs show Jenkins still warming up — retry once).
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+docker compose down -v
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-02/`
 - [ ] You can explain each Theory section in your own words
@@ -159,6 +217,8 @@ curl -sf -o /dev/null -w "%{http_code}\n" http://localhost:8080/login
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Installing Jenkins LTS** always combines:
 
@@ -172,6 +232,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -179,6 +241,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Publishing Jenkins on 0.0.0.0 without a reverse proxy"
     Use localhost for labs; production needs TLS termination and network controls.
@@ -191,6 +255,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Installing Jenkins LTS** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -198,6 +264,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -209,9 +277,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Installing Jenkins LTS** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. What is `JENKINS_HOME` and why must it be persisted?
 2. How do you unlock a fresh Jenkins controller?
@@ -227,11 +299,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Introduction to Jenkins and CI/CD](introduction-to-jenkins-and-ci-cd.md)
 - [Using Jenkins — Jobs, Views, and Folders](using-jenkins-jobs-views-and-folders.md)
 
 ## References
+
+
 
 - [Installing Jenkins](https://www.jenkins.io/doc/book/installing/)
 - [Docker install](https://www.jenkins.io/doc/book/installing/docker/)

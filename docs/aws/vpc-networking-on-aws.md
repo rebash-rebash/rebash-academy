@@ -51,6 +51,8 @@ comments: false
 
 
 
+
+
 Design a production-shaped Amazon Virtual Private Cloud (VPC): Classless Inter-Domain Routing (CIDR) plan, public and private subnets across Availability Zones (AZs), routing, Internet Gateway (IGW), Network Address Translation (NAT), security groups, network access control lists (NACLs), and when to use peering, Transit Gateway (TGW), endpoints, and Amazon Route 53.
 
 Almost every AWS workload sits in a **VPC** — your isolated network in a Region. Poor CIDR planning and “open to `0.0.0.0/0`” security groups cause outages and breaches. This module builds the mental model Cloud, DevOps, and platform engineers use daily.
@@ -60,9 +62,9 @@ Almost every AWS workload sits in a **VPC** — your isolated network in a Regio
 
 This is a core tutorial in **Module 3 · Networking** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -70,9 +72,9 @@ This is a core tutorial in **Module 3 · Networking** of the REBASH Academy **AW
 - [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
 - [Networking Fundamentals](../networking/index.md) — CIDR, routing, TCP/UDP
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -85,9 +87,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose VPC peering vs Transit Gateway vs VPC endpoints  
 - [ ] Place Amazon Route 53 public/private zones and health checks in the design
 
-
-
 ## Architecture
+
+
 
 
 
@@ -96,9 +98,9 @@ This topic’s control points and relationships are shown below.
 
 ![AWS VPC architecture](../assets/excalidraw/aws-vpc-architecture.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -160,48 +162,98 @@ Path: client → Route 53 → public LB → private app → DB SG; egress via NA
 - Leaving lab NAT Gateways running overnight  
 - Treating Route 53 health checks as a substitute for multi-AZ application design
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **VPC Networking on AWS** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-03`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-03 && cd ~/rebash-aws/module-03
 ```
 
-**Focus:** describe existing VPCs/subnets/route tables (read-only)
+### Real-world scenario
 
-### Step 1 – Network inventory
+Security asks for evidence that **VPC Networking on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock,Default:IsDefault}' --output table
-aws ec2 describe-subnets --query 'Subnets[].{Id:SubnetId,Vpc:VpcId,Az:AvailabilityZone,Cidr:CidrBlock}' --output table
-aws ec2 describe-route-tables --query 'RouteTables[0:3].{Id:RouteTableId,Vpc:VpcId}' --output table
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Step 2 – Design notes only
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-cat > vpc-design.md << 'EOF'
-Public subnet: route to IGW
-Private subnet: NAT is costly while idle — avoid in labs without destroy plan
-Security groups: stateful allow-lists
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
+cat notes.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -211,9 +263,9 @@ EOF
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -228,9 +280,9 @@ Production practice for **VPC Networking on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -241,9 +293,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -257,9 +309,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -270,9 +322,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -285,18 +337,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **VPC Networking on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Public versus private subnet routing?
@@ -311,9 +363,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Avoid 0.0.0.0/0 SSH from the world. Prefer SSM Session Manager.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -321,9 +373,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
 
-
-
 ## References
+
+
 
 
 

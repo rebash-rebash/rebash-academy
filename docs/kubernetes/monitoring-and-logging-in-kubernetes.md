@@ -43,23 +43,31 @@ comments: false
 
 
 
+
+
+
+
 Use Metrics Server for `kubectl top`, explain the Prometheus/Grafana path, and debug with Events and container logs.
 
 **Metrics Server** → HPA resource metrics. **Prometheus** + **kube-state-metrics** → deep metrics. Logs: node agents (Fluent Bit) or cloud logging. Always start with `kubectl describe` Events.
 
 This is a core tutorial in **Module 12 · Observability** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Kubernetes Networking Deep Dive](kubernetes-networking-deep-dive.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -70,9 +78,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use Events for failures  
 - [ ] Stream Pod logs
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -80,9 +90,11 @@ This topic’s control points and relationships are shown below.
 
 ![Production observability](../assets/excalidraw/k8s-production-cluster.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -128,51 +140,96 @@ Control loops still reconcile without Prometheus; observability tells *you* when
 - Cardinality explosions from high-unique label values in Prometheus.
 - Treating Events as long-term audit — they are retained briefly; use audit logs for compliance.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Monitoring and Logging in Kubernetes** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-12`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-12`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
 ```
 
-**Focus:** Collect Pod logs and basic resource signals for observability practice
+### Real-world scenario
 
-### Step 1 – Generate log output from a Deployment
+Your platform team is rolling out **Monitoring and Logging in Kubernetes** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-kubectl -n rebash-lab create deployment logger --image=busybox:1.36 --replicas=1 -- sleep 3600
-kubectl -n rebash-lab wait --for=condition=Available deploy/logger --timeout=60s
-POD=$(kubectl -n rebash-lab get pod -l app=logger -o jsonpath='{.items[0].metadata.name}')
-kubectl -n rebash-lab exec "$POD" -- sh -c 'echo "$(date -Iseconds) lab-event" >> /tmp/app.log; cat /tmp/app.log'
-# Container stdout is the usual log path — write a short message:
-kubectl -n rebash-lab delete pod "$POD" --force --grace-period=0 2>/dev/null || true
-kubectl -n rebash-lab set command deploy/logger -- sh -c 'while true; do echo "$(date -Iseconds) heartbeat"; sleep 5; done'
-kubectl -n rebash-lab rollout status deploy/logger
-```
+### Step-by-step tasks
 
-### Step 2 – Tail logs and check metrics endpoints if present
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What it is** against a live API.
 
 ```bash
-kubectl -n rebash-lab logs deploy/logger --tail=20
-kubectl top pods -n rebash-lab 2>/dev/null || echo "metrics-server not installed; logs still available via kubectl logs"
-kubectl -n rebash-lab get events --field-selector involvedObject.kind=Pod --sort-by=.lastTimestamp | tail -n 10
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Monitoring and Logging in Kubernetes
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -181,9 +238,11 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -197,9 +256,11 @@ Production practice for **Monitoring and Logging in Kubernetes** always combines
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -209,9 +270,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -224,9 +287,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -236,9 +301,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -250,17 +317,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Monitoring and Logging in Kubernetes** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Where do container logs go by default on a node?
@@ -275,18 +346,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Logs may contain secrets, personal data, or tokens. Scrub sensitive fields, encrypt in transit and at rest, restrict access, and set retention aligned with compliance.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Kubernetes Autoscaling](kubernetes-autoscaling.md)
 
-
-
 ## References
+
+
+
+
 
 
 

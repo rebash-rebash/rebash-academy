@@ -55,16 +55,33 @@ def iter_pages():
         yield path
 
 
-def classify(path: Path, meta: dict, words: int, min_words: int) -> list[str]:
+def is_moved_notice(path: Path, meta: dict, body: str) -> bool:
+    title = (meta.get("title") or path.stem).lower()
+    body_lower = body.lower()
+    return any(marker in title for marker in ("(moved)", "(renamed)")) or any(
+        marker in body_lower
+        for marker in (
+            '!!! tip "renamed"',
+            '!!! tip "superseded"',
+            "this project is now",
+            "this project is replaced by",
+            "was renamed to",
+            "was superseded by",
+        )
+    )
+
+
+def classify(path: Path, meta: dict, body: str, words: int, min_words: int) -> list[str]:
     reasons: list[str] = []
     status = (meta.get("status") or "").lower()
     template = meta.get("template") or ""
     desc = meta.get("description") or ""
     body_hint = (meta.get("title") or path.stem).lower()
+    moved_notice = is_moved_notice(path, meta, body)
 
     if status == "planned":
         reasons.append("status:planned")
-    if words < min_words and template not in {
+    if words < min_words and not moved_notice and template not in {
         "home.html",
         "career-paths.html",
         "technologies.html",
@@ -81,6 +98,8 @@ def classify(path: Path, meta: dict, words: int, min_words: int) -> list[str]:
             pass
         elif words < min_words:
             reasons.append(f"thin:{words}<{min_words}")
+    if moved_notice:
+        reasons.append("notice:moved")
     if not desc and path.name != "index.md":
         reasons.append("missing:description")
     if "being prepared" in body_hint or "coming soon" in body_hint:
@@ -102,7 +121,7 @@ def main() -> int:
         text = path.read_text(encoding="utf-8", errors="ignore")
         meta, body = parse_frontmatter(text)
         words = len(WORD_RE.findall(strip_markup(body)))
-        reasons = classify(path, meta, words, args.min_words)
+        reasons = classify(path, meta, body, words, args.min_words)
         if not reasons:
             continue
         rel = path.relative_to(ROOT).as_posix()

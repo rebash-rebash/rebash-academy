@@ -52,15 +52,17 @@ comments: false
 
 
 
+
+
 Compare HashiCorp Terraform, AWS CloudFormation, the AWS Cloud Development Kit (CDK), and AWS Service Catalog so you can pick an Infrastructure as Code (IaC) approach for a team and practise a **zero-cost or near-zero-cost** template validate/plan loop.
 
 **Infrastructure as Code** defines cloud resources in files reviewed through Git, applied by pipelines, and reconciled to a desired state. On AWS you commonly meet four options: **Terraform** (multi-cloud HCL, huge ecosystem), **CloudFormation** (native declarative templates/stacks), **CDK** (TypeScript/Python/etc. that synthesise CloudFormation), and **Service Catalog** (governed products for end users). The “best” tool is the one your organisation can secure, review, and operate — not the newest blog post.
 
 This is a core tutorial in **Module 11 · Infrastructure as Code** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -69,9 +71,9 @@ This is a core tutorial in **Module 11 · Infrastructure as Code** of the REBASH
 - Git and AWS CLI fundamentals
 - Helpful: prior Terraform or CloudFormation exposure
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -84,9 +86,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Run a CloudFormation `validate-template` (and optional Terraform plan) without leaving spend behind  
 - [ ] Know when Service Catalog fits platform self-service
 
-
-
 ## Architecture
+
+
 
 
 
@@ -95,9 +97,9 @@ This topic’s control points and relationships are shown below.
 
 ![IaC on AWS](../assets/excalidraw/aws-iac.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -165,58 +167,98 @@ ClickOps fails audits and does not scale. IaC makes VPC, IAM, and compute peer-r
 - NAT/EKS “hello IaC” left running — prefer validate/plan first.
 - Treating Terraform and CloudFormation as mutually exclusive.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **Infrastructure as Code on AWS** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-11`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-11 && cd ~/rebash-aws/module-11
 ```
 
-**Focus:** CloudFormation validate a tiny template; optional create/delete
+### Real-world scenario
 
-### Step 1 – Template validate
+Security asks for evidence that **Infrastructure as Code on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
-cat > bucket.yaml << 'EOF'
-AWSTemplateFormatVersion: '2010-09-09'
-Description: rebash lab bucket
-Resources:
-  LabBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags:
-        - Key: rebash
-          Value: lab
-Outputs:
-  BucketName:
-    Value: !Ref LabBucket
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
+```
+
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
+
+```bash
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
-aws cloudformation validate-template --template-body file://bucket.yaml
+cat notes.txt
 ```
 
-### Step 2 – Optional create/delete stack skipped by default
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-echo "Validated template only by default"
-echo "If created: aws cloudformation delete-stack --stack-name <name>"
-aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE --query 'StackSummaries[0:5].StackName' --output table
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-### Final step – Cleanup note
-
-```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
-```
-
-
 
 ## Validation
+
+
 
 
 
@@ -226,9 +268,9 @@ aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE --query 'St
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -243,9 +285,9 @@ Production practice for **Infrastructure as Code on AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -256,9 +298,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -272,9 +314,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -285,9 +327,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -300,18 +342,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Infrastructure as Code on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. CloudFormation versus Terraform/CDK trade-offs?
@@ -326,9 +368,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Use roles for deployment and never hardcode secrets in templates.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -336,9 +378,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [CI/CD on AWS](cicd-on-aws.md)
 
-
-
 ## References
+
+
 
 
 

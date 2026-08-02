@@ -1,206 +1,359 @@
 ---
-title: "Production Linux — Hardening and Performance"
-description: "Apply production hardening, performance tuning, capacity planning, monitoring, logging, and operational excellence."
+title: "Production Hardening and Performance"
+description: "Apply practical Linux hardening and performance baselines — sysctl, resource limits, time sync, and audit checks — on a practice Ubuntu VM."
 difficulty: advanced
-estimated_time: "55 min"
+estimated_time: "55–65 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: linux
+technology: linux
+module: "Module 16 · Production Linux"
 tags:
   - linux
   - hardening
   - performance
-  - ops
+  - sysctl
+  - production
 prerequisites:
-  - Troubleshooting Linux Systems
-  - Terminal access with a regular user account (sudo where noted)
+  - linux/troubleshooting-linux-systems
+next:
+  - linux/backup-disaster-recovery-and-capacity
+related:
+  - linux/ssh-hardening-and-firewalls
+  - linux/host-monitoring-vmstat-iostat-sar
+interview: interview/linux
 comments: false
 ---
 
-# Production Linux — Hardening and Performance
+# Production Hardening and Performance
 
 ## Overview
 
-Shipping a VM is easy; running it safely under load is the job.
+Production Linux hosts need two habits at once: **hardening** (reduce attack surface and limit blast radius) and **performance baselines** (know normal CPU, memory, disk, and network behaviour). Hardening without observability creates brittle hosts. Performance tuning without security creates fast vulnerable hosts.
 
-This is **Tutorial 24** in **Module 16: Production Linux** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — written for administrators, DevOps engineers, SREs, and platform engineers operating production Linux.
+Practical baselines include: time sync (chrony), kernel parameters via **sysctl**, user/process **resource limits**, unattended security updates policy, and regular audit of listening ports and failed units. In this tutorial you will inspect current baselines, apply a **lab-scoped** sysctl drop-in and limits drop-in, verify them, and save proof under `~/rebash-linux/lab24`. Changes stay namespaced to REBASH lab files so Cleanup is safe.
+
+In real estates, prefer golden images and configuration management over one-off SSH edits. Test sysctl changes on practice VMs — some settings can break apps if copied blindly from blog posts.
+
+This is **Tutorial 24** in **Module 16: Production Linux** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
 
 ## Prerequisites
 
-- Troubleshooting Linux Systems
-- Terminal access with a regular user account (sudo where noted)
+- [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
+- A **practice Ubuntu 22.04/24.04 VM** with `sudo`
+- Do **not** apply experimental kernel tuning on shared production without change control
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Production Linux — Hardening and Performance” on a real Linux host
-- [ ] Use modern tools (`ip`/`ss`, `systemctl`/`journalctl`) where they apply
-- [ ] Complete the lab under `~/rebash-linux/` with clear outputs
-- [ ] Relate this topic to Cloud, DevOps, and production operations
-- [ ] Explain the failure modes you would check first in an incident
+- [ ] Explain a minimal production baseline (time, updates, limits, sysctl, audit)
+- [ ] Add a sysctl drop-in and prove it with `sysctl`
+- [ ] Add a limits drop-in and prove the configured values
+- [ ] Capture listening ports and failed units as an audit snapshot
+- [ ] Pack evidence under `~/rebash-linux/lab24`
 
 ## Architecture
 
-Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
+Hardening and performance controls sit across identity, network exposure, kernel parameters, resource limits, and monitoring feedback loops.
 
-![Architecture diagram for Production Linux — Hardening and Performance](../assets/excalidraw/linux-production.svg)
+![Architecture diagram for Production Hardening and Performance](../assets/excalidraw/linux-production.svg)
 
 ## Theory
 
 ### What it is
 
-**Production hardening** reduces attack surface and increases accountability: patch cadence, SSH and firewall baselines, minimal packages, Mandatory Access Control (MAC) enforcing, audit and central logs, time sync, and encrypted or separated data volumes. **Performance tuning** adjusts kernel and application settings only with evidence — sysctl values, instance sizing, and IOPS classes — recorded in configuration management. **Capacity planning** and operational excellence (golden images, change control, game days) keep systems reliable as load grows.
+| Area | Examples |
+|------|----------|
+| Identity & access | sudo least privilege, SSH keys |
+| Network exposure | firewall, few listen ports |
+| Kernel/OS | sysctl, chrony, automatic security updates |
+| Resources | ulimits, cgroup limits on services |
+| Feedback | metrics, logs, failed-unit alerts |
+
+```bash
+timedatectl
+sysctl net.ipv4.ip_forward
+ss -lntu
+systemctl --failed
+```
 
 ### Why it matters
 
-Unpatched, snowflake hosts fail audits and fail at 3 a.m. Tuning without metrics creates mysterious regressions. Hardening and performance are not opposites: removing unused services often improves both security and noise. SRE and platform teams need a written baseline so every new image ships sane defaults.
+Open SSH with password auth, no time sync, and unlimited processes are common root causes of incidents and audit failures. Performance regressions often start as “we never recorded a baseline”.
 
 ### How it works
 
-Patch on a schedule with reboot windows for kernels. Enforce key-only SSH, host firewalls aligned with cloud security groups, and SELinux/AppArmor in enforcing mode. Run chrony for clock sync — TLS and logs depend on it. Separate OS and data disks; encrypt when policy requires. For performance, measure first (`vmstat`, `iostat`, `sar`, app Service Level Indicators (SLIs)), then change one knob (for example `vm.swappiness` or connection pool size) and document rollback. Capacity tracks trends for CPU, memory, disk, inodes, and network; prefer horizontal scale for stateless tiers. Monitor with alerts that link to runbooks; practise restores and failure modes.
+1. Measure current state  
+2. Apply small, named drop-in files  
+3. Verify with read-back commands  
+4. Monitor impact  
+5. Codify in images/config management  
 
-### Key concepts and comparisons
-
-| Area | Baseline practise |
-|------|-------------------|
-| Patching | Cadence + reboot policy |
-| Access | SSH hardened, least sudo |
-| MAC / audit | Enforcing + central logs |
-| Performance | Evidence-led sysctl/app tuning |
-| Capacity | Trends + headroom alerts |
-| Ops excellence | Images as code, blameless reviews |
-
-| Tune when | Avoid when |
-|-----------|------------|
-| Clear saturation/error signal | “Folklore” values from blogs |
-| Change is reversible and owned | One-off SSH edits on prod |
+| Knob | Careful note |
+|------|----------------|
+| `fs.file-max` / nofile limits | Apps may need higher file descriptors |
+| `vm.swappiness` | Workload-dependent |
+| IP forwarding | Only when the host is a router |
+| Automatic reboots | Coordinate maintenance windows |
 
 ### Common pitfalls
 
-- Copying sysctl stacks from the internet onto every fleet.
-- Disabling MAC or audit “temporarily” and never re-enabling.
-- Alerting on vanity metrics without runbooks or SLOs.
-- Right-sizing once and never revisiting after traffic growth.
-- Treating golden images as optional while snowflake hosts multiply.
+- Copy-pasting huge sysctl “performance” lists without testing.  
+- Raising limits globally instead of per-service.  
+- Disabling swap or firewalls “for speed”.  
+- No chrony — TLS and logs become confusing.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+Capture a production-style audit snapshot, install lab sysctl and limits drop-ins, verify read-back, and save evidence under `~/rebash-linux/lab24`.
+
+### Prerequisites
+
+- Ubuntu practice VM with `sudo`
+
+### Lab environment
+
+Workspace: `~/rebash-linux/lab24`
 
 ```bash
 mkdir -p ~/rebash-linux/lab24 && cd ~/rebash-linux/lab24
+set -euo pipefail
+sudo apt-get update -qq
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y chrony
+timedatectl | tee timedatectl.txt
 ```
 
-**Focus:** audit hardening checklist; capture baseline metrics; draft sysctl notes
+**Expected output:** chrony present; `timedatectl.txt` shows clock sync fields.
 
-### Step 1 – Production baseline
+### Real-world scenario
+
+Security and platform teams ask for a baseline on a new Ubuntu app VM: time sync on, a documented sysctl drop-in, higher file descriptor limits for the app user group, and a snapshot of listening ports. You implement lab-scoped files and keep proof for the hardening ticket.
+
+### Step-by-step tasks
+
+#### Task 1 – Audit snapshot
 
 ```bash
-cat > harden-checklist.md << 'EOF'
-- [ ] SSH keys only / PermitRootLogin no
-- [ ] Host firewall + cloud SG aligned
-- [ ] Automatic security updates policy
-- [ ] MAC enforcing where supported
-- [ ] Journal/syslog shipped
-- [ ] Disk/inode alerts
-- [ ] Documented reboot window
+cd ~/rebash-linux/lab24
+set -euo pipefail
+
+uname -a | tee uname.txt
+cat /etc/os-release | tee os-release.txt
+timedatectl show | tee timedatectl-show.txt
+sysctl fs.file-max net.ipv4.ip_forward vm.swappiness | tee sysctl-before.txt
+ulimit -n | tee ulimit-n-before.txt
+ss -lntu | tee ss-listen.txt
+systemctl --failed --no-pager | tee failed-units.txt || true
+df -hT | tee df.txt
+free -h | tee free.txt
+```
+
+**Expected output:** audit files exist; sysctl values captured before change.
+
+#### Task 2 – Lab sysctl drop-in
+
+```bash
+cd ~/rebash-linux/lab24
+set -euo pipefail
+
+# Conservative lab-only example: raise file-max modestly and keep ip_forward=0
+AFTER_MAX=$(( $(sysctl -n fs.file-max) + 1000 ))
+echo "$AFTER_MAX" | tee target-file-max.txt
+
+sudo tee /etc/sysctl.d/99-rebash-lab24.conf >/dev/null << EOF
+# REBASH lab24 — remove in cleanup
+fs.file-max = ${AFTER_MAX}
+net.ipv4.ip_forward = 0
 EOF
-{
-  uptime
-  free -h
-  df -h
-  sysctl vm.swappiness net.ipv4.ip_forward 2>/dev/null || true
-} | tee baseline.txt
+
+sudo sysctl --system 2>&1 | tee sysctl-apply.txt
+sysctl fs.file-max net.ipv4.ip_forward | tee sysctl-after.txt
+test "$(sysctl -n fs.file-max)" -eq "$AFTER_MAX"
+test "$(sysctl -n net.ipv4.ip_forward)" -eq 0
 ```
 
-### Final step – Cleanup note
+**Expected output:** `sysctl-after.txt` shows the new `fs.file-max` and `ip_forward = 0`.
+
+#### Task 3 – Limits drop-in + evidence pack
 
 ```bash
-# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-linux/lab24
+set -euo pipefail
+
+sudo tee /etc/security/limits.d/99-rebash-lab24.conf >/dev/null << 'EOF'
+# REBASH lab24 — remove in cleanup
+* soft nofile 4096
+* hard nofile 8192
+EOF
+
+# limits.d applies to new login sessions; prove the file content and pam path exist
+cat /etc/security/limits.d/99-rebash-lab24.conf | tee limits-file.txt
+grep -n 'pam_limits.so' /etc/pam.d/common-session | tee pam-limits.txt || \
+  grep -rn 'pam_limits.so' /etc/pam.d | head | tee pam-limits.txt
+
+# Performance-oriented snapshot after changes
+vmstat 1 3 | tee vmstat.txt
+iostat -xz 1 2 2>/dev/null | tee iostat.txt || echo 'install sysstat for iostat' | tee iostat.txt
+
+tar -czf production-evidence.tgz \
+  timedatectl.txt timedatectl-show.txt uname.txt os-release.txt \
+  sysctl-before.txt sysctl-after.txt sysctl-apply.txt target-file-max.txt \
+  ulimit-n-before.txt limits-file.txt pam-limits.txt \
+  ss-listen.txt failed-units.txt df.txt free.txt vmstat.txt iostat.txt
+ls -l production-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** limits file installed; pam_limits referenced; evidence archive exists.
+
+### Validation steps
+
+- [ ] Time sync status captured with `timedatectl`
+- [ ] `/etc/sysctl.d/99-rebash-lab24.conf` applied and verified
+- [ ] `/etc/security/limits.d/99-rebash-lab24.conf` exists
+- [ ] `production-evidence.tgz` exists under `~/rebash-linux/lab24`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| sysctl did not change | Typo / not loaded | `sysctl --system`; check file under `/etc/sysctl.d/` |
+| `ulimit -n` unchanged in current shell | limits apply on new sessions | Open a new login SSH session to see new soft limit |
+| chrony not syncing | Network/NTP blocked | Check security groups; `chronyc tracking` |
+| `iostat` missing | sysstat not installed | Optional install; not required for pass |
+
+### Challenge exercise
+
+Create a systemd **service drop-in** directory for an existing unit you are allowed to edit in the lab (or a lab unit you create) that sets `LimitNOFILE=8192`, then show `systemctl show -p LimitNOFILE …` in `service-limit.txt`. Remove it in Cleanup.
+
+### Learning outcomes
+
+- Captured a host hardening/performance audit snapshot
+- Applied and verified a sysctl drop-in
+- Added limits.d configuration with proof files
+- Packed production baseline evidence
+
+### Cleanup
+
+```bash
+cd ~/rebash-linux/lab24
+set -euo pipefail
+sudo rm -f /etc/sysctl.d/99-rebash-lab24.conf
+sudo rm -f /etc/security/limits.d/99-rebash-lab24.conf
+sudo sysctl --system >/dev/null
+# Keep production-evidence.tgz if you want it
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-linux/lab24/`
-- [ ] You can explain each Theory bullet in your own words
-- [ ] You used modern tooling where applicable (`ip`/`ss`, `systemctl`/`journalctl`)
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-linux/lab24/` with evidence files
+- [ ] You can explain why drop-in files beat editing primary configs blindly
+- [ ] You know limits often need a new login session
+- [ ] You treat sysctl changes as change-controlled production work
 
 ## Code Walkthrough
 
-Production Linux practice for **Production Linux — Hardening and Performance** always combines:
+Production rollout pattern:
 
-1. Inspect before you change (`status`, `df`, `ip`, logs)
-2. Prefer reversible, documented changes (config management, drop-ins)
-3. Capture evidence (command output, journal snippets) for handovers
-4. Prefer `systemctl`/`journalctl` and `ip`/`ss` over legacy tools
-5. Least privilege — escalate with `sudo` only when required
-
-Keep runbooks short enough to follow at 03:00. Automate the boring checks; keep humans for judgement.
+1. Audit current host  
+2. Propose small drop-ins in git  
+3. Test on a twin VM  
+4. Apply via config management  
+5. Watch metrics and failed units  
 
 ## Security Considerations
 
-- Treat host access and sudo as privileged — audit who can do what
-- Never paste secrets into shell history, tickets, or screenshots
-- Validate device names and paths before destructive disk or `rm` operations
-- Prefer key-based SSH and deny password auth on internet-facing hosts
-- Collect logs centrally; restrict who can read authentication and audit trails
+- Least privilege sudo and key-only SSH on internet-facing hosts  
+- Minimise listening ports; firewall default deny inbound  
+- Keep automatic security updates or a patch pipeline  
+- Do not disable security modules “for performance” without review  
+- Protect sysctl/limits change rights  
 
 ## Common Mistakes
 
-!!! warning "Using legacy networking tools by default"
-    `ifconfig`/`netstat` are missing or incomplete on modern images. **Fix:** use `ip` and `ss`.
+!!! warning "Huge blog sysctl packs on day one"
+    Untested settings break apps. **Fix:** change one parameter, measure, then keep.
 
-!!! warning "Editing vendor unit files in place"
-    Package upgrades overwrite `/lib/systemd/system`. **Fix:** `systemctl edit` drop-ins under `/etc`.
+!!! warning "Global ulimit raises for everyone"
+    Masks leaks and surprises other users. **Fix:** prefer systemd `LimitNOFILE` on the app unit.
 
-!!! warning "Trusting df without checking inodes and mounts"
-    A full `/var` or exhausted inodes looks different from root. **Fix:** `df -h`, `df -i`, and `findmnt`.
+!!! warning "No time synchronisation"
+    Certificates and log correlation fail. **Fix:** install/enable chrony; monitor sync.
+
+!!! warning "Calling a host “hardened” after one sysctl"
+    Hardening is layered. **Fix:** cover SSH, patches, users, firewall, audit, backups.
 
 ## Best Practices
 
-- Golden images + config as code over snowflake hosts
-- Alert on symptoms (failed units, disk, load) with runbooks attached
-- Time-sync (chrony) everywhere — logs and TLS depend on it
-- Separate OS and data volumes on Cloud VMs
-- Practise restore and rescue paths before you need them
+- Golden images + config as code  
+- Baselines and alerts for saturation  
+- Document every non-default sysctl  
+- Separate OS and data disks  
+- Regular restore and failover tests (next tutorial)  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Permission denied | Mode/owner/ACL/MAC | `namei -l`, `id`, `getfacl`, SELinux/AppArmor logs |
-| No route / timeout | Routing, DNS, firewall | `ip route`, `dig`, `ss`, security groups |
-| Service won’t start | Unit/config/deps | `systemctl status`, `journalctl -u`, config `-t` |
-| Disk full | Logs, containers, deleted-open | `df`/`du`, `lsof +L1`, rotate/expand |
-| High load | CPU, I/O wait, thrash | `vmstat`, `iostat`, `ps` |
+| App “too many open files” | nofile too low | Raise unit LimitNOFILE; verify |
+| Sysctl reverts after reboot | File not in sysctl.d | Place under `/etc/sysctl.d/` |
+| Clock offset | chrony/NTP blocked | Fix network; restart chrony |
+| Performance worse after tune | Bad parameter | Roll back drop-in; retest |
+| Audit fails on open ports | Unexpected listeners | `ss -lntup`; remove/stop service |
 
 ## Summary
 
-**Production Linux — Hardening and Performance** is essential for Cloud and DevOps engineers operating Linux hosts. Practise the lab until the inspection path is muscle memory, then continue the track.
+Production hosts need layered hardening and honest performance baselines. Use small drop-in files, verify read-back, and codify what works. Next: [Backup, Disaster Recovery, and Capacity](backup-disaster-recovery-and-capacity.md).
 
 ## Interview Questions
 
-1. How does this topic show up when operating Cloud VMs or Kubernetes nodes?
-2. What would you check first if this area misbehaves in production?
-3. Which modern Linux tools replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI or a cron/timer job?
+**1. What belongs in a minimal Linux production baseline?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, then gather host signals (`systemctl --failed`, `df`, `ip`/`ss`, `journalctl`) before making changes. Fix forward with evidence, not guesswork.
+??? success "Reveal answer"
+    Patch process, time sync, least-privilege access, firewall/SSH hardening, logging/metrics, resource limits for apps, backups/restore tests, and documented kernel/sysctl exceptions. Exact tools vary; the categories should not.
+
+**2. Why prefer `/etc/sysctl.d/` drop-ins over editing `/etc/sysctl.conf` only?**
+
+??? success "Reveal answer"
+    Drop-ins are easier to own per team/role, review in git, and remove cleanly. They reduce merge conflicts and make intent obvious (`99-app.conf` vs a giant shared file).
+
+**3. A process still sees the old `ulimit -n` after you edited limits.d. Why?**
+
+??? success "Reveal answer"
+    **limits.d** values apply to **new** login sessions (via PAM). Existing shells keep old limits. Systemd services should set `LimitNOFILE=` on the unit for reliable service limits.
+
+**4. How do hardening and performance conflict, and how do you balance them?**
+
+??? success "Reveal answer"
+    Example: verbose audit logging adds I/O; very low timeouts can break slow clients. Balance with measured SLOs: keep security defaults, raise specific limits for known apps, and watch metrics after each change.
+
+**5. What sysctl change is dangerous to copy from the internet without context?**
+
+??? success "Reveal answer"
+    Anything affecting networking (forwarding, rp_filter, connection tracking) or virtual memory behaviour can break routing or latency. Always test on a practice VM and know the rollback file.
+
+**6. How would you prove a hardening change in a ticket?**
+
+??? success "Reveal answer"
+    Show the drop-in contents, `sysctl`/`systemctl show` read-back, listening port snapshot, and that critical services still pass health checks. Before/after matters.
+
+**7. Where does SSH hardening fit relative to this tutorial?**
+
+??? success "Reveal answer"
+    SSH and firewalls are a major hardening slice covered in dedicated modules. This tutorial focuses on host baselines (time, sysctl, limits, audit snapshots) that complement network access controls.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Category Overview](index.md)
+- [Linux for Cloud & DevOps – Overview](index.md)
 - [Troubleshooting Linux Systems](troubleshooting-linux-systems.md) *(previous)*
 - [Backup, Disaster Recovery, and Capacity](backup-disaster-recovery-and-capacity.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md) *(related)*
 
 ## References
 
-- [Linux man-pages project](https://www.kernel.org/doc/man-pages/)
-- [systemd documentation](https://systemd.io/)
-- [Filesystem Hierarchy Standard](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
+- [`sysctl.d(5)`](https://manpages.ubuntu.com/manpages/jammy/en/man5/sysctl.d.5.html) — sysctl drop-ins  
+- [`limits.conf(5)`](https://manpages.ubuntu.com/manpages/jammy/en/man5/limits.conf.5.html) — resource limits  
+- [Ubuntu Server documentation](https://documentation.ubuntu.com/server/) — hardening topics  
 - Track index: [Linux for Cloud & DevOps Engineers](index.md)

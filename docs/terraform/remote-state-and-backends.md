@@ -44,24 +44,32 @@ comments: false
 
 
 
+
+
+
+
 Explain why remote state and locking matter, compare S3 / Azure / GCS and HCP Terraform patterns, and practise an explicit local backend path as a safe stepping stone.
 
 Local state cannot support teams. Concurrent applies corrupt files; laptops get wiped; pull requests lack a single source of truth. **Remote backends** provide shared durable storage, **locking**, encryption, and access control. Providers still talk to cloud APIs; the backend stores state.
 
 This is a core tutorial in **Module 8 · State Management** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Terraform State Fundamentals](terraform-state-fundamentals.md)
 - Terraform CLI 1.9+ (no cloud account required for the lab)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -72,9 +80,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe `terraform init -migrate-state` and partial `-backend-config`  
 - [ ] Use `terraform_remote_state` cautiously
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -82,9 +92,11 @@ This topic’s control points and relationships are shown below.
 
 ![Remote backends](../assets/excalidraw/terraform-remote-backend.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -125,60 +137,124 @@ Migrate deliberately: add backend → `init -migrate-state` → verify `state li
 - Deep `terraform_remote_state` webs instead of stable contracts.
 - Embedding long-lived access keys in backend config — use roles / OIDC.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Remote State and Backends** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-08/remote-backends/{state,state-b,out}`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-08/remote-backends/{state,state-b,out} && cd ~/rebash-terraform/module-08/remote-backends/{state,state-b,out}
 ```
 
-**Focus:** Configure a local backend path to practise backend blocks (no cloud account)
+### Real-world scenario
 
-### Step 1 – Move state into an explicit local backend directory
+You are automating **Remote State and Backends** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-mkdir -p state-backend
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
-  backend "local" {
-    path = "state-backend/terraform.tfstate"
-  }
-}
-resource "local_file" "marker" {
-  content  = "remote-style-local-backend
-"
-  filename = "${path.module}/marker.txt"
 }
 EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
+}
+output "note" { value = null_resource.lab.triggers.topic }
+EOF
 terraform init
-terraform apply -auto-approve
+terraform validate
 ```
 
-### Step 2 – Verify state location and discuss locking
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-ls -la state-backend/terraform.tfstate
-terraform state list
-echo "S3/Azure/GCS backends add shared storage + locking; this lab only relocates local state"
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+#### Task 3 – Inspect state safely
+
+State is the source of truth — list and show without hand-editing.
+
+```bash
+terraform state list | tee state-list.txt
+terraform state show null_resource.lab | tee state-show.txt
+```
+
+**Expected output:** state-list.txt contains `null_resource.lab`.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -187,9 +263,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -203,9 +281,11 @@ Production practice for **Remote State and Backends** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -215,9 +295,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -230,9 +312,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -242,9 +326,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -256,17 +342,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Remote State and Backends** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What problems do remote backends solve?
@@ -281,18 +371,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Encrypt the bucket, block public access, limit IAM to CI roles, enable versioning, and audit access. State is as sensitive as production config.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
 
-
-
 ## References
+
+
+
+
 
 
 

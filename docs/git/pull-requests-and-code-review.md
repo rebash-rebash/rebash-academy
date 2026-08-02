@@ -44,15 +44,17 @@ comments: false
 
 
 
+
+
 Open a PR with a clear description, understand required reviews and CODEOWNERS, and review changes with an ops risk lens (secrets, blast radius, rollback).
 
 PRs are the change-control gate for `main`. Branch protection + required checks beat informal “just push.”
 
 This is a core tutorial in **Module 10 · Collaboration** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -60,9 +62,9 @@ This is a core tutorial in **Module 10 · Collaboration** of the REBASH Academy 
 - [GitHub Fundamentals](github-fundamentals.md)
 - [Branching](branching-fundamentals.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -75,9 +77,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Add a CODEOWNERS file  
 - [ ] Review for security and operability
 
-
-
 ## Architecture
+
+
 
 
 
@@ -86,9 +88,9 @@ This topic’s control points and relationships are shown below.
 
 ![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -128,34 +130,97 @@ Write PR descriptions that state risk, test evidence, and rollback steps — esp
 - Merging with failing optional checks that were actually important  
 - Rewriting PR history mid-review without warning reviewers
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Pull Requests and Code Review** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-10`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-10 && cd ~/rebash-git/module-10
 ```
 
-**Focus:** prepare a small PR with conventional commits and review checklist
+### Real-world scenario
 
-### Step 1 – Feature branch + review checklist
+A delivery team is standardising **Pull Requests and Code Review**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+
+### Step-by-step tasks
+
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo base > app.txt
-git add app.txt && git commit -m "chore: base"
-git switch -c feature/rate-limit
-printf 'rate_limit: 100
-' > policy.yaml
-git add policy.yaml
-git commit -m "feat: add rate limit policy"
-cat > REVIEW.md << 'EOF'
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
+```
+
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
+
+```bash
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
+```
+
+**Expected output:** show.txt lists work.txt in the commit.
+
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
+
 ## PR checklist
+
+
 - [ ] Title summarises intent
 - [ ] Commits are reviewable units
 - [ ] No secrets
@@ -178,9 +243,9 @@ git status
 # Keep ~/rebash-git/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
 
 
 
@@ -190,9 +255,9 @@ git status
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -207,9 +272,9 @@ Production practice for **Pull Requests and Code Review** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -220,9 +285,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -236,9 +301,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -249,9 +314,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -264,18 +329,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 - Demo doc change
 
-
-
 ## Interview Questions
+
+
 
 
 1. What makes a high-quality PR for infrastructure?
@@ -290,9 +355,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Require reviews for sensitive paths and never approve changes you do not understand.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -300,9 +365,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [GitHub Actions for DevOps](github-actions-for-devops.md)
 
-
-
 ## References
+
+
 
 
 

@@ -25,6 +25,21 @@ mkdocs serve
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000) to preview the site.
 
+### Course books (EPUB / PDF)
+
+Professional books include cover, copyright, TOC, list of figures, syntax highlighting,
+headers/footers/page numbers, glossary, index, QR codes to live labs, and styled callouts.
+
+```bash
+pip install -r requirements-books.txt
+# macOS: brew install pango gdk-pixbuf libffi glib
+python3 scripts/build_course_book.py --list-courses
+python3 scripts/build_course_book.py linux
+python3 scripts/build_course_book.py python --format epub
+```
+
+Outputs land in `books/<course>/`. See [books/README.md](books/README.md).
+
 ## Adding a Tutorial
 
 Use the tutorial generator to scaffold a new page with the standard structure:

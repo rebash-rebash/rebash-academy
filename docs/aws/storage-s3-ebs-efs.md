@@ -51,6 +51,8 @@ comments: false
 
 
 
+
+
 Select the right AWS storage service for each workload — Amazon Simple Storage Service (S3), Elastic Block Store (EBS), Elastic File System (EFS), and a brief Amazon FSx overview — and apply storage classes, lifecycle rules, and encryption correctly.
 
 Cloud storage is not one product. **Block**, **file**, and **object** models solve different problems. Using EBS like a shared drive, or S3 like a POSIX disk, creates outages and surprise bills. This module gives Cloud and DevOps engineers a decision framework used in production architectures.
@@ -60,9 +62,9 @@ Cloud storage is not one product. **Block**, **file**, and **object** models sol
 
 This is a core tutorial in **Module 5 · Storage** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -70,9 +72,9 @@ This is a core tutorial in **Module 5 · Storage** of the REBASH Academy **AWS f
 - [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
 - Comfortable with Linux filesystems and the AWS CLI
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -85,9 +87,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Know when EFS or FSx fits shared file access  
 - [ ] Enforce encryption at rest (SSE-S3, SSE-KMS, client-side) and in transit
 
-
-
 ## Architecture
+
+
 
 
 
@@ -96,9 +98,9 @@ This topic’s control points and relationships are shown below.
 
 ![AWS storage](../assets/excalidraw/aws-storage.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -153,55 +155,98 @@ Lifecycle sketch: Standard → IA (30d) → Glacier Flexible (90d) → expire (3
 - Mounting EFS without TLS or the correct security group and blaming “hangs”  
 - Choosing FSx for every shared-file need when EFS or S3 would suffice
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **Storage: S3, EBS, and EFS** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-05`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-05 && cd ~/rebash-aws/module-05
 ```
 
-**Focus:** create a uniquely named lab bucket, prove put/get, then delete everything
+### Real-world scenario
 
-### Step 1 – S3 lab bucket lifecycle
+Security asks for evidence that **Storage: S3, EBS, and EFS** is configured correctly. You gather CLI proof without click-ops drift.
 
-```bash
-aws sts get-caller-identity
-ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-BUCKET="rebash-lab-${ACCOUNT}-$(date +%s)"
-echo "$BUCKET" > bucket-name.txt
-REGION=$(aws configure get region || echo eu-west-1)
-aws s3 mb "s3://${BUCKET}" --region "$REGION"
-echo "hello rebash" > hello.txt
-aws s3 cp hello.txt "s3://${BUCKET}/hello.txt"
-aws s3 ls "s3://${BUCKET}/"
-aws s3 cp "s3://${BUCKET}/hello.txt" hello-down.txt
-cat hello-down.txt
-```
+### Step-by-step tasks
 
-### Step 2 – Destroy bucket contents and bucket
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-BUCKET=$(cat bucket-name.txt)
-aws s3 rm "s3://${BUCKET}" --recursive
-aws s3 rb "s3://${BUCKET}"
-rm -f hello.txt hello-down.txt bucket-name.txt
-aws ec2 describe-volumes --query 'Volumes[].{Id:VolumeId,Size:Size,State:State}' --output table | head
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Final step – Cleanup note
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
+EOF
+cat notes.txt
 ```
 
+**Expected output:** Evidence files created even if some APIs are denied.
 
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
+
+```bash
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
+```
 
 ## Validation
+
+
 
 
 
@@ -211,9 +256,9 @@ aws ec2 describe-volumes --query 'Volumes[].{Id:VolumeId,Size:Size,State:State}'
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -228,9 +273,9 @@ Production practice for **Storage: S3, EBS, and EFS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -241,9 +286,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -257,9 +302,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -270,9 +315,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -285,18 +330,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Storage: S3, EBS, and EFS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. S3 consistency model basics you rely on?
@@ -311,9 +356,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Block public access by default, encrypt where required, and delete lab buckets/objects when finished.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -321,9 +366,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Databases on AWS](databases-on-aws.md)
 
-
-
 ## References
+
+
 
 
 

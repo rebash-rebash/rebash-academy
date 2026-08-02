@@ -44,24 +44,32 @@ comments: false
 
 
 
+
+
+
+
 Apply conditionals, `for` expressions, common built-in functions, `templatefile`, and a controlled `dynamic` block — keeping transforms in `locals` for reviewability.
 
 Terraform expressions include a rich **function library**, collection transforms (`for`), and **`dynamic` blocks** for nested provider schema. Large multi-line artefacts belong in **`templatefile`** so HCL stays readable. Prefer clarity over clever one-liners.
 
 This is a core tutorial in **Module 10 · Expressions & Functions** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Registry Modules and Composition](registry-modules-and-composition.md)
 - Terraform CLI 1.9+
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -72,9 +80,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Generate nested blocks with `dynamic` when needed  
 - [ ] Keep complex transforms in `locals`
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -82,9 +92,11 @@ This topic’s control points and relationships are shown below.
 
 ![Expressions and functions](../assets/excalidraw/terraform-expressions.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -126,66 +138,113 @@ Prefer named locals over nested in-resource pipelines; static blocks when N is t
 - Template variable names in `.tftpl` not matching the vars map keys.
 - Confusing `for` expressions with the `for_each` meta-argument.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Functions, Templates, and Dynamic Blocks** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-10/expressions/out`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-10/expressions/out && cd ~/rebash-terraform/module-10/expressions/out
 ```
 
-**Focus:** Use functions, templatestring/templatefile patterns, and dynamic blocks
+### Real-world scenario
 
-### Step 1 – Build dynamic content
+You are automating **Functions, Templates, and Dynamic Blocks** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > greeting.tftpl <<'EOF'
-Hello, ${name}!
-EOF
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-variable "names" {
-  type    = list(string)
-  default = ["alpha", "beta"]
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
 }
-resource "local_file" "greetings" {
-  for_each = toset(var.names)
-  filename = "${path.module}/hi-${each.key}.txt"
-  content  = templatefile("${path.module}/greeting.tftpl", { name = each.key })
-}
-locals {
-  upper_names = [for n in var.names : upper(n)]
-}
-output "upper_names" { value = local.upper_names }
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply and verify rendered files
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-cat hi-alpha.txt hi-beta.txt
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
 terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -194,9 +253,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -210,9 +271,11 @@ Production practice for **Functions, Templates, and Dynamic Blocks** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -222,9 +285,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -237,9 +302,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -249,9 +316,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -263,17 +332,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Functions, Templates, and Dynamic Blocks** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What is `templatefile` useful for?
@@ -288,18 +361,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Heavy nesting hides intent. Prefer locals with names, smaller templates, and tests so security-relevant values stay reviewable.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Data Sources and Existing Infrastructure](data-sources-and-existing-infrastructure.md)
 
-
-
 ## References
+
+
+
+
 
 
 

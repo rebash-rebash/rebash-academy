@@ -49,24 +49,32 @@ comments: false
 
 
 
+
+
+
+
 Assemble a DevSecOps stage that runs secret detection and SAST early, dependency and container scanning on build outputs, and documents where DAST, licence policies, and Software Bill of Materials (SBOM) fit before production deploy.
 
 **DevSecOps** embeds security scanners into the same pipeline that builds and deploys. GitLab analysers cover Static Application Security Testing (SAST), Dynamic Application Security Testing (DAST), dependency scanning, container scanning, secret detection, licence compliance, and SBOM export. Fail the pipeline on policy severity — do not treat scanners as optional decoration.
 
 This is a core tutorial in **Module 12 · DevSecOps** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Multi-Cloud Deployments with GitLab](multi-cloud-deployments-with-gitlab.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -79,9 +87,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline licence / SBOM outputs for supply-chain review  
 - [ ] Gate merges on severity thresholds
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -90,9 +100,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab DevSecOps scanning](../assets/excalidraw/gitlab-devsecops.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -145,62 +157,105 @@ Treat false positives with tracked allowlists — not by disabling scanners glob
 - Running DAST only in production.  
 - Generating an SBOM not attached to the released digest.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Security Scanning and DevSecOps** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-12`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-12 && cd ~/rebash-gitlab/module-12
 ```
 
-**Focus:** SAST/secret-detection style jobs and a security gate
+### Real-world scenario
 
-### Step 1 – Security scanning pipeline
+Your squad is encoding **Security Scanning and DevSecOps** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-echo 'PASSWORD_PLACEHOLDER = "replace-me"' > app.py
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-include:
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
-stages: [test, security, gate]
-unit:
-  stage: test
-  image: alpine:3.20
-  script: ["echo unit"]
-secret_review:
-  stage: security
-  image: alpine:3.20
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
   script:
-    - echo "Review Security tab reports"
-    - test -f app.py
-security_gate:
-  stage: gate
-  image: alpine:3.20
-  needs: [secret_review]
-  script: ["echo Fail when critical findings exceed policy"]
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Hunt for accidental secrets
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-grep -RInE '(AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' . || echo "no obvious secrets"
-grep -E 'Secret-Detection|SAST|security_gate' .gitlab-ci.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -210,9 +265,11 @@ grep -E 'Secret-Detection|SAST|security_gate' .gitlab-ci.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -227,9 +284,11 @@ Production practice for **Security Scanning and DevSecOps** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -240,9 +299,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -256,9 +317,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -269,9 +332,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -284,18 +349,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Security Scanning and DevSecOps** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What is the difference between SAST and secret detection?
@@ -310,9 +379,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Keep scanners required on protected branches and never commit secrets to “fix” the detector.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -320,9 +391,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md)
 
-
-
 ## References
+
+
+
+
 
 
 

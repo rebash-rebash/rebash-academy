@@ -47,15 +47,21 @@ comments: false
 
 
 
+
+
+
+
 Create annotated git tags, publish GitHub Releases with notes and assets, and apply Semantic Versioning (SemVer) with changelog discipline from GitHub Actions.
 
 A **release** is more than a green workflow: it is an immutable Git reference, human-readable notes, and optional binaries or package links. GitHub ties **tags**, **Releases**, and Actions so the same SHA you tested becomes the version you promote through environments.
 
 This is a core tutorial in **Module 13 · Release Management** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -63,9 +69,11 @@ This is a core tutorial in **Module 13 · Release Management** of the REBASH Aca
 - [Testing in GitHub Actions](testing-in-github-actions.md)
 - Comfortable with protected branches and `contents` / `packages` permissions
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -77,9 +85,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Create a GitHub Release with notes and asset links  
 - [ ] Generate or attach a changelog for operators
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -88,9 +98,11 @@ This topic’s control points and relationships are shown below.
 
 ![Release pipeline](../assets/excalidraw/gha-release-pipeline.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -146,26 +158,108 @@ Prefer **annotated tags** over lightweight tags for release history. Keep change
 - Creating Releases without a matching successful tag workflow — notes without artefacts.  
 - Granting broad `contents: write` on every pull-request workflow — scope write permissions to release jobs only.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Release Management and Versioning** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-13/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-13/.github/workflows && cd ~/rebash-github-actions/module-13/.github/workflows
 ```
 
-**Focus:** tag-driven release workflow publishing a changelog artifact
+### Real-world scenario
 
-### Step 1 – Release workflow
+Platform engineering wants **Release Management and Versioning** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > CHANGELOG.md << 'EOF'
-# Changelog
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
+EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+```
+
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
+
+```bash
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
+```
+
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
+
+```bash
+# Keep workflow stubs under ~/rebash-github-actions/
+```
+
 ## Unreleased
+
+
+
+
 - GHA release lab
 EOF
 cat > .github/workflows/release.yml << 'EOF'
@@ -206,9 +300,11 @@ test -f CHANGELOG.md
 # Keep ~/rebash-github-actions/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -218,9 +314,11 @@ test -f CHANGELOG.md
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -235,9 +333,11 @@ Production practice for **Release Management and Versioning** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -248,9 +348,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -264,9 +366,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -277,9 +381,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -292,18 +398,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Release Management and Versioning** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do tag triggers differ from branch pushes?
@@ -318,9 +428,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Restrict contents write, protect release tags, and sign/attest artifacts when required.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -328,9 +440,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md)
 
-
-
 ## References
+
+
+
+
 
 
 

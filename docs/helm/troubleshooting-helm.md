@@ -41,23 +41,31 @@ comments: false
 
 
 
+
+
+
+
 Diagnose common Helm failures with a fixed order: lint → template → dry-run → release status → Kubernetes events.
 
 Most “Helm is broken” tickets are template nil pointers, values typos, or cluster admission errors. Separate **render** failures from **apply** failures.
 
 This is a core tutorial in **Module 12 · Troubleshooting** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Production Helm Practices](production-helm-practices.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -68,9 +76,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Recover failed upgrades (`--atomic`, rollback)  
 - [ ] Debug dependency / repo fetch issues
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -78,9 +88,11 @@ This topic’s control points and relationships are shown below.
 
 ![Release lifecycle](../assets/excalidraw/helm-release-lifecycle.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -130,51 +142,102 @@ Separate questions: Did YAML render? Did the API accept it? Did Pods become Read
 - Fixing production with `kubectl edit` on Helm-owned objects (drift returns on next reconcile).
 - Assuming `--force` or deleting release Secrets is a routine fix — both are last resorts with data-loss risk.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Create, lint, render, install, and uninstall a Helm chart demonstrating **Troubleshooting Helm**.
+
+### Prerequisites
+
+- helm CLI
+- kubectl + lab cluster
+- Ability to create namespaces
+
+### Lab environment
+
+Workspace: `~/rebash-helm/module-12`
+
+Helm 3 against kind/minikube; release namespace `rebash-helm`.
 
 ```bash
 mkdir -p ~/rebash-helm/module-12 && cd ~/rebash-helm/module-12
 ```
 
-**Focus:** Diagnose a failed release using status, hooks, and kubectl
+### Real-world scenario
 
-### Step 1 – Install a chart then break an upgrade on purpose
+A team wants **Troubleshooting Helm** packaged as a chart so GitOps can promote the same artefact across environments.
+
+### Step-by-step tasks
+
+#### Task 1 – Create and lint a chart
+
+Scaffold a chart and fail the build on lint errors before install.
 
 ```bash
-kubectl create namespace rebash-helm
-helm create trouble
-helm upgrade --install demo ./trouble -n rebash-helm
-# Force a bad image tag to provoke ImagePullBackOff
-helm upgrade demo ./trouble -n rebash-helm --set image.repository=nginx --set image.tag=not-a-real-tag-xyz --wait --timeout 45s || true
-helm -n rebash-helm status demo || true
+helm version
+helm create labchart
+helm lint ./labchart | tee lint.txt
+helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
 ```
 
-### Step 2 – Collect evidence and roll back
+**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+
+#### Task 2 – Install with values override
+
+Prove values change rendered replicas, then install with wait.
 
 ```bash
-kubectl -n rebash-helm get pods
-kubectl -n rebash-helm describe pod -l app.kubernetes.io/instance=demo | sed -n '/Events:/,$p' | head -n 30
-helm -n rebash-helm history demo
-helm -n rebash-helm rollback demo 1
-kubectl -n rebash-helm rollout status deploy -l app.kubernetes.io/instance=demo --timeout=90s || true
+kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
+cat > myvalues.yaml << 'EOF'
+replicaCount: 2
+EOF
+helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
+helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
+helm list -n rebash-helm
+kubectl get deploy -n rebash-helm
 ```
 
-### Final step – Cleanup note
+**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+
+### Validation steps
+
+- [ ] helm lint clean
+- [ ] Release listed in namespace
+- [ ] Uninstall removes the release
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
+| lint failed | Template YAML break | Fix templates; re-run helm lint |
+| context deadline | Slow cluster | Increase --timeout or fix readiness |
+
+### Challenge exercise
+
+Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+
+### Learning outcomes
+
+- Packaged Kubernetes YAML as a chart
+- Overrode values safely
+- Cleaned up the release
+
+### Cleanup
 
 ```bash
-helm uninstall demo -n rebash-helm --ignore-not-found || true
+helm uninstall labchart -n rebash-helm 2>/dev/null || true
 kubectl delete namespace rebash-helm --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -183,9 +246,11 @@ kubectl delete namespace rebash-helm --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -199,9 +264,11 @@ Production practice for **Troubleshooting Helm** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -211,9 +278,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -226,9 +295,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -238,9 +309,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -252,17 +325,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 You can create, release, secure, GitOps-deploy, and troubleshoot production Helm charts end to end.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What commands start Helm release triage?
@@ -277,18 +354,22 @@ You can create, release, secure, GitOps-deploy, and troubleshoot production Helm
 !!! tip "Sample answer — question 4"
     Resources marked to keep remain after uninstall and can block reinstalls or leave credentials behind. Know which objects persist and delete them deliberately when appropriate.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Course overview](index.md) · [Kubernetes Helm module](../kubernetes/helm-package-management.md) · [Argo CD](../argocd/index.md)
 
-
-
 ## References
+
+
+
+
 
 
 

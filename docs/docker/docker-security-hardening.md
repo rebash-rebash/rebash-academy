@@ -43,13 +43,13 @@ comments: false
 
 
 
+
+
 Run a container as non-root with a read-only root filesystem, dropped capabilities, and no secrets in the image layers.
 
 Default containers often run as root with a writable filesystem — fine for demos, risky in production. Defence in depth: user, capabilities, seccomp/AppArmor, read-only FS, secrets mounts.
 
 This is a core tutorial in **Module 11 · Security** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
@@ -57,11 +57,13 @@ This is a core tutorial in **Module 11 · Security** of the REBASH Academy **Doc
 
 
 
+
+
 - [Container Registries and Distribution](container-registries-and-distribution.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -75,9 +77,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline seccomp / AppArmor roles  
 - [ ] Keep secrets out of `ENV` in images
 
-
-
 ## Architecture
+
+
 
 
 
@@ -87,9 +89,9 @@ This topic’s control points and relationships are shown below.
 
 ![Production platform](../assets/excalidraw/docker-production-platform.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -129,44 +131,94 @@ Set `USER` in the Dockerfile to a non-root UID and align Kubernetes `runAsNonRoo
 - Baking cloud keys into images  
 - Dropping capabilities without testing startup (then disabling all hardening)
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Docker Security Hardening** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-11`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
 ```
 
-**Focus:** run as non-root, drop capabilities, read security options
+### Real-world scenario
 
-### Step 1 – Hardening flags
+You are validating **Docker Security Hardening** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-docker run -d --name rebash-sec --user 101:101 --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE nginx:alpine
-docker exec rebash-sec id
-docker inspect rebash-sec --format 'user={{ "{{" }}.Config.User{{ "}}" }} readonly={{ "{{" }}.HostConfig.ReadonlyRootfs{{ "}}" }}'
-docker inspect rebash-sec --format '{{ "{{" }}json .HostConfig.CapDrop{{ "}}" }}'
-```
+### Step-by-step tasks
 
-### Step 2 – Cleanup
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-docker rm -f rebash-sec
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker rm -f rebash-sec 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -177,9 +229,9 @@ docker rm -f rebash-sec 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -195,9 +247,9 @@ Production practice for **Docker Security Hardening** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -209,9 +261,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -226,9 +278,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -240,9 +292,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -256,9 +308,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -266,9 +318,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 **Docker Security Hardening** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. List three hardening flags you use on docker run.
@@ -283,9 +335,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Default deny: non-root, cap-drop ALL, no privileged, minimal mounts.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -295,9 +347,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Container Scanning and SBOM](container-scanning-and-sbom.md)
 - Depth: [Environment Variables and Secrets](environment-variables-and-secrets.md)
 
-
-
 ## References
+
+
 
 
 

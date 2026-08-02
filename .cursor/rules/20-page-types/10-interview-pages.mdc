@@ -1,3 +1,721 @@
 ---
-alwaysApply: true
+description: Intelligent interview preparation and mock interview generation system for REBASH Academy
+alwaysApply: false
 ---
+
+# REBASH Academy Interview Page System
+
+## Canonical interview mandate (mandatory)
+
+Follow `.cursor/prompts/tutorials/create_interview_questions.md` and `.cursor/rules/00-foundation/09-content-quality-standard.mdc`.
+
+- Topic-specific questions only (no generic Cloud boilerplate)
+- Mix: concept · scenario · troubleshooting · trade-offs
+- Model answers explain *why* they are strong; include follow-ups on standalone guides
+- In-tutorial: 5–8 questions + 2–3 `!!! tip` sample answers
+
+Prefer Codex until the user changes agents.
+
+## Purpose
+
+This rule defines how interview preparation pages should be generated.
+
+Interview pages prepare learners for real engineering interviews.
+
+Every interview page should simulate the experience of interviewing with a modern engineering organisation.
+
+---
+
+# Philosophy
+
+Every interview page should answer
+
+↓
+
+What knowledge is expected?
+
+↓
+
+How would an interviewer ask this?
+
+↓
+
+How should I answer?
+
+↓
+
+Why is this answer strong?
+
+↓
+
+How can I improve?
+
+↓
+
+What would be the follow-up questions?
+
+Interview preparation should build confidence.
+
+Not memorisation.
+
+---
+
+# Interview Journey
+
+Every interview page should follow
+
+Role Overview
+
+↓
+
+Skills Expected
+
+↓
+
+Interview Process
+
+↓
+
+Technical Questions
+
+↓
+
+Scenario Questions
+
+↓
+
+Hands-on Tasks
+
+↓
+
+Architecture Discussion
+
+↓
+
+Behavioural Questions
+
+↓
+
+Evaluation
+
+↓
+
+Improvement Plan
+
+↓
+
+Next Interview
+
+---
+
+# Hero Section
+
+Automatically include
+
+Interview Topic
+
+Job Role
+
+Experience Level
+
+Difficulty
+
+Estimated Duration
+
+Technologies
+
+Question Count
+
+Mock Interview Option
+
+Primary CTA
+
+---
+
+# Role Overview
+
+Explain
+
+Job Responsibilities
+
+Daily Work
+
+Expected Skills
+
+Common Technologies
+
+Production Responsibilities
+
+Help learners understand the target role.
+
+---
+
+# Interview Process
+
+Describe
+
+Recruiter Screening
+
+↓
+
+Technical Round
+
+↓
+
+Hands-on Round
+
+↓
+
+System Design
+
+↓
+
+Behavioural Round
+
+↓
+
+Hiring Manager
+
+↓
+
+Final Discussion
+
+Explain what happens in each stage.
+
+---
+
+# Experience Levels
+
+Support
+
+Graduate
+
+Junior
+
+Mid-Level
+
+Senior
+
+Lead
+
+Staff
+
+Principal
+
+Architect
+
+Adjust questions automatically.
+
+---
+
+# Technical Questions
+
+Generate
+
+Concept Questions
+
+Architecture Questions
+
+Configuration Questions
+
+Security Questions
+
+Performance Questions
+
+Troubleshooting Questions
+
+Automation Questions
+
+Cloud Questions
+
+Questions should reflect real interviews.
+
+---
+
+# Scenario Questions
+
+Present situations like
+
+Production outage
+
+Deployment failure
+
+Security incident
+
+Performance degradation
+
+Scaling problem
+
+Migration challenge
+
+CI/CD failure
+
+Disaster recovery
+
+Candidates should explain their thinking.
+
+---
+
+# Hands-on Tasks
+
+Automatically include
+
+Debug this YAML
+
+Review Terraform
+
+Fix Dockerfile
+
+Write Bash script
+
+Improve Kubernetes manifest
+
+Troubleshoot logs
+
+Analyse monitoring data
+
+Review CI/CD pipeline
+
+Real interviews often involve practical work.
+
+---
+
+# Code Review
+
+Provide
+
+Broken code
+
+Configuration mistakes
+
+Security issues
+
+Performance issues
+
+Ask learners to identify
+
+Problem
+
+Cause
+
+Fix
+
+Best Practice
+
+---
+
+# System Design
+
+Generate discussions around
+
+Microservices
+
+High Availability
+
+Load Balancing
+
+Scaling
+
+Networking
+
+Caching
+
+Observability
+
+Disaster Recovery
+
+Security
+
+Trade-offs
+
+Encourage architectural thinking.
+
+---
+
+# Behavioural Questions
+
+Generate
+
+Leadership
+
+Ownership
+
+Conflict Resolution
+
+Failure
+
+Success
+
+Learning
+
+Mentoring
+
+Communication
+
+Use the STAR framework where appropriate.
+
+---
+
+# Follow-up Questions
+
+After every answer generate
+
+Why?
+
+↓
+
+How?
+
+↓
+
+What if?
+
+↓
+
+Alternative?
+
+↓
+
+Trade-offs?
+
+↓
+
+Production concerns?
+
+Simulate realistic interviewer behaviour.
+
+---
+
+# Answer Evaluation
+
+Every answer should include
+
+Excellent Answer
+
+Good Answer
+
+Weak Answer
+
+Common Mistakes
+
+Evaluation Criteria
+
+Improvement Suggestions
+
+Help learners understand expectations.
+
+---
+
+# Rubrics
+
+Evaluate
+
+Technical Accuracy
+
+Problem Solving
+
+Communication
+
+Architecture Thinking
+
+Security Awareness
+
+Performance Awareness
+
+Production Readiness
+
+Confidence
+
+Rubrics should resemble real hiring scorecards.
+
+---
+
+# Common Mistakes
+
+Explain
+
+Incomplete answers
+
+Theory without examples
+
+Ignoring trade-offs
+
+Weak troubleshooting
+
+Poor communication
+
+Lack of production thinking
+
+Teach candidates what interviewers notice.
+
+---
+
+# Whiteboard Exercises
+
+When appropriate include
+
+Architecture sketch
+
+Workflow design
+
+Data flow
+
+Network topology
+
+Scaling discussion
+
+Infrastructure planning
+
+Encourage structured thinking.
+
+---
+
+# Mock Interview
+
+Support
+
+Timed Session
+
+Random Questions
+
+Role-specific Questions
+
+Company-style Questions
+
+Scenario Simulation
+
+Technical Challenge
+
+Feedback Report
+
+Mock interviews should feel authentic.
+
+---
+
+# Personalised Feedback
+
+Automatically identify
+
+Strengths
+
+Weak Areas
+
+Missing Knowledge
+
+Communication Gaps
+
+Technical Gaps
+
+Recommended Practice
+
+Generate actionable advice.
+
+---
+
+# Improvement Plan
+
+Recommend
+
+Lessons
+
+Labs
+
+Projects
+
+Technology Pages
+
+Cheat Sheets
+
+Certification Domains
+
+Architecture Guides
+
+Learning should continue after every interview.
+
+---
+
+# Career Guidance
+
+Explain
+
+Typical Career Path
+
+Expected Skills
+
+Industry Trends
+
+Related Roles
+
+Next-Level Responsibilities
+
+Help learners plan ahead.
+
+---
+
+# Navigation
+
+Every interview page should include
+
+Breadcrumbs
+
+Interview Categories
+
+Role Navigation
+
+Previous
+
+Next
+
+Related Technologies
+
+Feedback
+
+Search
+
+---
+
+# Responsive Behaviour
+
+Desktop
+
+Full interview workspace
+
+Tablet
+
+Simplified interface
+
+Mobile
+
+One question at a time
+
+Large controls
+
+Readable code
+
+---
+
+# Accessibility
+
+Support
+
+Keyboard Navigation
+
+Screen Readers
+
+Accessible Code Blocks
+
+High Contrast
+
+Reduced Motion
+
+Accessible Forms
+
+Accessibility is mandatory.
+
+---
+
+# AI Decision Making
+
+Before generating determine
+
+↓
+
+Role
+
+↓
+
+Technology
+
+↓
+
+Experience Level
+
+↓
+
+Interview Type
+
+↓
+
+Question Mix
+
+↓
+
+Assessment Strategy
+
+↓
+
+Production Focus
+
+↓
+
+Improvement Strategy
+
+↓
+
+Generate
+
+---
+
+# Anti-patterns
+
+Never
+
+Generate memorisation-only questions
+
+Provide answers without explanations
+
+Skip production scenarios
+
+Ignore behavioural interviews
+
+Ignore architecture discussions
+
+Use trick questions
+
+Focus only on theory
+
+Ignore troubleshooting
+
+End without recommendations
+
+---
+
+# Validation Checklist
+
+Before completing verify
+
+✓ Role clearly defined
+
+✓ Interview process explained
+
+✓ Technical questions included
+
+✓ Scenario questions included
+
+✓ Hands-on tasks included
+
+✓ Architecture discussion included
+
+✓ Behavioural questions included
+
+✓ Follow-up questions generated
+
+✓ Evaluation rubric included
+
+✓ Improvement plan provided
+
+✓ Career guidance included
+
+✓ Next learning recommended
+
+---
+
+# Success Criteria
+
+Every REBASH Academy interview page should feel like a professional mock interview conducted by experienced engineering leaders.
+
+Learners should improve their technical knowledge, communication skills, problem-solving ability and production engineering mindset while understanding exactly how interviewers evaluate candidates.
+
+The learner should finish thinking:
+
+"I know how to think, communicate and solve problems like the engineer this role requires."

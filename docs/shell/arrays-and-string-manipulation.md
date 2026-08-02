@@ -1,20 +1,26 @@
 ---
 title: "Arrays and String Manipulation"
-description: "Indexed and associative arrays, string slicing and substitution, and pattern matching for ops data shaping."
+description: "Use Bash indexed arrays, expand elements safely, and apply string length, slice, and replace operations in ops scripts."
 difficulty: intermediate
-estimated_time: "50 min"
+estimated_time: "45–55 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: shell
+technology: shell
+module: "Module 8 · Arrays & Strings"
 tags:
   - shell
   - bash
   - arrays
   - strings
-  - patterns
+  - parameter-expansion
 prerequisites:
-  - Functions, Parameters, and Locals
-  - Bash 4.2+ on Linux (WSL2/VM/cloud)
+  - shell/functions-parameters-and-locals
+next:
+  - shell/file-operations-in-shell
+related:
+  - shell/functions-parameters-and-locals
+  - shell/file-operations-in-shell
 comments: false
 ---
 
@@ -22,29 +28,36 @@ comments: false
 
 ## Overview
 
-Host lists, service maps, and path rewriting are array and string problems. Handle them without fragile IFS hacks.
+An **indexed array** stores a numbered list of values in one variable: hosts, files, or regions. You create it with `arr=(a b c)`, read elements with `"${arr[0]}"`, and expand all elements with `"${arr[@]}"`. Bash also has rich **string (parameter) expansions**: length `"{{ '${#var}' }}"`, slice `"${var:offset:length}"`, and replace `"${var/old/new}"`. Together, arrays and string ops let you build command lines and clean names without calling `sed` for every small change. In this tutorial you will build arrays, iterate them safely, practise slice/replace, and save proof under `~/rebash-shell/lab08`.
 
-This is **Tutorial 8** in **Module 8: Arrays & Strings** of the REBASH Academy **Shell Scripting for DevOps Engineers** series — written for Linux administrators, DevOps engineers, SREs, and platform engineers who automate production hosts with Bash.
+DevOps scripts often start with a list of targets. Putting that list in an array avoids brittle space-separated strings and makes `"${arr[@]}"` forwarding safe — the same idea as `"$@"` from the functions module. String expansions trim suffixes (`.log`), build backup names, and normalise environment names (`Dev` → `dev`) before talking to cloud APIs.
+
+In production, the dangerous mistake is unquoted `${arr[@]}` or building lists with unquoted globs. Another trap is confusing `"${arr[*]}"` (joined) with `"${arr[@]}"` (separate words). Prefer arrays for lists of paths; prefer string expansion for single-value cleanup; move heavy parsing to `awk`/`jq` when the format is complex.
+
+This is **Tutorial 8** in **Module 8: Arrays & Strings** of the REBASH Academy **Shell Scripting for DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers. By the end, you will manipulate lists and strings with patterns you can defend in review.
+
+!!! note "MkDocs / macros and Bash `${…}`"
+    Bash uses `${name}` for expansions (single braces after the dollar). The docs site macro engine treats double curly braces as template syntax. Keep all Bash examples in the `${…}` form shown on this page. If a page must show a double-brace sequence, break it up in prose or escape it per the MkDocs macros guidance so the build does not parse it as a template.
 
 ## Prerequisites
 
-- Functions, Parameters, and Locals
-- Bash 4.2+ on Linux (WSL2/VM/cloud)
+- [Functions, Parameters, and Locals](functions-parameters-and-locals.md)
+- Bash 4.2+ on a practice Linux host (indexed arrays; associative arrays need Bash 4+)
+- Comfort with quoting and `"$@"`
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Arrays and String Manipulation” in a real ops script
-- [ ] Use `set -euo pipefail` as the production default
-- [ ] Use quoted expansions and clear stderr diagnostics
-- [ ] Produce meaningful exit codes for automation consumers
-- [ ] Debug behaviour with `bash -x` when something fails
-- [ ] Relate this topic to day-to-day Linux admin and DevOps work
+- [ ] Create and append to indexed arrays and read elements by index
+- [ ] Expand all elements safely with `"${arr[@]}"` and contrast `"${arr[*]}"`
+- [ ] Use string length, offset slice, and pattern replace expansions
+- [ ] Iterate arrays in a `for` loop without word-splitting paths
+- [ ] Save array/string evidence suitable for a change ticket
 
 ## Architecture
 
-Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
+Arrays hold lists; string expansions transform single values; together they feed loops and commands. The diagram highlights that path.
 
 ![Architecture diagram for Arrays and String Manipulation](../assets/excalidraw/shell-arrays-strings.svg)
 
@@ -52,172 +65,353 @@ Ops scripts sit between humans/automation and system tools. This topic’s contr
 
 ### What it is
 
-Bash **arrays** store ordered lists (**indexed**) or key/value maps (**associative**, Bash 4+). Alongside arrays, **parameter expansion** offers built-in string surgery: strip prefixes and suffixes, replace substrings, and take slices — without spawning `sed` for every small edit. **Pattern matching** with `[[ ]]`, `case`, and `=~` validates names and selects behaviour. Together these features let ops scripts manage host inventories, port maps, and path rewriting cleanly.
-
-### Why it matters
-
-DevOps work is full of lists: targets to patch, services to restart, files to archive. Storing them in a properly quoted array avoids the “split on spaces” trap that breaks paths and hostnames. Associative arrays replace brittle parallel lists (`names[i]` with `ports[i]`) with named lookups. Built-in string expansions keep simple transforms fast and dependency-free — useful in constrained Continuous Integration (CI) images — while patterns stop unsafe input before a destructive command runs.
-
-### How it works
-
-Indexed arrays hold elements in order. Always expand with `"${array[@]}"` so spaces inside elements are preserved:
+**Indexed arrays** map integers starting at 0 to values:
 
 ```bash
 hosts=(web01 web02 web03)
 hosts+=("web04")
-printf '%s\n' "${hosts[@]}"
-n=0
-for _ in "${hosts[@]}"; do n=$((n + 1)); done
-echo "count=$n"
+printf '%s\n' "${hosts[0]}"
+printf 'count=%s\n' "{{ '${#hosts[@]}' }}"
 ```
 
-Associative arrays need an explicit declaration:
+**String expansions** work on any scalar variable (and on a single array element):
 
 ```bash
-declare -A ports=( [web]=80 [db]=5432 )
-printf 'web port=%s\n' "${ports[web]}"
+name="app.prod.log"
+printf '%s\n' "{{ '${#name}' }}"
+printf '%s\n' "${name:0:3}"
+printf '%s\n' "${name%.log}"
+printf '%s\n' "${name/prod/staging}"
 ```
 
-They require Bash 4+ and suit environment-to-value maps and small inventories. For strings, parameter expansions rewrite without external tools. Combine with `[[ $name == *.log ]]`, `case` patterns, or `=~` regex — and validate before any destructive use.
+### Why it matters
 
-### Key concepts
+Space-separated strings break as soon as a path contains a space. Arrays keep elements separate. In Continuous Integration (CI) you often build an array of changed files or target environments, then pass `"${targets[@]}"` to a deployer. String replace and suffix removal keep naming rules in one place (for example strip `.yaml` before calling an API). Wrong quoting turns one path into many words and can delete or copy the wrong things.
 
-| Expansion / form | Use |
-|------------------|-----|
-| `"${array[@]}"` | All elements, safely quoted |
-| `declare -A` | Associative map (Bash 4+) |
-| `${var%%.*}` / `${var##*/}` | Strip longest suffix / basename-like |
-| `${var%/*}` | Dirname-like |
-| `${var/old/new}` | Replace first match |
-| `${var:0:3}` | Substring slice |
-| `[[ ]]` / `case` / `=~` | Pattern and regex tests |
+### How it works
+
+1. **Assign** — `arr=(one two "three four")` or `arr[0]=one`.
+2. **Append** — `arr+=("next")`.
+3. **Expand all** — `"${arr[@]}"` for separate words; `"${arr[*]}"` for one joined word.
+4. **Length** — `"{{ '${#arr[@]}' }}"` is element count; `"{{ '${#var}' }}"` is string length.
+5. **Slice / replace** — `"${var:offset:length}"`, `"${var/pattern/replacement}"`, `"${var//pattern/replacement}"` (all matches), prefix/suffix `${var#pat}` / `${var%pat}`.
+
+```bash
+files=("a b.log" "c.log")
+for f in "${files[@]}"; do
+  printf 'file=%s\n' "$f"
+done
+
+env_name="Prod-API"
+norm="$(printf '%s' "$env_name" | tr '[:upper:]' '[:lower:]')"
+# or pure Bash replace for simple cases:
+short="${env_name%%-*}"
+```
+
+Associative arrays (`declare -A map`) store key/value pairs (Bash 4+). This module focuses on **indexed** arrays plus everyday string expansions; use associative maps when you need lookup by name.
+
+### Key concepts and comparisons
+
+| Expansion | Meaning |
+|-----------|---------|
+| `"${arr[@]}"` | All elements, separate words |
+| `"${arr[*]}"` | All elements, joined into one word |
+| `"{{ '${#arr[@]}' }}"` | Number of elements |
+| `"${arr[i]}"` | Element at index `i` |
+| `"{{ '${#var}' }}"` | String length |
+| `"${var:offset:length}"` | Substring slice |
+| `"${var/old/new}"` | Replace first match |
+| `"${var//old/new}"` | Replace all matches |
+| `"${var%suf}"` / `"${var#pre}"` | Remove shortest suffix / prefix |
+
+| Prefer | Avoid |
+|--------|-------|
+| `"${arr[@]}"` in `for` / exec | Unquoted `${arr[@]}` |
+| Arrays for path lists | `list="a b c"` then unquoted `$list` |
+| String expansion for light cleanup | Giant nested expansions nobody can read |
 
 ### Common pitfalls
 
-- Expanding `${array[*]}` or unquoted `$array` and merging elements incorrectly
-- Using associative arrays under Bash 3 (for example older macOS defaults)
-- Forgetting `declare -A` before assignments to a map
-- Applying string replacements to untrusted input without validation
-- Confusing `${var%}` (shortest) with `${var%%}` (longest) suffix removal
+- Unquoted `${arr[@]}` re-splits elements that contain spaces.
+- Using `"${arr[*]}"` when you meant to forward separate arguments.
+- Off-by-one mistakes in `${var:offset:length}` (offset can be negative in Bash 4.2+ from the end).
+- Forgetting that `${var/old/new}` replaces only the **first** match unless you use `//`.
+- Treating arrays as portable to `dash` / plain POSIX `sh` — they are a Bash feature.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+Under `~/rebash-shell/lab08`, build a script that creates an indexed array of service names (including one with a space), iterates with `"${arr[@]}"`, applies string slice/replace to build artefact names, and writes evidence.
+
+### Prerequisites
+
+- Bash 4.2+, `chmod`, `tr`
+- Write access under your home directory
+
+### Lab environment
+
+Workspace: `~/rebash-shell/lab08`
 
 ```bash
-mkdir -p ~/rebash-shell/lab08 && cd ~/rebash-shell/lab08
+mkdir -p ~/rebash-shell/lab08/out
+cd ~/rebash-shell/lab08
+set -euo pipefail
+bash --version | head -n1 | tee out/bash-version.txt
 ```
 
-**Focus:** indexed host list; associative ports; string strip/replace; patterns
+**Expected output:** `out/bash-version.txt` mentions `bash`.
 
-### Step 1 – Arrays and strings
+### Real-world scenario
+
+A deploy helper must accept a list of services, including one display name with a space for a legacy app, normalise environment labels (`Prod` → `prod`), and build backup filenames like `billing-prod-backup.tar`. You implement the list as an array and the name rules as string expansions, then attach proof for the release ticket.
+
+### Step-by-step tasks
+
+#### Task 1 – Indexed array create, append, and safe iterate
 
 ```bash
-cat > arrays.sh << 'EOF'
+cd ~/rebash-shell/lab08
+set -euo pipefail
+
+cat > array-demo.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-hosts=(web01 web02 'web 03')
-hosts+=("web04")
-n=0
-for _ in "${hosts[@]}"; do n=$((n + 1)); done
-echo "count=$n"
-printf '%s\n' "${hosts[@]}"
-declare -A ports=( [web]=80 [db]=5432 )
-echo "web=${ports[web]}"
-path=/var/log/app.log
-echo "base=${path##*/}"
-[[ $path == *.log ]] && echo 'pattern ok'
+outdir="./out"
+mkdir -p "$outdir"
+
+services=("billing" "auth api" "catalog")
+services+=("payments")
+
+printf 'count=%s\n' "{{ '${#services[@]}' }}" | tee "$outdir/array-count.txt"
+: > "$outdir/services-listed.txt"
+for s in "${services[@]}"; do
+  printf 'svc=%s\n' "$s" | tee -a "$outdir/services-listed.txt"
+done
+
+# Joined form for contrast (one line)
+printf 'joined=%s\n' "${services[*]}" | tee "$outdir/services-joined.txt"
+
+grep -c '^svc=' "$outdir/services-listed.txt" | grep -qx 4
+grep -F 'svc=auth api' "$outdir/services-listed.txt"
 EOF
-chmod +x arrays.sh
-./arrays.sh
+chmod +x array-demo.sh
+./array-demo.sh
 ```
 
-### Final step – Cleanup note
+**Expected output:** `array-count.txt` is `count=4`; `services-listed.txt` has four `svc=` lines including `svc=auth api` as one line.
+
+#### Task 2 – String length, slice, and replace
 
 ```bash
-# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-shell/lab08
+set -euo pipefail
+
+cat > string-demo.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+outdir="./out"
+mkdir -p "$outdir"
+
+filename="billing.Prod.log"
+printf 'len=%s\n' "{{ '${#filename}' }}" | tee "$outdir/str-len.txt"
+printf 'slice=%s\n' "${filename:0:7}" | tee "$outdir/str-slice.txt"
+printf 'nosuffix=%s\n' "${filename%.log}" | tee "$outdir/str-nosuffix.txt"
+printf 'replaced=%s\n' "${filename/Prod/prod}" | tee "$outdir/str-replace.txt"
+
+base="${filename%%.*}"
+env_part="${filename#*.}"
+env_part="${env_part%%.*}"
+env_norm="${env_part,,}"   # Bash 4+ lowercase
+printf 'backup=%s-%s-backup.tar\n' "$base" "$env_norm" | tee "$outdir/backup-name.txt"
+
+grep -qx 'slice=billing' "$outdir/str-slice.txt"
+grep -qx 'replaced=billing.prod.log' "$outdir/str-replace.txt"
+grep -qx 'backup=billing-prod-backup.tar' "$outdir/backup-name.txt"
+EOF
+chmod +x string-demo.sh
+./string-demo.sh
+```
+
+**Expected output:** slice starts with `billing`; replace lowercases only via pattern `Prod`→`prod`; backup name is `billing-prod-backup.tar`.
+
+#### Task 3 – Combine array + strings and pack evidence
+
+```bash
+cd ~/rebash-shell/lab08
+set -euo pipefail
+
+cat > build-names.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+outdir="./out"
+env_label="Prod"
+env_norm="${env_label,,}"
+services=("billing" "catalog" "payments")
+: > "$outdir/artefact-names.txt"
+for s in "${services[@]}"; do
+  printf '%s-%s-backup.tar\n' "$s" "$env_norm" | tee -a "$outdir/artefact-names.txt"
+done
+grep -qx 'billing-prod-backup.tar' <(head -n1 "$outdir/artefact-names.txt")
+test "$(wc -l <"$outdir/artefact-names.txt" | tr -d ' ')" -eq 3
+EOF
+chmod +x build-names.sh
+./build-names.sh
+
+tar -czf out/arrays-evidence.tgz \
+  out/bash-version.txt out/array-count.txt out/services-listed.txt \
+  out/services-joined.txt out/str-len.txt out/str-slice.txt \
+  out/str-nosuffix.txt out/str-replace.txt out/backup-name.txt \
+  out/artefact-names.txt
+ls -l out/arrays-evidence.tgz | tee out/evidence-ls.txt
+```
+
+**Expected output:** three artefact names; evidence archive is not empty.
+
+### Validation steps
+
+- [ ] Array iteration keeps `auth api` as a single element
+- [ ] String replace / slice files match the expected values
+- [ ] `artefact-names.txt` has three `*-prod-backup.tar` lines
+- [ ] `out/arrays-evidence.tgz` exists
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `auth` and `api` on two lines | Unquoted expansion | Use `"${services[@]}"` and quote `"$s"` |
+| `${var,,}` fails | Old Bash / `sh` | Use Bash 4+ shebang, or `tr` for lowercase |
+| Replace did nothing | Wrong case / pattern | Patterns are case-sensitive; match exact text |
+| `count=0` | Empty assignment / wrong script dir | Run from `~/rebash-shell/lab08` |
+| Macro / build error on docs site | Accidental double-brace template syntax in page | Use Bash `${…}` only; escape per MkDocs macros guidance |
+
+### Challenge exercise
+
+Write `assoc-lite.sh` that uses a Bash **associative** array (`declare -A ports`) mapping `billing→8080`, `catalog→8081`, `payments→8082`, prints `service=port` lines to `out/ports.txt`, and asserts `billing` maps to `8080`. This stretch uses keys instead of only indexes.
+
+### Learning outcomes
+
+- Built and iterated indexed arrays with safe quoting
+- Applied length, slice, suffix removal, and replace
+- Combined arrays and string ops to build artefact names
+
+### Cleanup
+
+```bash
+cd ~/rebash-shell/lab08
+# Keep out/ for review, or: rm -rf ~/rebash-shell/lab08
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-shell/lab08/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] You can relate this topic to a real DevOps or Linux admin task
+- [ ] Lab finished under `~/rebash-shell/lab08/` with evidence archive
+- [ ] You can explain `"${arr[@]}"` vs `"${arr[*]}"`
+- [ ] You can show one slice and one replace example from memory
+- [ ] You know arrays are Bash-specific, not plain POSIX `sh`
 
 ## Code Walkthrough
 
-Production Bash for **Arrays and String Manipulation** always combines:
+Production use of **arrays and strings** usually follows this order:
 
-1. A clear shebang (`#!/usr/bin/env bash`)
-2. Strict mode near the top (`set -euo pipefail`) from Module 2 onward
-3. Quoted expansions and explicit tests
-4. Functions with `local` for reusable behaviour
-5. Documented exit codes and stderr logging
+1. **Collect** — build an array from args, files, or config  
+2. **Normalise** — string expand each element (case, suffix, prefix)  
+3. **Iterate** — `for x in "${arr[@]}"; do …; done`  
+4. **Forward** — pass `"${arr[@]}"` into commands/functions  
+5. **Evidence** — write the final list to a manifest file for CI  
 
-Keep scripts short enough to review in a single merge request. When logic grows (complex JSON APIs, heavy state), hand off to Python and keep Bash as the launcher.
+When parsing JSON or YAML, switch to `jq`/`yq` (later module) instead of extreme string nesting.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env) as untrusted until validated
-- Never log secrets; prefer masked CI variables and secret stores
-- Prefer least privilege — do not require root for file-local tasks
-- Avoid `eval` and unquoted expansions in destructive commands
-- Validate paths stay under an allow-listed root before `rm` or overwrite
+- Do not trust array elements from users without validating path prefixes  
+- Avoid building `eval` strings from array joins  
+- Remember filenames can contain spaces and leading dashes — quote and use `--`  
+- Do not log secret tokens while printing array dumps  
+- Least privilege: this lab only needs home-directory writes  
 
 ## Common Mistakes
 
-!!! warning "Skipping strict mode"
-    Cron and CI hide failures that an interactive terminal would show. **Fix:** start with `set -euo pipefail` from Module 2 onward.
+!!! warning "Unquoted `${arr[@]}`"
+    Elements with spaces split into multiple words. **Fix:** always `"${arr[@]}"` and `"$element"`.
 
-!!! warning "Unquoted path expansions"
-    Spaces and globs rewrite your command line. **Fix:** always `"$path"` / `"$@"`.
+!!! warning "Using `"${arr[*]}"` to call a command"
+    All args become one word. **Fix:** use `"${arr[@]}"` for exec/forwarding.
 
-!!! warning "Assuming interactive PATH"
-    Aliases and fancy PATH entries disappear under schedulers. **Fix:** set `PATH` or use absolute paths.
+!!! warning "Assuming POSIX `sh` supports arrays"
+    `dash` will fail. **Fix:** `#!/usr/bin/env bash` and document Bash 4.2+.
+
+!!! warning "Forgetting `//` for replace-all"
+    Only the first match changes. **Fix:** `"${var//old/new}"` when you need every match.
 
 ## Best Practices
 
-- One purpose per script; compose with functions or small binaries
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where scheduling may overlap
-- Pair every new script with a failing-path test you actually run
-- Run ShellCheck in CI before merging automation
+- Prefer arrays over IFS-splitting for lists of paths  
+- Keep string expansions readable — one transformation per line  
+- Name arrays in plural (`hosts`, `files`) for clarity  
+- Add ShellCheck in CI; it catches many quoting mistakes  
+- Document Bash version minimum when using `${var,,}` or associative arrays  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Works in terminal, fails in cron | PATH / cwd / env | Fingerprint env; set PATH |
-| `unbound variable` | `set -u` | Provide defaults or export vars |
-| Pipeline “succeeds” incorrectly | Missing `pipefail` | `set -o pipefail` |
-| `[[` unexpected operator | Running under `sh`/dash | Fix shebang to Bash |
+| Extra words from one path | Missing quotes | Quote `"${arr[@]}"` / `"$s"` |
+| `${var,,}` syntax error | Not Bash 4+ / wrong shell | Fix shebang; check `bash --version` |
+| Index empty | Sparse array / wrong index | Print `"{{ '${#arr[@]}' }}"` and indexes |
+| Replace no-op | Pattern mismatch | Print the value before/after; check case |
+| Joined line surprises | Used `*` instead of `@` | Pick `@` vs `*` deliberately |
 
 ## Summary
 
-**Arrays and String Manipulation** is a core skill for Linux admins and DevOps engineers automating real hosts and pipelines. Practise the lab until the failure path is as familiar as the happy path, then continue the track.
+Indexed arrays store lists without losing spaces; string expansions clean and reshape single values. Expand with `"${arr[@]}"`, slice and replace with `${var…}` forms, and keep evidence of the final names. Next, apply these skills to [File Operations in Shell](file-operations-in-shell.md).
 
 ## Interview Questions
 
-1. How does this topic show up in production Linux administration or CI?
-2. What failure mode appears if you ignore quoting or strict mode here?
-3. How would you test this behaviour under a minimal cron-like environment?
-4. When would you move this logic out of Bash into Python or another tool?
-5. What exit code contract would you document for teammates?
+**1. How do you iterate an array of files that may contain spaces?**
 
-!!! tip "Sample answer — question 2"
-    Unquoted expansions and missing `pipefail` create silent or partial failures — especially under cron — that look healthy in monitoring until data is wrong.
+??? success "Reveal answer"
+    Store each path as its own element and loop with `for f in "${files[@]}"; do …; done`, always quoting `"$f"`. Never iterate `for f in $files` or unquoted `${files[@]}`. This mirrors the `"$@"` rule for function arguments.
+
+**2. What is the difference between `"${arr[@]}"` and `"${arr[*]}"`?**
+
+??? success "Reveal answer"
+    **`"${arr[@]}"`** expands to separate words (one per element). **`"${arr[*]}"`** joins elements into a **single** word using the first character of `IFS`. Use `@` when calling commands; use `*` when you intentionally want one string (for example a display line).
+
+**3. How do you append to an indexed array and get its length?**
+
+??? success "Reveal answer"
+    Append with `arr+=("new element")`. Length (element count) is `"{{ '${#arr[@]}' }}"`. Do not confuse that with `"{{ '${#arr}' }}"`, which is not the portable way to count elements — use `"{{ '${#arr[@]}' }}"`.
+
+**4. Show how you would strip a `.log` suffix and replace `Prod` with `prod` in Bash.**
+
+??? success "Reveal answer"
+    Example: `name="billing.Prod.log"` then `"${name%.log}"` → `billing.Prod`, and `"${name/Prod/prod}"` → `billing.prod.log`. For lowercase of a whole string in Bash 4+, `"${name,,}"` works. Prefer clear intermediate variables over one unreadable nested expansion.
+
+**5. Why are Bash arrays a problem if your shebang is `#!/bin/sh` on Ubuntu?**
+
+??? success "Reveal answer"
+    On Ubuntu, `/bin/sh` is often **dash**, which does not support arrays. The script fails at `arr=(…)`. Use `#!/usr/bin/env bash` (or another Bash path) and state Bash 4.2+ in the README when you rely on arrays or `${var,,}`.
+
+**6. When should you stop using string expansion and switch to `awk` or `jq`?**
+
+??? success "Reveal answer"
+    Switch when the input is a real structured format (CSV with quotes, JSON, YAML) or when expansions nest so deep that reviewers cannot see the rule. String expansion is perfect for suffixes, prefixes, and simple replace; parsers are safer for structured data.
+
+**7. How would you prove an array kept a multi-word element intact in a ticket?**
+
+??? success "Reveal answer"
+    Write one `svc=…` line per element to a file and show that `svc=auth api` appears on a **single** line, with `grep -c '^svc='` equal to the element count. That evidence shows quoting was correct — better than a verbal claim.
 
 ## Related Tutorials
 
-- [Shell Scripting for DevOps Engineers – Category Overview](index.md)
+- [Shell Scripting for DevOps Engineers – Overview](index.md)
 - [Functions, Parameters, and Locals](functions-parameters-and-locals.md) *(previous)*
 - [File Operations in Shell](file-operations-in-shell.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [Text Processing in Shell Scripts](text-processing-in-shell-scripts.md)
 
 ## References
 
-- [GNU Bash manual](https://www.gnu.org/software/bash/manual/)
-- [POSIX shell command language](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html)
-- [ShellCheck](https://www.shellcheck.net/)
+- [Bash arrays (GNU Bash manual)](https://www.gnu.org/software/bash/manual/html_node/Arrays.html)  
+- [Shell parameter expansion](https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html)  
+- [ShellCheck](https://www.shellcheck.net/)  
 - Track index: [Shell Scripting for DevOps Engineers](index.md)

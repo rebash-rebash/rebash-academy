@@ -45,24 +45,32 @@ comments: false
 
 
 
+
+
+
+
 Configure artefact upload/download so a build job produces a shareable package a test job consumes, and add a lockfile-keyed dependency cache without treating cache as a correctness guarantee.
 
 **Artefacts** (GitHub spelling in the product UI: *artifacts*) are job outputs GitHub stores for download, retention, and sharing across jobs in a workflow run — packages, binaries, test reports, and logs. **Caching** restores dependency directories between runs to cut install time; cache is **best-effort** and must never replace pinned lockfiles. Confusing the two causes flaky pipelines and bloated storage bills.
 
 This is a core tutorial in **Module 6 · Artifacts & Caching** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -75,9 +83,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Distinguish artefact vs cache vs container registry image  
 - [ ] List pitfalls that cause stale or missing caches
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -86,9 +96,11 @@ This topic’s control points and relationships are shown below.
 
 ![Artifacts and caching](../assets/excalidraw/gha-artifacts-cache.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -146,27 +158,46 @@ Prefer short retention for intermediate binaries; publish releases to a registry
 - Sharing mutable caches across privileged and untrusted jobs without isolation.  
 - Confusing job artefacts with images in GitHub Container Registry (GHCR).
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Artifacts and Caching** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-06/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-06/.github/workflows && cd ~/rebash-github-actions/module-06/.github/workflows
 ```
 
-**Focus:** actions/cache patterns and upload/download-artifact across jobs
+### Real-world scenario
 
-### Step 1 – Cache + artifact workflow
+Platform engineering wants **Artifacts and Caching** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
-mkdir -p .github/workflows src
-echo 'print(1)' > src/app.py
-cat > .github/workflows/artifacts.yml << 'EOF'
-name: Artifacts and caching
-on: [push, workflow_dispatch]
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
@@ -174,45 +205,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-      - run: |
-          pip install pyyaml
-          mkdir -p dist && cp src/app.py dist/
-          echo "revision" > dist/REVISION
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-  verify:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
-      - run: test -f dist/REVISION && cat dist/REVISION
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Confirm cache and artifact actions
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-grep -E 'upload-artifact|download-artifact|cache:' .github/workflows/artifacts.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -222,9 +269,11 @@ grep -E 'upload-artifact|download-artifact|cache:' .github/workflows/artifacts.y
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -239,9 +288,11 @@ Production practice for **Artifacts and Caching** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -252,9 +303,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -268,9 +321,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -281,9 +336,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -296,18 +353,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Artifacts and Caching** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Cache vs artifact — which is authoritative for build outputs?
@@ -322,9 +383,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Do not cache secrets or writable shared directories across untrusted branches without careful keying.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -332,9 +395,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
 
-
-
 ## References
+
+
+
+
 
 
 

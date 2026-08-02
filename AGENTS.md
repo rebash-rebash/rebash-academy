@@ -2,11 +2,19 @@
 
 # REBASH Academy - AI Content Standards
 
+## Agent preference
+
+Prefer **Codex** for content generation (tutorials, labs, interviews, quizzes, cheatsheets) until the user explicitly changes the agent.
+
 ## Mission
 
 REBASH Academy is a production-quality learning platform for Cloud Computing, DevOps, Platform Engineering, Kubernetes, Linux, Networking, Security, Infrastructure as Code, AI and related technologies.
 
 Every piece of generated content must be technically accurate, educational, production-focused and ready for publication without manual cleanup.
+
+Quality bar: GeeksforGeeks clarity + Microsoft Learn structure + Linux Foundation lab realism.  
+Canonical index: `.cursor/prompts/CONTENT_QUALITY.md`  
+Always-on rule: `.cursor/rules/00-foundation/09-content-quality-standard.mdc`
 
 The goal is not simply to explain technology, but to develop confident engineers through structured learning.
 
@@ -109,9 +117,9 @@ Required sections in order: Overview → Prerequisites → Learning Objectives �
 
 Do **not** use the short skeleton (`## Goal`, `{ .ra-facts }`, stop after `## Next`). Diagrams must be Excalidraw under `docs/assets/excalidraw/`.
 
-**Hands-on Lab quality bar:** `**Focus:**` plus 2–3 topic-relevant steps with runnable commands, observable success, and real cleanup. No Skeleton/echo placeholders. Linux/Shell are the de facto examples (`docs/linux/ssh-and-remote-access.md`).
+**Hands-on Lab quality bar:** production-style, **topic-specific** labs only — Objective, Prerequisites, Lab environment, Real-world scenario, Step-by-step tasks (copy-paste commands + expected output / asserts), Validation, Common errors and fixes, Challenge (working artefact — not `runbook.md`), Learning outcomes, Cleanup. Executable end-to-end; no markdown/note-taking labs; never reuse a generic host-baseline lab with only the title changed. Full checklist: `.cursor/prompts/tutorial-format-linux.md` and `.cursor/prompts/tutorials/create_lab.md`.
 
-**Interview Questions quality bar:** 5 topic-specific questions and 1–2 `!!! tip` sample answers for this module — not generic Cloud/platform boilerplate.
+**Interview Questions quality bar:** 5–8 topic-specific questions; **each** followed by a collapsible `??? success "Reveal answer"` block. Concepts, debug, security, trade-offs, production — not generic boilerplate. Standalone guides: `.cursor/prompts/tutorials/create_interview_questions.md`.
 
 Align structure with:
 
@@ -119,7 +127,14 @@ Align structure with:
 python3 scripts/align-tutorial-to-linux-format.py --course <technology>
 ```
 
-Enrich labs and interview banks (priority tracks) with:
+Apply production Hands-on Labs across a course:
+
+```bash
+python3 scripts/apply-production-labs.py --course <technology>
+# or: --course all
+```
+
+Enrich interview banks (and legacy lab banks) with:
 
 ```bash
 python3 scripts/enrich-labs-and-interviews.py --course <technology>

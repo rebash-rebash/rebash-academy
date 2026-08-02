@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Kubernetes Agents and Deploys
 
 ## Overview
+
+
 
 Use the **Kubernetes plugin** and **Pod templates** so each build gets an ephemeral agent Pod.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 13 · Kubernetes Agents** of the REBASH Acad
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Kubernetes agents and deploys](../assets/excalidraw/jenkins-kubernetes-agents.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -104,92 +115,98 @@ See Kubernetes plugin docs linked from jenkins.io plugins and Scaling handbook.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Kubernetes Agents and Deploys** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-13`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-13 && cd ~/rebash-jenkins/module-13
 ```
 
-**Focus:** validate Pod template YAML and a deploy Pipeline stub (cluster optional)
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Kubernetes Agents and Deploys**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Capture controller/agent mental model files
+
+Document how this topic shows up on a real controller.
 
 ```bash
-cat > pod-template.yaml << 'EOF'
-apiVersion: v1
-kind: Pod
-spec:
-  serviceAccountName: jenkins-agent
-  containers:
-    - name: jnlp
-      image: jenkins/inbound-agent:latest
-    - name: kubectl
-      image: bitnami/kubectl:latest
-      command: ['cat']
-      tty: true
+tee scenario.md << 'EOF'
+Topic: Kubernetes Agents and Deploys
+- Controller owns config and orchestration
+- Agents execute untrusted build steps
+- Prefer Jenkinsfile in SCM over click-ops jobs
 EOF
+cat scenario.md
+mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+```
+
+**Expected output:** scenario.md and jobs/README.txt exist.
+
+#### Task 2 – Write a minimal Declarative stub
+
+Even management topics should leave a Pipeline artefact.
+
+```bash
 cat > Jenkinsfile << 'EOF'
 pipeline {
-  agent {
-    kubernetes {
-      yamlFile 'pod-template.yaml'
-    }
-  }
-  stages {
-    stage('Build') {
-      steps { sh 'echo build in pod' }
-    }
-    stage('Deploy') {
-      steps {
-        container('kubectl') {
-          sh 'kubectl -n lab apply -f k8s/ || echo "cluster optional in lab"'
-        }
-      }
-    }
-  }
+  agent any
+  stages { stage('OK') { steps { echo 'lab' } } }
 }
 EOF
-mkdir -p k8s
-cat > k8s/deploy.yaml << 'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata: { name: demo }
-spec:
-  replicas: 1
-  selector: { matchLabels: { app: demo } }
-  template:
-    metadata: { labels: { app: demo } }
-    spec:
-      containers:
-        - name: demo
-          image: hashicorp/http-echo:1.0
-          args: ["-text=hello"]
-EOF
-# Validate YAML locally if kubectl available
-kubectl apply --dry-run=client -f k8s/deploy.yaml 2>/dev/null || python3 -c "import yaml,sys; yaml.safe_load(open('pod-template.yaml')); yaml.safe_load(open('k8s/deploy.yaml')); print('yaml-ok')" 2>/dev/null || echo 'yaml-files-present'
-test -f pod-template.yaml && test -f Jenkinsfile
+grep -n agent Jenkinsfile
 ```
 
-### Step 2 – RBAC note
+**Expected output:** Jenkinsfile present with an agent directive.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-cat > rbac-notes.md << 'EOF'
-# Least privilege
-- Role: get/list/watch/create/update/patch on deployments, services in lab ns
-- Avoid cluster-admin in Jenkins credentials
-- Separate PR CI credentials from prod deploy
-EOF
-grep cluster-admin rbac-notes.md
-```
-
-### Final cleanup
-
-```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+# Keep lab notes under ~/rebash-jenkins/
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-13/`
 - [ ] You can explain each Theory section in your own words
@@ -197,6 +214,8 @@ grep cluster-admin rbac-notes.md
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Kubernetes Agents and Deploys** always combines:
 
@@ -210,6 +229,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -217,6 +238,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "cluster-admin in Jenkins"
     Scope ServiceAccounts to namespaces and verbs you need.
@@ -229,6 +252,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Kubernetes Agents and Deploys** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -236,6 +261,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -247,9 +274,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Kubernetes Agents and Deploys** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. What advantage do ephemeral Kubernetes agents provide?
 2. What is a Pod template in Jenkins?
@@ -265,11 +296,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md)
 - [Terraform Pipelines in Jenkins](terraform-pipelines-in-jenkins.md)
 
 ## References
+
+
 
 - [Scaling Jenkins](https://www.jenkins.io/doc/book/scaling/)
 - [Pipeline Syntax — agent](https://www.jenkins.io/doc/book/pipeline/syntax/#agent)

@@ -1,19 +1,28 @@
 ---
 title: "Logging — syslog, journald, and logrotate"
-description: "Follow the logging stack — syslog, journald, and logrotate — on modern Linux servers."
+description: "Query journald with journalctl, understand syslog, configure a logrotate rule, and prove rotation on Ubuntu."
 difficulty: intermediate
-estimated_time: "45 min"
+estimated_time: "45–55 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: linux
+technology: linux
+module: "Module 12 · Logging & Monitoring"
 tags:
   - linux
   - syslog
   - journald
   - logrotate
 prerequisites:
-  - Scheduling with cron, at, and Timers
-  - Terminal access with a regular user account (sudo where noted)
+  - linux/scheduling-cron-at-and-timers
+next:
+  - linux/host-monitoring-vmstat-iostat-sar
+related:
+  - linux/systemd-services-and-journalctl
+  - labs/linux-services-and-logs-lab
+labs:
+  - labs/linux-services-and-logs-lab
+interview: interview/linux
 comments: false
 ---
 
@@ -21,183 +30,317 @@ comments: false
 
 ## Overview
 
-If it is not logged, it did not happen during the incident review.
+If it is not logged, it did not happen in the incident review. On modern Ubuntu, **journald** collects structured logs from the kernel, services, and stdout/stderr of systemd units. You read them with **`journalctl`**. Many programs still write classic text logs under `/var/log`, often via **syslog** (rsyslog or syslog-ng). **logrotate** compresses and retires those text files so disks do not fill forever.
 
-This is **Tutorial 18** in **Module 12: Logging & Monitoring** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — written for administrators, DevOps engineers, SREs, and platform engineers operating production Linux.
+In Cloud and DevOps work you follow a unit with `journalctl -u`, correlate boot windows with `--since`, and ensure application file logs have a **logrotate** rule. Silent log growth is a common cause of disk-full outages. In this tutorial you will query the journal, write a sample app log, add a logrotate configuration, force a rotation, and save proof under `~/rebash-linux/lab18`.
+
+In production, ship important logs to a central system, restrict who can read authentication logs, and alert when journal or `/var/log` mounts grow too fast.
+
+This is **Tutorial 18** in **Module 12: Logging & Monitoring** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
 
 ## Prerequisites
 
-- Scheduling with cron, at, and Timers
-- Terminal access with a regular user account (sudo where noted)
+- [Scheduling with cron, at, and Timers](scheduling-cron-at-and-timers.md)
+- A **practice Ubuntu 22.04/24.04 VM** with `sudo`
+- Packages: `systemd` (journalctl), `logrotate` (usually installed)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Logging — syslog, journald, and logrotate” on a real Linux host
-- [ ] Use modern tools (`ip`/`ss`, `systemctl`/`journalctl`) where they apply
-- [ ] Complete the lab under `~/rebash-linux/` with clear outputs
-- [ ] Relate this topic to Cloud, DevOps, and production operations
-- [ ] Explain the failure modes you would check first in an incident
+- [ ] Query journald with `journalctl` filters (`-u`, `--since`, `-p`)
+- [ ] Explain how journald relates to classic `/var/log` syslog files
+- [ ] Create a logrotate rule for an application log and force a rotation
+- [ ] Prove rotation with timestamps and rotated filenames
+- [ ] Pack evidence under `~/rebash-linux/lab18`
 
 ## Architecture
 
-Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
+Applications and units emit logs to journald and/or text files; logrotate manages text file retention; operators query with journalctl and inspect `/var/log`.
 
-![Architecture diagram for Logging — syslog, journald, and logrotate](../assets/excalidraw/linux-logging.svg)
+![Architecture diagram for Logging](../assets/excalidraw/linux-logging.svg)
 
 ## Theory
 
 ### What it is
 
-Linux logging typically combines three layers: **syslog** daemons (`rsyslog` or `syslog-ng`) writing classic text files under `/var/log`; **journald** storing structured, indexed logs for systemd units; and **logrotate** preventing those files from filling disks by rotating, compressing, and eventually deleting them. Applications may log via the syslog API, directly to files, or to stdout collected by a supervisor.
+**journald** stores binary, indexed logs. **syslog** daemons traditionally write text files such as `/var/log/syslog`. **logrotate** runs on a schedule (often daily via cron/timers) to rotate, compress, and delete old log files based on rules in `/etc/logrotate.conf` and `/etc/logrotate.d/`.
+
+```bash
+journalctl -xe
+journalctl -u ssh.service -n 20 --no-pager
+ls /var/log
+```
 
 ### Why it matters
 
-Without logs you cannot reconstruct incidents; without rotation you create the incident (disk full). Enterprises forward both journal and syslog streams to a Security Information and Event Management (SIEM) or central store. Knowing where authentication events land (`auth.log`/`secure` versus `journalctl -u ssh`) speeds investigation. Mis-tuned `postrotate` hooks leave nginx or rsyslog writing to deleted inodes.
+Without retention, logs fill disks. Without query skills, incidents take longer. Central logging (Elastic, Loki, CloudWatch, and similar) still starts with correct host-side collection and rotation.
 
 ### How it works
 
-Traditional files include `syslog`/`messages`, `auth.log`/`secure`, and application files under `/var/log`. `tail` and `grep` still matter for quick checks. journald is queried with `journalctl` by boot (`-b`), unit (`-u`), priority (`-p`), and time. Persistence requires `/var/log/journal` (and adequate disk). logrotate reads `/etc/logrotate.conf` and `/etc/logrotate.d/*`; policies set frequency, `compress`, `delaycompress`, retention, and scripts that signal writers to reopen files. Test with `logrotate -d` (debug, no changes). Forwarding configs ship selected facilities to remote collectors over TLS where required.
+1. Units log to the journal (and sometimes to files).  
+2. Operators filter with `journalctl`.  
+3. File logs grow under `/var/log` or app directories.  
+4. logrotate renames/compresses and may signal the app (`postrotate`).
 
-### Key concepts and comparisons
-
-| System | Strength |
-|--------|----------|
-| syslog files | Simple, widely parsed, easy to tail |
-| journald | Structured fields, unit correlation |
-| Central SIEM | Fleet search, retention, alerting |
-| logrotate | Local disk hygiene for file logs |
-
-| Policy knob | Effect |
-|-------------|--------|
-| rotate / weekly | How often a new file starts |
-| compress | Saves space after rotation |
-| postrotate | Reload the writer safely |
-| maxsize | Rotate early if growth spikes |
+| Tool | Best for |
+|------|----------|
+| `journalctl` | systemd units, boots, priorities |
+| `/var/log/*` | Classic app/syslog text |
+| `logrotate` | Retention for text logs |
 
 ### Common pitfalls
 
-- Assuming the journal survives reboot when it is volatile-only.
-- Rotating files without signalling the daemon — space not freed correctly.
-- Keeping verbose debug logs forever on small cloud root disks.
-- Grepping only `/var/log/syslog` while the service only logs to the journal.
-- Shipping logs without redacting secrets or access tokens.
+- Forgetting `Storage=` / vacuum settings until the journal fills `/var`.  
+- Rotating a log without telling the app to reopen the file (needs `postrotate` or copytruncate carefully).  
+- Reading only `/var/log/syslog` when the service only logs to the journal.  
+- World-readable logs that contain secrets.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+Query journald, create a sample application log with a dedicated logrotate rule, force rotation, and save evidence under `~/rebash-linux/lab18`.
+
+### Prerequisites
+
+- Ubuntu with `sudo`, `journalctl`, `logrotate`
+
+### Lab environment
+
+Workspace: `~/rebash-linux/lab18`
 
 ```bash
 mkdir -p ~/rebash-linux/lab18 && cd ~/rebash-linux/lab18
+set -euo pipefail
+test -n "$(command -v journalctl)"
+test -n "$(command -v logrotate)"
+journalctl --version | head -n 1 | tee journalctl-version.txt
 ```
 
-**Focus:** query journal and /var/log; dry-run logrotate; draft a rotate stanza
+**Expected output:** `journalctl` and `logrotate` exist; version file written.
 
-### Step 1 – Logging paths
+### Real-world scenario
+
+A small app writes to `/var/log/rebash-lab18/app.log`. Disk alerts fired last month because nothing rotated that file. You add a logrotate rule, prove a forced rotation, and show how to pull matching journal lines for the same host window.
+
+### Step-by-step tasks
+
+#### Task 1 – Query journald
 
 ```bash
-journalctl -b -n 10 --no-pager 2>/dev/null | tee journal.txt || true
-ls /var/log | head | tee var-log.txt
-sudo logrotate -d /etc/logrotate.conf 2>&1 | head -n 40 | tee logrotate-debug.txt || true
-cat > app.logrotate.example << 'EOF'
-/var/log/rebash-app/*.log {
-  weekly
-  rotate 4
-  compress
-  missingok
-  notifempty
+cd ~/rebash-linux/lab18
+set -euo pipefail
+
+journalctl -b -n 30 --no-pager | tee journal-boot-tail.txt
+journalctl -p err..alert -n 20 --no-pager | tee journal-err.txt || true
+journalctl --list-boots | tee journal-boots.txt
+# Logger message into syslog/journal
+logger -t rebash-lab18 "rebash lab18 marker $(date -Is)"
+sleep 1
+journalctl -t rebash-lab18 -n 5 --no-pager | tee journal-marker.txt
+grep -F 'rebash lab18 marker' journal-marker.txt
+```
+
+**Expected output:** `journal-marker.txt` contains your logger line; boot list captured.
+
+#### Task 2 – Application log + logrotate rule
+
+```bash
+cd ~/rebash-linux/lab18
+set -euo pipefail
+
+sudo mkdir -p /var/log/rebash-lab18
+sudo chown "$USER":"$USER" /var/log/rebash-lab18
+printf 'line-%s\n' $(seq 1 200) > /var/log/rebash-lab18/app.log
+wc -l /var/log/rebash-lab18/app.log | tee app-lines-before.txt
+
+sudo tee /etc/logrotate.d/rebash-lab18 >/dev/null << 'EOF'
+/var/log/rebash-lab18/*.log {
+    daily
+    missingok
+    rotate 3
+    compress
+    delaycompress
+    notifempty
+    copytruncate
 }
 EOF
+
+# Syntax check (logrotate -d is dry-run debug)
+sudo logrotate -d /etc/logrotate.d/rebash-lab18 2>&1 | tee logrotate-debug.txt
+grep -Ei 'rebash-lab18|app.log' logrotate-debug.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** `app.log` has 200 lines; debug output mentions the lab path; rule file installed.
+
+#### Task 3 – Force rotation and evidence pack
 
 ```bash
-# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-linux/lab18
+set -euo pipefail
+
+# Force rotation even if not "daily" yet
+sudo logrotate -f /etc/logrotate.d/rebash-lab18
+ls -la /var/log/rebash-lab18/ | tee log-dir-after.txt
+# With copytruncate, original app.log remains; a rotated copy appears (name varies)
+test -f /var/log/rebash-lab18/app.log
+ls /var/log/rebash-lab18/app.log* | tee rotated-names.txt
+test "$(ls /var/log/rebash-lab18/app.log* | wc -l)" -ge 2
+
+tar -czf logging-evidence.tgz \
+  journalctl-version.txt journal-boot-tail.txt journal-err.txt \
+  journal-boots.txt journal-marker.txt \
+  app-lines-before.txt logrotate-debug.txt log-dir-after.txt rotated-names.txt
+ls -l logging-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** more than one `app.log*` name after forced rotate; evidence archive exists.
+
+### Validation steps
+
+- [ ] `journalctl -t rebash-lab18` shows the marker
+- [ ] `/etc/logrotate.d/rebash-lab18` exists
+- [ ] Forced rotation created a rotated file alongside `app.log`
+- [ ] `logging-evidence.tgz` exists under `~/rebash-linux/lab18`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Permission denied on `/var/log` | Need root for system paths | Use `sudo` for mkdir/logrotate |
+| No rotated file after `-f` | Rule path mismatch / `notifempty` | Confirm path; ensure log has content |
+| `journalctl` empty for tag | logger failed / wrong filter | Re-run `logger`; try `journalctl -n 50` |
+| Disk still filling | Journal vacuum not set / other logs | Check `journalctl --disk-usage`; rotate other paths |
+
+### Challenge exercise
+
+Write `/etc/logrotate.d/rebash-lab18-size` that rotates `/var/log/rebash-lab18/app.log` when it exceeds `1k` (`size 1k`), force it after appending more lines, and save `ls -la` output to `size-rotate.txt`. Remove the extra rule in Cleanup.
+
+### Learning outcomes
+
+- Filtered journald by boot, priority, and tag
+- Installed a logrotate drop-in and forced rotation
+- Proved rotated filenames on disk
+- Saved logging evidence for a ticket
+
+### Cleanup
+
+```bash
+cd ~/rebash-linux/lab18
+set -euo pipefail
+sudo rm -f /etc/logrotate.d/rebash-lab18 /etc/logrotate.d/rebash-lab18-size
+sudo rm -rf /var/log/rebash-lab18
+# Keep logging-evidence.tgz if you want it
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-linux/lab18/`
-- [ ] You can explain each Theory bullet in your own words
-- [ ] You used modern tooling where applicable (`ip`/`ss`, `systemctl`/`journalctl`)
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-linux/lab18/` with evidence files
+- [ ] You can explain journald vs text syslog files
+- [ ] You know why every long-lived app log needs rotation
+- [ ] You can find a service’s recent logs with `journalctl -u`
 
 ## Code Walkthrough
 
-Production Linux practice for **Logging — syslog, journald, and logrotate** always combines:
+Incident logging path:
 
-1. Inspect before you change (`status`, `df`, `ip`, logs)
-2. Prefer reversible, documented changes (config management, drop-ins)
-3. Capture evidence (command output, journal snippets) for handovers
-4. Prefer `systemctl`/`journalctl` and `ip`/`ss` over legacy tools
-5. Least privilege — escalate with `sudo` only when required
-
-Keep runbooks short enough to follow at 03:00. Automate the boring checks; keep humans for judgement.
+1. Identify the unit or log file  
+2. `journalctl -u … --since …`  
+3. Check `/var/log` and disk (`df`)  
+4. Confirm logrotate rules exist and ran  
+5. Forward critical logs centrally  
 
 ## Security Considerations
 
-- Treat host access and sudo as privileged — audit who can do what
-- Never paste secrets into shell history, tickets, or screenshots
-- Validate device names and paths before destructive disk or `rm` operations
-- Prefer key-based SSH and deny password auth on internet-facing hosts
-- Collect logs centrally; restrict who can read authentication and audit trails
+- Restrict permissions on auth and application logs  
+- Do not log secrets (tokens, passwords)  
+- Limit who can run `journalctl` as root on multi-tenant hosts  
+- Protect log shipping credentials  
+- Retain logs long enough for investigations, not forever on the host disk  
 
 ## Common Mistakes
 
-!!! warning "Using legacy networking tools by default"
-    `ifconfig`/`netstat` are missing or incomplete on modern images. **Fix:** use `ip` and `ss`.
+!!! warning "Only watching `/var/log/syslog`"
+    Many units log only to the journal. **Fix:** start with `journalctl -u servicename`.
 
-!!! warning "Editing vendor unit files in place"
-    Package upgrades overwrite `/lib/systemd/system`. **Fix:** `systemctl edit` drop-ins under `/etc`.
+!!! warning "Rotating without reopening the file"
+    The app may keep writing to a deleted inode. **Fix:** use a proper `postrotate` reload, or carefully use `copytruncate` when appropriate.
 
-!!! warning "Trusting df without checking inodes and mounts"
-    A full `/var` or exhausted inodes looks different from root. **Fix:** `df -h`, `df -i`, and `findmnt`.
+!!! warning "No vacuum on journal storage"
+    `/var` fills with journal data. **Fix:** configure `SystemMaxUse=` / vacuum; monitor `journalctl --disk-usage`.
+
+!!! warning "World-readable app logs"
+    Sensitive data leaks. **Fix:** mode `640`/`640`-style ownership to the app group.
 
 ## Best Practices
 
-- Golden images + config as code over snowflake hosts
-- Alert on symptoms (failed units, disk, load) with runbooks attached
-- Time-sync (chrony) everywhere — logs and TLS depend on it
-- Separate OS and data volumes on Cloud VMs
-- Practise restore and rescue paths before you need them
+- One logrotate file per application under `/etc/logrotate.d/`  
+- Prefer structured logs and correlation IDs  
+- Alert on log volume spikes and disk use  
+- Document where each critical service logs  
+- Test `logrotate -d` before production changes  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Permission denied | Mode/owner/ACL/MAC | `namei -l`, `id`, `getfacl`, SELinux/AppArmor logs |
-| No route / timeout | Routing, DNS, firewall | `ip route`, `dig`, `ss`, security groups |
-| Service won’t start | Unit/config/deps | `systemctl status`, `journalctl -u`, config `-t` |
-| Disk full | Logs, containers, deleted-open | `df`/`du`, `lsof +L1`, rotate/expand |
-| High load | CPU, I/O wait, thrash | `vmstat`, `iostat`, `ps` |
+| Empty `journalctl -u` | Wrong unit name / stdout not captured | Check `systemctl status`; unit `StandardOutput` |
+| Log file not rotating | Rule not matched / logrotate not run | `logrotate -d`; check timers/cron |
+| Disk full under `/var/log` | Missing rotate / huge dumps | Rotate, truncate carefully, expand disk |
+| Gaps in logs | Time skew / wiped journal | Fix NTP; check persistence settings |
+| Permission denied reading journal | Non-root / not in `adm`/`systemd-journal` | Use sudo or add user to the right group |
 
 ## Summary
 
-**Logging — syslog, journald, and logrotate** is essential for Cloud and DevOps engineers operating Linux hosts. Practise the lab until the inspection path is muscle memory, then continue the track.
+journald holds structured unit logs; syslog files still matter; logrotate keeps text logs from filling disks. Query with purpose, rotate every long-lived file log, and prove it. Next: [Host Monitoring — vmstat, iostat, sar](host-monitoring-vmstat-iostat-sar.md).
 
 ## Interview Questions
 
-1. How does this topic show up when operating Cloud VMs or Kubernetes nodes?
-2. What would you check first if this area misbehaves in production?
-3. Which modern Linux tools replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI or a cron/timer job?
+**1. What is the difference between journald and classic syslog files?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, then gather host signals (`systemctl --failed`, `df`, `ip`/`ss`, `journalctl`) before making changes. Fix forward with evidence, not guesswork.
+??? success "Reveal answer"
+    **journald** stores structured, indexed logs from the kernel and systemd units, queried with `journalctl`. **Classic syslog** usually writes plain text files under `/var/log`. Many hosts use both: units → journal, and some apps/syslog rules → text files that **logrotate** manages.
+
+**2. How do you show logs for one service since one hour ago?**
+
+??? success "Reveal answer"
+    Example: `journalctl -u myapp.service --since "1 hour ago" --no-pager`. Add `-p err` to focus on errors, or `-f` to follow. Confirm the exact unit name with `systemctl list-units`.
+
+**3. Why must application file logs have logrotate rules?**
+
+??? success "Reveal answer"
+    Without rotation, logs grow until the filesystem is full, causing outages. logrotate enforces retention (how many copies, compression, when to delete). Every long-lived path under `/var/log` or an app directory needs an owner and a rule.
+
+**4. What goes wrong if you rotate a log but the process keeps the old file descriptor open?**
+
+??? success "Reveal answer"
+    The process keeps writing to the old inode; the new log file stays empty and disk may not free as expected. Fix with a `postrotate` script that signals the app to reopen logs, or use carefully designed `copytruncate` where appropriate.
+
+**5. How would you investigate “disk full” when `/var` is the mount that filled?**
+
+??? success "Reveal answer"
+    Run `df -hT`/`du` on `/var`, check `/var/log` and journal disk use (`journalctl --disk-usage`), identify the largest files, rotate or purge safely, fix the missing retention rule, then confirm `df` recovered. Attach before/after proof.
+
+**6. Which journalctl filters do you use most in production?**
+
+??? success "Reveal answer"
+    Commonly `-u` (unit), `--since`/`--until`, `-b` (boot), `-p` (priority), and `-f` (follow). Tags (`-t`) help for `logger` markers and some apps.
+
+**7. How do host logs relate to Kubernetes or container platforms?**
+
+??? success "Reveal answer"
+    Containers often log to stdout (collected by the runtime) while the node still has journald for kubelet/container runtime and system units. Engineers need both cluster log pipelines and node `journalctl` skills when the node itself is unhealthy.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Category Overview](index.md)
+- [Linux for Cloud & DevOps – Overview](index.md)
 - [Scheduling with cron, at, and Timers](scheduling-cron-at-and-timers.md) *(previous)*
-- [Host Monitoring with vmstat, iostat, and sar](host-monitoring-vmstat-iostat-sar.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [Host Monitoring — vmstat, iostat, sar](host-monitoring-vmstat-iostat-sar.md) *(next)*
+- [systemd Services and journalctl](systemd-services-and-journalctl.md) *(related)*
 
 ## References
 
-- [Linux man-pages project](https://www.kernel.org/doc/man-pages/)
-- [systemd documentation](https://systemd.io/)
-- [Filesystem Hierarchy Standard](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
+- [`journalctl(1)`](https://www.freedesktop.org/software/systemd/man/journalctl.html) — systemd journal  
+- [`logrotate(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/logrotate.8.html) — Ubuntu man-pages  
 - Track index: [Linux for Cloud & DevOps Engineers](index.md)

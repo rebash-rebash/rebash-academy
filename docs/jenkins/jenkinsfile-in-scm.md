@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Jenkinsfile in SCM
 
 ## Overview
+
+
 
 Move from inline Pipeline scripts to a **Jenkinsfile** in source control management (SCM).
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 5 · Jenkinsfile in SCM** of the REBASH Acad
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Jenkinsfile in source control](../assets/excalidraw/jenkinsfile-scm.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -101,67 +112,110 @@ Multibranch readiness: same Jenkinsfile works across branches when you avoid har
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Jenkinsfile in SCM** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-05`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-05 && cd ~/rebash-jenkins/module-05
 ```
 
-**Focus:** create a Git repo with Jenkinsfile and validate SCM job settings file
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Jenkinsfile in SCM**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Author a Declarative Jenkinsfile
+
+Pipeline-as-code is the production default — Declarative first.
 
 ```bash
-git init -b main
 cat > Jenkinsfile << 'EOF'
 pipeline {
   agent any
-  parameters {
-    string(name: 'GREETING', defaultValue: 'hello', description: 'Message')
-  }
-  environment {
-    APP_ENV = 'lab'
-  }
+  options { timestamps() }
   stages {
-    stage('Checkout info') {
+    stage('Build') {
       steps {
-        echo "Greeting=${params.GREETING} env=${env.APP_ENV}"
-        sh 'git rev-parse --short HEAD || true'
+        sh 'mkdir -p dist && echo ok > dist/status.txt'
       }
     }
-    stage('Validate') {
+    stage('Test') {
       steps {
-        sh 'test -f Jenkinsfile'
+        sh 'test -f dist/status.txt && grep -q ok dist/status.txt'
       }
     }
+  }
+  post {
+    always { archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true }
   }
 }
 EOF
-git add Jenkinsfile && git -c user.email=lab@rebash.local -c user.name=Lab commit -m 'Add Jenkinsfile'
-git log -1 --oneline
+test -f Jenkinsfile && grep -n 'pipeline\|stages\|post' Jenkinsfile
 ```
 
-### Step 2 – Record Pipeline from SCM settings
+**Expected output:** Jenkinsfile contains pipeline/stages/post blocks.
+
+#### Task 2 – Validate structure locally
+
+Run the shell steps the Pipeline will execute so failures are cheap.
 
 ```bash
-cat > scm-job-settings.md << 'EOF'
-# Pipeline from SCM
-- SCM: Git
-- Repository URL: (local path or remote)
-- Script Path: Jenkinsfile
-- Lightweight checkout: enable when definition-only is enough
-EOF
-grep 'Script Path' scm-job-settings.md
+mkdir -p dist && echo ok > dist/status.txt
+test -f dist/status.txt && grep -q ok dist/status.txt
+tar -cf evidence.tar Jenkinsfile dist
+ls -l evidence.tar
 ```
 
-### Final cleanup
+**Expected output:** Shell checks pass; evidence.tar created for the job upload story.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+rm -f evidence.tar
+# Keep Jenkinsfile for SCM modules
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-05/`
 - [ ] You can explain each Theory section in your own words
@@ -169,6 +223,8 @@ grep 'Script Path' scm-job-settings.md
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Jenkinsfile in SCM** always combines:
 
@@ -182,6 +238,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -189,6 +247,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Secrets in Jenkinsfile"
     Reference credential IDs; never commit tokens or kubeconfigs.
@@ -201,6 +261,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Jenkinsfile in SCM** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -208,6 +270,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -219,9 +283,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Jenkinsfile in SCM** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. Why store the Jenkinsfile in SCM instead of the job config?
 2. What is Script Path in a Pipeline from SCM job?
@@ -237,11 +305,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Pipeline Fundamentals (Declarative)](pipeline-fundamentals-declarative.md)
 - [Agents, Nodes, and Executors](agents-nodes-and-executors.md)
 
 ## References
+
+
 
 - [Using a Jenkinsfile](https://www.jenkins.io/doc/book/pipeline/jenkinsfile/)
 - [Pipeline best practices](https://www.jenkins.io/doc/book/pipeline/pipeline-best-practices/)

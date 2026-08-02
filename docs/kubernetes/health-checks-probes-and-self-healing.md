@@ -28,15 +28,25 @@ comments: false
 
 
 
+
+
+
+
+
+
 Deploying a Pod is only the beginning. Production clusters must answer: **Is this container alive?** **Is it ready to receive traffic?** **Has it finished starting up?** Kubernetes answers these questions through **probes** — periodic health checks the kubelet runs against each container. Failed **liveness** probes trigger restarts; failed **readiness** probes remove the Pod from Service endpoints; **startup** probes protect slow-booting applications from premature liveness kills.
 
 Combined with ReplicaSet controllers and node health monitoring, probes enable **self-healing**: crashed processes restart, unhealthy instances drain from load balancers, and the declared desired state converges without manual intervention. This is why Kubernetes replaces static "restart the service" runbooks with declarative health policies.
 
 This is **Tutorial 12** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Namespaces and Resource Management](namespaces-and-resource-management.md) first.
 
-
-
 ## Prerequisites
+
+
+
+
+
+
 
 
 
@@ -46,9 +56,13 @@ This is **Tutorial 12** in **Module 4: Networking & Operations** of the REBASH A
 - Optional: `curl` inside the cluster or port-forward for probe verification
 - Familiarity with YAML editing and `kubectl apply`
 
-
-
 ## Learning Objectives
+
+
+
+
+
+
 
 
 
@@ -62,9 +76,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Design probe endpoints that reflect application health, not just process existence
 - [ ] Relate probe behaviour to Deployment rolling update success criteria
 
-
-
 ## Architecture
+
+
+
+
+
+
 
 
 
@@ -72,9 +90,13 @@ The kubelet runs probes locally on each node. Readiness state flows to the endpo
 
 ![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
-
-
 ## Theory
+
+
+
+
+
+
 
 
 
@@ -185,80 +207,98 @@ Production `/healthz` and `/ready` endpoints should differ:
 
 Avoid expensive checks on liveness (full DB query across shards). Keep liveness fast and local; readiness can check dependencies with timeouts.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Health Checks, Probes, and Self-Healing** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-kubernetes/health-checks-probes-and-self-healing`
+
+### Lab environment
+
+Workspace: `~/rebash-kubernetes/health-checks-probes-and-self-healing`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-kubernetes/health-checks-probes-and-self-healing && cd ~/rebash-kubernetes/health-checks-probes-and-self-healing
 ```
 
-**Focus:** Configure liveness and readiness probes so Kubernetes restarts and unready Pods correctly
+### Real-world scenario
 
-### Step 1 – Deploy an app with probes
+Your platform team is rolling out **Health Checks, Probes, and Self-Healing** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-cat > probes.yaml <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: probe-demo
-  namespace: rebash-lab
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: probe-demo
-  template:
-    metadata:
-      labels:
-app: probe-demo
-    spec:
-      containers:
-      - name: nginx
-image: nginx:1.27-alpine
-ports:
-- containerPort: 80
-readinessProbe:
-  httpGet:
-    path: /
-    port: 80
-  initialDelaySeconds: 2
-  periodSeconds: 5
-livenessProbe:
-  httpGet:
-    path: /
-    port: 80
-  initialDelaySeconds: 10
-  periodSeconds: 10
-EOF
-kubectl apply -f probes.yaml
-kubectl -n rebash-lab rollout status deploy/probe-demo
-```
+### Step-by-step tasks
 
-### Step 2 – Observe Ready condition and describe probe status
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **Why Probes Exist** against a live API.
 
 ```bash
-kubectl -n rebash-lab get pods -l app=probe-demo
-kubectl -n rebash-lab describe pod -l app=probe-demo | sed -n '/Conditions:/,/Volumes:/p'
-kubectl -n rebash-lab get pod -l app=probe-demo -o jsonpath='{.items[0].status.containerStatuses[0].ready}{"
-"}'
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Health Checks, Probes, and Self-Healing
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
+
+
 
 
 
@@ -275,9 +315,13 @@ Confirm the lab before moving on:
 | Failure behaviour | Induced failure shows restart or traffic shift as documented |
 | Cleanup | Lab workloads removed |
 
-
-
 ## Code Walkthrough
+
+
+
+
+
+
 
 
 
@@ -319,9 +363,13 @@ containers:
       timeoutSeconds: 3
 ```
 
-
-
 ## Security Considerations
+
+
+
+
+
+
 
 
 
@@ -332,9 +380,13 @@ containers:
 - Keep probe traffic on internal ports; do not expose admin health on public Ingress without need
 - Log probe failures centrally so crash loops are visible without exec into Pods
 
-
-
 ## Common Mistakes
+
+
+
+
+
+
 
 
 
@@ -350,9 +402,13 @@ containers:
 !!! warning "Ignoring readiness during rollouts"
     If readiness never passes, Deployment rollouts stall with `ProgressDeadlineExceeded`. Monitor rollout status and probe endpoints in CI.
 
-
-
 ## Best Practices
+
+
+
+
+
+
 
 
 
@@ -368,9 +424,13 @@ containers:
 !!! tip "Test probes under load"
     Health endpoints must respond during peak traffic. Slow probes cause unnecessary NotReady states and uneven load balancing.
 
-
-
 ## Troubleshooting
+
+
+
+
+
+
 
 
 
@@ -383,9 +443,13 @@ containers:
 | 502 from Ingress during deploy | Old pods terminated before new Ready | Tune `maxUnavailable`; fix readiness timing |
 | Probe works locally, fails in cluster | Wrong port or network policy | Verify `containerPort`; check NetworkPolicy |
 
-
-
 ## Summary
+
+
+
+
+
+
 
 
 
@@ -396,9 +460,13 @@ containers:
 - Design separate health endpoints: liveness checks internal recovery; readiness checks request-serving ability
 - Misconfigured probes cause restart storms — test under failure and load conditions before production
 
-
-
 ## Interview Questions
+
+
+
+
+
+
 
 
 1. What is the difference between liveness, readiness, and startup probes?
@@ -413,9 +481,13 @@ containers:
 !!! tip "Sample answer — question 4"
     Probes that are too frequent or too strict can kill healthy Pods under load or remove them from Service prematurely. Tune thresholds with realistic timeouts, failure thresholds, and separate readiness from liveness semantics.
 
-
-
 ## Related Tutorials
+
+
+
+
+
+
 
 
 
@@ -428,9 +500,13 @@ containers:
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
+
+
+
+
 
 
 

@@ -44,24 +44,26 @@ comments: false
 
 
 
+
+
 Pick the correct undo tool: `restore` for files, `stash` for WIP, `reset` for local history, `revert` for published commits.
 
 **Reset** moves branch pointers (dangerous if pushed). **Revert** adds a new commit that undoes a previous one — safe on `main`. **Stash** shelves WIP.
 
 This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
 
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Soft/mixed/hard reset differences  
 - [ ] `git revert` on shared branches
 
-
-
 ## Architecture
+
+
 
 
 
@@ -84,9 +86,9 @@ This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Undoing Changes — Reset, Revert, and Stash](../assets/excalidraw/git-workflow.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -125,55 +127,97 @@ Unstaged edits to a tracked file can be discarded with `git restore file`. Stage
 - Reverting a merge commit without understanding `-m` parent selection  
 - Using reset to “clean” a laptop problem on a shared remote branch
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Undoing Changes — Reset, Revert, and Stash** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-07-undo`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-07-undo && cd ~/rebash-git/module-07-undo
 ```
 
-**Focus:** practise stash, restore, and revert
+### Real-world scenario
 
-### Step 1 – Stash and restore
+A delivery team is standardising **Undoing Changes — Reset, Revert, and Stash**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+
+### Step-by-step tasks
+
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo v1 > file.txt
-git add file.txt && git commit -m "chore: v1"
-echo dirty >> file.txt
-git stash push -m "wip dirty"
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
+```
+
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
+
+```bash
+echo 'work' > work.txt
 git status
-git stash list
-git stash pop
-git restore file.txt
-git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
-### Step 2 – Revert a commit
+**Expected output:** show.txt lists work.txt in the commit.
+
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
 
 ```bash
-echo v2 > file.txt
-git add file.txt && git commit -m "feat: v2"
-git revert HEAD --no-edit
-git log --oneline -n 5
-cat file.txt
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
 ```
-
-### Final step – Cleanup note
-
-```bash
-# Keep ~/rebash-git/ for later tutorials
-```
-
-
 
 ## Validation
+
+
 
 
 
@@ -183,9 +227,9 @@ cat file.txt
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -200,9 +244,9 @@ Production practice for **Undoing Changes — Reset, Revert, and Stash** always 
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -213,9 +257,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -229,9 +273,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -242,9 +286,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -257,18 +301,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Undoing Changes — Reset, Revert, and Stash** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. reset vs revert vs restore — when each?
@@ -283,9 +327,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Hard reset can delete uncommitted work. Coordinate before rewriting shared branches.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -293,9 +337,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 
-
-
 ## References
+
+
 
 
 

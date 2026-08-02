@@ -45,24 +45,32 @@ comments: false
 
 
 
+
+
+
+
 Use CI/CD variables correctly (masked, protected, environment-scoped), avoid long-lived cloud keys where possible, and outline OIDC and Vault-style secret patterns for production.
 
 Pipelines need configuration and credentials. GitLab provides **CI/CD variables** at project, group, and instance levels, plus predefined `$CI_*` variables. Production teams prefer **short-lived cloud credentials via OpenID Connect (OIDC)** and external secret managers over static keys in the UI.
 
 This is a core tutorial in **Module 6 · Variables & Secrets** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Pipeline Design: DAGs and Includes](pipeline-design-dags-and-includes.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -74,9 +82,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Scope variables to environments  
 - [ ] Describe OIDC to AWS/GCP/Azure and Vault-style fetch patterns
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -85,9 +95,11 @@ This topic’s control points and relationships are shown below.
 
 ![Variables and secrets](../assets/excalidraw/gitlab-variables-secrets.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -135,72 +147,105 @@ No paid GitLab or live cloud account is required to author the YAML; enable OIDC
 - Forgetting `id_tokens` / audience config when migrating to OIDC.
 - Storing entire `.env` files as a single variable without rotation owners.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Variables, Secrets, and OIDC** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-06`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-06 && cd ~/rebash-gitlab/module-06
 ```
 
-**Focus:** separate non-secrets from masked vars; shape OIDC job (file-only validation)
+### Real-world scenario
 
-### Step 1 – Author variables + id_tokens pipeline
+Your squad is encoding **Variables, Secrets, and OIDC** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-cat > oidc-checklist.md << 'EOF'
-- [ ] Non-secrets in YAML variables only
-- [ ] Masked+protected secrets in CI/CD settings
-- [ ] id_tokens with explicit aud
-- [ ] Never echo tokens
-EOF
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [verify, deploy]
-variables:
-  APP_ENV: "ci"
-show_predefined:
-  stage: verify
-  image: alpine:3.20
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
   script:
-    - echo "project=$CI_PROJECT_PATH ref=$CI_COMMIT_REF_NAME"
-    - echo "APP_ENV=$APP_ENV"
-oidc_ready_deploy:
-  stage: deploy
-  image: alpine:3.20
-  id_tokens:
-    GITLAB_OIDC_TOKEN:
-      aud: https://gitlab.com
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
   script:
-    - test -n "${GITLAB_OIDC_TOKEN:-}" && echo "OIDC token present (do not print)" || echo "Token only on GitLab runners"
-    - echo "Exchange JWT via cloud STS — not long-lived keys"
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – File-only validation
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-grep -A6 'id_tokens:' .gitlab-ci.yml
-grep 'GITLAB_OIDC_TOKEN' .gitlab-ci.yml
-test -f oidc-checklist.md
-# No cloud API calls — structure only
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# File-only OIDC lab — no cloud resources
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -210,9 +255,11 @@ test -f oidc-checklist.md
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -227,9 +274,11 @@ Production practice for **Variables, Secrets, and OIDC** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -240,9 +289,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -256,9 +307,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -269,9 +322,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -284,18 +339,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Variables, Secrets, and OIDC** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Where should non-secret configuration live versus secret values?
@@ -310,9 +369,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     OIDC issues short-lived credentials scoped by trust conditions, removing standing keys from GitLab variables. Never print the JWT.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -320,9 +381,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Artifacts, Caches, and Dependencies](artifacts-caches-and-dependencies.md)
 
-
-
 ## References
+
+
+
+
 
 
 

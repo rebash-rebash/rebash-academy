@@ -42,24 +42,32 @@ comments: false
 
 
 
+
+
+
+
 Install Terraform 1.x, pin a version with tfenv or asdf, verify the binary, and understand how providers arrive from the Terraform Registry on `init`.
 
 Install via package manager, HashiCorp packages, or a version manager. Pin the CLI version for every root module with `required_version`. Providers download from the **Terraform Registry** on first `terraform init` — not at install time.
 
 This is a core tutorial in **Module 2 · Installing Terraform** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Introduction to Terraform and IaC](introduction-to-terraform-and-iac.md)
 - Network access to download the CLI and (later) providers
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -70,9 +78,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain when providers download (init + Registry)  
 - [ ] List core CLI verbs you will use daily
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -80,9 +90,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform CLI commands](../assets/excalidraw/terraform-cli-commands.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -130,77 +142,113 @@ You do not install AWS or Azure providers with a separate package manager for da
 - Committing `.terraform/` (plugins cache) — commit `.terraform.lock.hcl`, not the plugin directory.
 - Using a personal laptop binary for production applies — prefer CI with a pinned image.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Installing Terraform and the CLI Workflow** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-02`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-02 && cd ~/rebash-terraform/module-02
 ```
 
-**Focus:** Practise the core CLI workflow: init, validate, plan, apply, destroy
+### Real-world scenario
 
-### Step 1 – Initialise and validate
+You are automating **Installing Terraform and the CLI Workflow** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
-    }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
-}
-
-resource "null_resource" "lab" {
-  triggers = {
-    note = "rebash-lab"
-  }
-}
-
-resource "local_file" "marker" {
-  content  = "managed-by-terraform
-"
-  filename = "${path.module}/marker.txt"
 }
 EOF
-terraform version
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
+}
+output "note" { value = null_resource.lab.triggers.topic }
+EOF
 terraform init
 terraform validate
-terraform fmt -check || terraform fmt
 ```
 
-### Step 2 – Plan, apply, then prove destroy works
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
 terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
 terraform apply tfplan
-ls -la marker.txt
-terraform destroy -auto-approve
-test ! -f marker.txt && echo "destroyed OK"
-# Recreate for the cleanup step below
-terraform apply -auto-approve
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -209,9 +257,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -225,9 +275,11 @@ Production practice for **Installing Terraform and the CLI Workflow** always com
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -237,9 +289,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -252,9 +306,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -264,9 +320,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -278,17 +336,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Installing Terraform and the CLI Workflow** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does `terraform init` download and create?
@@ -303,18 +365,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Destroy removes managed resources and can delete data. In shared environments it needs the same approvals, state locking awareness, and backups as any production change.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Terraform Workflow: Init, Plan, Apply](terraform-workflow-init-plan-apply.md)
 
-
-
 ## References
+
+
+
+
 
 
 

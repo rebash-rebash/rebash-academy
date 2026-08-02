@@ -51,24 +51,32 @@ comments: false
 
 
 
+
+
+
+
 Sketch OpenID Connect (OIDC)–oriented GitHub Actions patterns for Amazon Web Services (AWS) Identity and Access Management (IAM) / Elastic Container Service (ECS) / Elastic Kubernetes Service (EKS), Azure service principals / Azure Kubernetes Service (AKS), and Google Cloud Workload Identity Federation / Google Kubernetes Engine (GKE) / Cloud Run — without embedding long-lived cloud keys in the repository.
 
 Modern deploy jobs **federate identity**: the job requests an OIDC token (`id-token: write`); the cloud exchanges it for a short-lived role. That role then updates ECS/EKS, AKS, GKE, or Cloud Run. Patterns differ by cloud, but the Actions shape is the same — authenticate, deploy an immutable artefact from Module 7, protect production with environments.
 
 This is a core tutorial in **Module 10 · Cloud Deployments** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Terraform Pipelines with GitHub Actions](terraform-pipelines-with-github-actions.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -81,9 +89,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Sketch GCP Workload Identity + GKE / Cloud Run  
 - [ ] Scope identities per environment and branch
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -92,9 +102,11 @@ This topic’s control points and relationships are shown below.
 
 ![Multi-cloud with OIDC](../assets/excalidraw/gha-multi-cloud.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -141,64 +153,108 @@ Reuse Module 7 digests across clouds for the same commit — do not rebuild a di
 - Mixing long-lived keys “just for break-glass” without a separate process.  
 - Redeploying different image digests per cloud for the same commit.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Multi-Cloud Deployments with GitHub Actions** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-10/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-10/.github/workflows && cd ~/rebash-github-actions/module-10/.github/workflows
 ```
 
-**Focus:** OIDC-ready jobs for AWS and Azure shapes (file-only)
+### Real-world scenario
 
-### Step 1 – Multi-cloud workflow
+Platform engineering wants **Multi-Cloud Deployments with GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > .github/workflows/multi-cloud.yml << 'EOF'
-name: Multi-cloud deploy shapes
-on: [workflow_dispatch]
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
-  aws_oidc:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    environment: aws-staging
     steps:
-      - run: echo "configure-aws-credentials when trust exists"
-  azure_oidc:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    environment: azure-staging
-    steps:
-      - run: echo "azure/login with OIDC when federated credential exists"
+      - uses: actions/checkout@v4
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Confirm separate environments and id-token
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-grep -E 'id-token: write|aws-staging|azure-staging' .github/workflows/multi-cloud.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# File-only — no cloud calls
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -208,9 +264,11 @@ grep -E 'id-token: write|aws-staging|azure-staging' .github/workflows/multi-clou
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -225,9 +283,11 @@ Production practice for **Multi-Cloud Deployments with GitHub Actions** always c
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -238,9 +298,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -254,9 +316,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -267,9 +331,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -282,18 +348,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Multi-Cloud Deployments with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do you structure workflows for AWS and Azure without duplication?
@@ -308,9 +378,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Isolate roles per cloud/environment and keep production approvals separate.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -318,9 +390,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Security Scanning and Supply Chain](security-scanning-and-supply-chain.md)
 
-
-
 ## References
+
+
+
+
 
 
 

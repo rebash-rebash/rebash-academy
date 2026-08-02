@@ -57,6 +57,8 @@ comments: false
 
 
 
+
+
 Diagnose Amazon Web Services (AWS) production failures with a fixed order: confirm identity and blast radius, then walk the **EC2 → IAM → VPC → DNS → storage → Lambda → EKS → cost** ladder without random console clicking.
 
 Most “AWS is down” tickets are permission denials, security group / route mistakes, DNS mispoints, or exhausted quotas — not Region-wide outages. Separate **control-plane errors** (API denied, wrong Region) from **data-plane symptoms** (timeouts, 5xx, CrashLoop). Capture evidence before you change anything.
@@ -66,9 +68,9 @@ Most “AWS is down” tickets are permission denials, security group / route mi
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -77,9 +79,9 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 - Working knowledge of Modules 2–11 (IAM, VPC, compute, storage, containers, serverless, observability)
 - AWS CLI v2 and read access to the affected account
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -94,9 +96,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Debug Lambda and EKS with logs, events, and auth  
 - [ ] Use cost spikes as a signal (runaway resources)
 
-
-
 ## Architecture
+
+
 
 
 
@@ -105,9 +107,9 @@ This topic’s control points and relationships are shown below.
 
 ![Troubleshooting ladder](../assets/excalidraw/aws-troubleshooting.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -189,50 +191,98 @@ Method per layer: symptom → evidence → decide → next action.
 - Calling every timeout an app bug before Flow Logs/Health.
 - Mutating before capturing evidence.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **Troubleshooting AWS** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-16`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-16 && cd ~/rebash-aws/module-16
 ```
 
-**Focus:** practise triage: identity → region → API error → CloudTrail
+### Real-world scenario
 
-### Step 1 – Triage commands
+Security asks for evidence that **Troubleshooting AWS** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
-echo "region=$(aws configure get region)"
-aws ec2 describe-instances --max-items 1 >/tmp/aws-out.json 2>/tmp/aws-err.txt || true
-head -n 20 /tmp/aws-err.txt || true
-aws cloudtrail lookup-events --max-results 5 --query 'Events[].{Time:EventTime,Name:EventName}' --output table 2>/dev/null || echo "CloudTrail lookup not permitted"
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Step 2 – Incident notes template
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-cat > triage.md << 'EOF'
-1. Who am I (STS ARN)? Which region?
-2. Exact error code/message
-3. Recent CloudTrail events for that API
-4. Blast radius / rollback
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
+cat notes.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -242,9 +292,9 @@ EOF
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -259,9 +309,9 @@ Production practice for **Troubleshooting AWS** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -272,9 +322,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -288,9 +338,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -301,9 +351,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -316,18 +366,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 Sixteen modules cover design, security, automation, cost, recovery — and on-call debugging with a shared playbook.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Your standard AWS incident triage order?
@@ -342,9 +392,9 @@ Sixteen modules cover design, security, automation, cost, recovery — and on-ca
 !!! tip "Sample answer — question 4"
     Limit who can disable logging during incidents; use temporary elevated roles with expiry.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -352,9 +402,9 @@ Sixteen modules cover design, security, automation, cost, recovery — and on-ca
 - [Course overview](index.md)
 - [Course overview](index.md) · [AWS interview prep](../interview/aws.md) · [Cheat sheet](../cheatsheets/aws.md)
 
-
-
 ## References
+
+
 
 
 

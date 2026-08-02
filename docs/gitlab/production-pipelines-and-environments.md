@@ -48,15 +48,21 @@ comments: false
 
 
 
+
+
+
+
 Design environment promotion (dev → staging → production) with protected environments, manual approvals, rollback paths, progressive delivery, and feature-flag controls.
 
 Production CI/CD is controlled promotion of an **immutable artefact** through named **environments**, not “run deploy on every push to main”. GitLab environments, protection rules, and `when: manual` jobs encode who may promote and how you recover.
 
 This is a core tutorial in **Module 15 · Production Pipelines** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -64,9 +70,11 @@ This is a core tutorial in **Module 15 · Production Pipelines** of the REBASH A
 - [Release Management and Versioning](release-management-and-versioning.md)
 - Deploy awareness from [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md) or equivalent
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -78,9 +86,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Document rollback (previous version / previous release)  
 - [ ] Outline progressive delivery and feature-flag separation
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -89,9 +99,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab production](../assets/excalidraw/gitlab-production.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -144,62 +156,105 @@ Keep production variables and runners scoped; production jobs should not share b
 - Rollback untested until an outage — practice in staging.
 - Using feature flags as a substitute for broken deploy pipelines — flags hide, they do not fix bad artefacts.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Production Pipelines and Environments** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-15`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-15 && cd ~/rebash-gitlab/module-15
 ```
 
-**Focus:** model staging/production environments with manual production gate
+### Real-world scenario
 
-### Step 1 – Environment-aware deploy jobs
+Your squad is encoding **Production Pipelines and Environments** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [build, deploy]
-build:
-  stage: build
-  image: alpine:3.20
-  script: ["mkdir -p dist && echo $CI_COMMIT_SHA > dist/REVISION"]
-  artifacts: {paths: [dist/]}
-deploy_staging:
-  stage: deploy
-  image: alpine:3.20
-  environment: {name: staging, url: https://staging.example.invalid}
-  script: ["test -f dist/REVISION", "echo deploy staging"]
-deploy_production:
-  stage: deploy
-  image: alpine:3.20
-  environment: {name: production, url: https://www.example.invalid}
-  needs: [deploy_staging]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-  script: ["echo production requires manual approval"]
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
+  script:
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Confirm environment blocks
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-grep -A3 'environment:' .gitlab-ci.yml
-grep -A2 'when: manual' .gitlab-ci.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -209,9 +264,11 @@ grep -A2 'when: manual' .gitlab-ci.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -226,9 +283,11 @@ Production practice for **Production Pipelines and Environments** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -239,9 +298,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -255,9 +316,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -268,9 +331,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -283,18 +348,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Production Pipelines and Environments** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do GitLab environments help track deployments?
@@ -309,9 +378,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Limit who can run production jobs, require approvals on protected environments, and inject production secrets only into those jobs.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -319,9 +390,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Pipeline Monitoring and Observability](pipeline-monitoring-and-observability.md)
 
-
-
 ## References
+
+
+
+
 
 
 

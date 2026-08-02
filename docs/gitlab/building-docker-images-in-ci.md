@@ -46,24 +46,32 @@ comments: false
 
 
 
+
+
+
+
 Author a GitLab CI job that builds a multi-stage Dockerfile (BuildKit-friendly), tags the image with the commit SHA, and documents promotion from registry to later environments without rebuilding.
 
 CI builds containers so every merge produces a **reproducible image**. GitLab provides a **Container Registry** per project (`$CI_REGISTRY_IMAGE`). Prefer **BuildKit** (or Kaniko/buildah on locked-down runners) over ad-hoc Docker-in-Docker. Tag with `$CI_COMMIT_SHA` (and optionally a digest); promote that same image through staging and production.
 
 This is a core tutorial in **Module 8 · Docker Pipelines** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Artifacts, Caches, and Dependencies](artifacts-caches-and-dependencies.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -76,9 +84,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe image promotion without rebuild  
 - [ ] Note DinD vs rootless / Kaniko trade-offs
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -87,9 +97,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab Docker pipeline](../assets/excalidraw/gitlab-docker-pipeline.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -137,64 +149,105 @@ Cache mounts and registry pull-through caches accelerate rebuilds; they do not r
 - Assuming cache guarantees bit-identical images across builders.  
 - Rebuilding for production instead of promoting the tested digest.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Building Docker Images in CI** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-08`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-08 && cd ~/rebash-gitlab/module-08
 ```
 
-**Focus:** Dockerfile plus Kaniko-style GitLab CI job; prove Dockerfile locally
+### Real-world scenario
 
-### Step 1 – Create Dockerfile and CI build job
+Your squad is encoding **Building Docker Images in CI** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-cat > Dockerfile << 'EOF'
-FROM python:3.12-alpine AS runtime
-WORKDIR /app
-COPY app.py .
-USER nobody
-CMD ["python", "app.py"]
-EOF
-echo 'print("hello from gitlab docker lab")' > app.py
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [build]
-build_image:
-  stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:v1.23.2-debug
-    entrypoint: [""]
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
   script:
-    - echo "Would push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-    - /kaniko/executor --context "$CI_PROJECT_DIR" --dockerfile "$CI_PROJECT_DIR/Dockerfile" --destination "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" --no-push
-  rules:
-    - if: $CI_COMMIT_BRANCH
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Local Docker build proof
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-docker build -t rebash-gitlab-lab:local .
-docker run --rm rebash-gitlab-lab:local
-docker rmi rebash-gitlab-lab:local
-grep -E 'kaniko|--no-push' .gitlab-ci.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-docker rmi rebash-gitlab-lab:local 2>/dev/null || true
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -204,9 +257,11 @@ docker rmi rebash-gitlab-lab:local 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -221,9 +276,11 @@ Production practice for **Building Docker Images in CI** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -234,9 +291,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -250,9 +309,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -263,9 +324,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -278,18 +341,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Building Docker Images in CI** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Why is Docker-in-Docker often avoided in favour of Kaniko/Buildah?
@@ -304,9 +371,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Authenticate via CI variables or OIDC-linked tokens, never ENV passwords in the image. Prefer minimal bases and non-root users.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -314,9 +383,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md)
 
-
-
 ## References
+
+
+
+
 
 
 

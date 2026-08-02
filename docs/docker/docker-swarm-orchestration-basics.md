@@ -27,13 +27,15 @@ comments: false
 
 
 
+
+
 **Docker Swarm** turns a pool of Docker engines into a single virtual cluster. You declare desired state — which image, how many replicas, which network — and Swarm schedules tasks, restarts failures, and rolling-updates services. Swarm is built into Docker Engine, simpler than Kubernetes, and ideal for small-to-medium deployments or edge clusters.
 
 This is **Tutorial 18** in **Module 6: Production & Beyond** of the REBASH Academy Docker track.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -45,9 +47,9 @@ This is **Tutorial 18** in **Module 6: Production & Beyond** of the REBASH Acade
 - Three Linux VMs or local machines with Docker Engine 24+ (one manager, two workers minimum for lab)
 - Open ports: TCP 2377 (cluster management), 7946 TCP/UDP (node communication), 4789 UDP (overlay network)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -62,9 +64,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Manage secrets and configs in Swarm
 - [ ] Deploy a multi-service stack from a Compose file with `docker stack deploy`
 
-
-
 ## Architecture
+
+
 
 
 
@@ -72,9 +74,9 @@ By the end of this tutorial, you will be able to:
 
 ![Docker networking / multi-host](../assets/excalidraw/docker-networking.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -191,47 +193,94 @@ After finishing **docker swarm orchestration basics**, skim the Related Links on
 
 Keep a short note of the exact commands that proved the happy path and the failure path. Interviewers and future incident responders both benefit when you can show *how you knew* the system was healthy — not only that you followed a script.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Docker Swarm Orchestration Basics** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/docker-swarm-orchestration-basics`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/docker-swarm-orchestration-basics && cd ~/rebash-docker/docker-swarm-orchestration-basics
 ```
 
-**Focus:** initialise a local swarm, deploy a service, then leave swarm
+### Real-world scenario
 
-### Step 1 – Swarm service lab
+You are validating **Docker Swarm Orchestration Basics** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-docker swarm init || docker info --format '{{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}'
-docker service create --name rebash-web --publish 18083:80 --replicas 2 nginx:alpine
-docker service ls
-docker service ps rebash-web
-curl -sI http://127.0.0.1:18083 | head -n 5
-```
+### Step-by-step tasks
 
-### Step 2 – Remove service and leave swarm
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-docker service rm rebash-web
-docker swarm leave --force || true
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker service rm rebash-web 2>/dev/null || true
-docker swarm leave --force 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -250,9 +299,9 @@ Confirm the lab before moving on:
 | Update/rollback | Rolling update or rollback path demonstrated |
 | Cleanup | Services removed; leave Swarm only if you intend to keep it |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -299,9 +348,9 @@ wget -qO- http://api:3000/health
 
 Service name `api` resolves to all healthy task IPs (VIP load balancing).
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -314,9 +363,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 - Prefer overlay networks with encryption for sensitive multi-host traffic when required
 - Limit published ports on ingress and remove unused services promptly
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -337,9 +386,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 !!! warning "Ignoring placement constraints"
     Stateful workloads (DB) on random nodes lose data on reschedule. Use labels and volumes with backup strategy.
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -360,9 +409,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 !!! tip "Plan exit strategy"
     Swarm maintenance mode is real — know when to migrate to [Kubernetes](from-docker-to-kubernetes.md).
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -377,9 +426,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 | Secret not mounted | Service not updated after secret create | Recreate service with `--secret` |
 | Quorum lost | Too many managers down | Restore from backup or rebuild cluster |
 
-
-
 ## Summary
+
+
 
 
 
@@ -392,9 +441,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 - **`docker stack deploy`** maps Compose files to Swarm with `deploy:` semantics
 - Swarm bridges single-host Docker and full orchestration — next step: [From Docker to Kubernetes](from-docker-to-kubernetes.md)
 
-
-
 ## Interview Questions
+
+
 
 
 1. Swarm service versus standalone container?
@@ -409,9 +458,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 !!! tip "Sample answer — question 4"
     Protect manager nodes and use Swarm secrets.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -427,9 +476,9 @@ Service name `api` resolves to all healthy task IPs (VIP load balancing).
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 

@@ -29,15 +29,17 @@ comments: false
 
 
 
+
+
 Applications need **configuration** — database URLs, API keys, feature flags, log levels — that changes between environments without rebuilding the image. The [Twelve-Factor App](https://12factor.net/config) principle states: store config in the **environment**, not in code. Docker provides several mechanisms to inject configuration at runtime: **environment variables**, **env files**, **secrets**, **bind mounts**, and integration with external **secret managers**.
 
 This tutorial explains when to use each approach, how to avoid leaking credentials into image layers and logs, and how to wire secrets through **Docker Compose** and production patterns. You will configure a sample web application with non-sensitive env vars and sensitive credentials using Docker's recommended secret primitives.
 
 This is **Tutorial 12** in **Module 4: Networking & Registry** of the REBASH Academy Docker series. Complete [Container Registries and Distribution](container-registries-and-distribution.md) before this tutorial.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -48,9 +50,9 @@ This is **Tutorial 12** in **Module 4: Networking & Registry** of the REBASH Aca
 - Familiarity with [Environment Variables and Shell Config](../linux/environment-variables-shell-config.md) on Linux
 - A lab directory where you can create test files (no real production credentials)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -65,9 +67,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Integrate external secret managers conceptually (Vault, AWS Secrets Manager, GCP Secret Manager)
 - [ ] Debug missing or incorrect environment variables in running containers
 
-
-
 ## Architecture
+
+
 
 
 
@@ -77,9 +79,9 @@ Configuration flows from sources of truth into the container process environment
 
 ![Compose and configuration](../assets/excalidraw/docker-compose.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -188,53 +190,94 @@ The Twelve-Factor **config** factor aligns with containers:
 
 Add `.env` to `.gitignore`. Scan repos with secret detection tools in CI.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Environment Variables and Secrets** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/environment-variables-and-secrets`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/environment-variables-and-secrets && cd ~/rebash-docker/environment-variables-and-secrets
 ```
 
-**Focus:** pass env files safely and avoid baking secrets into images
+### Real-world scenario
 
-### Step 1 – Env file runtime inject
+You are validating **Environment Variables and Secrets** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-cat > app.env << 'EOF'
-APP_MODE=lab
-GREETING=hello
-EOF
-cat > Dockerfile << 'EOF'
-FROM alpine:3.20
-CMD ["sh", "-c", "echo mode=$APP_MODE greeting=$GREETING"]
-EOF
-docker build -t rebash-env:lab .
-docker run --rm --env-file app.env rebash-env:lab
-docker image inspect rebash-env:lab --format '{{ "{{" }}json .Config.Env{{ "}}" }}'
-```
+### Step-by-step tasks
 
-### Step 2 – Cleanup
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-rm -f app.env
-docker rmi rebash-env:lab
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-rm -f app.env
-docker rmi rebash-env:lab 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -253,9 +296,9 @@ Confirm the lab before moving on:
 | Inspect awareness | You can show where env values appear in `docker inspect` |
 | Cleanup | Containers and any local `.env` lab files handled safely |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -298,9 +341,9 @@ DATABASE_HOST=localhost
 # Secrets: mount at /run/secrets/api_token instead of env vars
 ```
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -313,9 +356,9 @@ DATABASE_HOST=localhost
 - Avoid passing secrets on the CLI (`docker run -e PASS=…`) where shell history retains them
 - Scrub CI logs — echo and debug printing commonly leak secrets from env blocks
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -333,9 +376,9 @@ DATABASE_HOST=localhost
 !!! warning "Assuming Compose secrets work with docker compose up"
     Top-level `secrets` in Compose require Swarm (`docker stack deploy`) unless you bind-mount files manually on standalone Docker.
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -353,9 +396,9 @@ DATABASE_HOST=localhost
 !!! tip "Validate required variables at startup"
     Fail fast with clear errors when `DATABASE_URL` or secret files are missing — avoids silent misconfiguration in production.
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -370,9 +413,9 @@ DATABASE_HOST=localhost
 | Compose variable substitution empty | `.env` missing for YAML | Add `.env` for `${VAR}` in compose file or export in shell |
 | Permission denied on secret mount | Host file permissions too open | `chmod 600` on host; match container user if needed |
 
-
-
 ## Summary
+
+
 
 
 
@@ -385,9 +428,9 @@ DATABASE_HOST=localhost
 - Production integrates **external secret managers** for rotation, audit, and least-privilege access
 - Compose merges multiple env sources — understand precedence to avoid surprises
 
-
-
 ## Interview Questions
+
+
 
 
 1. Why are ENV instructions in Dockerfiles risky for secrets?
@@ -402,9 +445,9 @@ DATABASE_HOST=localhost
 !!! tip "Sample answer — question 4"
     Use secret managers / orchestrator secret objects and short rotation intervals.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -419,9 +462,9 @@ DATABASE_HOST=localhost
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 

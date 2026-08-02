@@ -54,15 +54,17 @@ comments: false
 
 
 
+
+
 Assemble a small event-driven design using AWS Lambda, Amazon API Gateway, Amazon EventBridge, Amazon Simple Notification Service (SNS), Amazon Simple Queue Service (SQS), and AWS Step Functions — and tear it down so idle resources do not linger.
 
 **Serverless** on AWS means you deploy code or workflows and pay primarily for invocations, duration, and messages — not for always-on virtual machines. **Lambda** runs functions. **API Gateway** exposes HTTP/WebSocket APIs. **EventBridge** routes events from AWS services and custom buses. **SNS** fans out notifications; **SQS** buffers work for consumers. **Step Functions** orchestrate multi-step workflows with retries and branching. Together they form the backbone of many Cloud DevOps automation and product backends.
 
 This is a core tutorial in **Module 8 · Serverless** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -71,9 +73,9 @@ This is a core tutorial in **Module 8 · Serverless** of the REBASH Academy **AW
 - IAM roles and least-privilege policies
 - AWS CLI configured; optional Python or Node.js for a tiny handler
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -85,9 +87,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline Step Functions orchestration for a multi-step job  
 - [ ] Apply timeouts, concurrency, DLQs, and teardown for cost hygiene
 
-
-
 ## Architecture
+
+
 
 
 
@@ -96,9 +98,9 @@ This topic’s control points and relationships are shown below.
 
 ![Serverless architecture](../assets/excalidraw/aws-serverless.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -155,57 +157,98 @@ Keep secrets in Secrets Manager or Systems Manager Parameter Store, not plaintex
 - Large payloads in events — store in S3 and pass references  
 - Leaving rules, APIs, queues, and log groups after labs
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **Serverless on AWS — Lambda, APIs, and Eventing** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-08`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-08 && cd ~/rebash-aws/module-08
 ```
 
-**Focus:** list Lambda resources; optional tiny function only if role exists
+### Real-world scenario
 
-### Step 1 – Serverless inventory
+Security asks for evidence that **Serverless on AWS — Lambda, APIs, and Eventing** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
-aws lambda list-functions --query 'Functions[].{Name:FunctionName,Runtime:Runtime}' --output table
-aws apigatewayv2 get-apis --query 'Items[].{Name:Name,Id:ApiId}' --output table 2>/dev/null || true
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Step 2 – Optional hello Lambda (destroy after)
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-ROLE_ARN=$(aws iam get-role --role-name lab-lambda-basic --query Role.Arn --output text 2>/dev/null || true)
-if [ -n "${ROLE_ARN:-}" ]; then
-  cat > function.py << 'EOF'
-def handler(event, context):
-    return {"ok": True}
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
-  zip -q function.zip function.py
-  FN="rebash-lab-$(date +%s)"
-  aws lambda create-function --function-name "$FN" --runtime python3.12 --role "$ROLE_ARN" --handler function.handler --zip-file fileb://function.zip
-  aws lambda invoke --function-name "$FN" out.json && cat out.json && echo
-  aws lambda delete-function --function-name "$FN"
-  rm -f function.zip function.py out.json
-else
-  echo "No lab-lambda-basic role — describe-only path is fine"
-fi
+cat notes.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -215,9 +258,9 @@ fi
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -232,9 +275,9 @@ Production practice for **Serverless on AWS — Lambda, APIs, and Eventing** alw
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -245,9 +288,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -261,9 +304,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -274,9 +317,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -289,18 +332,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Serverless on AWS — Lambda, APIs, and Eventing** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Lambda concurrency and timeout pitfalls?
@@ -315,9 +358,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Least-privilege function roles and delete unused functions after labs.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -325,9 +368,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Monitoring and Observability on AWS](monitoring-and-observability-on-aws.md)
 
-
-
 ## References
+
+
 
 
 

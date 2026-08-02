@@ -42,22 +42,24 @@ comments: false
 
 
 
+
+
 Use `git log`, `git show`, and `git diff` to answer “what changed?” during incidents and reviews.
 
 This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
 
 
 
+
+
 - [Basic Git Workflow](basic-git-workflow-add-commit-push.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -69,9 +71,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Diff working tree, staging, and commits  
 - [ ] Limit history by path/time
 
-
-
 ## Architecture
+
+
 
 
 
@@ -80,9 +82,9 @@ This topic’s control points and relationships are shown below.
 
 ![Architecture diagram for Viewing History and Diffs](../assets/excalidraw/git-object-model.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -125,49 +127,97 @@ git diff main...feature  # PR-style tip comparison
 - Over-relying on GUI diffs without checking binary or generated files  
 - Forgetting `--follow` when a file was renamed (history can look empty)
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Viewing History and Diffs** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-03/hist`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-03/hist && cd ~/rebash-git/module-03/hist
 ```
 
-**Focus:** read history with log/diff/show
+### Real-world scenario
 
-### Step 1 – Build history worth inspecting
+A delivery team is standardising **Viewing History and Diffs**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo a > file.txt && git add file.txt && git commit -m "chore: add file"
-echo b >> file.txt && git add file.txt && git commit -m "feat: append b"
-echo c >> file.txt && git add file.txt && git commit -m "feat: append c"
-git log --oneline --graph -n 5
-git show HEAD --stat
-git diff HEAD~2 HEAD
-```
+### Step-by-step tasks
 
-### Step 2 – Search history
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git log -S'b' --oneline
-git log -p -n 1
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -177,9 +227,9 @@ git log -p -n 1
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -194,9 +244,9 @@ Production practice for **Viewing History and Diffs** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -207,9 +257,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -223,9 +273,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -236,9 +286,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -251,18 +301,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Viewing History and Diffs** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. When do you use git show versus git diff?
@@ -277,9 +327,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Avoid pasting sensitive diffs into tickets; redact secrets.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -287,9 +337,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
 
-
-
 ## References
+
+
 
 
 

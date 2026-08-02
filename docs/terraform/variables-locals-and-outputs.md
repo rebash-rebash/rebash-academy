@@ -43,23 +43,31 @@ comments: false
 
 
 
+
+
+
+
 Design clean module inputs and outputs: typed variables, validation, tfvars and `TF_VAR_`, locals for derived values, and sensitive outputs that do not leak in logs.
 
 **Variables** are the knobs at the module boundary. **Locals** hold computed values inside the module. **Outputs** export results to the CLI, parent modules, or remote state consumers. Prefer explicit types, descriptions, and validation over undocumented defaults.
 
 This is a core tutorial in **Module 7 · Variables & Outputs** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Resources, Dependencies, and Meta-Arguments](resources-dependencies-and-meta-arguments.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -70,9 +78,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use locals for derived names without exposing them as inputs  
 - [ ] Mark sensitive outputs and confirm CLI redaction
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -80,9 +90,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform variables flow](../assets/excalidraw/terraform-variables-flow.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -128,77 +140,124 @@ Prefer explicit `-var-file` in CI over ambient `terraform.tfvars` so the wrong e
 - Expecting `sensitive = true` to encrypt state — it only redacts display.
 - Exposing every local as a variable — keep the interface small.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Variables, Locals, and Outputs** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-07`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-07 && cd ~/rebash-terraform/module-07
 ```
 
-**Focus:** Wire input variables, locals, and outputs cleanly
+### Real-world scenario
 
-### Step 1 – Define variables and outputs
+You are automating **Variables, Locals, and Outputs** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > variables.tf <<'EOF'
-variable "app_name" {
-  type    = string
-  default = "demo"
-}
-variable "tags" {
-  type    = map(string)
-  default = { team = "platform" }
-}
-EOF
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-locals {
-  label = "${var.app_name}-lab"
-}
-resource "local_file" "config" {
-  filename = "${path.module}/config.json"
-  content  = jsonencode({ name = local.label, tags = var.tags })
-}
-output "config_path" {
-  value = local_file.config.filename
-}
-output "label" {
-  value = local.label
-}
 EOF
-cat > terraform.tfvars <<'EOF'
-app_name = "payments"
-tags = { team = "platform", env = "lab" }
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
+}
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply and read outputs
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
 terraform output
-cat config.json
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+#### Task 3 – Inspect state safely
+
+State is the source of truth — list and show without hand-editing.
+
+```bash
+terraform state list | tee state-list.txt
+terraform state show null_resource.lab | tee state-show.txt
+```
+
+**Expected output:** state-list.txt contains `null_resource.lab`.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -207,9 +266,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -223,9 +284,11 @@ Production practice for **Variables, Locals, and Outputs** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -235,9 +298,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -250,9 +315,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -262,9 +329,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -276,17 +345,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Variables, Locals, and Outputs** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do input variables differ from locals?
@@ -301,18 +374,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Committed tfvars often leak passwords and keys through Git history. Prefer secret managers, CI-injected TF_VAR_ values, and never commit real secrets.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Terraform State Fundamentals](terraform-state-fundamentals.md)
 
-
-
 ## References
+
+
+
+
 
 
 

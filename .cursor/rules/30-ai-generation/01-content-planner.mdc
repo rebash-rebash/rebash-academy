@@ -1,3 +1,689 @@
 ---
+description: Master content planning and orchestration system for REBASH Academy
 alwaysApply: true
 ---
+
+# REBASH Academy Content Planning System
+
+## Purpose
+
+This rule defines how AI should plan content before generating it.
+
+Never begin writing immediately.
+
+Every generation task must start with planning.
+
+Planning determines quality.
+
+---
+
+# Core Principle
+
+Never ask
+
+"What should I write?"
+
+Always ask
+
+"What problem am I solving for the learner?"
+
+Every page exists to help someone achieve something.
+
+---
+
+# Tutorial planning gates (mandatory)
+
+Before generating a tutorial, the plan must include:
+
+1. **Theory outline** — concepts from the technology prompt (define → example → pitfall)  
+2. **Topic-specific lab outline** — 2–4 tasks, expected evidence, environment, cleanup (not a generic baseline)  
+3. **Interview themes** — 5–8 question intents + which get sample answers  
+4. **Diagram** — one Excalidraw subject  
+
+Reject plans that reuse the same lab for unrelated topics.
+
+Quality bar: `.cursor/rules/00-foundation/09-content-quality-standard.mdc`
+
+---
+
+# Think Like
+
+Before generating content think like
+
+↓
+
+Product Manager
+
+↓
+
+Curriculum Designer
+
+↓
+
+Solutions Architect
+
+↓
+
+Senior Engineer
+
+↓
+
+Technical Writer
+
+↓
+
+Learning Designer
+
+↓
+
+UX Designer
+
+↓
+
+Reviewer
+
+Never think like a text generator.
+
+---
+
+# Content Planning Workflow
+
+Every generation task must follow
+
+Understand Goal
+
+↓
+
+Understand Audience
+
+↓
+
+Identify Knowledge Level
+
+↓
+
+Determine Learning Outcome
+
+↓
+
+Determine Required Content
+
+↓
+
+Determine Supporting Content
+
+↓
+
+Determine Navigation
+
+↓
+
+Determine Validation
+
+↓
+
+Generate
+
+Never skip planning.
+
+---
+
+# Step 1
+
+Identify the Request
+
+Determine
+
+Content Type
+
+Technology
+
+Role
+
+Difficulty
+
+Business Context
+
+Learning Context
+
+Examples
+
+Kubernetes Course
+
+Terraform Tutorial
+
+Docker Lab
+
+Linux Cheat Sheet
+
+Azure Interview
+
+AWS Architecture
+
+---
+
+# Step 2
+
+Determine Audience
+
+Identify
+
+Student
+
+Developer
+
+Cloud Engineer
+
+DevOps Engineer
+
+Platform Engineer
+
+Security Engineer
+
+SRE
+
+Architect
+
+Manager
+
+Enterprise Team
+
+Adapt depth automatically.
+
+---
+
+# Step 3
+
+Determine Skill Level
+
+Support
+
+Absolute Beginner
+
+Beginner
+
+Intermediate
+
+Advanced
+
+Expert
+
+Never mix levels.
+
+---
+
+# Step 4
+
+Determine Learning Goal
+
+Examples
+
+Understand
+
+Install
+
+Configure
+
+Deploy
+
+Operate
+
+Secure
+
+Scale
+
+Troubleshoot
+
+Automate
+
+Architect
+
+Master
+
+The learning goal drives everything else.
+
+---
+
+# Step 5
+
+Determine Deliverable
+
+Identify exactly what will be produced
+
+Course
+
+Lesson
+
+Module
+
+Tutorial
+
+Project
+
+Architecture
+
+Cheat Sheet
+
+Documentation
+
+Interview
+
+Roadmap
+
+Certification
+
+Blog
+
+News
+
+Landing Page
+
+Search Experience
+
+Do not mix page types.
+
+---
+
+# Step 6
+
+Determine Required Sections
+
+Automatically choose only the required sections.
+
+Examples
+
+Course
+
+↓
+
+Hero
+
+Overview
+
+Modules
+
+Projects
+
+Labs
+
+Certification
+
+Roadmap
+
+Tutorial
+
+↓
+
+Goal
+
+Environment
+
+Implementation
+
+Validation
+
+Troubleshooting
+
+Summary
+
+Project
+
+↓
+
+Business Problem
+
+Architecture
+
+Implementation
+
+Testing
+
+Deployment
+
+Portfolio
+
+Only include relevant sections.
+
+---
+
+# Step 7
+
+Determine Supporting Assets
+
+Automatically decide if content needs
+
+Architecture Diagram
+
+Workflow
+
+Sequence Diagram
+
+Decision Tree
+
+Comparison Table
+
+Timeline
+
+Mind Map
+
+Flowchart
+
+Code
+
+CLI Commands
+
+API Examples
+
+Tables
+
+Screenshots
+
+Generate supporting material when it improves learning.
+
+---
+
+# Step 8
+
+Determine Learning Assets
+
+Recommend
+
+Tutorials
+
+Labs
+
+Projects
+
+Architecture Guides
+
+Interview Questions
+
+Cheat Sheets
+
+Documentation
+
+Certification
+
+Roadmaps
+
+Every page should connect to the ecosystem.
+
+---
+
+# Step 9
+
+Determine Validation
+
+Every page should answer
+
+How does the learner know they succeeded?
+
+Possible validation
+
+Quiz
+
+Hands-on
+
+Commands
+
+Expected Output
+
+Checklist
+
+Scenario
+
+Reflection
+
+Projects
+
+Validation is mandatory.
+
+---
+
+# Step 10
+
+Determine Production Relevance
+
+Always evaluate
+
+Security
+
+Performance
+
+Scalability
+
+Reliability
+
+Maintainability
+
+Automation
+
+Monitoring
+
+Cost
+
+Every page should prepare learners for production.
+
+---
+
+# Content Planning Matrix
+
+Before generation create an internal plan.
+
+Content Type
+
+↓
+
+Audience
+
+↓
+
+Difficulty
+
+↓
+
+Learning Goal
+
+↓
+
+Sections
+
+↓
+
+Examples
+
+↓
+
+Assets
+
+↓
+
+Validation
+
+↓
+
+Production Notes
+
+↓
+
+Generate
+
+Do not expose this planning unless requested.
+
+---
+
+# Adaptive Planning
+
+If Beginner
+
+↓
+
+More explanations
+
+↓
+
+More visuals
+
+↓
+
+Smaller steps
+
+↓
+
+Less jargon
+
+If Advanced
+
+↓
+
+Architecture
+
+↓
+
+Trade-offs
+
+↓
+
+Performance
+
+↓
+
+Security
+
+↓
+
+Automation
+
+↓
+
+Production scenarios
+
+Adjust automatically.
+
+---
+
+# Cross-link Strategy
+
+Every page should recommend
+
+Previous Learning
+
+↓
+
+Current Learning
+
+↓
+
+Next Learning
+
+↓
+
+Related Technologies
+
+↓
+
+Projects
+
+↓
+
+Interview Preparation
+
+↓
+
+Certification
+
+Learning should never end at one page.
+
+---
+
+# Internal Quality Questions
+
+Before generating ask internally
+
+Does this solve the learner's problem?
+
+Is this technically correct?
+
+Is it production ready?
+
+Is it practical?
+
+Is it easy to follow?
+
+Is something missing?
+
+Improve the plan before writing.
+
+---
+
+# AI Decision Tree
+
+Always determine
+
+↓
+
+Intent
+
+↓
+
+Audience
+
+↓
+
+Knowledge Level
+
+↓
+
+Goal
+
+↓
+
+Best Page Type
+
+↓
+
+Supporting Assets
+
+↓
+
+Validation
+
+↓
+
+Production Guidance
+
+↓
+
+Generate
+
+---
+
+# Anti-patterns
+
+Never
+
+Generate before planning
+
+Mix audiences
+
+Mix difficulties
+
+Skip validation
+
+Ignore production context
+
+Create isolated pages
+
+Duplicate existing content
+
+Teach theory without practice
+
+---
+
+# Success Criteria
+
+Every piece of REBASH Academy content should begin with a deliberate planning process.
+
+The final output should feel as though an experienced engineering team first designed the learning experience and only then created the content.
+
+Planning should become invisible to the learner but obvious in the quality of every page.

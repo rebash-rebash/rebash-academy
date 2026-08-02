@@ -43,13 +43,13 @@ comments: false
 
 
 
+
+
 Shrink and harden images with multi-stage builds, sensible bases, BuildKit cache, and ordered layers.
 
 Smaller images pull faster, scan cleaner, and attack less surface. **Multi-stage** builds compile in a fat stage and copy artefacts into a slim runtime stage.
 
 This is a core tutorial in **Module 6 · Image Optimisation** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
@@ -57,11 +57,13 @@ This is a core tutorial in **Module 6 · Image Optimisation** of the REBASH Acad
 
 
 
+
+
 - [Building Images with Dockerfile](building-images-with-dockerfile.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -75,9 +77,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Enable BuildKit features  
 - [ ] Measure image size before/after
 
-
-
 ## Architecture
+
+
 
 
 
@@ -87,9 +89,9 @@ This topic’s control points and relationships are shown below.
 
 ![Image layers](../assets/excalidraw/docker-image-layers.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -129,59 +131,100 @@ Declare a builder stage (`FROM golang:… AS build`) that compiles, then a runti
 - Keeping package manager caches in layers  
 - Using multi-stage complexity when a single slim stage would do
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Dockerfile Best Practices and Multi-Stage Builds** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-06`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
 ```
 
-**Focus:** build a multi-stage image and compare history
+### Real-world scenario
 
-### Step 1 – Multi-stage Dockerfile
+You are validating **Dockerfile Best Practices and Multi-Stage Builds** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+
+### Step-by-step tasks
+
+#### Task 1 – Author Dockerfile and build
+
+Images are the deployment unit — build a tagged local image.
 
 ```bash
-cat > hello.go << 'EOF'
-package main
-import "fmt"
-func main() { fmt.Println("multi-stage ok") }
-EOF
 cat > Dockerfile << 'EOF'
-FROM golang:1.22-alpine AS build
+FROM alpine:3.20 AS build
 WORKDIR /src
-COPY hello.go .
-RUN go build -o /out/hello hello.go
+RUN echo 'artefact' > app.txt
 FROM alpine:3.20
-COPY --from=build /out/hello /usr/local/bin/hello
-USER nobody
-ENTRYPOINT ["/usr/local/bin/hello"]
+COPY --from=build /src/app.txt /app.txt
+CMD ["cat", "/app.txt"]
 EOF
-docker build -t rebash-ms:lab .
-docker run --rm rebash-ms:lab
-docker images rebash-ms:lab
+docker build -t rebash-lab:local .
+docker image ls rebash-lab:local
 ```
 
-### Step 2 – Show layers / cleanup
+**Expected output:** Image `rebash-lab:local` listed with a recent CREATED time.
+
+#### Task 2 – Run and verify output
+
+Prove the runtime image does what the Dockerfile claims.
 
 ```bash
-docker history rebash-ms:lab | head -n 15
-docker rmi rebash-ms:lab
+docker run --rm --name rebash-lab rebash-lab:local | tee out.txt
+test "$(cat out.txt)" = 'artefact'
 ```
 
-### Final step – Cleanup note
+**Expected output:** out.txt contains exactly `artefact`.
+
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
 
 ```bash
-docker rmi rebash-ms:lab 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -192,9 +235,9 @@ docker rmi rebash-ms:lab 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -210,9 +253,9 @@ Production practice for **Dockerfile Best Practices and Multi-Stage Builds** alw
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -224,9 +267,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -241,9 +284,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -255,9 +298,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -271,9 +314,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -281,9 +324,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 **Dockerfile Best Practices and Multi-Stage Builds** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. How do multi-stage builds improve security and size?
@@ -298,9 +341,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Keep build tools out of production images and pin base digests.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -309,9 +352,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Volumes and Persistent Storage](volumes-and-persistent-storage.md)
 
-
-
 ## References
+
+
 
 
 

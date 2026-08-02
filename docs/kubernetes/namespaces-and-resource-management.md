@@ -27,15 +27,21 @@ comments: false
 
 
 
+
+
+
+
 A production Kubernetes cluster rarely runs a single application in isolation. Platform teams host dozens of teams — each with staging, production, and experimental workloads — on shared infrastructure. **Namespaces** are Kubernetes' primary mechanism for partitioning a cluster: they scope object names, enable RBAC boundaries, and anchor resource policies. Without namespaces, every Service name must be globally unique and a runaway batch job in one team can exhaust cluster memory for everyone.
 
 This tutorial covers namespace design, **ResourceQuota** and **LimitRange** enforcement, label-based organisation, and kubectl context workflows. You will learn how SRE and platform engineers prevent noisy-neighbor problems while keeping developer self-service intact.
 
 This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH Academy Kubernetes series. Complete [Ingress and External Access](ingress-and-external-access.md) first — external routing and namespace-scoped Ingress rules go hand in hand.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -45,9 +51,11 @@ This is **Tutorial 11** in **Module 4: Networking & Operations** of the REBASH A
 - Basic understanding of CPU and memory units (`100m`, `256Mi`, `1Gi`)
 - Comfort reading `kubectl get` and `kubectl describe` output
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -61,9 +69,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Diagnose pod scheduling failures caused by quota exhaustion
 - [ ] Apply labels and annotations for cost allocation and governance
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -71,9 +81,11 @@ Namespaces sit logically above workloads. The API server enforces quotas at admi
 
 ![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -198,73 +210,96 @@ Services are reachable as:
 
 NetworkPolicies (covered in later security tutorials) restrict cross-namespace traffic. Ingress rules reference Services in their own namespace unless using ExternalName or multi-namespace controllers.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Namespaces and Resource Management** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-kubernetes/namespaces-and-resource-management`
+
+### Lab environment
+
+Workspace: `~/rebash-kubernetes/namespaces-and-resource-management`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-kubernetes/namespaces-and-resource-management && cd ~/rebash-kubernetes/namespaces-and-resource-management
 ```
 
-**Focus:** Isolate workloads and set namespace-level resource budgets
+### Real-world scenario
 
-### Step 1 – Create namespace with ResourceQuota and LimitRange
+Your platform team is rolling out **Namespaces and Resource Management** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-cat > budget.yaml <<'EOF'
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: lab-quota
-  namespace: rebash-lab
-spec:
-  hard:
-    requests.cpu: "1"
-    requests.memory: 1Gi
-    pods: "10"
----
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: lab-limits
-  namespace: rebash-lab
-spec:
-  limits:
-  - type: Container
-    default:
-      cpu: 100m
-      memory: 128Mi
-    defaultRequest:
-      cpu: 50m
-      memory: 64Mi
-EOF
-kubectl apply -f budget.yaml
-kubectl -n rebash-lab describe resourcequota lab-quota
-```
+### Step-by-step tasks
 
-### Step 2 – Schedule a Pod and observe quota usage
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What Is a Namespace?** against a live API.
 
 ```bash
-kubectl -n rebash-lab run quota-pod --image=nginx:1.27-alpine
-kubectl -n rebash-lab get pod quota-pod -o jsonpath='{.spec.containers[0].resources}{"
-"}'
-kubectl -n rebash-lab describe resourcequota lab-quota
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Namespaces and Resource Management
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -281,9 +316,11 @@ Confirm the lab before moving on:
 | Isolation | Resources in one namespace do not appear in another without `-A` |
 | Cleanup | Lab namespace deleted |
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -338,9 +375,11 @@ spec:
 
 Apply: `kubectl apply -f namespace-bootstrap.yaml`
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -351,9 +390,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - Label namespaces for Pod Security admission (enforce/restricted) early
 - Delete unused namespaces — leftover RBAC and Secrets accumulate risk
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -369,9 +410,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 !!! warning "Deleting kube-system or kube-public"
     System namespaces host critical cluster components. Restrict namespace deletion to platform admins via RBAC.
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -387,9 +430,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 !!! tip "Monitor quota utilization"
     Alert when namespace quota usage exceeds 80%. Proactive quota increases prevent deployment failures during releases.
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -402,9 +447,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 | Namespace stuck Terminating | Finalizers on resources inside namespace | Identify blocking objects; remove finalizers only with care |
 | Quota shows zero used but pods exist | Pods lack requests/limits | Update Deployments; ensure LimitRange injects defaults |
 
-
-
 ## Summary
+
+
+
+
 
 
 
@@ -415,9 +462,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - Configure kubectl **context namespace** to reduce operator error during multi-namespace work
 - Pair quotas with monitoring and documented sizing so teams understand capacity boundaries before incidents
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do ResourceQuota and LimitRange differ?
@@ -432,9 +481,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 !!! tip "Sample answer — question 4"
     Quotas that are too tight block legitimate work; quotas that are too loose allow noisy neighbours. Review usage, set fair shares, and separate critical platforms into their own namespaces.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -447,9 +498,11 @@ Apply: `kubectl apply -f namespace-bootstrap.yaml`
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -42,24 +42,26 @@ comments: false
 
 
 
+
+
 Choose a sensible repo boundary, tag a release with SemVer, and document what belongs in a GitHub Release.
 
 Teams fail when everything is one mega-repo without ownership — or when fifty repos have no shared standards. Releases make versions discoverable for ops and consumers.
 
 This is a core tutorial in **Module 14 · Repository Management** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
 
 - [Git for Infrastructure as Code](git-for-infrastructure-as-code.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -71,9 +73,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Follow SemVer for libraries/CLIs  
 - [ ] Draft release notes from `git log`
 
-
-
 ## Architecture
+
+
 
 
 
@@ -82,9 +84,9 @@ This topic’s control points and relationships are shown below.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -124,54 +126,97 @@ Publish a short release checklist: green CI on the tagged commit, changelog entr
 - Monorepo without CODEOWNERS or path filters (CI forever)  
 - Orphan repos with no README, owners, or archive policy
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Repository Management and Releases** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-14`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-14 && cd ~/rebash-git/module-14
 ```
 
-**Focus:** practise release branches, tags, and bundle archive
+### Real-world scenario
 
-### Step 1 – Release branch and tag
+A delivery team is standardising **Repository Management and Releases**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo "app" > README.md
-git add README.md && git commit -m "chore: init"
-git switch -c release/1.2
-echo "1.2.0" > VERSION
-git add VERSION && git commit -m "release: 1.2.0"
-git tag -a v1.2.0 -m "1.2.0"
-git switch -
-git merge release/1.2 -m "merge: release 1.2"
-git tag -l 'v*'
-git branch -a
-```
+### Step-by-step tasks
 
-### Step 2 – Bundle for archive
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git bundle create repo.bundle --all
-git bundle verify repo.bundle
-ls -lh repo.bundle
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -181,9 +226,9 @@ ls -lh repo.bundle
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -198,9 +243,9 @@ Production practice for **Repository Management and Releases** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -211,9 +256,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -227,9 +272,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -240,9 +285,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -255,18 +300,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Repository Management and Releases** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Release branch versus tagging on main?
@@ -281,9 +326,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Protect tags, restrict releasers, and store checksums.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -291,9 +336,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Signed Commits and Git Security](signed-commits-and-git-security.md)
 
-
-
 ## References
+
+
 
 
 

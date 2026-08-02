@@ -52,6 +52,8 @@ comments: false
 
 
 
+
+
 Design least-privilege access on AWS using Identity and Access Management (IAM) principals, roles, policies, multi-factor authentication (MFA), Security Token Service (STS), cross-account patterns, IAM Identity Center, and AWS Organizations.
 
 Every API call is authorised by **identity + policy evaluation**. Misconfigured IAM is the most common cause of both outages (“AccessDenied”) and breaches (over-privileged keys). This module teaches the production model: humans use federated SSO; workloads assume **roles**; long-lived access keys are rare and rotated.
@@ -61,9 +63,9 @@ Every API call is authorised by **identity + policy evaluation**. Misconfigured 
 
 This is a core tutorial in **Module 2 · Identity & Access Management** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -71,9 +73,9 @@ This is a core tutorial in **Module 2 · Identity & Access Management** of the R
 - [AWS Fundamentals and Global Infrastructure](aws-fundamentals-and-global-infrastructure.md)
 - Comfortable with JSON and the AWS CLI
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -86,9 +88,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Place IAM Identity Center and Organizations (OUs, SCPs, billing) in a multi-account design  
 - [ ] Write and evaluate a simple least-privilege identity-based policy
 
-
-
 ## Architecture
+
+
 
 
 
@@ -97,9 +99,9 @@ This topic’s control points and relationships are shown below.
 
 ![AWS IAM model](../assets/excalidraw/aws-iam-model.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -159,48 +161,98 @@ Workload → Instance role or OIDC → AssumeRoleWithWebIdentity → APIs
 - Expecting SCPs or permission boundaries to grant access  
 - Skipping MFA on privileged human paths and the root user
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **IAM, Identity Access, and Organizations** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-02`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-02 && cd ~/rebash-aws/module-02
 ```
 
-**Focus:** inspect caller identity and IAM (read-only)
+### Real-world scenario
 
-### Step 1 – Identity inventory
+Security asks for evidence that **IAM, Identity Access, and Organizations** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
-aws iam list-account-aliases --output text || true
-aws iam get-user --output json 2>/dev/null | head -c 400 || echo "likely using a role — expected with SSO"
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Step 2 – Least-privilege checklist
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-cat > iam-checklist.md << 'EOF'
-- Prefer roles + STS / OIDC over access keys
-- SCPs for organisation guardrails
-- MFA on humans; separate break-glass
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
+cat notes.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
-# No IAM users/keys created
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -210,9 +262,9 @@ EOF
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -227,9 +279,9 @@ Production practice for **IAM, Identity Access, and Organizations** always combi
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -240,9 +292,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -256,9 +308,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -269,9 +321,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -284,18 +336,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **IAM, Identity Access, and Organizations** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. User versus role versus group versus policy?
@@ -310,9 +362,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Use roles with MFA/SSO, least privilege, and rotate/delete unused keys immediately.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -320,9 +372,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [VPC Networking on AWS](vpc-networking-on-aws.md)
 
-
-
 ## References
+
+
 
 
 

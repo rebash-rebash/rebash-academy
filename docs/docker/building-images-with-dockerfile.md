@@ -42,13 +42,13 @@ comments: false
 
 
 
+
+
 Author a clear Dockerfile for a small app: choose a base image, install deps, copy code, set `USER`, and define `CMD`/`ENTRYPOINT`.
 
 A **Dockerfile** is a build recipe. Each instruction can create a layer — order matters for cache and size (optimisation is Module 6).
 
 This is a core tutorial in **Module 5 · Dockerfile** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
@@ -56,11 +56,13 @@ This is a core tutorial in **Module 5 · Dockerfile** of the REBASH Academy **Do
 
 
 
+
+
 - [Working with Docker Images](working-with-docker-images.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Set `ENV` / `ARG`, `EXPOSE`, `LABEL`, `USER`  
 - [ ] Build and run a local image
 
-
-
 ## Architecture
+
+
 
 
 
@@ -85,9 +87,9 @@ This topic’s control points and relationships are shown below.
 
 ![Image layers](../assets/excalidraw/docker-image-layers.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -130,53 +132,100 @@ Each instruction creates a layer (conceptually). `FROM` selects a base. `RUN` ex
 - Confusing `ARG` (build) with runtime configuration  
 - Using `latest` bases that break builds unexpectedly
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Building Images with Dockerfile** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-05/app`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
 ```
 
-**Focus:** write a Dockerfile, build a tagged image, and run it
+### Real-world scenario
 
-### Step 1 – Dockerfile build
+You are validating **Building Images with Dockerfile** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+
+### Step-by-step tasks
+
+#### Task 1 – Author Dockerfile and build
+
+Images are the deployment unit — build a tagged local image.
 
 ```bash
-cat > app.py << 'EOF'
-print("hello from dockerfile lab")
-EOF
 cat > Dockerfile << 'EOF'
-FROM python:3.12-alpine
-WORKDIR /app
-COPY app.py .
-USER nobody
-CMD ["python", "app.py"]
+FROM alpine:3.20 AS build
+WORKDIR /src
+RUN echo 'artefact' > app.txt
+FROM alpine:3.20
+COPY --from=build /src/app.txt /app.txt
+CMD ["cat", "/app.txt"]
 EOF
-docker build -t rebash-df:lab .
-docker run --rm rebash-df:lab
+docker build -t rebash-lab:local .
+docker image ls rebash-lab:local
 ```
 
-### Step 2 – Inspect image and cleanup
+**Expected output:** Image `rebash-lab:local` listed with a recent CREATED time.
+
+#### Task 2 – Run and verify output
+
+Prove the runtime image does what the Dockerfile claims.
 
 ```bash
-docker image inspect rebash-df:lab --format '{{ "{{" }}.Config.User{{ "}}" }}'
-docker rmi rebash-df:lab
+docker run --rm --name rebash-lab rebash-lab:local | tee out.txt
+test "$(cat out.txt)" = 'artefact'
 ```
 
-### Final step – Cleanup note
+**Expected output:** out.txt contains exactly `artefact`.
+
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
 
 ```bash
-docker rmi rebash-df:lab 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -187,9 +236,9 @@ docker rmi rebash-df:lab 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -205,9 +254,9 @@ Production practice for **Building Images with Dockerfile** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -219,9 +268,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -236,9 +285,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -250,9 +299,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -266,9 +315,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -276,9 +325,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 **Building Images with Dockerfile** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. What do FROM/COPY/RUN/CMD/ENTRYPOINT each do?
@@ -293,9 +342,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Do not COPY secrets into layers. Use multi-stage builds and non-root users.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -304,9 +353,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
 
-
-
 ## References
+
+
 
 
 

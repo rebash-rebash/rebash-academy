@@ -41,23 +41,37 @@ comments: false
 
 
 
+
+
+
+
+
+
 Use labels/selectors to group objects, separate workloads with namespaces, and understand ReplicaSets as the replication layer under Deployments.
 
 **Labels** are queryable key/value metadata. **Selectors** bind Services and controllers to Pods. **Namespaces** partition names and often tenancy. **Annotations** hold non-identifying metadata (tooling, checksums).
 
 This is a core tutorial in **Module 3 · Kubernetes Objects** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
+
+
 
 
 
 - [Pods — The Atomic Unit](pods-the-atomic-unit.md)
 
-
-
 ## Learning Objectives
+
+
+
+
+
+
 
 
 
@@ -68,9 +82,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Create and use a namespace  
 - [ ] Relate ReplicaSet to Deployment
 
-
-
 ## Architecture
+
+
+
+
+
+
 
 
 
@@ -78,9 +96,13 @@ This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
+
+
 
 
 
@@ -123,48 +145,98 @@ Labels identify; annotations annotate. Do not put large config in labels — use
 - Operating without `-n` and wondering why “nothing exists”.
 - Treating namespaces as hard security isolation — you still need RBAC, NetworkPolicy, and quotas.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Labels, Selectors, and Namespaces** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-03-labels`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-03-labels`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-03-labels && cd ~/rebash-k8s/module-03-labels
 ```
 
-**Focus:** Organise objects with namespaces, labels, and selectors
+### Real-world scenario
 
-### Step 1 – Create labelled resources
+Your platform team is rolling out **Labels, Selectors, and Namespaces** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-kubectl -n rebash-lab run api --image=nginx:1.27-alpine --labels=tier=frontend,env=lab
-kubectl -n rebash-lab run worker --image=busybox:1.36 --labels=tier=backend,env=lab --command -- sleep 3600
-kubectl -n rebash-lab label pod api owner=rebash --overwrite
-kubectl -n rebash-lab get pods --show-labels
-```
+### Step-by-step tasks
 
-### Step 2 – Query with selectors and namespace scope
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What it is** against a live API.
 
 ```bash
-kubectl -n rebash-lab get pods -l tier=frontend
-kubectl -n rebash-lab get pods -l 'env in (lab),tier!=frontend'
-kubectl get ns rebash-lab -o yaml | head -n 20
-kubectl -n rebash-lab get all
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Labels, Selectors, and Namespaces
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
+
+
 
 
 
@@ -173,9 +245,13 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
+
+
 
 
 
@@ -189,9 +265,13 @@ Production practice for **Labels, Selectors, and Namespaces** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
+
+
 
 
 
@@ -201,9 +281,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
+
+
 
 
 
@@ -216,9 +300,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
+
+
 
 
 
@@ -228,9 +316,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
+
+
 
 
 
@@ -242,17 +334,25 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
+
+
 
 
 
 **Labels, Selectors, and Namespaces** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
+
+
 
 
 1. What is a Kubernetes namespace used for?
@@ -267,18 +367,26 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Namespaces scope names and RBAC subjects, but they do not provide network or node isolation alone. Combine with NetworkPolicy, quotas, and Pod security controls for stronger tenancy.
 
-
-
 ## Related Tutorials
+
+
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Deployments — Managing Replicated Pods](deployments-managing-replicated-pods.md)
 
-
-
 ## References
+
+
+
+
+
+
 
 
 

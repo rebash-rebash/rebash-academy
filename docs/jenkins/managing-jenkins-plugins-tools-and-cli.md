@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Managing Jenkins — Plugins, Tools, and CLI
 
 ## Overview
+
+
 
 Operate day-2 Jenkins: **Manage Jenkins**, **Plugin Manager**, global tool installations, **Jenkins CLI**, reload configuration, and **safeRestart**.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 10 · Managing Jenkins** of the REBASH Acade
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Managing Jenkins](../assets/excalidraw/jenkins-managing.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -101,55 +112,98 @@ Pin plugin versions in code later via JCasC / plugin management tools.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Managing Jenkins — Plugins, Tools, and CLI** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-10`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-10 && cd ~/rebash-jenkins/module-10
 ```
 
-**Focus:** script plugin inventory notes and CLI usage checklist
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Managing Jenkins — Plugins, Tools, and CLI**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Capture controller/agent mental model files
+
+Document how this topic shows up on a real controller.
 
 ```bash
-cat > manage-runbook.md << 'EOF'
-# Managing Jenkins runbook
-1. Snapshot / volume backup of JENKINS_HOME
-2. List plugins (UI or CLI list-plugins)
-3. Apply updates on TEST controller first
-4. Safe restart in change window
-5. Smoke: login, trigger known Pipeline, check agent
+tee scenario.md << 'EOF'
+Topic: Managing Jenkins — Plugins, Tools, and CLI
+- Controller owns config and orchestration
+- Agents execute untrusted build steps
+- Prefer Jenkinsfile in SCM over click-ops jobs
 EOF
-cat > cli-notes.md << 'EOF'
-# Jenkins CLI
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth user:token help
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth user:token list-plugins | head
-# Create API token under user configure — never commit it
-EOF
-grep -E 'Safe restart|list-plugins|Snapshot' manage-runbook.md cli-notes.md
+cat scenario.md
+mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
 ```
 
-### Step 2 – Tools block example
+**Expected output:** scenario.md and jobs/README.txt exist.
+
+#### Task 2 – Write a minimal Declarative stub
+
+Even management topics should leave a Pipeline artefact.
 
 ```bash
-cat > tools-Jenkinsfile.snippet << 'EOF'
+cat > Jenkinsfile << 'EOF'
 pipeline {
-  agent { label 'linux' }
-  tools { jdk 'jdk17' }
-  stages { stage('V') { steps { sh 'java -version' } } }
+  agent any
+  stages { stage('OK') { steps { echo 'lab' } } }
 }
 EOF
-grep jdk tools-Jenkinsfile.snippet
+grep -n agent Jenkinsfile
 ```
 
-### Final cleanup
+**Expected output:** Jenkinsfile present with an agent directive.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+# Keep lab notes under ~/rebash-jenkins/
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-10/`
 - [ ] You can explain each Theory section in your own words
@@ -157,6 +211,8 @@ grep jdk tools-Jenkinsfile.snippet
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Managing Jenkins — Plugins, Tools, and CLI** always combines:
 
@@ -170,6 +226,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -177,6 +235,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Production plugin updates without backup"
     Backup `JENKINS_HOME` and rehearse on a test controller first.
@@ -189,6 +249,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Managing Jenkins — Plugins, Tools, and CLI** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -196,6 +258,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -207,9 +271,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Managing Jenkins — Plugins, Tools, and CLI** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. What is the difference between safe restart and reload configuration?
 2. How do you roll out plugin updates safely?
@@ -225,11 +293,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Shared Libraries](shared-libraries.md)
 - [Securing Jenkins](securing-jenkins.md)
 
 ## References
+
+
 
 - [Managing Jenkins](https://www.jenkins.io/doc/book/managing/)
 - [Plugins](https://www.jenkins.io/doc/book/managing/plugins/)

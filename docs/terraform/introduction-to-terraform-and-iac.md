@@ -43,6 +43,10 @@ comments: false
 
 
 
+
+
+
+
 Explain what Infrastructure as Code (IaC) solves, contrast imperative and declarative models, and outline Terraform’s write → plan → apply workflow and architecture mental model.
 
 **Infrastructure as Code** treats infrastructure the same way we treat application code: versioned files, peer review, and repeatable applies. **Terraform** is a declarative IaC tool — you describe the desired end state in HashiCorp Configuration Language (HCL); Terraform computes a plan and calls provider APIs to create, update, or destroy real resources.
@@ -51,18 +55,22 @@ This course is **Terraform for Cloud & DevOps Engineers** — production IaC, no
 
 This is a core tutorial in **Module 1 · IaC Fundamentals** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Linux](../linux/index.md) — comfortable terminal and file editing
 - [Git](../git/index.md) — commits and pull requests (helpful)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -73,9 +81,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Name why teams choose Terraform for multi-cloud ops  
 - [ ] Sketch write → init → plan → apply → state
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -83,9 +93,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform workflow](../assets/excalidraw/terraform-workflow.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -131,72 +143,113 @@ You will install the CLI and run this loop in the next modules. For now, own the
 - A plan is not a guarantee forever — state drift and out-of-band console edits still matter.
 - “Declarative” does not mean “no order”; Terraform’s graph still sequences dependent creates.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Introduction to Terraform and Infrastructure as Code** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-01`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-01 && cd ~/rebash-terraform/module-01
 ```
 
-**Focus:** Apply your first Terraform configuration with local and null providers
+### Real-world scenario
 
-### Step 1 – Write a minimal configuration
+You are automating **Introduction to Terraform and Infrastructure as Code** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
-    }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
-}
-
-resource "null_resource" "lab" {
-  triggers = {
-    note = "rebash-lab"
-  }
-}
-
-resource "local_file" "marker" {
-  content  = "managed-by-terraform
-"
-  filename = "${path.module}/marker.txt"
 }
 EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
+}
+output "note" { value = null_resource.lab.triggers.topic }
+EOF
 terraform init
-terraform plan
+terraform validate
 ```
 
-### Step 2 – Apply and inspect state
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-terraform state list
-cat marker.txt
-terraform show | head -n 40
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -205,9 +258,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -221,9 +276,11 @@ Production practice for **Introduction to Terraform and Infrastructure as Code**
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -233,9 +290,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -248,9 +307,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -260,9 +321,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -274,17 +337,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Introduction to Terraform and Infrastructure as Code** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What problem does Infrastructure as Code solve compared with ClickOps?
@@ -299,18 +366,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     IaC can still destroy production if plans are unreviewed, state is corrupt, or credentials are overly broad. Code review, policy checks, and least-privilege credentials remain essential.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
 
-
-
 ## References
+
+
+
+
 
 
 

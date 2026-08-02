@@ -1,20 +1,27 @@
 ---
 title: "JSON and YAML with jq and yq"
-description: "Parse and transform JSON and YAML configuration with jq and yq in shell pipelines."
+description: "Parse and assert JSON and YAML in Bash using jq, with yq when installed and a clear fallback when it is not."
 difficulty: intermediate
-estimated_time: "50 min"
+estimated_time: "45–55 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: shell
+technology: shell
+module: "Module 14 · JSON & YAML"
 tags:
   - shell
   - bash
   - jq
   - yq
-  - config
+  - json
+  - yaml
 prerequisites:
-  - Networking Automation with Shell
-  - Bash 4.2+ on Linux (WSL2/VM/cloud)
+  - shell/networking-automation-with-shell
+next:
+  - shell/scheduling-cron-at-and-timers
+related:
+  - shell/text-processing-in-shell-scripts
+interview: interview/shell
 comments: false
 ---
 
@@ -22,29 +29,32 @@ comments: false
 
 ## Overview
 
-Cloud APIs and Kubernetes speak JSON/YAML. Shell stays useful when jq/yq shape data before the next tool runs.
+Cloud and DevOps tools speak **JSON** (JavaScript Object Notation) and **YAML** (YAML Ain’t Markup Language) everywhere: Kubernetes manifests, Terraform plan JSON, GitHub API responses, Ansible inventories, and app config files. Parsing them with `grep` is fragile. **`jq`** is the standard CLI for JSON. **`yq`** (the Mike Farah Go version is common) does similar work for YAML. In Bash you read a file, select fields, and **assert** values before a deploy continues.
 
-This is **Tutorial 14** in **Module 14: JSON & YAML** of the REBASH Academy **Shell Scripting for DevOps Engineers** series — written for Linux administrators, DevOps engineers, SREs, and platform engineers who automate production hosts with Bash.
+This is **Tutorial 14** in **Module 14: JSON & YAML** of the REBASH Academy **Shell Scripting for DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers. By the end, you will parse sample documents under `~/rebash-shell/lab14` with `jq`, and with `yq` when it is installed (with a safe fallback when it is not).
+
+In production, a missing field should fail the script early. Pretty-printing secrets into CI logs causes leaks. Prefer `jq`/`yq` over homemade parsers, pin tool versions in CI images, and keep assertions next to the deploy step.
 
 ## Prerequisites
 
-- Networking Automation with Shell
-- Bash 4.2+ on Linux (WSL2/VM/cloud)
+- [Networking Automation with Shell](networking-automation-with-shell.md)
+- Bash 4.2+ on Linux
+- `jq` installed (`sudo apt-get install -y jq` on Ubuntu)
+- Optional: `yq` (v4+) — the lab works with a fallback if `yq` is missing
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “JSON and YAML with jq and yq” in a real ops script
-- [ ] Use `set -euo pipefail` as the production default
-- [ ] Use quoted expansions and clear stderr diagnostics
-- [ ] Produce meaningful exit codes for automation consumers
-- [ ] Debug behaviour with `bash -x` when something fails
-- [ ] Relate this topic to day-to-day Linux admin and DevOps work
+- [ ] Explain when to use `jq` versus line-oriented tools like `grep`
+- [ ] Select and assert JSON fields with `jq`
+- [ ] Parse YAML with `yq` when available, or document a fallback path
+- [ ] Fail a script when a required field is missing or wrong
+- [ ] Avoid printing secrets while debugging structured config
 
 ## Architecture
 
-Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
+Scripts receive JSON/YAML from APIs or files, select fields with `jq`/`yq`, assert contracts, then continue automation or fail fast.
 
 ![Architecture diagram for JSON and YAML with jq and yq](../assets/excalidraw/shell-json-yaml.svg)
 
@@ -52,165 +62,372 @@ Ops scripts sit between humans/automation and system tools. This topic’s contr
 
 ### What it is
 
-Modern operations speak **JSON** (JavaScript Object Notation) and **YAML** (YAML Ain’t Markup Language) for APIs, Kubernetes manifests, and application config. Shell scripts should not parse those formats with `grep` and hope. **`jq`** is the standard command-line JSON processor; **`yq`** (pin a specific implementation — Mike Farah’s Go tool and Python variants differ) does the same job for YAML. Together they let Bash extract fields, rewrite keys, and validate structure before a deploy continues.
+**JSON** is a structured text format with objects, arrays, strings, numbers, booleans, and null. **YAML** is indentation-based and often used for Kubernetes and Ansible; many YAML files map cleanly to JSON data models. **`jq`** reads JSON from a file or stdin and applies a filter (for example `.name`, `.spec.replicas`). **`yq`** applies similar expressions to YAML documents.
+
+```bash
+jq -r '.name' app.json
+yq -r '.metadata.name' app.yaml   # when yq v4 is installed
+```
 
 ### Why it matters
 
-Cloud APIs, Continuous Integration (CI) artefacts, and GitOps files are structured data. Brittle text scraping breaks when a field moves or a list grows. Using `jq` / `yq` keeps transforms explicit, testable, and reviewable. It also reduces secret leakage: you can extract one non-sensitive field instead of dumping an entire document into logs. For DevOps and platform engineers, fluency with these tools is the difference between a reliable glue script and a fragile one-liner that fails on the next API version.
+APIs and cluster tools return structured data. If your script greps for a word, a harmless log line can fake success. Field asserts catch wrong environments, missing images, or zero replicas before you roll out. Platform teams use the same pattern in CI: fetch → parse → assert → deploy.
 
 ### How it works
 
-Pipe or redirect JSON into `jq`. Use `-r` for raw strings and `--arg` to pass shell values safely into the filter:
+1. **Validate JSON** — `jq empty file.json` or `jq . file.json` (fails on bad JSON).  
+2. **Select** — `jq -r '.key'` raw string; `jq '.list | length'` for counts.  
+3. **Assert** — compare to expected values; exit non-zero on mismatch.  
+4. **YAML** — with `yq eval` / `yq -r` (syntax varies slightly by version); or convert carefully.  
+5. **Fallback** — if `yq` is missing, convert a controlled sample with a small Python one-liner **only when Python is available**, or skip YAML asserts and record `yq=SKIP` — do not invent YAML parsing in pure Bash.
 
 ```bash
-jq -r '.items[].metadata.name' < deploy.json
-jq --arg env "$ENV" '.env = $env' config.json
+name=$(jq -r '.service.name' config.json)
+[[ "$name" == "payments" ]] || { echo "bad name: $name" >&2; exit 1; }
 ```
 
-Invalid JSON should fail the script (`set -e` plus `jq`’s non-zero status). With `yq`, select keys, convert between YAML and JSON when needed, and merge overlays for environment-specific config. Always **validate before apply**: check required keys exist, extract only what you need, and rewrite files atomically (`tmp` + `mv` on the same filesystem).
+### Key concepts and comparisons
 
-Treat configuration as versioned data. Document required keys in the script’s usage text. Keep secrets out of shell history, debug dumps, and world-readable files — prefer environment injection or a secrets store over embedding tokens in YAML checked into git.
+| Tool | Best for | Notes |
+|------|----------|-------|
+| `jq` | JSON APIs, `kubectl -o json` | Ubiquitous in CI images |
+| `yq` | Kubernetes/Ansible YAML | Confirm Mike Farah v4 vs older Python `yq` |
+| `grep`/`sed` | Simple logs | Fragile for nested structure |
+| Python `json`/`yaml` | Complex transforms | Heavier; good fallback in controlled images |
 
-### Key concepts
-
-| Concern | Practice |
-|---------|----------|
-| JSON | Prefer `jq` over `grep`/`sed` |
-| YAML | Pin one `yq` implementation in docs and CI |
-| Injection | `jq --arg` / `yq` equivalents — not string concat |
-| Validation | Fail fast on missing keys or invalid documents |
-| Rewrite | Atomic temp file + `mv`; never half-written configs |
+| Pattern | Prefer when | Avoid when |
+|---------|-------------|------------|
+| `jq -e` / explicit test | CI gates | Ignoring exit codes |
+| `-r` for shell vars | Feeding next commands | Forgetting quotes around results |
+| Pin `jq`/`yq` versions | Shared pipelines | Assuming every laptop matches CI |
+| Redact secrets | Debug logs | `jq .` on files with tokens |
 
 ### Common pitfalls
 
-- Parsing JSON with `grep`/`awk` and breaking on whitespace or key order
-- Mixing incompatible `yq` dialects across developer laptops and CI
-- Concatenating shell variables into filters instead of `--arg`
-- Dumping full documents (with secrets) into CI logs while debugging
-- Overwriting config in place so a crash leaves a truncated file
+- Using `grep` for nested JSON and matching the wrong line.
+- Forgetting `jq` exits non-zero on invalid JSON — catch and explain it.
+- Mixing `yq` v3 (Python) syntax with v4 (Go) syntax.
+- Pretty-printing whole secrets objects in CI logs.
+- Unquoted `$(jq …)` results that split on spaces.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+Create sample JSON and YAML, assert fields with `jq`, and parse YAML with `yq` when installed (or a documented fallback). Save evidence under `~/rebash-shell/lab14`.
+
+### Prerequisites
+
+- `jq` required
+- `yq` optional (v4 preferred); Python 3 optional for fallback
+
+### Lab environment
+
+Workspace: `~/rebash-shell/lab14`
 
 ```bash
 mkdir -p ~/rebash-shell/lab14 && cd ~/rebash-shell/lab14
-```
-
-**Focus:** jq extract/transform; yq read YAML; validate config keys
-
-### Step 1 – jq (and yq if present)
-
-```bash
-cat > sample.json << 'EOF'
-{"env":"lab","items":[{"name":"web"},{"name":"db"}]}
-EOF
-cat > sample.yaml << 'EOF'
-env: lab
-replicas: 2
-EOF
-cat > parse.sh << 'EOF'
-#!/usr/bin/env bash
 set -euo pipefail
-command -v jq >/dev/null || { echo "install jq" >&2; exit 3; }
-jq -r '.items[].name' sample.json | tee names.txt
-jq --arg e prod '.env=$e' sample.json > out.json
-if command -v yq >/dev/null; then
-  yq '.replicas' sample.yaml | tee replicas.txt
-else
-  echo 'yq not installed — skipped' | tee replicas.txt
-fi
-EOF
-chmod +x parse.sh
-./parse.sh
+command -v jq | tee jq-path.txt
+jq --version | tee jq-version.txt
+if command -v yq >/dev/null 2>&1; then yq --version | tee yq-version.txt; else echo 'yq=not-installed' | tee yq-version.txt; fi
 ```
 
-### Final step – Cleanup note
+**Expected output:** `jq` path and version recorded; `yq-version.txt` notes installed or not.
+
+### Real-world scenario
+
+A deploy job receives an app descriptor as JSON and a small Kubernetes-style YAML snippet. Before rollout, the pipeline must prove `service.name`, `service.port`, and `replicas` match the change ticket. If `yq` is missing on a laptop, the lab still proves JSON asserts and records how YAML was handled.
+
+### Step-by-step tasks
+
+#### Task 1 – Sample files and jq asserts
 
 ```bash
-# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-shell/lab14
+set -euo pipefail
+
+cat > app.json << 'EOF'
+{
+  "service": {
+    "name": "payments",
+    "port": 8080,
+    "env": "lab"
+  },
+  "replicas": 2,
+  "image": "ghcr.io/example/payments:1.4.2"
+}
+EOF
+
+cat > app.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments
+  labels:
+    app: payments
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: payments
+          image: ghcr.io/example/payments:1.4.2
+          ports:
+            - containerPort: 8080
+EOF
+
+jq empty app.json
+name=$(jq -r '.service.name' app.json)
+port=$(jq -r '.service.port' app.json)
+replicas=$(jq -r '.replicas' app.json)
+image=$(jq -r '.image' app.json)
+
+{
+  echo "json_name=${name}"
+  echo "json_port=${port}"
+  echo "json_replicas=${replicas}"
+  echo "json_image=${image}"
+} | tee jq-fields.txt
+
+[[ "$name" == "payments" ]]
+[[ "$port" == "8080" ]]
+[[ "$replicas" == "2" ]]
+[[ "$image" == "ghcr.io/example/payments:1.4.2" ]]
+echo "jq_asserts=OK" | tee jq-asserts.txt
+```
+
+**Expected output:** `jq-fields.txt` lists the four fields; `jq-asserts.txt` says `OK`.
+
+#### Task 2 – Negative assert (must fail)
+
+```bash
+cd ~/rebash-shell/lab14
+set -euo pipefail
+
+set +e
+bad=$(jq -r '.service.name' app.json)
+[[ "$bad" == "wrong-name" ]]
+ec=$?
+set -e
+echo "negative_test_exit=$ec" | tee jq-negative.txt
+test "$ec" -ne 0
+```
+
+**Expected output:** `negative_test_exit` is non-zero (assert correctly rejected the wrong name).
+
+#### Task 3 – yq when installed, fallback otherwise
+
+```bash
+cd ~/rebash-shell/lab14
+set -euo pipefail
+
+parse_yaml() {
+  if command -v yq >/dev/null 2>&1; then
+    # Mike Farah yq v4 style; also works with many distro packages
+    yq_name=$(yq -r '.metadata.name' app.yaml 2>/dev/null \
+      || yq eval '.metadata.name' app.yaml -r)
+    yq_replicas=$(yq -r '.spec.replicas' app.yaml 2>/dev/null \
+      || yq eval '.spec.replicas' app.yaml -r)
+    echo "yaml_tool=yq" | tee yaml-parse.txt
+    echo "yaml_name=${yq_name}" | tee -a yaml-parse.txt
+    echo "yaml_replicas=${yq_replicas}" | tee -a yaml-parse.txt
+    [[ "$yq_name" == "payments" ]]
+    [[ "$yq_replicas" == "2" ]]
+    echo "yaml_asserts=OK" | tee yaml-asserts.txt
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 - << 'PY' | tee yaml-parse.txt
+import sys
+try:
+    import yaml
+except ImportError:
+    print("yaml_tool=skip")
+    print("yaml_asserts=SKIP reason=no-yq-no-pyyaml")
+    sys.exit(0)
+with open("app.yaml", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+name = data["metadata"]["name"]
+replicas = data["spec"]["replicas"]
+print("yaml_tool=python3-pyyaml")
+print(f"yaml_name={name}")
+print(f"yaml_replicas={replicas}")
+if name != "payments" or replicas != 2:
+    sys.exit(1)
+print("yaml_asserts=OK")
+PY
+    # Normalise assert file
+    if grep -q 'yaml_asserts=OK' yaml-parse.txt; then
+      echo "yaml_asserts=OK" | tee yaml-asserts.txt
+    else
+      echo "yaml_asserts=SKIP" | tee yaml-asserts.txt
+    fi
+  else
+    echo "yaml_tool=skip" | tee yaml-parse.txt
+    echo "yaml_asserts=SKIP reason=no-yq-no-python" | tee yaml-asserts.txt
+  fi
+}
+
+parse_yaml
+grep -Eq 'yaml_asserts=(OK|SKIP)' yaml-asserts.txt
+
+tar -czf json-yaml-evidence.tgz \
+  jq-path.txt jq-version.txt yq-version.txt \
+  app.json app.yaml jq-fields.txt jq-asserts.txt jq-negative.txt \
+  yaml-parse.txt yaml-asserts.txt
+ls -l json-yaml-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** YAML path is `OK` (via `yq` or PyYAML) or honest `SKIP`; archive exists.
+
+### Validation steps
+
+- [ ] `jq empty app.json` succeeds
+- [ ] Field asserts pass for name, port, replicas, image
+- [ ] Negative name assert fails as expected
+- [ ] `yaml-asserts.txt` is `OK` or documented `SKIP`
+- [ ] `json-yaml-evidence.tgz` exists under `~/rebash-shell/lab14`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `jq: command not found` | Not installed | `sudo apt-get install -y jq` |
+| `yq` syntax error | v3 vs v4 | Try `yq eval '…' file -r` or install mikefarah/yq |
+| `null` from jq | Wrong path | `jq '.' file` to explore; fix the filter |
+| PyYAML missing | Fallback import fails | Install `yq`, or `pip install pyyaml` in a venv, or accept SKIP |
+| Word-splitting | Unquoted `$(jq …)` | Always quote: `"$name"` |
+
+### Challenge exercise
+
+Write `assert-app.sh` that takes a JSON file path as `$1`, asserts `.replicas >= 1` and `.service.port == 8080` using `jq`, and exits `0`/`1` accordingly. Prove with `app.json` (pass) and a tiny bad fixture `bad.json` with `"replicas": 0` (fail). Keep both fixtures in the lab folder.
+
+### Learning outcomes
+
+- Parsed and asserted JSON fields with `jq`
+- Proved a negative assertion fails
+- Parsed YAML with `yq` or a documented fallback
+- Packed evidence for a change ticket
+
+### Cleanup
+
+```bash
+cd ~/rebash-shell/lab14
+set -euo pipefail
+# Keep samples/evidence if you want; otherwise:
+# rm -f json-yaml-evidence.tgz *.txt bad.json assert-app.sh
+# Optional: rm -f app.json app.yaml
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-shell/lab14/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] You can relate this topic to a real DevOps or Linux admin task
+- [ ] Lab finished under `~/rebash-shell/lab14/` with evidence files
+- [ ] You can explain why `jq` beats `grep` for nested JSON
+- [ ] You can assert required fields and fail CI on mismatch
+- [ ] You know how to handle missing `yq` honestly
 
 ## Code Walkthrough
 
-Production Bash for **JSON and YAML with jq and yq** always combines:
+In real pipelines, structured config checks usually follow this order:
 
-1. A clear shebang (`#!/usr/bin/env bash`)
-2. Strict mode near the top (`set -euo pipefail`) from Module 2 onward
-3. Quoted expansions and explicit tests
-4. Functions with `local` for reusable behaviour
-5. Documented exit codes and stderr logging
+1. **Validate parse** — reject broken JSON/YAML early  
+2. **Select only needed fields** — do not dump whole secret objects  
+3. **Assert contracts** — name, port, replicas, image tag  
+4. **Fail non-zero** — blockers for deploy jobs  
+5. **Pin tool versions** — same `jq`/`yq` in CI and docs  
 
-Keep scripts short enough to review in a single merge request. When logic grows (complex JSON APIs, heavy state), hand off to Python and keep Bash as the launcher.
+Bash stays the glue; `jq`/`yq` do the structure work.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env) as untrusted until validated
-- Never log secrets; prefer masked CI variables and secret stores
-- Prefer least privilege — do not require root for file-local tasks
-- Avoid `eval` and unquoted expansions in destructive commands
-- Validate paths stay under an allow-listed root before `rm` or overwrite
+- Redact tokens, passwords, and private keys before logging `jq` output  
+- Prefer pulling secrets from a secret store, not from committed JSON  
+- Treat API JSON as untrusted until asserted  
+- Do not `curl \| jq` sensitive admin APIs on shared screen shares without care  
+- Keep write operations (`yq -i`) behind review — easy to rewrite manifests wrongly  
 
 ## Common Mistakes
 
-!!! warning "Skipping strict mode"
-    Cron and CI hide failures that an interactive terminal would show. **Fix:** start with `set -euo pipefail` from Module 2 onward.
+!!! warning "Grepping JSON for success"
+    A word in a comment or message can fake a pass. **Fix:** `jq` field asserts with exit codes.
 
-!!! warning "Unquoted path expansions"
-    Spaces and globs rewrite your command line. **Fix:** always `"$path"` / `"$@"`.
+!!! warning "Assuming every image has `yq`"
+    Laptops and slim CI images differ. **Fix:** install in the image, or skip with an explicit `SKIP` reason.
 
-!!! warning "Assuming interactive PATH"
-    Aliases and fancy PATH entries disappear under schedulers. **Fix:** set `PATH` or use absolute paths.
+!!! warning "Dumping full documents in CI"
+    Secrets leak into log archives. **Fix:** print only the fields you assert.
+
+!!! warning "Unquoted jq results in Bash"
+    Paths and names with spaces break. **Fix:** `"$var"` always.
 
 ## Best Practices
 
-- One purpose per script; compose with functions or small binaries
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where scheduling may overlap
-- Pair every new script with a failing-path test you actually run
-- Run ShellCheck in CI before merging automation
+- Check `jq empty` / parse before business asserts  
+- Use `-r` when feeding shell variables  
+- Keep sample fixtures next to the script for unit-style checks  
+- Prefer mikefarah `yq` v4 syntax in new docs and pin it  
+- Combine with ShellCheck for the surrounding Bash  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Works in terminal, fails in cron | PATH / cwd / env | Fingerprint env; set PATH |
-| `unbound variable` | `set -u` | Provide defaults or export vars |
-| Pipeline “succeeds” incorrectly | Missing `pipefail` | `set -o pipefail` |
-| `[[` unexpected operator | Running under `sh`/dash | Fix shebang to Bash |
+| `parse error` | Invalid JSON/YAML | Fix commas/indent; validate with `jq`/`yq` |
+| `Cannot index` | Wrong type at path | Inspect with `jq '.'` / `yq '.'` |
+| `yq` unexpected | Wrong major version | Check `yq --version`; align syntax |
+| Assert always passes | Compared wrong variable | Tee fields before `[[ ]]` |
+| CI-only failure | Tool missing in image | Install `jq`/`yq` in the CI image |
 
 ## Summary
 
-**JSON and YAML with jq and yq** is a core skill for Linux admins and DevOps engineers automating real hosts and pipelines. Practise the lab until the failure path is as familiar as the happy path, then continue the track.
+JSON and YAML are the data plane of cloud automation. Use `jq` to select and assert JSON fields; use `yq` for YAML when available, with an honest fallback when it is not. Fail early on contract mismatches, and keep secrets out of logs. Next, run scripts on a schedule in [Scheduling — cron, at, and Timers](scheduling-cron-at-and-timers.md).
 
 ## Interview Questions
 
-1. How does this topic show up in production Linux administration or CI?
-2. What failure mode appears if you ignore quoting or strict mode here?
-3. How would you test this behaviour under a minimal cron-like environment?
-4. When would you move this logic out of Bash into Python or another tool?
-5. What exit code contract would you document for teammates?
+**1. Why is `jq` safer than `grep` for checking a field in API JSON?**
 
-!!! tip "Sample answer — question 2"
-    Unquoted expansions and missing `pipefail` create silent or partial failures — especially under cron — that look healthy in monitoring until data is wrong.
+??? success "Reveal answer"
+    `grep` matches text anywhere, including messages and unrelated keys. `jq` walks the structure and reads one field (for example `.service.name`). Invalid JSON fails the parse. That makes CI gates much more reliable.
+
+**2. What does `jq -r` do, and when do you want it?**
+
+??? success "Reveal answer"
+    `-r` prints **raw** strings without JSON quotes. Use it when the value becomes a shell variable or a filename. Keep normal (non-raw) output when you need valid JSON for the next `jq` stage.
+
+**3. How do you fail a deploy script if `.replicas` is missing or zero?**
+
+??? success "Reveal answer"
+    Read with `jq -r '.replicas'` (or `jq -e '.replicas > 0'`), then test in Bash or use `jq`’s exit status. Exit non-zero before any rollout command. Interviewers want a hard gate, not a warning-only log line.
+
+**4. What is a practical difference between common `yq` versions?**
+
+??? success "Reveal answer"
+    The popular **Mike Farah Go `yq` (v4)** uses `yq '.path' file` / `yq eval` style filters similar to `jq`. Older **Python `yq`** wraps `jq` differently. Always check `yq --version` and pin the tool in CI so filters do not break.
+
+**5. How should a script behave if `yq` is not installed?**
+
+??? success "Reveal answer"
+    Either install it in the platform image (preferred for YAML-heavy pipelines), or fail clearly / skip with an explicit reason when YAML checks are optional. Silent success without parsing YAML is the worst option.
+
+**6. How do you avoid leaking secrets when debugging `jq` in CI?**
+
+??? success "Reveal answer"
+    Select only non-secret fields, mask values, and never archive full `jq .` dumps of credential objects. Prefer secret stores and short-lived tokens over committed JSON secrets.
+
+**7. When would you switch from Bash+jq to Python for config processing?**
+
+??? success "Reveal answer"
+    Switch when transforms are multi-step, need YAML merge libraries, complex validation, or shared modules across tools. Keep Bash+jq for small asserts and glue. “Right-sized tooling” is a strong interview answer.
 
 ## Related Tutorials
 
-- [Shell Scripting for DevOps Engineers – Category Overview](index.md)
+- [Shell Scripting for DevOps Engineers – Overview](index.md)
 - [Networking Automation with Shell](networking-automation-with-shell.md) *(previous)*
-- [Scheduling — cron, at, and systemd Timers](scheduling-cron-at-and-timers.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [Scheduling — cron, at, and Timers](scheduling-cron-at-and-timers.md) *(next)*
+- [Text Processing in Shell Scripts](text-processing-in-shell-scripts.md) *(related)*
 
 ## References
 
-- [GNU Bash manual](https://www.gnu.org/software/bash/manual/)
-- [POSIX shell command language](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html)
-- [ShellCheck](https://www.shellcheck.net/)
+- [jq manual](https://jqlang.github.io/jq/manual/) — filters and invocation  
+- [yq (mikefarah) documentation](https://mikefarah.gitbook.io/yq/) — YAML processing  
+- [JSON RFC 8259](https://datatracker.ietf.org/doc/html/rfc8259) — JSON data interchange  
 - Track index: [Shell Scripting for DevOps Engineers](index.md)

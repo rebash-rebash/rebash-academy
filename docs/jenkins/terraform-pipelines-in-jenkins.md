@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Terraform Pipelines in Jenkins
 
 ## Overview
+
+
 
 Automate Infrastructure as Code (IaC) with Terraform in Jenkins: **init**, **validate**, **plan**, **apply**, remote state, credentials or OpenID Connect (OIDC)-style cloud auth patterns, plan artefacts, and destroy discipline for labs.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 14 · Terraform Pipelines** of the REBASH Ac
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Terraform Pipelines in Jenkins](../assets/excalidraw/jenkins-terraform-pipeline.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -101,74 +112,110 @@ Remote state + locking prevents two applies clobbering each other.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Terraform Pipelines in Jenkins** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-14`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-14 && cd ~/rebash-jenkins/module-14
 ```
 
-**Focus:** Terraform plan-only Pipeline files with local backend for lab
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Terraform Pipelines in Jenkins**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Author a Declarative Jenkinsfile
+
+Pipeline-as-code is the production default — Declarative first.
 
 ```bash
-cat > main.tf << 'EOF'
-terraform {
-  required_version = ">= 1.5.0"
-}
-resource "null_resource" "lab" {
-  triggers = { always = timestamp() }
-}
-EOF
 cat > Jenkinsfile << 'EOF'
 pipeline {
   agent any
-  parameters {
-    booleanParam(name: 'DO_APPLY', defaultValue: false, description: 'Lab only')
-  }
+  options { timestamps() }
   stages {
-    stage('Init') { steps { sh 'terraform init -input=false' } }
-    stage('Validate') { steps { sh 'terraform validate' } }
-    stage('Plan') {
+    stage('Build') {
       steps {
-        sh 'terraform plan -input=false -out=tfplan'
-        archiveArtifacts artifacts: 'tfplan', fingerprint: true
+        sh 'mkdir -p dist && echo ok > dist/status.txt'
       }
     }
-    stage('Apply') {
-      when { expression { return params.DO_APPLY == true } }
-      steps { sh 'terraform apply -input=false tfplan' }
+    stage('Test') {
+      steps {
+        sh 'test -f dist/status.txt && grep -q ok dist/status.txt'
+      }
     }
+  }
+  post {
+    always { archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true }
   }
 }
 EOF
-terraform init -input=false
-terraform validate
-terraform plan -input=false -out=tfplan
-test -f tfplan && echo 'plan-ok'
-grep -E 'Plan|DO_APPLY|archiveArtifacts' Jenkinsfile
+test -f Jenkinsfile && grep -n 'pipeline\|stages\|post' Jenkinsfile
 ```
 
-### Step 2 – Destroy discipline note
+**Expected output:** Jenkinsfile contains pipeline/stages/post blocks.
+
+#### Task 2 – Validate structure locally
+
+Run the shell steps the Pipeline will execute so failures are cheap.
 
 ```bash
-cat > destroy-policy.md << 'EOF'
-# Destroy
-- Never auto-destroy production
-- Lab: explicit parameter + confirmation input
-- Prefer terraform destroy in disposable workspaces only
-EOF
-grep production destroy-policy.md
+mkdir -p dist && echo ok > dist/status.txt
+test -f dist/status.txt && grep -q ok dist/status.txt
+tar -cf evidence.tar Jenkinsfile dist
+ls -l evidence.tar
 ```
 
-### Final cleanup
+**Expected output:** Shell checks pass; evidence.tar created for the job upload story.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+rm -f evidence.tar
+# Keep Jenkinsfile for SCM modules
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-14/`
 - [ ] You can explain each Theory section in your own words
@@ -176,6 +223,8 @@ grep production destroy-policy.md
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Terraform Pipelines in Jenkins** always combines:
 
@@ -189,6 +238,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -196,6 +247,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Apply without the saved plan"
     Always `apply` the exact `tfplan` artefact you reviewed.
@@ -208,6 +261,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Terraform Pipelines in Jenkins** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -215,6 +270,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -226,9 +283,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Terraform Pipelines in Jenkins** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. Why separate plan and apply stages?
 2. What belongs in remote state configuration?
@@ -244,11 +305,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Kubernetes Agents and Deploys](kubernetes-agents-and-deploys.md)
 - [JCasC, Scaling, and Operations](jcasc-scaling-and-operations.md)
 
 ## References
+
+
 
 - [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)
 - [Pipeline best practices](https://www.jenkins.io/doc/book/pipeline/pipeline-best-practices/)

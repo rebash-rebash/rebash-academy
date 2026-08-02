@@ -41,24 +41,32 @@ comments: false
 
 
 
+
+
+
+
 Declare providers correctly, pin versions with `required_providers`, use aliases for multiple instances, and authenticate via environment or shared config — not committed secrets.
 
 A **provider** is a plugin that teaches Terraform a resource schema and how to call an API. HashiCorp and partners publish providers on the Terraform Registry. Your root module pins `source` and `version`; `init` installs the binary; `provider` blocks configure regions, endpoints, and credentials.
 
 This is a core tutorial in **Module 5 · Providers** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [HCL Fundamentals](hcl-fundamentals-blocks-arguments-and-expressions.md)
 - Completed Module 2 install (CLI + Registry access)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -69,9 +77,11 @@ By the end of this tutorial, you will be able to:
 - [ ] List safe authentication patterns (env vars, OIDC, shared config)  
 - [ ] Use the `local` provider for credential-free practice
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -79,9 +89,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform providers](../assets/excalidraw/terraform-providers.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -136,58 +148,113 @@ Illustrative alias (needs credentials — do not apply in this lab): `provider "
 - Assuming one `provider` block covers every account — use aliases or separate root modules.
 - Committing `.terraform/` provider binaries instead of the lock file.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Providers and the Terraform Plugin Model** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-05`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-05 && cd ~/rebash-terraform/module-05
 ```
 
-**Focus:** Pin providers and inspect the plugin lock file
+### Real-world scenario
 
-### Step 1 – Declare required_providers and initialise
+You are automating **Providers and the Terraform Plugin Model** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-provider "null" {}
-resource "null_resource" "plugin_demo" {}
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
+}
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
-ls -la .terraform.lock.hcl .terraform/providers | head -n 20
+terraform validate
 ```
 
-### Step 2 – Show provider versions and apply
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform providers
-terraform version
-terraform apply -auto-approve
-grep -A3 'provider "registry.terraform.io/hashicorp/null"' .terraform.lock.hcl || head -n 40 .terraform.lock.hcl
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -196,9 +263,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -212,9 +281,11 @@ Production practice for **Providers and the Terraform Plugin Model** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -224,9 +295,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -239,9 +312,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -251,9 +326,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -265,17 +342,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Providers and the Terraform Plugin Model** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does a Terraform provider plugin do?
@@ -290,18 +371,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Floating to the newest provider may introduce breaking resource schemas or behavioural changes during routine plans. Constrain versions and test upgrades deliberately.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Resources, Dependencies, and Meta-Arguments](resources-dependencies-and-meta-arguments.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -1,6 +1,6 @@
 ---
 title: "AI for DevOps — OpenAI, MCP, and LangChain"
-description: "Use AI assistively in DevOps — OpenAI SDK patterns, MCP clients, LangChain basics, and human-approved automation agents with strong guardrails."
+description: "Use AI assistively in DevOps with an offline-first mock LLM, safe prompt templates, and optional OpenAI only when OPENAI_API_KEY is set — never required."
 difficulty: advanced
 estimated_time: "45–60 min"
 technology: python
@@ -23,6 +23,7 @@ next:
 related:
   - python/cli-applications-argparse-click-typer
   - python/production-engineering-patterns
+  - python/configuration-management-and-secrets
 labs: []
 projects: []
 interview: interview/python
@@ -34,150 +35,288 @@ tags:
   - mcp
   - langchain
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-02"
 comments: false
 ---
-
 
 # AI for DevOps — OpenAI, MCP, and LangChain
 
 ## Overview
 
-Use LLMs as **assistants** for ops work — summarise logs, draft runbooks, call tools via MCP — with human approval before any mutating action.
+Large Language Models (LLMs) can help DevOps work — summarise logs, draft runbook steps, or suggest next checks — but they must not silently change production. **AI for DevOps** means using models as **assistants** with clear guardrails: human approval before mutating actions, secrets kept out of prompts, and an **offline-first** design so learning never depends on a paid Application Programming Interface (API).
 
-AI does not replace kubectl, Terraform, or judgment. It speeds reading and drafting. **Never** let a model hold long-lived cloud keys or auto-apply infrastructure without a human gate.
+In this tutorial you will build a small runbook helper that uses a **mock LLM client** by default. If `OPENAI_API_KEY` is set in the environment, the same interface can call a real OpenAI-compatible chat API. The lab never requires a paid key. You will also see a **prompt template** that injects incident text without embedding credentials, and a short note on Model Context Protocol (MCP) clients and LangChain-style tool calling.
 
-Complete [Security](security-for-devops-python.md) first. Diagrams use Excalidraw only.
+On real platforms, teams wire assistants into chat or ticketing. The dangerous pattern is giving the model long-lived cloud keys and letting it run `kubectl delete` or Terraform apply without a human gate. Good design: the model proposes; your code and your people dispose.
 
-This is a core tutorial in **Module 26 · AI for DevOps** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 26** in **Module 26: AI for DevOps** of the REBASH Academy **Python for Cloud & DevOps Engineers** series. It is written for DevOps, platform, and SRE engineers. By the end you will have an offline-first assistant under `~/rebash-python/lab26`.
 
 ## Prerequisites
 
-### Required
-
-- [REST APIs](rest-apis-requests-auth-and-resilience.md)
-- [Configuration and Secrets](configuration-management-and-secrets.md)
-
-### Recommended
-
-- Optional API key for a provider; otherwise use the offline stub lab
+- [Security for DevOps Python](security-for-devops-python.md)
+- [REST APIs — requests, Auth, and Resilience](rest-apis-requests-auth-and-resilience.md) (helpful)
+- Python 3.10+
+- Optional: `OPENAI_API_KEY` in the environment (lab works without it)
+- Do **not** paste production secrets into prompts
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Call a chat API pattern with timeouts and secrets from env  
-- [ ] Explain MCP (Model Context Protocol) clients at a high level  
-- [ ] Sketch a LangChain-style tool-calling flow  
-- [ ] List guardrails for AI-assisted automation  
-- [ ] Design human-in-the-loop approval for destructive tools
+- [ ] Explain why DevOps AI tools must be offline-first and human-approved for mutations
+- [ ] Implement a mock LLM client that returns runbook suggestions
+- [ ] Use a prompt template that includes incident text but never hard-coded secrets
+- [ ] Optionally call a real chat API only when `OPENAI_API_KEY` is set
+- [ ] Describe MCP clients and LangChain-style tool calling at a high level
 
 ## Architecture
 
-This topic’s control points and relationships are shown below.
+The CLI builds a prompt from a template and incident input, then calls an LLM client interface. The default client is a local mock. An optional OpenAI client activates only when a key exists. Tool ideas (MCP / LangChain) stay behind a human approval boundary.
 
-![AI for DevOps](../assets/excalidraw/python-ai-devops.svg)
+![Architecture diagram for AI for DevOps](../assets/excalidraw/python-ai-devops.svg)
 
 ## Theory
 
 ### What it is
 
-AI-assisted DevOps tooling uses large language model (LLM) APIs and orchestration libraries to **summarise, draft, classify, and call tools** — while humans and policy still own mutations. In Python you typically see OpenAI-compatible SDKs, **Model Context Protocol (MCP)** clients that discover scoped tools, and frameworks such as **LangChain** for prompts, chains, and agents. Offline stubs remain first-class for labs and CI without keys.
+An **LLM client** sends a prompt (system + user messages) and receives text. A **prompt template** is a fixed string with placeholders for safe fields (service name, error snippet) — not for API keys. **MCP (Model Context Protocol)** is a way for assistants to discover and call tools through a controlled client. **LangChain** (and similar frameworks) help chain prompts, tools, and memory; the important idea for ops is **tool calling with policy**, not the brand name.
+
+```python
+TEMPLATE = """You are a DevOps assistant. Suggest read-only checks only.
+Service: {service}
+Symptom: {symptom}
+"""
+prompt = TEMPLATE.format(service="payments-api", symptom="high latency")
+```
 
 ### Why it matters
 
-On-call noise is mostly text: logs, alerts, pull request diffs. Models compress that text and propose next steps. Without guardrails they also invent shell commands, leak secrets into prompts you log, or call write APIs. Treating AI as a **read-mostly assistant with allow-listed tools** is how platform teams gain speed without creating a new breach class.
+Engineers drown in logs during incidents. An assistant that drafts “check disk, check recent deploy, check dependency latency” saves minutes. An assistant that auto-runs destructive tools can delete the wrong namespace. Offline-first design lets students, air-gapped networks, and CI unit tests run without buying tokens. Security review will ask: where does the key live, what is logged, and who approves side effects?
 
 ### How it works
 
-Load API keys from the environment (never commit them). Call chat/completions with timeouts and retry on 429 — same resilience as any HTTP client. Azure OpenAI and other providers differ mainly by base URL and auth. An MCP **client** connects to servers that expose tools/resources (docs, read-only cluster APIs, tickets). LangChain (or similar) wires prompt templates to those tools. Agents may choose tools; your code must still validate outputs before executing anything. Bound max tokens and log model name plus latency for cost control.
+1. **Interface** — one function `complete(prompt: str) -> str` used by the CLI.  
+2. **Mock client** — pattern-match on keywords and return canned runbook steps (no network).  
+3. **Optional real client** — if `os.environ.get("OPENAI_API_KEY")`, call the HTTP API with timeout; else never try.  
+4. **Guardrails** — system text forbids secrets and mutating actions; print `APPROVAL_REQUIRED` for any tool idea.  
+5. **MCP / LangChain sketch** — tools are declared; the host decides whether to execute after human approval.
 
 ```python
-# Conceptual — key from env, never committed
-# from openai import OpenAI
-# client = OpenAI()  # uses OPENAI_API_KEY
-# client.chat.completions.create(...)
+import os
+
+def select_client():
+    if os.environ.get("OPENAI_API_KEY"):
+        return OpenAIClient()  # optional path
+    return MockLLMClient()
 ```
+
+You do not need LangChain installed for this lab. Understand the flow: prompt → model → optional tool request → **human/policy gate** → result.
 
 ### Key concepts and comparisons
 
-| Pattern | Example |
-|---------|---------|
-| Summarise | Compress incident logs |
-| Draft | PR description / runbook |
-| Classify | Severity from alert text |
-| Tool use | Read-only `kubectl get` via MCP |
+| Mode | When to use | Cost / dependency |
+|------|-------------|-------------------|
+| Mock LLM | Labs, CI, demos, air-gap | Free, deterministic |
+| Real API | Optional enrichment when key present | Paid / networked |
+| MCP tools | Controlled tool discovery | Host must enforce policy |
+| LangChain-style chain | Multi-step retrieve → reason → act | Extra dependency; still need gates |
 
-| Layer | Responsibility |
-|-------|----------------|
-| Model | Propose text / tool calls |
-| Allow-list | Which tools exist |
-| Human / policy | Approve writes |
-| Validator | Schema-check before exec |
+| Guardrail | Meaning |
+|-----------|---------|
+| No secrets in prompts | Keys stay in env/vault; never interpolated into templates |
+| Read-only suggestions default | Mutating tools require explicit approval |
+| Timeouts | HTTP calls must not hang CI |
+| Logging redaction | Do not log full prompts if they may contain customer data |
 
 ### Common pitfalls
 
-- Pasting secrets, tokens, or full `.env` files into prompts.  
-- Letting the model run arbitrary shell from its reply.  
-- No timeout/cost cap → runaway bills or hung jobs.  
-- Logging full prompts that contain customer data.  
-- Skipping an offline stub so CI cannot run without a vendor key.
+- Requiring an API key to import the module or run tests.  
+- Putting `OPENAI_API_KEY` into the prompt “so the model can call tools”.  
+- Auto-executing shell commands suggested by the model.  
+- Logging entire prompts that contain personal or customer data.  
+- Treating model output as ground truth without checking production state.
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for AI for DevOps — OpenAI, MCP, and LangChain
+### Objective
+
+Build an offline-first runbook assistant under `~/rebash-python/lab26` with a mock LLM, a safe prompt template, and an optional real client gated on `OPENAI_API_KEY`. Prove both paths with evidence.
+
+### Prerequisites
+
+- Python 3.10+ (stdlib + optional `urllib` for real API)
+- No paid account required
+- Unset `OPENAI_API_KEY` for the default path (or leave it unset)
+
+### Lab environment
+
+Workspace: `~/rebash-python/lab26`
 
 ```bash
-mkdir -p ~/rebash-python/module-26
-cd ~/rebash-python/module-26
-
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-# Optional live SDK:
-# python -m pip install 'openai==1.59.6'
+mkdir -p ~/rebash-python/lab26 && cd ~/rebash-python/lab26
+set -euo pipefail
+python3 --version | tee python-version.txt
+# Record whether a key is present without printing the secret
+if [ -n "${OPENAI_API_KEY:-}" ]; then
+  echo "OPENAI_API_KEY=present" | tee key-status.txt
+else
+  echo "OPENAI_API_KEY=absent" | tee key-status.txt
+fi
 ```
 
-### Step 1 – Offline “assistant” stub
+**Expected output:** `key-status.txt` says `present` or `absent` — never prints the key value.
+
+### Real-world scenario
+
+Your SRE team wants a CLI that turns a short incident blurb into suggested runbook checks. Legal and security require that training and CI work without calling a vendor. Production may optionally use OpenAI when a vault-injected key exists. Mutating actions must print `APPROVAL_REQUIRED` and stop.
+
+### Step-by-step tasks
+
+#### Task 1 – Mock LLM client and prompt template
 
 ```bash
-cd ~/rebash-python/module-26
-source .venv/bin/activate
+cd ~/rebash-python/lab26
+set -euo pipefail
 
-cat > ai_assist.py << 'EOF'
-#!/usr/bin/env python3
+cat > ai_runbook.py << 'EOF'
+"""Offline-first AI runbook helper for DevOps (mock LLM + optional OpenAI)."""
 from __future__ import annotations
 
 import argparse
 import json
 import os
 import sys
-from pathlib import Path
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+
+PROMPT_TEMPLATE = """You are a DevOps assistant for REBASH Academy labs.
+Rules:
+- Suggest read-only diagnostic checks only.
+- Never ask for or repeat API keys, passwords, or tokens.
+- If a mutating action is needed, say APPROVAL_REQUIRED.
+
+Service: {service}
+Environment: {environment}
+Symptom: {symptom}
+Recent change: {recent_change}
+"""
 
 
-def summarise_log(text: str) -> str:
-    errors = [ln for ln in text.splitlines() if "ERROR" in ln]
-    return json.dumps({
-        "line_count": len(text.splitlines()),
-        "error_count": len(errors),
-        "sample_errors": errors[:5],
-        "model": os.environ.get("AI_MODEL", "offline-stub"),
-    }, indent=2)
+@dataclass
+class LLMResult:
+    provider: str
+    text: str
 
 
-def main() -> int:
-    p = argparse.ArgumentParser(description="AI-assisted log summary (stub or live)")
-    p.add_argument("logfile", type=Path)
-    p.add_argument("--live", action="store_true", help="call real provider (needs key)")
-    args = p.parse_args()
-    text = args.logfile.read_text(encoding="utf-8", errors="ignore")
-    if args.live:
-        if not os.environ.get("OPENAI_API_KEY"):
-            print("error: OPENAI_API_KEY required for --live", file=sys.stderr)
-            return 2
-        print("error: live path left to operator — wire OpenAI SDK with timeout", file=sys.stderr)
-        return 1
-    print(summarise_log(text))
+class MockLLMClient:
+    """Deterministic offline client — no network."""
+
+    def complete(self, prompt: str) -> LLMResult:
+        lower = prompt.lower()
+        steps = [
+            "1. Check recent deploys and config changes for the service.",
+            "2. Inspect golden signals: latency, errors, saturation, traffic.",
+            "3. Verify dependency health (DB, cache, upstream API) with read-only probes.",
+        ]
+        if "latency" in lower or "slow" in lower:
+            steps.append("4. Compare p95 latency to the previous deploy baseline.")
+        if "oom" in lower or "memory" in lower:
+            steps.append("4. Check container/memory limits and recent RSS growth.")
+        if "disk" in lower:
+            steps.append("4. Run df/inode checks on the affected nodes (read-only).")
+        steps.append("Mutating remediation: APPROVAL_REQUIRED before restart or scale.")
+        return LLMResult(provider="mock", text="\n".join(steps))
+
+
+class OpenAIClient:
+    """Optional real client — used only when OPENAI_API_KEY is set."""
+
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini") -> None:
+        self.api_key = api_key
+        self.model = model
+        self.url = "https://api.openai.com/v1/chat/completions"
+
+    def complete(self, prompt: str) -> LLMResult:
+        body = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": "You are a careful DevOps assistant."},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.2,
+        }
+        data = json.dumps(body).encode("utf-8")
+        req = urllib.request.Request(
+            self.url,
+            data=data,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            text = payload["choices"][0]["message"]["content"].strip()
+            return LLMResult(provider="openai", text=text)
+        except (urllib.error.URLError, urllib.error.HTTPError, KeyError, IndexError, TimeoutError) as exc:
+            # Fall back to mock so labs never hard-fail on network/billing
+            mock = MockLLMClient().complete(prompt)
+            mock.text = (
+                f"[openai_error={type(exc).__name__}; fell back to mock]\n" + mock.text
+            )
+            return LLMResult(provider="openai_fallback_mock", text=mock.text)
+
+
+def build_prompt(service: str, environment: str, symptom: str, recent_change: str) -> str:
+    return PROMPT_TEMPLATE.format(
+        service=service,
+        environment=environment,
+        symptom=symptom,
+        recent_change=recent_change,
+    )
+
+
+def select_client() -> MockLLMClient | OpenAIClient:
+    key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if key:
+        return OpenAIClient(api_key=key)
+    return MockLLMClient()
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="REBASH lab26 AI runbook helper")
+    parser.add_argument("--service", required=True)
+    parser.add_argument("--environment", default="lab")
+    parser.add_argument("--symptom", required=True)
+    parser.add_argument("--recent-change", default="none")
+    parser.add_argument("--force-mock", action="store_true", help="Ignore OPENAI_API_KEY")
+    args = parser.parse_args(argv)
+
+    prompt = build_prompt(
+        args.service, args.environment, args.symptom, args.recent_change
+    )
+    # Guard: refuse if someone pasted a key-looking string into symptom
+    if "OPENAI_API_KEY=" in prompt or "AKIA" in prompt:
+        print("RESULT=fail error=secret_like_input_blocked", file=sys.stderr)
+        return 2
+
+    client: MockLLMClient | OpenAIClient
+    if args.force_mock:
+        client = MockLLMClient()
+    else:
+        client = select_client()
+
+    result = client.complete(prompt)
+    print(f"provider={result.provider}")
+    print("--- suggestion ---")
+    print(result.text)
+    print("--- end ---")
+    if "APPROVAL_REQUIRED" in result.text:
+        print("gate=human_approval_required_for_mutations")
+    print("RESULT=ok")
     return 0
 
 
@@ -185,109 +324,224 @@ if __name__ == "__main__":
     raise SystemExit(main())
 EOF
 
-printf '%s\n' 'INFO start' 'ERROR timeout db' 'INFO ok' 'ERROR 502 upstream' > sample.log
-python ai_assist.py sample.log
+python3 -m py_compile ai_runbook.py
 ```
 
-### Step 2 – Approval gate sketch
+**Expected output:** `py_compile` succeeds.
+
+#### Task 2 – Offline run (force mock) and secret-like input block
 
 ```bash
-cat > approve.py << 'EOF'
-#!/usr/bin/env python3
-proposed = {"tool": "kubectl_delete", "args": {"resource": "pod/web-a"}}
-print("PROPOSED", proposed)
-answer = "n"  # in real CLI: input("Approve? [y/N] ")
-if answer.lower() != "y":
-    raise SystemExit("rejected")
-print("would execute")
-EOF
+cd ~/rebash-python/lab26
+set -euo pipefail
 
-python approve.py || true
+python3 ai_runbook.py --force-mock \
+  --service payments-api \
+  --symptom "high latency after deploy" \
+  --recent-change "version 1.8.2" \
+  | tee run-mock.stdout
+
+grep -F 'provider=mock' run-mock.stdout
+grep -F 'APPROVAL_REQUIRED' run-mock.stdout
+grep -F 'RESULT=ok' run-mock.stdout
+grep -F 'OPENAI_API_KEY' ai_runbook.py | head -n 5
+# Prompt template must not embed a literal secret value
+! grep -E 'sk-[A-Za-z0-9]{10,}' ai_runbook.py
+
+set +e
+python3 ai_runbook.py --force-mock \
+  --service payments-api \
+  --symptom "OPENAI_API_KEY=sk-should-block" \
+  >run-blocked.stdout 2>run-blocked.stderr
+rc=$?
+set -e
+test "$rc" -eq 2
+grep -F 'secret_like_input_blocked' run-blocked.stderr
 ```
 
-### Step 3 – MCP mental model notes
+**Expected output:** mock run prints suggestions and `RESULT=ok`; secret-like symptom exits 2.
 
-Write `mcp-notes.md`: server exposes `list_pods` (read); client must not expose `delete_namespace` without approval + RBAC.
+#### Task 3 – Optional real API path and evidence pack
+
+```bash
+cd ~/rebash-python/lab26
+set -euo pipefail
+
+# Optional path: only attempts OpenAI when key is present (still safe if call fails)
+python3 ai_runbook.py \
+  --service payments-api \
+  --symptom "high latency after deploy" \
+  --recent-change "version 1.8.2" \
+  | tee run-auto.stdout
+
+grep -E 'provider=(mock|openai|openai_fallback_mock)' run-auto.stdout
+grep -F 'RESULT=ok' run-auto.stdout
+
+# Save a redacted prompt sample (no secrets)
+python3 - << 'EOF' | tee prompt-sample.txt
+from ai_runbook import build_prompt
+print(build_prompt("payments-api", "lab", "high latency", "version 1.8.2"))
+EOF
+grep -F 'Never ask for or repeat API keys' prompt-sample.txt
+! grep -E 'sk-[A-Za-z0-9]{10,}' prompt-sample.txt
+
+tar -czf lab26-evidence.tgz \
+  python-version.txt key-status.txt ai_runbook.py \
+  run-mock.stdout run-blocked.stderr run-auto.stdout prompt-sample.txt
+ls -l lab26-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** auto path still ends with `RESULT=ok`; prompt sample has guardrail text and no `sk-` secret; evidence archive exists.
+
+### Validation steps
+
+- [ ] `ai_runbook.py` compiles
+- [ ] `--force-mock` run shows `provider=mock` and `APPROVAL_REQUIRED`
+- [ ] Secret-like symptom is blocked with exit code 2
+- [ ] Auto client path prints a known `provider=` value and `RESULT=ok`
+- [ ] `lab26-evidence.tgz` exists under `~/rebash-python/lab26`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Accidental paid call in CI | Key injected in CI secrets | Use `--force-mock` in CI unit jobs |
+| `openai` HTTP error | Network/billing/model | Lab falls back to mock; check `provider=openai_fallback_mock` |
+| Key printed in logs | Echoed env | Never `echo "$OPENAI_API_KEY"`; use present/absent only |
+| Model suggests `kubectl delete` | Weak system rules | Keep APPROVAL_REQUIRED gate; do not auto-run tools |
+| Import fails without key | Bad design | `select_client()` must default to mock |
+
+### Challenge exercise
+
+Add a `--tools-demo` flag that prints a fake MCP/LangChain-style tool request JSON (for example `{"tool": "kubectl_get", "args": {"resource": "pods"}}`) and then prints `APPROVAL_REQUIRED` without executing anything. Save `tools-demo.stdout` showing both the JSON and the gate line.
+
+### Learning outcomes
+
+- Offline-first mock LLM for runbook suggestions  
+- Prompt template without secrets  
+- Optional OpenAI path gated on env  
+- Human approval boundary for mutating ideas  
+
+### Cleanup
+
+```bash
+cd ~/rebash-python/lab26
+set -euo pipefail
+rm -rf __pycache__
+# Do not write API keys into files; if you exported a key in this shell, unset it when done:
+# unset OPENAI_API_KEY
+```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/module-26/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-python/lab26/` with evidence archive
+- [ ] You can explain mock vs optional real client without requiring payment
+- [ ] You can describe MCP/LangChain tool calling plus a human gate
+- [ ] You know why secrets must not appear in prompts or prompt templates
 
 ## Code Walkthrough
 
-Production practice for **AI for DevOps — OpenAI, MCP, and LangChain** always combines:
+AI-assisted ops tools usually follow this order:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Default offline** — tests and training never require a vendor  
+2. **Template prompts** — only safe fields; block secret-like input  
+3. **One client interface** — swap mock/real behind the same method  
+4. **Timeouts and fallback** — network failure must not strand the operator  
+5. **Approve before act** — model output is advice until a human or policy allows a tool  
 
 ## Security Considerations
 
-- Treat credentials and tokens for python as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Store `OPENAI_API_KEY` in a vault or CI secret store — never in Git  
+- Redact prompts in logs when they may contain customer data  
+- Do not grant the model direct cloud credentials for mutating APIs  
+- Prefer read-only tools first; separate roles for break-glass actions (emergency admin)  
+- Review prompt injection risk when incident text comes from untrusted tickets  
 
 ## Common Mistakes
 
-!!! warning "Pasting secrets, tokens, or full `.env` files into prompts.  "
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "Making the paid API mandatory"
+    Students and CI then cannot run the suite. **Fix:** mock by default; real client only when a key exists.
 
-!!! warning "Letting the model run arbitrary shell from its reply.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Interpolating secrets into the prompt"
+    Keys appear in vendor logs and your debug output. **Fix:** tools that need auth use env/IAM outside the prompt.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Auto-running shell from model output"
+    Prompt injection becomes remote command execution. **Fix:** parse tool requests; require explicit approval.
+
+!!! warning "Trusting the model as the source of truth"
+    Hallucinated kubectl flags cause outages. **Fix:** verify against live state and runbooks.
 
 ## Best Practices
 
-- Encode AI for DevOps — OpenAI, MCP, and LangChain changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Keep a deterministic mock for CI snapshots  
+- Version prompt templates like code; review changes in pull requests  
+- Separate “suggest” and “execute” permissions  
+- Document data retention for any vendor API you enable  
+- Measure usefulness (time saved) before expanding tool rights  
 
 ## Troubleshooting
 
-| Symptom | Likely cause | What to do |
-|---------|--------------|------------|
-| High cost | Huge prompts / loops | Truncate logs; cap tokens |
-| Hallucinated kubectl | Model invents flags | Never exec raw model text; use structured tools |
-| Data leak | Prompt logs contain secrets | Redact before send/log |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Always `provider=mock` with key set | Typo in env name / empty value | Check `key-status.txt` logic; export correct name |
+| Hang on real call | No timeout | Keep `urlopen(..., timeout=30)` |
+| Fallback every time | Firewall or invalid key | Expected in locked-down labs; use mock |
+| Secret blocked unexpectedly | Symptom contained `AKIA` | Rephrase symptom; keep blocker |
+| Empty suggestions | Mock bug | Ensure `complete()` returns steps |
 
 ## Summary
 
-- AI assists; humans approve mutations  
-- MCP/LangChain = tool orchestration, not magic  
-- Offline stubs keep the course runnable without keys  
-- Security module rules still apply
+AI for DevOps works best as an **offline-first assistant**: mock clients for labs and CI, optional real APIs when keys exist, prompt templates without secrets, and **human approval** before any mutating tool. Next, close the track with [Troubleshooting Python Automation](troubleshooting-python-automation.md).
 
 ## Interview Questions
 
-1. How does **AI for DevOps — OpenAI, MCP, and LangChain** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. Why should an AI ops CLI work without `OPENAI_API_KEY`?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    Training, Continuous Integration (CI), and air-gapped networks cannot depend on a paid vendor. Offline mocks keep tests deterministic and free. Production can still enable a real client when a vault injects a key. Interviewers look for this split: **capability optional, core path local**.
+
+**2. What belongs in a prompt template, and what must never be interpolated?**
+
+??? success "Reveal answer"
+    Safe fields: service name, environment label, redacted symptom text, change ID. Never interpolate API keys, passwords, session cookies, or private keys. Authentication for tools belongs in the **runtime environment**, not in the prompt text.
+
+**3. How do MCP clients and LangChain-style tool calling fit into a safe design?**
+
+??? success "Reveal answer"
+    They help the model **request** tools (list pods, fetch a dashboard URL). The **host application** must decide whether to run the tool, under which credentials, and whether a human must approve. The protocol or framework does not remove the need for policy.
+
+**4. A model suggests `kubectl delete namespace prod`. What should your tool do?**
+
+??? success "Reveal answer"
+    Print the suggestion, mark **`APPROVAL_REQUIRED`**, and **not execute**. Prefer deny-by-default for destructive verbs. Require a second person or a change ticket for production mutations. Log who approved.
+
+**5. How do you prevent prompt injection from a malicious ticket description?**
+
+??? success "Reveal answer"
+    Treat ticket text as **untrusted data**: constrain templates, strip obvious secret patterns, do not let the model freely choose shell commands, and keep a human/policy gate before tools run. Avoid putting raw untrusted text into system instructions.
+
+**6. What do you log when calling a real LLM API during an incident?**
+
+??? success "Reveal answer"
+    Log provider, model name, latency, and maybe a hash or truncated prompt ID — not full prompts if they may contain personal or customer data, and never the API key. Redact aggressively; follow your organisation’s data policy.
+
+**7. When is a mock LLM better than a real model even in production paths?**
+
+??? success "Reveal answer"
+    Unit tests, contract tests, demos, disaster-recovery drills without vendor dependency, and fallbacks when the vendor is down. Some teams also use mocks for “golden” suggestion fixtures reviewed by humans.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [Troubleshooting Python Automation](troubleshooting-python-automation.md)
+- [Python for Cloud & DevOps – Overview](index.md)
+- [Security for DevOps Python](security-for-devops-python.md) *(previous)*
+- [Troubleshooting Python Automation](troubleshooting-python-automation.md) *(next)*
+- [CLI Applications — argparse, Click, and Typer](cli-applications-argparse-click-typer.md)
+- [Production Engineering Patterns](production-engineering-patterns.md)
 
 ## References
 
-- [OpenAI API docs](https://platform.openai.com/docs)  
-- [Model Context Protocol](https://modelcontextprotocol.io/)  
-- [LangChain](https://python.langchain.com/)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference) — optional real client  
+- [Model Context Protocol](https://modelcontextprotocol.io/) — MCP overview  
+- [LangChain documentation](https://python.langchain.com/) — tool/chain concepts  
+- [urllib.request](https://docs.python.org/3/library/urllib.request.html) — Python stdlib HTTP  
+- Track index: [Python for Cloud & DevOps Engineers](index.md)

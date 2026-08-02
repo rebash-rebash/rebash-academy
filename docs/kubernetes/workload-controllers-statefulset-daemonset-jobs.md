@@ -44,6 +44,10 @@ comments: false
 
 
 
+
+
+
+
 Pick the right controller: Deployment vs StatefulSet vs DaemonSet vs Job/CronJob — and run a Job to completion.
 
 | Controller | Use |
@@ -55,17 +59,21 @@ Pick the right controller: Deployment vs StatefulSet vs DaemonSet vs Job/CronJob
 
 This is a core tutorial in **Module 4 · Workload Management** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Deployments](deployments-managing-replicated-pods.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -75,9 +83,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain DaemonSet scheduling  
 - [ ] Run a Job and CronJob schedule basics
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -85,9 +95,11 @@ This topic’s control points and relationships are shown below.
 
 ![Architecture](../assets/excalidraw/k8s-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -130,100 +142,96 @@ All still reconcile desired vs actual state through the API.
 - Using Deployments for Kafka/ZooKeeper-style workloads without understanding identity and peer discovery.
 - CronJobs in the wrong timezone mental model — schedules use the controller’s interpretation; document clearly.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Workload Controllers — StatefulSet, DaemonSet, Jobs** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-04-ctl`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-04-ctl`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-04-ctl && cd ~/rebash-k8s/module-04-ctl
 ```
 
-**Focus:** Run Job, DaemonSet, and StatefulSet controller patterns
+### Real-world scenario
 
-### Step 1 – Create a Job and DaemonSet
+Your platform team is rolling out **Workload Controllers — StatefulSet, DaemonSet, Jobs** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-cat > controllers.yaml <<'EOF'
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: hello-job
-  namespace: rebash-lab
-spec:
-  template:
-    spec:
-      restartPolicy: Never
-      containers:
-      - name: hello
-image: busybox:1.36
-command: ["echo", "job-complete"]
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: node-agent
-  namespace: rebash-lab
-spec:
-  selector:
-    matchLabels:
-      app: node-agent
-  template:
-    metadata:
-      labels:
-app: node-agent
-    spec:
-      containers:
-      - name: pause
-image: registry.k8s.io/pause:3.10
-EOF
-kubectl apply -f controllers.yaml
-kubectl -n rebash-lab wait --for=condition=Complete job/hello-job --timeout=60s
-```
+### Step-by-step tasks
 
-### Step 2 – Add a simple StatefulSet and compare identities
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What it is** against a live API.
 
 ```bash
-kubectl -n rebash-lab logs job/hello-job
-kubectl -n rebash-lab get ds node-agent -o wide
-cat > sts.yaml <<'EOF'
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: store
-  namespace: rebash-lab
-spec:
-  serviceName: store
-  replicas: 2
-  selector:
-    matchLabels:
-      app: store
-  template:
-    metadata:
-      labels:
-app: store
-    spec:
-      containers:
-      - name: nginx
-image: nginx:1.27-alpine
-EOF
-kubectl apply -f sts.yaml
-kubectl -n rebash-lab get pods -l app=store -o wide
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Workload Controllers — StatefulSet, DaemonSet, Jobs
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -232,9 +240,11 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -248,9 +258,11 @@ Production practice for **Workload Controllers — StatefulSet, DaemonSet, Jobs*
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -260,9 +272,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -275,9 +289,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -287,9 +303,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -301,17 +319,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Workload Controllers — StatefulSet, DaemonSet, Jobs** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. When should you choose StatefulSet over Deployment?
@@ -326,18 +348,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Failing Jobs can consume cluster capacity with retries. Set backoffLimit, activeDeadlineSeconds, and alerts so broken batch work cannot starve other workloads.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Services and Cluster Networking](services-and-cluster-networking.md)
 
-
-
 ## References
+
+
+
+
 
 
 

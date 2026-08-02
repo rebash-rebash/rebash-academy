@@ -1,3 +1,90 @@
 ---
+description: REBASH Academy writing standards
+globs:
+  - "docs/**/*.md"
 alwaysApply: true
 ---
+
+# REBASH Academy Writing Standards
+
+## Audience
+
+Assume readers are students and practicing engineers (DevOps, Cloud, Platform, SRE, Security).
+
+Never assume expert knowledge. Always explain new concepts and acronyms on first use.
+
+---
+
+## Writing style
+
+Write like a senior engineer mentoring a junior engineer.
+
+Be: practical, technical, clear, concise.
+
+Avoid: marketing language, buzzwords, clickbait, long undifferentiated paragraphs, personal opinions.
+
+British English spelling unless quoting commands or official product names.
+
+**Audience language (India-first):** write so Indian students and working professionals understand easily — short sentences, plain words, explain jargon in simple terms on first use. Prefer familiar industry wording (server, jump server, practice VM, change ticket) over rare idioms. Avoid unexplained US slang or opaque phrases such as “blast radius”, “snowflake host”, or “break-glass” unless you immediately explain them in plain English (for example “emergency admin account”). Do not sound childish; stay professional and technical.
+
+Publication bar: GeeksforGeeks clarity — define, show, compare, warn. See `.cursor/rules/00-foundation/09-content-quality-standard.mdc`.
+
+---
+
+## Tutorial philosophy
+
+Teach: What · Why · How · When · Where · Trade-offs · Production usage.
+
+Never explain only "how".
+
+---
+
+## Structure
+
+Use consistent heading hierarchy.
+
+Canonical tutorial body: `.cursor/prompts/tutorial-format-linux.md`
+
+Must include: Overview, Prerequisites, Learning Objectives, Architecture, Theory, Hands-on Lab, Validation, Code Walkthrough, Security, Common Mistakes, Best Practices, Troubleshooting, Summary, Interview Questions, Related Tutorials, References.
+
+---
+
+## Labs
+
+Hands-on content must be copy-paste executable and topic-specific.
+
+No note-taking exercises as the main lab.
+
+Full rules: `.cursor/prompts/tutorials/create_lab.md`
+
+---
+
+## Interview
+
+Topic-specific questions with strong sample answers.
+
+Full rules: `.cursor/prompts/tutorials/create_interview_questions.md`
+
+---
+
+## Code
+
+Explain every important code block. Never paste unexplained code.
+
+Commands must be complete and runnable in the documented environment.
+
+---
+
+## Diagrams
+
+Always use **Excalidraw** under `docs/assets/excalidraw/`.
+
+Never use Mermaid or D2 for course tutorials.
+
+---
+
+## References
+
+Prefer official documentation, vendor docs, standards, RFCs.
+
+Avoid unofficial blogs when official documentation exists.

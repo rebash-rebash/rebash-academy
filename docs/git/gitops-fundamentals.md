@@ -44,15 +44,17 @@ comments: false
 
 
 
+
+
 Explain GitOps in one paragraph and sketch a repo layout where a reconciler (for example Argo CD) applies desired state from Git.
 
 **GitOps** keeps the desired state of systems in Git. An agent compares live state to Git and reconciles. Changes go through PRs — audit trail and rollback by git revert.
 
 This is a core tutorial in **Module 12 · GitOps** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -60,9 +62,9 @@ This is a core tutorial in **Module 12 · GitOps** of the REBASH Academy **Git f
 - [GitHub Actions for DevOps](github-actions-for-devops.md)
 - Familiarity with containers/Kubernetes helps
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -74,9 +76,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain PR → merge → sync → cluster  
 - [ ] Name rollback as `git revert` + sync
 
-
-
 ## Architecture
+
+
 
 
 
@@ -85,9 +87,9 @@ This topic’s control points and relationships are shown below.
 
 ![GitOps flow](../assets/excalidraw/git-gitops-flow.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -123,72 +125,97 @@ Separate concerns clearly: application CI builds and pushes images; a config rep
 - Pointing GitOps at mutable `:latest` tags  
 - Letting CI deploy directly *and* GitOps deploy the same apps without a clear boundary
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **GitOps Fundamentals** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-12/{apps/demo,clusters/dev}`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-12/{apps/demo,clusters/dev} && cd ~/rebash-git/module-12/{apps/demo,clusters/dev}
 ```
 
-**Focus:** env-repo style declarative manifests and image tag bump
+### Real-world scenario
 
-### Step 1 – Env repo style commit
+A delivery team is standardising **GitOps Fundamentals**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-mkdir -p apps/demo overlays/prod
-cat > apps/demo/deployment.yaml << 'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: demo
-spec:
-  replicas: 1
-  selector: {matchLabels: {app: demo}}
-  template:
-    metadata: {labels: {app: demo}}
-    spec:
-      containers:
-        - name: demo
-          image: ghcr.io/example/demo:1.0.0
-EOF
-cat > overlays/prod/kustomization.yaml << 'EOF'
-resources:
-  - ../../apps/demo
-images:
-  - name: ghcr.io/example/demo
-    newTag: 1.0.0
-EOF
-git add apps overlays
-git commit -m "gitops: add demo deployment at 1.0.0"
-```
+### Step-by-step tasks
 
-### Step 2 – Bump image tag as a GitOps change
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-sed -i.bak 's/1.0.0/1.0.1/g' overlays/prod/kustomization.yaml apps/demo/deployment.yaml
-rm -f overlays/prod/kustomization.yaml.bak apps/demo/deployment.yaml.bak
-git diff
-git add apps overlays
-git commit -m "gitops: bump demo to 1.0.1"
-git log --oneline -n 3
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -198,9 +225,9 @@ git log --oneline -n 3
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -215,9 +242,9 @@ Production practice for **GitOps Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -228,9 +255,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -244,9 +271,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -257,9 +284,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -272,18 +299,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **GitOps Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. What does desired state in Git mean operationally?
@@ -298,9 +325,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Protect env repos with strong reviews and least-privilege deploy identities for controllers.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -309,9 +336,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Git for Infrastructure as Code](git-for-infrastructure-as-code.md)
 - [Argo CD](../argocd/index.md)
 
-
-
 ## References
+
+
 
 
 

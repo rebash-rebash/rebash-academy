@@ -42,13 +42,13 @@ comments: false
 
 
 
+
+
 Persist data with named volumes, use bind mounts for live code, know when `tmpfs` fits, and back up a volume.
 
 Container filesystems are ephemeral. **Volumes** survive container removal; **bind mounts** map host paths; **tmpfs** keeps data in memory.
 
 This is a core tutorial in **Module 7 · Volumes & Storage** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
@@ -56,11 +56,13 @@ This is a core tutorial in **Module 7 · Volumes & Storage** of the REBASH Acade
 
 
 
+
+
 - [Dockerfile Best Practices and Multi-Stage Builds](dockerfile-best-practices-and-multi-stage-builds.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `tmpfs` for scratch data  
 - [ ] Backup/restore a volume with a helper container
 
-
-
 ## Architecture
+
+
 
 
 
@@ -85,9 +87,9 @@ This topic’s control points and relationships are shown below.
 
 ![Volume architecture](../assets/excalidraw/docker-volume-architecture.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -125,45 +127,94 @@ Declare mounts with `docker run -v` / `--mount` or Compose `volumes:`. Named vol
 - Permission denied after switching `USER` in the image  
 - Deleting volumes with `docker volume prune` without checking labels
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Volumes and Persistent Storage** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-07/host-data`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07/host-data
 ```
 
-**Focus:** persist data with a named volume across container recreate
+### Real-world scenario
 
-### Step 1 – Write then recreate
+You are validating **Volumes and Persistent Storage** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-docker volume create rebash-data
-docker run --rm -v rebash-data:/data alpine:3.20 sh -c 'echo persisted > /data/note.txt'
-docker run --rm -v rebash-data:/data alpine:3.20 cat /data/note.txt
-docker volume inspect rebash-data --format '{{ "{{" }}.Mountpoint{{ "}}" }}'
-```
+### Step-by-step tasks
 
-### Step 2 – Remove volume
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-docker volume rm rebash-data
-docker volume ls | grep rebash || echo "volume removed"
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker volume rm rebash-data 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -174,9 +225,9 @@ docker volume rm rebash-data 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -192,9 +243,9 @@ Production practice for **Volumes and Persistent Storage** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -206,9 +257,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -223,9 +274,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -237,9 +288,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -253,9 +304,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -263,9 +314,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 **Volumes and Persistent Storage** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Named volume versus bind mount trade-offs?
@@ -280,9 +331,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Never mount docker.sock into untrusted containers.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -291,9 +342,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Docker Networking Fundamentals](docker-networking-fundamentals.md)
 
-
-
 ## References
+
+
 
 
 

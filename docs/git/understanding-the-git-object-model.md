@@ -43,6 +43,8 @@ comments: false
 
 
 
+
+
 Explain blobs, trees, commits, and tags, and use `git cat-file` / `rev-parse` to inspect how history is stored — so reset, rebase, and recovery later make sense.
 
 Git is a **content-addressed** object database. Commands move pointers; objects are rarely rewritten in place. That mental model unlocks reflog recovery and “detached HEAD” incidents.
@@ -51,9 +53,9 @@ Complete [Introduction](introduction-to-git-and-version-control.md) first. Diagr
 
 This is a core tutorial in **Module 1 · Version Control Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -63,9 +65,9 @@ This is a core tutorial in **Module 1 · Version Control Fundamentals** of the R
 - [Introduction to Git and Version Control](introduction-to-git-and-version-control.md)
 - Git installed (Module 2 can be done in parallel if needed)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -78,9 +80,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Inspect objects with plumbing commands  
 - [ ] Connect branches to commit pointers
 
-
-
 ## Architecture
+
+
 
 
 
@@ -89,9 +91,9 @@ This topic’s control points and relationships are shown below.
 
 ![Git object model](../assets/excalidraw/git-object-model.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -131,54 +133,97 @@ Plumbing tools such as `git cat-file` and `git rev-parse` let you inspect these 
 - Hand-editing files under `.git/objects`  
 - Ignoring detached HEAD when checking out a tag or SHA for inspection
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Understanding the Git Object Model** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-01`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 ```
 
-**Focus:** inspect blobs/trees/commits with cat-file and rev-parse
+### Real-world scenario
 
-### Step 1 – Create objects and inspect
+A delivery team is standardising **Understanding the Git Object Model**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo hello > hello.txt
-git add hello.txt
-git commit -m "chore: hello"
-COMMIT=$(git rev-parse HEAD)
-TREE=$(git rev-parse 'HEAD^{tree}')
-echo "commit=$COMMIT"
-echo "tree=$TREE"
-git cat-file -t "$COMMIT"
-git cat-file -p "$COMMIT"
-git cat-file -p "$TREE"
-```
+### Step-by-step tasks
 
-### Step 2 – Blob content
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-BLOB=$(git rev-parse HEAD:hello.txt)
-git cat-file -p "$BLOB"
-git rev-list --objects --all | head
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -188,9 +233,9 @@ git rev-list --objects --all | head
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -205,9 +250,9 @@ Production practice for **Understanding the Git Object Model** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -218,9 +263,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -234,9 +279,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -247,9 +292,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -259,9 +304,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | `cat-file` fails | Wrong ID | Use `git rev-parse` |
 | Empty repo | No commit yet | Create initial commit |
 
-
-
 ## Summary
+
+
 
 
 
@@ -270,9 +315,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Branches are pointers; commits are snapshots  
 - Plumbing commands reveal the real model
 
-
-
 ## Interview Questions
+
+
 
 
 1. Explain blob, tree, commit, and tag objects.
@@ -287,9 +332,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Signed commits/tags bind identity to hashes. Rewriting published history breaks signatures.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -297,9 +342,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 
-
-
 ## References
+
+
 
 
 

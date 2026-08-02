@@ -50,24 +50,32 @@ comments: false
 
 
 
+
+
+
+
 Describe how the GitLab Agent connects CI to a cluster, sketch a Helm or kubectl deploy job, and contrast push deploys with GitOps pull controllers — including canary, blue-green, and rollback.
 
 Pipelines that **push** manifests with `kubectl` or **Helm** need a secure path into the cluster. The **GitLab Agent for Kubernetes** (`agentk`) establishes a reverse tunnel so runners never hold long-lived kubeconfigs in CI variables. Progressive delivery (canary, blue-green) and rollbacks sit on top of Deployments or Helm releases. **GitOps** (Flux/Argo CD) inverts the model: the cluster pulls desired state from Git (conceptual flow in `gitlab-gitops.svg`).
 
 This is a core tutorial in **Module 9 · Kubernetes Deployments** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Building Docker Images in CI](building-docker-images-in-ci.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -80,9 +88,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline rollback (Helm revision / prior image digest)  
 - [ ] State when push CI ends and GitOps begins
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -91,9 +101,11 @@ This topic’s control points and relationships are shown below.
 
 ![Kubernetes deploy from GitLab](../assets/excalidraw/gitlab-kubernetes-deploy.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -139,75 +151,105 @@ Keep production behind protected environments and manual or approval gates.
 - Both CI and Argo CD applying the same Deployment (duelling controllers).  
 - Skipping `helm history` / revision notes so rollback targets are unclear.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Kubernetes Deploys and GitLab Agent** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-09/manifests`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09/manifests
 ```
 
-**Focus:** GitLab Agent-style deploy job with kubectl dry-run manifests
+### Real-world scenario
 
-### Step 1 – Manifests + agent deploy job
+Your squad is encoding **Kubernetes Deploys and GitLab Agent** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-mkdir -p manifests
-cat > manifests/deploy.yaml << 'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: demo
-  namespace: rebash-lab
-spec:
-  replicas: 1
-  selector: {matchLabels: {app: demo}}
-  template:
-    metadata: {labels: {app: demo}}
-    spec:
-      containers:
-        - name: web
-          image: nginx:alpine
-          ports: [{containerPort: 80}]
-EOF
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [validate, deploy]
-validate:
-  stage: validate
-  image: bitnami/kubectl:latest
-  script: ["kubectl apply --dry-run=client -f manifests/"]
-deploy:
-  stage: deploy
-  image: bitnami/kubectl:latest
-  environment: {name: staging}
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
   script:
-    - echo "GitLab Agent injects kubectl context"
-    - kubectl apply -f manifests/
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Client-side validate if kubectl exists
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-command -v kubectl >/dev/null && kubectl apply --dry-run=client -f manifests/ || echo "kubectl optional"
-grep -E 'kubectl|environment:' .gitlab-ci.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -217,9 +259,11 @@ grep -E 'kubectl|environment:' .gitlab-ci.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -234,9 +278,11 @@ Production practice for **Kubernetes Deploys and GitLab Agent** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -247,9 +293,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -263,9 +311,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -276,9 +326,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -291,18 +343,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Kubernetes Deploys and GitLab Agent** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What problem does the GitLab Agent solve versus storing kubeconfig in CI?
@@ -317,9 +373,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Prefer short-lived agent sessions and least-privilege ServiceAccounts per environment.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -327,9 +385,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Terraform Pipelines in GitLab](terraform-pipelines-in-gitlab.md)
 
-
-
 ## References
+
+
+
+
 
 
 

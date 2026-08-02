@@ -42,24 +42,32 @@ comments: false
 
 
 
+
+
+
+
 Create a child module with typed variables and outputs, call it twice from a root, and apply a clear input/output contract without leaking internals.
 
 **Modules** package reusable infrastructure patterns behind a typed API. Platform teams publish child modules; application roots call them without copying raw resource blocks. Local `source = "./modules/..."` is the composition skill before Registry modules.
 
 This is a core tutorial in **Module 9 · Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Remote State and Backends](remote-state-and-backends.md)
 - Terraform CLI 1.9+
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -70,9 +78,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `path.module` correctly inside children  
 - [ ] Design small modules with stable contracts
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -80,9 +90,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform modules](../assets/excalidraw/terraform-modules.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -128,66 +140,124 @@ Child module when reused; inline resources for one-offs; wrapper modules to soft
 - Using relative `../` paths as the public API instead of input variables.
 - Forgetting `required_providers` or a README with examples.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Modules — Creating Reusable Infrastructure** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated} && cd ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}
 ```
 
-**Focus:** Build and call a local module
+### Real-world scenario
 
-### Step 1 – Author a module and root module
+You are automating **Modules — Creating Reusable Infrastructure** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-mkdir -p modules/label
-cat > modules/label/main.tf <<'EOF'
-variable "name" { type = string }
-resource "local_file" "out" {
-  filename = "${path.root}/${var.name}.label"
-  content  = "module-built:${var.name}
-"
-}
-output "path" { value = local_file.out.filename }
-EOF
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-module "app" {
-  source = "./modules/label"
-  name   = "checkout"
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
 }
-output "label_path" { value = module.app.path }
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply and inspect module address in state
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-terraform state list
-cat checkout.label
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
 terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+#### Task 3 – Inspect state safely
+
+State is the source of truth — list and show without hand-editing.
+
+```bash
+terraform state list | tee state-list.txt
+terraform state show null_resource.lab | tee state-show.txt
+```
+
+**Expected output:** state-list.txt contains `null_resource.lab`.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -196,9 +266,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -212,9 +284,11 @@ Production practice for **Modules — Creating Reusable Infrastructure** always 
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -224,9 +298,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -239,9 +315,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -251,9 +329,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -265,17 +345,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Modules — Creating Reusable Infrastructure** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What problem do modules solve?
@@ -290,18 +374,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     One module change can alter hundreds of workspaces. Version modules, changelog breaking changes, and roll out upgrades gradually with plans reviewed per environment.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Registry Modules and Composition](registry-modules-and-composition.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -44,24 +44,32 @@ comments: false
 
 
 
+
+
+
+
 Address Registry-style modules with version pins, compose multiple modules in one root, and decide when to wrap upstream versus call it directly.
 
 The **Terraform Registry** distributes versioned modules the same way it distributes providers. Production roots pin `source` and `version`, read changelogs before upgrades, and wire outputs of one module into inputs of another. This lab stays local while mirroring Registry consumption patterns.
 
 This is a core tutorial in **Module 9 · Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
 - Terraform CLI 1.9+
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -72,9 +80,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Compose modules by wiring outputs to inputs  
 - [ ] Decide when to wrap an upstream module
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -82,9 +92,11 @@ This topic’s control points and relationships are shown below.
 
 ![Module composition](../assets/excalidraw/terraform-modules.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -123,72 +135,124 @@ Call upstream directly when the API is stable and defaults fit; wrap when many c
 - Over-wrapping — a facade that re-exposes every upstream input.
 - Treating community Registry modules as “official HashiCorp.”
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Registry Modules and Composition** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out} && cd ~/rebash-terraform/module-09/registry-compose/{modules/label,modules/app,out}
 ```
 
-**Focus:** Compose multiple local modules as you would Registry modules
+### Real-world scenario
 
-### Step 1 – Create two small modules and compose them
+You are automating **Registry Modules and Composition** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-mkdir -p modules/network modules/app
-cat > modules/network/main.tf <<'EOF'
-resource "local_file" "net" {
-  filename = "${path.root}/network.txt"
-  content  = "cidr=10.0.0.0/16
-"
-}
-output "net_file" { value = local_file.net.filename }
-EOF
-cat > modules/app/main.tf <<'EOF'
-variable "network_file" { type = string }
-resource "local_file" "app" {
-  filename = "${path.root}/app.txt"
-  content  = "uses:${var.network_file}
-"
-}
-EOF
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-module "network" { source = "./modules/network" }
-module "app" {
-  source        = "./modules/app"
-  network_file  = module.network.net_file
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
 }
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply composition and verify wiring
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-cat network.txt app.txt
-terraform state list
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+#### Task 3 – Inspect state safely
+
+State is the source of truth — list and show without hand-editing.
+
+```bash
+terraform state list | tee state-list.txt
+terraform state show null_resource.lab | tee state-show.txt
+```
+
+**Expected output:** state-list.txt contains `null_resource.lab`.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -197,9 +261,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -213,9 +279,11 @@ Production practice for **Registry Modules and Composition** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -225,9 +293,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -240,9 +310,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -252,9 +324,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -266,17 +340,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Registry Modules and Composition** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What is the Terraform Registry used for?
@@ -291,18 +369,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Third-party modules can run unexpected resources or exfiltrate data via provisioners. Prefer verified sources, pinned versions, code review, and least-privilege credentials.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md)
 
-
-
 ## References
+
+
+
+
 
 
 

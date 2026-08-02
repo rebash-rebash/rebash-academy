@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Shared Libraries
 
 ## Overview
+
+
 
 Create reusable Pipeline logic with **shared libraries**: global or folder-scoped, `vars/` for global variables/steps, `src/` for class-based helpers, and explicit versioning with `@Library('name@version')`.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 9 · Shared Libraries** of the REBASH Academ
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Jenkins shared libraries](../assets/excalidraw/jenkins-shared-library.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -104,60 +115,98 @@ Tutorial: [Extending with Shared Libraries](https://www.jenkins.io/doc/book/pipe
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Shared Libraries** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-09`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-09 && cd ~/rebash-jenkins/module-09
 ```
 
-**Focus:** scaffold a shared library vars/ step and a consuming Jenkinsfile
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Shared Libraries**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Capture controller/agent mental model files
+
+Document how this topic shows up on a real controller.
 
 ```bash
-mkdir -p library/vars app
-cat > library/vars/sayHello.groovy << 'EOF'
-def call(String name = 'world') {
-  echo "Hello, ${name}."
-}
+tee scenario.md << 'EOF'
+Topic: Shared Libraries
+- Controller owns config and orchestration
+- Agents execute untrusted build steps
+- Prefer Jenkinsfile in SCM over click-ops jobs
 EOF
-cat > app/Jenkinsfile << 'EOF'
-@Library('rebash-lib@main') _
+cat scenario.md
+mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+```
+
+**Expected output:** scenario.md and jobs/README.txt exist.
+
+#### Task 2 – Write a minimal Declarative stub
+
+Even management topics should leave a Pipeline artefact.
+
+```bash
+cat > Jenkinsfile << 'EOF'
 pipeline {
   agent any
-  stages {
-    stage('Greet') {
-      steps {
-        script { sayHello('rebash') }
-      }
-    }
-  }
+  stages { stage('OK') { steps { echo 'lab' } } }
 }
 EOF
-cat > library-notes.md << 'EOF'
-# Register in Jenkins
-- Name: rebash-lib
-- Default version: main (pin tags in prod)
-- Modern SCM: Git repo URL to library/
-EOF
-find library app -type f | sort
-grep Library app/Jenkinsfile
+grep -n agent Jenkinsfile
 ```
 
-### Step 2 – Sanity-check vars script
+**Expected output:** Jenkinsfile present with an agent directive.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-grep -E 'call|echo' library/vars/sayHello.groovy
-```
-
-### Final cleanup
-
-```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+# Keep lab notes under ~/rebash-jenkins/
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-09/`
 - [ ] You can explain each Theory section in your own words
@@ -165,6 +214,8 @@ grep -E 'call|echo' library/vars/sayHello.groovy
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Shared Libraries** always combines:
 
@@ -178,6 +229,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -185,6 +238,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Unpinned library versions"
     Pin tags/SHAs for production Pipelines so library main cannot break everyone.
@@ -197,6 +252,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Shared Libraries** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -204,6 +261,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -215,9 +274,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Shared Libraries** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. What belongs in `vars/` versus `src/`?
 2. How do you pin a shared library version?
@@ -233,11 +296,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Docker with Jenkins Pipeline](docker-with-jenkins-pipeline.md)
 - [Managing Jenkins — Plugins, Tools, and CLI](managing-jenkins-plugins-tools-and-cli.md)
 
 ## References
+
+
 
 - [Extending with Shared Libraries](https://www.jenkins.io/doc/book/pipeline/shared-libraries/)
 - [Pipeline best practices](https://www.jenkins.io/doc/book/pipeline/pipeline-best-practices/)

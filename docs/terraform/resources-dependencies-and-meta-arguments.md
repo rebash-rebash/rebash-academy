@@ -43,23 +43,31 @@ comments: false
 
 
 
+
+
+
+
 Declare managed resources, understand the dependency graph, and use `count`, `for_each`, `lifecycle`, and `depends_on` correctly.
 
 A **resource** is something Terraform creates and updates through a provider. Addresses look like `local_file.readme`. Terraform builds a **graph** from references between resources; **meta-arguments** change how many instances exist and how replace/destroy behaves.
 
 This is a core tutorial in **Module 6 · Resources** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -70,9 +78,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose `for_each` over `count` for named instances  
 - [ ] Apply a `lifecycle` rule intentionally
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -80,9 +90,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform resources](../assets/excalidraw/terraform-resources.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -140,67 +152,113 @@ Wrong dependencies cause apply-time races (subnet before VPC, DNS before load ba
 - Setting `ignore_changes = all` to “fix” drift — you stop managing the resource.
 - Assuming `prevent_destroy` blocks `terraform destroy` of the whole root without care — it blocks plans that would destroy that resource; design env teardown deliberately.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Resources, Dependencies, and Meta-Arguments** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-06`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-06 && cd ~/rebash-terraform/module-06
 ```
 
-**Focus:** Explore implicit dependencies, count, and depends_on
+### Real-world scenario
 
-### Step 1 – Create chained resources
+You are automating **Resources, Dependencies, and Meta-Arguments** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
-    null  = { source = "hashicorp/null", version = "~> 3.2" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-resource "local_file" "base" {
-  filename = "${path.module}/base.txt"
-  content  = "base
-"
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
 }
-resource "local_file" "child" {
-  count    = 2
-  filename = "${path.module}/child-${count.index}.txt"
-  content  = "depends on ${local_file.base.filename}
-"
-}
-resource "null_resource" "after" {
-  depends_on = [local_file.child]
-  triggers   = { stamp = timestamp() }
-}
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply and inspect graph order
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-terraform state list
-ls -1 child-*.txt base.txt
-terraform graph | head -n 30
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -209,9 +267,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -225,9 +285,11 @@ Production practice for **Resources, Dependencies, and Meta-Arguments** always c
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -237,9 +299,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -252,9 +316,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -264,9 +330,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -278,17 +346,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Resources, Dependencies, and Meta-Arguments** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How does Terraform infer dependencies between resources?
@@ -303,18 +375,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Removing an element from a `count` list can force replacement of later indexes. `for_each` with stable keys usually produces safer updates.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
 
-
-
 ## References
+
+
+
+
 
 
 

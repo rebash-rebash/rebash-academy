@@ -42,23 +42,37 @@ comments: false
 
 
 
+
+
+
+
+
+
 Create a Deployment, scale it, perform a rolling update, and roll back when a bad image ships.
 
 A **Deployment** owns ReplicaSets and provides declarative updates. Default strategy is RollingUpdate — control `maxUnavailable` / `maxSurge`.
 
 This is a core tutorial in **Module 4 · Workload Management** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
+
+
 
 
 
 - [Labels, Selectors, and Namespaces](kubernetes-objects-labels-and-namespaces.md)
 
-
-
 ## Learning Objectives
+
+
+
+
+
+
 
 
 
@@ -69,9 +83,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Roll out a new image  
 - [ ] `rollout undo` / history
 
-
-
 ## Architecture
+
+
+
+
+
+
 
 
 
@@ -79,9 +97,13 @@ This topic’s control points and relationships are shown below.
 
 ![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
-
-
 ## Theory
+
+
+
+
+
+
 
 
 
@@ -126,81 +148,125 @@ Prefer changing the image via the Deployment (`set image` or edit YAML + apply),
 - Expecting in-place container upgrades; Pods are replaced, not mutated in place.
 - Forgetting `rollout status` in CI — pipelines proceed before the new revision is healthy.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Deployments — Managing Replicated Pods** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-04`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-04`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-04 && cd ~/rebash-k8s/module-04
 ```
 
-**Focus:** Roll out and scale a Deployment safely
+### Real-world scenario
 
-### Step 1 – Create a Deployment and Service
+Your platform team is rolling out **Deployments — Managing Replicated Pods** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+
+### Step-by-step tasks
+
+#### Task 1 – Declare and apply a Pod
+
+Create an isolated namespace and apply a Pod manifest so the scheduler places a container.
 
 ```bash
-kubectl create namespace rebash-lab
-cat > deploy.yaml <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web
-  namespace: rebash-lab
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: web
-  template:
-    metadata:
-      labels:
-app: web
-    spec:
-      containers:
-      - name: nginx
-image: nginx:1.27-alpine
-ports:
-- containerPort: 80
----
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+cat > pod.yaml << 'EOF'
 apiVersion: v1
-kind: Service
+kind: Pod
 metadata:
   name: web
   namespace: rebash-lab
-spec:
-  selector:
+  labels:
     app: web
-  ports:
-  - port: 80
-    targetPort: 80
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27-alpine
+      ports:
+        - containerPort: 80
 EOF
-kubectl apply -f deploy.yaml
-kubectl -n rebash-lab rollout status deploy/web
+kubectl apply -f pod.yaml
+kubectl wait --for=condition=Ready pod/web -n rebash-lab --timeout=120s
+kubectl get pod web -n rebash-lab -o wide
 ```
 
-### Step 2 – Scale and perform a rolling update
+**Expected output:** Pod `web` shows Ready 1/1 and a node name.
+
+#### Task 2 – Inspect Events and prove the app answers
+
+Use describe/Events/logs — the same triage path used in production incidents.
 
 ```bash
-kubectl -n rebash-lab scale deploy/web --replicas=3
-kubectl -n rebash-lab set image deploy/web nginx=nginx:1.27
-kubectl -n rebash-lab rollout status deploy/web
-kubectl -n rebash-lab rollout history deploy/web
-kubectl -n rebash-lab get pods -l app=web -o wide
+kubectl describe pod web -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 20
+kubectl exec -n rebash-lab web -- wget -qO- http://127.0.0.1/ | head -n 5
 ```
 
-### Final step – Cleanup note
+**Expected output:** HTML from nginx appears; describe.txt contains Events without ImagePullBackOff.
+
+#### Task 3 – Capture evidence for handover
+
+Save a short status snapshot you would attach to a ticket.
+
+```bash
+kubectl get pod,events -n rebash-lab -o wide | tee evidence.txt
+test -s evidence.txt
+```
+
+**Expected output:** evidence.txt is non-empty and lists the Pod.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Deployments — Managing Replicated Pods
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
+
+
 
 
 
@@ -209,9 +275,13 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
+
+
 
 
 
@@ -225,9 +295,13 @@ Production practice for **Deployments — Managing Replicated Pods** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
+
+
 
 
 
@@ -237,9 +311,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
+
+
 
 
 
@@ -252,9 +330,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
+
+
 
 
 
@@ -264,9 +346,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
+
+
 
 
 
@@ -278,17 +364,25 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
+
+
 
 
 
 **Deployments — Managing Replicated Pods** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
+
+
 
 
 1. What problem does a Deployment solve compared with creating Pods directly?
@@ -303,18 +397,26 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Without readiness probes, new Pods may receive traffic before they can serve it, causing errors during rollouts. Probes gate Endpoints so only ready Pods join the Service.
 
-
-
 ## Related Tutorials
+
+
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Workload Controllers — StatefulSet, DaemonSet, Jobs](workload-controllers-statefulset-daemonset-jobs.md)
 
-
-
 ## References
+
+
+
+
+
+
 
 
 

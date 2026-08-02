@@ -1,19 +1,15 @@
 ---
 title: "TCP and UDP Deep Dive"
-description: "Master the TCP three-way handshake, ports and sockets, connection lifecycle, flow and congestion control, UDP use cases, TIME_WAIT, and inspection with ss."
+description: "Master the TCP three-way handshake, ports and sockets, UDP use cases, and prove connection states with ss, nc, and curl on a Linux lab host."
 difficulty: intermediate
-estimated_time: "50–65 min"
-technology: networking
+estimated_time: "50–60 min"
+author: Shaik Basha
+last_updated: "2026-08-02"
 category: networking
+technology: networking
 module: "Module 8 · TCP & UDP"
-career_paths:
-  - beginner
-  - devops-engineer
-  - cloud-engineer
-  - linux-administrator
-  - site-reliability-engineer
-  - kubernetes-engineer
-skills:
+tags:
+  - networking
   - tcp
   - udp
   - ports
@@ -28,299 +24,351 @@ related:
   - networking/packet-analysis-tcpdump-wireshark
   - linux/linux-networking-tools
 labs: []
-projects: []
 interview: interview/networking
-certifications:
-  - CompTIA Network+
-  - RHCSA
-tags:
-  - networking
-  - tcp
-  - udp
-  - ports
-  - sockets
-  - ss
-author: Shaik Basha
-last_updated: "2026-07-31"
 comments: false
 ---
-
 
 # TCP and UDP Deep Dive
 
 ## Overview
 
-Explain TCP vs UDP, walk the three-way handshake and teardown, read connection states with `ss`, and diagnose refused vs timeout vs TIME_WAIT problems on a Linux lab host.
+Transport protocols decide **how** applications exchange data. **Transmission Control Protocol (TCP)** is reliable, ordered, and connection-oriented. **User Datagram Protocol (UDP)** is lightweight and best-effort. Most production symptoms — connection refused, timeouts, “too many open files,” and `TIME_WAIT` storms — land at this layer.
 
-Transport protocols decide **how** applications exchange data. **TCP (Transmission Control Protocol)** is reliable, ordered, and connection-oriented. **UDP (User Datagram Protocol)** is lightweight and best-effort. Production symptoms — connection refused, timeouts, “too many open files,” and TIME_WAIT storms — almost always land here.
+You will use `ss` to read socket states, `nc` (netcat) for localhost TCP and UDP demos, and `curl` timings for a real HTTPS sample. These are the same tools you use on jump servers and in incident bridges.
 
-This is **Module 8 — TCP & UDP**. Complete [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md) first. Diagrams use Excalidraw only.
-
-This is a core tutorial in **Module 8 · TCP & UDP** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 9** in **Module 8: TCP & UDP** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. Evidence goes under `~/rebash-networking/lab09`.
 
 ## Prerequisites
 
-### Required
-
 - [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md)
-- Linux host with network access
-- Familiarity with client–server apps
-
-### Recommended
-
-- `sudo` for `ss -p` and sysctl inspection
-- `nc` (netcat) for socket experiments
+- Ubuntu practice host with `ss`, `nc` (`netcat-openbsd` or `ncat`), and `curl`
+- Comfort with client–server ideas (one process listens, another connects)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain the TCP three-way handshake and FIN/ACK teardown  
-- [ ] Distinguish ports, sockets, and file descriptors  
-- [ ] List key TCP states and interpret `ss` output  
-- [ ] Explain TIME_WAIT and practical mitigations  
-- [ ] Choose UDP vs TCP for common Cloud/DevOps workloads  
-- [ ] Describe flow control vs congestion control at a practical level  
-- [ ] Debug “connection refused” vs “timeout” vs “address already in use”
+- [ ] Contrast TCP and UDP for real Cloud / DevOps workloads
+- [ ] Explain the TCP three-way handshake and common socket states
+- [ ] Use `ss` to show listening ports and established connections
+- [ ] Demo localhost TCP and UDP with `nc` and prove states
+- [ ] Read basic `curl` timing output and relate it to connect vs transfer
 
 ## Architecture
 
-TCP completes a three-way handshake before data. UDP sends datagrams with no connection state.
+TCP builds a connection with a three-way handshake before data. UDP sends datagrams without that setup.
 
 ![TCP three-way handshake](../assets/excalidraw/tcp-handshake.svg)
 
+![TCP versus UDP](../assets/excalidraw/tcp-vs-udp.svg)
+
 ## Theory
 
-### Ports and sockets
+### What it is
 
-A **port** is a 16-bit number (0–65535) naming an application endpoint on a host:
+A **port** is a 16-bit number that identifies an application endpoint on a host. A **socket** is the local address + port (and for TCP, the remote pair) that the kernel tracks. **TCP** provides a byte stream with acknowledgements, retransmission, and congestion control. **UDP** provides datagrams with no built-in delivery guarantee — Domain Name System (DNS), QUIC, and many discovery protocols use it.
 
-| Range | Name | Usage |
-|-------|------|-------|
-| 0–1023 | Well-known | HTTP 80, HTTPS 443, SSH 22 |
-| 1024–49151 | Registered | Databases, app services |
-| 49152–65535 | Ephemeral | Client source ports |
+```bash
+ss -lntu | head
+```
 
-A **socket** is the kernel endpoint — for TCP typically the 5-tuple `(protocol, local IP, local port, remote IP, remote port)`. Listening sockets accept new connections; connected sockets carry sessions. On Linux, sockets are **file descriptors**; `ulimit -n` caps how many a process may open.
+### Why it matters
 
-### TCP — reliability and control
+“Connection refused” means nothing is listening (or a reject rule sent RST). A **timeout** often means drops or a black hole — different fix. Load balancers, Kubernetes Services, and health checks are all port and protocol decisions. Choosing TCP vs UDP wrong (for example forcing TCP-only health checks on a UDP service) creates false downs.
 
-TCP provides:
+### How it works
 
-- **Reliability** — retransmission of lost segments  
-- **Ordering** — sequence numbers  
-- **Flow control** — receiver window (do not overwhelm the peer)  
-- **Congestion control** — adjust send rate to network conditions (cwnd, algorithms such as CUBIC)
+**TCP three-way handshake:** client sends SYN → server replies SYN-ACK → client sends ACK → state becomes ESTABLISHED. Teardown uses FIN/ACK (or RST on abort). Common states you will see in `ss`: `LISTEN`, `ESTAB`, `TIME-WAIT`, `CLOSE-WAIT`.
 
-#### Three-way handshake
+**UDP:** no handshake. `ss -lu` shows listening UDP sockets; “connected” UDP is optional and means the kernel remembers a default peer.
 
-1. **SYN** — client proposes initial sequence  
-2. **SYN-ACK** — server acknowledges and proposes its sequence  
-3. **ACK** — client acknowledges; both enter **ESTABLISHED**
+```bash
+# Listen TCP on localhost (lab uses explicit ports)
+nc -l 127.0.0.1 19090
+```
 
-Half-open SYNs without completion are the basis of SYN floods — mitigated with SYN cookies and edge rate limits.
+### Key concepts and comparisons
 
-#### Teardown and TIME_WAIT
+| Feature | TCP | UDP |
+|---------|-----|-----|
+| Connection | Yes | No (usually) |
+| Ordered / reliable | Yes | No |
+| Header cost | Higher | Lower |
+| Typical uses | HTTP(S), SSH, databases | DNS, DHCP, metrics, games, QUIC |
 
-Graceful close uses **FIN/ACK** in both directions (or **RST** for abort). The active closer enters **TIME_WAIT** for about **2×MSL** so delayed segments cannot corrupt a new connection on the same 4-tuple. High-churn clients and proxies accumulate TIME_WAIT — prefer keep-alive and pooling; treat `tcp_tw_reuse` carefully; do not revive obsolete `tcp_tw_recycle` advice.
+| Symptom | Often means |
+|---------|-------------|
+| Connection refused | No listener / active reject |
+| Timeout | Filter, drop, or wrong route |
+| `TIME-WAIT` many entries | Recent closes; usually normal, can stress under churn |
 
-#### TCP states (practical set)
+### Common pitfalls
 
-| State | Meaning |
-|-------|---------|
-| LISTEN | Waiting for connections |
-| SYN-SENT / SYN-RECV | Handshake in progress |
-| ESTABLISHED | Data can flow |
-| FIN-WAIT-* / CLOSE-WAIT | Shutdown in progress |
-| TIME-WAIT | Active closer waiting 2×MSL |
-| CLOSED | No connection |
-
-Stuck **CLOSE-WAIT** usually means the application never called `close()` after the peer finished.
-
-### UDP — datagrams
-
-UDP has no handshake, no delivery guarantee, and an 8-byte header. Use it when latency matters more than per-packet reliability, or when the application (or QUIC) adds its own reliability.
-
-| Use case | Why UDP |
-|----------|---------|
-| DNS | Small query/response |
-| NTP | Tiny periodic sync |
-| VoIP / gaming | Loss preferred over late retransmit |
-| QUIC (HTTP/3) | Reliability and TLS in user space over UDP |
-
-### ss vs netstat
-
-Prefer **`ss`** (netlink, maintained). Useful flags: `-t`/`-u`, `-l`/`-a`, `-n`, `-p` (root), `-i` (RTT/cwnd), `-o` (timers).
+- Using `netstat` only — prefer `ss`.
+- Forgetting `-u` when checking UDP listeners.
+- Treating `TIME-WAIT` as a leak without checking connection rate.
+- Binding `0.0.0.0` in a lab and exposing ports beyond localhost by mistake.
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for TCP and UDP Deep Dive
+### Objective
+
+Prove TCP and UDP behaviour on localhost with `nc`, inspect states with `ss`, and capture `curl` timings to a public HTTPS endpoint. Save evidence under `~/rebash-networking/lab09`.
+
+### Prerequisites
+
+- `iproute2` (`ss`), `curl`, and netcat (`nc -h` should work)
+- Outbound HTTPS allowed for the curl task (or note failure honestly)
+
+### Lab environment
+
+Workspace: `~/rebash-networking/lab09`
 
 ```bash
-mkdir -p ~/rebash-networking/module-08
-cd ~/rebash-networking/module-08
-
-sudo apt-get update
-sudo apt-get install -y iproute2 netcat-openbsd dnsutils curl
+mkdir -p ~/rebash-networking/lab09 && cd ~/rebash-networking/lab09
+set -euo pipefail
+whoami | tee admin-user.txt
+command -v ss | tee tools-ss.txt
+command -v nc | tee tools-nc.txt
+command -v curl | tee tools-curl.txt
+ss -lntu | head -n 40 | tee ss-baseline.txt
 ```
 
-Confirm tools:
+**Expected output:** tool paths recorded; baseline `ss` snapshot saved.
+
+### Real-world scenario
+
+An API owner says “the load balancer is broken.” You must show whether anything listens on the port, whether a TCP handshake completes on localhost, whether UDP reachability works for a sidecar check, and how long TLS connect takes from this host — with files for the bridge call.
+
+### Step-by-step tasks
+
+#### Task 1 – TCP listen / connect on localhost
 
 ```bash
-ss -h | head -3
-nc -h 2>&1 | head -2
+cd ~/rebash-networking/lab09
+set -euo pipefail
+
+TCP_PORT=19090
+# Start listener in background
+nc -l 127.0.0.1 "$TCP_PORT" > tcp-server.out 2>tcp-server.err &
+echo $! > tcp-server.pid
+sleep 0.3
+
+ss -lnt "( sport = :$TCP_PORT )" | tee ss-tcp-listen.txt
+grep -E ":$TCP_PORT|LISTEN" ss-tcp-listen.txt
+
+printf 'rebash-tcp-ok\n' | nc -w 2 127.0.0.1 "$TCP_PORT" | tee tcp-client.out || true
+sleep 0.2
+cat tcp-server.out | tee tcp-payload.txt
+grep -q 'rebash-tcp-ok' tcp-payload.txt
+
+# States snapshot (listener may have closed after one connection depending on nc)
+ss -nt | tee ss-tcp-after.txt || true
+
+kill "$(cat tcp-server.pid)" 2>/dev/null || true
+wait "$(cat tcp-server.pid)" 2>/dev/null || true
 ```
 
-### Step 1 – List listening ports
+**Expected output:** `ss-tcp-listen.txt` shows LISTEN on `19090`; `tcp-payload.txt` contains `rebash-tcp-ok`.
+
+#### Task 2 – UDP localhost demo
 
 ```bash
-ss -tuln
-sudo ss -tulpn | head -20
+cd ~/rebash-networking/lab09
+set -euo pipefail
+
+UDP_PORT=19091
+nc -u -l 127.0.0.1 "$UDP_PORT" > udp-server.out 2>udp-server.err &
+echo $! > udp-server.pid
+sleep 0.3
+
+ss -lun "( sport = :$UDP_PORT )" | tee ss-udp-listen.txt
+grep -E ":$UDP_PORT|UNCONN|udp" ss-udp-listen.txt || test -s ss-udp-listen.txt
+
+printf 'rebash-udp-ok\n' | nc -u -w 2 127.0.0.1 "$UDP_PORT"
+sleep 0.3
+cat udp-server.out | tee udp-payload.txt
+grep -q 'rebash-udp-ok' udp-payload.txt
+
+kill "$(cat udp-server.pid)" 2>/dev/null || true
+wait "$(cat udp-server.pid)" 2>/dev/null || true
 ```
 
-`0.0.0.0` means all interfaces; `127.0.0.1` is localhost only.
+**Expected output:** UDP listener visible in `ss`; `udp-payload.txt` contains `rebash-udp-ok`.
 
-### Step 2 – Established connections
+#### Task 3 – curl timings + evidence pack
 
 ```bash
-ss -tn state established
-curl -s -o /dev/null https://example.com
-ss -tn state established '( dport = :443 or sport = :443 )'
+cd ~/rebash-networking/lab09
+set -euo pipefail
+
+# connect / starttransfer / total (seconds)
+curl -sS -o /dev/null -w 'namelookup=%{time_namelookup}\nconnect=%{time_connect}\nappconnect=%{time_appconnect}\nstarttransfer=%{time_starttransfer}\ntotal=%{time_total}\nhttp_code=%{http_code}\n' \
+  https://example.com | tee curl-timings.txt
+
+grep -E 'connect=|total=|http_code=' curl-timings.txt
+
+ss -s | tee ss-summary.txt
+
+tar -czf tcp-udp-evidence.tgz \
+  admin-user.txt ss-baseline.txt \
+  ss-tcp-listen.txt tcp-payload.txt \
+  ss-udp-listen.txt udp-payload.txt \
+  curl-timings.txt ss-summary.txt ss-tcp-after.txt
+ls -l tcp-udp-evidence.tgz | tee evidence-ls.txt
 ```
 
-### Step 3 – Local handshake with netcat
+**Expected output:** timings file has numeric fields; HTTPS `http_code` is often `200` (or another valid code if the edge changes); archive exists.
+
+### Validation steps
+
+- [ ] TCP payload `rebash-tcp-ok` received
+- [ ] UDP payload `rebash-udp-ok` received
+- [ ] `ss` showed the TCP LISTEN socket during Task 1
+- [ ] `curl-timings.txt` includes connect and total times
+- [ ] `tcp-udp-evidence.tgz` exists under `~/rebash-networking/lab09`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `nc: Address already in use` | Port busy | Choose another high port or kill leftover `nc` |
+| OpenBSD vs traditional nc flags | Different `nc` packages | Use `nc -l 127.0.0.1 port` / `nc -u`; check `nc -h` |
+| UDP payload empty | Timing / buffering | Small `sleep` after send; retry Task 2 |
+| curl DNS/connect fail | No egress | Record the error in `curl-timings.txt`; localhost tasks still pass |
+| `ss` filter syntax error | Older ss | Use `ss -lnt \| grep 19090` instead |
+
+### Challenge exercise
+
+Write `prove-states.sh` that: starts `nc -l 127.0.0.1 19092` in the background, runs `ss -lnt | grep 19092`, connects once with `nc`, saves both `ss` snapshots to `states-listen.txt` and `states-after.txt`, then kills the listener. This script is the stretch artefact.
+
+### Learning outcomes
+
+- Proved TCP and UDP localhost delivery with evidence
+- Used `ss` as the modern socket inspector
+- Linked curl timing fields to connect vs transfer delay
+
+### Cleanup
 
 ```bash
-nc -l 9999 &
-LISTEN_PID=$!
-sleep 1
-echo "hello" | nc 127.0.0.1 9999
-ss -tn sport = :9999 || true
-wait $LISTEN_PID 2>/dev/null || kill $LISTEN_PID 2>/dev/null || true
+cd ~/rebash-networking/lab09
+set -euo pipefail
+kill "$(cat tcp-server.pid 2>/dev/null)" 2>/dev/null || true
+kill "$(cat udp-server.pid 2>/dev/null)" 2>/dev/null || true
+pkill -f 'nc -l 127.0.0.1 1909' 2>/dev/null || true
+# rm -f tcp-udp-evidence.tgz *.txt *.out *.err *.pid
 ```
-
-### Step 4 – TIME_WAIT after short clients
-
-```bash
-ss -tan | awk '/TIME-WAIT/ {c++} END {print "TIME-WAIT:", c+0}'
-sysctl net.ipv4.ip_local_port_range
-for i in $(seq 1 20); do curl -s -o /dev/null http://example.com || true; done
-ss -tan | awk '/TIME-WAIT/ {c++} END {print "TIME-WAIT after burst:", c+0}'
-```
-
-### Step 5 – UDP sockets
-
-```bash
-ss -uln
-dig +short example.com @8.8.8.8
-```
-
-### Step 6 – Refused vs timeout
-
-```bash
-nc -zv -w 2 127.0.0.1 19999 2>&1 || true
-nc -zv -w 2 10.255.255.1 443 2>&1 || true
-```
-
-**Refused** = RST (nothing listening, host reachable). **Timeout** = no SYN-ACK (filter, black hole, or dead path).
-
-### Step 7 – TCP internals
-
-```bash
-ss -ti state established | head -30
-```
-
-Look for `rtt`, `cwnd`, and retransmission clues.
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-networking/module-08/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-networking/lab09/`
+- [ ] You can explain SYN / SYN-ACK / ACK in one short paragraph
+- [ ] You can contrast connection refused vs timeout
+- [ ] You prefer `ss` over legacy `netstat` for daily work
 
 ## Code Walkthrough
 
-Production practice for **TCP and UDP Deep Dive** always combines:
+Transport debugging in production usually follows:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
+1. **Is anything listening?** — `ss -lntu`  
+2. **Can this host connect?** — localhost/`nc` or `curl` to the real port  
+3. **What state are sockets in?** — `ESTAB`, `TIME-WAIT`, `CLOSE-WAIT`  
+4. **Where is time spent?** — curl `%{time_connect}` vs `%{time_starttransfer}`  
+5. **Least exposure** — bind lab listeners to `127.0.0.1` only  
 
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+Packet capture comes after these basics, not before.
 
 ## Security Considerations
 
-- Treat credentials and tokens for networking as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Bind practice listeners to **localhost** only  
+- Do not open high ports on public interfaces “for a quick test”  
+- TCP clearsight into ESTABLISHED peers can reveal unexpected clients — handle as sensitive  
+- UDP amplification risks exist for some services — rate-limit on the edge  
+- Prefer TLS on application protocols that carry credentials (covered next modules)  
 
 ## Common Mistakes
 
-!!! warning "Skipping fundamentals for TCP and UDP Deep Dive"
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "Calling every failure a timeout"
+    Refused vs timeout vs TLS error need different fixes. **Fix:** capture the exact client error and a matching `ss` snapshot.
 
-!!! warning "Treating lab defaults as production-ready for TCP and UDP Deep Dive"
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Ignoring UDP in health checks"
+    A TCP probe against a UDP-only service is a false signal. **Fix:** match probe protocol to the service.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Panicking at TIME_WAIT"
+    Short-lived connections create many `TIME-WAIT` entries. **Fix:** check churn and file-descriptor limits before changing kernel timers casually.
+
+!!! warning "Using 0.0.0.0 in shared labs"
+    Others on the network may connect. **Fix:** `127.0.0.1` for demos.
 
 ## Best Practices
 
-- Encode TCP and UDP Deep Dive changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Standardise on `ss` in runbooks  
+- Record listen address and port in every change ticket  
+- Separate connect failures from application 5xx after handshake  
+- Use curl timing format for slow HTTPS complaints  
+- Know which of your stack is TCP vs UDP (DNS, metrics, QUIC)  
 
 ## Troubleshooting
 
-| Issue | Likely cause | What to do |
-|-------|--------------|------------|
-| Connection refused | No listener / wrong bind | `ss -tlnp`; check bind address |
-| Connection timed out | Firewall or routing | SG/iptables; `traceroute`; confirm host up |
-| Address already in use | Conflict or TIME_WAIT | `ss -tlnp`; wait; `SO_REUSEADDR` in apps |
-| TIME_WAIT storm | Short-lived clients | Keep-alive; pool; widen ephemeral range carefully |
-| High CLOSE-WAIT | App not closing FDs | Fix application; restart as stopgap |
-| SYN drops under load | Backlog / `somaxconn` | Align backlog; SYN cookies at edge |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Connection refused | Nothing on port / wrong IP | `ss -lnt`; fix bind address |
+| Timeout | Drop / wrong security group | Trace path; open correct proto/port |
+| `CLOSE-WAIT` pile-up | App not reading/closing | Fix application close path |
+| UDP “works sometimes” | No reliability | Add app-level retry or use TCP/QUIC |
+| High connect time | Network/TLS | Use curl timings; check DNS and TLS |
 
 ## Summary
 
-- **TCP** = handshake, reliability, flow and congestion control, connection states  
-- **UDP** = datagrams for DNS, NTP, media, and QUIC  
-- **Ports** name services; **sockets** are the full endpoints  
-- **TIME_WAIT** protects against stale segments; manage it with design, not folklore  
-- Use **`ss`**; distinguish **refused** from **timeout**
+TCP gives you a reliable stream and visible connection states; UDP gives you speed with less help from the kernel. Prove both with `ss`, `nc`, and curl timings before you blame the load balancer. Next: [DNS Fundamentals](dns-fundamentals.md).
 
 ## Interview Questions
 
-1. How does **TCP and UDP Deep Dive** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. Walk through the TCP three-way handshake.**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    Client sends **SYN**, server replies **SYN-ACK**, client sends **ACK**. After that the connection is **ESTABLISHED** and data can flow. Interviewers also expect you to know teardown uses FIN/ACK (or RST on abort) and that middleboxes can interfere with handshake packets.
+
+**2. How do you distinguish connection refused from a timeout?**
+
+??? success "Reveal answer"
+    **Refused** usually means the host responded with a TCP **RST** (nothing listening, or an active reject). A **timeout** means no useful response — often a **drop** in a firewall/security group or a black hole. Refused → check listener/`ss`. Timeout → check path and filters.
+
+**3. When would you choose UDP over TCP?**
+
+??? success "Reveal answer"
+    When you want low overhead and can handle loss in the application — classic **DNS**, DHCP, many telemetry streams, and modern **QUIC** (UDP-based). Choose TCP when you need a reliable byte stream without implementing retransmission yourself (HTTP/1.1, databases, SSH).
+
+**4. What does `ss -lntu` show you that `ping` cannot?**
+
+??? success "Reveal answer"
+    It shows **which ports are listening** for TCP and UDP and related socket state. Ping only tests ICMP reachability. Services can be up on TCP 443 while ping fails, or listening only on localhost while the world cannot connect.
+
+**5. What is TIME_WAIT and is it always a problem?**
+
+??? success "Reveal answer"
+    After an active close, TCP keeps the tuple in **TIME_WAIT** so delayed packets do not corrupt a new connection with the same 4-tuple. Many short connections create many TIME_WAIT entries — often **normal**. It becomes a problem under extreme churn or port exhaustion; fix connection reuse or architecture before randomly tuning timeouts.
+
+**6. How do curl `time_connect` and `time_starttransfer` help in an incident?**
+
+??? success "Reveal answer"
+    **`time_connect`** covers TCP connect (and related network delay to the accept). **`time_appconnect`** adds TLS. **`time_starttransfer`** waits until the first response byte. Large connect time → network/LB. Large gap after connect → slow TLS or slow app. This splits “network” from “application” quickly.
+
+**7. Why bind lab `nc` servers to 127.0.0.1?**
+
+??? success "Reveal answer"
+    Binding to all interfaces can expose an unauthenticated listener on the LAN or public IP. Localhost keeps the demo **safe** while still proving TCP/UDP and `ss` states. Production services should bind intentionally and sit behind controls.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [DNS Fundamentals](dns-fundamentals.md)  
-- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)  
-- [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md)  
-- [Networking Cheat Sheet](../cheatsheets/networking.md)  
-- [Networking Interview Prep](../interview/networking.md)
+- [Networking for Cloud & DevOps – Overview](index.md)
+- [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md) *(previous)*
+- [DNS Fundamentals](dns-fundamentals.md) *(next)*
+- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 
 ## References
 
-- [RFC 793 — TCP](https://www.rfc-editor.org/rfc/rfc793)  
+- [RFC 9293 — TCP](https://www.rfc-editor.org/rfc/rfc9293)  
 - [RFC 768 — UDP](https://www.rfc-editor.org/rfc/rfc768)  
-- [ss(8)](https://man7.org/linux/man-pages/man8/ss.8.html)  
-- [Linux ip-sysctl](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt)  
-- [IANA port registry](https://www.iana.org/assignments/service-names-port-numbers/)
+- [`ss(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ss.8.html)  
+- Track index: [Networking for Cloud & DevOps Engineers](index.md)

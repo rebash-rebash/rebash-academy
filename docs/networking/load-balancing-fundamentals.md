@@ -1,23 +1,20 @@
 ---
 title: "Load Balancing Fundamentals"
-description: "Master Layer 4 vs Layer 7 load balancing, scheduling algorithms, health checks, session persistence, and cloud ALB/NLB concepts for DevOps."
+description: "Explain Layer 4 vs Layer 7 load balancing, health checks, and scheduling, then run a local demo with two backends and a working balancer artefact."
 difficulty: intermediate
-estimated_time: "45–60 min"
-technology: networking
+estimated_time: "45–55 min"
+author: Shaik Basha
+last_updated: "2026-08-02"
 category: networking
+technology: networking
 module: "Module 13 · Load Balancing"
-career_paths:
-  - beginner
-  - devops-engineer
-  - cloud-engineer
-  - site-reliability-engineer
-  - kubernetes-engineer
-  - platform-engineer
-skills:
-  - load-balancing
+tags:
+  - networking
+  - load-balancer
   - health-checks
-  - alb
-  - nlb
+  - nginx
+  - layer-4
+  - layer-7
 prerequisites:
   - networking/linux-networking-toolkit
 next:
@@ -27,244 +24,415 @@ related:
   - networking/kubernetes-networking-fundamentals
   - networking/load-balancer-operations-and-health-checks
 labs: []
-projects: []
 interview: interview/networking
-certifications:
-  - CompTIA Network+
-  - AWS SAA
-tags:
-  - networking
-  - load-balancer
-  - alb
-  - nlb
-  - health-checks
-author: Shaik Basha
-last_updated: "2026-07-31"
 comments: false
 ---
-
 
 # Load Balancing Fundamentals
 
 ## Overview
 
-Choose L4 vs L7 correctly, explain common scheduling and health-check designs, and map the same ideas to cloud load balancers (ALB/NLB and equivalents).
+A **load balancer** presents one stable front door and spreads traffic across healthy backends. It supports scale-out, rolling deploys, and failover. **Layer 4 (L4)** balancers forward Transmission Control Protocol (TCP) or User Datagram Protocol (UDP) by IP and port. **Layer 7 (L7)** balancers understand Hypertext Transfer Protocol (HTTP) — paths, Host headers, cookies — and often terminate Transport Layer Security (TLS).
 
-A **load balancer** presents a stable front door and spreads traffic across healthy backends. It enables scale-out, rolling deploys, and failover. Wrong tier choices cause silent bugs: L4 cannot route by path; L7 adds TLS and parsing complexity.
+Wrong tier choices cause silent bugs: an L4 balancer cannot route by URL path; an L7 balancer adds parsing and certificate complexity. Cloud products such as Application Load Balancer (ALB) and Network Load Balancer (NLB) map to these ideas. In this tutorial you will run a **local** demo with two Python HTTP backends and nginx (or a documented fallback) under `~/rebash-networking/lab16`.
 
-This is the first tutorial in **Module 13 — Load Balancing**. Complete [Linux Networking Toolkit](linux-networking-toolkit.md) (and HTTP/firewall modules) first. Diagrams use Excalidraw only.
+Health checks decide which backends receive traffic. Bad checks flap instances or keep “zombie” nodes in the pool. Session persistence (stickiness) trades even load for session affinity. Production designs document algorithm, health check, idle timeouts, and drain behaviour for deploys.
 
-This is a core tutorial in **Module 13 · Load Balancing** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 13: Load Balancing** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, SRE, and platform engineers.
 
 ## Prerequisites
 
-### Required
-
 - [Linux Networking Toolkit](linux-networking-toolkit.md)
 - [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
-- [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md)
-
-### Recommended
-
-- Cloud console familiarity for ALB/NLB (or GCP/Azure LB) exploration
+- Practice Ubuntu VM with `python3` and preferably `nginx` (`sudo apt-get install -y nginx` if allowed)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Contrast Layer 4 and Layer 7 load balancing  
-- [ ] Compare round-robin, least connections, and IP-hash (session persistence)  
-- [ ] Design health checks that match real readiness  
-- [ ] Explain active/passive or multi-AZ LB high availability  
-- [ ] Choose AWS ALB vs NLB (and equivalents) for common cases  
-- [ ] Diagnose uneven distribution and flapping health
+- [ ] Contrast L4 vs L7 load balancing with one example each
+- [ ] Explain round-robin, least-connections, and when stickiness is used
+- [ ] Describe health-check design mistakes that cause outages
+- [ ] Run two local backends behind nginx **or** a scripted fallback balancer
+- [ ] Capture curl evidence proving traffic hits both backends
 
 ## Architecture
 
-Clients hit a VIP; the balancer forwards only to healthy pool members.
+Clients hit a virtual IP or hostname on the load balancer. The balancer selects a healthy backend using an algorithm and optional persistence. Health checks run out-of-band from user traffic.
 
-![Load balancing](../assets/excalidraw/load-balancing.svg)
+![Architecture diagram for Load Balancing Fundamentals](../assets/excalidraw/load-balancing.svg)
 
 ## Theory
 
-### Why load balance?
+### What it is
 
-Direct-to-one-server creates a single point of failure, a scale ceiling, and painful deploys. The balancer owns the **VIP** or DNS name; backends form a **target group** / **pool**.
+| Tier | Sees | Good for |
+|------|------|----------|
+| L4 | IP/port, TCP/UDP | High throughput, TLS pass-through, non-HTTP |
+| L7 | HTTP methods, Host, path, headers | Path routing, Header-based canary, WAF pairing |
 
-### Layer 4 vs Layer 7
+```bash
+# Mental model — one VIP, many backends
+# Client → LB:80 → backend-a:8081 or backend-b:8082
+```
 
-| | Layer 4 | Layer 7 |
-|--|---------|---------|
-| Sees | IP + port (TCP/UDP) | HTTP/gRPC headers, path, Host |
-| Speed | Lower overhead | More processing / TLS terminate |
-| Protocols | Any TCP/UDP | HTTP-family (typical) |
-| Routing | Port / IP | Path, Host, headers, cookies |
+### Why it matters
 
-**NLB-style** ≈ L4. **ALB / Application Gateway / HTTP(S) LB** ≈ L7.
+Without a balancer, every client must know every instance. With one, you can replace backends during deploys. Cloud and Kubernetes Services/Ingress reuse these patterns. Choosing NLB vs ALB (or equivalents) is mostly L4 vs L7 plus operational features (health checks, idle timeout, cross-zone).
 
-### Scheduling
+### How it works
 
-| Algorithm | Behaviour |
-|-----------|-----------|
-| Round-robin | Rotate members |
-| Least connections | Prefer quieter backends |
-| IP hash / cookie stickiness | Session persistence |
+1. **Bind** a front-end listener (port 80/443 or internal port).  
+2. **Pool** backends with weights.  
+3. **Health-check** each member (TCP connect or HTTP status).  
+4. **Schedule** new connections (round-robin, least-conn, hash).  
+5. **Drain** on deploy — stop new connections, finish in-flight.
 
-Sticky sessions help stateful apps but hurt even distribution and draining — prefer shared session stores when you can.
+### Key concepts and comparisons
 
-### Health checks
+| Algorithm | Behaviour | Prefer when |
+|-----------|-----------|-------------|
+| Round-robin | Rotate evenly | Similar backends, short requests |
+| Least connections | Prefer quieter node | Long-lived connections |
+| IP hash / cookie stickiness | Same client → same node | Stateful sessions without shared store |
 
-- **TCP** — port open  
-- **HTTP** — status path (`/healthz`) returns 200  
-- Interval, timeout, healthy/unhealthy thresholds  
+| Pattern | Prefer when | Avoid when |
+|---------|-------------|------------|
+| L4 pass-through TLS | End-to-end TLS to app | You need path-based routing |
+| L7 terminate TLS | Central certs, HTTP routing | Ultra-low latency UDP gaming |
+| Shared session store | Horizontal scale without stickiness | You rely only on sticky cookies forever |
 
-Bad checks: probing a path that needs auth, or marking ready before DB connections work. Align with Kubernetes readiness when behind Ingress.
+### Common pitfalls
 
-### High availability
-
-Run balancers (or use managed multi-AZ services) so the VIP survives AZ loss. Drain backends before deploy; never rely on a single backend in production.
-
-### Cloud mapping
-
-| Need | Typical choice |
-|------|----------------|
-| HTTP path / Host routing, TLS terminate | ALB / Application Gateway / HTTP(S) LB |
-| Extreme L4, static IP, non-HTTP | NLB / Network LB / TCP LB |
-| Preserve client IP | PROXY protocol, X-Forwarded-For, or L4 pass-through patterns |
+- Health check hits `/` while the real app is `/healthz` (false healthy/unhealthy).  
+- Idle timeout shorter than app long-polls.  
+- Sticky sessions hiding uneven load and broken deploys.  
+- Balancing to pods by Pod IP without a Service (Kubernetes lesson later).
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Load Balancing Fundamentals
+### Objective
+
+Run two backends on ports **18081** and **18082**, put a balancer on **18080**, prove both backends receive requests, and keep a working artefact (`nginx` config **or** `rr-client.sh` fallback).
+
+### Prerequisites
+
+- `python3`, `curl`
+- Preferred: `nginx`  
+- Fallback: pure bash round-robin client if nginx/haproxy/socat missing
+
+### Lab environment
+
+Workspace: `~/rebash-networking/lab16`
 
 ```bash
-mkdir -p ~/rebash-networking/module-13
-cd ~/rebash-networking/module-13
-
-sudo apt-get update
-sudo apt-get install -y curl
+mkdir -p ~/rebash-networking/lab16 && cd ~/rebash-networking/lab16
+set -euo pipefail
+whoami | tee admin-user.txt
+command -v nginx >/dev/null && echo nginx=yes | tee tools.txt || echo nginx=no | tee tools.txt
+command -v haproxy >/dev/null && echo haproxy=yes | tee -a tools.txt || echo haproxy=no | tee -a tools.txt
+command -v socat >/dev/null && echo socat=yes | tee -a tools.txt || echo socat=no | tee -a tools.txt
 ```
 
-Optional cloud CLIs if you will inspect managed LBs later.
+**Expected output:** `tools.txt` records which balancers exist.
 
-### Step 1 – Observe a public LB from the client
+### Real-world scenario
+
+Before buying a cloud load balancer, you prove the design on a laptop: two app instances, one front door, evidence that requests spread. You keep the config or fallback script as a teaching artefact for the team.
+
+### Step-by-step tasks
+
+#### Task 1 – Two Python backends
 
 ```bash
-curl -sI https://example.com/ | head -20
-dig +short example.com A
+cd ~/rebash-networking/lab16
+set -euo pipefail
+
+cat > backend.py << 'EOF'
+#!/usr/bin/env python3
+import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+NAME = sys.argv[1]
+PORT = int(sys.argv[2])
+
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        body = f"backend={NAME}\n".encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+    def log_message(self, *args):
+        pass
+
+HTTPServer.allow_reuse_address = True
+HTTPServer(("127.0.0.1", PORT), H).serve_forever()
+EOF
+
+chmod +x backend.py
+python3 backend.py A 18081 >backend-a.log 2>&1 &
+echo $! > backend-a.pid
+python3 backend.py B 18082 >backend-b.log 2>&1 &
+echo $! > backend-b.pid
+sleep 0.4
+curl -sS http://127.0.0.1:18081/ | tee hit-a.txt
+curl -sS http://127.0.0.1:18082/ | tee hit-b.txt
+grep -q 'backend=A' hit-a.txt
+grep -q 'backend=B' hit-b.txt
 ```
 
-Note: DNS may point at anycast or cloud LB edges — you rarely see “the” backend IP.
+**Expected output:** `hit-a.txt` / `hit-b.txt` show `backend=A` and `backend=B`.
 
-### Step 2 – Design a pool on paper
+#### Task 2 – nginx upstream **or** fallback balancer
 
-```text
-VIP: app.example.com → L7 LB
-Backends: 10.0.2.10:8080, 10.0.2.11:8080, 10.0.2.12:8080
-Health: GET /healthz every 10s, 2 failures → unhealthy
-Algorithm: least connections
-Stickiness: none (JWT in Authorization header)
+```bash
+cd ~/rebash-networking/lab16
+set -euo pipefail
+
+if command -v nginx >/dev/null 2>&1; then
+  cat > nginx-lb.conf << 'EOF'
+worker_processes 1;
+error_log /tmp/rebash-lab16-nginx.err;
+pid /tmp/rebash-lab16-nginx.pid;
+events { worker_connections 64; }
+http {
+  access_log /tmp/rebash-lab16-nginx.access;
+  upstream rebash_backends {
+    server 127.0.0.1:18081;
+    server 127.0.0.1:18082;
+  }
+  server {
+    listen 127.0.0.1:18080;
+    location / {
+      proxy_pass http://rebash_backends;
+    }
+  }
+}
+EOF
+  nginx -t -c "$PWD/nginx-lb.conf"
+  nginx -c "$PWD/nginx-lb.conf"
+  echo mode=nginx | tee mode.txt
+else
+  # Fallback artefact: bash round-robin client (documents missing nginx)
+  cat > rr-client.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+N="${1:-10}"
+ports=(18081 18082)
+i=0
+for ((k=0; k<N; k++)); do
+  p="${ports[$((i % {{ '${#ports[@]}' }}))]}"
+  curl -sS "http://127.0.0.1:${p}/"
+  i=$((i+1))
+done
+EOF
+  chmod +x rr-client.sh
+  # Simple socat multiplexer if available
+  if command -v socat >/dev/null 2>&1; then
+    socat TCP-LISTEN:18080,bind=127.0.0.1,reuseaddr,fork \
+      TCP:127.0.0.1:18081 &
+    echo $! > socat.pid
+    echo mode=socat-single-backend-demo | tee mode.txt
+    echo "NOTE: socat demo forwards to A only; use rr-client.sh for spread proof" | tee -a mode.txt
+  else
+    echo mode=rr-client-fallback | tee mode.txt
+  fi
+fi
+
+# Spread proof
+: > hits.txt
+if [[ "$(cat mode.txt)" == mode=nginx ]]; then
+  for i in $(seq 1 10); do
+    curl -sS http://127.0.0.1:18080/ >> hits.txt
+  done
+else
+  ./rr-client.sh 10 >> hits.txt
+fi
+
+grep -c 'backend=A' hits.txt | tee count-a.txt
+grep -c 'backend=B' hits.txt | tee count-b.txt
+# At least one hit each when using nginx or rr-client
+test "$(cat count-a.txt)" -ge 1
+test "$(cat count-b.txt)" -ge 1
 ```
 
-Save as `~/rebash-networking/module-13/pool-design.md`.
+**Expected output:** `hits.txt` contains both `backend=A` and `backend=B`; `mode.txt` records which path ran.
 
-### Step 3 – Health-check failure modes
+#### Task 3 – Evidence pack
 
-List three ways a check can lie (always 200 static file; fails only under load; blocks probe SG). Note remediations.
+```bash
+cd ~/rebash-networking/lab16
+set -euo pipefail
 
-### Step 4 – L4 vs L7 decision drill
+tar -czf lb-evidence.tgz \
+  admin-user.txt tools.txt mode.txt \
+  hit-a.txt hit-b.txt hits.txt count-a.txt count-b.txt \
+  backend.py nginx-lb.conf rr-client.sh 2>/dev/null || \
+tar -czf lb-evidence.tgz *.txt backend.py mode.txt \
+  $(ls nginx-lb.conf rr-client.sh 2>/dev/null || true)
 
-For each, pick L4 or L7:
+ls -l lb-evidence.tgz | tee evidence-ls.txt
+test -s lb-evidence.tgz
+```
 
-1. Path `/api` vs `/static` to different services  
-2. PostgreSQL to three replicas  
-3. Mutual TLS passthrough to backends  
+**Expected output:** `lb-evidence.tgz` is non-empty and includes the working artefact.
 
-### Step 5 – Status code mapping
+### Validation steps
 
-Recall from HTTP module: **502/503/504** often originate at the balancer when upstreams misbehave — document which symptom maps to “no healthy targets” vs “upstream timeout.”
+- [ ] Both backends respond on 18081/18082
+- [ ] Spread proof shows A and B in `hits.txt`
+- [ ] `mode.txt` explains nginx vs fallback
+- [ ] `lb-evidence.tgz` exists
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `nginx: bind failed` | Port in use | Change listen port or stop conflicting process |
+| Only backend A in hits | socat single target | Use `rr-client.sh` or nginx upstream |
+| `Connection refused` on 18080 | Balancer not started | Start nginx or use fallback client |
+| Permission denied for nginx pid | Path rights | Use `/tmp` paths as in the config |
+
+### Challenge exercise
+
+Add an HTTP health note file `health-design.md` (short) listing: check path, interval idea, and what happens when one backend is killed. Then `kill` backend B’s PID, re-run five curls through nginx (if in nginx mode), and save `hits-degraded.txt` showing only A (or document fallback behaviour).
+
+### Learning outcomes
+
+- Distinguished L4 vs L7 in practical terms
+- Ran a two-backend local balancer demo
+- Kept a working config or fallback script artefact
+- Linked health checks to deploy safety
+
+### Cleanup
+
+```bash
+cd ~/rebash-networking/lab16
+set -euo pipefail
+
+if [[ -f /tmp/rebash-lab16-nginx.pid ]]; then
+  nginx -s stop -c "$PWD/nginx-lb.conf" 2>/dev/null || \
+    kill "$(cat /tmp/rebash-lab16-nginx.pid)" 2>/dev/null || true
+fi
+[[ -f socat.pid ]] && kill "$(cat socat.pid)" 2>/dev/null || true
+[[ -f backend-a.pid ]] && kill "$(cat backend-a.pid)" 2>/dev/null || true
+[[ -f backend-b.pid ]] && kill "$(cat backend-b.pid)" 2>/dev/null || true
+rm -f backend-a.pid backend-b.pid socat.pid
+ss -lnt '( sport = :18080 or sport = :18081 or sport = :18082 )' || true
+```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-networking/module-13/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-networking/lab16/`
+- [ ] You can explain L4 vs L7 and one cloud mapping (NLB/ALB)
+- [ ] You can describe a safe health check for rolling deploys
+- [ ] You know stickiness trade-offs
 
 ## Code Walkthrough
 
-Production practice for **Load Balancing Fundamentals** always combines:
+Local demos mirror production:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
+1. **Backends first** — prove each instance alone  
+2. **Pool config** — upstream / target group  
+3. **Front listener** — VIP/port  
+4. **Prove spread** — multiple curls, count backends  
+5. **Break one backend** — confirm health/failover behaviour  
 
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+Cloud consoles hide the same objects: listeners, target groups, health checks.
 
 ## Security Considerations
 
-- Treat credentials and tokens for networking as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Prefer internal balancers for admin APIs  
+- Terminate TLS with strong ciphers; manage certificates as secrets  
+- Do not expose raw backend ports publicly when an LB exists  
+- Restrict who can change target registration  
+- Log enough to see which backend served a request when debugging  
 
 ## Common Mistakes
 
-!!! warning "Skipping fundamentals for Load Balancing Fundamentals"
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "Using L4 when you need path-based routing"
+    Paths are invisible at L4. **Fix:** use L7 (ALB/nginx/Ingress) for `/api` vs `/static`.
 
-!!! warning "Treating lab defaults as production-ready for Load Balancing Fundamentals"
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Health check on a heavy homepage"
+    False unhealthy during cache misses. **Fix:** dedicated cheap `/healthz`.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Sticky sessions forever"
+    Uneven load and painful deploys. **Fix:** shared session store; stickiness only when required.
+
+!!! warning "Forgetting drain during deploy"
+    In-flight requests die. **Fix:** connection draining / `preStop` hooks in Kubernetes.
 
 ## Best Practices
 
-- Encode Load Balancing Fundamentals changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Document algorithm, timeouts, and health path in the runbook  
+- Test failover by stopping one backend in staging  
+- Align idle timeouts across LB, proxy, and app  
+- Use multiple availability zones for the balancer itself  
+- Prefer immutable target registration via automation  
 
 ## Troubleshooting
 
-| Symptom | Likely cause | What to do |
-|---------|--------------|------------|
-| 503 | No healthy targets | Fix health path/SG; check deploy |
-| Uneven load | Stickiness / long connections | Review algorithm; drain; metrics |
-| Flapping | Tight thresholds / slow app | Tune interval; fix cold start |
-| Client IP lost | SNAT at LB | PROXY protocol or headers |
-| TLS errors | Cert/SNI on L7 | Check listener cert and Host |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| 502/504 from LB | No healthy targets | Fix health checks / backends |
+| Uneven load | Stickiness or long conn | Review algorithm |
+| TLS errors at edge | Cert/SNI mismatch | Fix certificates / Host |
+| Works via backend IP, fails via VIP | Security group on LB | Open listener SG |
+| Flapping healthy/unhealthy | Borderline timeout | Relax threshold; fix app |
 
 ## Summary
 
-- L4 forwards transport flows; L7 understands HTTP  
-- Algorithms and stickiness trade fairness vs affinity  
-- Health checks must reflect real readiness  
-- Prefer multi-AZ managed balancers in cloud
+Load balancers front many backends with health-aware scheduling. Choose L4 vs L7 deliberately, prove spread locally, and treat health checks as production code. Next: [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md).
 
 ## Interview Questions
 
-1. How does **Load Balancing Fundamentals** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. When do you choose an L4 balancer over an L7 balancer?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    Choose **L4** for raw TCP/UDP, TLS pass-through, extreme throughput, or non-HTTP protocols. Choose **L7** when you need Host/path routing, header-based rules, or central HTTP features. Cloud NLB ≈ L4; ALB ≈ L7 is a useful mapping, not a law.
+
+**2. What makes a good HTTP health check?**
+
+??? success "Reveal answer"
+    A **cheap, dedicated** endpoint (for example `/healthz`) that checks critical dependencies the instance needs, returns clear status codes, and runs on an interval/threshold that avoids flapping. Checking a heavy homepage or external third party from every node is a common anti-pattern.
+
+**3. How does round-robin differ from least-connections?**
+
+??? success "Reveal answer"
+    **Round-robin** sends new requests in turn, which works when requests are similar. **Least-connections** prefers the backend with fewer active connections — better for mixed long/short workloads. Interviewers also expect you to mention stickiness as a separate concern.
+
+**4. Users keep hitting one backend after you scaled out. What do you suspect?**
+
+??? success "Reveal answer"
+    **Session stickiness** (cookie or IP hash), DNS caching to an old VIP, or a misconfigured target group that never registered new nodes. Check balancer stats and whether new targets are healthy.
+
+**5. Why can idle timeout mismatches look like “random API failures”?**
+
+??? success "Reveal answer"
+    If the load balancer closes idle connections sooner than the client or app expects, long-polls or reused connections fail. Align LB, reverse proxy, and application timeouts and watch for 502/504 spikes.
+
+**6. How would you prove a local lab balancer is actually distributing traffic?**
+
+??? success "Reveal answer"
+    Give each backend a distinct response body (as in this lab), send many requests through the front port, and **count** which backends appear. Config alone is not proof.
+
+**7. Map Kubernetes Service `type: LoadBalancer` to this lesson.**
+
+??? success "Reveal answer"
+    The cloud provider creates an external (or internal) load balancer whose targets are nodes/NodePorts or pods via integrated mechanisms. Mentally it is still “VIP + healthy backends”; CNI and kube-proxy/IPVS add the cluster-side hop covered in Module 14.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md)  
+- [Networking for Cloud & DevOps – Overview](index.md)
+- [Linux Networking Toolkit](linux-networking-toolkit.md) *(previous)*
+- [Reverse Proxy and Ingress Basics](reverse-proxy-and-ingress-basics.md) *(next)*
 - [Load Balancer Operations and Health Checks](load-balancer-operations-and-health-checks.md)
+- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
 
 ## References
 
-- [AWS ELB docs](https://docs.aws.amazon.com/elasticloadbalancing/)  
-- [GCP Cloud Load Balancing](https://cloud.google.com/load-balancing/docs)  
-- [Azure Load Balancer](https://learn.microsoft.com/azure/load-balancer/)
+- [nginx reverse proxy / upstream](https://nginx.org/en/docs/http/ngx_http_proxy_module.html) — nginx  
+- [AWS ELB product comparisons](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html) — L4/L7 mapping  
+- Track index: [Networking for Cloud & DevOps Engineers](index.md)

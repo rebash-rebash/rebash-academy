@@ -45,15 +45,21 @@ comments: false
 
 
 
+
+
+
+
 Explain HCP Terraform (formerly Terraform Cloud) workspaces, remote runs, team access, and policy hooks — and sketch a `cloud` block workflow you can adopt when an organisation is ready.
 
 **HCP Terraform** (HashiCorp Cloud Platform Terraform; historically **Terraform Cloud**) hosts state, runs plans/applies remotely, and adds collaboration features: teams, variable sets, VCS-driven runs, and policy enforcement. You trade operating your own state bucket for a managed control plane. Enterprise tiers add deeper governance; the mental model starts the same.
 
 This is a core tutorial in **Module 13 · Terraform Cloud & Enterprise** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -61,9 +67,11 @@ This is a core tutorial in **Module 13 · Terraform Cloud & Enterprise** of the 
 - [Remote State and Backends](remote-state-and-backends.md)
 - HashiCorp account optional for the conceptual lab (no paid org required)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -74,9 +82,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Map teams, variable sets, and policy stages  
 - [ ] Contrast `cloud` block vs self-managed backends
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -84,9 +94,11 @@ This topic’s control points and relationships are shown below.
 
 ![HCP Terraform](../assets/excalidraw/terraform-cloud.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -126,80 +138,113 @@ Workspace = state + runs + variables; run = remote plan/apply; variable sets sha
 - Secrets in Git *and* variable sets — pick one controlled path.
 - Local execution while assuming credentials never touch laptops.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Terraform Cloud and HCP Terraform** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-13/hcp-terraform`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-13/hcp-terraform && cd ~/rebash-terraform/module-13/hcp-terraform
 ```
 
-**Focus:** Model remote-run concepts locally without requiring HCP Terraform login
+### Real-world scenario
 
-### Step 1 – Document run stages with a local dry-run script
+You are automating **Terraform Cloud and HCP Terraform** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
-    }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-
+EOF
+cat > main.tf << 'EOF'
 resource "null_resource" "lab" {
-  triggers = {
-    note = "rebash-lab"
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
   }
 }
-
-resource "local_file" "marker" {
-  content  = "managed-by-terraform
-"
-  filename = "${path.module}/marker.txt"
-}
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
-cat > simulate-remote-run.sh <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "1) queue plan"
-terraform plan -out=tfplan
-echo "2) policy checks (placeholder)"
-echo "3) apply after approval"
-terraform apply tfplan
-EOF
-chmod +x simulate-remote-run.sh
+terraform validate
 ```
 
-### Step 2 – Execute the simulated remote run
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-./simulate-remote-run.sh
-terraform state list
-echo "HCP Terraform adds remote execution, state, and policy — this lab mirrors the stages"
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -208,9 +253,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -224,9 +271,11 @@ Production practice for **Terraform Cloud and HCP Terraform** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -236,9 +285,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -251,9 +302,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -263,9 +316,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -277,17 +332,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Terraform Cloud and HCP Terraform** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What capabilities does HCP Terraform add beyond open-source CLI alone?
@@ -302,18 +361,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Centralisation improves governance but creates platform dependency and needs clear workspace permissions so teams cannot apply each other’s prod stacks.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
 
-
-
 ## References
+
+
+
+
 
 
 

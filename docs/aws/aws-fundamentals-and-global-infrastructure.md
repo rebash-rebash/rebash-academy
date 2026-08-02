@@ -52,6 +52,8 @@ comments: false
 
 
 
+
+
 Build a clear mental map of Amazon Web Services (AWS): Regions, Availability Zones (AZs), edge locations, the shared responsibility model, and safe first use of the AWS Command Line Interface (CLI) and CloudShell.
 
 AWS is a global public cloud platform. Before you launch compute or open a Virtual Private Cloud (VPC), you need to know **where** resources live, **who** is responsible for security, and **how** you authenticate to the Application Programming Interface (API). Wrong Region choices create latency, compliance, and cost surprises; misunderstanding shared responsibility creates security gaps.
@@ -63,9 +65,9 @@ This course is **AWS for Cloud & DevOps Engineers** — production habits from d
 
 This is a core tutorial in **Module 1 · AWS Fundamentals** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -74,9 +76,9 @@ This is a core tutorial in **Module 1 · AWS Fundamentals** of the REBASH Academ
 - [Networking Fundamentals](../networking/index.md) — IP, DNS, HTTPS basics
 - An AWS account (Free Tier eligible) or read-only access for discovery commands
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -89,9 +91,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose a sensible home Region for labs  
 - [ ] Decide when to use the AWS CLI versus CloudShell, and run read-only discovery
 
-
-
 ## Architecture
+
+
 
 
 
@@ -100,9 +102,9 @@ This topic’s control points and relationships are shown below.
 
 ![AWS global infrastructure](../assets/excalidraw/aws-global-infrastructure.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -158,48 +160,98 @@ Cloud and DevOps work is Regional by default. Pipelines, Terraform state, EC2, a
 - Assuming CloudShell replaces a proper CLI/SSO setup for production automation  
 - Believing edge locations alone make an application multi-AZ resilient
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **AWS Fundamentals and Global Infrastructure** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-01`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-01 && cd ~/rebash-aws/module-01
 ```
 
-**Focus:** verify identity and explore regions with describe APIs
+### Real-world scenario
 
-### Step 1 – Caller identity and regions
+Security asks for evidence that **AWS Fundamentals and Global Infrastructure** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
+aws sts get-caller-identity | tee identity.json
 aws configure get region || true
-aws ec2 describe-regions --query 'Regions[].RegionName' --output text | tr '	' '
-' | head
+test -s identity.json
 ```
 
-### Step 2 – Record lab notes (no create)
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-cat > notes.md << 'EOF'
-- Region choice affects latency, services, and data residency
-- AZ codes are account-mapped
-- Prefer STS/OIDC over long-lived access keys
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
+cat notes.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -209,9 +261,9 @@ EOF
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -226,9 +278,9 @@ Production practice for **AWS Fundamentals and Global Infrastructure** always co
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -239,9 +291,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -255,9 +307,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -268,9 +320,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -283,18 +335,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **AWS Fundamentals and Global Infrastructure** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Region versus Availability Zone versus Local Zone?
@@ -309,9 +361,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Prefer short-lived credentials (SSO/OIDC). Limit allowed regions via SCP where appropriate.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -319,9 +371,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
 
-
-
 ## References
+
+
 
 
 

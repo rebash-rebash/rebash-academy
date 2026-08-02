@@ -44,24 +44,32 @@ comments: false
 
 
 
+
+
+
+
 Design a GitOps layout where Argo CD or Flux renders a Helm chart from Git (or OCI) with per-environment values — CI builds images, GitOps upgrades values.
 
 GitOps controllers can install Helm charts as first-class releases. Keep chart source and env values in Git; avoid `helm upgrade` from laptops for production.
 
 This is a core tutorial in **Module 10 · GitOps Integration** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Helm Security](helm-security.md)
 - [GitOps fundamentals](../git/gitops-fundamentals.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -72,9 +80,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Lay out multi-env values  
 - [ ] Explain progressive delivery options
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -82,9 +92,11 @@ This topic’s control points and relationships are shown below.
 
 ![Helm + GitOps](../assets/excalidraw/helm-gitops-workflow.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -131,53 +143,102 @@ Prefer controller-managed upgrades for production; reserve direct Helm CLI for b
 - Putting secrets in Git “because GitOps needs them” — use sealed/SOPS/external secrets patterns.
 - Path mistakes in Argo CD `valueFiles` (relative paths are easy to get wrong).
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm GitOps Integration**.
+
+### Prerequisites
+
+- helm CLI
+- kubectl + lab cluster
+- Ability to create namespaces
+
+### Lab environment
+
+Workspace: `~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}`
+
+Helm 3 against kind/minikube; release namespace `rebash-helm`.
 
 ```bash
 mkdir -p ~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod} && cd ~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}
 ```
 
-**Focus:** Render Helm to plain YAML for a GitOps-friendly commit layout
+### Real-world scenario
 
-### Step 1 – Template a chart into a manifests directory
+A team wants **Helm GitOps Integration** packaged as a chart so GitOps can promote the same artefact across environments.
+
+### Step-by-step tasks
+
+#### Task 1 – Create and lint a chart
+
+Scaffold a chart and fail the build on lint errors before install.
 
 ```bash
-kubectl create namespace rebash-helm
-helm create gitops-demo
-mkdir -p gitops/lab
-helm template demo ./gitops-demo -n rebash-helm --set replicaCount=2 > gitops/lab/all.yaml
-head -n 40 gitops/lab/all.yaml
-git init -b main
-git add gitops
-git -c user.email=lab@rebash.local -c user.name=Lab commit -m "Render Helm manifests for GitOps"
+helm version
+helm create labchart
+helm lint ./labchart | tee lint.txt
+helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
 ```
 
-### Step 2 – Apply rendered manifests and compare with a Helm release approach
+**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+
+#### Task 2 – Install with values override
+
+Prove values change rendered replicas, then install with wait.
 
 ```bash
-kubectl apply -f gitops/lab/all.yaml
-kubectl -n rebash-helm get deploy
-echo "GitOps tools often render Helm in CI or use helm-controller — avoid double-managing the same objects"
-# Optional: same chart via Helm for comparison
-helm upgrade --install demo ./gitops-demo -n rebash-helm --set replicaCount=2 || true
+kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
+cat > myvalues.yaml << 'EOF'
+replicaCount: 2
+EOF
+helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
+helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
+helm list -n rebash-helm
+kubectl get deploy -n rebash-helm
 ```
 
-### Final step – Cleanup note
+**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+
+### Validation steps
+
+- [ ] helm lint clean
+- [ ] Release listed in namespace
+- [ ] Uninstall removes the release
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
+| lint failed | Template YAML break | Fix templates; re-run helm lint |
+| context deadline | Slow cluster | Increase --timeout or fix readiness |
+
+### Challenge exercise
+
+Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+
+### Learning outcomes
+
+- Packaged Kubernetes YAML as a chart
+- Overrode values safely
+- Cleaned up the release
+
+### Cleanup
 
 ```bash
-helm uninstall demo -n rebash-helm --ignore-not-found || true
+helm uninstall labchart -n rebash-helm 2>/dev/null || true
 kubectl delete namespace rebash-helm --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -186,9 +247,11 @@ kubectl delete namespace rebash-helm --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -202,9 +265,11 @@ Production practice for **Helm GitOps Integration** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -214,9 +279,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -229,9 +296,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -241,9 +310,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -255,17 +326,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Helm GitOps Integration** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How can Helm fit a GitOps workflow?
@@ -280,18 +355,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Secrets should not live in plain values committed to Git. Use sealed secrets, external operators, or SOPS so GitOps can sync without exposing credentials.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Production Helm Practices](production-helm-practices.md)
 
-
-
 ## References
+
+
+
+
 
 
 

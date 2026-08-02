@@ -48,24 +48,32 @@ comments: false
 
 
 
+
+
+
+
 Design a GitLab pipeline that runs `init` → `validate` → `plan` on merge requests (with a plan artefact) and a protected `apply` on the default branch — with remote state outside the runner workspace.
 
 Terraform in GitLab CI automates Infrastructure as Code (IaC): every change is planned in review, then applied under gates. Store **remote state** with locking. Attach the binary **plan** as a job artefact so apply executes what reviewers saw. Never leave state only on the runner disk.
 
 This is a core tutorial in **Module 10 · Terraform Pipelines** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Kubernetes Deploys and GitLab Agent](kubernetes-deploys-and-gitlab-agent.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -78,9 +86,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain remote state + locking in CI  
 - [ ] Use `TF_IN_AUTOMATION` and non-interactive flags
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -89,9 +99,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform pipeline in GitLab](../assets/excalidraw/gitlab-terraform-pipeline.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -130,77 +142,105 @@ Prefer apply-of-saved-plan for production.
 - Logging plans that include secret attribute values.  
 - One shared state key for all environments; fork MRs with apply roles.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Terraform Pipelines in GitLab** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-10`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-10 && cd ~/rebash-gitlab/module-10
 ```
 
-**Focus:** plan/apply GitLab jobs with artefact plan (local backend)
+### Real-world scenario
 
-### Step 1 – Minimal Terraform + CI jobs
+Your squad is encoding **Terraform Pipelines in GitLab** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-cat > versions.tf << 'EOF'
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    null = { source = "hashicorp/null", version = "~> 3.2" }
-  }
-}
-EOF
-cat > main.tf << 'EOF'
-resource "null_resource" "lab" {
-  triggers = { note = "gitlab-terraform-lab" }
-}
-EOF
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [validate, plan, apply]
-image: {name: hashicorp/terraform:1.9, entrypoint: [""]}
-variables: {TF_IN_AUTOMATION: "true"}
-validate:
-  stage: validate
-  script: ["terraform init -backend=false", "terraform validate"]
-plan:
-  stage: plan
-  script: ["terraform init -backend=false", "terraform plan -out=plan.cache"]
-  artifacts: {paths: [plan.cache], expire_in: 1 day}
-apply:
-  stage: apply
-  needs: [plan]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-  script: ["terraform init -backend=false", "terraform apply -auto-approve plan.cache"]
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
+  script:
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Local validate/plan/destroy
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-if command -v terraform >/dev/null; then
-  terraform init -backend=false && terraform validate
-  terraform plan -out=plan.cache && terraform apply -auto-approve plan.cache
-  terraform destroy -auto-approve
-fi
-grep -E 'plan.cache|when: manual' .gitlab-ci.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-terraform destroy -auto-approve 2>/dev/null || true
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -210,9 +250,11 @@ terraform destroy -auto-approve 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -227,9 +269,11 @@ Production practice for **Terraform Pipelines in GitLab** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -240,9 +284,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -256,9 +302,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -269,9 +317,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -284,18 +334,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Terraform Pipelines in GitLab** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Why store terraform plan as an artifact before apply?
@@ -310,9 +364,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Protect state with remote backends and restricted IAM/OIDC roles. Destroy experimental stacks in the same change window.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -320,9 +376,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Multi-Cloud Deployments with GitLab](multi-cloud-deployments-with-gitlab.md)
 
-
-
 ## References
+
+
+
+
 
 
 

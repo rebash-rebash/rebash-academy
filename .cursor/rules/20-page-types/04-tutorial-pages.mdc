@@ -1,3 +1,668 @@
 ---
-alwaysApply: true
+description: Intelligent tutorial page generation system for REBASH Academy
+alwaysApply: false
 ---
+
+# REBASH Academy Tutorial Page System
+
+## Canonical format (mandatory)
+
+Body structure and quality bar:
+
+- `.cursor/prompts/tutorial-format-linux.md` (all technologies)
+- `.cursor/rules/00-foundation/09-content-quality-standard.mdc`
+- `.cursor/prompts/CONTENT_QUALITY.md`
+
+Hands-on Lab: topic-specific, copy-paste executable, full subsection list (Objective → Cleanup). No note-taking labs.  
+Interview Questions: 5–8 topic-specific + 2–3 sample answers.  
+Diagrams: Excalidraw only (never D2/Mermaid for tutorials).
+
+Prefer Codex for content generation until the user changes agents.
+
+## Purpose
+
+This rule defines how tutorial pages should be generated.
+
+A tutorial teaches learners how to accomplish one specific goal through guided, hands-on practice.
+
+Tutorials should always be outcome-driven.
+
+Learners should finish with a working result.
+
+---
+
+# Philosophy
+
+Every tutorial should answer
+
+↓
+
+What are we building?
+
+↓
+
+Why are we building it?
+
+↓
+
+What do I need?
+
+↓
+
+How do I build it?
+
+↓
+
+How do I verify it?
+
+↓
+
+What can go wrong?
+
+↓
+
+How do I improve it?
+
+↓
+
+Where do I go next?
+
+---
+
+# Learning Journey
+
+Every tutorial should follow
+
+Goal
+
+↓
+
+Prerequisites
+
+↓
+
+Architecture
+
+↓
+
+Environment Setup
+
+↓
+
+Implementation
+
+↓
+
+Validation
+
+↓
+
+Troubleshooting
+
+↓
+
+Production Improvements
+
+↓
+
+Challenge
+
+↓
+
+Summary
+
+↓
+
+Next Tutorial
+
+---
+
+# Hero Section
+
+Automatically include
+
+Tutorial Title
+
+Short Description
+
+Goal
+
+Difficulty
+
+Estimated Time
+
+Technologies
+
+Required Environment
+
+Version
+
+Last Updated
+
+Primary CTA
+
+Secondary CTA
+
+---
+
+# Learning Goal
+
+Clearly explain
+
+Business Problem
+
+Real-world Scenario
+
+Expected Result
+
+Success Criteria
+
+Learners should know exactly what they will achieve.
+
+---
+
+# Prerequisites
+
+Separate into
+
+Required
+
+Recommended
+
+Optional
+
+Include
+
+Knowledge
+
+Software
+
+Accounts
+
+Permissions
+
+Environment
+
+Link prerequisite tutorials where available.
+
+---
+
+# Expected Outcome
+
+Show learners
+
+What they will build
+
+Architecture
+
+Screenshots
+
+Expected Output
+
+Deployment Result
+
+Success Indicators
+
+Set clear expectations.
+
+---
+
+# Environment Setup
+
+Automatically generate
+
+System Requirements
+
+Installation
+
+Configuration
+
+Dependencies
+
+Verification
+
+Environment Validation
+
+Support
+
+Linux
+
+macOS
+
+Windows
+
+Docker
+
+Cloud
+
+---
+
+# Architecture
+
+Include
+
+Architecture Diagram
+
+Workflow Diagram
+
+Component Overview
+
+Data Flow
+
+Deployment Flow
+
+Visual learning improves understanding.
+
+---
+
+# Implementation Strategy
+
+Always teach progressively
+
+Planning
+
+↓
+
+Step-by-Step Implementation
+
+↓
+
+Validation
+
+↓
+
+Production Improvements
+
+↓
+
+Reflection
+
+Never skip intermediate explanations.
+
+---
+
+# Step Structure
+
+Every implementation step should include
+
+Step Number
+
+Objective
+
+Explanation
+
+Commands
+
+Code
+
+Expected Output
+
+Validation
+
+Common Mistakes
+
+Next Step
+
+Each step should build confidence.
+
+---
+
+# Code Examples
+
+Every example should include
+
+Filename
+
+Directory
+
+Explanation
+
+Code
+
+Expected Output
+
+Validation
+
+Production Notes
+
+Security Notes
+
+Avoid unexplained snippets.
+
+---
+
+# Commands
+
+Every command should include
+
+Purpose
+
+Syntax
+
+Example
+
+Expected Output
+
+Verification
+
+Common Errors
+
+Commands should resemble real terminal sessions.
+
+---
+
+# Validation
+
+After every major step include
+
+Expected Result
+
+Verification Commands
+
+Logs
+
+Screenshots
+
+Troubleshooting
+
+Learners should always know if they succeeded.
+
+---
+
+# Troubleshooting
+
+Explain
+
+Problem
+
+Symptoms
+
+Diagnosis
+
+Resolution
+
+Verification
+
+Prevention
+
+Teach systematic debugging.
+
+---
+
+# Production Improvements
+
+After completing the tutorial explain
+
+Security Improvements
+
+Performance Optimisation
+
+Scalability
+
+Automation
+
+Monitoring
+
+Logging
+
+Reliability
+
+Cost Optimisation
+
+Move learners beyond the basic solution.
+
+---
+
+# Challenge
+
+Always include optional challenges.
+
+Examples
+
+Improve performance
+
+Secure the deployment
+
+Add monitoring
+
+Support multiple environments
+
+Automate deployment
+
+Refactor configuration
+
+Encourage experimentation.
+
+---
+
+# Best Practices
+
+Explain
+
+Security
+
+Performance
+
+Maintainability
+
+Observability
+
+Scalability
+
+Reliability
+
+Documentation
+
+Every tutorial should reinforce professional engineering habits.
+
+---
+
+# Summary
+
+Summarise
+
+What was built
+
+Key Concepts
+
+Important Commands
+
+Production Lessons
+
+Common Mistakes
+
+Key Takeaways
+
+Keep summaries concise.
+
+---
+
+# Next Learning
+
+Automatically recommend
+
+Related Tutorials
+
+Labs
+
+Projects
+
+Technology Pages
+
+Interview Questions
+
+Certification Topics
+
+Learning Paths
+
+Guide learners naturally.
+
+---
+
+# Navigation
+
+Every tutorial should include
+
+Breadcrumbs
+
+Table of Contents
+
+Sticky Navigation
+
+Previous Tutorial
+
+Next Tutorial
+
+Related Content
+
+Feedback
+
+Search
+
+---
+
+# Responsive Behaviour
+
+Desktop
+
+Full learning workspace
+
+Tablet
+
+Simplified navigation
+
+Mobile
+
+Single-column tutorial
+
+Touch-friendly interactions
+
+Maintain readability throughout.
+
+---
+
+# Accessibility
+
+Support
+
+Keyboard Navigation
+
+Screen Readers
+
+Accessible Code Blocks
+
+High Contrast
+
+Reduced Motion
+
+Accessible Diagrams
+
+Accessibility is mandatory.
+
+---
+
+# AI Decision Making
+
+Before generating determine
+
+↓
+
+Tutorial Goal
+
+↓
+
+Technology
+
+↓
+
+Audience
+
+↓
+
+Difficulty
+
+↓
+
+Environment
+
+↓
+
+Architecture Needs
+
+↓
+
+Hands-on Opportunities
+
+↓
+
+Validation Strategy
+
+↓
+
+Production Relevance
+
+↓
+
+Generate
+
+---
+
+# Anti-patterns
+
+Never
+
+Write documentation instead of tutorials
+
+Skip prerequisites
+
+Skip validation
+
+Skip troubleshooting
+
+Provide unexplained commands
+
+End after implementation
+
+Ignore production practices
+
+Skip challenges
+
+Overwhelm beginners
+
+Leave learners without next steps
+
+---
+
+# Validation Checklist
+
+Before completing verify
+
+✓ Goal clearly defined
+
+✓ Prerequisites included
+
+✓ Architecture explained
+
+✓ Environment setup complete
+
+✓ Steps progressive
+
+✓ Validation after every major step
+
+✓ Troubleshooting included
+
+✓ Production improvements provided
+
+✓ Challenge included
+
+✓ Summary complete
+
+✓ Next learning recommended
+
+---
+
+# Success Criteria
+
+Every REBASH Academy tutorial should feel like a guided workshop.
+
+Learners should successfully build a working solution, validate each milestone, understand why every step matters, recover from common mistakes and finish with a production-ready implementation that they can confidently extend in real-world engineering environments.

@@ -47,23 +47,31 @@ comments: false
 
 
 
+
+
+
+
 Provision managed Kubernetes clusters and node pools with Terraform, understand the kubernetes and helm providers, and draw a clear boundary where GitOps owns in-cluster desired state.
 
 Terraform shines at **cluster infrastructure**: control plane, node pools, IAM for the API server, and add-on plumbing at the cloud edge. In-cluster workloads usually belong to **GitOps** (Argo CD / Flux) with Helm charts — not endless `kubernetes_*` resources in the same root that created the cluster. Use the kubernetes/helm providers sparingly for bootstrap (for example CRDs or controllers that GitOps then manages).
 
 This is a core tutorial in **Module 18 · Kubernetes Infrastructure** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Multi-Cloud Terraform](multi-cloud-terraform.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -74,9 +82,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe helm provider use for bootstrap only  
 - [ ] Draw the GitOps boundary after cluster create
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -84,9 +94,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform and Kubernetes](../assets/excalidraw/terraform-kubernetes.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -164,88 +176,113 @@ provider "kubernetes" {
 - Letting Terraform and Argo CD both own the same Deployment.  
 - Untested control-plane version bumps in production without a staging cluster.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Kubernetes Infrastructure with Terraform** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-18`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-18 && cd ~/rebash-terraform/module-18
 ```
 
-**Focus:** Represent Kubernetes-oriented objects as local files (no live cluster provider required)
+### Real-world scenario
 
-### Step 1 – Generate namespace and deployment manifests from Terraform
+You are automating **Kubernetes Infrastructure with Terraform** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-variable "namespace" {
-  type    = string
-  default = "rebash-lab"
-}
-resource "local_file" "namespace" {
-  filename = "${path.module}/manifests/namespace.yaml"
-  content  = <<-EOT
-    apiVersion: v1
-    kind: Namespace
-    metadata:
-      name: ${var.namespace}
-  EOT
-}
-resource "local_file" "deploy" {
-  filename = "${path.module}/manifests/deploy.yaml"
-  content  = <<-EOT
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: demo
-      namespace: ${var.namespace}
-    spec:
-      replicas: 1
-      selector:
-matchLabels:
-  app: demo
-      template:
-metadata:
-  labels:
-    app: demo
-spec:
-  containers:
-  - name: nginx
-    image: nginx:1.27-alpine
-  EOT
-}
 EOF
-mkdir -p manifests
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
+}
+output "note" { value = null_resource.lab.triggers.topic }
+EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply and optionally dry-run with kubectl if available
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-ls -la manifests/
-head -n 20 manifests/deploy.yaml
-if command -v kubectl >/dev/null; then kubectl apply --dry-run=client -f manifests/; else echo "kubectl optional for dry-run"; fi
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -254,9 +291,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -270,9 +309,11 @@ Production practice for **Kubernetes Infrastructure with Terraform** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -282,9 +323,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -297,9 +340,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -309,9 +354,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -323,17 +370,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Kubernetes Infrastructure with Terraform** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How can Terraform manage Kubernetes objects?
@@ -348,18 +399,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Kubeconfig or cloud tokens in CI are powerful. Scope RBAC, prefer short-lived auth, and keep cluster-admin usage rare.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Production Terraform Patterns](production-terraform-patterns.md)
 
-
-
 ## References
+
+
+
+
 
 
 

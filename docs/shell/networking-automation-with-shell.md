@@ -1,21 +1,26 @@
 ---
 title: "Networking Automation with Shell"
-description: "Automate connectivity checks and transfers with ping, curl, wget, nc, dig, SSH, SCP, and rsync."
+description: "Build curl health checks with retries and timeouts, and capture safe ss/ip snapshots for troubleshooting."
 difficulty: intermediate
-estimated_time: "50 min"
+estimated_time: "50–55 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: shell
+technology: shell
+module: "Module 13 · Networking Automation"
 tags:
   - shell
   - bash
+  - networking
   - curl
-  - ssh
-  - rsync
-  - dns
+  - ss
 prerequisites:
-  - Linux Administration Automation
-  - Bash 4.2+ on Linux (WSL2/VM/cloud)
+  - shell/linux-admin-automation
+next:
+  - shell/json-and-yaml-with-jq-yq
+related:
+  - shell/troubleshooting-shell-scripts
+interview: interview/shell
 comments: false
 ---
 
@@ -23,194 +28,382 @@ comments: false
 
 ## Overview
 
-Health checks, artifact pulls, and remote ops all start as shell networking. Timeouts and exit codes matter more than clever curl flags.
+DevOps and platform work depends on the network: **Can this URL answer? Which sockets are listening? What is the host’s address?** Doing that by hand is fine once; scripts make it repeatable for Continuous Integration (CI), smoke tests after deploy, and incident notes. This tutorial focuses on **safe** networking automation: `curl` health checks with **timeouts and retries**, plus read-only `ss` / `ip` snapshots. You will **not** change firewall rules.
 
-This is **Tutorial 13** in **Module 13: Networking Automation** of the REBASH Academy **Shell Scripting for DevOps Engineers** series — written for Linux administrators, DevOps engineers, SREs, and platform engineers who automate production hosts with Bash.
+This is **Tutorial 13** in **Module 13: Networking Automation** of the REBASH Academy **Shell Scripting for DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers. By the end, you will have a health-check script and evidence under `~/rebash-shell/lab13`.
+
+In production, a hung `curl` without `--max-time` can block a whole pipeline. Retries without a limit can amplify an outage. Destructive firewall commands on a shared jump server can lock everyone out. Prefer observe-and-report first; change network policy through reviewed Infrastructure as Code (IaC) or a change ticket.
 
 ## Prerequisites
 
-- Linux Administration Automation
-- Bash 4.2+ on Linux (WSL2/VM/cloud)
+- [Linux Admin Automation](linux-admin-automation.md)
+- Bash 4.2+ on Linux with outbound HTTPS allowed for a public test URL (or a local endpoint you control)
+- Packages: `curl`; prefer `iproute2` (`ip`, `ss`) over legacy `net-tools`
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Networking Automation with Shell” in a real ops script
-- [ ] Use `set -euo pipefail` as the production default
-- [ ] Use quoted expansions and clear stderr diagnostics
-- [ ] Produce meaningful exit codes for automation consumers
-- [ ] Debug behaviour with `bash -x` when something fails
-- [ ] Relate this topic to day-to-day Linux admin and DevOps work
+- [ ] Write a `curl`-based health check with connect/max timeouts
+- [ ] Retry failed checks with a limited loop and clear exit codes
+- [ ] Capture a read-only `ss` and `ip` snapshot for troubleshooting
+- [ ] Avoid destructive firewall or routing changes in smoke scripts
+- [ ] Explain when to use `curl` versus deeper tools (`dig`, SSH, `rsync`)
 
 ## Architecture
 
-Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
+Shell networking helpers call remote endpoints and local sockets, then write evidence. Timeouts and retries protect the caller; snapshots help humans debug without changing the host.
 
-![Architecture diagram for Networking Automation with Shell](../assets/excalidraw/shell-automation-workflow.svg)
+![Architecture diagram for Networking Automation with Shell](../assets/excalidraw/shell-networking-automation.svg)
 
 ## Theory
 
 ### What it is
 
-**Networking automation with the shell** means probing reachability, resolving names, calling HTTP APIs, and moving files over SSH — all from scripts that must succeed or fail clearly. Typical tools include `ping` and `nc` for connectivity checks, `dig` / `getent` for Domain Name System (DNS), `curl` or `wget` for transfers and APIs, and `ssh` / `rsync` for remote command execution and synchronisation. These commands are the first line of diagnosis when an application “cannot connect”.
+**Networking automation with shell** means using CLI tools from scripts to test reachability and gather facts. Core tools include:
+
+- **`curl`** — HTTP/HTTPS client (health checks, APIs)
+- **`ping`** — ICMP reachability (often blocked in clouds)
+- **`ss` / `ip`** — sockets and addresses (modern replacement for `netstat` / `ifconfig`)
+- **`dig` / `getent hosts`** — Domain Name System (DNS) lookups
+- **SSH / `scp` / `rsync`** — remote access and file sync (use with key hygiene; not the focus of the lab)
+
+```bash
+curl -fsS --connect-timeout 3 --max-time 10 -o /dev/null -w '%{http_code}\n' https://example.com
+ss -lntu
+ip -br addr
+```
 
 ### Why it matters
 
-Most production incidents labelled as application bugs start as DNS, firewall, or timeout problems. Scripts that call APIs without timeouts hang Continuous Integration (CI) runners; SSH prompts for passwords freeze unattended jobs; copying trees with `scp` instead of `rsync` wastes time and handles resumes poorly. Encoding network checks with explicit timeouts and non-interactive SSH options turns tribal knowledge into repeatable runbooks that DevOps and Site Reliability Engineering (SRE) teams can schedule and review.
+Deploy pipelines need a quick “is the service up?” check. Incidents need a timestamped picture of listening ports and addresses. Without timeouts, scripts hang. Without capped retries, one blip fails a release or floods a dying service. Without discipline, someone pastes a firewall flush “fix” into a shared script and causes a bigger outage.
 
 ### How it works
 
-Start with DNS before blaming the app: `dig +short` or `getent hosts`. Use `ping -c 3 host` for Internet Control Message Protocol (ICMP) reachability when ICMP is allowed — many clouds block it. Probe Transmission Control Protocol (TCP) ports with `nc -zv host port` (or equivalent). For HTTP, prefer `curl` with failure-on-error and hard limits:
+1. **Health check** — `curl` with `-f` (fail on HTTP errors), `-S` (show errors), timeouts, and `-w` for status code.  
+2. **Retries** — loop a few times with `sleep`; cap attempts; exit non-zero if all fail.  
+3. **Local snapshot** — `ip -br addr`, `ss -lntu` (listening TCP/UDP) into files.  
+4. **DNS (optional)** — `getent hosts name` or `dig +short` when debugging names.  
+5. **Remote file ops** — `scp` / `rsync` for copies; keep keys and host-key policy under team standards.
 
 ```bash
-curl -fsSL --connect-timeout 5 --max-time 30 "$url"
+for i in 1 2 3; do
+  code=$(curl -fsS --connect-timeout 3 --max-time 10 \
+    -o /dev/null -w '%{http_code}' "$URL") && break
+  sleep 2
+done
 ```
 
-`-f` makes HTTP error statuses fail the command. `wget` remains fine for simple file fetches; always set timeouts either way.
+Do **not** open or flush firewalls from a smoke-test script.
 
-For remote work:
+### Key concepts and comparisons
 
-```bash
-ssh -o BatchMode=yes -o ConnectTimeout=5 host 'uname -a'
-rsync -az --delete src/ host:dst/
-```
+| Tool | Use | Caution |
+|------|-----|---------|
+| `curl` | HTTP(S) health and APIs | Always set timeouts |
+| `ping` | Quick ICMP check | Often blocked; not equal to “app up” |
+| `ss` | Listening / established sockets | Read-only snapshot |
+| `ip` | Addresses and routes | Prefer `ip` over `ifconfig` |
+| `dig` | DNS debugging | Cache vs authoritative answers |
+| SSH/`rsync` | Remote ops | Key hygiene; least privilege |
 
-`BatchMode=yes` fails fast instead of waiting for a password. Prefer `rsync` over `scp` for directory trees, deletes, and resumes. Log probe results to stderr; keep machine-readable summaries on stdout when another tool will parse them.
-
-### Key concepts
-
-| Tool | Role |
-|------|------|
-| `dig` / `getent` | DNS resolution checks |
-| `ping` / `nc` | ICMP / TCP connectivity probes |
-| `curl` / `wget` | HTTP APIs and downloads with timeouts |
-| `ssh` + `BatchMode` | Non-interactive remote commands |
-| `rsync` | Efficient, resumable remote sync |
+| Pattern | Prefer when | Avoid when |
+|---------|-------------|------------|
+| Timeouts + capped retries | CI smoke tests | Infinite retry loops |
+| `ss`/`ip` snapshot | Incident evidence | Changing firewall in the same script |
+| HTTPS URL you control | Production checks | Hitting random third parties without policy |
+| Exit non-zero on failure | Gates and alerts | Always swallowing errors with `\|\| true` |
 
 ### Common pitfalls
 
-- Omitting `--connect-timeout` / `--max-time` so hung sockets block the job forever
-- Assuming `ping` failure means the host is down when ICMP is filtered
-- Interactive SSH in cron that waits indefinitely for a password
-- Using `scp` for large trees instead of `rsync`
-- Printing secrets or tokens in verbose `curl -v` logs
+- `curl` without `--max-time` hanging a job forever.
+- Treating HTTP 200 from a load balancer as “app healthy” without a real health path.
+- Using `ping` alone as the only readiness check.
+- Changing `iptables`/`nftables` or `ufw` from a tutorial smoke script.
+- Printing tokens from `Authorization` headers into logs.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+Build `healthcheck.sh` that retries `curl` against a URL with timeouts, prove success and failure paths, and capture a safe `ss`/`ip` snapshot under `~/rebash-shell/lab13`. No firewall changes.
+
+### Prerequisites
+
+- `curl`, `ss`, `ip` (from `iproute2` on Ubuntu)
+- Outbound HTTPS to `https://example.com` (or set `URL` to another safe endpoint)
+
+### Lab environment
+
+Workspace: `~/rebash-shell/lab13`
 
 ```bash
 mkdir -p ~/rebash-shell/lab13 && cd ~/rebash-shell/lab13
+set -euo pipefail
+command -v curl | tee curl-path.txt
+command -v ss | tee ss-path.txt
+command -v ip | tee ip-path.txt
 ```
 
-**Focus:** curl with timeouts; dig/nc probes; SSH BatchMode; rsync dry-run
+**Expected output:** Paths for `curl`, `ss`, and `ip` are recorded.
 
-### Step 1 – Network probes
+### Real-world scenario
+
+After each deploy to a practice VM, CI should confirm the health URL answers within a few seconds. If the check fails a few times, the job fails. Operators also want a listening-port snapshot attached to the ticket — without anyone touching the firewall.
+
+### Step-by-step tasks
+
+#### Task 1 – curl health check with retries and timeouts
 
 ```bash
-cat > net.sh << 'EOF'
+cd ~/rebash-shell/lab13
+set -euo pipefail
+
+cat > healthcheck.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-dig +short example.com | head | tee dns.txt || getent hosts example.com | tee dns.txt
-curl -fsS --connect-timeout 5 --max-time 15 -o /dev/null -w 'http=%{http_code}\n' https://example.com
-# local TCP smoke (may fail if nothing listens — ok):
-nc -z -w 2 127.0.0.1 22 && echo 'ssh port open' || echo 'ssh port closed'
-echo 'rsync dry-run local:'
-mkdir -p src dst
-echo x > src/f
-rsync -an src/ dst/
+
+URL="${URL:-https://example.com}"
+RETRIES="${RETRIES:-3}"
+SLEEP_SECS="${SLEEP_SECS:-2}"
+CONNECT_TIMEOUT="${CONNECT_TIMEOUT:-3}"
+MAX_TIME="${MAX_TIME:-10}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RESULT_FILE="${RESULT_FILE:-$ROOT/health-result.txt}"
+
+: > "$RESULT_FILE"
+attempt=1
+code="000"
+while (( attempt <= RETRIES )); do
+  set +e
+  code=$(curl -fsS \
+    --connect-timeout "$CONNECT_TIMEOUT" \
+    --max-time "$MAX_TIME" \
+    -o /dev/null \
+    -w '%{http_code}' \
+    "$URL" 2>"$ROOT/curl-stderr.txt")
+  ec=$?
+  set -e
+  echo "attempt=${attempt} curl_exit=${ec} http_code=${code}" | tee -a "$RESULT_FILE"
+  if [[ "$ec" -eq 0 && "$code" =~ ^[23][0-9][0-9]$ ]]; then
+    echo "health=OK url=${URL} http_code=${code}" | tee -a "$RESULT_FILE"
+    exit 0
+  fi
+  if (( attempt < RETRIES )); then
+    sleep "$SLEEP_SECS"
+  fi
+  attempt=$((attempt + 1))
+done
+
+echo "health=FAIL url=${URL} last_http_code=${code}" | tee -a "$RESULT_FILE"
+exit 1
 EOF
-chmod +x net.sh
-./net.sh
+chmod +x healthcheck.sh
+
+RESULT_FILE="$PWD/health-result.txt" URL=https://example.com ./healthcheck.sh
+grep -q 'health=OK' health-result.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** `health-result.txt` contains `health=OK` and an HTTP 2xx/3xx code.
+
+#### Task 2 – Fail path with a bad URL
 
 ```bash
-# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-shell/lab13
+set -euo pipefail
+
+set +e
+RESULT_FILE="$PWD/health-result-fail.txt" \
+  URL=https://example.invalid \
+  RETRIES=2 SLEEP_SECS=1 CONNECT_TIMEOUT=2 MAX_TIME=3 \
+  ./healthcheck.sh
+ec=$?
+set -e
+echo "exit_code=$ec" | tee fail-exit.txt
+test "$ec" -ne 0
+grep -q 'health=FAIL' health-result-fail.txt
+```
+
+**Expected output:** Non-zero exit; `health-result-fail.txt` contains `health=FAIL`.
+
+#### Task 3 – ss/ip snapshot (read-only)
+
+```bash
+cd ~/rebash-shell/lab13
+set -euo pipefail
+
+{
+  echo "=== ip addresses ==="
+  ip -br addr
+  echo
+  echo "=== listening sockets (TCP/UDP) ==="
+  ss -lntu
+  echo
+  echo "=== DNS quick check ==="
+  getent hosts example.com || true
+} | tee net-snapshot.txt
+
+test -s net-snapshot.txt
+grep -Eq 'LISTEN|udp|TCP|tcp' net-snapshot.txt || grep -q 'addr' net-snapshot.txt
+
+tar -czf net-evidence.tgz \
+  curl-path.txt ss-path.txt ip-path.txt \
+  healthcheck.sh health-result.txt health-result-fail.txt fail-exit.txt \
+  net-snapshot.txt curl-stderr.txt
+ls -l net-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** `net-snapshot.txt` is non-empty; `net-evidence.tgz` exists. No firewall commands were run.
+
+### Validation steps
+
+- [ ] `./healthcheck.sh` succeeds against `https://example.com` (or your `URL`)
+- [ ] Bad URL path exits non-zero with `health=FAIL`
+- [ ] `net-snapshot.txt` includes `ip` and `ss` output
+- [ ] Lab used no `iptables`/`nft`/`ufw` changes
+- [ ] `net-evidence.tgz` exists under `~/rebash-shell/lab13`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `curl: (6) Could not resolve host` | DNS or offline | Check network; use a reachable `URL` |
+| Hang then CI timeout | Missing `--max-time` | Keep connect and max timeouts as in the lab |
+| `ss: command not found` | Old image / missing iproute2 | `sudo apt-get install -y iproute2` on Ubuntu practice VM |
+| False OK on HTTP 404 | Forgot `-f` | Keep `-fsS` so HTTP errors fail |
+| Corporate proxy errors | Proxy required | Export `https_proxy` per your lab network policy |
+
+### Challenge exercise
+
+Add optional header support: if `HEALTH_HEADER` is set (for example `X-Lab: rebash`), pass `-H "$HEALTH_HEADER"` to `curl`. Prove with a run that logs `header_set=yes` in the result file when the variable is present, and `header_set=no` when absent. Do not log secret bearer tokens.
+
+### Learning outcomes
+
+- Built a timeout-aware `curl` health check with capped retries
+- Proved both OK and FAIL paths with exit codes
+- Captured a read-only `ss`/`ip` snapshot for tickets
+- Avoided destructive firewall changes
+
+### Cleanup
+
+```bash
+cd ~/rebash-shell/lab13
+set -euo pipefail
+# Keep evidence if you want; otherwise:
+# rm -f net-evidence.tgz *.txt
+# Optional: rm -f healthcheck.sh
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-shell/lab13/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] You can relate this topic to a real DevOps or Linux admin task
+- [ ] Lab finished under `~/rebash-shell/lab13/` with evidence files
+- [ ] You can explain why `--connect-timeout` and `--max-time` matter
+- [ ] You can describe capped retries versus infinite loops
+- [ ] You know why smoke scripts should not change firewalls
 
 ## Code Walkthrough
 
-Production Bash for **Networking Automation with Shell** always combines:
+In real pipelines, networking smoke checks usually follow this order:
 
-1. A clear shebang (`#!/usr/bin/env bash`)
-2. Strict mode near the top (`set -euo pipefail`) from Module 2 onward
-3. Quoted expansions and explicit tests
-4. Functions with `local` for reusable behaviour
-5. Documented exit codes and stderr logging
+1. **Define URL and timeouts** — never rely on curl defaults alone  
+2. **Retry with a cap** — small sleep; fail clearly after N tries  
+3. **Record HTTP code and exit** — machines need exit codes; people need files  
+4. **Snapshot sockets/addresses** — attach to the ticket when debugging  
+5. **Leave policy alone** — firewall and routes change through review, not smoke scripts  
 
-Keep scripts short enough to review in a single merge request. When logic grows (complex JSON APIs, heavy state), hand off to Python and keep Bash as the launcher.
+SSH and `rsync` come next for remote file work; keep the same timeout and least-privilege habits.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env) as untrusted until validated
-- Never log secrets; prefer masked CI variables and secret stores
-- Prefer least privilege — do not require root for file-local tasks
-- Avoid `eval` and unquoted expansions in destructive commands
-- Validate paths stay under an allow-listed root before `rm` or overwrite
+- Do not put API tokens in command lines that appear in `ps` — prefer headers from a restricted env or a secret store  
+- Prefer HTTPS and certificate validation (`curl -f` without insecure `-k` in production)  
+- Snapshot files may show internal bind addresses — limit who can read them  
+- Never embed `iptables -F` / `ufw disable` in health scripts  
+- Validate `URL` schemes (`https://`) before calling curl in shared tools  
 
 ## Common Mistakes
 
-!!! warning "Skipping strict mode"
-    Cron and CI hide failures that an interactive terminal would show. **Fix:** start with `set -euo pipefail` from Module 2 onward.
+!!! warning "No timeout on curl"
+    The job hangs until an external limit kills it. **Fix:** always set `--connect-timeout` and `--max-time`.
 
-!!! warning "Unquoted path expansions"
-    Spaces and globs rewrite your command line. **Fix:** always `"$path"` / `"$@"`.
+!!! warning "Infinite retries"
+    You can DDoS your own failing service. **Fix:** cap attempts; alert after failure.
 
-!!! warning "Assuming interactive PATH"
-    Aliases and fancy PATH entries disappear under schedulers. **Fix:** set `PATH` or use absolute paths.
+!!! warning "Ping-only readiness"
+    ICMP can work while the app is down (or the opposite). **Fix:** hit the real HTTP health path.
+
+!!! warning "Firewall changes in a smoke script"
+    One mistake locks the host. **Fix:** read-only checks here; policy via IaC and tickets.
 
 ## Best Practices
 
-- One purpose per script; compose with functions or small binaries
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where scheduling may overlap
-- Pair every new script with a failing-path test you actually run
-- Run ShellCheck in CI before merging automation
+- One health script, parameters via environment variables  
+- Log attempt number, HTTP code, and final `health=OK|FAIL`  
+- Use `ss` and `ip` instead of deprecated `netstat`/`ifconfig` where possible  
+- Keep DNS debugging (`dig`) separate from the default smoke path  
+- Pair deploy jobs with a post-deploy health gate  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Works in terminal, fails in cron | PATH / cwd / env | Fingerprint env; set PATH |
-| `unbound variable` | `set -u` | Provide defaults or export vars |
-| Pipeline “succeeds” incorrectly | Missing `pipefail` | `set -o pipefail` |
-| `[[` unexpected operator | Running under `sh`/dash | Fix shebang to Bash |
+| Intermittent FAIL | Cold start / blip | Slightly increase retries; fix app flakiness |
+| Works on laptop, fails in CI | Egress / DNS / proxy | Fingerprint network in CI; set proxy |
+| `HTTP 000` | Connection never completed | Check stderr; timeouts; DNS |
+| Empty `ss` output | Permissions / namespace | Run on the host network namespace; check `ss -lntu` |
+| Certificate errors | Broken CA store / wrong host | Fix certs; avoid `-k` except in isolated labs |
 
 ## Summary
 
-**Networking Automation with Shell** is a core skill for Linux admins and DevOps engineers automating real hosts and pipelines. Practise the lab until the failure path is as familiar as the happy path, then continue the track.
+Networking automation in the shell should answer “is it up?” and “what does this host look like?” with timeouts, capped retries, and read-only snapshots. Leave firewall changes out of smoke tests. Next, parse structured config with [JSON and YAML with jq and yq](json-and-yaml-with-jq-yq.md).
 
 ## Interview Questions
 
-1. How does this topic show up in production Linux administration or CI?
-2. What failure mode appears if you ignore quoting or strict mode here?
-3. How would you test this behaviour under a minimal cron-like environment?
-4. When would you move this logic out of Bash into Python or another tool?
-5. What exit code contract would you document for teammates?
+**1. Why must production `curl` health checks set `--max-time` (and usually `--connect-timeout`)?**
 
-!!! tip "Sample answer — question 2"
-    Unquoted expansions and missing `pipefail` create silent or partial failures — especially under cron — that look healthy in monitoring until data is wrong.
+??? success "Reveal answer"
+    Without a max time, `curl` can block until TCP stalls for a long time, holding a CI runner or cron slot. `--connect-timeout` bounds the TCP/TLS connect phase; `--max-time` bounds the whole transfer. Together they make failure fast and predictable.
+
+**2. How do you design retries so they help without making an outage worse?**
+
+??? success "Reveal answer"
+    Cap attempts (for example 3), sleep briefly between tries, fail with a clear non-zero exit, and avoid thundering-herd loops across hundreds of runners. Retries absorb short blips; they should not hammer a dying dependency forever.
+
+**3. Why is `ping` alone a weak readiness check for an HTTPS API?**
+
+??? success "Reveal answer"
+    ICMP can be blocked while HTTP works, or ICMP can succeed while the application process is down. Readiness should call the real health endpoint (and check status codes) whenever possible.
+
+**4. What belongs in an incident “network snapshot” from a Linux host?**
+
+??? success "Reveal answer"
+    Timestamp, `ip -br addr` (and maybe routes), listening sockets via `ss -lntu`, and a DNS lookup for the failing name. That evidence helps compare “before/after” without changing firewall state.
+
+**5. When would you use `dig` in automation versus only `curl`?**
+
+??? success "Reveal answer"
+    Use `dig` (or `getent hosts`) when the failure looks like name resolution — wrong IP, NXDOMAIN, or split DNS. Use `curl` when you need application-level HTTP success. Many teams run a quick DNS assert before the HTTP gate.
+
+**6. Why should smoke scripts avoid changing `iptables`/`nftables`/`ufw`?**
+
+??? success "Reveal answer"
+    Smoke tests run often and sometimes in parallel. A bad rule or flush can drop SSH and lock operators out. Firewall policy belongs in reviewed IaC or a controlled change, with a rollback plan — not in a health-check script.
+
+**7. How do you keep secrets out of `curl` debug output?**
+
+??? success "Reveal answer"
+    Do not pass bearer tokens on the command line if you can avoid it; do not run `curl -v` in CI logs when headers contain credentials; redact result files. Prefer short-lived tokens from a secret store and log only status codes.
 
 ## Related Tutorials
 
-- [Shell Scripting for DevOps Engineers – Category Overview](index.md)
-- [Linux Administration Automation](linux-admin-automation.md) *(previous)*
+- [Shell Scripting for DevOps Engineers – Overview](index.md)
+- [Linux Admin Automation](linux-admin-automation.md) *(previous)*
 - [JSON and YAML with jq and yq](json-and-yaml-with-jq-yq.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [Troubleshooting Shell Scripts](troubleshooting-shell-scripts.md) *(related)*
 
 ## References
 
-- [GNU Bash manual](https://www.gnu.org/software/bash/manual/)
-- [POSIX shell command language](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html)
-- [ShellCheck](https://www.shellcheck.net/)
+- [curl man page](https://curl.se/docs/manpage.html) — timeouts and exit codes  
+- [`ss(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ss.8.html) — socket statistics  
+- [`ip(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip.8.html) — show / manipulate routing and devices  
 - Track index: [Shell Scripting for DevOps Engineers](index.md)

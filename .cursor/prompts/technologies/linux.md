@@ -1,5 +1,7 @@
 # Technology Definition
 
+> **Content quality:** When generating tutorials for this course, follow `.cursor/prompts/CONTENT_QUALITY.md`, `tutorial-format-linux.md`, and `create_lab.md`. Labs must be topic-specific and copy-paste executable — never a generic host baseline with only the title changed. Prefer Codex until the user changes agents.
+
 ## Course
 
 Linux for Cloud & DevOps Engineers

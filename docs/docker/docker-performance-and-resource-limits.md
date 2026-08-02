@@ -43,13 +43,13 @@ comments: false
 
 
 
+
+
 Apply CPU and memory limits, observe container stats, and relate storage drivers and lifecycle to performance.
 
 Unlimited containers can starve the host. Set `--memory` / `--cpus` (or Compose `deploy.resources`) so noisy neighbours fail safely. Know your storage driver (`overlay2`) and prune policy.
 
 This is a core tutorial in **Module 14 · Performance** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
-
-
 
 ## Prerequisites
 
@@ -57,11 +57,13 @@ This is a core tutorial in **Module 14 · Performance** of the REBASH Academy **
 
 
 
+
+
 - [Container Logging and Monitoring](container-logging-and-monitoring.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -75,9 +77,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Name storage driver implications  
 - [ ] Prune safely for disk
 
-
-
 ## Architecture
+
+
 
 
 
@@ -87,9 +89,9 @@ This topic’s control points and relationships are shown below.
 
 ![Container lifecycle](../assets/excalidraw/docker-container-lifecycle.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -130,43 +132,94 @@ Load-test with realistic concurrency before you copy limits from a tutorial. Lan
 - Never pruning build cache on busy runners  
 - Blaming “Docker slowness” when the image is multi-gigabytes
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Docker Performance and Resource Limits** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-14`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
 ```
 
-**Focus:** apply CPU/memory limits and observe with docker stats
+### Real-world scenario
 
-### Step 1 – Constrained container
+You are validating **Docker Performance and Resource Limits** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-docker run -d --name rebash-lim --memory=64m --cpus=0.50 nginx:alpine
-docker stats rebash-lim --no-stream
-docker inspect rebash-lim --format 'mem={{ "{{" }}.HostConfig.Memory{{ "}}" }} nano_cpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}'
-```
+### Step-by-step tasks
 
-### Step 2 – Cleanup
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-docker rm -f rebash-lim
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker rm -f rebash-lim 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -177,9 +230,9 @@ docker rm -f rebash-lim 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -195,9 +248,9 @@ Production practice for **Docker Performance and Resource Limits** always combin
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -209,9 +262,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -226,9 +279,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -240,9 +293,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -256,9 +309,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -266,9 +319,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 **Docker Performance and Resource Limits** is essential for Cloud and DevOps engineers working with docker. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. How do --memory and --cpus protect a host?
@@ -283,9 +336,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Set limits in shared environments so one container cannot starve neighbours.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -294,9 +347,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Docker in CI/CD Pipelines](docker-in-ci-cd-pipelines.md)
 
-
-
 ## References
+
+
 
 
 

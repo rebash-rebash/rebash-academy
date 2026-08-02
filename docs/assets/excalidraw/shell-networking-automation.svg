@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="220"
+     viewBox="0 0 820 220" role="img" aria-label="shell-networking-automation">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="410.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Shell networking automation</text>
+
+  <path d="M 42.8,72.5 L 172.7,72.6 Q 182.7,72.6 182.7,82.6 L 182.3,133.8 Q 182.3,143.8 172.3,143.8 L 42.1,142.5 Q 32.1,142.5 32.1,132.5 L 32.8,82.5 Q 32.8,72.5 42.8,72.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 40.2,70.8 L 169.5,70.3 Q 179.5,70.3 179.5,80.3 L 180.0,130.1 Q 180.0,140.1 170.0,140.1 L 39.2,140.1 Q 29.2,140.1 29.2,130.1 L 30.2,80.8 Q 30.2,70.8 40.2,70.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  <text x="105.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">DNS check</text>
+  <text x="105.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">dig / getent</text>
+
+  <path d="M 232.3,72.5 L 363.8,72.5 Q 373.8,72.5 373.8,82.5 L 373.4,132.2 Q 373.4,142.2 363.4,142.2 L 232.2,142.4 Q 222.2,142.4 222.2,132.4 L 222.3,82.5 Q 222.3,72.5 232.3,72.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 229.8,69.9 L 359.0,69.4 Q 369.0,69.4 369.0,79.4 L 369.8,129.9 Q 369.8,139.9 359.8,139.9 L 230.3,139.2 Q 220.3,139.2 220.3,129.2 L 219.8,79.9 Q 219.8,69.9 229.8,69.9 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="295.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">HTTP probe</text>
+  <text x="295.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">curl -fI</text>
+
+  <path d="M 422.8,72.4 L 552.1,72.2 Q 562.1,72.2 562.1,82.2 L 563.4,132.5 Q 563.4,142.5 553.4,142.5 L 423.7,142.5 Q 413.7,142.5 413.7,132.5 L 412.8,82.4 Q 412.8,72.4 422.8,72.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 419.9,69.1 L 550.5,69.1 Q 560.5,69.1 560.5,79.1 L 560.3,129.8 Q 560.3,139.8 550.3,139.8 L 420.2,140.9 Q 410.2,140.9 410.2,130.9 L 409.9,79.1 Q 409.9,69.1 419.9,69.1 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  <text x="485.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Socket view</text>
+  <text x="485.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">ss / ip</text>
+
+  <path d="M 613.5,72.1 L 772.8,72.3 Q 782.8,72.3 782.8,82.3 L 782.1,132.9 Q 782.1,142.9 772.1,142.9 L 612.6,142.6 Q 602.6,142.6 602.6,132.6 L 603.5,82.1 Q 603.5,72.1 613.5,72.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 609.5,70.7 L 769.9,69.3 Q 779.9,69.3 779.9,79.3 L 780.7,130.3 Q 780.7,140.3 770.7,140.3 L 609.5,139.9 Q 599.5,139.9 599.5,129.9 L 599.5,80.7 Q 599.5,70.7 609.5,70.7 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  <text x="690.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Report</text>
+  <text x="690.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">exit code · log</text>
+
+  <path d="M 180.0,105.0 L 193.1,105.0 L 205.7,105.5 L 220.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 220.0,105.0 L 213.1,109.0 M 220.0,105.0 L 213.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+  <path d="M 370.0,105.0 L 383.0,105.6 L 396.7,104.6 L 410.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 410.0,105.0 L 403.1,109.0 M 410.0,105.0 L 403.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+  <path d="M 560.0,105.0 L 573.1,106.2 L 587.1,105.5 L 600.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 600.0,105.0 L 593.1,109.0 M 600.0,105.0 L 593.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+  <text x="410.0" y="180.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Automate dig · curl · ss checks with clear exit codes</text>
+</svg>

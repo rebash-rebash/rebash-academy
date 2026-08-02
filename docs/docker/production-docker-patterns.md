@@ -45,15 +45,17 @@ comments: false
 
 
 
+
+
 Assemble a production checklist: immutable tags, hardened images, registry retention, volume backup, health/resources, and a path to orchestrators.
 
 Production Docker is a set of defaults: small scanned images, non-root, limits, health checks, CI promotion, and documented rollback. Compose may run small fleets; Kubernetes owns large scale.
 
 This is a core tutorial in **Module 17 · Production Docker** of the REBASH Academy **Docker for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -62,9 +64,9 @@ This is a core tutorial in **Module 17 · Production Docker** of the REBASH Acad
 - Modules 9–16 (Compose through troubleshooting)
 - [Docker Security Hardening](docker-security-hardening.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -78,9 +80,9 @@ By the end of this tutorial, you will be able to:
 - [ ] List scaling limits of single-host Docker  
 - [ ] Complete an operational excellence checklist
 
-
-
 ## Architecture
+
+
 
 
 
@@ -90,9 +92,9 @@ This topic’s control points and relationships are shown below.
 
 ![Production platform](../assets/excalidraw/docker-production-platform.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -131,51 +133,94 @@ Codify these patterns in a platform template repository so every new service inh
 - No resource limits “because the VM is big enough”  
 - Rollback plans that require a developer laptop
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Production Docker Patterns** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/module-17`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
 ```
 
-**Focus:** production-minded flags: restart policy, healthcheck
+### Real-world scenario
 
-### Step 1 – Production-shaped run
+You are validating **Production Docker Patterns** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
 
-```bash
-cat > Dockerfile << 'EOF'
-FROM nginx:alpine
-HEALTHCHECK --interval=5s --timeout=2s --retries=3 CMD wget -qO- http://127.0.0.1/ || exit 1
-EOF
-docker build -t rebash-prod:lab .
-docker run -d --name rebash-prod --restart=on-failure:3 -p 18085:80 rebash-prod:lab
-sleep 6
-docker inspect rebash-prod --format 'health={{ "{{" }}if .State.Health{{ "}}" }}{{ "{{" }}.State.Health.Status{{ "}}" }}{{ "{{" }}else{{ "}}" }}none{{ "{{" }}end{{ "}}" }}'
-curl -sI http://127.0.0.1:18085 | head -n 3
-```
+### Step-by-step tasks
 
-### Step 2 – Cleanup
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-docker rm -f rebash-prod
-docker rmi rebash-prod:lab
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker rm -f rebash-prod 2>/dev/null || true
-docker rmi rebash-prod:lab 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
+**Expected output:** inspect.txt shows `running` and the nginx image.
 
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
+
+```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
+docker compose down -v 2>/dev/null || true
+```
 
 ## Validation
+
+
 
 
 
@@ -186,9 +231,9 @@ docker rmi rebash-prod:lab 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -204,9 +249,9 @@ Production practice for **Production Docker Patterns** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -218,9 +263,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -235,9 +280,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -249,9 +294,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -265,9 +310,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -275,9 +320,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 You can ship and operate containers with production discipline and hand off cleanly to Kubernetes.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Restart policies you use in production?
@@ -292,9 +337,9 @@ You can ship and operate containers with production discipline and hand off clea
 !!! tip "Sample answer — question 4"
     Non-root, minimal images, scanned bases, no secrets in images.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -303,9 +348,9 @@ You can ship and operate containers with production discipline and hand off clea
 - [Course overview](index.md)
 - [From Docker to Kubernetes](from-docker-to-kubernetes.md) · [Capstone and next steps](docker-capstone-and-next-steps.md)
 
-
-
 ## References
+
+
 
 
 

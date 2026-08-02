@@ -1,0 +1,149 @@
+---
+description: Publication-quality content bar for tutorials, labs, interviews (GFG / Microsoft Learn class)
+alwaysApply: true
+---
+
+# REBASH Academy Content Quality Standard
+
+Quality bar: **GeeksforGeeks clarity + Microsoft Learn structure + Linux Foundation lab realism**.
+
+Every page must be something a hiring manager or senior engineer would respect — not filler, not a template dump.
+
+Prefer **Codex** for content generation until the user explicitly changes the agent.
+
+---
+
+## Non-negotiables
+
+1. **Correctness** — never invent flags, APIs, fields, or CLI options. Prefer MCP / official docs.
+2. **Topic-specific** — labs and interview questions must match *this* tutorial’s Theory, not a generic host baseline.
+3. **Executable labs** — every command block must be copy-paste runnable end-to-end on the stated lab environment.
+4. **Observable success** — each task has **Expected output** or a check (`test`, `grep -q`, exit code, Ready condition).
+5. **No note-taking labs** — ban “write runbook.md / take notes / fill a table” as the main exercise. Challenges produce a working artefact (script, unit, ACL layout, pipeline YAML, firewall rules).
+6. **British English** — explain acronyms on first use.
+7. **Scannable** — short paragraphs, tables, bullets, admonitions. One idea per subsection.
+8. **Production judgement** — when to use, when to avoid, what breaks when misconfigured.
+9. **Audience progression in prose** — deepen from beginner to professional inside normal paragraphs. Do **not** use labelled blocks such as “For beginners:” / “For practitioners:” / “For professionals:”.
+10. **Clear English for Indian learners** — short sentences, plain vocabulary, jargon explained simply. Prefer wording Indian students and IT professionals already use in college and industry. Avoid unexplained idioms and dense native-speaker slang.
+
+---
+
+## Theory (tutorial)
+
+Write like a great reference article:
+
+| Layer | Requirement |
+|-------|-------------|
+| What it is | Plain-language definition + smallest mental model |
+| Why it matters | Cloud / DevOps / SRE / Platform use |
+| How it works | Steps, data flow, or lifecycle — not slogans |
+| Compare | Tables when two tools/options compete |
+| Pitfalls | Concrete mistakes with **Fix:** |
+
+**Bad:** three vague paragraphs restating the title.  
+**Good:** definition → example command → table → pitfall with fix → production note.
+
+---
+
+## Hands-on Lab (in-tutorial and standalone)
+
+Canonical subsections (order fixed):
+
+1. Objective  
+2. Prerequisites  
+3. Lab environment (path + runtime; prefer disposable Ubuntu VM / Docker / kind as appropriate)  
+4. Real-world scenario (2–4 sentences)  
+5. Step-by-step tasks (`#### Task N – …`)  
+6. Validation steps  
+7. Common errors and fixes (Error \| Cause \| Fix)  
+8. Challenge exercise (working stretch artefact)  
+9. Learning outcomes  
+10. Cleanup  
+
+### Command rules
+
+- Copy-paste safe in `bash` (use heredocs; quote paths; `set -euo pipefail` in scripts).
+- Escape MkDocs macros: `${{`, `{%`, Go `{{` templates (`{% raw %}` or `{{ "{{" }}…{{ "}}" }}`).
+- Prefer modern tools (`ip`/`ss`, `systemctl`/`journalctl`) with honest fallbacks only when needed.
+- Safe defaults: local/null/kind; cloud read-only or sandbox warnings; no secrets in repo.
+- **2–4 tasks** minimum, each tied to Theory.
+
+### Topic fidelity (examples)
+
+| Tutorial topic | Bad lab | Good lab |
+|----------------|---------|----------|
+| Users & sudo | `uname` + `df` | `useradd`, groups, `visudo`, `id`, `sudo -l` |
+| SSH hardening | `ss` only | keys, `sshd -t`, drop-in config, firewall allow SSH |
+| Text processing | baseline files | `grep`/`sed`/`awk` pipeline on sample logs + asserts |
+| systemd | `is-system-running` only | unit file, `daemon-reload`, enable, `journalctl` proof |
+| cron/timers | none | real crontab or `.timer` + `list-timers` |
+
+Never ship the same lab body with only the title string swapped.
+
+Full checklist: `.cursor/prompts/tutorial-format-linux.md`  
+Lab prompt: `.cursor/prompts/tutorials/create_lab.md`
+
+---
+
+## Interview Questions
+
+### In-tutorial section
+
+- **5–8** questions specific to this module (concepts, debug, security, trade-offs, production).
+- Difficulty ramps: ≥1 junior-safe, ≥1 senior/production judgement.
+- **Every question** has an expandable answer directly underneath:
+
+```markdown
+**1. Question?**
+
+??? success "Reveal answer"
+    Full answer with *why*.
+```
+
+- Ban always-visible answer dumps and generic boilerplate.
+
+### Standalone interview guides
+
+Follow `.cursor/prompts/tutorials/create_interview_questions.md`:
+
+- Concept → scenario → troubleshooting → architecture mix  
+- Strong answers + follow-ups  
+- No trivia dumps  
+
+---
+
+## Other sections (minimum bar)
+
+| Section | Pass criteria |
+|---------|----------------|
+| Troubleshooting | Symptom \| Cause \| Fix table; topic-real failures |
+| Common Mistakes | 2–4 `!!! warning` with Fix |
+| Security | 5 topic-specific bullets |
+| Best Practices | 5 actionable bullets |
+| References | Official docs first |
+
+Diagrams: **Excalidraw only** under `docs/assets/excalidraw/` (never D2/Mermaid for tutorials).
+
+---
+
+## Anti-patterns (fail review)
+
+- Templated “Gather host baseline” labs for every Linux/Shell page  
+- Identical Challenge text across a course  
+- Placeholder commands (`# TODO`, `echo hello` as the whole lab)  
+- Invented kubectl/terraform/aws flags  
+- Interview Qs unrelated to the page Theory  
+- D2 diagrams or stale `## Goal` / `{ .ra-facts }` tutorial skeletons  
+- Marketing / buzzword padding  
+
+---
+
+## Done means
+
+A stranger can:
+
+1. Read Theory and understand the topic without another site.  
+2. Paste lab commands and finish with a working result + evidence.  
+3. Answer interview questions using only this page’s content.  
+
+If any of those fail, the page is not done.

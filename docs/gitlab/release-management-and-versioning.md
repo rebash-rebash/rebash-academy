@@ -48,15 +48,21 @@ comments: false
 
 
 
+
+
+
+
 Create annotated Git tags, publish GitLab Releases with notes and assets, and apply Semantic Versioning (SemVer) with changelog discipline from CI.
 
 A **release** is more than a green pipeline: it is an immutable Git reference, human-readable notes, and optional binaries or package links. GitLab ties **tags**, **Releases**, and CI so the same SHA you tested becomes the version you promote.
 
 This is a core tutorial in **Module 14 · Release Management** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -64,9 +70,11 @@ This is a core tutorial in **Module 14 · Release Management** of the REBASH Aca
 - [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md)
 - [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md) (or equivalent awareness)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -78,9 +86,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Create a GitLab Release with description and links  
 - [ ] Generate or attach a changelog for operators
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -89,9 +99,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab release](../assets/excalidraw/gitlab-release.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -146,25 +158,105 @@ Prefer **annotated tags** over lightweight tags for release history. Keep change
 - Changelog that lists every chore commit — operators need impact, not noise.
 - Creating Releases without a matching successful tag pipeline — notes without artefacts.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Release Management and Versioning** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-14`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-14 && cd ~/rebash-gitlab/module-14
 ```
 
-**Focus:** tag-driven release job with changelog artefact
+### Real-world scenario
 
-### Step 1 – Release pipeline on tags
+Your squad is encoding **Release Management and Versioning** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-cat > CHANGELOG.md << 'EOF'
-# Changelog
+mkdir -p src && echo 'print("ok")' > src/app.py
+cat > .gitlab-ci.yml << 'EOF'
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
+  script:
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
+EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```
+
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
+
+```bash
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
+```
+
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
+
+```bash
+# File-only lab — keep YAML for the next tutorial
+```
+
 ## Unreleased
+
+
+
+
 - Lab release scaffolding
 EOF
 cat > .gitlab-ci.yml << 'EOF'
@@ -198,9 +290,11 @@ test -f CHANGELOG.md
 # Keep ~/rebash-gitlab/ for later tutorials
 ```
 
-
-
 ## 0.1.0
+
+
+
+
 
 
 - Lab release' > CHANGELOG.md
@@ -223,9 +317,11 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
 # File-only
 ```
 
-
-
 ## 0.1.0
+
+
+
+
 
 
 - Lab release' > CHANGELOG.md
@@ -247,10 +343,12 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
 ```bash
 # File-only
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -260,9 +358,11 @@ python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -277,9 +377,11 @@ Production practice for **Release Management and Versioning** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -290,9 +392,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -306,9 +410,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -319,9 +425,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -334,18 +442,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Release Management and Versioning** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do tag pipelines differ from branch pipelines?
@@ -360,9 +472,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Protect release tags, sign artifacts when required, and keep provenance (commit SHA, pipeline ID). Do not reuse tags.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -370,9 +484,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -1,3 +1,45 @@
 ---
 alwaysApply: true
 ---
+
+# Writing Rule
+
+Write in clear technical English for a global engineering audience.
+
+## Voice
+
+- Direct, practical, and educational.
+- Confident without marketing language.
+- Beginner-friendly without being shallow.
+- Production-focused without assuming every reader is already senior.
+
+## Style
+
+- Use short paragraphs.
+- Explain why before how when introducing a new concept.
+- Prefer concrete examples over abstract claims.
+- Define acronyms on first use.
+- Use active voice.
+- Avoid buzzwords, hype, and motivational filler.
+
+## Learning depth
+
+Every substantial page should include:
+
+- A simple mental model.
+- A practical workflow.
+- A production concern.
+- A validation method.
+- A next step for deeper practice.
+
+## Terms
+
+Use consistent terminology across the repository:
+
+- Hands-on Lab
+- Learning Objectives
+- Security Considerations
+- Best Practices
+- Troubleshooting
+- Interview Questions
+- Related Tutorials

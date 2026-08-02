@@ -116,6 +116,55 @@
   padding-right: 1.8rem;
 }
 
+/*
+  Collapsible "Reveal answer" summaries:
+  Text on the left, chevron on the right.
+  Use flex + margin-left:auto (not absolute) so the arrow cannot overlap the label.
+*/
+.md-typeset details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  min-height: 2.25rem;
+  padding: 0.4rem 1rem !important;
+  text-align: start;
+}
+
+[dir="ltr"] .md-typeset details > summary {
+  padding-left: 0 !important;
+  padding-right: 1rem !important;
+}
+
+[dir="rtl"] .md-typeset details > summary {
+  padding-right: 0 !important;
+  padding-left: 1rem !important;
+}
+
+.md-typeset details > summary::after {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  margin: 0;
+  margin-inline-start: auto; /* push chevron to the far side */
+  flex: 0 0 1rem;
+  transform: none;
+}
+
+.md-typeset details[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+[dir="rtl"] .md-typeset details:not([open]) > summary::after {
+  transform: rotate(180deg);
+}
+
+[dir="rtl"] .md-typeset details[open] > summary::after {
+  transform: rotate(90deg);
+}
+
 .md-typeset .admonition > :last-child,
 .md-typeset details > :last-child {
   margin-bottom: 0;

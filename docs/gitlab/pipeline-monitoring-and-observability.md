@@ -48,15 +48,21 @@ comments: false
 
 
 
+
+
+
+
 Observe pipeline health with analytics, job logs, runner and pipeline metrics, and actionable notifications — without drowning the team in noise.
 
 CI/CD is a production system. **Observability** means you can answer: Are pipelines slower? Which jobs fail most? Are runners saturated? GitLab provides pipeline analytics and logs; runners and external metrics complete the picture.
 
 This is a core tutorial in **Module 16 · Monitoring & Observability** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -64,9 +70,11 @@ This is a core tutorial in **Module 16 · Monitoring & Observability** of the RE
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
 - [GitLab Runners and Executors](gitlab-runners-and-executors.md) (runner capacity awareness)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -78,9 +86,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Identify runner queue / capacity signals  
 - [ ] Configure useful notifications (MR, Slack, email)
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -89,9 +99,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab monitoring](../assets/excalidraw/gitlab-monitoring.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -144,56 +156,105 @@ Separate **developer feedback** (MR failed tests) from **platform pages** (share
 - Alerting on every `allow_failure` job — reserve pages for customer-impacting stages.
 - Ignoring queue time while chasing script micro-optimisations.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Pipeline Monitoring and Observability** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-16`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-16 && cd ~/rebash-gitlab/module-16
 ```
 
-**Focus:** emit pipeline metrics and observe duration
+### Real-world scenario
 
-### Step 1 – Observability-friendly pipeline
+Your squad is encoding **Pipeline Monitoring and Observability** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [build, observe]
-build:
-  stage: build
-  image: alpine:3.20
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
   script:
-    - START=$(date +%s); sleep 1; END=$(date +%s)
-    - echo "job=build duration_s=$((END-START)) sha=$CI_COMMIT_SHA" | tee metrics.txt
-  artifacts: {paths: [metrics.txt], expire_in: 1 week}
-observe:
-  stage: observe
-  image: alpine:3.20
-  needs: [build]
-  script: ["test -f metrics.txt", "cat metrics.txt", "grep duration_s metrics.txt"]
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Local metrics dry-run
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-START=$(date +%s); sleep 1; END=$(date +%s)
-echo "job=build duration_s=$((END-START)) sha=local" | tee metrics.txt
-grep duration_s metrics.txt
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -203,9 +264,11 @@ grep duration_s metrics.txt
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -220,9 +283,11 @@ Production practice for **Pipeline Monitoring and Observability** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -233,9 +298,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -249,9 +316,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -262,9 +331,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -277,18 +348,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Pipeline Monitoring and Observability** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Which pipeline metrics matter for platform teams?
@@ -303,9 +378,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Redact tokens from exported logs/metrics and limit who can read job traces with secrets.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -313,9 +390,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Troubleshooting GitLab CI](troubleshooting-gitlab-ci.md)
 
-
-
 ## References
+
+
+
+
 
 
 

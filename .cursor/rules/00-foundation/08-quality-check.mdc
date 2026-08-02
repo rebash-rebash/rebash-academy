@@ -1,3 +1,513 @@
 ---
+description: Global quality assurance and review standards
 alwaysApply: true
 ---
+
+# REBASH Academy Quality Standards
+
+## Purpose
+
+This rule defines the quality standards for every artifact generated for REBASH Academy.
+
+Quality is more important than speed.
+
+Never sacrifice correctness for completeness.
+
+Every generated artifact should be publishable without major manual editing.
+
+---
+
+# Quality Philosophy
+
+Every page should be
+
+- Accurate
+- Complete
+- Practical
+- Production Ready
+- Maintainable
+- Easy to Understand
+
+Publication bar: `.cursor/rules/00-foundation/09-content-quality-standard.mdc`
+
+Do not generate content simply to fill space.
+
+Every paragraph should provide value.
+
+---
+
+# Lab and interview pass/fail
+
+**Lab FAIL if any are true:**
+
+- Commands are not copy-paste runnable on the stated environment
+- Lab ignores the tutorial topic (generic baseline for every page)
+- Challenge is note-taking (`runbook.md`, “document what you learned”)
+- No Expected output / validation evidence
+- No Cleanup for disposable resources
+
+**Interview FAIL if any are true:**
+
+- Questions are generic Cloud/platform boilerplate unrelated to the page
+- No sample answers (in-tutorial) or model answers (standalone)
+- Trivia-only (version numbers, acronym expansion) without judgement
+
+**Tutorial FAIL if:** missing canonical sections from `.cursor/prompts/tutorial-format-linux.md`, or diagrams are D2/Mermaid instead of Excalidraw.
+
+---
+
+# Think Before Writing
+
+Before generating content determine
+
+- What is being generated?
+- Who is the audience?
+- What problem does it solve?
+- Where does it belong?
+- What knowledge should the learner gain?
+
+Only then begin writing.
+
+---
+
+# Correctness
+
+Never invent
+
+Commands
+
+Configuration
+
+Flags
+
+CLI options
+
+YAML fields
+
+Terraform arguments
+
+Kubernetes resources
+
+API fields
+
+Cloud services
+
+If unsure
+
+State the limitation rather than guessing.
+
+---
+
+# Technical Accuracy
+
+All technical content should align with
+
+- Official Documentation
+- Latest Stable Releases
+- Industry Best Practices
+
+Avoid deprecated features unless teaching legacy systems.
+
+---
+
+# Completeness
+
+Every page should answer
+
+- What is it?
+- Why is it needed?
+- When should it be used?
+- How does it work?
+- How is it implemented?
+- How is it validated?
+- How is it monitored?
+- How is it troubleshot?
+
+Avoid leaving important questions unanswered.
+
+---
+
+# Production Readiness
+
+Examples should reflect real-world engineering.
+
+Include where appropriate
+
+- Security
+- Scalability
+- Monitoring
+- Logging
+- High Availability
+- Performance
+- Cost Optimisation
+- Disaster Recovery
+
+Avoid toy examples except for introducing concepts.
+
+---
+
+# Practical Learning
+
+Prefer
+
+Hands-on
+
+Commands
+
+Architecture
+
+Diagrams
+
+Troubleshooting
+
+Validation
+
+Real examples
+
+Avoid purely theoretical explanations.
+
+---
+
+# Code Quality
+
+Every code sample should
+
+Compile
+
+Execute
+
+Use current syntax
+
+Follow best practices
+
+Be properly formatted
+
+Be complete
+
+Avoid pseudo code unless requested.
+
+---
+
+# Commands
+
+Every command should
+
+Be executable
+
+Include required flags
+
+Use realistic values
+
+Avoid placeholders where possible
+
+Good
+
+```bash
+kubectl get pods --all-namespaces
+```
+
+Bad
+
+```bash
+kubectl ...
+```
+
+---
+
+# YAML
+
+YAML examples should
+
+Indent correctly
+
+Validate successfully
+
+Use current API versions
+
+Avoid deprecated resources.
+
+---
+
+# Terraform
+
+Terraform examples should
+
+Use current provider syntax
+
+Be formatted
+
+Include required providers
+
+Use variables where appropriate
+
+Avoid deprecated resources.
+
+---
+
+# Kubernetes
+
+Kubernetes manifests should
+
+Validate successfully
+
+Use stable APIs
+
+Include metadata
+
+Use labels
+
+Use selectors correctly
+
+Avoid beta APIs unless explicitly teaching them.
+
+---
+
+# Cloud Examples
+
+Examples for AWS
+
+Azure
+
+GCP
+
+OCI
+
+Should follow provider best practices.
+
+Avoid insecure defaults.
+
+---
+
+# Linux Commands
+
+Commands should
+
+Be safe
+
+Be reproducible
+
+Explain destructive operations
+
+Warn before deletion commands.
+
+---
+
+# Security
+
+Every page should consider
+
+Least Privilege
+
+Secrets Management
+
+Authentication
+
+Authorisation
+
+Encryption
+
+Audit Logging
+
+Never recommend insecure practices.
+
+---
+
+# Validation
+
+Every tutorial should include
+
+Expected Output
+
+Verification Steps
+
+Troubleshooting
+
+Common Mistakes
+
+Success Criteria
+
+Learners should know how to confirm success.
+
+---
+
+# References
+
+Always prefer
+
+Official Documentation
+
+RFCs
+
+CNCF
+
+Cloud Providers
+
+HashiCorp
+
+Linux Distributions
+
+Avoid relying solely on community blogs.
+
+---
+
+# Consistency
+
+Use consistent
+
+Terminology
+
+Formatting
+
+Navigation
+
+Writing style
+
+Headings
+
+Code formatting
+
+Avoid mixing styles.
+
+---
+
+# Review Checklist
+
+Before finishing verify
+
+Content
+
+✓ Objectives achieved
+
+✓ Audience appropriate
+
+✓ Concepts explained
+
+✓ No repetition
+
+✓ Production relevant
+
+Markdown
+
+✓ One H1
+
+✓ Correct heading hierarchy
+
+✓ Relative links
+
+✓ Code block language
+
+✓ Valid Markdown
+
+Repository
+
+✓ Correct location
+
+✓ Correct filename
+
+✓ Correct technology
+
+✓ Correct module
+
+Code
+
+✓ Runnable
+
+✓ Current syntax
+
+✓ Correct formatting
+
+✓ Security considered
+
+Design
+
+✓ Matches design system
+
+✓ Navigation consistent
+
+✓ Static website compatible
+
+Documentation
+
+✓ References included
+
+✓ Summary included
+
+✓ Related content included
+
+✓ Next steps provided
+
+---
+
+# AI Self Review
+
+Before returning the final result ask
+
+Is this technically correct?
+
+Would I publish this?
+
+Would I teach this to engineers?
+
+Would this confuse a beginner?
+
+Can this be improved?
+
+If the answer suggests improvements
+
+Improve the content before returning it.
+
+---
+
+# Anti-patterns
+
+Never
+
+Guess
+
+Invent APIs
+
+Invent commands
+
+Invent configuration
+
+Duplicate content
+
+Repeat paragraphs
+
+Generate filler text
+
+Leave TODO placeholders
+
+Use "coming soon"
+
+Generate incomplete examples
+
+---
+
+# Success Criteria
+
+Every generated page should satisfy all of the following
+
+✓ Technically accurate
+
+✓ Production ready
+
+✓ Well structured
+
+✓ Easy to understand
+
+✓ MkDocs compatible
+
+✓ Repository compliant
+
+✓ Consistent with REBASH Academy standards
+
+If any criterion fails, revise the content before considering it complete.
+
+---
+
+# Final Principle
+
+Generate content that you would confidently publish in a professional engineering documentation platform without requiring significant manual review.
+
+Quality is the default.

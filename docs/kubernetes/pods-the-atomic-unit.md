@@ -39,23 +39,31 @@ comments: false
 
 
 
+
+
+
+
 Deploy a Pod with resource requests, understand lifecycle phases, and know why bare Pods are rare in production.
 
 A **Pod** is one or more containers sharing network/storage namespaces. Controllers (Deployments) recreate Pods; bare Pods do not self-heal on node loss.
 
 This is a core tutorial in **Module 3 · Kubernetes Objects** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [kubectl Essentials](kubectl-essentials-and-workflows.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -66,9 +74,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Set requests/limits  
 - [ ] Prefer Deployments for apps
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -76,9 +86,11 @@ This topic’s control points and relationships are shown below.
 
 ![Pod lifecycle](../assets/excalidraw/k8s-pod-lifecycle.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -123,70 +135,123 @@ Resource **requests** influence scheduling; **limits** cap usage. Probes (livene
 - Putting tightly coupled processes in separate Pods when they need shared volumes or localhost.
 - Ignoring `describe` Events when stuck in Pending (image pull, taints, PVC).
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Pods — The Atomic Unit** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-03`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-03`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-03 && cd ~/rebash-k8s/module-03
 ```
 
-**Focus:** Understand Pod lifecycle, multi-container patterns, and IP identity
+### Real-world scenario
 
-### Step 1 – Create a multi-container Pod sharing a volume
+Your platform team is rolling out **Pods — The Atomic Unit** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+
+### Step-by-step tasks
+
+#### Task 1 – Declare and apply a Pod
+
+Create an isolated namespace and apply a Pod manifest so the scheduler places a container.
 
 ```bash
-kubectl create namespace rebash-lab
-cat > pod.yaml <<'EOF'
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+cat > pod.yaml << 'EOF'
 apiVersion: v1
 kind: Pod
 metadata:
-  name: atomic
+  name: web
   namespace: rebash-lab
+  labels:
+    app: web
 spec:
   containers:
-  - name: writer
-    image: busybox:1.36
-    command: ["sh", "-c", "echo from-writer > /shared/note; sleep 3600"]
-    volumeMounts:
-    - name: shared
-      mountPath: /shared
-  - name: reader
-    image: busybox:1.36
-    command: ["sh", "-c", "sleep 2; cat /shared/note; sleep 3600"]
-    volumeMounts:
-    - name: shared
-      mountPath: /shared
-  volumes:
-  - name: shared
-    emptyDir: {}
+    - name: nginx
+      image: nginx:1.27-alpine
+      ports:
+        - containerPort: 80
 EOF
 kubectl apply -f pod.yaml
-kubectl -n rebash-lab wait --for=condition=Ready pod/atomic --timeout=60s
+kubectl wait --for=condition=Ready pod/web -n rebash-lab --timeout=120s
+kubectl get pod web -n rebash-lab -o wide
 ```
 
-### Step 2 – Inspect shared network and volume
+**Expected output:** Pod `web` shows Ready 1/1 and a node name.
+
+#### Task 2 – Inspect Events and prove the app answers
+
+Use describe/Events/logs — the same triage path used in production incidents.
 
 ```bash
-kubectl -n rebash-lab logs atomic -c reader
-kubectl -n rebash-lab get pod atomic -o jsonpath='PodIP={.status.podIP}{"
-"}'
-kubectl -n rebash-lab exec atomic -c writer -- ls -l /shared
+kubectl describe pod web -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 20
+kubectl exec -n rebash-lab web -- wget -qO- http://127.0.0.1/ | head -n 5
 ```
 
-### Final step – Cleanup note
+**Expected output:** HTML from nginx appears; describe.txt contains Events without ImagePullBackOff.
+
+#### Task 3 – Capture evidence for handover
+
+Save a short status snapshot you would attach to a ticket.
+
+```bash
+kubectl get pod,events -n rebash-lab -o wide | tee evidence.txt
+test -s evidence.txt
+```
+
+**Expected output:** evidence.txt is non-empty and lists the Pod.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Pods — The Atomic Unit
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -195,9 +260,11 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -211,9 +278,11 @@ Production practice for **Pods — The Atomic Unit** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -223,9 +292,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -238,9 +309,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -250,9 +323,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -264,17 +339,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Pods — The Atomic Unit** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Why can containers in a Pod share localhost and volumes?
@@ -289,18 +368,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Shared network namespaces mean any container can bind ports and talk over localhost; a compromised sidecar can reach the app. Keep images minimal and apply strict securityContext settings.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Labels, Selectors, and Namespaces](kubernetes-objects-labels-and-namespaces.md)
 
-
-
 ## References
+
+
+
+
 
 
 

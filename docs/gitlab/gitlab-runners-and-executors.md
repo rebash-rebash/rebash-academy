@@ -45,24 +45,32 @@ comments: false
 
 
 
+
+
+
+
 Distinguish shared, group, and project runners; pick an executor for isolation; and use job tags so the right capacity picks up production work.
 
 A **GitLab Runner** is the agent that executes jobs. The **executor** decides *how* isolation works (host shell, Docker container, Kubernetes Pod, and others). Scope (instance/shared, group, project) decides *who* can use the runner. Tags bind jobs to capable fleets.
 
 This is a core tutorial in **Module 3 · GitLab Runners** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -74,9 +82,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `tags` so jobs land on the right fleet  
 - [ ] Outline why autoscaling exists (cost and queue depth)
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -85,9 +95,11 @@ This topic’s control points and relationships are shown below.
 
 ![Runner architecture](../assets/excalidraw/gitlab-runner-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -138,62 +150,105 @@ You can study YAML without owning runners: GitLab.com free tier provides shared 
 - Forgetting tags so GPU or privileged jobs never run (or run everywhere).
 - Equating “Docker executor” with “Docker-in-Docker” — DinD is a separate, higher-risk pattern.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **GitLab Runners and Executors** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-03`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
 ```
 
-**Focus:** compare executor tags and pin a runner tag on a job
+### Real-world scenario
 
-### Step 1 – Document executors and pin tags
+Your squad is encoding **GitLab Runners and Executors** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-cat > runner-notes.md << 'EOF'
-# Runner executors
-- shell: fast, weak isolation
-- docker: clean images (common)
-- kubernetes: elastic; needs RBAC
-Prefer tags over untagged shared runners for production jobs
-EOF
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [probe]
-probe_docker:
-  stage: probe
-  image: alpine:3.20
-  tags: [docker]
+stages: [lint, test]
+lint:
+  stage: lint
+  image: python:3.12-alpine
   script:
-    - uname -a
-    - echo "executor expected: docker"
-probe_shell:
-  stage: probe
-  tags: [shell]
-  rules: [{when: manual}]
-  script: ["echo manual shell-tagged job"]
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Validate tags
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-grep -E 'tags:|image:' .gitlab-ci.yml
-test -f runner-notes.md
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -203,9 +258,11 @@ test -f runner-notes.md
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -220,9 +277,11 @@ Production practice for **GitLab Runners and Executors** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -233,9 +292,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -249,9 +310,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -262,9 +325,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -277,18 +342,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **GitLab Runners and Executors** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Compare shell, Docker, and Kubernetes executors for isolation and cost.
@@ -303,9 +372,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Privileged mode and Docker socket mounts can let jobs escape to the host. Prefer unprivileged executors and dedicated tags for production.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -313,9 +384,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Pipeline Syntax (.gitlab-ci.yml)](pipeline-syntax-gitlab-ci-yml.md)
 
-
-
 ## References
+
+
+
+
 
 
 

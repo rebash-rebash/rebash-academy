@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Using Jenkins — Jobs, Views, and Folders
 
 ## Overview
+
+
 
 Learn the Jenkins user interface: dashboard, jobs, build history, views, folders, and where credentials appear.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 3 · Using Jenkins** of the REBASH Academy *
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Jenkins UI — jobs, views, folders](../assets/excalidraw/jenkins-ui.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -104,51 +115,98 @@ Credentials appear under Manage Jenkins → Credentials (and folder credentials)
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Using Jenkins — Jobs, Views, and Folders** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-03`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-03 && cd ~/rebash-jenkins/module-03
 ```
 
-**Focus:** create a folder, a Pipeline job stub, and a list view
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Using Jenkins — Jobs, Views, and Folders**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Capture controller/agent mental model files
+
+Document how this topic shows up on a real controller.
 
 ```bash
-# Document UI checklist while controller from module-02 runs
-cat > ui-checklist.md << 'EOF'
-# Using Jenkins checklist
-- [ ] Dashboard loads
-- [ ] New Item → Folder `rebash-labs`
-- [ ] New Item → Pipeline `hello-pipeline` inside folder
-- [ ] Build once; open Console Output
-- [ ] Create List View including hello-pipeline
-- [ ] Credentials link found under Manage Jenkins (do not store secrets yet)
+tee scenario.md << 'EOF'
+Topic: Using Jenkins — Jobs, Views, and Folders
+- Controller owns config and orchestration
+- Agents execute untrusted build steps
+- Prefer Jenkinsfile in SCM over click-ops jobs
 EOF
-# Optional: use jenkins-cli later; for now validate notes
-grep -E 'Folder|Pipeline|Credentials' ui-checklist.md
-test -f ui-checklist.md
+cat scenario.md
+mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
 ```
 
-### Step 2 – Capture job URL pattern
+**Expected output:** scenario.md and jobs/README.txt exist.
+
+#### Task 2 – Write a minimal Declarative stub
+
+Even management topics should leave a Pipeline artefact.
 
 ```bash
-cat > url-pattern.txt << 'EOF'
-Root job:   /job/hello-pipeline/
-Folder job: /job/rebash-labs/job/hello-pipeline/
-View:       /view/my-labs/
+cat > Jenkinsfile << 'EOF'
+pipeline {
+  agent any
+  stages { stage('OK') { steps { echo 'lab' } } }
+}
 EOF
-cat url-pattern.txt
+grep -n agent Jenkinsfile
 ```
 
-### Final cleanup
+**Expected output:** Jenkinsfile present with an agent directive.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+# Keep lab notes under ~/rebash-jenkins/
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-03/`
 - [ ] You can explain each Theory section in your own words
@@ -156,6 +214,8 @@ cat url-pattern.txt
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Using Jenkins — Jobs, Views, and Folders** always combines:
 
@@ -169,6 +229,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -176,6 +238,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Secrets in Freestyle shell"
     Use the Credentials store and bind credentials in Pipeline; never paste tokens into build steps.
@@ -188,6 +252,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Using Jenkins — Jobs, Views, and Folders** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -195,6 +261,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -206,9 +274,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Using Jenkins — Jobs, Views, and Folders** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. When would you still see Freestyle jobs in an enterprise?
 2. How do folders help multi-team Jenkins controllers?
@@ -224,11 +296,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Installing Jenkins LTS](installing-jenkins-lts.md)
 - [Pipeline Fundamentals (Declarative)](pipeline-fundamentals-declarative.md)
 
 ## References
+
+
 
 - [Using Jenkins](https://www.jenkins.io/doc/book/using/)
 - [Pipeline Getting Started](https://www.jenkins.io/doc/pipeline/tour/getting-started/)

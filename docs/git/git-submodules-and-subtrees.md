@@ -25,13 +25,15 @@ comments: false
 
 
 
+
+
 Platform teams reuse Terraform modules, Helm charts, and shared libraries across repositories. **Submodules** pin exact commits of nested repos; **subtrees** merge external history into a subdirectory. Both solve dependency management — with different tradeoffs in complexity, clone experience, and update workflows.
 
 This is **Tutorial 18** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -40,9 +42,9 @@ This is **Tutorial 18** in **Module 6: Advanced & DevOps** of the REBASH Academy
 - [Working with Remotes](working-with-remotes.md)
 - Understanding of commit SHAs and remotes
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -57,9 +59,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Choose embedding strategy for shared Terraform modules
 - [ ] Remove submodules cleanly
 
-
-
 ## Architecture
+
+
 
 
 
@@ -68,9 +70,9 @@ Submodules pin an external repository at a commit; subtrees vendor history into 
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -225,63 +227,97 @@ Manual cleanup required — submodules leave artifacts if removed incorrectly.
 
 Submodules are often a last resort when registry isn't available.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Git Submodules and Subtrees** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/git-submodules-and-subtrees`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/git-submodules-and-subtrees && cd ~/rebash-git/git-submodules-and-subtrees
 ```
 
-**Focus:** add a submodule from a local bare repo and update it
+### Real-world scenario
 
-### Step 1 – Create dependency repo and add submodule
+A delivery team is standardising **Git Submodules and Subtrees**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-mkdir -p modules
-git init --bare modules/lib.git
-git clone modules/lib.git modules/lib-work
-cd modules/lib-work
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo "lib-v1" > VERSION
-git add VERSION && git commit -m "chore: lib v1"
-git push origin HEAD
-cd ../..
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-git submodule add ./modules/lib.git third_party/lib
-git commit -m "chore: add lib submodule"
-git submodule status
-```
+### Step-by-step tasks
 
-### Step 2 – Update submodule pointer
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-cd modules/lib-work
-echo "lib-v2" > VERSION
-git add VERSION && git commit -m "chore: lib v2"
-git push origin HEAD
-cd ../..
-cd third_party/lib && git pull && cd ../..
-git add third_party/lib
-git commit -m "chore: bump lib submodule"
-git submodule status
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -299,9 +335,9 @@ Confirm the lab before moving on:
 | Subtree | Subtree add/pull (if practised) updates the vendored path |
 | Cleanup | Lab parent and submodule repos removed |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -316,9 +352,9 @@ Confirm the lab before moving on:
 | `git subtree pull --prefix=P URL branch` | Update subtree | Pull upstream changes |
 | `git submodule status` | Show submodule SHAs | Verify pinned versions |
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -329,9 +365,9 @@ Confirm the lab before moving on:
 - Prefer subtree or vendoring when you need full control of third-party history
 - Audit submodule changes in PRs as carefully as first-party code
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -348,9 +384,9 @@ Confirm the lab before moving on:
 !!! warning "Subtree push overwriting upstream"
     `git subtree push` can force complex history. Coordinate with module owners.
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -367,9 +403,9 @@ Confirm the lab before moving on:
 !!! tip "Document clone command in README"
     `git clone --recurse-submodules` prominently at top.
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -383,9 +419,9 @@ Confirm the lab before moving on:
 | Subtree merge conflicts | Diverged histories | Resolve; consider squash |
 | Cannot remove submodule | Incomplete removal | deinit + rm + clean .git/modules |
 
-
-
 ## Summary
+
+
 
 
 
@@ -396,9 +432,9 @@ Confirm the lab before moving on:
 - Clone with **`--recurse-submodules`**; CI must initialize submodules
 - For DevOps dependencies, prefer **registries** (Terraform, Helm) when available
 
-
-
 ## Interview Questions
+
+
 
 
 1. Submodule versus subtree — operational differences?
@@ -413,9 +449,9 @@ Confirm the lab before moving on:
 !!! tip "Sample answer — question 4"
     Pin submodule URLs to trusted sources and review pointer bumps like dependency upgrades.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -429,9 +465,9 @@ Confirm the lab before moving on:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 

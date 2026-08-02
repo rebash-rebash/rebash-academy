@@ -27,12 +27,37 @@ def parse_front_matter(content: str) -> dict:
         data = yaml.safe_load(match.group(1))
         return data if isinstance(data, dict) else {}
 
-    # Minimal fallback parser
+    # Minimal fallback parser for the repository's front matter style.
+    # It supports top-level scalars and simple block lists such as:
+    #
+    # tags:
+    #   - linux
+    #   - devops
     meta: dict = {}
+    current_list_key: str | None = None
     for line in match.group(1).splitlines():
-        if ":" in line and not line.strip().startswith("-"):
-            key, _, value = line.partition(":")
-            meta[key.strip()] = value.strip().strip('"').strip("'")
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        if stripped.startswith("-") and current_list_key:
+            value = stripped[1:].strip().strip('"').strip("'")
+            if value:
+                meta.setdefault(current_list_key, []).append(value)
+            continue
+
+        current_list_key = None
+        if ":" not in line or stripped.startswith("-"):
+            continue
+
+        key, _, value = line.partition(":")
+        key = key.strip()
+        value = value.strip()
+        if value:
+            meta[key] = value.strip('"').strip("'")
+        else:
+            meta[key] = []
+            current_list_key = key
     return meta
 
 

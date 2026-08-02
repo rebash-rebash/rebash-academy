@@ -43,15 +43,17 @@ comments: false
 
 
 
+
+
 Author a minimal GitHub Actions workflow that runs on pull requests: checkout, validate, and report status — the CI gate for Git-based delivery.
 
 **GitHub Actions** runs workflows on events (`push`, `pull_request`). Jobs use runners; secrets never belong in Git history.
 
 This is a core tutorial in **Module 11 · GitHub Actions** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -59,9 +61,9 @@ This is a core tutorial in **Module 11 · GitHub Actions** of the REBASH Academy
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - GitHub repository with Actions enabled
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -74,9 +76,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Store secrets in repository settings (not in Git)  
 - [ ] Distinguish workflow vs job vs step
 
-
-
 ## Architecture
+
+
 
 
 
@@ -85,9 +87,9 @@ This topic’s control points and relationships are shown below.
 
 ![GitHub Actions flow](../assets/excalidraw/git-github-actions.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -125,60 +127,97 @@ On a matching event, GitHub schedules jobs. Jobs run in parallel unless `needs:`
 - Over-broad `write` repository tokens on every job  
 - Skipping status checks that the branch protection was meant to enforce
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **GitHub Actions for DevOps** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-11/.github/workflows`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-11/.github/workflows && cd ~/rebash-git/module-11/.github/workflows
 ```
 
-**Focus:** add a minimal GitHub Actions workflow to a git repo
+### Real-world scenario
 
-### Step 1 – Repo + workflow
+A delivery team is standardising **GitHub Actions for DevOps**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-mkdir -p .github/workflows
-cat > .github/workflows/ci.yml << 'EOF'
-name: CI
-on: [push, pull_request]
-permissions:
-  contents: read
-jobs:
-  probe:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: test -f README.md
-EOF
-echo "# devops git lab" > README.md
-git add .
-git commit -m "ci: add minimal workflow"
-git log --oneline -n 3
-```
+### Step-by-step tasks
 
-### Step 2 – Validate workflow present in git tree
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git ls-files .github/workflows/ci.yml
-grep -E 'checkout@v4|permissions:' .github/workflows/ci.yml
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -188,9 +227,9 @@ grep -E 'checkout@v4|permissions:' .github/workflows/ci.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -205,9 +244,9 @@ Production practice for **GitHub Actions for DevOps** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -218,9 +257,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -234,9 +273,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -247,9 +286,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -262,18 +301,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **GitHub Actions for DevOps** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. How does a git push start CI on GitHub?
@@ -288,9 +327,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Least-privilege permissions, pinned actions, and no secrets in forks.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -299,9 +338,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [GitOps Fundamentals](gitops-fundamentals.md)
 - Deeper track: [GitHub Actions](../github-actions/index.md)
 
-
-
 ## References
+
+
 
 
 

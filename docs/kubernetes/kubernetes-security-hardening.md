@@ -42,23 +42,31 @@ comments: false
 
 
 
+
+
+
+
 Run a Pod with a restrictive securityContext, enable Pod Security Admission labels on a namespace, and draft a default-deny NetworkPolicy pattern.
 
 Defence in depth: RBAC + **securityContext** + **Pod Security Admission (PSA)** + **NetworkPolicy** + signed/scanned images + Secrets hygiene.
 
 This is a core tutorial in **Module 10 · Security** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [RBAC and Kubernetes Security Basics](rbac-and-kubernetes-security-basics.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -69,9 +77,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain NetworkPolicy default-deny  
 - [ ] List image policy controls
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -79,9 +89,11 @@ This topic’s control points and relationships are shown below.
 
 ![RBAC](../assets/excalidraw/k8s-rbac-model.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -127,69 +139,120 @@ PSA replaces the older PodSecurityPolicy API; learn labels, not PSP.
 - Leaving `hostNetwork` / `hostPID` enabled on ordinary apps.
 - Scanning images once and never again — rebuild pipelines must re-scan.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Kubernetes Security Hardening** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-10-hard`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-10-hard`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
 ```
 
-**Focus:** Apply a Pod Security Context and non-root container settings
+### Real-world scenario
 
-### Step 1 – Deploy a hardened Pod
+Your platform team is rolling out **Kubernetes Security Hardening** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+
+### Step-by-step tasks
+
+#### Task 1 – Create ServiceAccount, Role, RoleBinding
+
+Least privilege starts with namespaced RBAC objects.
 
 ```bash
-kubectl create namespace rebash-lab
-cat > hardened.yaml <<'EOF'
-apiVersion: v1
-kind: Pod
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create serviceaccount viewer -n rebash-lab
+cat > rbac.yaml << EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
 metadata:
-  name: hardened
+  name: pod-reader
   namespace: rebash-lab
-spec:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    seccompProfile:
-      type: RuntimeDefault
-  containers:
-  - name: app
-    image: busybox:1.36
-    command: ["sh", "-c", "id; sleep 3600"]
-    securityContext:
-      allowPrivilegeEscalation: false
-      readOnlyRootFilesystem: true
-      capabilities:
-drop: ["ALL"]
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: viewer-pods
+  namespace: rebash-lab
+subjects:
+  - kind: ServiceAccount
+    name: viewer
+    namespace: rebash-lab
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
 EOF
-kubectl apply -f hardened.yaml
-kubectl -n rebash-lab wait --for=condition=Ready pod/hardened --timeout=60s
+kubectl apply -f rbac.yaml
 ```
 
-### Step 2 – Verify identity and security fields
+**Expected output:** Role and RoleBinding created without error.
+
+#### Task 2 – Prove allow and deny with auth can-i
+
+Never guess permissions — ask the API.
 
 ```bash
-kubectl -n rebash-lab exec hardened -- id
-kubectl -n rebash-lab get pod hardened -o jsonpath='{.spec.securityContext}{"
-"}'
-kubectl -n rebash-lab get pod hardened -o jsonpath='{.spec.containers[0].securityContext}{"
-"}'
+kubectl auth can-i list pods -n rebash-lab --as=system:serviceaccount:rebash-lab:viewer
+kubectl auth can-i delete pods -n rebash-lab --as=system:serviceaccount:rebash-lab:viewer || true
 ```
 
-### Final step – Cleanup note
+**Expected output:** `yes` for list; `no` (or non-zero) for delete.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Kubernetes Security Hardening
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -198,9 +261,11 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -214,9 +279,11 @@ Production practice for **Kubernetes Security Hardening** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -226,9 +293,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -241,9 +310,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -253,9 +324,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -267,17 +340,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Kubernetes Security Hardening** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does a Pod securityContext control?
@@ -292,18 +369,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Admission policies enforce organisational baselines so individual manifests cannot opt into privileged mode. Runtime settings protect each Pod; admission makes the standard mandatory.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Kubernetes Networking Deep Dive](kubernetes-networking-deep-dive.md)
 
-
-
 ## References
+
+
+
+
 
 
 

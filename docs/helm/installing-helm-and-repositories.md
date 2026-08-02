@@ -40,24 +40,32 @@ comments: false
 
 
 
+
+
+
+
 Install Helm 3, point it at your kubeconfig cluster, add a chart repository, and search/pull a chart.
 
 Install via package manager or the official script. Configure **repos** (`helm repo add`) or use **OCI** registries (`oci://…`). Plugins extend the CLI (for example `helm-diff`).
 
 This is a core tutorial in **Module 2 · Installing Helm** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Helm Architecture](helm-architecture-and-components.md)
 - Working `kubectl` cluster (kind/minikube/cloud)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -68,9 +76,11 @@ By the end of this tutorial, you will be able to:
 - [ ] List plugins concept  
 - [ ] Confirm cluster context
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -78,9 +88,11 @@ This topic’s control points and relationships are shown below.
 
 ![Helm architecture](../assets/excalidraw/helm-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -130,50 +142,102 @@ Helm does not need a special server component in the cluster. If `kubectl` can r
 - Assuming plugins are required for core install/upgrade — they are optional helpers.
 - Pointing Helm at the wrong kubecontext and installing into the wrong cluster.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Create, lint, render, install, and uninstall a Helm chart demonstrating **Installing Helm and Repositories**.
+
+### Prerequisites
+
+- helm CLI
+- kubectl + lab cluster
+- Ability to create namespaces
+
+### Lab environment
+
+Workspace: `~/rebash-helm/module-02`
+
+Helm 3 against kind/minikube; release namespace `rebash-helm`.
 
 ```bash
 mkdir -p ~/rebash-helm/module-02 && cd ~/rebash-helm/module-02
 ```
 
-**Focus:** Verify Helm client and practise repository add/update/search
+### Real-world scenario
 
-### Step 1 – Check Helm and add a repository
+A team wants **Installing Helm and Repositories** packaged as a chart so GitOps can promote the same artefact across environments.
+
+### Step-by-step tasks
+
+#### Task 1 – Create and lint a chart
+
+Scaffold a chart and fail the build on lint errors before install.
 
 ```bash
 helm version
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm search repo bitnami/nginx --versions | head -n 5
+helm create labchart
+helm lint ./labchart | tee lint.txt
+helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
 ```
 
-### Step 2 – Pull a chart locally and inspect without installing from remote blindly
+**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+
+#### Task 2 – Install with values override
+
+Prove values change rendered replicas, then install with wait.
 
 ```bash
-helm pull bitnami/nginx --version $(helm search repo bitnami/nginx --versions -o json | python3 -c 'import sys,json; print(json.load(sys.stdin)[0]["version"])') --untar
-ls -la nginx
-helm template inspect-nginx ./nginx -n rebash-helm | head -n 30
-kubectl create namespace rebash-helm
-helm lint ./nginx
+kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
+cat > myvalues.yaml << 'EOF'
+replicaCount: 2
+EOF
+helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
+helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
+helm list -n rebash-helm
+kubectl get deploy -n rebash-helm
 ```
 
-### Final step – Cleanup note
+**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+
+### Validation steps
+
+- [ ] helm lint clean
+- [ ] Release listed in namespace
+- [ ] Uninstall removes the release
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
+| lint failed | Template YAML break | Fix templates; re-run helm lint |
+| context deadline | Slow cluster | Increase --timeout or fix readiness |
+
+### Challenge exercise
+
+Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+
+### Learning outcomes
+
+- Packaged Kubernetes YAML as a chart
+- Overrode values safely
+- Cleaned up the release
+
+### Cleanup
 
 ```bash
-rm -rf nginx nginx-*.tgz 2>/dev/null || true
-helm repo remove bitnami 2>/dev/null || true
+helm uninstall labchart -n rebash-helm 2>/dev/null || true
 kubectl delete namespace rebash-helm --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -182,9 +246,11 @@ kubectl delete namespace rebash-helm --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -198,9 +264,11 @@ Production practice for **Installing Helm and Repositories** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -210,9 +278,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -225,9 +295,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -237,9 +309,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -251,17 +325,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Installing Helm and Repositories** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does `helm repo add` store on your machine?
@@ -276,18 +354,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     A malicious repo can serve charts that escalate privileges. Prefer HTTPS repos you trust, pin versions, verify provenance when available, and review rendered YAML.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Working with Helm Charts](working-with-helm-charts.md)
 
-
-
 ## References
+
+
+
+
 
 
 

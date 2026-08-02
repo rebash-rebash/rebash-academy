@@ -39,23 +39,31 @@ comments: false
 
 
 
+
+
+
+
 Trace CLI → chart/repo → template render → release → Kubernetes API, and name the main Helm components.
 
 Helm 3 is a **client-only** tool (no Tiller). It talks to the Kubernetes API, stores release metadata as Secrets/ConfigMaps in the cluster, and renders Go templates with values.
 
 This is a core tutorial in **Module 1 · Helm Fundamentals** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Introduction to Helm](introduction-to-helm.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -66,9 +74,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe where release history lives  
 - [ ] Outline HTTP vs OCI chart sources
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -76,9 +86,11 @@ This topic’s control points and relationships are shown below.
 
 ![Helm architecture](../assets/excalidraw/helm-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -124,48 +136,102 @@ Mental model: **CLI → fetch chart → merge values → render templates → ap
 - Expecting `helm template` to catch every cluster error — admission webhooks and quotas only appear on apply.
 - Forgetting that hooks and CRDs have special lifecycle rules compared with ordinary templates.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Architecture and Components**.
+
+### Prerequisites
+
+- helm CLI
+- kubectl + lab cluster
+- Ability to create namespaces
+
+### Lab environment
+
+Workspace: `~/rebash-helm/module-01-arch`
+
+Helm 3 against kind/minikube; release namespace `rebash-helm`.
 
 ```bash
 mkdir -p ~/rebash-helm/module-01-arch && cd ~/rebash-helm/module-01-arch
 ```
 
-**Focus:** Map chart layout to rendered Kubernetes objects
+### Real-world scenario
 
-### Step 1 – Inspect chart structure and render
+A team wants **Helm Architecture and Components** packaged as a chart so GitOps can promote the same artefact across environments.
+
+### Step-by-step tasks
+
+#### Task 1 – Create and lint a chart
+
+Scaffold a chart and fail the build on lint errors before install.
 
 ```bash
-kubectl create namespace rebash-helm
-helm create arch-demo
-find arch-demo -type f | sort
-helm template demo ./arch-demo -n rebash-helm --debug 2>&1 | head -n 50
+helm version
+helm create labchart
+helm lint ./labchart | tee lint.txt
+helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
 ```
 
-### Step 2 – Install and inspect release secret metadata (Helm 3)
+**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+
+#### Task 2 – Install with values override
+
+Prove values change rendered replicas, then install with wait.
 
 ```bash
-helm upgrade --install demo ./arch-demo -n rebash-helm
-kubectl -n rebash-helm get secrets -l owner=helm
-helm -n rebash-helm get manifest demo | head -n 40
-helm -n rebash-helm status demo
+kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
+cat > myvalues.yaml << 'EOF'
+replicaCount: 2
+EOF
+helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
+helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
+helm list -n rebash-helm
+kubectl get deploy -n rebash-helm
 ```
 
-### Final step – Cleanup note
+**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+
+### Validation steps
+
+- [ ] helm lint clean
+- [ ] Release listed in namespace
+- [ ] Uninstall removes the release
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
+| lint failed | Template YAML break | Fix templates; re-run helm lint |
+| context deadline | Slow cluster | Increase --timeout or fix readiness |
+
+### Challenge exercise
+
+Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+
+### Learning outcomes
+
+- Packaged Kubernetes YAML as a chart
+- Overrode values safely
+- Cleaned up the release
+
+### Cleanup
 
 ```bash
-helm uninstall demo -n rebash-helm --ignore-not-found || true
+helm uninstall labchart -n rebash-helm 2>/dev/null || true
 kubectl delete namespace rebash-helm --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -174,9 +240,11 @@ kubectl delete namespace rebash-helm --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -190,9 +258,11 @@ Production practice for **Helm Architecture and Components** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -202,9 +272,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -217,9 +289,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -229,9 +303,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -243,17 +319,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Helm Architecture and Components** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What are the main directories inside a chart?
@@ -268,18 +348,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Removing Tiller eliminated a powerful in-cluster shared server. Helm 3 uses your kubeconfig credentials directly, so RBAC of the caller matters.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Installing Helm and Repositories](installing-helm-and-repositories.md)
 
-
-
 ## References
+
+
+
+
 
 
 

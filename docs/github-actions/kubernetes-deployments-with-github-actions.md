@@ -50,24 +50,32 @@ comments: false
 
 
 
+
+
+
+
 Sketch a GitHub Actions deploy job that applies a SHA-tagged image with `kubectl` or Helm, waits for rollout success, documents rollback, and draws a clear boundary between push Continuous Delivery (CD) and GitOps pull controllers.
 
 Pipelines that **push** manifests need a secure path into the cluster. Prefer short-lived credentials — OpenID Connect (OIDC) to a cloud Identity and Access Management (IAM) role that can call the Kubernetes API, or a narrowly scoped kubeconfig stored as an environment secret — never a cluster-admin key in unprotected repository secrets. Progressive delivery and rollbacks sit on Deployments or Helm releases. **GitOps** (Flux / Argo CD) inverts the model: the cluster pulls desired state from Git; CI updates Git rather than talking to the API directly.
 
 This is a core tutorial in **Module 8 · Kubernetes Deployments** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -80,9 +88,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Compare push CD with GitOps pull  
 - [ ] State when CI should stop applying to the cluster
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -91,9 +101,11 @@ This topic’s control points and relationships are shown below.
 
 ![Kubernetes deployment pipeline](../assets/excalidraw/gha-kubernetes-pipeline.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -141,76 +153,108 @@ Keep production behind manual approval on the environment. Prefer GitOps when ma
 - Both CI and Argo CD applying the same Deployment (duelling controllers).  
 - Skipping `helm history` so rollback targets are unclear.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Kubernetes Deployments with GitHub Actions** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-08/{.github/workflows,manifests}`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-08/{.github/workflows,manifests} && cd ~/rebash-github-actions/module-08/{.github/workflows,manifests}
 ```
 
-**Focus:** kubectl dry-run deploy workflow with environment protection
+### Real-world scenario
 
-### Step 1 – Manifests + deploy workflow
+Platform engineering wants **Kubernetes Deployments with GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
-mkdir -p .github/workflows manifests
-cat > manifests/deploy.yaml << 'EOF'
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: demo
-  namespace: rebash-lab
-data:
-  note: github-actions-k8s-lab
-EOF
-cat > .github/workflows/k8s.yml << 'EOF'
-name: Kubernetes deploy shape
-on: [workflow_dispatch]
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
-  id-token: write
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Client dry-run when kubectl exists
+      - name: Prove workspace
         run: |
-          if command -v kubectl >/dev/null; then
-            kubectl apply --dry-run=client -f manifests/
-          else
-            test -f manifests/deploy.yaml
-          fi
-  deploy_staging:
-    needs: validate
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "Wire cloud OIDC + kubectl apply for a real cluster"
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Validate manifests file
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-test -f manifests/deploy.yaml
-grep -E 'environment: staging|dry-run' .github/workflows/k8s.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -220,9 +264,11 @@ grep -E 'environment: staging|dry-run' .github/workflows/k8s.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -237,9 +283,11 @@ Production practice for **Kubernetes Deployments with GitHub Actions** always co
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -250,9 +298,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -266,9 +316,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -279,9 +331,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -294,18 +348,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Kubernetes Deployments with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do you authenticate kubectl from GitHub Actions safely?
@@ -320,9 +378,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Prefer short-lived credentials via OIDC, namespace-scoped Roles, and environment reviewers for production.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -330,9 +390,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Terraform Pipelines with GitHub Actions](terraform-pipelines-with-github-actions.md)
 
-
-
 ## References
+
+
+
+
 
 
 

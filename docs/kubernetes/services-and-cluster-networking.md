@@ -43,23 +43,31 @@ comments: false
 
 
 
+
+
+
+
 Create a ClusterIP Service that load-balances to Deployment Pods and explain NodePort, LoadBalancer, ExternalName, and headless modes.
 
 A **Service** gives a stable virtual IP and DNS name. Selectors bind to Pod labels; **EndpointSlices** track backends. **kube-proxy** (or eBPF dataplanes) implement distribution.
 
 This is a core tutorial in **Module 5 · Services & Networking** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Workload Controllers](workload-controllers-statefulset-daemonset-jobs.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -70,9 +78,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use DNS `svc.namespace.svc.cluster.local`  
 - [ ] Inspect endpoints / EndpointSlices
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -80,9 +90,11 @@ This topic’s control points and relationships are shown below.
 
 ![Service networking](../assets/excalidraw/k8s-service-networking.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -128,48 +140,97 @@ Pods are mortal — their IPs change on every reschedule. Applications and other
 - Testing with `curl` to a Pod IP from outside the cluster network — use Service DNS from a debug Pod.
 - Ignoring readiness: not-ready Pods should drop from endpoints; missing probes keep bad Pods in the pool.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Services and Cluster Networking** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-05`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-05`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-05 && cd ~/rebash-k8s/module-05
 ```
 
-**Focus:** Expose Pods via ClusterIP and exercise Service selectors
+### Real-world scenario
 
-### Step 1 – Create Deployment and Service
+Your platform team is rolling out **Services and Cluster Networking** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-kubectl -n rebash-lab create deployment svc-demo --image=nginx:1.27-alpine --replicas=2
-kubectl -n rebash-lab expose deployment svc-demo --port=80 --target-port=80 --name=svc-demo
-kubectl -n rebash-lab get svc svc-demo -o wide
-kubectl -n rebash-lab get endpoints svc-demo
-```
+### Step-by-step tasks
 
-### Step 2 – Test Service DNS from another Pod
+#### Task 1 – Expose a Deployment with a Service
+
+Services give a stable virtual IP and DNS name while Pods churn.
 
 ```bash
-kubectl -n rebash-lab run curl --image=busybox:1.36 --restart=Never --command -- sleep 3600
-kubectl -n rebash-lab wait --for=condition=Ready pod/curl --timeout=60s
-kubectl -n rebash-lab exec curl -- wget -qO- http://svc-demo/ | head -n 3
-kubectl -n rebash-lab describe svc svc-demo | sed -n '/Selector:/,/Session Affinity:/p'
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment web --image=nginx:1.27-alpine -n rebash-lab
+kubectl expose deployment web -n rebash-lab --port=80 --target-port=80 --name=web
+kubectl get svc,endpoints -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Service `web` has Endpoints populated.
+
+#### Task 2 – Prove ClusterIP reachability
+
+Test from inside the cluster the way apps discover each other.
+
+```bash
+kubectl run curl --rm -it --restart=Never -n rebash-lab --image=curlimages/curl:8.5.0 -- \
+  curl -sS -o /dev/null -w '%{http_code}\n' http://web
+kubectl describe svc web -n rebash-lab | tee svc.txt
+```
+
+**Expected output:** HTTP status `200` printed; svc.txt shows selector and Endpoints.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Services and Cluster Networking
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -178,9 +239,11 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -194,9 +257,11 @@ Production practice for **Services and Cluster Networking** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -206,9 +271,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -221,9 +288,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -233,9 +302,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -247,17 +318,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Services and Cluster Networking** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does a ClusterIP Service provide to clients?
@@ -272,18 +347,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     With no matching Ready Pods, the Service still has a ClusterIP but no backends, so connections fail. Check selectors, readiness, and EndpointSlices when debugging.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Ingress and External Access](ingress-and-external-access.md)
 
-
-
 ## References
+
+
+
+
 
 
 

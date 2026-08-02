@@ -41,23 +41,37 @@ comments: false
 
 
 
+
+
+
+
+
+
 Operate a cluster with declarative `kubectl apply`, inspect objects, stream logs, and exec for debugging — without guessing flags under pressure.
 
 Prefer **apply** + Git over imperative create for anything lasting. Imperative commands are fine for labs and break-glass.
 
 This is a core tutorial in **Module 2 · Cluster Setup** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
+
+
 
 
 
 - Working cluster from [Installing Kubernetes](installing-kubernetes-and-kubectl.md)
 
-
-
 ## Learning Objectives
+
+
+
+
+
+
 
 
 
@@ -68,9 +82,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `-n` / contexts safely  
 - [ ] Dry-run client/server
 
-
-
 ## Architecture
+
+
+
+
+
+
 
 
 
@@ -78,9 +96,13 @@ This topic’s control points and relationships are shown below.
 
 ![Control plane path](../assets/excalidraw/k8s-control-plane.svg)
 
-
-
 ## Theory
+
+
+
+
+
+
 
 
 
@@ -129,62 +151,98 @@ Server-side apply and field managers matter in advanced teams; for this course, 
 - `port-forward` is a debug tunnel, not a production exposure path.
 - Running `delete` without confirming selectors — label mistakes wipe the wrong workloads.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **kubectl Essentials and Workflows** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-02-kubectl`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-02-kubectl`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-02-kubectl && cd ~/rebash-k8s/module-02-kubectl
 ```
 
-**Focus:** Practise everyday kubectl workflows: get, describe, logs, exec, apply
+### Real-world scenario
 
-### Step 1 – Apply a manifest and explore resources
+Your platform team is rolling out **kubectl Essentials and Workflows** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-cat > app.yaml <<'EOF'
-apiVersion: v1
-kind: Pod
-metadata:
-  name: tools
-  namespace: rebash-lab
-  labels:
-    app: tools
-spec:
-  containers:
-  - name: tools
-    image: busybox:1.36
-    command: ["sleep", "3600"]
-EOF
-kubectl apply -f app.yaml
-kubectl -n rebash-lab get pods -l app=tools -o wide
-kubectl -n rebash-lab describe pod tools | head -n 30
-```
+### Step-by-step tasks
 
-### Step 2 – Logs, exec, and output formats
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What it is** against a live API.
 
 ```bash
-kubectl -n rebash-lab exec tools -- uname -a
-kubectl -n rebash-lab get pod tools -o yaml | head -n 20
-kubectl -n rebash-lab get pod tools -o jsonpath='{.status.phase}{"
-"}'
-kubectl api-resources | head -n 15
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for kubectl Essentials and Workflows
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
+
+
 
 
 
@@ -193,9 +251,13 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
+
+
 
 
 
@@ -209,9 +271,13 @@ Production practice for **kubectl Essentials and Workflows** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
+
+
 
 
 
@@ -221,9 +287,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
+
+
 
 
 
@@ -236,9 +306,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
+
+
 
 
 
@@ -248,9 +322,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
+
+
 
 
 
@@ -262,17 +340,25 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
+
+
 
 
 
 **kubectl Essentials and Workflows** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
+
+
 
 
 1. What is the difference between imperative kubectl run and declarative kubectl apply?
@@ -287,18 +373,26 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Git-backed manifests give review, history, and repeatable environments. Imperative edits drift from documented intent and are hard to audit after incidents.
 
-
-
 ## Related Tutorials
+
+
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Pods — The Atomic Unit](pods-the-atomic-unit.md)
 
-
-
 ## References
+
+
+
+
+
+
 
 
 

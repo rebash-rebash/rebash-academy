@@ -1,0 +1,65 @@
+# Linux glossary
+
+Curated terms for the REBASH Linux course book. Keep entries short and practical.
+
+- **ACL** — Access Control List; extra file permissions beyond owner/group/other.
+- **AppArmor** — Linux Security Module that confines programmes with path-based profiles (common on Ubuntu).
+- **apt** — Debian/Ubuntu package manager front end (`apt` / `apt-get`).
+- **BIOS** — Basic Input/Output System; older firmware that starts the boot process.
+- **bootloader** — Software (often GRUB) that loads the kernel and initramfs.
+- **cgroup** — Control group; kernel feature that limits and accounts CPU, memory, and I/O for process groups.
+- **CI/CD** — Continuous Integration / Continuous Delivery (or Deployment).
+- **cron** — Time-based job scheduler for recurring commands.
+- **DAC** — Discretionary Access Control; classic Unix owner/group/other permissions.
+- **df** — Report free disk space on mounted filesystems (blocks and, with `-i`, inodes).
+- **distribution (distro)** — A complete Linux OS: kernel plus user space, package manager, and release policy.
+- **DNS** — Domain Name System; maps names to IP addresses.
+- **dnf** — Package manager used on many RHEL-family systems.
+- **DR** — Disaster Recovery; plan and practise to restore service after a major failure.
+- **FHS** — Filesystem Hierarchy Standard; conventional layout of `/etc`, `/var`, `/usr`, and related paths.
+- **firewall** — Host or network filter that allows or denies traffic (for example UFW or nftables).
+- **GID** — Group ID; numeric identity of a group.
+- **GRUB** — GRand Unified Bootloader; common bootloader on Ubuntu and many servers.
+- **hard link** — Another directory entry for the same inode on one filesystem.
+- **HTTP / HTTPS** — Hypertext Transfer Protocol (and its TLS-secured form) used by web services.
+- **I/O** — Input/Output; disk or network data movement.
+- **IaC** — Infrastructure as Code.
+- **initramfs** — Initial RAM filesystem loaded with the kernel for early boot drivers and root mount.
+- **inode** — Filesystem object that stores metadata and points to a file’s data blocks.
+- **journald** — systemd’s logging service; query with `journalctl`.
+- **kernel** — Core of Linux that manages CPU, memory, devices, and system calls.
+- **LVM** — Logical Volume Manager; flexible disk volumes above physical disks/partitions.
+- **MAC** — Mandatory Access Control (SELinux or AppArmor), enforced by policy beyond DAC.
+- **mount point** — Directory where a filesystem is attached into the tree.
+- **namespace** — Kernel isolation boundary (PID, mount, network, and others) used by containers.
+- **OCI** — Open Container Initiative; standard image and runtime formats.
+- **PAM** — Pluggable Authentication Modules; login and auth stack configuration.
+- **PATH** — Environment variable listing directories searched for executable commands.
+- **PID** — Process ID; number identifying a running process.
+- **pipe** — Connects stdout of one command to stdin of the next (`|`).
+- **process** — A running instance of a programme.
+- **PTY / TTY** — Pseudo-terminal / terminal device connecting a session to a shell.
+- **RBAC** — Role-Based Access Control.
+- **RHEL** — Red Hat Enterprise Linux and compatible distributions.
+- **root** — UID 0 superuser account, or the filesystem root `/`.
+- **RPO** — Recovery Point Objective; how much data loss (in time) is acceptable.
+- **RTO** — Recovery Time Objective; how quickly service must be restored.
+- **SELinux** — Security-Enhanced Linux; label-based MAC common on RHEL-family systems.
+- **shell** — Programme that reads and runs commands (for example `bash`).
+- **SSH** — Secure Shell; encrypted remote login and file transfer.
+- **SRE** — Site Reliability Engineering.
+- **sticky bit** — Directory mode bit so users can delete only their own files (typical on `/tmp`).
+- **sudo** — Run a command as another user (usually root) under policy.
+- **symlink** — Symbolic link; a path that points to another path (may cross filesystems).
+- **systemd** — Common init system and service manager (PID 1 on most modern servers).
+- **target** — systemd unit that groups other units into a desired system state (replaces old runlevels).
+- **TCP** — Transmission Control Protocol; reliable stream transport used by SSH and HTTP.
+- **timer** — systemd unit that activates another unit on a schedule.
+- **UEFI** — Unified Extensible Firmware Interface; modern firmware replacing classic BIOS.
+- **UFW** — Uncomplicated Firewall; simple front end to nftables/iptables on Ubuntu.
+- **UID** — User ID; numeric identity of a user account.
+- **umask** — Mask that controls default permissions for newly created files.
+- **unit** — systemd configuration object (service, timer, mount, target, and so on).
+- **UUID** — Universally Unique Identifier; stable disk/filesystem id for `/etc/fstab`.
+- **VM** — Virtual machine.
+- **zombie process** — Process that has exited but still has an entry until its parent reaps it.

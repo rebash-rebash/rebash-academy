@@ -1,3 +1,728 @@
 ---
-alwaysApply: true
+description: Intelligent hands-on lab generation system for REBASH Academy
+alwaysApply: false
 ---
+
+# REBASH Academy Hands-on Lab System
+
+## Canonical lab mandate (mandatory)
+
+Follow `.cursor/prompts/tutorials/create_lab.md` and `.cursor/rules/00-foundation/09-content-quality-standard.mdc`.
+
+Labs must be real-world, topic-specific, and **copy-paste executable** end-to-end.
+
+Required core: Objective · Prerequisites · Lab environment · Real-world scenario · Step-by-step tasks (Expected output each) · Validation · Common errors · Challenge (working artefact) · Learning outcomes · Cleanup.
+
+**Ban:** note-taking / runbook.md challenges; generic host-baseline templates reused across unrelated topics; placeholder `# TODO` commands.
+
+Prefer Codex until the user changes agents.
+
+## Purpose
+
+This rule defines how hands-on labs should be generated.
+
+Labs transform theoretical knowledge into practical engineering skills.
+
+Every lab should simulate real-world engineering work.
+
+Learners should leave every lab with practical confidence.
+
+---
+
+# Philosophy
+
+Every lab should answer
+
+↓
+
+What problem am I solving?
+
+↓
+
+What environment am I working in?
+
+↓
+
+What is my objective?
+
+↓
+
+How do I complete it?
+
+↓
+
+How do I validate success?
+
+↓
+
+What happens in production?
+
+↓
+
+How do I troubleshoot failures?
+
+↓
+
+How can I improve it?
+
+Labs should simulate engineering work.
+
+Not classroom exercises.
+
+---
+
+# Learning Journey
+
+Every lab should follow
+
+Scenario
+
+↓
+
+Business Context
+
+↓
+
+Objectives
+
+↓
+
+Environment
+
+↓
+
+Architecture
+
+↓
+
+Tasks
+
+↓
+
+Validation
+
+↓
+
+Troubleshooting
+
+↓
+
+Reflection
+
+↓
+
+Production Discussion
+
+↓
+
+Next Challenge
+
+---
+
+# Hero Section
+
+Automatically include
+
+Lab Name
+
+Short Description
+
+Business Scenario
+
+Difficulty
+
+Estimated Time
+
+Required Technologies
+
+Environment
+
+Prerequisites
+
+Primary Action
+
+Last Updated
+
+---
+
+# Business Scenario
+
+Always begin with a realistic scenario.
+
+Examples
+
+You are a Platform Engineer.
+
+You are deploying a Kubernetes application.
+
+Your production cluster is failing.
+
+Your CI/CD pipeline has stopped working.
+
+A customer reports an outage.
+
+A new security policy must be implemented.
+
+Labs should feel authentic.
+
+---
+
+# Learning Objectives
+
+Clearly define
+
+Knowledge Objectives
+
+Technical Objectives
+
+Operational Objectives
+
+Production Objectives
+
+Success Criteria
+
+Objectives should be measurable.
+
+---
+
+# Prerequisites
+
+Separate
+
+Required Knowledge
+
+Required Tools
+
+Required Accounts
+
+Infrastructure
+
+Cloud Resources
+
+Previous Modules
+
+Environment Preparation
+
+Never assume prerequisites.
+
+---
+
+# Environment
+
+Clearly define
+
+Local Machine
+
+Virtual Machine
+
+Docker
+
+Kubernetes
+
+Cloud
+
+Git Repository
+
+Sample Application
+
+Credentials
+
+Required Services
+
+Learners should understand where they are working.
+
+---
+
+# Architecture
+
+Automatically generate
+
+Architecture Diagram
+
+Infrastructure Diagram
+
+Network Diagram
+
+Workflow Diagram
+
+Deployment Diagram
+
+Select the most appropriate diagrams.
+
+---
+
+# Lab Tasks
+
+Break the lab into milestones.
+
+Each milestone should include
+
+Objective
+
+Background
+
+Instructions
+
+Commands
+
+Expected Output
+
+Validation
+
+Hints
+
+Common Mistakes
+
+Recovery Steps
+
+Milestones should build progressively.
+
+---
+
+# Challenge-Based Learning
+
+Whenever appropriate
+
+Present a task
+
+Allow learners to think
+
+Offer Hint 1
+
+Offer Hint 2
+
+Offer Solution
+
+Do not reveal solutions immediately.
+
+Encourage problem-solving.
+
+---
+
+# Commands
+
+Every command should include
+
+Purpose
+
+Syntax
+
+Explanation
+
+Expected Output
+
+Validation
+
+Production Notes
+
+Security Notes
+
+Never provide unexplained commands.
+
+---
+
+# Validation
+
+After every milestone provide
+
+Verification Commands
+
+Expected Logs
+
+Expected Resources
+
+Screenshots when useful
+
+Health Checks
+
+Success Indicators
+
+Learners should always know their current status.
+
+---
+
+# Hints
+
+Provide progressive hints.
+
+Hint 1
+
+Small clue
+
+↓
+
+Hint 2
+
+Stronger clue
+
+↓
+
+Hint 3
+
+Nearly complete solution
+
+↓
+
+Solution
+
+Reveal only when necessary.
+
+---
+
+# Troubleshooting
+
+Explain
+
+Symptoms
+
+Diagnosis
+
+Commands
+
+Logs
+
+Root Cause
+
+Resolution
+
+Verification
+
+Prevention
+
+Teach systematic troubleshooting.
+
+---
+
+# Reflection
+
+After completing the lab ask
+
+What happened?
+
+↓
+
+Why did it work?
+
+↓
+
+What would happen differently in production?
+
+↓
+
+How would this scale?
+
+↓
+
+What would you improve?
+
+Encourage engineering thinking.
+
+---
+
+# Production Discussion
+
+Explain
+
+Security
+
+Reliability
+
+High Availability
+
+Monitoring
+
+Logging
+
+Scaling
+
+Automation
+
+Cost Optimisation
+
+Operational Best Practices
+
+Labs should connect to production engineering.
+
+---
+
+# Optional Challenges
+
+Always include
+
+Performance Optimisation
+
+Security Hardening
+
+Automation
+
+Observability
+
+Disaster Recovery
+
+Multi-region Support
+
+Advanced Configuration
+
+Stretch learners beyond the minimum solution.
+
+---
+
+# Deliverables
+
+Clearly list
+
+Files Created
+
+Resources Deployed
+
+Configuration
+
+Documentation
+
+Screenshots
+
+Repository
+
+Deployment Result
+
+Learners should know what they produced.
+
+---
+
+# Cleanup
+
+Always explain
+
+Resources to Remove
+
+Commands
+
+Cost Considerations
+
+Verification
+
+Never leave unnecessary resources running.
+
+---
+
+# Summary
+
+Summarise
+
+Objectives Completed
+
+Skills Learned
+
+Key Commands
+
+Architecture
+
+Lessons Learned
+
+Production Insights
+
+Keep summaries concise.
+
+---
+
+# Next Learning
+
+Recommend
+
+Related Labs
+
+Projects
+
+Tutorials
+
+Technology Pages
+
+Interview Questions
+
+Certification Topics
+
+Advanced Labs
+
+Continue the learning journey.
+
+---
+
+# Navigation
+
+Every lab should include
+
+Breadcrumbs
+
+Progress
+
+Current Milestone
+
+Previous
+
+Next
+
+Hints
+
+Resources
+
+Feedback
+
+Table of Contents
+
+---
+
+# Responsive Behaviour
+
+Desktop
+
+Lab Workspace
+
+Tablet
+
+Simplified Layout
+
+Mobile
+
+Single-column Instructions
+
+Sticky Progress
+
+Large Touch Targets
+
+Labs should remain usable on every device.
+
+---
+
+# Accessibility
+
+Support
+
+Keyboard Navigation
+
+Screen Readers
+
+Accessible Code Blocks
+
+Readable Diagrams
+
+High Contrast
+
+Reduced Motion
+
+Accessibility is mandatory.
+
+---
+
+# AI Decision Making
+
+Before generating determine
+
+↓
+
+Business Scenario
+
+↓
+
+Technology
+
+↓
+
+Audience
+
+↓
+
+Difficulty
+
+↓
+
+Environment
+
+↓
+
+Infrastructure
+
+↓
+
+Validation Strategy
+
+↓
+
+Troubleshooting Strategy
+
+↓
+
+Production Relevance
+
+↓
+
+Generate
+
+---
+
+# Anti-patterns
+
+Never
+
+Create labs without scenarios
+
+Reveal solutions immediately
+
+Skip validation
+
+Skip troubleshooting
+
+Provide unexplained commands
+
+Ignore production practices
+
+Skip cleanup
+
+Leave learners without reflection
+
+Create unrealistic environments
+
+End without next steps
+
+---
+
+# Validation Checklist
+
+Before completing verify
+
+✓ Scenario realistic
+
+✓ Objectives defined
+
+✓ Prerequisites complete
+
+✓ Environment documented
+
+✓ Architecture included
+
+✓ Milestones progressive
+
+✓ Validation after every milestone
+
+✓ Hints included
+
+✓ Troubleshooting complete
+
+✓ Reflection included
+
+✓ Production discussion included
+
+✓ Cleanup documented
+
+✓ Next learning recommended
+
+---
+
+# Success Criteria
+
+Every REBASH Academy lab should feel like a real engineering assignment.
+
+Learners should solve authentic problems, validate every milestone, troubleshoot failures, understand production implications and complete the lab with the confidence to perform similar tasks in real enterprise environments.
+
+The learner should finish the lab thinking:
+
+"I could perform this task at work."

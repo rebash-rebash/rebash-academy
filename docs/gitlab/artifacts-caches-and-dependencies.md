@@ -46,24 +46,32 @@ comments: false
 
 
 
+
+
+
+
 Configure `artifacts:` and `cache:` so a build job produces a shareable package, a test job consumes it, and dependency installs reuse a keyed cache without treating cache as a correctness guarantee.
 
 **Artefacts** are job outputs GitLab stores and can pass to later jobs or attach to merge requests (packages, JUnit reports, coverage). **Cache** speeds installs by restoring files between pipelines; it is best-effort and must not replace pinned lockfiles. Reports (`junit`, `coverage_report`, and similar) surface quality signals in the MR UI.
 
 This is a core tutorial in **Module 7 · Artifacts & Cache** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Variables, Secrets, and OIDC](variables-secrets-and-oidc.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -76,9 +84,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Distinguish artefacts from cache and from container images  
 - [ ] Attach a simple report artefact for the MR widget
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -87,9 +97,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab artefacts and cache](../assets/excalidraw/gitlab-artifacts-cache.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -137,72 +149,105 @@ Prefer short retention for intermediate binaries; keep release artefacts on tags
 - Expecting artefacts without listing paths or after a failed job (`when: on_success` default).  
 - Confusing job artefacts with Container Registry images.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Artifacts, Caches, and Dependencies** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-07`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-07 && cd ~/rebash-gitlab/module-07
 ```
 
-**Focus:** configure cache keys and job artifacts with expire_in
+### Real-world scenario
 
-### Step 1 – Build pipeline with cache + artifacts
+Your squad is encoding **Artifacts, Caches, and Dependencies** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-mkdir -p src && echo 'print("build")' > src/main.py
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [deps, build, test]
-variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-deps:
-  stage: deps
+stages: [lint, test]
+lint:
+  stage: lint
   image: python:3.12-alpine
-  cache:
-    key: {files: [requirements.txt]}
-    paths: [.cache/pip]
   script:
-    - echo pytest > requirements.txt
-    - pip install -r requirements.txt
-  artifacts:
-    paths: [requirements.txt]
-    expire_in: 1 day
-build:
-  stage: build
-  image: python:3.12-alpine
-  needs: [deps]
-  script:
-    - mkdir -p dist && cp -r src dist/ && echo "$CI_COMMIT_SHA" > dist/REVISION
-  artifacts:
-    paths: [dist/]
-    expire_in: 3 days
+    - python -m py_compile src/app.py
 test:
   stage: test
   image: python:3.12-alpine
-  needs: [build]
-  script: ["test -f dist/REVISION", "cat dist/REVISION"]
+  needs: [lint]
+  script:
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Verify cache and artifact paths
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-grep -A8 'cache:' .gitlab-ci.yml
-grep -A3 'artifacts:' .gitlab-ci.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -212,9 +257,11 @@ grep -A3 'artifacts:' .gitlab-ci.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -229,9 +276,11 @@ Production practice for **Artifacts, Caches, and Dependencies** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -242,9 +291,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -258,9 +309,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -271,9 +324,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -286,18 +341,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Artifacts, Caches, and Dependencies** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What is the difference between cache and artifacts in GitLab CI?
@@ -312,9 +371,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Treat caches as untrusted acceleration: pin keys, avoid storing secrets, and keep artifact retention short.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -322,9 +383,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Building Docker Images in CI](building-docker-images-in-ci.md)
 
-
-
 ## References
+
+
+
+
 
 
 

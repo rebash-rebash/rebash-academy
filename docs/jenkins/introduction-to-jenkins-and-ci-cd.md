@@ -31,9 +31,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Introduction to Jenkins and CI/CD
 
 ## Overview
+
+
 
 Explain what Continuous Integration (CI) and Continuous Delivery (CD) solve, place Jenkins Long-Term Support (LTS) in that model, and describe the controller–agent architecture.
 
@@ -45,11 +48,15 @@ This is a core tutorial in **Module 1 · Introduction to Jenkins and CI/CD** of 
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -60,11 +67,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Jenkins architecture](../assets/excalidraw/jenkins-architecture.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -117,44 +128,98 @@ The [Guided Tour](https://www.jenkins.io/doc/pipeline/tour/getting-started/) men
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Introduction to Jenkins and CI/CD** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-01`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-01 && cd ~/rebash-jenkins/module-01
 ```
 
-**Focus:** document CI/CD terms and sketch a controller–agent layout
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Introduction to Jenkins and CI/CD**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Capture controller/agent mental model files
+
+Document how this topic shows up on a real controller.
 
 ```bash
-cat > cicd-notes.md << 'EOF'
-# Jenkins CI/CD notes
-- CI: build and test every meaningful change
-- CD: always releasable; gates decide when to ship
-- Controller: schedules, stores JENKINS_HOME
-- Agents: execute builds; prefer labels over built-in node
-- LTS: production line; pin image tags in Compose
+tee scenario.md << 'EOF'
+Topic: Introduction to Jenkins and CI/CD
+- Controller owns config and orchestration
+- Agents execute untrusted build steps
+- Prefer Jenkinsfile in SCM over click-ops jobs
 EOF
-test -f cicd-notes.md && wc -l cicd-notes.md
+cat scenario.md
+mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
 ```
 
-### Step 2 – Validate your mental model checklist
+**Expected output:** scenario.md and jobs/README.txt exist.
+
+#### Task 2 – Write a minimal Declarative stub
+
+Even management topics should leave a Pipeline artefact.
 
 ```bash
-grep -E 'Controller|Agents|LTS|CI:' cicd-notes.md
-printf '%s\n' "controller=schedule" "agent=execute" "lts=production" > model.txt
-cat model.txt
+cat > Jenkinsfile << 'EOF'
+pipeline {
+  agent any
+  stages { stage('OK') { steps { echo 'lab' } } }
+}
+EOF
+grep -n agent Jenkinsfile
 ```
 
-### Final cleanup
+**Expected output:** Jenkinsfile present with an agent directive.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+# Keep lab notes under ~/rebash-jenkins/
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-01/`
 - [ ] You can explain each Theory section in your own words
@@ -162,6 +227,8 @@ cat model.txt
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Introduction to Jenkins and CI/CD** always combines:
 
@@ -175,6 +242,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -182,6 +251,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Building on the built-in node"
     Untrusted Pipeline steps can reach controller credentials and filesystem. Use agents with labels from the start.
@@ -194,6 +265,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Introduction to Jenkins and CI/CD** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -201,6 +274,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -212,9 +287,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Introduction to Jenkins and CI/CD** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. What is the difference between Continuous Integration and Continuous Delivery?
 2. What does the Jenkins controller store, and what should agents do instead?
@@ -230,10 +309,14 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Installing Jenkins LTS](installing-jenkins-lts.md)
 
 ## References
+
+
 
 - [Jenkins User Documentation](https://www.jenkins.io/doc/)
 - [Pipeline Getting Started](https://www.jenkins.io/doc/pipeline/tour/getting-started/)

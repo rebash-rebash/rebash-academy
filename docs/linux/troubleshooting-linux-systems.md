@@ -1,19 +1,26 @@
 ---
 title: "Troubleshooting Linux Systems"
-description: "Systematically debug boot failures, high CPU/memory, disk full, permissions, network, service failures, logs, and bottlenecks."
-difficulty: advanced
-estimated_time: "60 min"
+description: "Use a repeatable Linux troubleshooting method — gather facts, narrow scope, fix forward — with a hands-on broken-service lab on Ubuntu."
+difficulty: intermediate
+estimated_time: "50–60 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: linux
+technology: linux
+module: "Module 15 · Troubleshooting"
 tags:
   - linux
   - troubleshooting
-  - incidents
-  - performance
+  - incident
+  - journalctl
 prerequisites:
-  - Containers — Namespaces, cgroups, OverlayFS, and OCI
-  - Terminal access with a regular user account (sudo where noted)
+  - linux/containers-namespaces-cgroups-and-oci
+next:
+  - linux/production-linux-hardening-and-performance
+related:
+  - linux/systemd-services-and-journalctl
+  - linux/host-monitoring-vmstat-iostat-sar
+interview: interview/linux
 comments: false
 ---
 
@@ -21,28 +28,33 @@ comments: false
 
 ## Overview
 
-Incidents reward a checklist over panic. Build a repeatable troubleshooting path.
+Troubleshooting is not random command typing. It is a **method**: define the symptom, gather facts, narrow the scope, make one change at a time, and prove recovery with evidence. On Linux hosts the first facts usually come from **time**, **recent changes**, **failed units**, **disk**, **memory**, **network listen ports**, and **logs**.
 
-This is **Tutorial 23** in **Module 15: Troubleshooting** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — written for administrators, DevOps engineers, SREs, and platform engineers operating production Linux.
+In Cloud and DevOps work you troubleshoot jump servers, Continuous Integration (CI) runners, Kubernetes nodes, and application VMs. The tools differ slightly; the method stays the same. In this tutorial you will practise a checklist, break and fix a small systemd unit on purpose, and save an incident-style evidence pack under `~/rebash-linux/lab23`.
+
+In production, communicate blast radius (how much is affected) in plain language, avoid untracked changes, and write down what you tried. Guessing without evidence extends outages.
+
+This is **Tutorial 23** in **Module 15: Troubleshooting** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
 
 ## Prerequisites
 
-- Containers — Namespaces, cgroups, OverlayFS, and OCI
-- Terminal access with a regular user account (sudo where noted)
+- [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md)
+- Comfort with [systemd Services and journalctl](systemd-services-and-journalctl.md)
+- A **practice Ubuntu 22.04/24.04 VM** with `sudo`
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Troubleshooting Linux Systems” on a real Linux host
-- [ ] Use modern tools (`ip`/`ss`, `systemctl`/`journalctl`) where they apply
-- [ ] Complete the lab under `~/rebash-linux/` with clear outputs
-- [ ] Relate this topic to Cloud, DevOps, and production operations
-- [ ] Explain the failure modes you would check first in an incident
+- [ ] Apply a fact-first troubleshooting checklist on a Linux host
+- [ ] Use `systemctl --failed`, `journalctl`, `df`, and `ss` as early signals
+- [ ] Diagnose a broken systemd unit from status + journal
+- [ ] Fix forward with a reversible change and prove recovery
+- [ ] Pack incident evidence under `~/rebash-linux/lab23`
 
 ## Architecture
 
-Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
+Troubleshooting walks from user symptom → host signals → component logs → targeted fix → validation.
 
 ![Architecture diagram for Troubleshooting Linux Systems](../assets/excalidraw/linux-troubleshooting.svg)
 
@@ -50,155 +62,319 @@ Linux ops work sits between humans/automation and the kernel, services, and netw
 
 ### What it is
 
-**Troubleshooting** is a disciplined loop: define blast radius and recent changes, gather host signals, narrow the domain, confirm with logs, change one variable, and record evidence. Domains include boot, CPU, memory, disk, permissions, network, and services. The goal is not clever guesses — it is reproducible diagnosis that works at 03:00 under pressure.
+A practical loop:
+
+1. **Symptom** — what fails, since when, for whom?  
+2. **Scope** — one host, one service, or many?  
+3. **Facts** — status, logs, resources, recent changes  
+4. **Hypothesis** — one likely cause  
+5. **Action** — smallest safe change  
+6. **Proof** — symptom gone; evidence saved  
+
+```bash
+systemctl --failed
+journalctl -xe --no-pager | tail
+df -hT
+ss -lntu
+```
 
 ### Why it matters
 
-Cloud and Kubernetes incidents still terminate on Linux nodes. Without a method, teams thrash: restarting healthy services, widening permissions, or rebooting away evidence. A shared checklist (`systemctl --failed`, `df`, `ip`/`ss`, `journalctl`) aligns on-call engineers and shortens Mean Time To Recovery (MTTR). Post-incident learning depends on the notes you took while debugging.
+Unstructured troubleshooting causes longer outages and new failures. Interviewers and incident commanders look for method and evidence, not memorised trivia.
 
 ### How it works
 
-Start with urgency signals: load, memory, disk, failed units. Classify: boot (GRUB, fstab, emergency target), CPU (`top`/`ps`, then careful `strace`/`perf`), memory (`free`, OOM in `dmesg`/`journalctl -k`), disk (`df`/`df -i`/`du`, deleted-open files), permissions (`namei -l`, ACLs, MAC), network (`ip route`, `ss`, DNS, firewalls, `curl -v`), services (`systemctl status`, `journalctl -u`, config `-t`). Time-box log analysis to since deploy or since alert. Apply the USE method for performance: utilisation, saturation, errors. Fix forward with evidence; prefer reversible changes.
-
-### Key concepts and comparisons
-
-| Domain | First tools |
-|--------|-------------|
-| Boot | `journalctl -b -p err`, failed units, fstab |
-| CPU | `top`, `ps`, load vs run queue |
-| Memory | `free`, OOM logs, top consumers |
-| Disk | `df -h`, `df -i`, `du`, `lsof +L1` |
-| Perms | `namei -l`, `id`, `getfacl`, MAC logs |
-| Network | `ip`, `ss`, `dig`, SG/firewall |
-| Service | `systemctl`, `journalctl -u`, config test |
-
-| Anti-pattern | Better |
-|--------------|--------|
-| Change five things at once | One change + evidence |
-| Reboot immediately | Capture journal/metrics first |
-| Disable SELinux to pass | Read denials; fix labels |
+| Area | First commands |
+|------|----------------|
+| Services | `systemctl status`, `--failed`, `journalctl -u` |
+| Capacity | `df -hT`, `df -i`, `free -h` |
+| CPU/I/O | `vmstat`, `iostat` |
+| Network | `ip -br a`, `ss -lntu` |
+| Auth/SSH | `journalctl -u ssh`, auth logs |
 
 ### Common pitfalls
 
-- Skipping blast radius — rebooting a shared node for a single pod symptom.
-- Trusting only application logs while systemd shows the unit never started.
-- Clearing disk by deleting files still held open — space does not return.
-- Chasing DNS when the security group is the deny.
-- Leaving the host worse (debug packages, permissive MAC) after the incident.
+- Changing three things at once.  
+- Rebooting as the first step without capturing logs.  
+- Fixing a symptom on the wrong host.  
+- No before/after proof in the ticket.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+Run a host fact pack, deploy a systemd unit that fails on purpose, diagnose it with `systemctl`/`journalctl`, fix it, prove it is active, and save evidence under `~/rebash-linux/lab23`.
+
+### Prerequisites
+
+- Ubuntu with `sudo` and systemd
+
+### Lab environment
+
+Workspace: `~/rebash-linux/lab23`
 
 ```bash
 mkdir -p ~/rebash-linux/lab23 && cd ~/rebash-linux/lab23
-```
-
-**Focus:** build a troubleshooting toolkit script; run failed-unit and df/cpu checks
-
-### Step 1 – Troubleshooting toolkit
-
-```bash
-cat > toolkit.sh << 'EOF'
-#!/usr/bin/env bash
 set -euo pipefail
-echo "== failed units =="; systemctl --failed --no-pager || true
-echo "== load/mem/disk =="; uptime; free -h; df -h
-echo "== top cpu =="; ps aux --sort=-%cpu | head -n 6
-echo "== journal err =="; journalctl -b -p err -n 15 --no-pager 2>/dev/null || true
-echo "== listeners =="; ss -tulpn | head
-EOF
-chmod +x toolkit.sh
-./toolkit.sh | tee toolkit-out.txt
+date -Is | tee incident-start.txt
+whoami | tee operator.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** timestamp and operator files exist.
+
+### Real-world scenario
+
+A practice “health writer” service should create `/var/tmp/rebash-lab23.ok` every time it runs. After a bad config change it fails. You are on call: gather host facts, find the failed unit, fix the ExecStart path, and attach proof that the unit is active again.
+
+### Step-by-step tasks
+
+#### Task 1 – Host fact pack
 
 ```bash
-# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-linux/lab23
+set -euo pipefail
+
+uname -a | tee uname.txt
+cat /etc/os-release | tee os-release.txt
+uptime | tee uptime.txt
+df -hT | tee df.txt
+free -h | tee free.txt
+systemctl is-system-running | tee systemd-state.txt || true
+systemctl --failed --no-pager | tee failed-before.txt || true
+ss -lntu | head -n 30 | tee ss.txt
+ip -br a | tee ip.txt
+```
+
+**Expected output:** fact files created; systemd state captured (may be `running` or `degraded`).
+
+#### Task 2 – Break a unit on purpose and diagnose
+
+```bash
+cd ~/rebash-linux/lab23
+set -euo pipefail
+
+# Broken unit: ExecStart points to a missing script
+sudo tee /etc/systemd/system/rebash-lab23.service >/dev/null << 'EOF'
+[Unit]
+Description=REBASH lab23 health writer (intentionally broken first)
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/rebash-lab23-missing.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+set +e
+sudo systemctl start rebash-lab23.service
+set -e
+systemctl status rebash-lab23.service --no-pager -l | tee status-broken.txt || true
+journalctl -u rebash-lab23.service -n 30 --no-pager | tee journal-broken.txt
+grep -Ei 'No such file|failed|status=' journal-broken.txt status-broken.txt
+systemctl is-failed rebash-lab23.service | tee is-failed.txt
+test "$(cat is-failed.txt)" = "failed"
+```
+
+**Expected output:** unit is `failed`; journal/status mention the missing ExecStart path.
+
+#### Task 3 – Fix forward, prove recovery, pack evidence
+
+```bash
+cd ~/rebash-linux/lab23
+set -euo pipefail
+
+sudo tee /usr/local/bin/rebash-lab23-health.sh >/dev/null << 'EOF'
+#!/bin/bash
+set -euo pipefail
+date -Is > /var/tmp/rebash-lab23.ok
+EOF
+sudo chmod 755 /usr/local/bin/rebash-lab23-health.sh
+
+sudo tee /etc/systemd/system/rebash-lab23.service >/dev/null << 'EOF'
+[Unit]
+Description=REBASH lab23 health writer
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/rebash-lab23-health.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl reset-failed rebash-lab23.service || true
+sudo systemctl start rebash-lab23.service
+systemctl is-active rebash-lab23.service | tee is-active.txt
+test "$(cat is-active.txt)" = "active"
+test -f /var/tmp/rebash-lab23.ok
+cat /var/tmp/rebash-lab23.ok | tee health-ok.txt
+systemctl status rebash-lab23.service --no-pager -l | tee status-fixed.txt
+journalctl -u rebash-lab23.service -n 20 --no-pager | tee journal-fixed.txt
+
+tar -czf troubleshooting-evidence.tgz \
+  incident-start.txt operator.txt uname.txt os-release.txt \
+  uptime.txt df.txt free.txt systemd-state.txt failed-before.txt ss.txt ip.txt \
+  status-broken.txt journal-broken.txt is-failed.txt \
+  is-active.txt health-ok.txt status-fixed.txt journal-fixed.txt
+ls -l troubleshooting-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** unit `active`; `/var/tmp/rebash-lab23.ok` exists; evidence archive not empty.
+
+### Validation steps
+
+- [ ] Fact pack files exist under `~/rebash-linux/lab23`
+- [ ] Broken state showed `failed` with a clear journal reason
+- [ ] Fixed unit is `active` and wrote the ok file
+- [ ] `troubleshooting-evidence.tgz` exists
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Unit not found` | Forgot `daemon-reload` | `sudo systemctl daemon-reload` |
+| Still failed after fix | Old failure cached / wrong path | `reset-failed`; verify ExecStart exists |
+| Cannot write `/etc/systemd/system` | No sudo | Use a practice VM with admin rights |
+| `is-active` is `inactive` | oneshot without RemainAfterExit | Keep `RemainAfterExit=yes` as in the lab |
+
+### Challenge exercise
+
+Extend the unit into a simple **restarting service** (`Type=simple`) that loops `sleep 30` after rewriting the ok file, enable it, prove `active (running)`, then stop and disable it. Save `systemctl status` to `challenge-status.txt`.
+
+### Learning outcomes
+
+- Ran a repeatable host fact pack
+- Diagnosed a failed unit from status + journal
+- Fixed forward and proved recovery
+- Built an incident evidence archive
+
+### Cleanup
+
+```bash
+cd ~/rebash-linux/lab23
+set -euo pipefail
+sudo systemctl disable --now rebash-lab23.service 2>/dev/null || true
+sudo rm -f /etc/systemd/system/rebash-lab23.service
+sudo rm -f /usr/local/bin/rebash-lab23-health.sh
+sudo systemctl daemon-reload
+sudo rm -f /var/tmp/rebash-lab23.ok
+# Keep troubleshooting-evidence.tgz if you want it
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-linux/lab23/`
-- [ ] You can explain each Theory bullet in your own words
-- [ ] You used modern tooling where applicable (`ip`/`ss`, `systemctl`/`journalctl`)
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-linux/lab23/` with evidence files
+- [ ] You can list the first five fact commands you run on a sick host
+- [ ] You know why rebooting first can destroy evidence
+- [ ] You can explain failed → fixed with journal proof
 
 ## Code Walkthrough
 
-Production Linux practice for **Troubleshooting Linux Systems** always combines:
+Production incident habit:
 
-1. Inspect before you change (`status`, `df`, `ip`, logs)
-2. Prefer reversible, documented changes (config management, drop-ins)
-3. Capture evidence (command output, journal snippets) for handovers
-4. Prefer `systemctl`/`journalctl` and `ip`/`ss` over legacy tools
-5. Least privilege — escalate with `sudo` only when required
-
-Keep runbooks short enough to follow at 03:00. Automate the boring checks; keep humans for judgement.
+1. Announce symptom and scope  
+2. Capture facts (do not reboot yet)  
+3. Form one hypothesis  
+4. Change one thing; watch logs  
+5. Confirm user symptom cleared; attach evidence  
 
 ## Security Considerations
 
-- Treat host access and sudo as privileged — audit who can do what
-- Never paste secrets into shell history, tickets, or screenshots
-- Validate device names and paths before destructive disk or `rm` operations
-- Prefer key-based SSH and deny password auth on internet-facing hosts
-- Collect logs centrally; restrict who can read authentication and audit trails
+- Prefer read-only gathering before privileged changes  
+- Do not paste secrets from logs into tickets  
+- Use break-glass admin accounts carefully (emergency admin)  
+- Record who changed what during the incident  
+- Limit SSH access while you work on internet-facing hosts  
 
 ## Common Mistakes
 
-!!! warning "Using legacy networking tools by default"
-    `ifconfig`/`netstat` are missing or incomplete on modern images. **Fix:** use `ip` and `ss`.
+!!! warning "Rebooting before collecting logs"
+    Volatile evidence disappears. **Fix:** `journalctl`, `systemctl status`, and resource snapshots first.
 
-!!! warning "Editing vendor unit files in place"
-    Package upgrades overwrite `/lib/systemd/system`. **Fix:** `systemctl edit` drop-ins under `/etc`.
+!!! warning "Changing config and restarting three services at once"
+    You cannot tell what fixed it. **Fix:** one change, then re-check.
 
-!!! warning "Trusting df without checking inodes and mounts"
-    A full `/var` or exhausted inodes looks different from root. **Fix:** `df -h`, `df -i`, and `findmnt`.
+!!! warning "Troubleshooting the wrong machine"
+    Load balancers hide targets. **Fix:** confirm hostname/IP/instance ID with the reporter.
+
+!!! warning "Declaring victory without a user-visible check"
+    Unit active ≠ feature works. **Fix:** hit the real health URL or canary file users care about.
 
 ## Best Practices
 
-- Golden images + config as code over snowflake hosts
-- Alert on symptoms (failed units, disk, load) with runbooks attached
-- Time-sync (chrony) everywhere — logs and TLS depend on it
-- Separate OS and data volumes on Cloud VMs
-- Practise restore and rescue paths before you need them
+- Keep a personal one-page checklist  
+- Prefer reversible changes and feature flags  
+- Use configuration management after emergency hotfixes  
+- Write a short timeline in the ticket  
+- Practise failure drills on lab VMs  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Permission denied | Mode/owner/ACL/MAC | `namei -l`, `id`, `getfacl`, SELinux/AppArmor logs |
-| No route / timeout | Routing, DNS, firewall | `ip route`, `dig`, `ss`, security groups |
-| Service won’t start | Unit/config/deps | `systemctl status`, `journalctl -u`, config `-t` |
-| Disk full | Logs, containers, deleted-open | `df`/`du`, `lsof +L1`, rotate/expand |
-| High load | CPU, I/O wait, thrash | `vmstat`, `iostat`, `ps` |
+| Service failed | Bad ExecStart/config | status + journal; fix path/config |
+| Disk full | Logs/containers | `df`/`du`; rotate; expand |
+| No listen port | App/crash/firewall | `ss`, journal, security groups |
+| High load | CPU/I/O/memory | vmstat/iostat/free; top PIDs |
+| Intermittent failure | Race/deps/time | journals across boots; chrony |
 
 ## Summary
 
-**Troubleshooting Linux Systems** is essential for Cloud and DevOps engineers operating Linux hosts. Practise the lab until the inspection path is muscle memory, then continue the track.
+Method beats memory. Gather facts, narrow scope, fix forward, prove recovery, and keep evidence. Next: [Production Hardening and Performance](production-linux-hardening-and-performance.md).
 
 ## Interview Questions
 
-1. How does this topic show up when operating Cloud VMs or Kubernetes nodes?
-2. What would you check first if this area misbehaves in production?
-3. Which modern Linux tools replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI or a cron/timer job?
+**1. What are the first five commands you run on an unfamiliar sick Linux VM?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, then gather host signals (`systemctl --failed`, `df`, `ip`/`ss`, `journalctl`) before making changes. Fix forward with evidence, not guesswork.
+??? success "Reveal answer"
+    A solid set is: `uptime` (load/time since boot), `df -hT` (+ `df -i`), `free -h`, `systemctl --failed`, and `journalctl -xe` / `journalctl -u <service>`. Add `ss -lntu` and `ip -br a` when the symptom is network. Explain *why* each command, not only the names.
+
+**2. A service is `failed`. How do you proceed?**
+
+??? success "Reveal answer"
+    `systemctl status name -l`, then `journalctl -u name --since …`, fix the root cause (path, permissions, config), `daemon-reload` if units changed, `reset-failed` if needed, start, and prove with `is-active` plus an application check. Avoid reboot as step one.
+
+**3. Why is “reboot the server” a weak first answer in interviews?**
+
+??? success "Reveal answer"
+    Reboot may clear symptoms without understanding cause, destroy volatile evidence, and hide recurring bugs. Prefer capturing logs and status first; reboot only when justified (kernel deadlock, exhausted resources with a plan).
+
+**4. How do you decide if the problem is disk vs memory vs CPU?**
+
+??? success "Reveal answer"
+    Use `df`/`df -i` for disk, `free`/`vmstat` swap fields for memory, and `vmstat`/`top` runnable vs idle for CPU. High `wa` points to I/O. Correlate with the application symptom and recent changes.
+
+**5. What evidence belongs in an incident ticket?**
+
+??? success "Reveal answer"
+    Timeline, scope, commands run, key outputs (`status`, journal snippets, `df`), changes made, and proof of recovery. Redact secrets. Before/after is stronger than “we restarted it”.
+
+**6. How does troubleshooting a Kubernetes node differ from an app VM?**
+
+??? success "Reveal answer"
+    You still use host facts (`df`, journal for kubelet/runtime), but you also check node conditions, pods on the node, and cluster events. Decide whether the failure is node-level (disk pressure) or workload-level. Do not apply random `kubectl delete` without scope.
+
+**7. What does “fix forward” mean?**
+
+??? success "Reveal answer"
+    Make the smallest safe change that restores service (correct config, free disk, restart one unit) while recording evidence — rather than only rolling back blindly or changing many things. Rollback is still valid when it is the safest path; either way, prove the user symptom is gone.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Category Overview](index.md)
-- [Containers — Namespaces, cgroups, OverlayFS, and OCI](containers-namespaces-cgroups-and-oci.md) *(previous)*
-- [Production Linux — Hardening and Performance](production-linux-hardening-and-performance.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [Linux for Cloud & DevOps – Overview](index.md)
+- [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md) *(previous)*
+- [Production Hardening and Performance](production-linux-hardening-and-performance.md) *(next)*
+- [systemd Services and journalctl](systemd-services-and-journalctl.md) *(related)*
 
 ## References
 
-- [Linux man-pages project](https://www.kernel.org/doc/man-pages/)
-- [systemd documentation](https://systemd.io/)
-- [Filesystem Hierarchy Standard](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
+- [`systemctl(1)`](https://www.freedesktop.org/software/systemd/man/systemctl.html) — systemd control  
+- [`journalctl(1)`](https://www.freedesktop.org/software/systemd/man/journalctl.html) — journal queries  
 - Track index: [Linux for Cloud & DevOps Engineers](index.md)

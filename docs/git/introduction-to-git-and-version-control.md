@@ -44,15 +44,17 @@ comments: false
 
 
 
+
+
 Explain why version control is the system of record for DevOps, compare VCS models, and use Git vocabulary (repo, commit, branch, remote) correctly before installing tools.
 
 Incidents ask “what changed?” Compliance asks “who approved?” Git answers both. This course is **Git & GitHub for Cloud & DevOps Engineers** — workflows for IaC, GitOps, and CI/CD, not Git as trivia.
 
 This is a core tutorial in **Module 1 · Version Control Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -62,9 +64,9 @@ This is a core tutorial in **Module 1 · Version Control Fundamentals** of the R
 - [Linux Fundamentals](../linux/index.md)
 - Comfort with a terminal
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -77,9 +79,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Define repository, commit, branch, remote, working tree  
 - [ ] Sketch the working → staging → commit → remote flow
 
-
-
 ## Architecture
+
+
 
 
 
@@ -88,9 +90,9 @@ Daily Git flow from edits to remotes and pipelines:
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -134,52 +136,97 @@ Terraform modules, Kubernetes manifests, GitHub Actions workflows, and policy al
 - Confusing the working tree with the repository (`.git`)  
 - Assuming a clone without a remote is “not real Git” — remotes are optional until you collaborate
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Introduction to Git and Version Control** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-01`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 ```
 
-**Focus:** initialise a repo and make your first commit
+### Real-world scenario
 
-### Step 1 – Init and first commit
+A delivery team is standardising **Introduction to Git and Version Control**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+
+### Step-by-step tasks
+
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-printf '# Git lab
-' > README.md
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
 git add README.md
-git status
-git commit -m "docs: add README for git introduction lab"
-git log --oneline -n 3
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Step 2 – Inspect working tree vs last commit
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-echo "note=$(date -u +%Y-%m-%d)" >> README.md
+echo 'work' > work.txt
 git status
-git diff
-git checkout -- README.md
-git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** show.txt lists work.txt in the commit.
+
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -189,9 +236,9 @@ git status
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -206,9 +253,9 @@ Production practice for **Introduction to Git and Version Control** always combi
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -219,9 +266,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -235,9 +282,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -248,9 +295,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -263,9 +310,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
@@ -274,9 +321,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Distributed clones enable offline work and collaboration  
 - Next: object model, then install
 
-
-
 ## Interview Questions
+
+
 
 
 1. What problem does version control solve for infrastructure teams?
@@ -291,9 +338,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Exclude secrets, state files, and credentials with .gitignore and secret scanning.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -302,9 +349,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Understanding the Git Object Model](understanding-the-git-object-model.md)  
 - [Git Installation and Configuration](git-installation-and-configuration.md)
 
-
-
 ## References
+
+
 
 
 

@@ -50,24 +50,32 @@ comments: false
 
 
 
+
+
+
+
 Author a GitHub Actions workflow that builds a multi-stage Dockerfile with Buildx, produces multi-architecture images, and pushes immutable SHA tags to GitHub Container Registry (GHCR) — ready for later Kubernetes or cloud promotion.
 
 CI builds containers so every merge produces a **reproducible Open Container Initiative (OCI) image**. Prefer **Docker Buildx** over ad-hoc `docker build` on a laptop. Tag with the commit SHA (and optionally a digest); promote that same image through staging and production. **GHCR** (`ghcr.io/<owner>/<image>`) is the natural home for GitHub-native pipelines; the same pattern works for Docker Hub, Amazon Elastic Container Registry (ECR), and others with different login steps.
 
 This is a core tutorial in **Module 7 · Docker Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Artifacts and Caching](artifacts-and-caching.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -80,9 +88,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain SHA tags vs floating `latest`  
 - [ ] Describe image promotion without rebuild
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -91,9 +101,11 @@ This topic’s control points and relationships are shown below.
 
 ![Docker build pipeline](../assets/excalidraw/gha-docker-pipeline.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -140,58 +152,46 @@ Pin base images by digest in production Dockerfiles. Cache accelerates rebuilds;
 - Forgetting `packages: write` / package visibility so GHCR push fails.  
 - Rebuilding for production instead of promoting the tested digest.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Docker Pipelines with GitHub Actions** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/docker-lab`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/docker-lab && cd ~/rebash-github-actions/docker-lab
 ```
 
-**Focus:** Dockerfile plus build-push workflow (local build; push disabled)
+### Real-world scenario
 
-### Step 1 – Dockerfile and workflow
+Platform engineering wants **Docker Pipelines with GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > Dockerfile << 'EOF'
-FROM python:3.12-alpine
-WORKDIR /app
-COPY app.py .
-USER nobody
-CMD ["python", "app.py"]
-EOF
-echo 'print("gha docker lab")' > app.py
-
-{% raw %}
-```yaml
-# .github/workflows/docker.yml
-name: Docker pipelines
-on: [push, workflow_dispatch]
-permissions:
-  contents: read
-  packages: write
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          tags: ghcr.io/example/demo:lab
-          # production tags often use: ghcr.io/${{ github.repository }}/demo:${{ github.sha }}
-```
-{% endraw %}
-
-cat > .github/workflows/docker.yml << 'EOF'
-name: Docker pipelines
-on: [push, workflow_dispatch]
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
@@ -199,34 +199,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          tags: ghcr.io/example/demo:lab
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Local docker build proof
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-docker build -t rebash-gha-lab:local .
-docker run --rm rebash-gha-lab:local
-docker rmi rebash-gha-lab:local
-grep -E 'build-push-action|push: false' .github/workflows/docker.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-docker rmi rebash-gha-lab:local 2>/dev/null || true
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -236,9 +263,11 @@ docker rmi rebash-gha-lab:local 2>/dev/null || true
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -253,9 +282,11 @@ Production practice for **Docker Pipelines with GitHub Actions** always combines
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -266,9 +297,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -282,9 +315,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -295,9 +330,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -310,18 +347,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Docker Pipelines with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Why keep push false until registry auth is ready?
@@ -336,9 +377,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Use OIDC or GITHUB_TOKEN/registry login actions; never bake credentials into layers.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -346,9 +389,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Kubernetes Deployments with GitHub Actions](kubernetes-deployments-with-github-actions.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -46,23 +46,31 @@ comments: false
 
 
 
+
+
+
+
 Apply a Terraform security baseline: no secrets in Git, marked sensitive outputs, Vault/SSM injection patterns, least-privilege IAM for runners, encrypted remote state, and policy-as-code gates.
 
 Terraform configs often tempt teams to bake passwords into `terraform.tfvars`. Prefer external secret stores. Restrict who can plan and apply. Encrypt state at rest and treat plan artefacts as sensitive. Policy engines (Open Policy Agent / Sentinel) block unsafe changes before apply.
 
 This is a core tutorial in **Module 15 · Security** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Format, Validate, and Terraform Test](format-validate-and-terraform-test.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -75,9 +83,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Explain state encryption and plan artefact handling  
 - [ ] Summarise OPA vs Sentinel policy-as-code
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -85,9 +95,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform security](../assets/excalidraw/terraform-security.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -143,65 +155,113 @@ Security is layered: a green policy check that still commits an API key in Git i
 - Trusting module provenance while ignoring the IAM policy the module creates.  
 - Disabling policy fail-closed so a change “just applies” — fix the config or request a reviewed exception.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Terraform Security and Secrets** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-15`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-15 && cd ~/rebash-terraform/module-15
 ```
 
-**Focus:** Keep secrets out of state-friendly patterns using sensitive variables
+### Real-world scenario
 
-### Step 1 – Mark sensitive inputs and avoid writing them to local files casually
+You are automating **Terraform Security and Secrets** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-variable "api_token" {
-  type      = string
-  sensitive = true
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
 }
-resource "local_file" "safe_marker" {
-  filename = "${path.module}/safe.txt"
-  content  = "token-configured=${var.api_token != ""}
-"
-}
-output "token_set" {
-  value     = var.api_token != ""
-  sensitive = true
-}
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply with an env-based variable and inspect redaction
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-export TF_VAR_api_token='lab-not-a-real-secret'
-terraform apply -auto-approve
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
 terraform output
-cat safe.txt
-echo "Note: sensitive values can still appear in state — protect state files"
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -210,9 +270,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -226,9 +288,11 @@ Production practice for **Terraform Security and Secrets** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -238,9 +302,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -253,9 +319,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -265,9 +333,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -279,17 +349,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Terraform Security and Secrets** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How does the sensitive flag on variables help?
@@ -304,18 +378,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Prefer short-lived credentials via OIDC/IAM roles over static keys in env files. Static keys in CI variables still need rotation and scoped permissions.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Terraform in CI/CD Pipelines](terraform-in-ci-cd-pipelines.md)
 
-
-
 ## References
+
+
+
+
 
 
 

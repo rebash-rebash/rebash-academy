@@ -1,9 +1,28 @@
-# Tutorial content format (Linux de facto)
+# Canonical tutorial format (all technologies)
 
-**Canonical reference:** `docs/linux/*.md` and `docs/shell/*.md`.
+**This is the de facto body structure for every tutorial under `docs/<technology>/`.**
 
-Every technology tutorial under `docs/<technology>/` MUST follow this body structure.
-Do **not** use the shorter Helm-style skeleton (`## Goal`, `{ .ra-facts }`, `## Environment setup`, stop after `## Next`).
+Canonical examples: `docs/linux/*.md`, `docs/shell/*.md`.
+
+Quality bar: `.cursor/rules/00-foundation/09-content-quality-standard.mdc`  
+Index: `.cursor/prompts/CONTENT_QUALITY.md`
+
+Do **not** use the short skeleton (`## Goal`, `{ .ra-facts }`, stop after `## Next`).
+
+Prefer **Codex** for generation until the user changes agents.
+
+---
+
+## Audience progression
+
+Layer content so students and professionals both gain value:
+
+1. **Student entry** — plain definition, problem solved, smallest mental model  
+2. **Practitioner bridge** — daily Cloud / DevOps / SRE / Platform work  
+3. **Professional depth** — trade-offs, failure modes, security, evidence  
+4. **Portfolio proof** — lab artefact the learner can discuss in interviews  
+
+Use this progression *inside* sections as continuous prose — do **not** invent extra top-level headings, and do **not** label blocks “For beginners / practitioners / professionals”. Start simple, then deepen naturally.
 
 ---
 
@@ -38,58 +57,91 @@ Do **not** use the shorter Helm-style skeleton (`## Goal`, `{ .ra-facts }`, `## 
 
 - 2–4 short paragraphs: why the topic matters in Cloud/DevOps.
 - Include: `This is **Tutorial N** in **Module M: …** of the REBASH Academy **<Course Name>** series — written for …`
-- No separate `## Goal` section (fold the outcome into Overview).
-- No `{ .ra-facts }` line under the H1.
+- State beginner takeaway, practitioner skill, and production judgement.
+- No separate `## Goal`. No `{ .ra-facts }` under the H1.
 
 ### Prerequisites
 
-- Bullet list (plain language and/or links).
+- Bullet list (knowledge and/or links).
 
 ### Learning Objectives
 
-- Intro line: `By the end of this tutorial, you will be able to:`
-- 4–6 checkbox objectives (`- [ ] …`).
+- Intro: `By the end of this tutorial, you will be able to:`
+- 4–6 checkboxes (`- [ ] …`) that are measurable.
 
 ### Architecture
 
 - One short intro sentence.
-- One Excalidraw diagram only: `![…](../assets/excalidraw/<name>.svg)`
-- Never D2/Mermaid/`assets/images/`.
+- One Excalidraw diagram: `![…](../assets/excalidraw/<name>.svg)`
+- Never D2, Mermaid, or `assets/images/` for course diagrams.
 
 ### Theory
 
-Preferred subsections (adapt names to the topic, keep depth):
+Preferred subsections (adapt names; keep depth):
 
 1. `### What it is`
-2. `### Why it matters` (Cloud / DevOps / SRE context)
+2. `### Why it matters`
 3. `### How it works`
-4. Topic-specific concept headings **or** `### Key concepts and comparisons` (tables OK)
+4. Topic headings **or** `### Key concepts and comparisons` (tables OK)
 5. `### Common pitfalls`
 
-Cover **every** concept from the technology prompt module. British English. Production focus.
+Cover **every** concept from the technology prompt module for this tutorial.
+
+Depth rule per concept:
+
+- Beginner-safe explanation  
+- Concrete command, config, or workflow example  
+- Production judgement: when to use / avoid / what breaks  
+
+Write at GeeksforGeeks clarity: define → show → compare → warn.
 
 ### Hands-on Lab
 
-- Title casing: `## Hands-on Lab` (not “lab”).
-- Workspace: `~/rebash-<technology>/labNN` (zero-padded) **or** `module-NN` consistently within a course — prefer `labNN` to match Linux/Shell.
-- Line: `**Focus:** …` (what the learner will practise)
-- **2–3 real steps** with **topic-relevant** titles: `### Step 1 – …`, `### Step 2 – …`, `### Final step – Cleanup note`
-- Each step needs runnable commands tied to Theory and an **observable success** (file created, pod Ready, plan shows change, curl 200, pipeline YAML validates).
-- Cleanup must remove disposable resources (containers, namespaces, Terraform state) — not re-run a no-op script.
-- Safe defaults: local/`null`/kind where possible; AWS read-only / sandbox warnings; no committed secrets.
-- **Never** use a placeholder “Skeleton” step that only echoes the tutorial name — every step must teach the module skill.
-- Use `set -euo pipefail` in shell labs where appropriate.
-- Escape `${{` / `{#` for mkdocs-macros (`{% raw %}`).
-- Quality bar examples: `docs/linux/ssh-and-remote-access.md`. Enrich priority tracks with `python3 scripts/enrich-labs-and-interviews.py --course <technology>`.
+Title: `## Hands-on Lab`
+
+Labs must be **practical, production-oriented, and executable end-to-end**.  
+No markdown-only or note-taking exercises. The learner builds or configures a **real working solution** for *this* topic.
+
+Required subsections (order fixed):
+
+1. `### Objective` — one concrete outcome  
+2. `### Prerequisites` — tools/accounts for *this* lab  
+3. `### Lab environment` — `~/rebash-<technology>/labNN` (or `module-NN`) + runtime (Ubuntu VM, Docker, kind, local CLI)  
+4. `### Real-world scenario` — 2–4 sentences of production context  
+5. `### Step-by-step tasks` — `#### Task N – …` with copy-paste commands, short why, and **Expected output**  
+6. `### Validation steps` — checkboxes proving the solution works  
+7. `### Common errors and fixes` — table: Error | Cause | Fix  
+8. `### Challenge exercise` — stretch **artefact** (script, unit, ACL, pipeline, rules) — not “write runbook.md”  
+9. `### Learning outcomes` — bullets tied to tasks  
+10. `### Cleanup` — remove disposable resources  
+
+Rules:
+
+- **2–4 tasks**, each tied to Theory for *this* slug  
+- Paste-safe bash; prefer asserts (`test`, `grep -q`, exit codes)  
+- Observable success (file, Ready pod, plan change, curl 200, YAML parses, service healthy)  
+- Safe defaults; no secrets; escape `${{` / `{%` / Go `{{` for mkdocs-macros  
+- **Never** reuse a generic “host baseline + ip/ss” lab with only the title changed  
+
+**Good (users/sudo):** `useradd`, `usermod -aG`, `visudo`, `id`, `sudo -l` with evidence files.  
+**Bad:** only `uname`/`df`/`ip` while the title says Users and sudo.
+
+Apply/refresh generators only when they emit topic-specific labs:
+
+```bash
+python3 scripts/apply-production-labs.py --course <technology>
+```
+
+If the generator is still generic for a tech, **hand-write** the lab to this standard.
 
 ### Validation
 
-Checkbox list (not a one-line paragraph):
+Checkbox list:
 
-- Lab path ran successfully
-- Can explain Theory in own words
-- Used modern tooling where applicable
-- Can describe one production failure mode
+- Lab path completed successfully  
+- Can explain Theory in own words  
+- Used modern tooling where applicable  
+- Can describe one production failure mode for this topic  
 
 ### Code Walkthrough
 
@@ -105,11 +157,11 @@ Checkbox list (not a one-line paragraph):
 
 ### Best Practices
 
-5 bullets.
+5 actionable bullets.
 
 ### Troubleshooting
 
-Markdown table: Symptom | Likely cause | Fix
+Markdown table: Symptom | Likely cause | Fix — real failures for this topic.
 
 ### Summary
 
@@ -117,26 +169,33 @@ Markdown table: Symptom | Likely cause | Fix
 
 ### Interview Questions
 
-- **5 topic-specific questions** (concepts, debugging, security, trade-offs, production) — not the generic “How does X show up…” boilerplate.
-- **1–2 sample answers** in `!!! tip "Sample answer — question N"` blocks tied to this module.
-- British English; expand acronyms on first use in answers when needed.
-- Prefer banks from `scripts/enrich-labs-and-interviews.py` over aligner stubs.
+- **5–8 topic-specific** questions (concepts, debugging, security, trade-offs, production).  
+- Difficulty ramp: ≥1 junior, ≥1 senior/production.  
+- **Every question** is followed immediately by a **collapsible** answer (Material `pymdownx.details`):
+
+```markdown
+**1. Question text?**
+
+??? success "Reveal answer"
+    Answer paragraph(s). Explain *why*, not only *what*.
+```
+
+- Do **not** dump answers only at the end; do **not** use always-open `!!! tip` for the main answer.  
+- Ban generic Cloud/platform boilerplate unrelated to this module.
 
 ### Related Tutorials
 
-- Course index
-- Next tutorial
-- Optional prior / related path
+- Course index · next · optional prior/related  
 
 ### References
 
-Official docs + course index link.
+Official docs + course index.
 
 ---
 
 ## Frontmatter
 
-Minimum (Linux/Shell style):
+Minimum:
 
 ```yaml
 ---
@@ -153,17 +212,19 @@ comments: false
 ---
 ```
 
-Optional curriculum fields (`technology`, `module`, `career_paths`, `skills`, `next`, `related`, `interview`, `certifications`) may remain for site tooling, but **body structure above is mandatory**.
+Optional curriculum fields (`technology`, `module`, `career_paths`, `skills`, `next`, `related`, `interview`, `certifications`, `labs`) may remain for tooling. **Body structure above is mandatory.**
 
 ---
 
-## Anti-patterns (do not use)
+## Anti-patterns
 
-- `## Goal` as a top-level section
-- `{ .ra-facts }` under the title
-- Stopping after `## Next` / short Validation paragraph only
-- Missing Architecture / Code Walkthrough / Security / Common Mistakes / Best Practices / Troubleshooting / Summary / Interview / Related
-- D2 or Mermaid diagrams
+- `## Goal` as a top-level section  
+- `{ .ra-facts }` under the title  
+- Short skeleton stopping after `## Next`  
+- Missing Architecture / Lab subsections / Interview sample answers  
+- D2 or Mermaid diagrams  
+- Note-taking Challenges  
+- Templated labs that ignore the tutorial topic  
 
 ---
 
@@ -173,4 +234,4 @@ Optional curriculum fields (`technology`, `module`, `career_paths`, `skills`, `n
 python3 scripts/generate-excalidraw-svg.py
 ```
 
-Excalidraw SVGs live under `docs/assets/excalidraw/`.
+Assets: `docs/assets/excalidraw/` (`.svg` + `.excalidraw`).

@@ -1,3 +1,44 @@
 ---
 alwaysApply: true
 ---
+
+# Learning Psychology
+
+REBASH Academy content must support learners across the full path from student to professional.
+
+## Learning progression
+
+Structure explanations so learners can climb through four levels:
+
+1. **Recognition** - define the concept in plain language and explain why it exists.
+2. **Understanding** - show how the concept works with a small concrete example.
+3. **Execution** - guide the learner through a real task with observable output.
+4. **Judgement** - explain trade-offs, failure modes, security risks, and production decisions.
+
+Do not skip the first level for beginner content. Do not skip the fourth level for professional content.
+
+## Engagement rules
+
+- Open with the operational problem the learner will be able to solve.
+- Use short explanations before commands; commands without context do not teach.
+- Connect theory to real work: incidents, deployments, audits, automation, troubleshooting, and platform operations.
+- Include visible progress: expected output, validation checks, completed artefacts, or decision records.
+- Use challenge exercises to stretch learners without hiding required knowledge in the challenge.
+
+## Cognitive load
+
+- Introduce acronyms before relying on them.
+- Avoid presenting too many tools at once unless the topic is explicitly comparative.
+- Break complex workflows into numbered tasks with clear success criteria.
+- Prefer one realistic scenario over many disconnected examples.
+- Use tables for comparisons and troubleshooting, not for long narrative explanations.
+
+## Professional readiness
+
+Learners should finish content able to answer:
+
+- What problem does this solve?
+- How do I operate it safely?
+- How do I prove it works?
+- What can fail in production?
+- What would I say about it in an interview or design review?

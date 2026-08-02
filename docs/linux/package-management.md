@@ -1,22 +1,28 @@
 ---
 title: "Package Management"
-description: "Install and maintain software with apt, dnf, yum, zypper, and understand snap/flatpak on Linux hosts."
+description: "Install, query, hold, and remove packages with apt on Ubuntu, and understand how dnf/yum and zypper fit other distributions."
 difficulty: beginner
-estimated_time: "45 min"
+estimated_time: "45–55 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: linux
+technology: linux
+module: "Module 10 · Package Management"
 tags:
   - linux
   - apt
   - dnf
   - yum
-  - zypper
-  - snap
-  - flatpak
+  - packages
 prerequisites:
-  - SSH and Remote Access
-  - Terminal access with a regular user account (sudo where noted)
+  - linux/ssh-and-remote-access
+next:
+  - linux/scheduling-cron-at-and-timers
+related:
+  - labs/linux-ops-toolkit-lab
+labs:
+  - labs/linux-ops-toolkit-lab
+interview: interview/linux
 comments: false
 ---
 
@@ -24,28 +30,33 @@ comments: false
 
 ## Overview
 
-Unpatched packages are vulnerability debt. Fluent package ops keep fleets consistent.
+A **package manager** installs, updates, and removes software in a consistent way for your Linux distribution. On Ubuntu and Debian you use **`apt`** (and lower-level **`dpkg`**). On Red Hat Enterprise Linux (RHEL) family systems you use **`dnf`** (or older **`yum`**) with **`rpm`**. On SUSE you use **`zypper`**. Optional tools such as **snap** and **Flatpak** exist mainly for desktop apps and are usually secondary on servers.
 
-This is **Tutorial 16** in **Module 10: Package Management** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — written for administrators, DevOps engineers, SREs, and platform engineers operating production Linux.
+Unpatched packages are security debt. Golden images, Continuous Integration (CI) runners, and configuration management all assume a known package state. In this tutorial you will refresh package metadata, install a small tool, query version and files, place an **apt hold** (pin so it does not upgrade by accident), remove a package cleanly, and save proof under `~/rebash-linux/lab16`. The lab uses Ubuntu `apt` because that matches most practice VMs; the Theory tables cover other families so you can work across clouds.
+
+In production, prefer distribution packages for system daemons, reboot after kernel updates, and record critical versions in image builds rather than “hand-installed” binaries that nobody can reproduce. Automate patching carefully (`unattended-upgrades`, `dnf-automatic`) with a maintenance window.
+
+This is **Tutorial 16** in **Module 10: Package Management** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
 
 ## Prerequisites
 
-- SSH and Remote Access
-- Terminal access with a regular user account (sudo where noted)
+- [SSH and Remote Access](ssh-and-remote-access.md)
+- A **practice Ubuntu 22.04/24.04 VM** with `sudo` and working `apt` repositories
+- Do **not** run experimental holds/removes on a shared production server
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “Package Management” on a real Linux host
-- [ ] Use modern tools (`ip`/`ss`, `systemctl`/`journalctl`) where they apply
-- [ ] Complete the lab under `~/rebash-linux/` with clear outputs
-- [ ] Relate this topic to Cloud, DevOps, and production operations
-- [ ] Explain the failure modes you would check first in an incident
+- [ ] Explain what a package manager does and name the common tools per distro family
+- [ ] Update apt metadata and install a package with `apt-get`
+- [ ] Query package policy, files, and status with `apt` / `dpkg`
+- [ ] Hold and unhold a package, then remove it cleanly
+- [ ] Describe how kernel updates and image builds relate to patching
 
 ## Architecture
 
-Linux ops work sits between humans/automation and the kernel, services, and network. This topic’s control points are shown below.
+Repositories publish packages. The package manager resolves dependencies, installs files, and tracks state in a local database (`dpkg` / `rpm`).
 
 ![Architecture diagram for Package Management](../assets/excalidraw/linux-package-management.svg)
 
@@ -53,150 +64,321 @@ Linux ops work sits between humans/automation and the kernel, services, and netw
 
 ### What it is
 
-A **package manager** installs, updates, and removes software in a consistent way for your distribution: **apt**/**dpkg** on Debian and Ubuntu; **dnf**/**yum**/**rpm** on Red Hat Enterprise Linux (RHEL) family systems; **zypper** on SUSE. Optional desktop-oriented systems such as **snap** and **Flatpak** sandbox apps but are usually secondary on servers. Packages bring dependencies, version metadata, and file inventories the OS can query and verify.
+| Family | Install / update | Query | Database |
+|--------|------------------|-------|----------|
+| Debian / Ubuntu | `apt` / `apt-get` | `apt policy`, `dpkg -l` | `dpkg` |
+| RHEL / Fedora / Amazon Linux | `dnf` (or `yum`) | `rpm -q`, `dnf list` | `rpm` |
+| SUSE | `zypper` | `zypper info`, `rpm -q` | `rpm` |
+
+Packages bring version metadata, dependencies, and a file inventory the OS can verify.
+
+```bash
+sudo apt-get update
+apt-cache policy curl
+dpkg -l curl
+```
 
 ### Why it matters
 
-Unmanaged manual binaries drift; unpatched kernels and libraries are the main host vulnerability class. Golden images, CI runners, and configuration management all assume a known package state. Knowing how to install a tool, pin or hold a version, and reboot after kernel updates keeps fleets reproducible and secure.
+Manual binaries under `/usr/local` drift and are hard to patch. Unpatched kernels and libraries are a major host vulnerability class. Interviewers and hiring managers expect you to install tools the distro way, know how to check versions, and explain holds/pins when a change must wait.
 
 ### How it works
 
-Refresh metadata (`apt update`, `dnf check-update`, `zypper refresh`), then install (`apt install`, `dnf install`). Query with `apt policy`, `rpm -q`, or `dpkg -l`. Upgrades apply security and bugfix releases; kernel updates typically need a reboot to take effect. Prefer distribution packages for system daemons; use containers or language-specific tools for app runtime isolation. Automate patching carefully (`unattended-upgrades`, `dnf-automatic`) with maintenance windows. Remove unused packages to shrink attack surface. Record critical versions in image build pipelines rather than hand-maintained snowflakes.
+1. **Refresh metadata** — `apt-get update`, `dnf check-update`, `zypper refresh`.
+2. **Install** — `apt-get install`, `dnf install`, `zypper install`.
+3. **Query** — `apt policy`, `dpkg -L package`, `rpm -ql package`.
+4. **Upgrade** — apply security and bugfix releases; kernel updates usually need a **reboot**.
+5. **Hold / pin** — stop a package from upgrading until you are ready (`apt-mark hold` on Ubuntu).
+6. **Remove** — `apt-get remove` (keep config) or `purge` (remove config too); clean unused deps with `autoremove`.
+
+```bash
+sudo apt-get install -y tree
+apt-mark showhold
+sudo apt-mark hold tree
+```
+
+Prefer distro packages for system services. Use containers or language tools (pip, npm) for app runtimes when isolation matters. Snap/Flatpak are optional; many servers disable snap for simplicity.
 
 ### Key concepts and comparisons
 
-| Family | Tools | Query |
-|--------|-------|-------|
-| Debian/Ubuntu | apt, dpkg | `apt policy`, `dpkg -l` |
-| RHEL/Fedora/Rocky/Alma | dnf/yum, rpm | `rpm -q`, `dnf list` |
-| SUSE | zypper, rpm | `zypper info` |
+| Action | apt (Ubuntu) | dnf (RHEL-like) |
+|--------|--------------|-----------------|
+| Refresh | `apt-get update` | `dnf check-update` / `makecache` |
+| Install | `apt-get install pkg` | `dnf install pkg` |
+| Remove | `apt-get remove pkg` | `dnf remove pkg` |
+| Hold | `apt-mark hold pkg` | `dnf versionlock` (plugin) |
+| Files list | `dpkg -L pkg` | `rpm -ql pkg` |
 
-| Approach | Server fit |
-|----------|------------|
-| Distro packages | Best for OS daemons and libs |
-| Containers | App shipping and isolation |
-| snap/Flatpak | Mostly desktop; use sparingly on servers |
+| Pattern | Prefer when | Avoid when |
+|---------|-------------|------------|
+| Distro package | System tools, daemons | You need a bleeding-edge app version |
+| Container image | App runtime isolation | Simple host CLI tools |
+| Manual binary in `/usr/local` | Rare emergency | Default for every tool |
 
 ### Common pitfalls
 
-- Running `upgrade` on production without a change window or rollback image.
-- Mixing random third-party apt repos without pinning or trust evaluation.
-- Installing compilers and debug tools on locked-down production hosts against policy.
-- Forgetting that a new kernel is inactive until reboot.
-- Assuming package names match across Debian and RHEL families.
+- Running `apt-get upgrade` on production without a window or snapshot.
+- Forgetting `apt-get update` so installs fail or get stale versions.
+- Holding packages forever and missing security fixes.
+- Mixing random third-party `.deb` files without trusting the source.
+- Assuming the same package name exists on every distro (`apache2` vs `httpd`).
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+On a practice Ubuntu VM, install `tree`, prove it with queries, place and remove an apt hold, remove the package, and save a package evidence archive under `~/rebash-linux/lab16`.
+
+### Prerequisites
+
+- Ubuntu 22.04/24.04 with `sudo` and working internet/apt mirrors
+- Snapshot the VM first if your hypervisor supports it
+
+### Lab environment
+
+Workspace: `~/rebash-linux/lab16`
 
 ```bash
 mkdir -p ~/rebash-linux/lab16 && cd ~/rebash-linux/lab16
+set -euo pipefail
+whoami | tee admin-user.txt
+. /etc/os-release
+printf '%s\n' "$NAME" "$VERSION_ID" | tee os-release.txt
+sudo -n true 2>/dev/null || sudo -v
 ```
 
-**Focus:** detect package manager; install a CLI tool; query package metadata
+**Expected output:** `os-release.txt` shows Ubuntu (or Debian).
 
-### Step 1 – Package manager detect
+### Real-world scenario
+
+Your team standardises a small diagnostic tool on bastion hosts. Change control asks you to install it from the distro repository, record the version, hold it during an application freeze week, then unhold and remove it from a decommissioned practice host — with command output attached to the ticket.
+
+### Step-by-step tasks
+
+#### Task 1 – Update metadata and install `tree`
 
 ```bash
-{
-  command -v apt && echo PM=apt
-  command -v dnf && echo PM=dnf
-  command -v yum && echo PM=yum
-  command -v zypper && echo PM=zypper
-  command -v snap && snap version | head -n 1
-  command -v flatpak && flatpak --version
-} | tee pkg-tools.txt
-# Non-mutating query examples:
-(apt-cache policy bash 2>/dev/null || dnf info bash 2>/dev/null || true) | head | tee pkg-info.txt
+cd ~/rebash-linux/lab16
+set -euo pipefail
+
+sudo apt-get update -y | tee apt-update.txt
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tree | tee apt-install-tree.txt
+
+command -v tree | tee tree-path.txt
+tree --version | tee tree-version.txt
+test -x "$(command -v tree)"
 ```
 
-### Final step – Cleanup note
+**Expected output:** `tree` is on `PATH`; `tree-version.txt` shows a version string.
+
+#### Task 2 – Query policy, files, and hold
 
 ```bash
-# Keep ~/rebash-linux/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-linux/lab16
+set -euo pipefail
+
+apt-cache policy tree | tee apt-policy-tree.txt
+dpkg -l tree | tee dpkg-l-tree.txt
+dpkg -L tree | head -n 40 | tee dpkg-L-tree-head.txt
+grep -E '/usr/bin/tree|/bin/tree' dpkg-L-tree-head.txt
+
+sudo apt-mark hold tree | tee apt-hold.txt
+apt-mark showhold | tee apt-showhold.txt
+grep -qx tree apt-showhold.txt
+
+# Simulate “would upgrade” awareness
+apt-get -s upgrade 2>/dev/null | tee apt-sim-upgrade.txt || true
+```
+
+**Expected output:** policy shows an installed version; `apt-showhold.txt` lists `tree`.
+
+#### Task 3 – Unhold, remove, evidence pack
+
+```bash
+cd ~/rebash-linux/lab16
+set -euo pipefail
+
+sudo apt-mark unhold tree | tee apt-unhold.txt
+sudo DEBIAN_FRONTEND=noninteractive apt-get remove -y tree | tee apt-remove-tree.txt
+
+# Confirm removed from PATH (or not a regular file)
+if command -v tree >/dev/null 2>&1; then
+  echo "WARN: tree still on PATH — check other packages" | tee tree-after-remove.txt
+else
+  echo "tree removed from PATH" | tee tree-after-remove.txt
+fi
+dpkg -l tree 2>&1 | tee dpkg-after-remove.txt || true
+
+# Optional clean of unused deps (safe on practice VM)
+sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y | tee apt-autoremove.txt || true
+
+# Note other families for the ticket (documentation only)
+cat > other-distros.txt << 'EOF'
+RHEL-like: sudo dnf install -y tree && rpm -q tree && sudo dnf remove -y tree
+SUSE:      sudo zypper install -y tree && rpm -q tree
+EOF
+
+tar -czf package-evidence.tgz \
+  admin-user.txt os-release.txt apt-update.txt apt-install-tree.txt \
+  tree-path.txt tree-version.txt apt-policy-tree.txt dpkg-l-tree.txt \
+  dpkg-L-tree-head.txt apt-hold.txt apt-showhold.txt apt-sim-upgrade.txt \
+  apt-unhold.txt apt-remove-tree.txt tree-after-remove.txt \
+  dpkg-after-remove.txt apt-autoremove.txt other-distros.txt
+ls -l package-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** hold removed; package removed (or marked not installed); `package-evidence.tgz` exists.
+
+### Validation steps
+
+- [ ] `apt-get update` completed without repository errors
+- [ ] `tree` installed and version recorded, then removed
+- [ ] `apt-mark hold` / `unhold` proven in output files
+- [ ] `package-evidence.tgz` exists under `~/rebash-linux/lab16`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Unable to locate package` | Stale cache / wrong suite | `sudo apt-get update`; check `/etc/apt/sources.list` |
+| `Could not get lock` | Another apt process | Wait for unattended-upgrades; `ps aux \| grep apt` |
+| Hold ignored in some tools | Used wrong mark command | Use `apt-mark hold`; verify with `apt-mark showhold` |
+| Removed package still “installed” | Config left behind | Use `apt-get purge` if you also want config removed |
+| Breaks on production | Broad `upgrade` | Use staged patches and snapshots |
+
+### Challenge exercise
+
+Install `jq`, record `apt-cache policy jq` and `jq --version`, hold `jq`, prove hold with `apt-mark showhold`, then unhold and remove `jq`. Save outputs as `challenge-jq-*.txt` in the lab directory.
+
+### Learning outcomes
+
+- Installed and queried a distro package with apt/dpkg
+- Used apt hold/unhold during a simulated freeze
+- Removed the package and packed ticket evidence
+- Mapped apt actions to dnf/zypper for other distros
+
+### Cleanup
+
+```bash
+cd ~/rebash-linux/lab16
+set -euo pipefail
+sudo apt-mark unhold tree 2>/dev/null || true
+sudo apt-mark unhold jq 2>/dev/null || true
+sudo DEBIAN_FRONTEND=noninteractive apt-get remove -y tree jq 2>/dev/null || true
+# Keep package-evidence.tgz if you want it
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-linux/lab16/`
-- [ ] You can explain each Theory bullet in your own words
-- [ ] You used modern tooling where applicable (`ip`/`ss`, `systemctl`/`journalctl`)
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-linux/lab16/`
+- [ ] You can explain apt vs dnf vs zypper at a high level
+- [ ] You know why kernel upgrades often need a reboot
+- [ ] You can describe the risk of never patching vs holding forever
 
 ## Code Walkthrough
 
-Production Linux practice for **Package Management** always combines:
+Production package hygiene usually follows:
 
-1. Inspect before you change (`status`, `df`, `ip`, logs)
-2. Prefer reversible, documented changes (config management, drop-ins)
-3. Capture evidence (command output, journal snippets) for handovers
-4. Prefer `systemctl`/`journalctl` and `ip`/`ss` over legacy tools
-5. Least privilege — escalate with `sudo` only when required
+1. **Refresh** metadata before install  
+2. **Install** from trusted distro/repos only  
+3. **Record** versions in image builds or tickets  
+4. **Hold** only with an expiry plan  
+5. **Patch** in windows; reboot for kernel changes  
 
-Keep runbooks short enough to follow at 03:00. Automate the boring checks; keep humans for judgement.
+Configuration management (Ansible, cloud-init) should own desired packages.
 
 ## Security Considerations
 
-- Treat host access and sudo as privileged — audit who can do what
-- Never paste secrets into shell history, tickets, or screenshots
-- Validate device names and paths before destructive disk or `rm` operations
-- Prefer key-based SSH and deny password auth on internet-facing hosts
-- Collect logs centrally; restrict who can read authentication and audit trails
+- Prefer official mirrors and signed repositories  
+- Review third-party apt sources before adding them  
+- Patch regularly; track Common Vulnerabilities and Exposures (CVE) for critical packages  
+- Do not run random install scripts from the internet as root  
+- Limit who can run package installs with sudo rules  
 
 ## Common Mistakes
 
-!!! warning "Using legacy networking tools by default"
-    `ifconfig`/`netstat` are missing or incomplete on modern images. **Fix:** use `ip` and `ss`.
+!!! warning "Skipping apt-get update"
+    You install stale or missing packages. **Fix:** always update metadata first on practice and in automation.
 
-!!! warning "Editing vendor unit files in place"
-    Package upgrades overwrite `/lib/systemd/system`. **Fix:** `systemctl edit` drop-ins under `/etc`.
+!!! warning "Permanent holds with no review"
+    Security fixes never arrive. **Fix:** document holds and remove them after the freeze.
 
-!!! warning "Trusting df without checking inodes and mounts"
-    A full `/var` or exhausted inodes looks different from root. **Fix:** `df -h`, `df -i`, and `findmnt`.
+!!! warning "curl \| bash installers for system tools"
+    Hard to audit and reverse. **Fix:** prefer distro packages or verified artefacts.
+
+!!! warning "Forgetting reboot after kernel update"
+    Host still runs the old kernel. **Fix:** plan reboot; confirm with `uname -r`.
 
 ## Best Practices
 
-- Golden images + config as code over snowflake hosts
-- Alert on symptoms (failed units, disk, load) with runbooks attached
-- Time-sync (chrony) everywhere — logs and TLS depend on it
-- Separate OS and data volumes on Cloud VMs
-- Practise restore and rescue paths before you need them
+- Build golden images with required packages baked in  
+- Use unattended security updates carefully on servers  
+- Keep a short allow-list of approved packages for bastions  
+- Prefer `DEBIAN_FRONTEND=noninteractive` in scripts  
+- Clean unused packages to shrink attack surface  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Permission denied | Mode/owner/ACL/MAC | `namei -l`, `id`, `getfacl`, SELinux/AppArmor logs |
-| No route / timeout | Routing, DNS, firewall | `ip route`, `dig`, `ss`, security groups |
-| Service won’t start | Unit/config/deps | `systemctl status`, `journalctl -u`, config `-t` |
-| Disk full | Logs, containers, deleted-open | `df`/`du`, `lsof +L1`, rotate/expand |
-| High load | CPU, I/O wait, thrash | `vmstat`, `iostat`, `ps` |
+| Hash sum mismatch | Mirror glitch | Retry `apt-get update`; switch mirror if needed |
+| Unmet dependencies | Mixed releases / broken pins | Read apt error; avoid mixing suites |
+| `dpkg was interrupted` | Partial upgrade | `sudo dpkg --configure -a` |
+| Package held back | Hold or phased updates | `apt-mark showhold`; read apt notes |
+| Wrong package name | Distro difference | Search (`apt-cache search`, `dnf search`) |
 
 ## Summary
 
-**Package Management** is essential for Cloud and DevOps engineers operating Linux hosts. Practise the lab until the inspection path is muscle memory, then continue the track.
+Package managers keep Linux software installable, queryable, and patchable. On Ubuntu, practise `apt-get update`, install, `apt-cache policy`, `apt-mark hold`, and clean removal — then map the same ideas to `dnf` and `zypper`. Next, schedule recurring work in [Scheduling with cron, at, and Timers](scheduling-cron-at-and-timers.md).
 
 ## Interview Questions
 
-1. How does this topic show up when operating Cloud VMs or Kubernetes nodes?
-2. What would you check first if this area misbehaves in production?
-3. Which modern Linux tools replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI or a cron/timer job?
+**1. What problem does a package manager solve compared with copying binaries by hand?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, then gather host signals (`systemctl --failed`, `df`, `ip`/`ss`, `journalctl`) before making changes. Fix forward with evidence, not guesswork.
+??? success "Reveal answer"
+    It tracks **versions**, **dependencies**, and **installed files**, and it uses signed repositories. That makes installs repeatable, upgrades safer, and removal cleaner than dropping unknown binaries into `/usr/local`.
+
+**2. What is the difference between `apt-get update` and `apt-get upgrade`?**
+
+??? success "Reveal answer"
+    **`update`** refreshes package **metadata** (what versions are available). **`upgrade`** installs newer versions of packages already on the system. You usually update first, then upgrade in a planned window.
+
+**3. How do you stop one package from upgrading during a freeze week on Ubuntu?**
+
+??? success "Reveal answer"
+    Use `sudo apt-mark hold packagename`, verify with `apt-mark showhold`, and document why. After the freeze, `apt-mark unhold packagename` and patch. Do not hold critical security packages forever without a plan.
+
+**4. Why do kernel package updates often require a reboot?**
+
+??? success "Reveal answer"
+    The running kernel is already loaded in memory. Installing a new kernel package updates files on disk, but the host keeps running the old kernel until reboot. Confirm with `uname -r` after reboot.
+
+**5. How would you find which package owns `/usr/bin/curl` on Ubuntu vs RHEL?**
+
+??? success "Reveal answer"
+    On Ubuntu/Debian: `dpkg -S /usr/bin/curl`. On RHEL-like systems: `rpm -qf /usr/bin/curl`. This helps when a file is broken or you need to reinstall the correct package.
+
+**6. When are snap or Flatpak appropriate on a server?**
+
+??? success "Reveal answer"
+    Rarely for classic server daemons. They are more common for desktop apps. Many production servers prefer apt/dnf packages or containers for isolation. If snap is unused, teams often disable it to reduce complexity.
+
+**7. How do golden images and package management work together in cloud fleets?**
+
+??? success "Reveal answer"
+    Bake a known package set into the image (and record versions). Instances launch consistent. Patching then happens via new images or controlled in-place upgrades. This beats unique “snowflake” hosts where someone installed tools by hand months ago.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Category Overview](index.md)
+- [Linux for Cloud & DevOps – Overview](index.md)
 - [SSH and Remote Access](ssh-and-remote-access.md) *(previous)*
 - [Scheduling with cron, at, and Timers](scheduling-cron-at-and-timers.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [Lab — Linux Ops Toolkit](../labs/linux-ops-toolkit-lab.md) *(more practice)*
 
 ## References
 
-- [Linux man-pages project](https://www.kernel.org/doc/man-pages/)
-- [systemd documentation](https://systemd.io/)
-- [Filesystem Hierarchy Standard](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
+- [Ubuntu APT documentation](https://ubuntu.com/server/docs/package-management) — package management overview  
+- [`apt-get(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/apt-get.8.html) — apt-get manual  
+- [`apt-mark(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/apt-mark.8.html) — hold/unhold  
+- [DNF documentation](https://dnf.readthedocs.io/) — RHEL-family package manager  
 - Track index: [Linux for Cloud & DevOps Engineers](index.md)

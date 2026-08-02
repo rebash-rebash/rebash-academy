@@ -41,23 +41,31 @@ comments: false
 
 
 
+
+
+
+
 Read and write clear HCL: blocks and labels, arguments, expressions, a first variable and output, locals, and common built-in functions.
 
 **HashiCorp Configuration Language (HCL)** is Terraform’s configuration language. Almost everything is a **block** with **arguments**. Values come from literals, references, and **expressions** — including functions such as `join` and `format`.
 
 This is a core tutorial in **Module 4 · HCL Fundamentals** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Terraform Workflow: Init, Plan, and Apply](terraform-workflow-init-plan-apply.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -68,9 +76,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Use a variable, local, and output together  
 - [ ] Apply a simple function in an expression
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -78,9 +88,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform HCL blocks](../assets/excalidraw/terraform-hcl-blocks.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -138,63 +150,113 @@ Readable HCL is operational safety. Dense one-liners and unexplained magic local
 - Putting secrets in plain locals committed to Git.
 - Using string templates where a direct reference is clearer (`var.x` vs `"${var.x}"`).
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **HCL Fundamentals: Blocks, Arguments, and Expressions** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-04`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-04 && cd ~/rebash-terraform/module-04
 ```
 
-**Focus:** Practise HCL blocks, arguments, and simple expressions
+### Real-world scenario
 
-### Step 1 – Author blocks with expressions
+You are automating **HCL Fundamentals: Blocks, Arguments, and Expressions** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-
-locals {
-  project = "rebash"
-  env     = "lab"
-  name    = "${local.project}-${local.env}"
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
 }
-
-resource "local_file" "readme" {
-  filename = "${path.module}/${local.name}.txt"
-  content  = join("
-", ["name=${local.name}", "env=${local.env}"])
-}
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
 terraform validate
 ```
 
-### Step 2 – Apply and read interpolated output
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-cat rebash-lab.txt
-terraform console <<<'local.name'
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -203,9 +265,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -219,9 +283,11 @@ Production practice for **HCL Fundamentals: Blocks, Arguments, and Expressions**
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -231,9 +297,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -246,9 +314,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -258,9 +328,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -272,17 +344,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **HCL Fundamentals: Blocks, Arguments, and Expressions** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What is the difference between an argument and a nested block in HCL?
@@ -297,18 +373,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Dense one-liners make reviews and incidents harder. Extract locals, name things clearly, and keep security-sensitive logic obvious.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
 
-
-
 ## References
+
+
+
+
 
 
 

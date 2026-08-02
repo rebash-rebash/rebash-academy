@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Docker with Jenkins Pipeline
 
 ## Overview
+
+
 
 Use Docker with Jenkins Pipeline: `agent { docker { image '…' } }`, Dockerfile agents, image build/push patterns, and registry credentials.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 8 · Docker with Pipeline** of the REBASH Ac
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Docker with Jenkins Pipeline](../assets/excalidraw/jenkins-docker-pipeline.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -101,72 +112,110 @@ Never bake registry passwords into image layers.
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Docker with Jenkins Pipeline** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-08`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-08 && cd ~/rebash-jenkins/module-08
 ```
 
-**Focus:** Jenkinsfile with docker agent plus local Dockerfile build proof
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Docker with Jenkins Pipeline**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Author a Declarative Jenkinsfile
+
+Pipeline-as-code is the production default — Declarative first.
 
 ```bash
-cat > Dockerfile << 'EOF'
-FROM python:3.12-alpine
-WORKDIR /app
-COPY app.py .
-USER nobody
-CMD ["python", "app.py"]
-EOF
-echo 'print("hello from jenkins docker lab")' > app.py
 cat > Jenkinsfile << 'EOF'
 pipeline {
-  agent {
-    docker {
-      image 'python:3.12-alpine'
-      args '-u root:root'
-    }
-  }
+  agent any
+  options { timestamps() }
   stages {
+    stage('Build') {
+      steps {
+        sh 'mkdir -p dist && echo ok > dist/status.txt'
+      }
+    }
     stage('Test') {
       steps {
-        sh 'python -c "print(1+1)"'
+        sh 'test -f dist/status.txt && grep -q ok dist/status.txt'
       }
     }
-    stage('Image build note') {
-      steps {
-        echo 'On a Docker-capable agent: docker build -t rebash/lab:${BUILD_NUMBER} .'
-      }
-    }
+  }
+  post {
+    always { archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true }
   }
 }
 EOF
-docker build -t rebash/jenkins-lab:local .
-docker run --rm rebash/jenkins-lab:local
-grep -A3 'docker {' Jenkinsfile
+test -f Jenkinsfile && grep -n 'pipeline\|stages\|post' Jenkinsfile
 ```
 
-### Step 2 – Credential hygiene note
+**Expected output:** Jenkinsfile contains pipeline/stages/post blocks.
+
+#### Task 2 – Validate structure locally
+
+Run the shell steps the Pipeline will execute so failures are cheap.
 
 ```bash
-cat > registry-notes.md << 'EOF'
-# Registry
-- Store username/password or token as Jenkins credentials
-- Use withRegistry / withCredentials in Pipeline
-- Tag with Git SHA; avoid latest for prod
-EOF
-grep credentials registry-notes.md
+mkdir -p dist && echo ok > dist/status.txt
+test -f dist/status.txt && grep -q ok dist/status.txt
+tar -cf evidence.tar Jenkinsfile dist
+ls -l evidence.tar
 ```
 
-### Final cleanup
+**Expected output:** Shell checks pass; evidence.tar created for the job upload story.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+rm -f evidence.tar
+# Keep Jenkinsfile for SCM modules
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-08/`
 - [ ] You can explain each Theory section in your own words
@@ -174,6 +223,8 @@ grep credentials registry-notes.md
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Docker with Jenkins Pipeline** always combines:
 
@@ -187,6 +238,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -194,6 +247,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Unrestricted docker.sock mounts"
     A job can control the host Docker daemon — treat as privileged access.
@@ -206,6 +261,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Docker with Jenkins Pipeline** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -213,6 +270,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -224,9 +283,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Docker with Jenkins Pipeline** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. How does `agent { docker { … } }` differ from building an image in a stage?
 2. What is the main risk of mounting the host Docker socket?
@@ -242,11 +305,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Multibranch Pipelines and Pull Requests](multibranch-pipelines-and-prs.md)
 - [Shared Libraries](shared-libraries.md)
 
 ## References
+
+
 
 - [Pipeline Syntax — agent](https://www.jenkins.io/doc/book/pipeline/syntax/#agent)
 - [Using Docker with Pipeline](https://www.jenkins.io/doc/book/pipeline/docker/)

@@ -54,15 +54,17 @@ comments: false
 
 
 
+
+
 Place AWS Key Management Service (KMS), Secrets Manager, Systems Manager Parameter Store, GuardDuty, Inspector, Security Hub, Macie, Shield, and AWS WAF into a coherent defence-in-depth model — and practise secret/parameter hygiene without leaving paid detectors unreviewed.
 
 Identity (IAM) is necessary but not sufficient. **KMS** manages encryption keys. **Secrets Manager** and **Parameter Store** distribute secrets and configuration. **GuardDuty** detects threats from logs and findings. **Inspector** scans for software vulnerabilities. **Security Hub** aggregates findings and standards. **Macie** discovers sensitive data in S3. **Shield** protects against Distributed Denial of Service (DDoS); **AWS WAF** filters Layer 7 web exploits. Production platforms combine encryption, least privilege, continuous detection, and edge protection — with clear ownership for triage.
 
 This is a core tutorial in **Module 10 · Security** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -71,9 +73,9 @@ This is a core tutorial in **Module 10 · Security** of the REBASH Academy **AWS
 - Solid IAM (roles, policies, MFA, Organisations SCPs)
 - CloudTrail enabled in the account you use for labs
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -85,9 +87,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Map GuardDuty, Inspector, Security Hub, and Macie to distinct detection jobs  
 - [ ] Contrast Shield Standard versus Shield Advanced and place AWS WAF at Layer 7
 
-
-
 ## Architecture
+
+
 
 
 
@@ -96,9 +98,9 @@ This topic’s control points and relationships are shown below.
 
 ![AWS security services](../assets/excalidraw/aws-security.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -162,49 +164,98 @@ Most incidents involve leaked credentials, missing encryption, unpatched softwar
 - Plaintext secrets in Lambda env vars.
 - Confusing GuardDuty (behaviour), Inspector (CVEs), and Macie (data discovery).
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+!!! warning "Cost and account safety"
+    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
+
+### Objective
+
+Use read-only AWS APIs to inventory and verify aspects of **AWS Security Services — Keys, Secrets, and Detection** in a sandbox account.
+
+### Prerequisites
+
+- AWS CLI v2
+- Credentials for a **sandbox** account (SSO or short-lived keys)
+
+### Lab environment
+
+Workspace: `~/rebash-aws/module-10`
+
+Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
 ```bash
 mkdir -p ~/rebash-aws/module-10 && cd ~/rebash-aws/module-10
 ```
 
-**Focus:** read-only tour of CloudTrail/GuardDuty/Security Hub/Config
+### Real-world scenario
 
-### Step 1 – Security services probe
+Security asks for evidence that **AWS Security Services — Keys, Secrets, and Detection** is configured correctly. You gather CLI proof without click-ops drift.
+
+### Step-by-step tasks
+
+#### Task 1 – Prove caller identity
+
+Every AWS change starts by knowing which account/role you are.
 
 ```bash
-aws sts get-caller-identity
-aws cloudtrail describe-trails --query 'trailList[].{Name:Name,MultiRegion:IsMultiRegionTrail}' --output table 2>/dev/null || true
-aws guardduty list-detectors --output table 2>/dev/null || echo "GuardDuty not enabled or no permission"
-aws securityhub describe-hub 2>/dev/null || echo "Security Hub not enabled or no permission"
-aws configservice describe-configuration-recorders --output table 2>/dev/null || true
+aws sts get-caller-identity | tee identity.json
+aws configure get region || true
+test -s identity.json
 ```
 
-### Step 2 – Control checklist
+**Expected output:** JSON includes Account, Arn, and UserId.
+
+#### Task 2 – Collect topic signals
+
+Inventory the service surface related to this module.
 
 ```bash
-cat > security-controls.md << 'EOF'
-- CloudTrail organisation trail + log file validation
-- GuardDuty + Security Hub aggregation
-- Config rules for required tags / public access blocks
+aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
+aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
+tee notes.txt << 'EOF'
+Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
 EOF
+cat notes.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Evidence files created even if some APIs are denied.
+
+### Validation steps
+
+- [ ] identity.json present
+- [ ] No long-lived keys committed to the repo
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
+| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
+| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+
+### Challenge exercise
+
+Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+
+### Learning outcomes
+
+- Authenticated safely
+- Captured read-only evidence
+- Avoided unmanaged spend
+
+### Cleanup
 
 ```bash
-# COST WARNING: prefer describe/list APIs. Destroy anything you create.
-# Keep ~/rebash-aws/ for later tutorials
+# Revoke/lab-expire any temporary keys you exported
+# Do not leave EC2/ELB/NAT running
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -214,9 +265,9 @@ EOF
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -231,9 +282,9 @@ Production practice for **AWS Security Services — Keys, Secrets, and Detection
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -244,9 +295,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -260,9 +311,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -273,9 +324,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -288,18 +339,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **AWS Security Services — Keys, Secrets, and Detection** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. CloudTrail versus CloudWatch Logs versus Config?
@@ -314,9 +365,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Centralise trails/findings and restrict who can disable logging.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -324,9 +375,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md)
 
-
-
 ## References
+
+
 
 
 

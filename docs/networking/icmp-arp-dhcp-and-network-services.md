@@ -1,25 +1,22 @@
 ---
 title: "ICMP, ARP, DHCP, and Network Services"
-description: "Master ICMP diagnostics, ARP/neighbour resolution, the DHCP DORA process, and NTP time sync — the control-plane services every Cloud and DevOps path depends on."
+description: "Use ping, ip neigh, dig, and read-only DHCP lease inspection to prove how ICMP, ARP, and DHCP support everyday Cloud and DevOps connectivity."
 difficulty: intermediate
-estimated_time: "45–60 min"
-technology: networking
+estimated_time: "45–55 min"
+author: Shaik Basha
+last_updated: "2026-08-02"
 category: networking
+technology: networking
 module: "Module 7 · Switching"
-career_paths:
-  - beginner
-  - devops-engineer
-  - cloud-engineer
-  - linux-administrator
-  - site-reliability-engineer
-  - kubernetes-engineer
-skills:
+tags:
+  - networking
   - icmp
   - arp
   - dhcp
-  - ntp
+  - ping
+  - neighbour
 prerequisites:
-  - networking/routing-fundamentals
+  - networking/ethernet-switching-and-vlans
 next:
   - networking/tcp-and-udp-deep-dive
 related:
@@ -28,83 +25,69 @@ related:
   - linux/linux-networking-tools
 labs:
   - labs/networking-dns-firewall-triage
-projects: []
 interview: interview/networking
-certifications:
-  - CompTIA Network+
-  - RHCSA
-tags:
-  - networking
-  - icmp
-  - arp
-  - dhcp
-  - ntp
-  - ping
-  - traceroute
-author: Shaik Basha
-last_updated: "2026-07-31"
 comments: false
 ---
-
 
 # ICMP, ARP, DHCP, and Network Services
 
 ## Overview
 
-Inspect and explain the four services that make “basic connectivity” possible — ICMP, ARP/neighbour, DHCP, and NTP — and capture a lab checklist you can reuse in incidents.
+TCP and HTTP only work after quieter protocols do their jobs. **Dynamic Host Configuration Protocol (DHCP)** often assigns addressing. **Address Resolution Protocol (ARP)** (and the Linux neighbour table) finds the next-hop Media Access Control (MAC) address. **Internet Control Message Protocol (ICMP)** reports path problems when firewalls allow it. **Network Time Protocol (NTP)** keeps clocks honest for logs and certificates.
 
-TCP and HTTP only work after quieter protocols do their jobs. **DHCP** assigns addressing, **ARP** finds the next-hop MAC, **ICMP** reports path problems (when allowed), and **NTP** keeps clocks honest for logs and certificates. Failures here masquerade as application bugs.
+Failed `ping` is the most misread alert in operations — ICMP is often filtered while HTTPS still works. Stale neighbours cause “same IP, wrong MAC” black holes after failover. Wrong DHCP options hand out a bad gateway or Domain Name System (DNS) server.
 
-This is part of **Module 7 — Switching** (ARP) and host network services. Complete [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) first. For command overlap, see [Linux Networking Tools](../linux/linux-networking-tools.md); this page focuses on protocol behaviour and production triage.
-
-This is a core tutorial in **Module 7 · Switching** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 8** in **Module 7: Switching** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. By the end, you will collect ping, neighbour, DNS, and lease evidence under `~/rebash-networking/lab08`.
 
 ## Prerequisites
 
-### Required
-
-- [Routing Fundamentals](routing-fundamentals.md)
-- Linux lab host with outbound network access
-- Comfort with `ip`, `ping`, and reading command output
-
-### Recommended
-
-- `sudo` for lease inspection and optional packet capture
-- `~/rebash-networking/module-02/` from earlier labs
+- [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md)
+- A practice Ubuntu 22.04/24.04 VM with outbound network access
+- Tools: `ip`, `ping`, `dig` (`dnsutils` on Ubuntu), optional `curl`
+- Read-only access to DHCP/NetworkManager lease files when present
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain key ICMP types and why ping/traceroute can fail while TCP works  
-- [ ] Read and interpret `ip neigh` / ARP cache state  
-- [ ] Describe the DHCP DORA flow and inspect lease information on Linux  
-- [ ] Check time sync with `timedatectl` / `chronyc`  
-- [ ] Triage “no gateway”, “no DHCP”, and “clock skew” symptoms  
-- [ ] Separate protocol failure from firewall filtering
+- [ ] Explain key ICMP types and why ping can fail while TCP works
+- [ ] Read `ip neigh` states after a successful gateway ping
+- [ ] Describe the DHCP DORA flow and inspect a lease file read-only
+- [ ] Use `dig` as a simple name-resolution check during triage
+- [ ] Separate “no route / no ARP / filtered ICMP / bad lease” symptoms
 
 ## Architecture
 
-A new host typically: DHCP → ARP gateway → ICMP check → NTP sync.
+A new host typically: get address (DHCP or cloud metadata) → resolve gateway MAC (ARP) → optional ICMP check → use DNS and apps. Time sync runs in parallel.
 
-![Network services path](../assets/excalidraw/what-is-networking.svg)
+![Architecture diagram for ICMP, ARP, and DHCP path](../assets/excalidraw/network-services-icmp-arp-dhcp.svg)
 
 ## Theory
 
 ### What it is
 
-Beneath everyday Transmission Control Protocol (TCP) apps sit control-plane helpers: **Internet Control Message Protocol (ICMP)** for reachability and path errors, **Address Resolution Protocol (ARP)** (and the Linux neighbour table) for Internet Protocol (IP)→Media Access Control (MAC) mapping on a segment, **Dynamic Host Configuration Protocol (DHCP)** for address leases, and **Network Time Protocol (NTP)** for clock sync. None of these replace your application protocol; they make the path and identity of the host possible.
+**ICMP** is a Layer 3 control protocol carried in IP. Echo Request/Reply power `ping`. **ARP** answers “Who has this IPv4 address?” on the local Ethernet segment; Linux stores answers in the **neighbour table** (`ip neigh`). **DHCP** uses **DORA** — Discover, Offer, Request, Ack — to lease an address plus options (mask, gateway, DNS, lease time). Cloud metadata often replaces classic DHCP, but you still ask “who gave me this address?”
+
+```bash
+ping -c 2 127.0.0.1
+ip neigh show
+```
 
 ### Why it matters
 
-Failed `ping` is the most misread alert in operations — ICMP is often filtered while HTTPS works. Stale ARP/neighbour entries cause “same IP, wrong MAC” black holes after moves or failover. DHCP mistakes hand out the wrong gateway or DNS. Clock skew breaks Transport Layer Security (TLS), Kerberos, and signed cloud Application Programming Interface (API) requests. Knowing these services stops false root causes during triage.
+If you equate ping failure with “host down,” you will open wrong tickets. Security groups often drop ICMP. If you ignore `FAILED` neighbours after a virtual IP (VIP) move, traffic goes to a dead MAC until the cache expires. If DHCP gives the wrong default gateway, “Internet is down” is really “lease is wrong.” Clock skew (NTP) breaks Transport Layer Security (TLS) and signed cloud Application Programming Interface (API) calls — check `timedatectl` when certificates “suddenly” fail.
 
 ### How it works
 
-ICMP is a Layer 3 control protocol carried in IP. Echo Request/Reply (types 8/0) power `ping`; Destination Unreachable (type 3) and Time Exceeded (type 11) feed traceroute. On Ethernet, ARP answers “Who has this IP?” for on-link destinations or for the **gateway** when the destination is remote; Linux caches answers as neighbour states (`REACHABLE`, `STALE`, `FAILED`, …). DHCP uses the **DORA** exchange (Discover, Offer, Request, Ack) to lease an address plus options (mask, gateway, DNS, lease time). Cloud metadata often replaces classic DHCP, but you still ask “who gave me this address?” NTP clients (`chrony`, `systemd-timesyncd`) keep clocks honest.
+1. **Address** — DHCP (or static / cloud) configures IP, mask, gateway, DNS.
+2. **On-link next hop** — for a remote destination, ARP targets the **gateway** IP; for a same-subnet host, ARP targets that host.
+3. **ICMP** — optional reachability and path messages (filtered often).
+4. **Apps** — TCP/UDP use the resolved path; DNS uses UDP/TCP 53.
 
-!!! note "ICMP is often filtered"
-    Security groups and edge firewalls frequently drop ICMP. Failed ping ≠ host down. Confirm with TCP (`curl`, `nc`) on the real port.
+```bash
+ip route | awk '/default/ {print; exit}'
+# Then ping that gateway and re-check neighbours
+```
 
 ### Key concepts and comparisons
 
@@ -119,229 +102,294 @@ ICMP is a Layer 3 control protocol carried in IP. Echo Request/Reply (types 8/0)
 | Discover / Offer | Find server; propose lease |
 | Request / Ack | Accept offer; confirm |
 
-| Time tooling | Notes |
-|--------------|-------|
-| `timedatectl` | systemd clock + NTP status |
-| `chronyc` | chrony diagnostics |
-| `systemd-timesyncd` | lighter sync on many Ubuntu images |
+| Neighbour state (examples) | Meaning |
+|----------------------------|---------|
+| REACHABLE | Recently confirmed |
+| STALE | May still work; needs refresh |
+| FAILED | Resolution failed |
 
 ### Common pitfalls
 
-- Equating ping failure with host failure.  
-- Ignoring neighbour `FAILED` after IP moves or VIP failover.  
-- Rogue or mis-scoped DHCP handing out wrong gateways.  
-- Disabling ICMP Time Exceeded and wondering why traceroute is blank.  
-- Minutes of clock skew → mysterious TLS and API signature errors.
+- Equating ping failure with host failure.
+- Ignoring neighbour `FAILED` after IP moves or VIP failover.
+- Editing lease files instead of reading them.
+- Assuming every host uses `/var/lib/dhcp` — NetworkManager and cloud-init paths differ.
+- Disabling all ICMP and wondering why traceroute is blank.
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for ICMP, ARP, DHCP, and Network Services
+### Objective
+
+On a practice Ubuntu VM, prove ICMP and ARP/neighbour behaviour with `ping` and `ip neigh`, run a simple `dig` check, and collect **read-only** DHCP or NetworkManager lease evidence. Pack outputs under `~/rebash-networking/lab08`.
+
+### Prerequisites
+
+- Ubuntu with `ip`, `ping`, `dig`
+- Outbound ICMP may be filtered to the Internet — localhost and gateway tests still count
+- Sudo only if needed to read lease directories (prefer readable paths first)
+
+### Lab environment
+
+Workspace: `~/rebash-networking/lab08`
 
 ```bash
-mkdir -p ~/rebash-networking/module-02
-cd ~/rebash-networking/module-02
-
-sudo apt-get update
-sudo apt-get install -y iproute2 iputils-ping traceroute dnsutils \
-  dhcpcd-base 2>/dev/null || true
-sudo apt-get install -y chrony || sudo apt-get install -y systemd-timesyncd
+mkdir -p ~/rebash-networking/lab08 && cd ~/rebash-networking/lab08
+set -euo pipefail
+whoami | tee admin-user.txt
+ip -br a | tee addrs.txt
+ip route | tee routes.txt
+test -n "$(command -v ping)"
+command -v dig >/dev/null || { sudo apt-get update && sudo apt-get install -y dnsutils; }
 ```
 
-Tools used below are available on typical Ubuntu images even when the DHCP client package name differs (`systemd-networkd`, NetworkManager, `dhclient`).
+**Expected output:** address and route files exist; `dig` is available.
 
-### Step 1 — ICMP baseline
+### Real-world scenario
+
+Users say “the server is down” because ping failed. You must prove whether ICMP is filtered, whether the gateway neighbour is healthy, whether DNS resolves, and how the host got its address — then attach evidence to the incident ticket.
+
+### Step-by-step tasks
+
+#### Task 1 – ICMP: localhost and gateway
 
 ```bash
-cd ~/rebash-networking/module-02
-ping -c 4 127.0.0.1
-ping -c 4 1.1.1.1 || echo "ICMP to 1.1.1.1 filtered or unreachable — continue with TCP checks"
+cd ~/rebash-networking/lab08
+set -euo pipefail
+
+ping -c 2 127.0.0.1 | tee ping-localhost.txt
+grep -E 'bytes from|1 received|2 received' ping-localhost.txt
+
+GW="$(ip route | awk '/default/ {print $3; exit}')"
+echo "gateway=${GW:-none}" | tee gateway.txt
+
+if [ -n "${GW:-}" ]; then
+  ping -c 3 "$GW" | tee ping-gateway.txt || true
+  # Internet ICMP often filtered — record attempt without failing the lab
+  ping -c 2 1.1.1.1 | tee ping-internet.txt || echo "internet ICMP failed or filtered" | tee ping-internet.txt
+else
+  echo "No default gateway — skip remote ping" | tee ping-gateway.txt
+  echo "No default gateway" | tee ping-internet.txt
+fi
 ```
 
-**Expected:** Loopback succeeds. Public ping may succeed or time out depending on filters.
+**Expected output:** localhost ping succeeds; gateway ping recorded when a default route exists.
 
-### Step 2 — Traceroute vs TCP truth
+#### Task 2 – ARP / neighbour table evidence
 
 ```bash
-traceroute -n 1.1.1.1 | head -n 12 || true
-curl -sI --max-time 10 https://1.1.1.1/ | head -n 5 || \
-  curl -sI --max-time 10 https://example.com/ | head -n 5
+cd ~/rebash-networking/lab08
+set -euo pipefail
+
+ip neigh show | tee neigh-before.txt || true
+
+GW="$(awk -F= '/gateway=/ {print $2}' gateway.txt)"
+if [ -n "$GW" ] && [ "$GW" != "none" ]; then
+  ping -c 1 "$GW" >/dev/null 2>&1 || true
+  ip neigh show "$GW" | tee neigh-gateway.txt
+  ip neigh show | tee neigh-after.txt
+  grep -E 'REACHABLE|STALE|DELAY|PROBE|FAILED' neigh-after.txt || test -s neigh-after.txt
+else
+  echo "No gateway to resolve" | tee neigh-gateway.txt
+  ip neigh show | tee neigh-after.txt
+fi
 ```
 
-**Expected:** Even if traceroute is sparse, HTTPS headers can still succeed — document that difference.
+**Expected output:** after gateway ping, `neigh-gateway.txt` or `neigh-after.txt` shows a neighbour entry when L2 works.
 
-### Step 3 — Neighbour / ARP inspection
-
-```bash
-GW=$(ip route show default | awk '/default/ {print $3; exit}')
-echo "GW=$GW"
-ping -c 1 "$GW" 2>/dev/null || true
-ip neigh show
-ip -br neigh
-```
-
-**Expected:** A neighbour entry for the gateway with a MAC when L2 works.
-
-### Step 4 — Flush and rediscover (lab only)
+#### Task 3 – dig check + read-only DHCP / NM leases
 
 ```bash
-# Lab only — briefly clears neighbour entries
-sudo ip neigh flush all || true
-ip neigh show
-ping -c 1 "$GW" 2>/dev/null || true
-ip neigh show
-```
+cd ~/rebash-networking/lab08
+set -euo pipefail
 
-**Expected:** Table empties (or nearly), then the gateway reappears after traffic.
+dig +short example.com A | tee dig-example.txt
+test -s dig-example.txt
 
-### Step 5 — DHCP / address origin clues
-
-```bash
-ip -4 -br addr
-ip route show default
-
-# systemd-networkd leases (when present)
-ls /run/systemd/netif/leases 2>/dev/null || true
-sudo networkctl status 2>/dev/null | sed -n '1,80p' || true
-
-# NetworkManager (when present)
-nmcli -f IP4,DHCP4 device show 2>/dev/null | head -n 40 || true
-
-# Classic dhclient leases (when present)
-sudo ls /var/lib/dhcp/ 2>/dev/null || true
-```
-
-**Expected:** You can state whether the address looks DHCP/cloud-assigned and what the advertised gateway/DNS are (when tools expose them).
-
-### Step 6 — DNS options vs connectivity
-
-```bash
-resolvectl status 2>/dev/null | sed -n '1,60p' || cat /etc/resolv.conf
-dig +short example.com A | head
-```
-
-**Expected:** Resolver addresses are visible; DNS answers return (unless filtered). DHCP often provided those resolvers.
-
-### Step 7 — Time sync check
-
-```bash
-timedatectl
-timedatectl show-timesync 2>/dev/null || true
-chronyc tracking 2>/dev/null || true
-date -Is
-```
-
-**Expected:** NTP/systemd-timesync reports synchronised (wording varies), and local time looks correct for your zone.
-
-### Step 8 — Capture a services checklist
-
-```bash
+# Read-only lease hunt (do not edit these files)
 {
-  echo "=== icmp ==="
-  ping -c 2 127.0.0.1 | tail -n 3
-  echo
-  echo "=== gateway neigh ==="
-  ip neigh show to "$GW" 2>/dev/null || ip neigh show | head
-  echo
-  echo "=== default route ==="
-  ip route show default
-  echo
-  echo "=== time ==="
-  timedatectl | sed -n '1,12p'
-} | tee network-services-check.txt
+  echo "=== resolv.conf ==="
+  cat /etc/resolv.conf 2>/dev/null || true
+  echo "=== DHCP / NetworkManager lease clues ==="
+  ls -la /var/lib/dhcp/ 2>/dev/null || echo "no /var/lib/dhcp"
+  ls -la /var/lib/NetworkManager/ 2>/dev/null || echo "no NetworkManager dir"
+  for f in /var/lib/dhcp/dhclient*.leases \
+           /var/lib/dhcpcd5/dhcpcd.leases \
+           /var/lib/NetworkManager/*.lease \
+           /run/systemd/netif/leases/*; do
+    if [ -r "$f" ]; then
+      echo "---- $f ----"
+      # shellcheck disable=SC2002
+      cat "$f" | head -n 40
+    fi
+  done
+  if command -v nmcli >/dev/null 2>&1; then
+    echo "=== nmcli device show (IP4) ==="
+    nmcli -f GENERAL,IP4 device show 2>/dev/null | head -n 80 || true
+  fi
+  if command -v timedatectl >/dev/null 2>&1; then
+    echo "=== timedatectl ==="
+    timedatectl | head -n 20
+  fi
+} | tee lease-and-time.txt
+
+tar -czf services-evidence.tgz \
+  admin-user.txt addrs.txt routes.txt gateway.txt \
+  ping-localhost.txt ping-gateway.txt ping-internet.txt \
+  neigh-before.txt neigh-gateway.txt neigh-after.txt \
+  dig-example.txt lease-and-time.txt
+ls -l services-evidence.tgz | tee evidence-ls.txt
+```
+
+**Expected output:** `dig-example.txt` has an IPv4 address; `lease-and-time.txt` shows resolv.conf and whatever lease paths exist; archive is non-empty.
+
+### Validation steps
+
+- [ ] Localhost ping succeeded
+- [ ] Gateway (if present) was recorded and neighbour table inspected
+- [ ] `dig-example.txt` is non-empty
+- [ ] `lease-and-time.txt` captured resolv.conf and lease/NM clues
+- [ ] `services-evidence.tgz` exists under `~/rebash-networking/lab08`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Internet ping fails | ICMP filtered | Normal — use TCP/`curl` for app proof |
+| Empty neighbour table | No recent traffic / no gateway | Ping gateway; check L2 |
+| `dig: command not found` | `dnsutils` missing | `sudo apt-get install -y dnsutils` |
+| Cannot read lease file | Permissions | Note the path; use `sudo cat` read-only if policy allows |
+| No `/var/lib/dhcp` | NM / cloud-init / static IP | Document how address was assigned instead |
+
+### Challenge exercise
+
+Write `triage-services.sh` that prints: default gateway, `ping -c1` exit code to gateway, `ip neigh` line for gateway, and `dig +short example.com`. Save stdout to `triage-out.txt`. This script is the working artefact — not a markdown notes file.
+
+### Learning outcomes
+
+- Separated ICMP filter from true host failure
+- Proved neighbour resolution after gateway ping
+- Collected dig + read-only lease evidence for tickets
+
+### Cleanup
+
+```bash
+cd ~/rebash-networking/lab08
+set -euo pipefail
+# Inspection-only lab — optional:
+# rm -f services-evidence.tgz *.txt
 ```
 
 ## Validation
 
-- [ ] You can name ICMP Echo Request/Reply and Time Exceeded roles  
-- [ ] You can explain when ARP targets the gateway vs the destination  
-- [ ] You can list DORA in order  
-- [ ] `ip neigh` shows the gateway after a ping (when a gateway exists)  
-- [ ] You inspected how your host learned its address (DHCP/cloud/static clues)  
-- [ ] `timedatectl` shows time sync state  
-- [ ] `network-services-check.txt` exists  
-
-```bash
-test -f ~/rebash-networking/module-02/network-services-check.txt && echo "services check: OK"
-```
+- [ ] Lab finished under `~/rebash-networking/lab08/` with evidence
+- [ ] You can list DORA in order
+- [ ] You can explain when ARP targets the gateway vs the destination
+- [ ] You know ICMP filter ≠ application down
 
 ## Code Walkthrough
 
-Production practice for **ICMP, ARP, DHCP, and Network Services** always combines:
+Production triage for these services usually follows:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
+1. **Confirm local stack** — localhost ping, interface UP, default route  
+2. **Prove next hop** — ping gateway (if allowed) + `ip neigh`  
+3. **Prove name resolution** — `dig` / `getent` before blaming the app  
+4. **Ask who configured the host** — DHCP lease, NetworkManager, cloud-init, static  
+5. **Check time** — `timedatectl` when TLS or API signatures fail  
 
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+Automate the checklist; keep humans for “is ICMP filtered here?” judgement.
 
 ## Security Considerations
 
-- Treat credentials and tokens for networking as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Treat rogue DHCP as a real risk on flat networks — prefer authenticated / managed pools  
+- Do not paste full lease files with customer hostnames into public tickets without redaction  
+- ICMP can aid reconnaissance; filtering edge ICMP is common — document exceptions for ops  
+- Neighbour spoofing (ARP spoof) is possible on shared L2 — combine with port security or cloud controls  
+- Read lease files read-only; never hand-edit them to “fix” production  
 
 ## Common Mistakes
 
-!!! warning "Equating ping failure with host failure.  "
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "Declaring the host down because ping failed"
+    Many clouds drop ICMP. **Fix:** test the real TCP/UDP port (`curl`, `nc`) and check security groups.
 
-!!! warning "Ignoring neighbour `FAILED` after IP moves or VIP failover.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Clearing the whole neighbour table during an incident"
+    You may remove good entries and add churn. **Fix:** inspect the one IP you care about; delete selectively if stale.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Editing dhclient leases by hand"
+    Leases are rewritten by the client. **Fix:** fix DHCP server/options or static config properly; reboot/renew.
+
+!!! warning "Ignoring clock skew"
+    TLS and Kerberos fail in confusing ways. **Fix:** check `timedatectl` / chrony early in the runbook.
 
 ## Best Practices
 
-- Encode ICMP, ARP, DHCP, and Network Services changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Always record gateway + neighbour + dig in the first evidence pack  
+- Prefer `ip neigh` over legacy `arp -a`  
+- Document whether Internet ICMP is allowed in each environment  
+- Renew DHCP cleanly (`dhclient` / NM) instead of editing lease files  
+- Correlate NTP status with certificate and API signature failures  
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Commands | Fix direction |
-|---------|--------------|----------|---------------|
-| Ping fails, HTTPS works | ICMP filtered | `curl`, `nc` | Trust app-port tests |
-| `Destination Host Unreachable` | ARP failure | `ip neigh`, VLAN/subnet | Fix L2 / addressing |
-| No address on interface | DHCP failure | `journalctl -u …`, leases | Fix DHCP/server/security group |
-| Wrong gateway | Bad DHCP options / static mistake | `ip route` | Correct options / cloud route |
-| TLS mysteriously fails | Clock skew | `timedatectl` | Fix NTP |
-| Intermittent neighbour FAILED | L2 instability | `ip monit`, switch/cloud attach | Fix link/VLAN |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Ping fails, HTTPS works | ICMP filtered | Use app-port tests; adjust monitoring |
+| Same-subnet unreachable | ARP/neigh FAILED | Check peer, VLAN, security groups |
+| Wrong DNS after reboot | Bad DHCP option | Fix server options; verify lease |
+| No default route | DHCP failed / static misconfig | Inspect leases and `ip route` |
+| TLS handshake fails randomly | Clock skew | Fix NTP; verify `timedatectl` |
 
 ## Summary
 
-- **ICMP** diagnoses paths when permitted; it is not the application protocol.  
-- **ARP/neighbour** binds IP to MAC for on-link next hops.  
-- **DHCP (DORA)** automates address, gateway, and DNS options.  
-- **NTP** keeps trust in logs and certificates.  
-- Production triage checks these services before deep packet captures.
+ICMP, ARP/neighbour, DHCP, and time sync are the quiet services under every app path. Prove them with ping, `ip neigh`, `dig`, and read-only lease inspection — then decide what is filtered versus broken. Next: [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md).
 
 ## Interview Questions
 
-1. How does **ICMP, ARP, DHCP, and Network Services** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. Why can `ping` fail while `curl https://service` works?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    **ICMP Echo** is a different protocol from TCP 443. Firewalls and cloud security groups often **drop ICMP** while allowing HTTPS. Ping is a hint, not proof the host or application is down. Interviewers want you to test the real port and read security-group rules.
+
+**2. When does ARP resolve the gateway instead of the destination host?**
+
+??? success "Reveal answer"
+    If the destination IP is **off-link** (not in a connected route), the host sends frames to the **default gateway** MAC. ARP therefore asks for the gateway’s IP. If the destination is **on-link** (same subnet), ARP asks for that host’s IP directly.
+
+**3. Explain DHCP DORA in order and what a lease contains.**
+
+??? success "Reveal answer"
+    **Discover → Offer → Request → Ack**. The lease typically includes IPv4 address, subnet mask, default gateway, DNS servers, and lease lifetime. On Linux you may see this in dhclient/NetworkManager lease files or via `nmcli` — cloud VMs may get the same ideas from metadata instead of classic DHCP.
+
+**4. What does a neighbour state of FAILED usually mean?**
+
+??? success "Reveal answer"
+    Linux tried to resolve the IP to a MAC and **did not get a usable reply**. Causes include host down, wrong VLAN, filtered ARP, or a stale VIP. Fix the Layer 2 path; clearing one stale entry can help after failover, but do not blindly flush everything.
+
+**5. How would you prove in a ticket that DHCP handed out the wrong DNS servers?**
+
+??? success "Reveal answer"
+    Attach `/etc/resolv.conf`, the readable lease or `nmcli` IP4 DNS fields, and `dig` output showing which resolver was queried. Compare with the intended DHCP option or cloud DNS setting. Evidence beats “DNS feels wrong.”
+
+**6. How does NTP relate to “network” incidents?**
+
+??? success "Reveal answer"
+    Large **clock skew** breaks TLS certificate validity windows, Kerberos, and signed cloud API requests. The network path may be fine. Include `timedatectl` (or chrony) in early triage when errors mention certificates or authentication timestamps.
+
+**7. What is the difference between ICMP Destination Unreachable and a TCP connection timeout?**
+
+??? success "Reveal answer"
+    **Destination Unreachable** is an ICMP message saying a hop or host actively reported a problem (for example port unreachable, or administratively prohibited). A **TCP timeout** often means probes were **dropped silently** (filter) or the path is black-holed — you get no RST and no useful ICMP. Different signals, different fixes.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - Continue with [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md) — connection state, ports, and reliability trade-offs at the transport layer.
+- [Networking for Cloud & DevOps – Overview](index.md)
+- [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) *(previous)*
+- [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md) *(next)*
+- [Lab — DNS / firewall triage](../labs/networking-dns-firewall-triage.md)
 
 ## References
 
-- [RFC 792 – ICMP](https://www.rfc-editor.org/rfc/rfc792)  
-- [RFC 826 – ARP](https://www.rfc-editor.org/rfc/rfc826)  
-- [RFC 2131 – DHCP](https://www.rfc-editor.org/rfc/rfc2131)  
-- [timedatectl(1)](https://www.freedesktop.org/software/systemd/man/timedatectl.html)  
-- [chrony documentation](https://chrony-project.org/documentation.html)
+- [RFC 792 — ICMP](https://www.rfc-editor.org/rfc/rfc792)  
+- [RFC 826 — ARP](https://www.rfc-editor.org/rfc/rfc826)  
+- [RFC 2131 — DHCP](https://www.rfc-editor.org/rfc/rfc2131)  
+- [`ip-neighbour(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip-neighbour.8.html)  
+- Track index: [Networking for Cloud & DevOps Engineers](index.md)

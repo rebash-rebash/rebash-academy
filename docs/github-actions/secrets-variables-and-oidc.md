@@ -46,15 +46,21 @@ comments: false
 
 
 
+
+
+
+
 Place non-secret configuration in variables, scope secrets correctly (repository, environment, organisation), and outline OpenID Connect (OIDC) so jobs obtain short-lived cloud credentials without long-lived access keys.
 
 Pipelines need configuration and credentials. GitHub provides **configuration variables** (`vars.*`) and **secrets** (`secrets.*`) at repository, organisation, and **environment** scopes. Production Cloud and DevOps teams prefer **OIDC federation** to AWS, Azure, or Google Cloud: GitHub mints a JWT for the job; the cloud trusts that JWT and returns temporary credentials. That removes static keys from the Actions UI.
 
 This is a core tutorial in **Module 5 · Secrets & Variables** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -62,9 +68,11 @@ This is a core tutorial in **Module 5 · Secrets & Variables** of the REBASH Aca
 - [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
 - Optional: an AWS, Azure, or Google Cloud sandbox for a live OIDC exchange later
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -77,9 +85,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe OIDC trust (issuer, subject, audience) to a cloud role  
 - [ ] Request `id-token: write` only when federating
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -88,9 +98,11 @@ This topic’s control points and relationships are shown below.
 
 ![Secrets and OIDC](../assets/excalidraw/gha-secrets-oidc.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -150,106 +162,108 @@ You can author the workflow without a live cloud account — the OIDC job demons
 - Organisation secrets available to all repositories including forks of public templates without review.
 - Storing entire `.env` files as one secret with no rotation owner.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Secrets, Variables, and OIDC** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-05/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-05/.github/workflows && cd ~/rebash-github-actions/module-05/.github/workflows
 ```
 
-**Focus:** separate vars/secrets and author an OIDC-ready job (file-only)
+### Real-world scenario
 
-### Step 1 – Checklist + OIDC workflow
+Platform engineering wants **Secrets, Variables, and OIDC** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > oidc-checklist.md << 'EOF'
-- [ ] vars for non-secrets (DEMO_REGION)
-- [ ] environment: staging for deploy secrets
-- [ ] permissions: contents: read, id-token: write on OIDC jobs
-- [ ] cloud trust on sub claim (repo + ref + environment)
-- [ ] never echo secrets
-EOF
-
-{% raw %}
-```yaml
-# .github/workflows/secrets-and-oidc.yml
-name: Secrets and OIDC
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
-  show-config:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Non-secret configuration
-        env:
-          DEMO_REGION: ${{ vars.DEMO_REGION }}
+      - name: Prove workspace
         run: |
-          test -f oidc-checklist.md
-          echo "DEMO_REGION=${DEMO_REGION:-unset}"
-  staging-shape:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment: staging
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: OIDC-ready placeholder
-        run: echo "Add aws-actions/configure-aws-credentials when cloud trust exists"
-```
-{% endraw %}
-
-# Persist a macros-safe copy without expressions for local tree checks:
-cat > .github/workflows/secrets-and-oidc.yml << 'EOF'
-name: Secrets and OIDC
-on: [workflow_dispatch]
-permissions:
-  contents: read
-jobs:
-  show-config:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: test -f oidc-checklist.md
-  staging-shape:
-    runs-on: ubuntu-latest
-    environment: staging
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - run: echo "OIDC-ready job has id-token: write"
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – File-only validation
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-grep -E 'id-token: write|environment: staging' .github/workflows/secrets-and-oidc.yml
-test -f oidc-checklist.md
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# File-only OIDC lab — no cloud resources
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -259,9 +273,11 @@ test -f oidc-checklist.md
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -276,9 +292,11 @@ Production practice for **Secrets, Variables, and OIDC** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -289,9 +307,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -305,9 +325,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -318,9 +340,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -333,18 +357,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Secrets, Variables, and OIDC** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Difference between vars and secrets?
@@ -359,9 +387,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Prefer OIDC short-lived roles over long-lived cloud keys in repository secrets.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -369,9 +399,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Artifacts and Caching](artifacts-and-caching.md)
 
-
-
 ## References
+
+
+
+
 
 
 

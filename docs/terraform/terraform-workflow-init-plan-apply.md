@@ -42,24 +42,32 @@ comments: false
 
 
 
+
+
+
+
 Run the full local lifecycle — `fmt`, `validate`, `init`, `plan`, `apply`, `destroy` — and explain what each command does to configuration, state, and providers.
 
 Every production change follows the same loop: format and validate, initialise the working directory, review a plan, apply deliberately, and destroy when a lab or environment should go away. Master these verbs before writing complex HCL.
 
 This is a core tutorial in **Module 3 · Terraform Basics** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Installing Terraform and the CLI Workflow](installing-terraform-and-the-cli-workflow.md)
 - Working `terraform` 1.x binary
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -70,9 +78,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Read a plan summary (add / change / destroy)  
 - [ ] Apply and tear down a local `local_file` resource safely
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -80,9 +90,11 @@ This topic’s control points and relationships are shown below.
 
 ![Terraform workflow](../assets/excalidraw/terraform-workflow.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -133,62 +145,113 @@ Saved plans (`terraform plan -out=tfplan` then `terraform apply tfplan`) freeze 
 - Forgetting that `destroy` is still an apply of deletions — review it like any other plan.
 - Committing local `terraform.tfstate` with secrets — use remote state later; never publish state files.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Terraform Workflow: Init, Plan, and Apply** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-03`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-03 && cd ~/rebash-terraform/module-03
 ```
 
-**Focus:** Walk the init → plan → apply loop with a saved plan file
+### Real-world scenario
 
-### Step 1 – Initialise and create a plan artefact
+You are automating **Terraform Workflow: Init, Plan, and Apply** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
-    null  = { source = "hashicorp/null", version = "~> 3.2" }
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
-resource "null_resource" "workflow" {
-  triggers = { step = "plan-apply" }
+EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
 }
-resource "local_file" "note" {
-  filename = "${path.module}/workflow.txt"
-  content  = "init-plan-apply
-"
-}
+output "note" { value = null_resource.lab.triggers.topic }
 EOF
 terraform init
-terraform plan -out=tfplan
-terraform show -no-color tfplan | head -n 30
+terraform validate
 ```
 
-### Step 2 – Apply the saved plan and confirm state
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
 terraform apply tfplan
-cat workflow.txt
-terraform state list
-terraform plan -detailed-exitcode || test $? -eq 0
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -197,9 +260,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -213,9 +278,11 @@ Production practice for **Terraform Workflow: Init, Plan, and Apply** always com
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -225,9 +292,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -240,9 +309,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -252,9 +323,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -266,17 +339,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Terraform Workflow: Init, Plan, and Apply** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What is the purpose of each stage: init, plan, and apply?
@@ -291,18 +368,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Without locking, two operators can race and corrupt state or apply conflicting changes. Remote backends with locking serialise applies and reduce this risk.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [HCL Fundamentals: Blocks, Arguments, and Expressions](hcl-fundamentals-blocks-arguments-and-expressions.md)
 
-
-
 ## References
+
+
+
+
 
 
 

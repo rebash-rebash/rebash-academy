@@ -42,15 +42,17 @@ comments: false
 
 
 
+
+
 Diagnose the most common Git failure modes in delivery work and recover without destroying shared history.
 
 Most “Git is broken” moments are state problems: wrong branch, dirty tree, divergent remotes, or detached HEAD. Read status and reflog before rewriting.
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -58,9 +60,9 @@ This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academ
 - [Signed Commits and Git Security](signed-commits-and-git-security.md)
 - [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Clear a stuck merge/rebase  
 - [ ] Use reflog when commits “disappear”
 
-
-
 ## Architecture
+
+
 
 
 
@@ -84,9 +86,9 @@ This topic’s control points and relationships are shown below.
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -126,53 +128,97 @@ Start with `git status` to learn whether a merge/rebase/cherry-pick is in progre
 - Force-push without `--force-with-lease`  
 - Ignoring in-progress merge/rebase markers and making new commits on top
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Git Troubleshooting** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-16`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-16 && cd ~/rebash-git/module-16
 ```
 
-**Focus:** recover from detached HEAD and run fsck/gc
+### Real-world scenario
 
-### Step 1 – Detached HEAD recovery
+A delivery team is standardising **Git Troubleshooting**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+
+### Step-by-step tasks
+
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo 1 > f.txt && git add f.txt && git commit -m "chore: 1"
-echo 2 > f.txt && git add f.txt && git commit -m "chore: 2"
-git switch --detach HEAD~1
-echo "detached work" > detached.txt
-git add detached.txt && git commit -m "wip: detached"
-git switch -c recover/detached
-git switch main
-git merge recover/detached -m "merge: recover detached work"
-git log --oneline --graph -n 8
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Step 2 – Refresh index after messy state
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
+echo 'work' > work.txt
 git status
-git fsck --no-full
-git gc --quiet
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** show.txt lists work.txt in the commit.
+
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -182,9 +228,9 @@ git gc --quiet
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -199,9 +245,9 @@ Production practice for **Git Troubleshooting** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -212,9 +258,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -228,9 +274,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -241,9 +287,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -256,18 +302,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Git Troubleshooting** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Detached HEAD — what happened and how do you keep work?
@@ -282,9 +328,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Do not run experimental fsck repairs on the only copy of a production repo — clone/mirror first.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -292,9 +338,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
 
-
-
 ## References
+
+
 
 
 

@@ -44,23 +44,37 @@ comments: false
 
 
 
+
+
+
+
+
+
 Separate CI (build/push images) from GitOps (desired cluster state in Git) and sketch an Argo CD Application sync/rollback flow.
 
 **GitOps**: Git is source of truth; a reconciler (Argo CD / Flux) syncs the cluster. Progressive delivery (Argo Rollouts / Flagger) gates traffic.
 
 This is a core tutorial in **Module 15 · GitOps** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
+
+
 
 
 
 - [Helm](helm-package-management.md) · [GitOps fundamentals](../git/gitops-fundamentals.md)
 
-
-
 ## Learning Objectives
+
+
+
+
+
+
 
 
 
@@ -71,9 +85,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Describe Argo CD sync / rollback  
 - [ ] Layout app vs config repos
 
-
-
 ## Architecture
+
+
+
+
+
+
 
 
 
@@ -81,9 +99,13 @@ This topic’s control points and relationships are shown below.
 
 ![GitOps workflow](../assets/excalidraw/k8s-gitops-workflow.svg)
 
-
-
 ## Theory
+
+
+
+
+
+
 
 
 
@@ -126,78 +148,98 @@ Desired state lives in Git; the cluster is a projection. Controllers still own r
 - Monorepo paths without directory-scoped Applications — one bad sync affects all.
 - Treating sync success as user-success without app health/metrics gates.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **GitOps and CI/CD with Kubernetes** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-15/{apps/demo,clusters/dev}`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-15/{apps/demo,clusters/dev}`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev} && cd ~/rebash-k8s/module-15/{apps/demo,clusters/dev}
 ```
 
-**Focus:** Treat cluster desired state as versioned manifests with a dry-run apply loop
+### Real-world scenario
 
-### Step 1 – Initialise a GitOps-style manifest repo layout
+Your platform team is rolling out **GitOps and CI/CD with Kubernetes** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-mkdir -p apps/demo overlays/lab
-cat > apps/demo/deployment.yaml <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: gitops-demo
-  namespace: rebash-lab
-  labels:
-    app: gitops-demo
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: gitops-demo
-  template:
-    metadata:
-      labels:
-app: gitops-demo
-    spec:
-      containers:
-      - name: nginx
-image: nginx:1.27-alpine
-EOF
-cat > overlays/lab/kustomization.yaml <<'EOF'
-resources:
-  - ../../apps/demo/deployment.yaml
-images:
-  - name: nginx
-    newTag: 1.27-alpine
-EOF
-git init -b main
-git add apps overlays
-git -c user.email=lab@rebash.local -c user.name=Lab commit -m "Add GitOps demo manifests"
-```
+### Step-by-step tasks
 
-### Step 2 – Apply from Git and verify drift detection habit
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What it is** against a live API.
 
 ```bash
-kubectl apply -k overlays/lab
-kubectl -n rebash-lab rollout status deploy/gitops-demo
-kubectl -n rebash-lab get deploy gitops-demo -o yaml | grep -A2 'image:'
-# Simulate a CI check: render and diff without mutating the live cluster
-kubectl diff -k overlays/lab || true
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for GitOps and CI/CD with Kubernetes
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
+
+
 
 
 
@@ -206,9 +248,13 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
+
+
 
 
 
@@ -222,9 +268,13 @@ Production practice for **GitOps and CI/CD with Kubernetes** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
+
+
 
 
 
@@ -234,9 +284,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
+
+
 
 
 
@@ -249,9 +303,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
+
+
 
 
 
@@ -261,9 +319,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
+
+
 
 
 
@@ -275,17 +337,25 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
+
+
 
 
 
 **GitOps and CI/CD with Kubernetes** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
+
+
 
 
 1. What is GitOps in the context of Kubernetes delivery?
@@ -300,18 +370,26 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     CI push models concentrate powerful credentials in the pipeline. Pull-based controllers keep credentials in-cluster with narrower RBAC, reducing blast radius if the CI system is compromised, at the cost of another in-cluster component to operate.
 
-
-
 ## Related Tutorials
+
+
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Platform Engineering on Kubernetes](platform-engineering-on-kubernetes.md)
 
-
-
 ## References
+
+
+
+
+
+
 
 
 

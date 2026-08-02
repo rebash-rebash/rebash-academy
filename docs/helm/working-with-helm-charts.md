@@ -39,23 +39,31 @@ comments: false
 
 
 
+
+
+
+
 Scaffold a chart with `helm create`, walk the directory layout, and edit `Chart.yaml` metadata correctly.
 
 A chart is a directory (or packaged `.tgz`) with a fixed layout. Know what belongs in `templates/` vs `values.yaml` vs `charts/`.
 
 This is a core tutorial in **Module 3 · Working with Charts** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Installing Helm and Repositories](installing-helm-and-repositories.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -66,9 +74,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Locate values, templates, helpers  
 - [ ] List files safely with `helm show`
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -76,9 +86,11 @@ This topic’s control points and relationships are shown below.
 
 ![Chart structure](../assets/excalidraw/helm-chart-structure.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -119,48 +131,102 @@ Think of a chart like a software package: metadata (`Chart.yaml`), configuration
 - Editing files inside `charts/` by hand instead of declaring dependencies and running `helm dependency update`.
 - Shipping huge non-template assets because `.helmignore` was never configured.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Create, lint, render, install, and uninstall a Helm chart demonstrating **Working with Helm Charts**.
+
+### Prerequisites
+
+- helm CLI
+- kubectl + lab cluster
+- Ability to create namespaces
+
+### Lab environment
+
+Workspace: `~/rebash-helm/module-03`
+
+Helm 3 against kind/minikube; release namespace `rebash-helm`.
 
 ```bash
 mkdir -p ~/rebash-helm/module-03 && cd ~/rebash-helm/module-03
 ```
 
-**Focus:** Create, package, and install a local chart
+### Real-world scenario
 
-### Step 1 – Build and package
+A team wants **Working with Helm Charts** packaged as a chart so GitOps can promote the same artefact across environments.
+
+### Step-by-step tasks
+
+#### Task 1 – Create and lint a chart
+
+Scaffold a chart and fail the build on lint errors before install.
 
 ```bash
-kubectl create namespace rebash-helm
-helm create work-chart
-helm lint work-chart
-helm package work-chart
-ls -la work-chart-*.tgz
+helm version
+helm create labchart
+helm lint ./labchart | tee lint.txt
+helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
 ```
 
-### Step 2 – Install from the package and show values
+**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+
+#### Task 2 – Install with values override
+
+Prove values change rendered replicas, then install with wait.
 
 ```bash
-helm upgrade --install demo ./work-chart-*.tgz -n rebash-helm
-helm -n rebash-helm get values demo --all | head -n 40
-kubectl -n rebash-helm get all
+kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
+cat > myvalues.yaml << 'EOF'
+replicaCount: 2
+EOF
+helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
+helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
+helm list -n rebash-helm
+kubectl get deploy -n rebash-helm
 ```
 
-### Final step – Cleanup note
+**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+
+### Validation steps
+
+- [ ] helm lint clean
+- [ ] Release listed in namespace
+- [ ] Uninstall removes the release
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
+| lint failed | Template YAML break | Fix templates; re-run helm lint |
+| context deadline | Slow cluster | Increase --timeout or fix readiness |
+
+### Challenge exercise
+
+Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+
+### Learning outcomes
+
+- Packaged Kubernetes YAML as a chart
+- Overrode values safely
+- Cleaned up the release
+
+### Cleanup
 
 ```bash
-helm uninstall demo -n rebash-helm --ignore-not-found || true
+helm uninstall labchart -n rebash-helm 2>/dev/null || true
 kubectl delete namespace rebash-helm --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -169,9 +235,11 @@ kubectl delete namespace rebash-helm --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -185,9 +253,11 @@ Production practice for **Working with Helm Charts** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -197,9 +267,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -212,9 +284,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -224,9 +298,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -238,17 +314,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Working with Helm Charts** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does `helm package` produce?
@@ -263,18 +343,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Lint catches template and metadata mistakes early. Sharing broken charts wastes cluster time and can leave failed releases that need cleanup.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Helm Templates and Go Templating](helm-templates-and-go-templating.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -46,6 +46,10 @@ comments: false
 
 
 
+
+
+
+
 Explain what CI/CD solves, map GitLab’s architecture to pipelines and runners, and define stage, job, and pipeline in ops language.
 
 **Continuous Integration (CI)** builds and tests every change in Git. **Continuous Delivery / Deployment (CD)** promotes those builds toward production with gates you control. **GitLab CI/CD** stores the automation definition as `.gitlab-ci.yml` next to the application code, so review, history, and merge requests share one system.
@@ -54,9 +58,11 @@ This course is **GitLab CI/CD for Cloud & DevOps Engineers** — production pipe
 
 This is a core tutorial in **Module 1 · GitLab CI/CD Fundamentals** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -64,9 +70,11 @@ This is a core tutorial in **Module 1 · GitLab CI/CD Fundamentals** of the REBA
 - [Git](../git/index.md) — commits, branches, and merge requests
 - [Linux](../linux/index.md) — comfortable terminal and YAML editing
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -78,9 +86,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast Free / Premium / Ultimate and SaaS vs self-managed  
 - [ ] Name when shared runners are enough vs when you need dedicated ones
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -89,9 +99,11 @@ This topic’s control points and relationships are shown below.
 
 ![GitLab architecture](../assets/excalidraw/gitlab-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -143,64 +155,105 @@ You do **not** need a paid GitLab instance for early labs: use **GitLab.com free
 - Free-tier minutes are finite on SaaS — lint and local runners save quota.
 - Stages are not the only ordering model; later modules cover `needs` DAGs.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **GitLab CI/CD Fundamentals** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-01`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-01 && cd ~/rebash-gitlab/module-01
 ```
 
-**Focus:** author a minimal .gitlab-ci.yml with stages and a real verify job
+### Real-world scenario
 
-### Step 1 – Scaffold app and pipeline
+Your squad is encoding **GitLab CI/CD Fundamentals** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-cat > app.py << 'EOF'
-def add(a, b):
-    return a + b
-if __name__ == "__main__":
-    print(add(2, 3))
-EOF
+mkdir -p src && echo 'print("ok")' > src/app.py
 cat > .gitlab-ci.yml << 'EOF'
-stages: [verify, package]
-verify:
-  stage: verify
+stages: [lint, test]
+lint:
+  stage: lint
   image: python:3.12-alpine
   script:
-    - python -m pip install pytest
-    - python -c "from app import add; assert add(2,3)==5"
-package:
-  stage: package
-  image: alpine:3.20
+    - python -m py_compile src/app.py
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lint]
   script:
-    - tar czf app.tgz app.py
-  artifacts:
-    paths: [app.tgz]
-    expire_in: 1 day
+    - python src/app.py
 EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Validate locally
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-python3 -c "from app import add; assert add(2,3)==5; print('ok')"
-grep -E '^(stages:|verify:|package:)' .gitlab-ci.yml
-wc -l .gitlab-ci.yml app.py
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -210,9 +263,11 @@ wc -l .gitlab-ci.yml app.py
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -227,9 +282,11 @@ Production practice for **GitLab CI/CD Fundamentals** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -240,9 +297,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -256,9 +315,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -269,9 +330,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -284,18 +347,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **GitLab CI/CD Fundamentals** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What are stages versus jobs in GitLab CI, and why does order matter?
@@ -310,9 +377,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Keep non-secrets in YAML variables; put credentials in masked/protected CI variables or OIDC. Never commit tokens, and never echo secret values in job logs.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -320,9 +389,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [GitLab Projects, Merge Requests, and Releases](gitlab-projects-mrs-and-releases.md)
 
-
-
 ## References
+
+
+
+
 
 
 

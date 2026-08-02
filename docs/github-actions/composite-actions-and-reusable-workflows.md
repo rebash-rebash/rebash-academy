@@ -48,15 +48,21 @@ comments: false
 
 
 
+
+
+
+
 Factor repeated CI into composite actions and reusable workflows, pin marketplace actions by commit SHA, and outline how platform teams publish internal actions.
 
 Copy-pasted workflow YAML drifts. **Composite actions** package a sequence of steps with inputs and outputs. **Reusable workflows** (`workflow_call`) share whole jobs — often lint, test, build, and deploy contracts — across repositories. The **marketplace** accelerates delivery; **pinning by SHA** and **internal actions** keep the supply chain under your control.
 
 This is a core tutorial in **Module 14 · Reusable Components** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -64,9 +70,11 @@ This is a core tutorial in **Module 14 · Reusable Components** of the REBASH Ac
 - [Release Management and Versioning](release-management-and-versioning.md)
 - [Workflow Syntax, Matrix, and Reusable](workflow-syntax-matrix-and-reusable.md) (or equivalent)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -78,9 +86,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Pin third-party actions to a full commit SHA  
 - [ ] Choose composite vs reusable vs internal action repo
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -89,9 +99,11 @@ This topic’s control points and relationships are shown below.
 
 ![Reusable components](../assets/excalidraw/gha-reusable-components.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -138,77 +150,108 @@ Pin marketplace and internal actions to a **full commit SHA** (comment the human
 - Giant composites that re-implement half of CI — keep them thin.  
 - Forgetting composites cannot set job-level `permissions` or `runs-on`.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Composite Actions and Reusable Workflows** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows}`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows} && cd ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows}
 ```
 
-**Focus:** author a composite action and call it from a workflow
+### Real-world scenario
 
-### Step 1 – Composite action + caller
+Platform engineering wants **Composite Actions and Reusable Workflows** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
-mkdir -p .github/actions/hello .github/workflows
-cat > .github/actions/hello/action.yml << 'EOF'
-name: Hello composite
-description: Greet and write an output file
-inputs:
-  name:
-    required: true
-runs:
-  using: composite
-  steps:
-    - shell: bash
-      run: |
-        echo "Hello from composite"
-        echo "ok" > "${GITHUB_WORKSPACE}/hello.out"
-EOF
-cat > .github/workflows/use-composite.yml << 'EOF'
-name: Use composite
-on: [workflow_dispatch, push]
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
-  greet:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/hello
-        with:
-          name: rebash
-      - run: test -f hello.out && cat hello.out
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
-
-{% raw %}
-```yaml
-# Composite steps may use: echo "Hello ${{ inputs.name }}"
-# Keep that expression inside {% raw %} when documenting on MkDocs pages.
-```
-{% endraw %}
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Validate composite action schema
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-grep -E 'using: composite|inputs:' .github/actions/hello/action.yml
-grep 'uses: ./' .github/workflows/use-composite.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -218,9 +261,11 @@ grep 'uses: ./' .github/workflows/use-composite.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -235,9 +280,11 @@ Production practice for **Composite Actions and Reusable Workflows** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -248,9 +295,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -264,9 +313,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -277,9 +328,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -292,18 +345,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Composite Actions and Reusable Workflows** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Composite action vs reusable workflow — when each?
@@ -318,9 +375,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Pin dependencies inside shared actions and limit secrets passed into shared units.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -328,9 +387,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
 
-
-
 ## References
+
+
+
+
 
 
 

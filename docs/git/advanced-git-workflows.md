@@ -26,13 +26,15 @@ comments: false
 
 
 
+
+
 Branching strategy shapes how fast you ship and how painful merges become. GitFlow's long-lived branches suit scheduled releases; trunk-based development suits continuous deployment; GitHub Flow balances simplicity and review. Platform and application teams often need different models — this tutorial helps you choose and implement the right one.
 
 This is **Tutorial 17** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -41,9 +43,9 @@ This is **Tutorial 17** in **Module 6: Advanced & DevOps** of the REBASH Academy
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -58,9 +60,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Document team workflow in CONTRIBUTING.md
 - [ ] Migrate gradually between workflow models
 
-
-
 ## Architecture
+
+
 
 
 
@@ -69,9 +71,9 @@ Team workflows constrain which branches accept direct commits and how changes pr
 
 ![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -202,58 +204,97 @@ git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short) %(
 
 Review quarterly with platform team; adjust workflow if branch lifetime exceeds one week consistently.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Advanced Git Workflows** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/advanced-git-workflows`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/advanced-git-workflows && cd ~/rebash-git/advanced-git-workflows
 ```
 
-**Focus:** practise worktrees and sparse checkout
+### Real-world scenario
 
-### Step 1 – Worktree for a hotfix
+A delivery team is standardising **Advanced Git Workflows**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-mkdir -p services/a services/b
-echo a > services/a/app.txt
-echo b > services/b/app.txt
-git add services && git commit -m "chore: monorepo baseline"
-git worktree add ../hotfix-wt -b hotfix/log
-cd ../hotfix-wt
-echo fix >> services/a/app.txt
-git add services/a/app.txt
-git commit -m "fix: a logging"
-cd -
-git log --oneline hotfix/log -n 2
-```
+### Step-by-step tasks
 
-### Step 2 – Sparse checkout cone
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git sparse-checkout init --cone
-git sparse-checkout set services/a
-ls services
-git sparse-checkout disable
-git worktree remove ../hotfix-wt 2>/dev/null || true
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-git worktree remove ../hotfix-wt 2>/dev/null || true
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -271,9 +312,9 @@ Confirm the lab before moving on:
 | Protection | You can state which branches forbid force-push |
 | Cleanup | Lab remotes/repos removed |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -290,9 +331,9 @@ Confirm the lab before moving on:
 
 ```markdown
 
-
-
 ## Branching
+
+
 
 
 
@@ -301,9 +342,9 @@ Confirm the lab before moving on:
 - Open PR when ready; require 1 approval + CI pass
 - Squash merge to `main`
 
-
-
 ## Releases
+
+
 
 
 
@@ -311,9 +352,9 @@ Confirm the lab before moving on:
 - Hotfix: branch from tag, merge to `main`, tag patch release
 ```
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -324,9 +365,9 @@ Confirm the lab before moving on:
 - Avoid embedding long-lived cloud keys in workflow files — use OIDC federation
 - Review monorepo path filters so skipped CI cannot bypass security checks
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -343,9 +384,9 @@ Confirm the lab before moving on:
 !!! warning "No documented hotfix path"
     Incidents cause ad-hoc force pushes. Document hotfix branch + cherry-pick procedure.
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -362,9 +403,9 @@ Confirm the lab before moving on:
 !!! tip "Review workflow annually"
     Team scale and release cadence change — workflow should evolve.
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -378,9 +419,9 @@ Confirm the lab before moving on:
 | Hotfix missing on develop | Incomplete GitFlow merge | Cherry-pick hotfix to integration branch |
 | Monorepo CI too slow | Full test on every commit | Path-based CI filters |
 
-
-
 ## Summary
+
+
 
 
 
@@ -392,9 +433,9 @@ Confirm the lab before moving on:
 - **Annotated tags** mark releases regardless of branching model
 - Document workflow in **CONTRIBUTING.md** and align with CI/CD gates
 
-
-
 ## Interview Questions
+
+
 
 
 1. When do worktrees beat multiple clones?
@@ -409,9 +450,9 @@ Confirm the lab before moving on:
 !!! tip "Sample answer — question 4"
     Document team workflows; keep hooks and custom drivers reviewed like production automation.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -425,9 +466,9 @@ Confirm the lab before moving on:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 

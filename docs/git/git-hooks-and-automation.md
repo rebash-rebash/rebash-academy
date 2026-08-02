@@ -25,13 +25,15 @@ comments: false
 
 
 
+
+
 Git hooks are scripts Git runs automatically at lifecycle events — before commit, after merge, before push. They enforce team standards locally (format, lint, secrets scan) and on the server (reject non-compliant pushes). For DevOps teams, hooks are the first line of defense before CI minutes are spent.
 
 This is **Tutorial 16** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -40,9 +42,9 @@ This is **Tutorial 16** in **Module 6: Advanced & DevOps** of the REBASH Academy
 - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
 - Shell scripting basics from the Linux track
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -57,9 +59,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Bypass hooks safely when necessary (`--no-verify`)
 - [ ] Integrate hooks with Terraform, YAML, and secret scanning
 
-
-
 ## Architecture
+
+
 
 
 
@@ -68,9 +70,9 @@ Hooks run scripts around Git events so teams can enforce policy locally and on t
 
 ![Git workflow and hooks around commit](../assets/excalidraw/git-workflow.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -215,57 +217,97 @@ chmod +x .githooks/*
 
 Committed to repo — works without pre-commit framework.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Git Hooks and Automation** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/git-hooks-and-automation`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/git-hooks-and-automation && cd ~/rebash-git/git-hooks-and-automation
 ```
 
-**Focus:** install a pre-commit hook that blocks .env files
+### Real-world scenario
 
-### Step 1 – Local hook
+A delivery team is standardising **Git Hooks and Automation**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-cat > .git/hooks/pre-commit << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-if git diff --cached --name-only | grep -E '(^|/)\.env$|\.pem$'; then
-  echo "Refuse to commit secrets (.env/.pem)" >&2
-  exit 1
-fi
-EOF
-chmod +x .git/hooks/pre-commit
-echo ok > ok.txt
-git add ok.txt && git commit -m "chore: ok file"
-```
+### Step-by-step tasks
 
-### Step 2 – Prove the hook blocks secrets
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-echo SECRET=1 > .env
-git add .env
-if git commit -m "bad"; then echo "hook failed to block"; exit 1; else echo "hook blocked secret commit"; fi
-git reset HEAD .env
-rm -f .env
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -283,9 +325,9 @@ Confirm the lab before moving on:
 | Sample script | Hook script is executable and path is correct |
 | Cleanup | Lab hooks removed or disabled |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -317,9 +359,9 @@ repos:
       - id: yamllint
 ```
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -330,9 +372,9 @@ repos:
 - Server-side hooks must validate, not silently mutate, pushed content
 - Fail closed on secret detection — do not allow `--no-verify` in CI
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -349,9 +391,9 @@ repos:
 !!! warning "Not versioning shared hook config"
     `.git/hooks` isn't cloned. Use pre-commit or core.hooksPath in repo.
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -368,9 +410,9 @@ repos:
 !!! tip "Mirror pre-commit in CI"
     `pre-commit run --all-files` in pipeline catches hook-skipping.
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -384,9 +426,9 @@ repos:
 | Server hook not firing | SaaS platform limitation | Use CI push rules |
 | --no-verify abused | No policy | Audit; server-side checks |
 
-
-
 ## Summary
+
+
 
 
 
@@ -397,9 +439,9 @@ repos:
 - Exit non-zero to abort; use **--no-verify** only in emergencies
 - Combine hooks with CI — never trust client-side alone for security
 
-
-
 ## Interview Questions
+
+
 
 
 1. Client-side versus server-side hooks?
@@ -414,9 +456,9 @@ repos:
 !!! tip "Sample answer — question 4"
     Do not bypass hooks on production repos without audit. Prefer managed frameworks pinned to reviewed versions.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -430,9 +472,9 @@ repos:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 

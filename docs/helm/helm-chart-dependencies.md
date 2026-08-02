@@ -40,23 +40,31 @@ comments: false
 
 
 
+
+
+
+
 Declare a dependency in `Chart.yaml`, run `helm dependency update`, and explain library charts vs application subcharts.
 
 Parent charts compose subcharts (databases, shared libraries). Pin versions. Prefer OCI or controlled repos in enterprise networks.
 
 This is a core tutorial in **Module 6 · Chart Dependencies** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Helm Values and Overrides](helm-values-and-overrides.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -67,9 +75,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast library charts  
 - [ ] Pin version constraints
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -77,9 +87,11 @@ This topic’s control points and relationships are shown below.
 
 ![Chart dependencies](../assets/excalidraw/helm-dependencies.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -124,61 +136,102 @@ Prefer committing `Chart.lock` (and often the vendored `charts/*.tgz` in regulat
 - Enabling a heavy subchart in every environment by default (databases in local CI clusters).
 - Assuming library charts install workloads — they must not.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Chart Dependencies**.
+
+### Prerequisites
+
+- helm CLI
+- kubectl + lab cluster
+- Ability to create namespaces
+
+### Lab environment
+
+Workspace: `~/rebash-helm/module-06`
+
+Helm 3 against kind/minikube; release namespace `rebash-helm`.
 
 ```bash
 mkdir -p ~/rebash-helm/module-06 && cd ~/rebash-helm/module-06
 ```
 
-**Focus:** Declare a chart dependency and build charts/ with helm dependency
+### Real-world scenario
 
-### Step 1 – Create a parent chart with a file:// dependency
+A team wants **Helm Chart Dependencies** packaged as a chart so GitOps can promote the same artefact across environments.
+
+### Step-by-step tasks
+
+#### Task 1 – Create and lint a chart
+
+Scaffold a chart and fail the build on lint errors before install.
 
 ```bash
-kubectl create namespace rebash-helm
-helm create child
-helm create parent
-cat > parent/Chart.yaml <<'EOF'
-apiVersion: v2
-name: parent
-description: parent with local dependency
-type: application
-version: 0.1.0
-appVersion: "1.0.0"
-dependencies:
-  - name: child
-    version: 0.1.0
-    repository: "file://../child"
+helm version
+helm create labchart
+helm lint ./labchart | tee lint.txt
+helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```
+
+**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+
+#### Task 2 – Install with values override
+
+Prove values change rendered replicas, then install with wait.
+
+```bash
+kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
+cat > myvalues.yaml << 'EOF'
+replicaCount: 2
 EOF
-helm dependency update parent
-ls -la parent/charts
+helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
+helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
+helm list -n rebash-helm
+kubectl get deploy -n rebash-helm
 ```
 
-### Step 2 – Lint and install the parent release
+**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+
+### Validation steps
+
+- [ ] helm lint clean
+- [ ] Release listed in namespace
+- [ ] Uninstall removes the release
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
+| lint failed | Template YAML break | Fix templates; re-run helm lint |
+| context deadline | Slow cluster | Increase --timeout or fix readiness |
+
+### Challenge exercise
+
+Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+
+### Learning outcomes
+
+- Packaged Kubernetes YAML as a chart
+- Overrode values safely
+- Cleaned up the release
+
+### Cleanup
 
 ```bash
-helm lint parent
-helm upgrade --install demo ./parent -n rebash-helm
-helm -n rebash-helm list
-kubectl -n rebash-helm get deploy
-```
-
-### Final step – Cleanup note
-
-```bash
-helm uninstall demo -n rebash-helm --ignore-not-found || true
+helm uninstall labchart -n rebash-helm 2>/dev/null || true
 kubectl delete namespace rebash-helm --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -187,9 +240,11 @@ kubectl delete namespace rebash-helm --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -203,9 +258,11 @@ Production practice for **Helm Chart Dependencies** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -215,9 +272,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -230,9 +289,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -242,9 +303,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -256,17 +319,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Helm Chart Dependencies** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does the dependencies field in Chart.yaml declare?
@@ -281,18 +348,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Floating versions can pull breaking subchart changes unexpectedly. Pin versions and test upgrades of parent and children together.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Helm Releases and Lifecycle](helm-releases-and-lifecycle.md)
 
-
-
 ## References
+
+
+
+
 
 
 

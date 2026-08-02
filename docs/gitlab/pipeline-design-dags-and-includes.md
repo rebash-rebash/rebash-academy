@@ -45,24 +45,32 @@ comments: false
 
 
 
+
+
+
+
 Compose maintainable pipelines with multi-stage flows, `needs` DAGs, parent-child and multi-project pipelines, dynamic child pipelines, and `include` templates.
 
 Linear stages work until feedback time explodes. **DAG pipelines** (`needs`) start independent jobs early. **Includes** share templates across projects. **Parent-child** and **multi-project** pipelines split ownership; **dynamic pipelines** generate YAML when the graph depends on the change set.
 
 This is a core tutorial in **Module 5 · Pipeline Design** of the REBASH Academy **GitLab CI/CD for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 
 - [Pipeline Syntax (.gitlab-ci.yml)](pipeline-syntax-gitlab-ci-yml.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -74,9 +82,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Contrast parent-child vs multi-project triggers  
 - [ ] Outline when to generate a dynamic child pipeline
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -85,9 +95,11 @@ This topic’s control points and relationships are shown below.
 
 ![Parent-child pipelines](../assets/excalidraw/gitlab-parent-child.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -136,68 +148,105 @@ Prefer **your** group’s project includes as the golden path; GitLab `include:t
 - Dynamic pipelines that regenerate differently every run.
 - Triggering downstream deploys from every feature branch.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a valid `.gitlab-ci.yml` that models **Pipeline Design: DAGs and Includes** and validate it locally before pushing.
+
+### Prerequisites
+
+- Python 3 with PyYAML (`pip install pyyaml`)
+- Optional: GitLab project to run the pipeline
+
+### Lab environment
+
+Workspace: `~/rebash-gitlab/module-05/{templates,generated}`
+
+File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-05/{templates,generated} && cd ~/rebash-gitlab/module-05/{templates,generated}
 ```
 
-**Focus:** split CI with include files and needs DAG edges
+### Real-world scenario
 
-### Step 1 – Create includes and parent pipeline
+Your squad is encoding **Pipeline Design: DAGs and Includes** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+
+### Step-by-step tasks
+
+#### Task 1 – Write pipeline YAML
+
+Stages and jobs must be explicit so MR pipelines are predictable.
 
 ```bash
-mkdir -p ci
-cat > ci/lint.yml << 'EOF'
+mkdir -p src && echo 'print("ok")' > src/app.py
+cat > .gitlab-ci.yml << 'EOF'
+stages: [lint, test]
 lint:
   stage: lint
-  image: alpine:3.20
-  script: ["echo lint ok"]
-EOF
-cat > ci/test.yml << 'EOF'
-unit:
+  image: python:3.12-alpine
+  script:
+    - python -m py_compile src/app.py
+test:
   stage: test
-  image: alpine:3.20
+  image: python:3.12-alpine
   needs: [lint]
-  script: ["echo unit ok"]
+  script:
+    - python src/app.py
 EOF
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test, deploy]
-include:
-  - local: ci/lint.yml
-  - local: ci/test.yml
-deploy:
-  stage: deploy
-  image: alpine:3.20
-  needs: [unit]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-  script: ["echo deploy after DAG"]
-EOF
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-### Step 2 – Verify includes and needs
+**Expected output:** Prints `OK` and job names; no YAML exception.
+
+#### Task 2 – Simulate the scripts locally
+
+Prove the job script works before burning runner minutes.
 
 ```bash
-test -f ci/lint.yml && test -f ci/test.yml
-grep -E 'include:|needs:|local:' -n .gitlab-ci.yml ci/*.yml
+python3 -m py_compile src/app.py
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
 ```
 
-### Final step – Cleanup note
+**Expected output:** Compile succeeds; out.txt is `ok`.
+
+### Validation steps
+
+- [ ] `.gitlab-ci.yml` parses
+- [ ] Local script path matches job intent
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
+| job stuck pending | No runner / tags | Check runner tags match job tags |
+| needs not found | Typo in job name | Align `needs` with actual job keys |
+
+### Challenge exercise
+
+Add an `artifacts:` path from lint to test and document expire_in.
+
+### Learning outcomes
+
+- Produced reviewable GitLab CI YAML
+- Validated structure and scripts locally
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-gitlab/ for later tutorials
+# File-only lab — keep YAML for the next tutorial
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -207,9 +256,11 @@ grep -E 'include:|needs:|local:' -n .gitlab-ci.yml ci/*.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -224,9 +275,11 @@ Production practice for **Pipeline Design: DAGs and Includes** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -237,9 +290,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -253,9 +308,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -266,9 +323,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -281,18 +340,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Pipeline Design: DAGs and Includes** is essential for Cloud and DevOps engineers working with gitlab. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. When do you choose include local versus project/remote includes?
@@ -307,9 +370,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Pin shared templates to tags/SHAs and review changes like application code.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -317,9 +382,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Variables, Secrets, and OIDC](variables-secrets-and-oidc.md)
 
-
-
 ## References
+
+
+
+
 
 
 

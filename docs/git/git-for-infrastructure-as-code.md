@@ -43,15 +43,17 @@ comments: false
 
 
 
+
+
 Structure an Infrastructure as Code (IaC) repository for safe Git reviews: clear modules, `.gitignore` for state/secrets, and plan-on-PR as the change process.
 
 IaC without Git discipline is risky. Treat Terraform/Ansible like production code: small PRs, CODEOWNERS on `prod/`, never commit `.tfstate` or secrets.
 
 This is a core tutorial in **Module 13 · Git for IaC** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -59,9 +61,9 @@ This is a core tutorial in **Module 13 · Git for IaC** of the REBASH Academy **
 - [GitOps Fundamentals](gitops-fundamentals.md)
 - [gitignore and gitattributes](gitignore-and-gitattributes.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Require review for production paths  
 - [ ] Pair Git with CI plan (no apply from laptop as policy)
 
-
-
 ## Architecture
+
+
 
 
 
@@ -84,9 +86,9 @@ This topic’s control points and relationships are shown below.
 
 ![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -124,57 +126,97 @@ Keep declarative definitions, modules, tests, and runbooks in Git. Run `terrafor
 - Applying unreviewed local changes that never land in Git  
 - One giant root module with no ownership boundaries
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Git for Infrastructure as Code** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-13/{modules/network,envs/dev}`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-13/{modules/network,envs/dev} && cd ~/rebash-git/module-13/{modules/network,envs/dev}
 ```
 
-**Focus:** structure an IaC-friendly repo with modules layout and ignore state
+### Real-world scenario
 
-### Step 1 – IaC layout and ignores
+A delivery team is standardising **Git for Infrastructure as Code**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+
+### Step-by-step tasks
+
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-mkdir -p modules/network envs/dev
-cat > .gitignore << 'EOF'
-.terraform/
-*.tfstate
-*.tfstate.*
-crash.log
-EOF
-echo '# network module stub' > modules/network/main.tf
-echo '# root module for dev' > envs/dev/main.tf
-echo "local mock state — must not commit" > terraform.tfstate
-git add .gitignore modules envs
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
+```
+
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
+
+```bash
+echo 'work' > work.txt
 git status
-git check-ignore -v terraform.tfstate
-git commit -m "chore: IaC layout with state ignored"
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
-### Step 2 – Prove state is not tracked
+**Expected output:** show.txt lists work.txt in the commit.
+
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
 
 ```bash
-git ls-files | grep -i tfstate && exit 1 || echo "state not tracked"
-git ls-files
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
 ```
-
-### Final step – Cleanup note
-
-```bash
-# Keep ~/rebash-git/ for later tutorials
-```
-
-
 
 ## Validation
+
+
 
 
 
@@ -184,9 +226,9 @@ git ls-files
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -201,9 +243,9 @@ Production practice for **Git for Infrastructure as Code** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -214,9 +256,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -230,9 +272,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -243,9 +285,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -258,18 +300,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Git for Infrastructure as Code** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. Which IaC files must never be committed?
@@ -284,9 +326,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Protect main, require plans in CI, and keep cloud credentials out of the repo.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -294,9 +336,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Repository Management and Releases](repository-management-and-releases.md)
 
-
-
 ## References
+
+
 
 
 

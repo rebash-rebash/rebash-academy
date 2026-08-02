@@ -1,6 +1,6 @@
 ---
 title: "Kubernetes Python Client Automation"
-description: "Automate Kubernetes with kubernetes-python-client — kubeconfig/in-cluster config, Pods, Deployments, Services, ConfigMaps, Secrets, Jobs, and Namespaces."
+description: "Automate Kubernetes with the official Python client — read-only list when kubeconfig works, otherwise generate and validate YAML with dry-run notes. No cluster destroy."
 difficulty: advanced
 estimated_time: "55–70 min"
 technology: python
@@ -35,278 +35,495 @@ tags:
   - kubernetes
   - client
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-02"
 comments: false
 ---
-
 
 # Kubernetes Python Client Automation
 
 ## Overview
 
-Load kubeconfig or in-cluster config, list core workloads with the official Python client, and build read-only health/inventory reports (mutate only with explicit flags later).
+The official **`kubernetes`** Python package is a generated client around the Kubernetes API server. Your script loads credentials, builds typed API objects such as `CoreV1Api`, and issues the same verbs `kubectl` uses — get, list, create, patch, delete — over HTTPS. For this course the happy path is **get/list** inventory, not cluster surgery.
 
-`kubernetes` Python client is a typed wrapper around the API server. Respect **RBAC**, never log Secret data, and default to get/list.
+Out of cluster, `config.load_kube_config()` reads `KUBECONFIG` or `~/.kube/config`. Inside a Pod, `config.load_incluster_config()` uses the mounted ServiceAccount token. Errors surface as `ApiException` with HTTP status codes: 401/403 for auth or Role-Based Access Control (RBAC), 404 for missing objects. Prefer namespace-scoped lists when you can — cluster-wide scans need broader permissions and are slower.
 
-Complete [Docker SDK Automation](docker-sdk-automation.md) first. Diagrams use Excalidraw only.
+If you have no cluster (common on student laptops), you still practise by **generating and validating YAML manifests** and printing **dry-run notes** in script output. Never run delete-namespace or destroy kind clusters from a learning script’s default path.
 
-This is a core tutorial in **Module 18 · Kubernetes Automation** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 18** in **Module 18: Kubernetes Automation** of the REBASH Academy **Python for DevOps Engineers** series. It is written for Kubernetes, Platform, DevOps, and Site Reliability Engineering (SRE) engineers. By the end you will have inventory evidence from a live API **or** validated manifests with dry-run guidance — without destroying a cluster.
 
 ## Prerequisites
 
-### Required
-
-- [REST APIs](rest-apis-requests-auth-and-resilience.md) concepts  
-- Optional: local cluster (kind/minikube/k3s) **or** fixture path
+- [Docker SDK Automation](docker-sdk-automation.md)
+- [REST APIs](rest-apis-requests-auth-and-resilience.md) concepts (status codes, timeouts)
+- Python 3.10+ and a virtual environment
+- Optional: kubeconfig for kind / minikube / k3s / a lab cluster — otherwise use the YAML path
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Load kubeconfig / in-cluster config  
-- [ ] List Pods and Deployments in a namespace  
-- [ ] Sketch Services, ConfigMaps, Jobs, Namespaces  
-- [ ] Treat Secrets as opaque (metadata only in reports)  
-- [ ] Handle ApiException status codes
+- [ ] Load kubeconfig (and describe in-cluster config)
+- [ ] List Namespaces and Pods read-only when the API is reachable
+- [ ] Sketch Deployments, Services, ConfigMaps, Jobs, and Secret handling rules
+- [ ] Treat Secret *data* as opaque (metadata only in reports)
+- [ ] Generate/validate YAML manifests when kubeconfig is missing
+- [ ] Refuse cluster-destroy style flags in lab tooling
 
 ## Architecture
 
-This topic’s control points and relationships are shown below.
+Python loads kubeconfig or in-cluster credentials, calls the API server through typed clients, and emits inventory JSON. Offline, the same workflow validates local manifests and prints dry-run notes instead of mutating the cluster.
 
-![Kubernetes client architecture](../assets/excalidraw/python-k8s-client-architecture.svg)
+![Architecture diagram for Kubernetes Python client](../assets/excalidraw/python-k8s-client-architecture.svg)
 
 ## Theory
 
 ### What it is
 
-The official `kubernetes` Python package is a generated client around the Kubernetes API server. Your script loads credentials, builds typed API objects (`CoreV1Api`, `AppsV1Api`, and so on), and issues the same verbs `kubectl` uses — get, list, create, patch, delete — over HTTPS. It is not a replacement for controllers or operators; it is the library you use for inventory, health reports, CI gates, and small automation that must speak Kubernetes fluently.
+`kubernetes` clients wrap REST under `/api` and `/apis`. **Pods** are the atomic running unit; **Deployments** manage replicas; **Services** provide stable networking; **ConfigMaps** and **Secrets** hold configuration; **Jobs** run finite work; **Namespaces** isolate names. RBAC decides whether your identity may list or change them.
+
+```python
+from kubernetes import client, config
+
+config.load_kube_config()
+v1 = client.CoreV1Api()
+for ns in v1.list_namespace().items:
+    print(ns.metadata.name)
+```
 
 ### Why it matters
 
-Platform and SRE teams live in clusters. Shelling out to `kubectl` works for one-off jobs, but Python clients give structured objects, pagination helpers, and testable code paths. Read-only inventory tools catch Pending Pods, broken Deployments, and missing Services before users do. Mutating tools (when you eventually add them) inherit Role-Based Access Control (RBAC) from a ServiceAccount — so least privilege is enforceable, not optional.
+Platform and SRE teams live in clusters. Shelling out to `kubectl` works for one-offs; Python gives structured objects, testable parsers, and CI gates (“no Pending Pods older than N minutes”). Mutating tools inherit the ServiceAccount’s RBAC — least privilege is enforceable.
 
 ### How it works
 
-Out of cluster, `config.load_kube_config()` reads `KUBECONFIG` or `~/.kube/config`. Inside a Pod, `config.load_incluster_config()` uses the mounted ServiceAccount token and CA. Clients then call namespaced or cluster-scoped list/get methods. Errors surface as `ApiException` with HTTP status codes: 401/403 for auth or RBAC, 404 for missing objects, 409 for conflicts. Prefer namespace-scoped lists for controllers and reports — cluster-wide scans are slower and need broader permissions.
+1. **Load config** — kubeconfig or in-cluster.  
+2. **Build API clients** — `CoreV1Api`, `AppsV1Api`, ….  
+3. **List/get** — namespaced or cluster-scoped.  
+4. **Handle ApiException** — map status codes to clear errors.  
+5. **Offline path** — write YAML, `kubectl apply --dry-run=client` notes, or PyYAML validation only.
 
-```python
-from kubernetes import config
-config.load_kube_config()          # laptop / CI with kubeconfig
-# config.load_incluster_config()   # Pod ServiceAccount
-```
+| Resource | Typical read | Caution |
+|----------|--------------|---------|
+| Namespace / Pod | list names & phases | Wide list needs RBAC |
+| Deployment | replicas / conditions | Avoid delete in labs |
+| Secret | list names only | Never log `data` values |
+| Job | completions / failures | |
 
 ### Key concepts and comparisons
 
-| Resource | Typical client | Automation use |
-|----------|----------------|----------------|
-| Pods, Namespaces, ConfigMaps, Secrets, Services | `CoreV1Api` | Inventory, health, Service endpoints |
-| Deployments | `AppsV1Api` | Ready vs desired replicas |
-| Jobs / CronJobs | `BatchV1Api` | Batch completion checks |
-
-| Mode | When | Risk |
-|------|------|------|
-| List / get | Health checkers, audits | Low if RBAC is list/get only |
-| Create / patch / delete | Controllers, apply tools | High — require `--apply`, dry-run, tickets |
-
-Treat Secrets as opaque: report name, namespace, and type — never decode or print `data` values in logs or JSON reports.
+| Mode | Prefer when | Evidence label |
+|------|-------------|----------------|
+| Live client list | kubeconfig works | `mode: live` |
+| YAML validate + dry-run notes | No cluster / CI | `mode: manifest-dry-run` |
+| `kubectl` subprocess | Quick check | Still read-only flags |
 
 ### Common pitfalls
 
-- Running with a cluster-admin kubeconfig “just for a script” and accidentally enabling write paths later.  
-- Logging full object dumps that include Secret payloads or tokens.  
-- Ignoring pagination / large namespaces and timing out CI.  
-- Treating 403 as “cluster down” instead of “RBAC denied.”  
-- Mutating without server-side dry-run or a clear `--apply` flag.
+- Logging Secret values.  
+- Cluster-admin kubeconfig in CI for a list job.  
+- Ignoring 403 (RBAC) vs 401 (auth).  
+- Deleting namespaces as “cleanup” in shared clusters.  
+- Mixing API versions (`apps/v1` vs obsolete ones).
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for Kubernetes Python Client Automation
+### Objective
+
+Under `~/rebash-python/lab18`, list namespaces/pods when kubeconfig works; otherwise generate a small Deployment+Service YAML set, validate with PyYAML, and write dry-run notes. Refuse destroy flags. No cluster teardown.
+
+### Prerequisites
+
+- Python 3.10+
+- Optional: working `kubectl` / kubeconfig
+- `pip install kubernetes pyyaml` (kubernetes optional if offline-only)
+
+### Lab environment
+
+Workspace: `~/rebash-python/lab18`
 
 ```bash
-mkdir -p ~/rebash-python/module-18
-cd ~/rebash-python/module-18
-
+mkdir -p ~/rebash-python/lab18/manifests && cd ~/rebash-python/lab18
+set -euo pipefail
 python3 -m venv .venv
+# shellcheck disable=SC1091
 source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install 'kubernetes==31.0.0'
+python -m pip install -U pip
+python -m pip install 'pyyaml>=6,<7'
+python -m pip install 'kubernetes>=29,<32' || true
+command -v kubectl >/dev/null && kubectl config current-context 2>/dev/null | tee kube-context.txt || echo "no-kubeconfig" | tee kube-context.txt
 ```
 
-### Step 1 – Fixture pod inventory
+**Expected output:** venv ready; `kube-context.txt` has a context name or `no-kubeconfig`.
+
+### Real-world scenario
+
+Your platform team wants a Python health inventory: namespaces and Pod phases for a lab cluster. Student machines often lack clusters, so the same repository must validate example manifests and print how you would dry-run apply. Destroying kind clusters or namespaces is forbidden in the default tool.
+
+### Step-by-step tasks
+
+#### Task 1 – Manifest generate + YAML validation (always works)
 
 ```bash
-cd ~/rebash-python/module-18
+cd ~/rebash-python/lab18
+set -euo pipefail
+# shellcheck disable=SC1091
 source .venv/bin/activate
 
-mkdir -p fixtures
-cat > fixtures/pods.json << 'EOF'
-{
-  "items": [
-    {"metadata": {"name": "web-a", "namespace": "demo"}, "status": {"phase": "Running"}},
-    {"metadata": {"name": "web-b", "namespace": "demo"}, "status": {"phase": "Pending"}}
-  ]
-}
-EOF
-
-cat > k8s_pods.py << 'EOF'
+cat > generate_manifests.py << 'EOF'
 #!/usr/bin/env python3
+"""Generate sample manifests and validate YAML structure."""
 from __future__ import annotations
 
-import argparse
 import json
-import sys
 from pathlib import Path
 
+import yaml
 
-def from_fixture(path: Path, namespace: str | None) -> list[dict]:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    rows = []
-    for item in data.get("items", []):
-        ns = item["metadata"]["namespace"]
-        if namespace and ns != namespace:
-            continue
-        rows.append({
-            "name": item["metadata"]["name"],
-            "namespace": ns,
-            "phase": item.get("status", {}).get("phase"),
-        })
-    return rows
+ROOT = Path(__file__).resolve().parent
+MAN = ROOT / "manifests"
 
+DEPLOYMENT = """
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rebash-lab18-web
+  namespace: default
+  labels:
+    app: rebash-lab18
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rebash-lab18
+  template:
+    metadata:
+      labels:
+        app: rebash-lab18
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+"""
 
-def from_cluster(namespace: str) -> list[dict]:
-    from kubernetes import client, config
-
-    config.load_kube_config()
-    v1 = client.CoreV1Api()
-    pod_list = v1.list_namespaced_pod(namespace)
-    return [
-        {
-            "name": p.metadata.name,
-            "namespace": p.metadata.namespace,
-            "phase": p.status.phase,
-        }
-        for p in pod_list.items
-    ]
+SERVICE = """
+apiVersion: v1
+kind: Service
+metadata:
+  name: rebash-lab18-web
+  namespace: default
+spec:
+  selector:
+    app: rebash-lab18
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+"""
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Pod inventory")
-    p.add_argument("--namespace", default="demo")
-    p.add_argument("--fixture", type=Path)
-    args = p.parse_args()
-    try:
-        rows = (
-            from_fixture(args.fixture, args.namespace)
-            if args.fixture
-            else from_cluster(args.namespace)
-        )
-    except Exception as exc:  # noqa: BLE001
-        print(f"error: {exc}", file=sys.stderr)
-        print("hint: pass --fixture fixtures/pods.json", file=sys.stderr)
-        return 1
-    print(json.dumps(rows, indent=2))
-    bad = [r for r in rows if r["phase"] != "Running"]
-    return 1 if bad else 0
+    MAN.mkdir(parents=True, exist_ok=True)
+    (MAN / "deployment.yaml").write_text(DEPLOYMENT.strip() + "\n", encoding="utf-8")
+    (MAN / "service.yaml").write_text(SERVICE.strip() + "\n", encoding="utf-8")
+    docs = []
+    for path in sorted(MAN.glob("*.yaml")):
+        loaded = list(yaml.safe_load_all(path.read_text(encoding="utf-8")))
+        for doc in loaded:
+            assert doc and "kind" in doc and "apiVersion" in doc
+            docs.append({"file": path.name, "kind": doc["kind"], "name": doc["metadata"]["name"]})
+    notes = {
+        "mode": "manifest-dry-run",
+        "docs": docs,
+        "dry_run_notes": [
+            "kubectl apply --dry-run=client -f manifests/",
+            "kubectl apply --dry-run=server -f manifests/  # needs API access",
+            "Do NOT kubectl delete namespace or kind delete cluster from this lab",
+        ],
+    }
+    Path("manifest-evidence.json").write_text(json.dumps(notes, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(notes, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
 EOF
 
-python k8s_pods.py --fixture fixtures/pods.json; echo exit=$?
+python generate_manifests.py | tee manifest-run.txt
+test -s manifests/deployment.yaml
+test -s manifest-evidence.json
+python -c 'import json; d=json.load(open("manifest-evidence.json")); assert len(d["docs"])==2; print("yaml ok")'
 ```
 
-### Step 2 – Deployment readiness sketch
+**Expected output:** two manifests; `manifest-evidence.json` lists Deployment and Service with dry-run notes.
+
+#### Task 2 – Live read-only list (or honest skip)
 
 ```bash
-python - <<'PY'
-dep = {"name": "api", "ready": 2, "desired": 3}
-print("healthy" if dep["ready"] == dep["desired"] else "degraded")
-print("# live: AppsV1Api().list_namespaced_deployment")
-PY
+cd ~/rebash-python/lab18
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
+
+cat > k8s_inventory.py << 'EOF'
+#!/usr/bin/env python3
+"""Read-only namespace/pod inventory — never destroy."""
+from __future__ import annotations
+
+import json
+import os
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+
+
+def refuse_destroy() -> None:
+    bad = {"--destroy", "--delete-all", "--delete-namespace", "--kind-delete"}
+    if bad.intersection(sys.argv):
+        print("REFUSED: cluster destroy / delete flags disabled in lab18", file=sys.stderr)
+        raise SystemExit(2)
+
+
+def live_inventory() -> dict:
+    from kubernetes import client, config
+    from kubernetes.client.rest import ApiException
+
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+    namespaces = [i.metadata.name for i in v1.list_namespace().items]
+    pods = []
+    # Limit blast: default namespace only for the lab report
+    for p in v1.list_namespaced_pod("default").items:
+        pods.append(
+            {
+                "name": p.metadata.name,
+                "phase": p.status.phase,
+                "namespace": p.metadata.namespace,
+            }
+        )
+    return {
+        "mode": "live",
+        "namespaces": namespaces,
+        "pods_default": pods,
+        "policy": "read-only list; no deletes",
+    }
+
+
+def main() -> int:
+    refuse_destroy()
+    if os.environ.get("LAB18_FORCE_MANIFEST") == "1":
+        result = {
+            "mode": "skipped-live",
+            "reason": "LAB18_FORCE_MANIFEST=1",
+            "policy": "read-only list; no deletes",
+        }
+    else:
+        try:
+            result = live_inventory()
+        except Exception as exc:  # noqa: BLE001 — missing kubeconfig/module/RBAC
+            result = {
+                "mode": "skipped-live",
+                "reason": type(exc).__name__,
+                "detail": str(exc)[:300],
+                "policy": "read-only list; no deletes",
+                "hint": "use manifest-evidence.json dry-run path",
+            }
+    Path("k8s-inventory.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+EOF
+
+python k8s_inventory.py | tee inventory-run.txt
+test -s k8s-inventory.json
 ```
 
-### Step 3 – RBAC note
+**Expected output:** `k8s-inventory.json` with `mode` `live` or `skipped-live` — both acceptable.
 
-Document: ServiceAccount + Role `get/list` on pods only for a health checker.
+#### Task 3 – Destroy refusal and evidence pack
+
+```bash
+cd ~/rebash-python/lab18
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
+
+set +e
+python k8s_inventory.py --destroy >destroy-denied.txt 2>&1
+rc=$?
+set -e
+test "$rc" -eq 2
+grep -F 'REFUSED' destroy-denied.txt
+
+python - << 'EOF'
+import json
+from pathlib import Path
+
+pack = {
+    "manifests": json.loads(Path("manifest-evidence.json").read_text(encoding="utf-8")),
+    "inventory": json.loads(Path("k8s-inventory.json").read_text(encoding="utf-8")),
+    "destroy_refused": True,
+}
+Path("lab18-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
+assert pack["manifests"]["mode"] == "manifest-dry-run"
+print("evidence ok")
+EOF
+```
+
+**Expected output:** destroy refused; `lab18-evidence.json` merges manifest + inventory evidence.
+
+### Validation steps
+
+- [ ] Manifests validate (`kind` / `apiVersion` present)
+- [ ] Live list is read-only or cleanly skipped
+- [ ] Destroy-style flags exit `2`
+- [ ] Evidence under `~/rebash-python/lab18`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `ConfigException` / no kubeconfig | No cluster | Use manifest path; expected |
+| `ApiException` 403 | RBAC too tight | Ask for get/list only; or skip-live |
+| `ModuleNotFoundError: kubernetes` | pip failed | Manifest path still works with PyYAML |
+| Fear of kind delete | Old habits | Lab refuses destroy flags |
+
+### Challenge exercise
+
+Add a ConfigMap manifest (`rebash-lab18-config`) with two keys, validate it in `generate_manifests.py`, and extend evidence `docs` to three entries. Optional: if live mode works, also list Deployments in `default` via `AppsV1Api().list_namespaced_deployment` — still no deletes. Never print Secret data.
+
+### Learning outcomes
+
+- Generated and validated Kubernetes YAML in Python
+- Listed namespaces/pods when kubeconfig allowed
+- Documented dry-run apply notes for tickets
+- Refused cluster-destroy flags
+
+### Cleanup
+
+```bash
+cd ~/rebash-python/lab18
+deactivate 2>/dev/null || true
+# Do NOT kind delete cluster / kubectl delete ns from this lab.
+# If you manually applied manifests in a personal cluster, delete only those named objects:
+# kubectl delete -f manifests/ --dry-run=client
+# rm -rf .venv
+```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/module-18/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-python/lab18/`
+- [ ] You can explain kubeconfig vs in-cluster config
+- [ ] You never log Secret values
+- [ ] You know why destroy is gated
 
 ## Code Walkthrough
 
-Production practice for **Kubernetes Python Client Automation** always combines:
+Production Kubernetes Python automation usually follows:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Load identity** — kubeconfig or ServiceAccount  
+2. **Least-privilege list/get** — namespace scope when possible  
+3. **Map ApiException codes** — 401/403/404  
+4. **Report phases/conditions** — not raw Secret data  
+5. **Mutate only with flags + RBAC + change control**  
 
 ## Security Considerations
 
-- Treat credentials and tokens for python as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Use read-only Roles/ClusterRoles for inventory bots  
+- Never commit kubeconfig files with embedded tokens  
+- Do not log Secret `data` or bearer tokens  
+- Prefer namespaced ServiceAccounts over cluster-admin  
+- Audit who can `delete collection` in production  
 
 ## Common Mistakes
 
-!!! warning "Running with a cluster-admin kubeconfig “just for a script” and accidentally enabling writ"
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "Logging Secret values for debugging"
+    Credentials leak into CI logs. **Fix:** log Secret *names* and keys existence only.
 
-!!! warning "Logging full object dumps that include Secret payloads or tokens.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Cluster-admin kubeconfig in a list job"
+    Over-privilege. **Fix:** bind get/list on required resources only.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "kubectl delete namespace as lab cleanup on shared clusters"
+    Wipes teammates’ work. **Fix:** delete only named lab objects; never default destroy.
+
+!!! warning "Ignoring 403"
+    Scripts look “empty” when RBAC denied the list. **Fix:** surface ApiException status clearly.
 
 ## Best Practices
 
-- Encode Kubernetes Python Client Automation changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Default tools to dry-run / read-only  
+- Pin client library versions  
+- Prefer server-side apply in real GitOps; keep Python for inventory/gates  
+- Record API resource versions in evidence when debugging races  
+- Pair with NetworkPolicy and Pod Security separately from this client intro  
 
 ## Troubleshooting
 
-| Symptom | Likely cause | What to do |
-|---------|--------------|------------|
-| 403 Forbidden | RBAC | Grant least list/get |
-| Config exception | No kubeconfig | Fixture or set `KUBECONFIG` |
-| Slow list | Cluster-wide without need | Namespace-scope |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Empty pod list | Wrong namespace | Query `default` or pass namespace flag |
+| 401 | Expired token / bad kubeconfig | `kubectl auth can-i list pods` |
+| 403 | Missing RBAC | Grant get/list RoleBinding |
+| SSL errors | Custom CA | Configure cluster CA in kubeconfig |
+| Slow cluster list | Too wide | Namespace scope; limit field selectors |
 
 ## Summary
 
-- Official client + kubeconfig/in-cluster  
-- Read-only inventory/health first  
-- Labs for health checker and deployment validator
+Kubernetes Python automation starts with **config loading**, **read-only list/get**, careful **Secret hygiene**, and an offline **manifest + dry-run notes** path when no cluster exists — never default cluster destroy. Next, wrap Terraform workflows in [Infrastructure Automation — Terraform](infrastructure-automation-terraform.md).
 
 ## Interview Questions
 
-1. How does **Kubernetes Python Client Automation** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. What is the difference between `load_kube_config` and `load_incluster_config`?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    **`load_kube_config`** reads a kubeconfig file (local laptop, CI with a fetched kubeconfig). **`load_incluster_config`** uses the ServiceAccount token and CA mounted into a Pod. Controllers and in-cluster jobs use the latter; developer laptops use the former. Choosing wrong raises a clear config error.
+
+**2. Why should inventory tools avoid printing Secret data?**
+
+??? success "Reveal answer"
+    Secret values are credentials and tokens. CI logs and chat pastes become leak channels. Report Secret *names*, namespaces, and maybe key *names* — never base64 payloads. Prefer external secret managers for real systems.
+
+**3. How do HTTP status codes from `ApiException` guide troubleshooting?**
+
+??? success "Reveal answer"
+    **401** means identity/auth failed. **403** means authenticated but RBAC denied. **404** means the object or path is missing. **409** often means conflict. Retrying 403 with the same SA will not help — fix RoleBindings.
+
+**4. When is a YAML dry-run path acceptable instead of a live list?**
+
+??? success "Reveal answer"
+    When teaching parsers, validating manifests in CI without a cluster, or developing on a laptop. Label evidence `manifest-dry-run` vs `live`. Add a separate integration job against kind for true API behaviour.
+
+**5. What RBAC verbs should a pod inventory bot need?**
+
+??? success "Reveal answer"
+    Typically `get` and `list` on `pods` and `namespaces` (and maybe `deployments`) in the target namespaces. It should not need `delete`, `create`, or secrets `get` on data. Bind a dedicated ServiceAccount with a Role/RoleBinding.
+
+**6. How do Deployments and Pods relate in an inventory report?**
+
+??? success "Reveal answer"
+    A Deployment owns ReplicaSets that own Pods. Reporting only Pods shows phases; reporting Deployments shows desired vs ready replicas and conditions. Healthy platforms watch both — Pending Pods under a Deployment that cannot schedule is a common production signal.
+
+**7. A junior engineer wants the script to `kind delete cluster` in Cleanup. What do you say?**
+
+??? success "Reveal answer"
+    Refuse in shared or unclear environments. Cleanup should remove only lab-named objects the script created, with dry-run first. Destroying a cluster is a deliberate local decision, not a default tutorial step — especially when kubeconfig might point at something else.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [Infrastructure Automation — Terraform](infrastructure-automation-terraform.md)  
-- [Kubernetes Health Checker lab](../labs/python-kubernetes-health-checker.md)
+- [Python for DevOps Engineers – Overview](index.md)
+- [Docker SDK Automation](docker-sdk-automation.md) *(previous)*
+- [Infrastructure Automation — Terraform](infrastructure-automation-terraform.md) *(next)*
+- [Lab — Kubernetes Health Checker](../labs/python-kubernetes-health-checker.md) *(more practice)*
 
 ## References
 
-- [kubernetes-client/python](https://github.com/kubernetes-client/python)
+- [Kubernetes Python client](https://github.com/kubernetes-client/python)  
+- [Kubernetes API overview](https://kubernetes.io/docs/reference/using-api/)  
+- [RBAC authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)  
+- Track index: [Python for DevOps Engineers](index.md)

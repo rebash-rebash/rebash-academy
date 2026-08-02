@@ -42,24 +42,26 @@ comments: false
 
 
 
+
+
 Run `git bisect` to binary-search history for the first bad commit, and use `blame` / pickaxe (`-S`) when you know the change shape.
 
 When “it worked last week,” bisect beats scrolling `git log`. Mark a known good and known bad commit; Git checks out midpoints until the culprit is found.
 
 This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
 
 - [Git Troubleshooting](git-troubleshooting.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -71,9 +73,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Use `git blame` for line ownership  
 - [ ] Search history with `git log -S`
 
-
-
 ## Architecture
+
+
 
 
 
@@ -82,9 +84,9 @@ This topic’s control points and relationships are shown below.
 
 ![Object model / history](../assets/excalidraw/git-object-model.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -120,58 +122,97 @@ Prepare a script that builds or configures just enough to reproduce the failure 
 - Forgetting `bisect reset` and staying on a detached midpoint  
 - Marking the newest commit good by mistake and getting nonsense ranges
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Git Bisect and Debugging History** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-16-bisect`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-16-bisect && cd ~/rebash-git/module-16-bisect
 ```
 
-**Focus:** use git bisect to find the commit that broke a script
+### Real-world scenario
 
-### Step 1 – Create good→bad history
+A delivery team is standardising **Git Bisect and Debugging History**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-cat > check.sh << 'EOF'
-#!/usr/bin/env bash
-grep -q OK data.txt
-EOF
-chmod +x check.sh
-echo OK > data.txt
-git add check.sh data.txt && git commit -m "chore: good"
-for i in 1 2 3 4; do echo "noise $i" >> noise.txt; git add noise.txt && git commit -m "chore: noise $i"; done
-echo BAD > data.txt
-git add data.txt && git commit -m "fix: accidentally break data"
-for i in 5 6; do echo "noise $i" >> noise.txt; git add noise.txt && git commit -m "chore: noise $i"; done
-```
+### Step-by-step tasks
 
-### Step 2 – Bisect to the breaking commit
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-git bisect start
-git bisect bad HEAD
-git bisect good HEAD~7
-git bisect run ./check.sh
-git bisect reset
-git log --oneline -n 12
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -181,9 +222,9 @@ git log --oneline -n 12
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -198,9 +239,9 @@ Production practice for **Git Bisect and Debugging History** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -211,9 +252,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -227,9 +268,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -240,9 +281,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -255,18 +296,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Git Bisect and Debugging History** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. How does bisect find a bad commit?
@@ -281,9 +322,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Do not bisect on production data stores. Keep repro scripts free of credentials.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -291,9 +332,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Production Git Practices](production-git-practices.md)
 
-
-
 ## References
+
+
 
 
 

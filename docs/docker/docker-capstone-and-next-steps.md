@@ -29,13 +29,15 @@ comments: false
 
 
 
+
+
 You have built images, wired networks, secured containers, integrated CI/CD, and mapped Docker to Kubernetes. This capstone ties it together: deploy a **multi-service voting application** — web frontend, API, worker, Redis, and PostgreSQL — using production Docker patterns, observability hooks, and a documented path to [Kubernetes](../kubernetes/index.md).
 
 This is **Tutorial 20** — the finale of **Module 6: Production & Beyond** and the complete REBASH Academy **Docker track**.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -49,9 +51,9 @@ This is **Tutorial 20** — the finale of **Module 6: Production & Beyond** and 
 - Docker Engine 24+ with Compose v2
 - Optional: GitHub or GitLab account for CI lab
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -66,9 +68,9 @@ By the end of this capstone, you will be able to:
 - [ ] Document operational runbooks for backup, rollback, and scaling
 - [ ] Outline a Kubernetes migration plan using the concept map from Tutorial 19
 
-
-
 ## Architecture
+
+
 
 
 
@@ -76,9 +78,9 @@ By the end of this capstone, you will be able to:
 
 ![Production container platform](../assets/excalidraw/docker-production-platform.svg)
 
-
-
 ## Project Overview — VoteStack
+
+
 
 
 
@@ -97,9 +99,9 @@ By the end of this capstone, you will be able to:
 
 You will clone or create the project structure, containerize each service, and run the full stack locally — mirroring how teams ship real products.
 
-
-
 ## Project Structure
+
+
 
 
 
@@ -129,9 +131,9 @@ votestack/
 └── .github/workflows/ci.yml
 ```
 
-
-
 ## Theory
+
+
 
 
 
@@ -177,55 +179,94 @@ Get into the habit of watching state while commands run: `docker events` / `kube
 
 Misconfiguration here usually shows up as intermittent outages rather than clean errors: restart loops without log shipping, services that listen but never become Ready, volumes that work on one node only, or credentials that leak into image history. Use the Hands-on Lab as a rehearsal for the failure mode — break something on purpose, watch the signal, then apply the fix documented in Troubleshooting.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build or run a real Docker solution for **Docker Capstone and Next Steps** and prove it with inspect/logs/HTTP.
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop
+- Permission to run containers
+
+### Lab environment
+
+Workspace: `~/rebash-docker/docker-capstone-and-next-steps`
+
+Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/docker-capstone-and-next-steps && cd ~/rebash-docker/docker-capstone-and-next-steps
 ```
 
-**Focus:** compose a small stack with volume, then full teardown
+### Real-world scenario
 
-### Step 1 – Capstone stack
+You are validating **Docker Capstone and Next Steps** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+
+### Step-by-step tasks
+
+#### Task 1 – Run and inspect a container
+
+Start from a known image, publish a port, and verify HTTP.
 
 ```bash
-cat > compose.yaml << 'EOF'
-services:
-  web:
-    image: nginx:alpine
-    ports: ["18086:80"]
-    volumes: ["rebash-cap:/usr/share/nginx/html:ro"]
-volumes:
-  rebash-cap:
-EOF
-docker volume create rebash-cap
-docker run --rm -v rebash-cap:/data alpine:3.20 sh -c 'echo "<h1>capstone</h1>" > /data/index.html'
-docker compose up -d
-curl -s http://127.0.0.1:18086 | head -n 5
+docker run -d --name rebash-lab -p 18080:80 nginx:alpine
+docker ps --filter name=rebash-lab
+curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
 ```
 
-### Step 2 – Full teardown
+**Expected output:** Container Up; HTTP 200 in headers.txt.
+
+#### Task 2 – Inspect runtime config
+
+Use inspect for status — production debugging rarely starts with guesswork.
 
 ```bash
-docker compose down -v
-docker volume rm rebash-cap 2>/dev/null || true
+docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
+test -s inspect.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** inspect.txt shows `running` and the nginx image.
+
+### Validation steps
+
+- [ ] Container or image behaves as Expected output describes
+- [ ] Ports respond or command output matches
+- [ ] Cleanup removes lab resources
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
+| permission denied | User not in docker group | Use rootless Docker or fix group membership |
+| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+
+### Challenge exercise
+
+Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+
+### Learning outcomes
+
+- Executed a real Docker workflow
+- Captured evidence files
+- Removed disposable resources
+
+### Cleanup
 
 ```bash
+docker rm -f rebash-lab 2>/dev/null || true
+docker rmi rebash-lab:local 2>/dev/null || true
 docker compose down -v 2>/dev/null || true
-docker volume rm rebash-cap 2>/dev/null || true
-# Keep ~/rebash-docker/ for later tutorials
 ```
-
-
 
 ## Validation
+
+
 
 
 
@@ -244,9 +285,9 @@ Confirm the lab before moving on:
 | Patterns | Healthchecks, restarts, and non-root settings present |
 | Cleanup | Stack stopped; secrets not committed |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -263,9 +304,9 @@ docker inspect votestack-api-1 | jq -r '.[0].State.Health.Status'
 
 See [Container Logging and Monitoring](container-logging-and-monitoring.md) for metrics exporters.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -278,9 +319,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 - Document break-glass procedures — do not leave `--privileged` “temporary” services in the final compose file
 - Tear down or snapshot lab data so the next learner does not inherit your secrets
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -301,9 +342,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 !!! warning "Stopping at Compose for high-traffic prod"
     Single-host Compose hits vertical limits — plan Swarm or [Kubernetes](../kubernetes/index.md).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -324,9 +365,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 !!! tip "Continue the learning path"
     Docker completes the container foundation — [Kubernetes](../kubernetes/index.md) is the natural next track.
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -340,9 +381,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 | Disk full | Unbounded logs/images | Log rotation; docker system prune |
 | CI push denied | Registry auth | Configure GITHUB_TOKEN scopes |
 
-
-
 ## Summary
+
+
 
 
 
@@ -354,9 +395,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 - **Runbooks** for backup, update, and rollback complete the operational picture
 - You have finished all **20 Docker tutorials** — continue to [Kubernetes](../kubernetes/index.md), [GitLab CI/CD](../gitlab/index.md), and [Learning Paths](../learning-paths/index.md)
 
-
-
 ## Interview Questions
+
+
 
 
 1. Which Docker skills are prerequisites for Kubernetes?
@@ -371,9 +412,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 !!! tip "Sample answer — question 4"
     Carry forward non-root images, scanning, and secret hygiene into Kubernetes/Helm/GitOps next steps.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -391,9 +432,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 
@@ -406,9 +447,9 @@ See [Container Logging and Monitoring](container-logging-and-monitoring.md) for 
 - [REBASH Academy – Kubernetes Overview](../kubernetes/index.md)
 - [REBASH Academy – Roadmap](../roadmap.md)
 
-
-
 ## Congratulations
+
+
 
 
 

@@ -43,23 +43,37 @@ comments: false
 
 
 
+
+
+
+
+
+
 Plan control-plane upgrades, document etcd backup/restore, and define HA and maintenance practices for self-managed or managed clusters.
 
 Day-2 ops: version skew policy, drain/cordon workers, etcd snapshots (self-managed), and DR runbooks. Managed services shift etcd ownership to the cloud — still test restore of **workloads and data**.
 
 This is a core tutorial in **Module 17 · Production Operations** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
+
+
 
 
 
 - [Platform Engineering on Kubernetes](platform-engineering-on-kubernetes.md)
 
-
-
 ## Learning Objectives
+
+
+
+
+
+
 
 
 
@@ -70,9 +84,13 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline etcd snapshot (kubeadm)  
 - [ ] Write a DR checklist
 
-
-
 ## Architecture
+
+
+
+
+
+
 
 
 
@@ -80,9 +98,13 @@ This topic’s control points and relationships are shown below.
 
 ![Production cluster](../assets/excalidraw/k8s-production-cluster.svg)
 
-
-
 ## Theory
+
+
+
+
+
+
 
 
 
@@ -126,48 +148,98 @@ Controllers keep reconciling during maintenance if capacity remains; drains are 
 - Assuming managed control-plane backup restores your PVCs and databases.
 - Running ancient add-ons (CNI, Ingress) incompatible with the new Kubernetes version.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Kubernetes Production Operations** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-17`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-17`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-17 && cd ~/rebash-k8s/module-17
 ```
 
-**Focus:** Practise operational hygiene: rollouts, events, and resource snapshots
+### Real-world scenario
 
-### Step 1 – Deploy and capture operational baseline
+Your platform team is rolling out **Kubernetes Production Operations** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-kubectl -n rebash-lab create deployment ops --image=nginx:1.27-alpine --replicas=2
-kubectl -n rebash-lab rollout status deploy/ops
-kubectl -n rebash-lab get events --sort-by=.lastTimestamp | tail -n 15
-```
+### Step-by-step tasks
 
-### Step 2 – Perform a controlled change and inspect history
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What it is** against a live API.
 
 ```bash
-kubectl -n rebash-lab set resources deploy/ops -c=nginx --requests=cpu=50m,memory=64Mi
-kubectl -n rebash-lab rollout status deploy/ops
-kubectl -n rebash-lab rollout history deploy/ops
-kubectl -n rebash-lab get deploy ops -o jsonpath='{.spec.template.spec.containers[0].resources}{"
-"}'
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Kubernetes Production Operations
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
+
+
 
 
 
@@ -176,9 +248,13 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
+
+
 
 
 
@@ -192,9 +268,13 @@ Production practice for **Kubernetes Production Operations** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
+
+
 
 
 
@@ -204,9 +284,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
+
+
 
 
 
@@ -219,9 +303,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
+
+
 
 
 
@@ -231,9 +319,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
+
+
 
 
 
@@ -245,17 +337,25 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
+
+
 
 
 
 **Kubernetes Production Operations** is essential for Cloud and DevOps engineers working with kubernetes. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
+
+
 
 
 1. What operational signals do you check first when a Deployment misbehaves?
@@ -270,18 +370,26 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Use progressive delivery, RBAC separation, quotas, PDBs, and change windows for risky work. Automate checks so velocity does not skip validation.
 
-
-
 ## Related Tutorials
+
+
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Troubleshooting Kubernetes Workloads](troubleshooting-kubernetes-workloads.md)
 
-
-
 ## References
+
+
+
+
+
+
 
 
 

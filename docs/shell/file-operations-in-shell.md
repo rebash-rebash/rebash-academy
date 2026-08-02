@@ -1,20 +1,27 @@
 ---
 title: "File Operations in Shell"
-description: "Read and write files safely, create temporary files, use file tests, and manage directories in automation."
+description: "Create directories safely, find files, copy and move with checks, use mktemp for temporary files, and optionally take a lock file in Bash scripts."
 difficulty: intermediate
-estimated_time: "45 min"
+estimated_time: "45–55 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-02"
 category: shell
+technology: shell
+module: "Module 9 · File Operations"
 tags:
   - shell
   - bash
+  - find
+  - mktemp
   - files
-  - temp
-  - directories
+  - lock
 prerequisites:
-  - Arrays and String Manipulation
-  - Bash 4.2+ on Linux (WSL2/VM/cloud)
+  - shell/arrays-and-string-manipulation
+next:
+  - shell/text-processing-in-shell-scripts
+related:
+  - shell/arrays-and-string-manipulation
+  - shell/text-processing-in-shell-scripts
 comments: false
 ---
 
@@ -22,29 +29,33 @@ comments: false
 
 ## Overview
 
-Backup jobs, lock files, and config rewrites all touch the filesystem. Do it with tests, temps, and cleanup traps.
+Most ops scripts **create folders**, **find files**, **copy or move** them, and clean up **temporary files**. Bash does not replace `cp`, `mv`, `find`, or `mkdir` — it orchestrates them safely. You will use `mkdir -p`, guarded `find`, `cp`/`mv` with checks, **`mktemp`** for unique temp paths, and an optional **lock file** so two cron jobs do not run the same work at once. Practice stays under `~/rebash-shell/lab09` so you never touch production data by mistake.
 
-This is **Tutorial 9** in **Module 9: File Operations** of the REBASH Academy **Shell Scripting for DevOps Engineers** series — written for Linux administrators, DevOps engineers, SREs, and platform engineers who automate production hosts with Bash.
+On jump servers and Continuous Integration (CI) agents, unsafe file ops are a common outage class: `mv` over an unexpected path, `rm -rf` on a variable that expanded empty, or two backups writing the same destination. Site Reliability Engineering (SRE) and platform teams expect scripts that create parents with `mkdir -p`, write to temp files then rename, and prove what was copied.
+
+In production, prefer: allow-listed base directories, `mktemp` under `$TMPDIR`, `mv` for atomic publish when on the same filesystem, and a lock (for example `flock` or a lock directory) for overlapping schedules. Never invent temp names with fixed strings like `/tmp/myjob.txt` on a shared host.
+
+This is **Tutorial 9** in **Module 9: File Operations** of the REBASH Academy **Shell Scripting for DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, SRE, and platform engineers. By the end, you will have a small staging-and-publish script with evidence for a change ticket.
 
 ## Prerequisites
 
-- Arrays and String Manipulation
-- Bash 4.2+ on Linux (WSL2/VM/cloud)
+- [Arrays and String Manipulation](arrays-and-string-manipulation.md)
+- Bash 4.2+ and coreutils (`mkdir`, `cp`, `mv`, `find`, `mktemp`)
+- Optional: `flock` (from `util-linux`, present on Ubuntu)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply the core ideas of “File Operations in Shell” in a real ops script
-- [ ] Use `set -euo pipefail` as the production default
-- [ ] Use quoted expansions and clear stderr diagnostics
-- [ ] Produce meaningful exit codes for automation consumers
-- [ ] Debug behaviour with `bash -x` when something fails
-- [ ] Relate this topic to day-to-day Linux admin and DevOps work
+- [ ] Create directory trees with `mkdir -p` and verify with tests
+- [ ] Use `find` with clear roots and predicates (not unbounded `/` searches)
+- [ ] Copy and move files safely with existence checks and `--` for odd names
+- [ ] Create temp files/dirs with `mktemp` and clean them up
+- [ ] Optionally take a lock file/`flock` so concurrent runs do not clash
 
 ## Architecture
 
-Ops scripts sit between humans/automation and system tools. This topic’s control points are shown below.
+Scripts discover files, stage work in temp space, then publish into a target tree — optionally under a lock so only one writer runs.
 
 ![Architecture diagram for File Operations in Shell](../assets/excalidraw/shell-file-operations.svg)
 
@@ -52,169 +63,342 @@ Ops scripts sit between humans/automation and system tools. This topic’s contr
 
 ### What it is
 
-Shell scripts spend much of their life reading and writing files: configs, inventories, logs, lock files, and temporary workspaces. Core skills include line-oriented **reading**, safe **writing** and atomic replace, creating **temporary files** with cleanup traps, **file tests** (`-f`, `-d`, and friends), and **directory operations** such as `mkdir -p`, `find`, and `rsync`. Done well, file handling is boring and reliable; done poorly, it races, truncates, or deletes the wrong tree.
+**Directory ops** — `mkdir -p path` creates parents as needed; `[[ -d path ]]` tests directories.  
+**Discovery** — `find ROOT -type f -name '*.log'` lists matches under a known root.  
+**Copy / move** — `cp` duplicates; `mv` renames or relocates (atomic replace when staying on one filesystem).  
+**Temp files** — `mktemp` / `mktemp -d` create unique names.  
+**Locks** — `flock` or exclusive `mkdir` lockdirs serialise jobs.
+
+```bash
+base="$HOME/rebash-shell/lab09"
+mkdir -p "$base/staging" "$base/published"
+tmp="$(mktemp -d "$base/tmp.XXXXXX")"
+```
 
 ### Why it matters
 
-Automation that mutates the filesystem is where Linux administration meets risk. Partial writes leave corrupt configs that services load on the next restart. Fixed paths under `/tmp` collide between users or invite symlink attacks. Recursive deletes without an allow-listed root are a classic outage class. Continuous Integration (CI) and cron jobs that create debris without `trap` cleanup fill disks over time. Safe file patterns are therefore as important as the business logic that uses those files.
+CI artefacts, config drops, and backup jobs are all file choreography. A script that writes directly to the final path can leave a half-written file if it is killed. A job without a lock can interleave two writers. `find /` without limits can load a server and touch files you must not change. Safe patterns keep automation predictable and reviewable.
 
 ### How it works
 
-Read lines without word-splitting:
+1. **Fix a base directory** — never trust a relative path from an unknown cwd alone; `cd` to the lab root or use absolute paths.
+2. **`mkdir -p`** — create staging and destination trees.
+3. **`find`** — start from a narrow root; filter with `-type`, `-name`, `-mtime` as needed.
+4. **Stage then publish** — write under `mktemp -d`, then `mv` into place.
+5. **Lock (optional)** — wrap the critical section with `flock` or a lock directory.
 
 ```bash
-while IFS= read -r line; do
-  printf '%s\n' "$line"
-done <"$file"
+src_root="./incoming"
+find "$src_root" -type f -name '*.conf' -print
+
+tmpdir="$(mktemp -d)"
+cp -- "$src" "$tmpdir/file.conf"
+mv -- "$tmpdir/file.conf" "./published/file.conf"
+rmdir "$tmpdir" 2>/dev/null || rm -rf "$tmpdir"
 ```
 
-Prefer `mapfile` / `readarray` for modest files that fit in memory. Avoid `for line in $(cat file)`. Writing uses `printf ... >"$out"` to truncate or `>>` to append. For config updates, write to a temporary file on the same filesystem, then `mv` over the target so readers see either the old or the new file — not a half-written hybrid.
+**Safe `mv`/`cp` habits:** quote paths; use `--` before paths that may start with `-`; test sources with `[[ -f ]]`; avoid `cp` to a path you have not created parents for (`mkdir -p` first).
 
-Create temps with `mktemp` and always register cleanup:
+### Key concepts and comparisons
 
-```bash
-tmp=$(mktemp)
-tmpdir=$(mktemp -d)
-trap 'rm -rf "$tmp" "$tmpdir"' EXIT
-```
+| Tool | Role | Caution |
+|------|------|---------|
+| `mkdir -p` | Create tree | Still check you are under the intended base |
+| `find` | Discover | Bound the root; avoid `find /` in labs |
+| `cp` | Duplicate | Overwrites by default if target exists |
+| `mv` | Rename / publish | Cross-device `mv` copies then deletes |
+| `mktemp` | Unique temp | Always clean up in `trap` for long scripts |
+| `flock` | Serialise | Needs a lock file path both jobs share |
 
-Never hard-code `/tmp/myjob`. Before destructive directory work, test paths (`-e`, `-f`, `-d`, `-L`, permission bits) and keep operations under an allowed root. Use `mkdir -p`, `install -d`, `find`, and `rsync -a` as appropriate for trees.
-
-### Key concepts
-
-| Concern | Practice |
-|---------|----------|
-| Reading | `IFS= read -r` or `mapfile`; never `for $(cat)` |
-| Writing | Redirect carefully; atomic `tmp` + `mv` for replace |
-| Temps | `mktemp` / `mktemp -d` + `trap` on `EXIT` |
-| Tests | `-e` `-f` `-d` `-r` `-w` `-x` `-s` `-L` |
-| Trees | `mkdir -p`, `find`, `rsync`; allow-list before `rm -rf` |
+| Pattern | Prefer when |
+|---------|-------------|
+| Write temp + `mv` | Publishing a config that readers must see whole |
+| `cp -a` | Preserving mode/times for backups |
+| Lock file | Cron overlap risk |
 
 ### Common pitfalls
 
-- Truncating a live config with `>` instead of writing via a temp file
-- Hard-coding predictable temp paths that other users can race
-- Forgetting `trap` cleanup so failed runs leave large directories behind
-- Running `rm -rf` on a variable that expanded empty or to `/`
-- Checking only byte free space and ignoring inode exhaustion on the same volume
+- Using a fixed `/tmp/job.txt` name on a shared host (collisions / symlink attacks).
+- Running `find /` or unquoted variables in `rm -rf`.
+- Forgetting `mkdir -p` before writing a nested destination.
+- Relying on `mv` atomicity across filesystems (it is not atomic then).
+- Leaving temp directories behind when the script fails mid-way (use `trap`).
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+### Objective
+
+Under `~/rebash-shell/lab09`, create an incoming tree, find `*.conf` files, stage them with `mktemp -d`, publish with `mv`, take an optional `flock`, and pack evidence.
+
+### Prerequisites
+
+- Bash, `find`, `mktemp`, `cp`, `mv`
+- `flock` recommended (`util-linux` on Ubuntu)
+
+### Lab environment
+
+Workspace: `~/rebash-shell/lab09`
 
 ```bash
-mkdir -p ~/rebash-shell/lab09 && cd ~/rebash-shell/lab09
+mkdir -p ~/rebash-shell/lab09/{incoming,published,out}
+cd ~/rebash-shell/lab09
+set -euo pipefail
+bash --version | head -n1 | tee out/bash-version.txt
+command -v mktemp | tee out/mktemp-path.txt
 ```
 
-**Focus:** read/write atomically; mktemp + trap; file tests; safe mkdir
+**Expected output:** `out/bash-version.txt` and `out/mktemp-path.txt` are non-empty.
 
-### Step 1 – Safe file ops
+### Real-world scenario
+
+A small app drops config snippets into `incoming/`. Your job must copy only `*.conf` files into `published/`, never two runs at once, and leave a manifest for the change ticket. Temps must be unique so parallel agents on the same host do not clash.
+
+### Step-by-step tasks
+
+#### Task 1 – Seed incoming files and discover with `find`
 
 ```bash
-cat > files.sh << 'EOF'
+cd ~/rebash-shell/lab09
+set -euo pipefail
+
+mkdir -p incoming/app-a incoming/app-b
+printf 'port=8080\n' > incoming/app-a/app.conf
+printf 'port=8081\n' > incoming/app-b/app.conf
+printf 'ignore me\n' > incoming/app-a/readme.txt
+
+find ./incoming -type f -name '*.conf' | sort | tee out/found-confs.txt
+test "$(wc -l <out/found-confs.txt | tr -d ' ')" -eq 2
+grep -F 'app.conf' out/found-confs.txt
+! grep -F 'readme.txt' out/found-confs.txt
+```
+
+**Expected output:** exactly two `*.conf` paths listed; `readme.txt` absent.
+
+#### Task 2 – Stage with `mktemp`, safe `cp`/`mv`, publish
+
+```bash
+cd ~/rebash-shell/lab09
+set -euo pipefail
+
+cat > publish-confs.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-root=$PWD/data
-mkdir -p "$root"
-tmp=$(mktemp)
-trap 'rm -f "$tmp"' EXIT
-printf 'line1\nline2\n' >"$tmp"
-out=$root/out.txt
-cp "$tmp" "$out.tmp"
-mv "$out.tmp" "$out"
-[[ -f "$out" && -s "$out" ]] || exit 4
-while IFS= read -r line; do echo "got=$line"; done <"$out"
+root="$(cd "$(dirname "$0")" && pwd)"
+cd "$root"
+mkdir -p published out
+
+tmpdir="$(mktemp -d "$root/out/stage.XXXXXX")"
+cleanup() { rm -rf "$tmpdir"; }
+trap cleanup EXIT
+
+: > out/published-manifest.txt
+while IFS= read -r -d '' f; do
+  base="$(basename "$(dirname "$f")")"
+  dest_dir="published/$base"
+  mkdir -p "$dest_dir"
+  stage="$tmpdir/${base}.conf"
+  cp -- "$f" "$stage"
+  mv -- "$stage" "$dest_dir/app.conf"
+  printf '%s -> %s\n' "$f" "$dest_dir/app.conf" | tee -a out/published-manifest.txt
+done < <(find ./incoming -type f -name '*.conf' -print0)
+
+test -f published/app-a/app.conf
+test -f published/app-b/app.conf
+grep -F 'app-a' out/published-manifest.txt
 EOF
-chmod +x files.sh
-./files.sh
+chmod +x publish-confs.sh
+./publish-confs.sh
 ```
 
-### Final step – Cleanup note
+**Expected output:** `published/app-a/app.conf` and `published/app-b/app.conf` exist; manifest lists both mappings; temp stage directory is removed by `trap`.
+
+#### Task 3 – Optional lock with `flock` and evidence pack
 
 ```bash
-# Keep ~/rebash-shell/ for later tutorials; destroy disposable cloud resources from this lab
+cd ~/rebash-shell/lab09
+set -euo pipefail
+
+cat > locked-publish.sh << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+root="$(cd "$(dirname "$0")" && pwd)"
+cd "$root"
+mkdir -p out
+lockfile="$root/out/publish.lock"
+
+if ! command -v flock >/dev/null 2>&1; then
+  printf 'flock_missing=1\n' | tee out/lock-status.txt
+  exit 0
+fi
+
+# Hold the lock while we re-run publish (serialised section)
+(
+  flock -n 9 || { printf 'lock_busy=1\n' | tee out/lock-status.txt; exit 1; }
+  printf 'lock_acquired=1\n' | tee out/lock-status.txt
+  ./publish-confs.sh
+) 9>"$lockfile"
+
+grep -q 'lock_acquired=1' out/lock-status.txt
+EOF
+chmod +x locked-publish.sh
+./locked-publish.sh
+
+tar -czf out/fileops-evidence.tgz \
+  out/bash-version.txt out/mktemp-path.txt out/found-confs.txt \
+  out/published-manifest.txt out/lock-status.txt \
+  published/app-a/app.conf published/app-b/app.conf
+ls -l out/fileops-evidence.tgz | tee out/evidence-ls.txt
+```
+
+**Expected output:** `lock-status.txt` shows `lock_acquired=1` (or `flock_missing=1` if `flock` is unavailable); evidence archive is not empty.
+
+### Validation steps
+
+- [ ] `find` lists exactly the two `*.conf` files under `incoming/`
+- [ ] `publish-confs.sh` creates `published/app-a/app.conf` and `published/app-b/app.conf`
+- [ ] Temp stage directories under `out/stage.*` are gone after a successful run
+- [ ] Evidence archive exists under `~/rebash-shell/lab09/out/`
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `No such file or directory` on publish | Missing `mkdir -p` | Create `published/$base` first |
+| `find` picks `readme.txt` | Wrong `-name` | Use `-name '*.conf'` |
+| Temp dirs left behind | No `trap` / failed early | `trap cleanup EXIT` |
+| `flock: command not found` | Minimal image | Install `util-linux` or skip lock path |
+| Overwrote wrong file | Relative cwd drift | `cd` to script root as in the lab |
+
+### Challenge exercise
+
+Write `safe-backup.sh` that: creates `backup/` with `mkdir -p`, copies every published `app.conf` to `backup/<app>-app.conf.$(date -u +%Y%m%d)`, uses `mktemp -d` for staging, and refuses to run if `out/publish.lock` is already held (`flock -n` failure must exit `1` with a clear stderr message). Prove with a second listing in `out/backup-manifest.txt`.
+
+### Learning outcomes
+
+- Discovered files with a bounded `find`
+- Staged with `mktemp` and published with `mv`
+- Applied an optional `flock` and packed ticket evidence
+
+### Cleanup
+
+```bash
+cd ~/rebash-shell/lab09
+set -euo pipefail
+rm -f out/publish.lock
+# Keep published/ and out/ for review, or:
+# rm -rf ~/rebash-shell/lab09
 ```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-shell/lab09/`
-- [ ] You can explain each Theory heading in your own words
-- [ ] Failure path exits non-zero and prints diagnostics to stderr (where applicable)
-- [ ] You can relate this topic to a real DevOps or Linux admin task
+- [ ] Lab finished under `~/rebash-shell/lab09/` with evidence archive
+- [ ] You can explain why `mktemp` beats fixed `/tmp` names
+- [ ] You can explain stage-then-`mv` for safer publishes
+- [ ] You know one risk of unbounded `find /` or unlocked cron overlap
 
 ## Code Walkthrough
 
-Production Bash for **File Operations in Shell** always combines:
+Production **file operations** in shell usually follow this order:
 
-1. A clear shebang (`#!/usr/bin/env bash`)
-2. Strict mode near the top (`set -euo pipefail`) from Module 2 onward
-3. Quoted expansions and explicit tests
-4. Functions with `local` for reusable behaviour
-5. Documented exit codes and stderr logging
+1. **Resolve a base directory** — script root or explicit `--root`  
+2. **Create destinations** — `mkdir -p` before writes  
+3. **Discover narrowly** — `find` under that base only  
+4. **Stage → publish** — `mktemp` then `mv` / checked `cp`  
+5. **Serialise if needed** — `flock` around the critical section; clean temps with `trap`  
 
-Keep scripts short enough to review in a single merge request. When logic grows (complex JSON APIs, heavy state), hand off to Python and keep Bash as the launcher.
+Long-running agents should also log every source→destination pair to a manifest.
 
 ## Security Considerations
 
-- Treat all external input (args, files, env) as untrusted until validated
-- Never log secrets; prefer masked CI variables and secret stores
-- Prefer least privilege — do not require root for file-local tasks
-- Avoid `eval` and unquoted expansions in destructive commands
-- Validate paths stay under an allow-listed root before `rm` or overwrite
+- Never `rm -rf` on an unvalidated variable; refuse empty roots  
+- Prefer `mktemp` over predictable temp names on multi-user hosts  
+- Do not follow unexpected symlinks into sensitive trees — consider `find -P` / careful `cp -P` policy  
+- Lock files should live on local disk, not on broken network mounts when possible  
+- Least privilege: this lab needs only home-directory write access  
 
 ## Common Mistakes
 
-!!! warning "Skipping strict mode"
-    Cron and CI hide failures that an interactive terminal would show. **Fix:** start with `set -euo pipefail` from Module 2 onward.
+!!! warning "Fixed temp filenames in `/tmp`"
+    Parallel jobs and symlink tricks collide. **Fix:** `mktemp` / `mktemp -d` and private directories under the job root when possible.
 
-!!! warning "Unquoted path expansions"
-    Spaces and globs rewrite your command line. **Fix:** always `"$path"` / `"$@"`.
+!!! warning "`find /` in a maintenance script"
+    Huge I/O and accidental matches. **Fix:** start from an allow-listed root.
 
-!!! warning "Assuming interactive PATH"
-    Aliases and fancy PATH entries disappear under schedulers. **Fix:** set `PATH` or use absolute paths.
+!!! warning "Writing the final file in place"
+    Readers see partial content. **Fix:** write temp, then `mv` into place on the same filesystem.
+
+!!! warning "No lock on overlapping cron"
+    Two writers corrupt output. **Fix:** `flock` or an exclusive lock directory.
 
 ## Best Practices
 
-- One purpose per script; compose with functions or small binaries
-- Log to stderr; reserve stdout for data or RESULT lines
-- Idempotent behaviour where scheduling may overlap
-- Pair every new script with a failing-path test you actually run
-- Run ShellCheck in CI before merging automation
+- Manifest every publish (`source -> dest`) for tickets and audits  
+- Use `--` before arbitrary path arguments  
+- `trap` cleanup for temp directories  
+- Prefer absolute paths after resolving script location  
+- Test overwrite behaviour explicitly (`cp`/`mv` onto existing files)  
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Works in terminal, fails in cron | PATH / cwd / env | Fingerprint env; set PATH |
-| `unbound variable` | `set -u` | Provide defaults or export vars |
-| Pipeline “succeeds” incorrectly | Missing `pipefail` | `set -o pipefail` |
-| `[[` unexpected operator | Running under `sh`/dash | Fix shebang to Bash |
+| Destination missing | No `mkdir -p` | Create parent dirs first |
+| `find` returns nothing | Wrong root / pattern | Check cwd and `-name` |
+| Cross-device `mv` slow / non-atomic | Different filesystems | Stage on the destination filesystem |
+| Lock always busy | Stale process / crashed holder | Inspect holders; remove stale lock only when safe |
+| Temps accumulate | Missing `trap` | Add `EXIT` cleanup |
 
 ## Summary
 
-**File Operations in Shell** is a core skill for Linux admins and DevOps engineers automating real hosts and pipelines. Practise the lab until the failure path is as familiar as the happy path, then continue the track.
+File operations in shell are about **safe choreography**: narrow `find`, `mkdir -p`, `mktemp`, checked `cp`/`mv`, and locks when jobs overlap. Prove every publish with a manifest. Next, parse file contents with [Text Processing in Shell Scripts](text-processing-in-shell-scripts.md).
 
 ## Interview Questions
 
-1. How does this topic show up in production Linux administration or CI?
-2. What failure mode appears if you ignore quoting or strict mode here?
-3. How would you test this behaviour under a minimal cron-like environment?
-4. When would you move this logic out of Bash into Python or another tool?
-5. What exit code contract would you document for teammates?
+**1. Why is `mktemp` safer than redirecting to `/tmp/myjob.conf`?**
 
-!!! tip "Sample answer — question 2"
-    Unquoted expansions and missing `pipefail` create silent or partial failures — especially under cron — that look healthy in monitoring until data is wrong.
+??? success "Reveal answer"
+    Fixed names collide when two jobs run together and can be targeted with symlink attacks on shared `/tmp`. **`mktemp`** creates a unique name with safe permissions. Always clean up with `trap` so failures do not leave sensitive leftovers.
+
+**2. How does write-to-temp then `mv` improve config publishes?**
+
+??? success "Reveal answer"
+    Readers either see the old file or the new file, not a half-written file, when `mv` is on the **same filesystem** (rename is atomic). Writing directly to the live path can expose partial content if the process is killed. Cross-filesystem `mv` copies then deletes — plan staging on the destination filesystem when atomicity matters.
+
+**3. What makes a `find` invocation dangerous in production scripts?**
+
+??? success "Reveal answer"
+    Unbounded roots (`/`), missing `-type` filters, or acting on results with `rm` without a dry-run can touch the wrong files and create heavy disk load. Prefer an allow-listed root, clear predicates (`-name`, `-mtime`), and a manifest before destructive actions.
+
+**4. How would you stop two cron invocations from publishing at once?**
+
+??? success "Reveal answer"
+    Wrap the critical section with **`flock`** on a lock file, or use an exclusive `mkdir` lockdir. If the lock cannot be acquired, exit non-zero (or skip with a logged reason). Do not rely on “the job is usually fast enough”.
+
+**5. Why use `cp -- "$src" "$dest"` / `mv -- …`?**
+
+??? success "Reveal answer"
+    Paths can start with `-` and be interpreted as options. **`--`** ends option parsing so the next argument is always a path. Combine with quoting for spaces.
+
+**6. What should a publish script leave for a change ticket?**
+
+??? success "Reveal answer"
+    A **manifest** of source→destination, timestamps, tool versions if relevant, and proof that unexpected files (for example `readme.txt`) were ignored. An evidence `tar` of manifests plus sample outputs is enough for many reviews.
+
+**7. When is `cp -a` preferable to plain `cp`?**
+
+??? success "Reveal answer"
+    When you need to preserve mode, ownership (if permitted), and timestamps — typical for backups or promoting a tree. For single config files where you intentionally set mode afterward, plain `cp` plus `chmod` may be clearer. State the choice in the script comments.
 
 ## Related Tutorials
 
-- [Shell Scripting for DevOps Engineers – Category Overview](index.md)
+- [Shell Scripting for DevOps Engineers – Overview](index.md)
 - [Arrays and String Manipulation](arrays-and-string-manipulation.md) *(previous)*
 - [Text Processing in Shell Scripts](text-processing-in-shell-scripts.md) *(next)*
-- [Learning Paths](../learning-paths/index.md)
+- [Linux Admin Automation](linux-admin-automation.md)
 
 ## References
 
-- [GNU Bash manual](https://www.gnu.org/software/bash/manual/)
-- [POSIX shell command language](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html)
-- [ShellCheck](https://www.shellcheck.net/)
+- [`mktemp(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/mktemp.1.html) — Ubuntu man-pages  
+- [`find(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/find.1.html)  
+- [`flock(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/flock.1.html)  
 - Track index: [Shell Scripting for DevOps Engineers](index.md)

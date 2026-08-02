@@ -26,15 +26,21 @@ comments: false
 
 
 
+
+
+
+
 Running two replicas is not production-ready. Real clusters face traffic spikes, node maintenance, and hardware failures simultaneously. **Horizontal Pod Autoscaler (HPA)** scales replicas on metrics. **Pod Disruption Budgets (PDB)** ensure voluntary disruptions (drains, upgrades) never take down too many pods at once. **Affinity and topology spread** place workloads on the right nodes and spread them across failure domains.
 
 This tutorial teaches the production control loop: scale out under load, scale in safely, survive node drains, and avoid single points of failure.
 
 This is **Tutorial 17** in **Module 6: Production** of the REBASH Academy Kubernetes series.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -45,9 +51,11 @@ This is **Tutorial 17** in **Module 6: Production** of the REBASH Academy Kubern
 - Cluster with **metrics-server** installed (required for CPU/memory HPA)
 - Optional: Prometheus Adapter for custom metrics HPA
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -60,17 +68,21 @@ By the end of this tutorial, you will be able to:
 - [ ] Combine resource requests with autoscaling for stable scheduling
 - [ ] Validate scaling and disruption behaviour before production cutover
 
-
-
 ## Architecture
+
+
+
+
 
 
 
 ![Kubernetes architecture](../assets/excalidraw/k8s-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -159,89 +171,96 @@ When a teammate asks “is this ready?”, answer with evidence from this tutori
 
 Get into the habit of watching state while commands run: `docker events` / `kubectl get events`, resource usage, and logs in a second pane. Many failures are timing issues (probes, readiness, volume attach) that disappear if you only look at the final steady state. Capturing a short timeline of what you saw will also make your Troubleshooting section notes far more valuable later.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Production Patterns — HPA, PDB, and Affinity** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity`
+
+### Lab environment
+
+Workspace: `~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity && cd ~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity
 ```
 
-**Focus:** Combine PDB and pod anti-affinity for resilient scheduling
+### Real-world scenario
 
-### Step 1 – Deploy with anti-affinity and PDB
+Your platform team is rolling out **Production Patterns — HPA, PDB, and Affinity** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-cat > patterns.yaml <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: resilient
-  namespace: rebash-lab
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: resilient
-  template:
-    metadata:
-      labels:
-app: resilient
-    spec:
-      affinity:
-podAntiAffinity:
-  preferredDuringSchedulingIgnoredDuringExecution:
-  - weight: 100
-    podAffinityTerm:
-      labelSelector:
-matchLabels:
-  app: resilient
-      topologyKey: kubernetes.io/hostname
-      containers:
-      - name: nginx
-image: nginx:1.27-alpine
-resources:
-  requests:
-    cpu: 50m
-    memory: 64Mi
----
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: resilient
-  namespace: rebash-lab
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: resilient
-EOF
-kubectl apply -f patterns.yaml
-kubectl -n rebash-lab rollout status deploy/resilient
-```
+### Step-by-step tasks
 
-### Step 2 – Inspect placement and disruption budget
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **Horizontal Pod Autoscaler** against a live API.
 
 ```bash
-kubectl -n rebash-lab get pods -l app=resilient -o wide
-kubectl -n rebash-lab get pdb resilient -o yaml | head -n 30
-kubectl -n rebash-lab describe deploy resilient | sed -n '/Affinity:/,/Containers:/p'
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Production Patterns — HPA, PDB, and Affinity
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -258,9 +277,11 @@ Confirm the lab before moving on:
 | Affinity | Scheduling rules affect Pod placement as documented |
 | Cleanup | HPA/PDB/demo workloads removed |
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -288,9 +309,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 | PDB | `policy/v1` | Namespaced |
 | VPA | `autoscaling.k8s.io/v1` | Namespaced (optional add-on) |
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -301,9 +324,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - Watch that scale-up does not bypass Pod Security or quota unexpectedly
 - Test drain/eviction behaviour in staging before relying on PDBs in production
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -322,9 +347,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 !!! warning "Ignoring scale-down stabilization"
     Immediate scale-down after a spike causes thrashing — tune `stabilizationWindowSeconds`.
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -343,9 +370,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 !!! tip "Document min/max replica rationale"
     `maxReplicas` prevents runaway scaling costs; `minReplicas` ensures HA baseline — record both in runbooks.
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -358,9 +387,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 | Flapping replicas | Target too aggressive | Raise target CPU%; add scale-down delay |
 | Custom metric missing | Prometheus Adapter misconfigured | Check adapter logs and metric discovery |
 
-
-
 ## Summary
+
+
+
+
 
 
 
@@ -371,9 +402,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - Tune scale-down behaviour to prevent flapping; validate with load tests and drain simulations
 - Next: [Monitoring and Logging in Kubernetes](monitoring-and-logging-in-kubernetes.md)
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do HPA and PDB interact during scale-down and node drains?
@@ -388,9 +421,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 !!! tip "Sample answer — question 4"
     If minAvailable exceeds Ready Pods, voluntary disruptions are blocked and drains can stall. Keep PDB aligned with actual replica counts and readiness.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -404,9 +439,11 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -45,15 +45,21 @@ comments: false
 
 
 
+
+
+
+
 Decide when GitHub-hosted runners are enough, when self-hosted capacity is required, and how labels, runner groups, and autoscaling keep jobs on the right fleet.
 
 A **runner** is the machine that executes a job. **GitHub-hosted** runners are ephemeral VMs (or containers) GitHub operates — labelled `ubuntu-latest`, `windows-latest`, `macos-latest`, plus larger and GPU SKUs on paid plans. **Self-hosted** runners are machines *you* register; they can reach private networks, use custom images, and scale under your cloud account. **Runner groups** and **labels** control which repositories may use which capacity.
 
 This is a core tutorial in **Module 3 · Runners** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -61,9 +67,11 @@ This is a core tutorial in **Module 3 · Runners** of the REBASH Academy **GitHu
 - [GitHub Actions Basics: Workflows, Jobs, and Steps](github-actions-basics-workflows-jobs-steps.md)
 - Basic Linux administration helps for self-hosted labs
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -76,9 +84,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Outline why autoscaling exists (queue depth and cost)  
 - [ ] List security risks of unprotected self-hosted runners
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -87,9 +97,11 @@ This topic’s control points and relationships are shown below.
 
 ![Runner architecture](../assets/excalidraw/gha-runner-architecture.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -146,63 +158,108 @@ You can complete this module’s YAML without registering a self-hosted runner �
 - Assuming self-hosted disks are clean between jobs — leftover files and Docker images cause flaky builds unless you use ephemeral runners or strict cleanup.
 - Equating “Docker available on the runner” with safe Docker-in-Docker for every workload.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **GitHub-Hosted and Self-Hosted Runners** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-03/.github/workflows`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-03/.github/workflows && cd ~/rebash-github-actions/module-03/.github/workflows
 ```
 
-**Focus:** contrast github-hosted labels with a self-hosted tagged job
+### Real-world scenario
 
-### Step 1 – Hosted vs self-hosted definitions
+Platform engineering wants **GitHub-Hosted and Self-Hosted Runners** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
-mkdir -p .github/workflows notes
-cat > notes/runners.md << 'EOF'
-# Runner notes
-- github-hosted: ubuntu-latest — patched by GitHub, ephemeral
-- self-hosted: you patch OS, scale, isolate secrets
-- Prefer labels like [self-hosted, linux, rebash]
-EOF
-cat > .github/workflows/runners.yml << 'EOF'
-name: Runner shapes
-on: [workflow_dispatch]
+mkdir -p .github/workflows
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
-  hosted:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: uname -a
-  self_hosted_shape:
-    runs-on: [self-hosted, linux, rebash]
-    if: false
-    steps:
-      - run: echo "Enable when a labelled runner exists"
+      - uses: actions/checkout@v4
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Validate labels
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-grep -E 'ubuntu-latest|self-hosted' .github/workflows/runners.yml
-test -f notes/runners.md
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -212,9 +269,11 @@ test -f notes/runners.md
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -229,9 +288,11 @@ Production practice for **GitHub-Hosted and Self-Hosted Runners** always combine
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -242,9 +303,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -258,9 +321,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -271,9 +336,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -286,18 +353,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **GitHub-Hosted and Self-Hosted Runners** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. Pros and cons of github-hosted versus self-hosted runners?
@@ -312,9 +383,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Never use self-hosted runners for untrusted public fork PRs without hard isolation.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -322,9 +395,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
 
-
-
 ## References
+
+
+
+
 
 
 

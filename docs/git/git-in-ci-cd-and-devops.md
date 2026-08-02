@@ -27,13 +27,15 @@ comments: false
 
 
 
+
+
 Git is the trigger, transport, and source of truth for modern DevOps delivery. Every push fires webhooks; every merge runs pipelines; every tag deploys to production. GitOps operators reconcile Kubernetes clusters against Git branches. This finale tutorial connects everything you've learned — workflow, hooks, signing, remotes — to the CI/CD and GitOps patterns used in production.
 
 This is **Tutorial 20** in **Module 6: Advanced & DevOps** — the finale of the REBASH Academy Git series.
 
-
-
 ## Prerequisites
+
+
 
 
 
@@ -43,9 +45,9 @@ This is **Tutorial 20** in **Module 6: Advanced & DevOps** — the finale of the
 - [Working with Remotes](working-with-remotes.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -60,9 +62,9 @@ By the end of this tutorial, you will be able to:
 - [ ] Integrate Git with Terraform Cloud, GitHub Actions, and GitLab CI
 - [ ] Apply complete Git hygiene across the DevOps lifecycle
 
-
-
 ## Architecture
+
+
 
 
 
@@ -71,9 +73,9 @@ CI/CD watches remotes for new commits, runs automated verification, and deploys 
 
 ![GitHub Actions](../assets/excalidraw/git-github-actions.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -308,51 +310,97 @@ Link deployments to commits in:
 - **Incident tools** — "what commit is prod?" query
 - **Changelog automation** — conventional commits → release notes
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Git in CI/CD and DevOps** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/git-in-ci-cd-and-devops`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/git-in-ci-cd-and-devops && cd ~/rebash-git/git-in-ci-cd-and-devops
 ```
 
-**Focus:** tag a release commit and export CI-friendly git metadata
+### Real-world scenario
 
-### Step 1 – Commits + annotated tag
+A delivery team is standardising **Git in CI/CD and DevOps**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo "1.0.0" > VERSION
-git add VERSION && git commit -m "chore: version 1.0.0"
-git tag -a v1.0.0 -m "release 1.0.0"
-echo "1.0.1" > VERSION
-git add VERSION && git commit -m "fix: patch 1.0.1"
-git describe --tags --always
-git show v1.0.0 --no-patch
-```
+### Step-by-step tasks
 
-### Step 2 – Export CI-friendly metadata
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-echo "GIT_SHA=$(git rev-parse HEAD)"
-echo "GIT_DESCRIBE=$(git describe --tags --always)"
-echo "GIT_TREE=$(git rev-parse 'HEAD^{tree}')"
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -370,9 +418,9 @@ Confirm the lab before moving on:
 | Secrets | No plaintext secrets remain in the committed workflow |
 | Cleanup | Lab repo cleaned; tokens revoked if created |
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -390,9 +438,9 @@ Confirm the lab before moving on:
 
 ```markdown
 
-
-
 ## Repository Setup
+
+
 
 
 
@@ -402,9 +450,9 @@ Confirm the lab before moving on:
 - [ ] pre-commit hooks configured
 - [ ] CODEOWNERS defined
 
-
-
 ## CI Pipeline
+
+
 
 
 
@@ -414,9 +462,9 @@ Confirm the lab before moving on:
 - [ ] Secret and IaC policy scan
 - [ ] Post plan to PR comment
 
-
-
 ## CD / GitOps
+
+
 
 
 
@@ -427,9 +475,9 @@ Confirm the lab before moving on:
 - [ ] Deployment annotated with commit SHA
 ```
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -440,9 +488,9 @@ Confirm the lab before moving on:
 - Separate build, staging, and production deployment roles
 - Fail pipelines on secret scanning and signature verification errors
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -459,9 +507,9 @@ Confirm the lab before moving on:
 !!! warning "Mutable tags (latest) in production"
     Use immutable SHA or semver tags — not floating `latest`.
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -478,9 +526,9 @@ Confirm the lab before moving on:
 !!! tip "Practice rollback drills"
     Revert commit in Git; verify GitOps syncs; document RTO.
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -494,9 +542,9 @@ Confirm the lab before moving on:
 | Plan differs CI vs local | Different vars/backend | Align env; remote backend |
 | Deploy before CI pass | Missing branch protection | Require status checks |
 
-
-
 ## Summary
+
+
 
 
 
@@ -508,9 +556,9 @@ Confirm the lab before moving on:
 - Complete Git track skills — workflow, hooks, signing, remotes — integrate here
 - Git is step 3 in the DevOps learning path; apply it with [GitLab CI/CD](../gitlab/index.md), [Terraform](../terraform/index.md), and platform tooling
 
-
-
 ## Interview Questions
+
+
 
 
 1. Which git metadata should CI inject into artifacts?
@@ -525,9 +573,9 @@ Confirm the lab before moving on:
 !!! tip "Sample answer — question 4"
     Sign releases when needed and keep provenance (SHA, pipeline ID).
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -544,9 +592,9 @@ Confirm the lab before moving on:
 - Interview prep: [Git Interview Prep](../interview/git.md)
 - Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
 
-
-
 ## References
+
+
 
 
 
@@ -560,9 +608,9 @@ Confirm the lab before moving on:
 - [Pro Git Book – entire book](https://git-scm.com/book/en/v2)
 - [REBASH Academy – Git Overview](index.md)
 
-
-
 ## Congratulations
+
+
 
 
 

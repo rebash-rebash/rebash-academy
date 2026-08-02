@@ -47,23 +47,31 @@ comments: false
 
 
 
+
+
+
+
 Describe the same landing-zone shape on AWS, Azure, and Google Cloud Platform (GCP) behind one module interface — network, compute, identity, and object storage — with illustrative HCL skeletons (not a live multi-cloud deploy).
 
 Multi-cloud Terraform is rarely “one resource block for every cloud”. You define a **stable interface** (inputs/outputs) and implement provider-specific modules underneath. AWS Virtual Private Cloud (VPC) / Elastic Compute Cloud (EC2) / Identity and Access Management (IAM) / Simple Storage Service (S3), Azure resource groups / Virtual Networks (VNets) / virtual machines, and GCP VPC / Compute Engine / Cloud Storage map to the same platform vocabulary with different APIs.
 
 This is a core tutorial in **Module 17 · Multi-Cloud Infrastructure** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Terraform in CI/CD Pipelines](terraform-in-ci-cd-pipelines.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -75,9 +83,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Design a shared module interface across clouds  
 - [ ] Explain why “identical” multi-cloud is usually a facade
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -85,9 +95,11 @@ This topic’s control points and relationships are shown below.
 
 ![Multi-cloud Terraform](../assets/excalidraw/terraform-multi-cloud.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -164,69 +176,113 @@ Same idea for compute (EC2 / `azurerm_linux_virtual_machine` / `google_compute_i
 - Forcing lowest-common-denominator features and then bolting exceptions everywhere.  
 - Leaving provider credentials inside child modules instead of the root/CI.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Multi-Cloud Terraform** without paid cloud resources.
+
+### Prerequisites
+
+- Terraform CLI ≥ 1.5
+- Network access to download the null provider once
+
+### Lab environment
+
+Workspace: `~/rebash-terraform/module-17/modules/network/{aws,azure,gcp}`
+
+Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-17/modules/network/{aws,azure,gcp} && cd ~/rebash-terraform/module-17/modules/network/{aws,azure,gcp}
 ```
 
-**Focus:** Simulate multi-cloud composition with two provider aliases (local/null only)
+### Real-world scenario
 
-### Step 1 – Declare two logical stacks in one root
+You are automating **Multi-Cloud Terraform** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+
+### Step-by-step tasks
+
+#### Task 1 – Author and initialise configuration
+
+Use local/null providers so the lab never bills a cloud account.
 
 ```bash
-cat > main.tf <<'EOF'
+cat > versions.tf << 'EOF'
 terraform {
+  required_version = ">= 1.5.0"
   required_providers {
-    local = { source = "hashicorp/local", version = "~> 2.5" }
-    null  = { source = "hashicorp/null", version = "~> 3.2" }
-  }
-}
-resource "local_file" "aws_like" {
-  filename = "${path.module}/stack-a.txt"
-  content  = "stack=a cloud=simulated-aws
-"
-}
-resource "local_file" "gcp_like" {
-  filename = "${path.module}/stack-b.txt"
-  content  = "stack=b cloud=simulated-gcp
-"
-}
-resource "null_resource" "cross_cut" {
-  depends_on = [local_file.aws_like, local_file.gcp_like]
-  triggers = {
-    a = local_file.aws_like.content
-    b = local_file.gcp_like.content
+    null = { source = "hashicorp/null", version = "~> 3.2" }
   }
 }
 EOF
+cat > main.tf << 'EOF'
+resource "null_resource" "lab" {
+  triggers = { topic = "rebash-lab" }
+  provisioner "local-exec" {
+    command = "echo applied > applied.txt"
+  }
+}
+output "note" { value = null_resource.lab.triggers.topic }
+EOF
 terraform init
+terraform validate
 ```
 
-### Step 2 – Apply and discuss real multi-cloud coupling
+**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+
+#### Task 2 – Plan, apply, and prove outputs
+
+Treat the plan as the change ticket — review before apply.
 
 ```bash
-terraform apply -auto-approve
-cat stack-a.txt stack-b.txt
-terraform state list
-echo "Real multi-cloud: separate states per account/provider often reduce blast radius"
+terraform plan -out=tfplan
+terraform show -no-color tfplan | tee plan.txt
+terraform apply tfplan
+terraform output
+test -f applied.txt && cat applied.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+
+### Validation steps
+
+- [ ] terraform validate passes
+- [ ] Plan was saved and reviewed before apply
+- [ ] Destroy completes with empty state (or resources removed)
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Provider not found | Missing init / network | Run `terraform init` again |
+| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
+| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+
+### Challenge exercise
+
+Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+
+### Learning outcomes
+
+- Completed a reviewable plan/apply cycle
+- Proved outputs/files exist
+- Destroyed lab state
+
+### Cleanup
 
 ```bash
 terraform destroy -auto-approve
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+rm -rf .terraform tfplan 2>/dev/null || true
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -235,9 +291,11 @@ terraform destroy -auto-approve
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -251,9 +309,11 @@ Production practice for **Multi-Cloud Terraform** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -263,9 +323,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -278,9 +340,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -290,9 +354,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -304,17 +370,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Multi-Cloud Terraform** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does multi-cloud Terraform usually mean in practice?
@@ -329,18 +399,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Identity, networking, and observability differ per cloud; tooling sprawl rises. Pursue multi-cloud for clear requirements, not fashion.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Kubernetes Infrastructure with Terraform](kubernetes-infrastructure-with-terraform.md)
 
-
-
 ## References
+
+
+
+
 
 
 

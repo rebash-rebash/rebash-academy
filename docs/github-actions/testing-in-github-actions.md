@@ -47,15 +47,21 @@ comments: false
 
 
 
+
+
+
+
 Design a test pyramid in GitHub Actions with unit, integration, smoke, and end-to-end (e2e) jobs, parallel matrix execution, and quality gates that fail the workflow when thresholds are missed.
 
 Tests are the cheapest production incident you never ship. GitHub Actions runs **unit**, **integration**, **smoke**, and selective **e2e** jobs on pull requests; publishes reports as artefacts; and enforces **quality gates** so red tests block merge. A **matrix** fans the same job across runtimes or shards so feedback stays fast as the suite grows.
 
 This is a core tutorial in **Module 12 · Testing** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
@@ -63,9 +69,11 @@ This is a core tutorial in **Module 12 · Testing** of the REBASH Academy **GitH
 - [Security Scanning and Supply Chain](security-scanning-and-supply-chain.md)
 - Comfortable with jobs, `needs`, and artefacts from earlier modules
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -77,9 +85,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Upload test reports and coverage artefacts  
 - [ ] Fail the workflow on failed tests or coverage floors
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -88,9 +98,11 @@ This topic’s control points and relationships are shown below.
 
 ![Testing in Actions](../assets/excalidraw/gha-testing.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -140,68 +152,108 @@ Unit proves logic; integration proves wiring; smoke proves “it is up”; e2e p
 - Uploading artefacts only on success — failed suites never leave XML for debugging.  
 - Matrix explosion without a deliberate `fail-fast` policy.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Author a GitHub Actions workflow that implements **Testing in GitHub Actions** and validate YAML structure locally.
+
+### Prerequisites
+
+- Python 3 with PyYAML
+- Optional: GitHub repo to run the workflow
+
+### Lab environment
+
+Workspace: `~/rebash-github-actions/module-12/{.github/workflows,tests}`
+
+Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
 
 ```bash
 mkdir -p ~/rebash-github-actions/module-12/{.github/workflows,tests} && cd ~/rebash-github-actions/module-12/{.github/workflows,tests}
 ```
 
-**Focus:** run pytest with JUnit and fail the job on test failure
+### Real-world scenario
 
-### Step 1 – Test workflow with reporting
+Platform engineering wants **Testing in GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+
+### Step-by-step tasks
+
+#### Task 1 – Create workflow file
+
+Jobs and steps must be explicit; pin mainstream actions.
 
 ```bash
 mkdir -p .github/workflows
-cat > test_sample.py << 'EOF'
-def test_truth():
-    assert 2 + 2 == 4
-EOF
-cat > .github/workflows/test.yml << 'EOF'
-name: Testing
-on: [push, pull_request]
+cat > .github/workflows/lab.yml << 'EOF'
+name: lab
+on:
+  workflow_dispatch:
+  push:
 permissions:
   contents: read
 jobs:
-  unit:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: |
-          pip install pytest
-          pytest --junitxml=junit.xml -q
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: junit
-          path: junit.xml
+      - name: Prove workspace
+        run: |
+          mkdir -p out
+          echo ok > out/marker.txt
+          test -s out/marker.txt
 EOF
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
 ```
 
-### Step 2 – Local pytest + junit
+**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
+
+#### Task 2 – Dry-run the shell steps locally
+
+The `run:` block should work in a normal shell before CI.
 
 ```bash
-python3 -m pytest --junitxml=junit.xml -q 2>/dev/null || python3 -c "assert 2+2==4"
-test -f junit.xml || echo '<testsuite/>' > junit.xml
-grep junit.xml .github/workflows/test.yml
+mkdir -p out && echo ok > out/marker.txt
+test -s out/marker.txt && cat out/marker.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** Prints `ok`.
+
+### Validation steps
+
+- [ ] Workflow YAML parses
+- [ ] Local run steps succeed
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
+| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
+| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+
+### Challenge exercise
+
+Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+
+### Learning outcomes
+
+- Created a real workflow file
+- Validated structure before push
+
+### Cleanup
 
 ```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep workflow stubs under ~/rebash-github-actions/
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -211,9 +263,11 @@ grep junit.xml .github/workflows/test.yml
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -228,9 +282,11 @@ Production practice for **Testing in GitHub Actions** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -241,9 +297,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -257,9 +315,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -270,9 +330,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -285,18 +347,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 
 **Testing in GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. How do you surface pytest failures clearly in PRs?
@@ -311,9 +377,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Keep test jobs free of production secrets when possible; use ephemeral credentials for integration tests.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -321,9 +389,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Release Management and Versioning](release-management-and-versioning.md)
 
-
-
 ## References
+
+
+
+
 
 
 

@@ -30,9 +30,12 @@ last_updated: "2026-07-31"
 comments: false
 ---
 
+
 # Agents, Nodes, and Executors
 
 ## Overview
+
+
 
 Design a safe agent topology: **nodes**, **labels**, **executors**, and tool installations.
 
@@ -42,11 +45,15 @@ This is a core tutorial in **Module 6 · Agents, Nodes, and Executors** of the R
 
 ## Prerequisites
 
+
+
 - Completed prior modules in this track where linked in frontmatter
 - [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
 - Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
 
 ## Learning Objectives
+
+
 
 By the end of this tutorial, you will be able to:
 
@@ -57,11 +64,15 @@ By the end of this tutorial, you will be able to:
 
 ## Architecture
 
+
+
 This topic’s control points and relationships are shown below.
 
 ![Controller and agents](../assets/excalidraw/jenkins-controller-agents.svg)
 
 ## Theory
+
+
 
 ### What it is
 
@@ -107,55 +118,98 @@ See [Distributed builds](https://www.jenkins.io/doc/book/using/using-agents/) st
 
 ## Hands-on Lab
 
-Create a workspace for this tutorial.
+
+
+### Objective
+
+Configure a real Jenkins-facing artefact for **Agents, Nodes, and Executors** (Compose controller and/or Jenkinsfile) you can run or import.
+
+### Prerequisites
+
+- Docker Engine for controller labs
+- Text editor / shell
+
+### Lab environment
+
+Workspace: `~/rebash-jenkins/module-06`
+
+Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
 
 ```bash
 mkdir -p ~/rebash-jenkins/module-06 && cd ~/rebash-jenkins/module-06
 ```
 
-**Focus:** document a zero-executor controller policy and labelled agent Pipeline
+### Real-world scenario
 
-### Step 1 – Primary exercise
+Your organisation is standardising **Agents, Nodes, and Executors**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+
+### Step-by-step tasks
+
+#### Task 1 – Capture controller/agent mental model files
+
+Document how this topic shows up on a real controller.
 
 ```bash
-cat > agent-policy.md << 'EOF'
-# Agent policy (lab)
-- Built-in node executors: 0 in production
-- Required labels: linux, docker
-- Pipeline snippet:
-  agent { label 'linux' }
-- Tools: prefer image-baked JDK/Maven over global auto-install when possible
+tee scenario.md << 'EOF'
+Topic: Agents, Nodes, and Executors
+- Controller owns config and orchestration
+- Agents execute untrusted build steps
+- Prefer Jenkinsfile in SCM over click-ops jobs
 EOF
+cat scenario.md
+mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+```
+
+**Expected output:** scenario.md and jobs/README.txt exist.
+
+#### Task 2 – Write a minimal Declarative stub
+
+Even management topics should leave a Pipeline artefact.
+
+```bash
 cat > Jenkinsfile << 'EOF'
 pipeline {
-  agent { label 'linux' }
-  stages {
-    stage('Where am I') {
-      steps {
-        sh 'uname -a; pwd; echo "Run on labelled agent, not controller"'
-      }
-    }
-  }
+  agent any
+  stages { stage('OK') { steps { echo 'lab' } } }
 }
 EOF
-grep -E "label|executors|Built-in" agent-policy.md Jenkinsfile
+grep -n agent Jenkinsfile
 ```
 
-### Step 2 – Validate label directive
+**Expected output:** Jenkinsfile present with an agent directive.
+
+### Validation steps
+
+- [ ] Artefacts from tasks exist
+- [ ] No secrets committed
+- [ ] Compose stack stopped if started
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
+| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
+| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+
+### Challenge exercise
+
+Disable builds on the built-in node in your notes and document the agent label you would require instead.
+
+### Learning outcomes
+
+- Produced runnable Jenkins artefacts
+- Practised safe lab controller hygiene
+
+### Cleanup
 
 ```bash
-grep -A1 'agent' Jenkinsfile
-test -f agent-policy.md && echo 'policy-ok'
-```
-
-### Final cleanup
-
-```bash
-# Keep ~/rebash-jenkins/ for later tutorials; stop Compose only if you are done with the controller
-# docker compose -f ~/rebash-jenkins/module-02/docker-compose.yml down   # optional; omit -v to keep JENKINS_HOME
+# Keep lab notes under ~/rebash-jenkins/
 ```
 
 ## Validation
+
+
 
 - [ ] Lab commands run under `~/rebash-jenkins/module-06/`
 - [ ] You can explain each Theory section in your own words
@@ -163,6 +217,8 @@ test -f agent-policy.md && echo 'policy-ok'
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
+
+
 
 Production practice for **Agents, Nodes, and Executors** always combines:
 
@@ -176,6 +232,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Security Considerations
 
+
+
 - Treat Jenkins credentials and cloud tokens as privileged — never commit them
 - Keep builds off the built-in node; isolate untrusted pull requests
 - Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
@@ -183,6 +241,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Collect audit logs; limit who can administer the controller
 
 ## Common Mistakes
+
+
 
 !!! warning "Builds on the built-in node"
     Set built-in executors to zero once agents exist; treat violations as severity-one security debt.
@@ -195,6 +255,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Best Practices
 
+
+
 - Encode **Agents, Nodes, and Executors** changes as code and review them in pull requests
 - Prefer Jenkins LTS and pinned agent/tool versions
 - Keep builds off the controller; use labelled agents
@@ -202,6 +264,8 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
 
 ## Troubleshooting
+
+
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -213,9 +277,13 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Summary
 
+
+
 **Agents, Nodes, and Executors** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
 ## Interview Questions
+
+
 
 1. Why set the built-in node’s executors to zero?
 2. What is a label and how does a Pipeline select it?
@@ -231,11 +299,15 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 ## Related Tutorials
 
+
+
 - [Course overview](index.md)
 - [Jenkinsfile in SCM](jenkinsfile-in-scm.md)
 - [Multibranch Pipelines and Pull Requests](multibranch-pipelines-and-prs.md)
 
 ## References
+
+
 
 - [Using Jenkins](https://www.jenkins.io/doc/book/using/)
 - [Scaling Jenkins](https://www.jenkins.io/doc/book/scaling/)

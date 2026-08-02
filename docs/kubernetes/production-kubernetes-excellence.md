@@ -45,23 +45,31 @@ comments: false
 
 
 
+
+
+
+
 Assemble a production excellence checklist: multi-cluster posture, policy, cost controls, observability SLOs, and scaling — ready for a platform review.
 
 Excellence is boring consistency: GitOps everywhere, PSA/NetworkPolicy defaults, scanned images, HPA + PDB, backup tested, and cost visibility (requests right-sizing).
 
 This is a core tutorial in **Module 20 · Production Kubernetes** of the REBASH Academy **Kubernetes for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - Modules 15–19 complete
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -72,9 +80,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Name FinOps levers (requests, bin-pack, spot)  
 - [ ] Complete an ops excellence checklist
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -82,9 +92,11 @@ This topic’s control points and relationships are shown below.
 
 ![Production cluster](../assets/excalidraw/k8s-production-cluster.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -129,90 +141,96 @@ Review the checklist regularly; excellence decays without ownership.
 - Backups never restored; DR untested.
 - Calling the platform done when observability still lacks actionable alerts.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Build and verify a working Kubernetes solution for **Production Kubernetes Excellence** that you can inspect, prove, and tear down safely.
+
+### Prerequisites
+
+- kubectl configured against a lab cluster (kind/minikube preferred)
+- Cluster-admin or namespace-create rights in the lab cluster
+- Writable workspace at `~/rebash-k8s/module-20`
+
+### Lab environment
+
+Workspace: `~/rebash-k8s/module-20`
+
+Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-20 && cd ~/rebash-k8s/module-20
 ```
 
-**Focus:** Apply production defaults: requests, probes, and disruption-aware replica count
+### Real-world scenario
 
-### Step 1 – Deploy with production-minded fields
+Your platform team is rolling out **Production Kubernetes Excellence** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
 
-```bash
-kubectl create namespace rebash-lab
-cat > prod.yaml <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: prod-web
-  namespace: rebash-lab
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: prod-web
-  template:
-    metadata:
-      labels:
-app: prod-web
-    spec:
-      containers:
-      - name: nginx
-image: nginx:1.27-alpine
-ports:
-- containerPort: 80
-resources:
-  requests:
-    cpu: 50m
-    memory: 64Mi
-  limits:
-    memory: 128Mi
-readinessProbe:
-  httpGet: {path: /, port: 80}
-  periodSeconds: 5
-livenessProbe:
-  httpGet: {path: /, port: 80}
-  periodSeconds: 10
----
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: prod-web
-  namespace: rebash-lab
-spec:
-  minAvailable: 2
-  selector:
-    matchLabels:
-      app: prod-web
-EOF
-kubectl apply -f prod.yaml
-kubectl -n rebash-lab rollout status deploy/prod-web
-```
+### Step-by-step tasks
 
-### Step 2 – Validate excellence checklist
+#### Task 1 – Apply a topic workload
+
+Create a namespace and a small Deployment to practise **What it is** against a live API.
 
 ```bash
-kubectl -n rebash-lab get deploy,pdb
-kubectl -n rebash-lab get pods -l app=prod-web -o wide
-kubectl -n rebash-lab describe pdb prod-web | head -n 25
+kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
+kubectl rollout status deployment/topic -n rebash-lab
+kubectl get all -n rebash-lab
 ```
 
-### Final step – Cleanup note
+**Expected output:** Deployment Ready; Pods listed under the namespace.
+
+#### Task 2 – Inspect and gather evidence
+
+Production changes always leave an audit trail of describe/Events.
+
+```bash
+kubectl describe deploy topic -n rebash-lab | tee describe.txt
+kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```
+
+**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+
+### Validation steps
+
+- [ ] Namespace `rebash-lab` contains the expected Ready objects
+- [ ] You can explain each Task command from the Theory section
+- [ ] Cleanup deletes the namespace without leftover workloads
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
+| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
+| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+
+### Challenge exercise
+
+Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+
+### Learning outcomes
+
+- Applied a real cluster change for Production Kubernetes Excellence
+- Used describe/Events for verification
+- Destroyed lab resources cleanly
+
+### Cleanup
 
 ```bash
 kubectl delete namespace rebash-lab --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
+# Keep ~/rebash-kubernetes/ for later tutorials
 ```
 
-
-
 ## Validation
+
+
+
+
 
 
 
@@ -221,9 +239,11 @@ kubectl delete namespace rebash-lab --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -237,9 +257,11 @@ Production practice for **Production Kubernetes Excellence** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -249,9 +271,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -264,9 +288,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -276,9 +302,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -290,17 +318,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 You can design and operate production Kubernetes platforms end to end — from first Pod to multi-cluster GitOps with security and DR.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. List five controls you expect on a production Deployment.
@@ -315,9 +347,11 @@ You can design and operate production Kubernetes platforms end to end — from f
 !!! tip "Sample answer — question 4"
     Multi-tenant clusters improve density but need stronger isolation and governance. Many clusters improve blast-radius isolation at higher operational and cost overhead.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
@@ -325,9 +359,11 @@ You can design and operate production Kubernetes platforms end to end — from f
 - [Kubernetes Capstone and Next Steps](kubernetes-capstone-and-next-steps.md)
 - [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
 
-
-
 ## References
+
+
+
+
 
 
 

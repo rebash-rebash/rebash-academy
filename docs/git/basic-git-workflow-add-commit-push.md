@@ -43,24 +43,26 @@ comments: false
 
 
 
+
+
 Run the daily loop: edit → `status` → `add` → `commit` → `log` → `push`, with Conventional-style messages suitable for IaC and apps.
 
 Staging lets you craft commits intentionally. Push publishes history to the remote for CI and teammates.
 
 This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
 
 
 
 
 - [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
 
-
-
 ## Learning Objectives
+
+
 
 
 
@@ -73,9 +75,9 @@ By the end of this tutorial, you will be able to:
 - [ ] View `git log`  
 - [ ] Push to `origin` when a remote exists
 
-
-
 ## Architecture
+
+
 
 
 
@@ -84,9 +86,9 @@ This topic’s control points and relationships are shown below.
 
 ![Git workflow](../assets/excalidraw/git-workflow.svg)
 
-
-
 ## Theory
+
+
 
 
 
@@ -125,57 +127,97 @@ The working tree holds edits. `git add` copies file content into the **index**. 
 - Committing on the wrong branch then force-pushing to “fix” it  
 - Pushing to `main` when policy requires a pull request
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Complete a real Git workflow for **Basic Git Workflow — Add, Commit, Push** with commits you can inspect and recover.
+
+### Prerequisites
+
+- Git 2.x installed
+
+### Lab environment
+
+Workspace: `~/rebash-git/module-03/workflow`
+
+Local Git repository only (no required remote).
 
 ```bash
 mkdir -p ~/rebash-git/module-03/workflow && cd ~/rebash-git/module-03/workflow
 ```
 
-**Focus:** practise status → add → commit → log
+### Real-world scenario
 
-### Step 1 – Edit, stage, commit
+A delivery team is standardising **Basic Git Workflow — Add, Commit, Push**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
 
-```bash
-git init
-git config user.name "REBASH Learner"
-git config user.email "learner@rebash.local"
-echo "service: api" > app.yaml
-git add app.yaml
-git commit -m "feat: add app.yaml skeleton"
-echo "replicas: 2" >> app.yaml
-git status
-git diff
-git add app.yaml
-git commit -m "feat: set replicas to 2"
-git log --oneline --decorate -n 5
-```
+### Step-by-step tasks
 
-### Step 2 – Partial staging awareness
+#### Task 1 – Initialise a repository and first commit
+
+Every production change starts as a commit with clear identity config.
 
 ```bash
-echo "debug: true" >> app.yaml
-echo "notes" > NOTES.txt
-git add NOTES.txt
-git status
-git restore --staged NOTES.txt
-git checkout -- app.yaml
-git status
+git init -b main
+git config user.email 'lab@rebash.local'
+git config user.name 'REBASH Lab'
+echo '# lab' > README.md
+git add README.md
+git commit -m 'Initial commit'
+git log --oneline | tee log.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** log.txt shows the initial commit on `main`.
+
+#### Task 2 – Inspect status and diff discipline
+
+Clean working trees prevent accidental commits of secrets.
 
 ```bash
-# Keep ~/rebash-git/ for later tutorials
+echo 'work' > work.txt
+git status
+git add work.txt
+git commit -m 'Add work.txt'
+git show --stat HEAD | tee show.txt
 ```
 
+**Expected output:** show.txt lists work.txt in the commit.
 
+### Validation steps
+
+- [ ] Repository has at least two commits or a merge as designed
+- [ ] log/graph evidence files exist
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
+| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
+| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+
+### Challenge exercise
+
+Use `git reflog` to recover a commit after a hard reset on a private branch.
+
+### Learning outcomes
+
+- Performed real Git operations
+- Left auditable history
+- Understood recovery basics
+
+### Cleanup
+
+```bash
+# Safe local repo — delete the lab directory when finished:
+# rm -rf "$(pwd)"
+```
 
 ## Validation
+
+
 
 
 
@@ -185,9 +227,9 @@ git status
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
 
 
 
@@ -202,9 +244,9 @@ Production practice for **Basic Git Workflow — Add, Commit, Push** always comb
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
 
 
 
@@ -215,9 +257,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
 
 
 
@@ -231,9 +273,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
 
 
 
@@ -244,9 +286,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
 
 
 
@@ -259,18 +301,18 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
 
 
 
 
 **Basic Git Workflow — Add, Commit, Push** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
 
 
 1. What does the staging area allow you to do?
@@ -285,9 +327,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Never amend commits that others have based work on. Keep secrets out with status/diff review.
 
-
-
 ## Related Tutorials
+
+
 
 
 
@@ -295,9 +337,9 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - [Course overview](index.md)
 - [Viewing History and Diffs](viewing-history-and-diffs.md)
 
-
-
 ## References
+
+
 
 
 

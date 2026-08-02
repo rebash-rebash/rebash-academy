@@ -1,21 +1,18 @@
 ---
 title: "OOP — Classes and Dataclasses"
-description: "Classes, objects, methods, constructors, inheritance, encapsulation, polymorphism, and dataclasses for DevOps configuration and check models."
+description: "Model DevOps hosts with classes and dataclasses, validate in __post_init__, and serialize to dict for automation tools."
 difficulty: intermediate
-estimated_time: "50–65 min"
-technology: python
+estimated_time: "50–60 min"
+author: Shaik Basha
+last_updated: "2026-08-02"
 category: python
+technology: python
 module: "Module 9 · OOP"
-career_paths:
-  - beginner
-  - devops-engineer
-  - cloud-engineer
-  - platform-engineer
-  - site-reliability-engineer
-skills:
+tags:
   - python
   - oop
   - dataclasses
+  - classes
 prerequisites:
   - python/error-handling-and-exceptions
 next:
@@ -23,292 +20,418 @@ next:
 related:
   - python/configuration-management-and-secrets
   - python/cli-applications-argparse-click-typer
-labs: []
-projects: []
 interview: interview/python
-certifications:
-  - PCAP
-tags:
-  - python
-  - oop
-  - dataclasses
-  - classes
-author: Shaik Basha
-last_updated: "2026-07-31"
 comments: false
 ---
-
 
 # OOP — Classes and Dataclasses
 
 ## Overview
 
-Model ops concepts with classes and dataclasses — configuration records, health checks, and small plugin-style interfaces — without over-engineering.
+You do not need a deep enterprise class hierarchy for a short shell helper. You do need clear types when a tool grows: a **host**, a **health check**, a **cloud account**. Object-Oriented Programming (OOP) gives you classes, methods, and inheritance. For data-shaped records, Python **dataclasses** reduce boilerplate and keep field lists obvious.
 
-You do not need enterprise OOP hierarchies for a shell script. You do need clear types when a tool grows: a `ServiceCheck`, a `CloudAccount`, a dataclass loaded from YAML. Prefer **dataclasses** for data; classes with methods for behaviour.
+In DevOps work, a `Host` with `name`, `env`, and `ip` is easier to validate and serialise than a loose dict that may miss keys. Methods hold behaviour (`is_prod()`, `to_dict()`). `__post_init__` runs after a dataclass is created so you can reject bad values early. Inheritance and simple polymorphism help when several check types share a `run()` interface — without over-engineering.
 
-Complete [Error Handling](error-handling-and-exceptions.md) first. Diagrams use Excalidraw only.
-
-This is a core tutorial in **Module 9 · OOP** of the REBASH Academy **Python for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 9** in **Module 9: OOP** of the REBASH Academy **Python for Cloud & DevOps Engineers** series. It is written for DevOps, Cloud, Platform, and Site Reliability Engineering (SRE) engineers. By the end, you will have a validated `Host` dataclass and dict serialisation under `~/rebash-python/lab09`.
 
 ## Prerequisites
 
-### Required
-
 - [Error Handling and Exceptions](error-handling-and-exceptions.md)
-- Functions and data structures modules
+- Comfort with functions and dicts from earlier modules
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Define a class with `__init__` and methods  
-- [ ] Use inheritance for shared check behaviour  
-- [ ] Apply encapsulation with clear public APIs  
-- [ ] Rely on duck typing / polymorphism for runners  
-- [ ] Model config with `@dataclass`  
-- [ ] Know when a function is enough
+- [ ] Define a class with methods and a clear public API
+- [ ] Model config-like records with `@dataclass`
+- [ ] Validate fields in `__post_init__`
+- [ ] Serialise a dataclass to a `dict` for JSON/YAML
+- [ ] Explain when a plain function is enough instead of a class
 
 ## Architecture
 
-This topic’s control points and relationships are shown below.
+Ops concepts become types. A `Host` holds data and small methods. Validation runs at construction. Serialisation turns objects into dicts for files and APIs. Optional subclasses share a check interface.
 
-![Classes and dataclasses](../assets/excalidraw/python-oop-dataclasses.svg)
+![Architecture diagram for Python OOP and dataclasses](../assets/excalidraw/python-oop-dataclasses.svg)
 
 ## Theory
 
-### Classes and objects
+### What it is
+
+A **class** is a blueprint. An **object** (instance) is one concrete value. **Methods** are functions on the class. A **constructor** in Python is `__init__`.
+
+A **dataclass** generates `__init__`, `__repr__`, and comparison methods from annotated fields:
 
 ```python
-class ServiceCheck:
-    def __init__(self, name: str, endpoint: str) -> None:
-        self.name = name
-        self.endpoint = endpoint
+from dataclasses import dataclass, asdict
 
-    def label(self) -> str:
-        return f"{self.name}->{self.endpoint}"
-```
-
-### Constructors and methods
-
-`__init__` initialises instance state. Instance methods take `self`. Prefer explicit parameters over hidden globals.
-
-### Inheritance
-
-```python
-class HttpCheck(ServiceCheck):
-    def __init__(self, name: str, endpoint: str, timeout: float = 5.0) -> None:
-        super().__init__(name, endpoint)
-        self.timeout = timeout
-```
-
-Keep hierarchies shallow (one or two levels) in ops tools.
-
-### Encapsulation
-
-Public attributes are fine for simple records. Use a leading underscore for internal helpers (`_parse`). Properties when validation on set matters.
-
-### Polymorphism
-
-A runner can call `.run()` on any check object that implements it — no formal interface required (duck typing). Protocols/`typing.Protocol` optional for larger codebases.
-
-### Dataclasses
-
-```python
-from dataclasses import dataclass
-
-@dataclass(slots=True)
-class AppConfig:
+@dataclass
+class Host:
+    name: str
     env: str
-    replicas: int
-    dry_run: bool = True
+    ip: str
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            raise ValueError("name is required")
+        if self.env not in {"dev", "stage", "prod"}:
+            raise ValueError(f"bad env: {self.env}")
+
+    def is_prod(self) -> bool:
+        return self.env == "prod"
+
+    def to_dict(self) -> dict:
+        return asdict(self)
 ```
 
-Great for YAML/JSON-shaped config. Add methods only when behaviour belongs with the data.
+**Inheritance** shares behaviour (`class HttpCheck(BaseCheck):`). **Encapsulation** means keeping a clear public API and treating internal helpers as private by convention (`_validate`). **Polymorphism** means different objects share a method name (`check.run()`) so a runner can loop without caring about the exact type (duck typing is common in Python).
 
-### When not to use classes
+### Why it matters
 
-A pure function that formats a string does not need a class. Start with functions; promote to classes when state + multiple operations cluster together.
+Dicts are flexible but error-prone: missing `ip`, wrong `env`, or nested shape drift. Types at the boundary catch mistakes when config is loaded. Serialisation to dict keeps JSON/YAML easy. Over-deep inheritance trees slow reviews — prefer composition and dataclasses for data.
+
+### How it works
+
+1. **Model the record** — fields with types.
+2. **Validate early** — `__post_init__` or a factory method.
+3. **Add behaviour** — small methods, not god classes.
+4. **Serialise** — `asdict()` / `to_dict()` for files and APIs.
+5. **Stop when a function is enough** — one-off scripts do not need a class tax.
+
+```python
+h = Host(name="web-01", env="prod", ip="10.0.1.11")
+assert h.is_prod()
+payload = h.to_dict()  # {"name": "web-01", "env": "prod", "ip": "10.0.1.11"}
+```
+
+### Key concepts and comparisons
+
+| Idea | Meaning | DevOps example |
+|------|---------|----------------|
+| Class / object | Blueprint / instance | `Host`, one server |
+| Method | Behaviour on the instance | `is_prod()`, `to_dict()` |
+| Inheritance | Share / extend behaviour | `BaseCheck` → `DiskCheck` |
+| Dataclass | Data-focused class | Inventory rows, settings |
+| Encapsulation | Clear public surface | Validate in `__post_init__` |
+
+| Pattern | Prefer when | Avoid when |
+|---------|-------------|------------|
+| `@dataclass` | Config/inventory records | Heavy mutable services with many deps |
+| Plain class + `__init__` | Complex setup / resources | Simple 3-field records |
+| Inheritance | Shared check interface | Deep trees for every variant |
+| Function module | Stateless helpers | Forcing a class with no state |
+
+### Common pitfalls
+
+- Building deep inheritance when a function and a dict would do.
+- Skipping validation and discovering bad `env` in production.
+- Mutable default fields (`list` / `dict`) without `field(default_factory=list)`.
+- Putting network I/O inside `__init__` / `__post_init__` (hard to test).
+- Treating private attributes as a security boundary — they are a convention only.
 
 ## Hands-on Lab
 
-**Focus:** practise the core workflow for OOP — Classes and Dataclasses
+### Objective
+
+Create a `Host` dataclass with methods, `__post_init__` validation, and `to_dict()` serialisation. Prove good hosts work and bad hosts raise. Save evidence under `~/rebash-python/lab09`.
+
+### Prerequisites
+
+- Python 3.12+ (dataclasses are in the standard library)
+- Write access under your home directory
+
+### Lab environment
+
+Workspace: `~/rebash-python/lab09`
 
 ```bash
-mkdir -p ~/rebash-python/module-09
-cd ~/rebash-python/module-09
-
+mkdir -p ~/rebash-python/lab09 && cd ~/rebash-python/lab09
+set -euo pipefail
 python3 -m venv .venv
 source .venv/bin/activate
+python -c "from dataclasses import dataclass; print('ok')"
 ```
 
-### Step 1 – Dataclass config
+**Expected output:** `ok`; `.venv` exists.
+
+### Real-world scenario
+
+Your inventory CLI will soon accept YAML hosts. Before wiring files, you model a `Host` type with validation so bad environments (`prd` typo) fail at construction, and you can dump clean dicts into JSON for a ticket attachment.
+
+### Step-by-step tasks
+
+#### Task 1 – Define Host dataclass with validation and methods
 
 ```bash
-cd ~/rebash-python/module-09
+cd ~/rebash-python/lab09
+set -euo pipefail
 source .venv/bin/activate
 
-cat > models.py << 'EOF'
+cat > host_model.py << 'PY'
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 
-@dataclass(slots=True)
-class AppConfig:
+ALLOWED_ENVS = frozenset({"dev", "stage", "prod"})
+
+
+@dataclass
+class Host:
+    name: str
     env: str
-    replicas: int
-    dry_run: bool = True
+    ip: str
 
-    def validate(self) -> None:
-        if self.replicas < 0:
-            raise ValueError("replicas must be >= 0")
-        if not self.env:
-            raise ValueError("env required")
-EOF
+    def __post_init__(self) -> None:
+        self.name = self.name.strip()
+        self.env = self.env.strip().lower()
+        self.ip = self.ip.strip()
+        if not self.name:
+            raise ValueError("name is required")
+        if self.env not in ALLOWED_ENVS:
+            raise ValueError(f"env must be one of {sorted(ALLOWED_ENVS)}, got {self.env!r}")
+        parts = self.ip.split(".")
+        if len(parts) != 4 or not all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
+            raise ValueError(f"ip looks invalid: {self.ip!r}")
 
-python - <<'PY'
-from models import AppConfig
-cfg = AppConfig(env="lab", replicas=2)
-cfg.validate()
-print(cfg)
+    def is_prod(self) -> bool:
+        return self.env == "prod"
+
+    def label(self) -> str:
+        return f"{self.name}.{self.env}"
+
+    def to_dict(self) -> dict[str, str]:
+        return asdict(self)
 PY
+
+python -c "from host_model import Host; print(Host('web-01','prod','10.0.1.11').label())"
 ```
 
-### Step 2 – Check hierarchy
+**Expected output:** `web-01.prod`
+
+#### Task 2 – Serialise good hosts and reject bad ones
 
 ```bash
-cat > checks.py << 'EOF'
-from __future__ import annotations
+cd ~/rebash-python/lab09
+set -euo pipefail
+source .venv/bin/activate
 
-from dataclasses import dataclass
+python << 'PY'
+import json
+from pathlib import Path
+from host_model import Host
 
+root = Path.home() / "rebash-python" / "lab09"
 
-@dataclass(slots=True)
-class CheckResult:
-    name: str
-    ok: bool
-    detail: str
+hosts = [
+    Host(name="web-01", env="prod", ip="10.0.1.11"),
+    Host(name="web-02", env="stage", ip="10.0.1.12"),
+    Host(name="db-01", env="PROD", ip="10.0.2.11"),  # normalised to prod
+]
 
+assert hosts[0].is_prod()
+assert not hosts[1].is_prod()
+assert hosts[2].env == "prod"
 
-class BaseCheck:
-    name: str
+payload = {"hosts": [h.to_dict() for h in hosts]}
+out = root / "hosts.json"
+out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
-    def run(self) -> CheckResult:
-        raise NotImplementedError
+# Negative tests
+errors: list[str] = []
+for bad in (
+    dict(name="", env="prod", ip="10.0.1.11"),
+    dict(name="x", env="prd", ip="10.0.1.11"),
+    dict(name="x", env="dev", ip="10.0.1"),
+):
+    try:
+        Host(**bad)
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        raise SystemExit(f"expected ValueError for {bad}")
 
-
-class StaticCheck(BaseCheck):
-    def __init__(self, name: str, ok: bool, detail: str = "") -> None:
-        self.name = name
-        self._ok = ok
-        self._detail = detail
-
-    def run(self) -> CheckResult:
-        return CheckResult(self.name, self._ok, self._detail)
-
-
-def run_all(checks: list[BaseCheck]) -> int:
-    worst = 0
-    for check in checks:
-        result = check.run()
-        print(f"{result.name}: {'ok' if result.ok else 'FAIL'} {result.detail}")
-        if not result.ok:
-            worst = 1
-    return worst
-EOF
-
-python - <<'PY'
-from checks import StaticCheck, run_all
-raise SystemExit(run_all([
-    StaticCheck("dns", True, "resolved"),
-    StaticCheck("disk", False, "90% used"),
-]))
+(root / "validation-errors.txt").write_text("\n".join(errors) + "\n", encoding="utf-8")
+assert len(errors) == 3
+print("wrote", out)
+print("errors", len(errors))
 PY
 ```
 
-### Step 3 – Polymorphism in a loop
+**Expected output:** `hosts.json` written; three validation errors recorded.
 
-Confirm `run_all` only needs objects with `.run()` — add another check class inline if you like.
+#### Task 3 – Reload dicts into Host objects
+
+```bash
+cd ~/rebash-python/lab09
+set -euo pipefail
+source .venv/bin/activate
+
+python << 'PY'
+import json
+from pathlib import Path
+from host_model import Host
+
+root = Path.home() / "rebash-python" / "lab09"
+raw = json.loads((root / "hosts.json").read_text(encoding="utf-8"))
+reloaded = [Host(**row) for row in raw["hosts"]]
+assert len(reloaded) == 3
+assert all(isinstance(h, Host) for h in reloaded)
+assert reloaded[0].to_dict()["name"] == "web-01"
+
+(root / "reload-ok.txt").write_text(
+    "\n".join(h.label() for h in reloaded) + "\n",
+    encoding="utf-8",
+)
+print((root / "reload-ok.txt").read_text(encoding="utf-8"))
+PY
+```
+
+**Expected output:** `reload-ok.txt` lists three labels including `web-01.prod`.
+
+### Validation steps
+
+- [ ] `Host` rejects empty name, bad env, and bad IP
+- [ ] `env` values are normalised (for example `PROD` → `prod`)
+- [ ] `hosts.json` matches `to_dict()` output
+- [ ] Reloading JSON into `Host` succeeds
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `mutable default` TypeError | `tags: list = []` | Use `field(default_factory=list)` |
+| Validation never runs | Plain class without `__post_init__` | Use `@dataclass` + `__post_init__` or validate in `__init__` |
+| `asdict` includes unwanted fields | Extra attributes | Keep only declared fields; or write a custom `to_dict` |
+| Case typos in env | No normalisation | Strip/lower in `__post_init__` |
+
+### Challenge exercise
+
+Add an optional field `tags: list[str]` with `field(default_factory=list)`. Reject unknown tags outside `{"web","db","cache"}`. Create `Host("cache-01","prod","10.0.3.11", tags=["cache"])`, serialise to `challenge-host.json`, and prove reload works.
+
+### Learning outcomes
+
+- Built a dataclass with methods and validation
+- Serialised to dict/JSON and reloaded
+- Rejected invalid host records with clear errors
+
+### Cleanup
+
+```bash
+cd ~/rebash-python/lab09
+set -euo pipefail
+# rm -rf .venv __pycache__ *.py *.json *.txt
+deactivate 2>/dev/null || true
+```
 
 ## Validation
 
-- [ ] Lab commands run under `~/rebash-python/module-09/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab finished under `~/rebash-python/lab09/`
+- [ ] You can explain dataclass vs plain class
+- [ ] You validate at construction time
+- [ ] You know when a function is enough
 
 ## Code Walkthrough
 
-Production practice for **OOP — Classes and Dataclasses** always combines:
+Production habits for OOP in ops tools:
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Start with data** — dataclass fields that match YAML/JSON  
+2. **Validate once** — `__post_init__` or a factory  
+3. **Keep methods small** — no hidden network calls in constructors  
+4. **Serialise explicitly** — `to_dict()` / `asdict()` at the boundary  
+5. **Prefer composition** — a runner holding checks, not deep inheritance  
 
 ## Security Considerations
 
-- Treat credentials and tokens for python as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Validation is not a substitute for auth — it only checks shape
+- Do not store secrets as dataclass fields that get logged via `__repr__`
+- Be careful dumping full objects into logs (use allow-listed fields)
+- Treat private `_fields` as convention only, not access control
+- Reject unexpected keys when loading from external JSON if you need strict schemas
 
 ## Common Mistakes
 
-!!! warning "Skipping fundamentals for OOP — Classes and Dataclasses"
-    Validate assumptions against the Theory section and official docs before changing production.
+!!! warning "God classes that deploy, log, and page"
+    Hard to test and review. **Fix:** keep `Host` as data; put I/O in separate functions/modules.
 
-!!! warning "Treating lab defaults as production-ready for OOP — Classes and Dataclasses"
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+!!! warning "Mutable default arguments on fields"
+    Shared list across instances. **Fix:** `field(default_factory=list)`.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Skipping `__post_init__` validation"
+    Bad config reaches production. **Fix:** validate enums, IPs, and required strings early.
+
+!!! warning "Deep inheritance for every cloud provider"
+    Slow and brittle. **Fix:** shared protocol/duck typing + composition.
 
 ## Best Practices
 
-- Encode OOP — Classes and Dataclasses changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- One dataclass per document shape (Host, Service, Alert)
+- Normalise strings (strip, case) in one place
+- Freeze dataclasses (`frozen=True`) when values should not change after load
+- Add a short `label()` for human-readable logs
+- Write unit tests for invalid env/IP cases
 
 ## Troubleshooting
 
-| Symptom | Likely cause | What to do |
-|---------|--------------|------------|
-| Forgot `super().__init__` | Incomplete subclass init | Call super with required args |
-| Mutable dataclass default | Shared list/dict | `field(default_factory=list)` |
-| God class | Too many responsibilities | Split data vs runner vs I/O |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| `TypeError` on construct | Wrong field types / missing args | Match JSON keys to fields |
+| Validation passes bad IP | Weak check | Improve `__post_init__` rules |
+| JSON reload fails | Extra/missing keys | Align `to_dict` with constructor |
+| Unexpected shared tags list | Mutable default | `default_factory` |
+| Hard to mock Host | I/O in `__init__` | Move I/O out of the model |
 
 ## Summary
 
-- Classes for behaviour + state; dataclasses for records  
-- Shallow inheritance; duck-typed runners  
-- Validate on models; keep I/O at the edges  
-- Functions first; classes when they earn their keep
+Classes and dataclasses turn loose dicts into validated ops models. Keep data objects small, validate in `__post_init__`, and serialise to dict for files and APIs. Next, emit useful diagnostics in [Logging and Debugging](logging-and-debugging.md).
 
 ## Interview Questions
 
-1. How does **OOP — Classes and Dataclasses** show up when operating Cloud or production platforms?
-2. What would you check first if this area misbehaves in production?
-3. Which modern tools or APIs replace older equivalents here?
-4. What security control should accompany this capability?
-5. How would you automate verification of this topic in CI?
+**1. When do you choose a dataclass over a plain dict for inventory hosts?**
 
-!!! tip "Sample answer — question 2"
-    Start with blast radius and recent changes, gather evidence (logs, status, plan/diff), then fix forward with a known rollback path — not guesswork.
+??? success "Reveal answer"
+    Choose a dataclass when you have a stable set of fields, want validation, methods like `is_prod()`, and clear serialisation. Dicts are fine for throwaway scripts. Interviewers look for “validate once at the boundary” rather than checking keys in every function.
+
+**2. What is `__post_init__` for, and what should you avoid putting in it?**
+
+??? success "Reveal answer"
+    It runs after the dataclass `__init__` to normalise and validate fields. Avoid network calls, file I/O, and heavy side effects there — those make objects hard to test and slow to construct. Keep `__post_init__` about data quality.
+
+**3. How do inheritance and duck typing show up in a health-check runner?**
+
+??? success "Reveal answer"
+    A runner can call `check.run()` on any object that has that method. You may use a small base class or just a shared method name (duck typing). Prefer a shallow hierarchy: shared helpers, not five levels of subclasses.
+
+**4. Why is `tags: list = []` as a dataclass field dangerous?**
+
+??? success "Reveal answer"
+    Mutable defaults are shared across instances if handled incorrectly. Dataclasses require `field(default_factory=list)` so each instance gets its own list. Shared mutables cause confusing cross-host tag bugs.
+
+**5. How do you serialise a dataclass for JSON without leaking internal fields?**
+
+??? success "Reveal answer"
+    Use `asdict()` when all fields are public and JSON-safe, or write an explicit `to_dict()` that allow-lists keys. Do not dump objects that contain secrets. Round-trip test: dict → JSON → construct dataclass again.
+
+**6. A colleague builds a 12-level class hierarchy for cloud resources. What do you suggest instead?**
+
+??? success "Reveal answer"
+    Prefer composition: a client object plus small resource models (dataclasses). Share behaviour with functions or a thin base only where it removes real duplication. Deep hierarchies are hard to change and review in ops codebases.
+
+**7. How would you prove in a PR that Host validation works?**
+
+??? success "Reveal answer"
+    Show unit tests (or a lab script) that construct valid hosts successfully and assert `ValueError` for empty name, bad env, and bad IP. Attach sample `to_dict()` JSON. Evidence of both allow and deny paths matters — same idea as sudo allow/deny tests on Linux.
 
 ## Related Tutorials
 
-- [Course overview](index.md)
-- - [Logging and Debugging](logging-and-debugging.md)
+- [Python for Cloud & DevOps – Overview](index.md)
+- [Error Handling and Exceptions](error-handling-and-exceptions.md) *(previous)*
+- [Logging and Debugging](logging-and-debugging.md) *(next)*
+- [CLI Applications — argparse, Click, and Typer](cli-applications-argparse-click-typer.md)
 
 ## References
 
-- [Classes tutorial](https://docs.python.org/3/tutorial/classes.html)  
-- [dataclasses](https://docs.python.org/3/library/dataclasses.html)
+- [Classes](https://docs.python.org/3/tutorial/classes.html) — Python tutorial  
+- [dataclasses — Data Classes](https://docs.python.org/3/library/dataclasses.html) — Python docs  
+- Track index: [Python for Cloud & DevOps Engineers](index.md)

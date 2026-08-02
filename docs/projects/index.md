@@ -21,9 +21,7 @@ build steps, and what to publish on GitHub.
 | [Python Cloud Operations Toolkit](python-cloud-operations-toolkit.md) | advanced | 12–18 hours |
 | [Production DevOps Automation Platform (Capstone)](python-devops-automation-framework.md) | advanced | 24–40 hours |
 | [Python Infrastructure Inventory CLI](python-infra-inventory-cli.md) | intermediate | 8–12 hours |
-| [Python Kubernetes Operations Toolkit (moved)](python-k8s-ops-toolkit.md) | advanced | 1 min |
 | [Python Log Analysis Tool](python-log-analysis-tool.md) | beginner | 4–6 hours |
-| [Python Log Parser (moved)](python-log-parser.md) | beginner | 1 min |
 | [Python Platform Engineering Framework](python-platform-engineering-framework.md) | expert | 16–24 hours |
 | [Linux Administration Toolkit](shell-linux-administration-toolkit.md) | intermediate | 8–12 hours |
 | [Linux Automation Scripts](shell-linux-automation-scripts.md) | beginner | 3–5 hours |

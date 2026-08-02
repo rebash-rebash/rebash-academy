@@ -40,23 +40,31 @@ comments: false
 
 
 
+
+
+
+
 Gate chart changes with `helm lint`, `helm template`, dry-run installs, and optional `helm test` hooks before merge.
 
 Never discover template typos in production. CI should lint + render for every env values file. `--debug --dry-run` shows manifests without apply (still contacts the cluster for some lookups).
 
 This is a core tutorial in **Module 8 · Testing & Validation** of the REBASH Academy **Helm for Kubernetes Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
-
-
 ## Prerequisites
+
+
+
+
 
 
 
 - [Helm Releases and Lifecycle](helm-releases-and-lifecycle.md)
 
-
-
 ## Learning Objectives
+
+
+
+
 
 
 
@@ -67,9 +75,11 @@ By the end of this tutorial, you will be able to:
 - [ ] Dry-run upgrade  
 - [ ] Outline chart tests (`templates/tests/`)
 
-
-
 ## Architecture
+
+
+
+
 
 
 
@@ -77,9 +87,11 @@ This topic’s control points and relationships are shown below.
 
 ![Template rendering](../assets/excalidraw/helm-template-rendering.svg)
 
-
-
 ## Theory
+
+
+
+
 
 
 
@@ -128,69 +140,102 @@ Unit-testing frameworks (for example chart-testing/`ct`, or snapshot tests of `h
 - Chart tests that require manual cleanup or depend on flaky external networks.
 - Skipping render for “tiny” values changes that alter nested maps and break templates.
 
-
-
 ## Hands-on Lab
 
 
-Create a workspace for this tutorial.
+
+### Objective
+
+Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Testing and Validation**.
+
+### Prerequisites
+
+- helm CLI
+- kubectl + lab cluster
+- Ability to create namespaces
+
+### Lab environment
+
+Workspace: `~/rebash-helm/module-08`
+
+Helm 3 against kind/minikube; release namespace `rebash-helm`.
 
 ```bash
 mkdir -p ~/rebash-helm/module-08 && cd ~/rebash-helm/module-08
 ```
 
-**Focus:** Validate charts with lint, template, and helm test hooks
+### Real-world scenario
 
-### Step 1 – Add a simple test Pod hook
+A team wants **Helm Testing and Validation** packaged as a chart so GitOps can promote the same artefact across environments.
 
-{% raw %}
-```bash
-kubectl create namespace rebash-helm
-helm create test-demo
-mkdir -p test-demo/templates/tests
-python3 - <<'PY'
-from pathlib import Path
-Path('test-demo/templates/tests/test-connection.yaml').write_text('''apiVersion: v1
-kind: Pod
-metadata:
-  name: "{{ include "test-demo.fullname" . }}-test-connection"
-  labels:
-    {{- include "test-demo.labels" . | nindent 4 }}
-  annotations:
-    "helm.sh/hook": test
-spec:
-  containers:
-  - name: wget
-    image: busybox:1.36
-    command: ['wget']
-    args: ['{{ include "test-demo.fullname" . }}:{{ .Values.service.port }}']
-  restartPolicy: Never
-''')
-PY
-helm lint test-demo
-helm template demo ./test-demo -n rebash-helm >/dev/null
-```
-{% endraw %}
+### Step-by-step tasks
 
-### Step 2 – Install and run helm test
+#### Task 1 – Create and lint a chart
+
+Scaffold a chart and fail the build on lint errors before install.
 
 ```bash
-helm upgrade --install demo ./test-demo -n rebash-helm
-kubectl -n rebash-helm rollout status deploy -l app.kubernetes.io/instance=demo --timeout=90s || kubectl -n rebash-helm get deploy
-helm -n rebash-helm test demo --logs || true
+helm version
+helm create labchart
+helm lint ./labchart | tee lint.txt
+helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
 ```
 
-### Final step – Cleanup note
+**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+
+#### Task 2 – Install with values override
+
+Prove values change rendered replicas, then install with wait.
 
 ```bash
-helm uninstall demo -n rebash-helm --ignore-not-found || true
+kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
+cat > myvalues.yaml << 'EOF'
+replicaCount: 2
+EOF
+helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
+helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
+helm list -n rebash-helm
+kubectl get deploy -n rebash-helm
+```
+
+**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+
+### Validation steps
+
+- [ ] helm lint clean
+- [ ] Release listed in namespace
+- [ ] Uninstall removes the release
+
+### Common errors and fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
+| lint failed | Template YAML break | Fix templates; re-run helm lint |
+| context deadline | Slow cluster | Increase --timeout or fix readiness |
+
+### Challenge exercise
+
+Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+
+### Learning outcomes
+
+- Packaged Kubernetes YAML as a chart
+- Overrode values safely
+- Cleaned up the release
+
+### Cleanup
+
+```bash
+helm uninstall labchart -n rebash-helm 2>/dev/null || true
 kubectl delete namespace rebash-helm --ignore-not-found
-# Workspace kept for notes; remove with: rm -rf "$(pwd)" when finished
 ```
-
-
 
 ## Validation
+
+
+
+
 
 
 
@@ -199,9 +244,11 @@ kubectl delete namespace rebash-helm --ignore-not-found
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
-
-
 ## Code Walkthrough
+
+
+
+
 
 
 
@@ -215,9 +262,11 @@ Production practice for **Helm Testing and Validation** always combines:
 
 Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
 
-
-
 ## Security Considerations
+
+
+
+
 
 
 
@@ -227,9 +276,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Restrict who can approve production changes
 - Collect audit logs; limit who can read sensitive traces
 
-
-
 ## Common Mistakes
+
+
+
+
 
 
 
@@ -242,9 +293,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! warning "Changing production without a rollback path"
     Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
 
-
-
 ## Best Practices
+
+
+
+
 
 
 
@@ -254,9 +307,11 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 - Alert on symptoms with runbooks attached
 - Destroy lab resources; tag everything with owner and expiry where possible
 
-
-
 ## Troubleshooting
+
+
+
+
 
 
 
@@ -268,17 +323,21 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 | Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
 | Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
 
-
-
 ## Summary
+
+
+
+
 
 
 
 **Helm Testing and Validation** is essential for Cloud and DevOps engineers working with helm. Practise the lab until the inspection and change path is muscle memory, then continue the track.
 
-
-
 ## Interview Questions
+
+
+
+
 
 
 1. What does `helm lint` check?
@@ -293,18 +352,22 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 !!! tip "Sample answer — question 4"
     Policy checks (for example Pod Security) catch privileged defaults that lint may miss. Preventing those charts from shipping reduces cluster compromise risk.
 
-
-
 ## Related Tutorials
+
+
+
+
 
 
 
 - [Course overview](index.md)
 - [Helm Security](helm-security.md)
 
-
-
 ## References
+
+
+
+
 
 
 
