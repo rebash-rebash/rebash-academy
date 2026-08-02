@@ -3150,6 +3150,181 @@ a.rebash-roadmap__card:focus-visible {
   }
 }
 
+/* Free course books — registration gate */
+.rebash-books {
+  margin: 1.5rem 0 2.5rem;
+}
+
+.rebash-books__lede {
+  max-width: 40rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.rebash-books__form {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.35rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  background: var(--md-default-bg-color);
+  max-width: 36rem;
+}
+
+.rebash-books__fields {
+  display: grid;
+  gap: 0.9rem;
+}
+
+@media screen and (min-width: 700px) {
+  .rebash-books__fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.rebash-books__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.85rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rebash-books__fields .rebash-books__field {
+  margin-top: 0;
+}
+
+.rebash-books__field input,
+.rebash-books__field select {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 0.35rem;
+  background: var(--md-code-bg-color);
+  color: var(--md-default-fg-color);
+}
+
+.rebash-books__field input:focus,
+.rebash-books__field select:focus {
+  outline: 2px solid var(--rebash-blue);
+  outline-offset: 1px;
+}
+
+.rebash-books__consent {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--md-default-fg-color--light);
+  line-height: 1.45;
+}
+
+.rebash-books__consent input {
+  margin-top: 0.2rem;
+}
+
+.rebash-books__hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.rebash-books__status {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+}
+
+.rebash-books__status.is-error {
+  color: #c62828;
+}
+
+.rebash-books__status.is-ok {
+  color: #2e7d32;
+}
+
+.rebash-books__status.is-pending {
+  color: var(--md-default-fg-color--light);
+}
+
+.rebash-books__submit {
+  margin-top: 1rem;
+}
+
+.rebash-books__grid {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+@media screen and (min-width: 900px) {
+  .rebash-books__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rebash-books__grid--single {
+    grid-template-columns: minmax(0, 36rem);
+  }
+}
+
+.rebash-books__card {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  background: var(--md-default-bg-color);
+}
+
+.rebash-books__cover {
+  width: 7.5rem;
+  height: auto;
+  border-radius: 0.25rem;
+  object-fit: cover;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.rebash-books__card-body h3 {
+  margin-top: 0;
+  margin-bottom: 0.35rem;
+}
+
+.rebash-books__card-body p {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.rebash-books__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rebash-books__actions .md-button {
+  margin: 0;
+}
+
+.rebash-books__footnote {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--md-default-fg-color--light);
+}
+
+@media screen and (max-width: 600px) {
+  .rebash-books__card {
+    grid-template-columns: 1fr;
+  }
+
+  .rebash-books__cover {
+    width: 9rem;
+  }
+}
+
 /* Responsive */
 @media screen and (max-width: 768px) {
   .rebash-hero__title {

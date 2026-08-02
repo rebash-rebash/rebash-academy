@@ -170,7 +170,7 @@ function markCustomTemplateLinks() {
   document.querySelectorAll("a[href]").forEach(function (link) {
     try {
       var path = link.pathname || "";
-      if (/\/(career-paths|learning-paths|technologies|labs|quizzes|projects|capstones|cheatsheets|interview|certifications|blog|about)\/?$/.test(path)) {
+      if (/\/(career-paths|learning-paths|technologies|labs|quizzes|projects|capstones|cheatsheets|interview|certifications|blog|about|books)\/?$/.test(path)) {
         link.setAttribute("data-md-no-instant", "");
       }
     } catch (e) {
