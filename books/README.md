@@ -54,3 +54,20 @@ Designed covers (optional): put a full-bleed PNG at `docs/assets/images/covers/<
 - `assets/` — diagrams + per-chapter QR PNGs
 
 Optional: add `docs/<course>/glossary.md` with `- **Term** — definition` lines to seed the glossary.
+
+## Site downloads (free registration)
+
+The live site page is [docs/books/index.md](../docs/books/index.md) (`/books/`).
+
+1. Build the courses you want to offer.
+2. Sync artefacts into the MkDocs site tree:
+
+```bash
+python3 scripts/sync_books_to_site.py
+```
+
+3. Configure lead capture in `mkdocs.yml` under `extra.books` — set **one** of:
+   - `formspree_form_id` from [Formspree](https://formspree.io)
+   - `web3forms_access_key` from [Web3Forms](https://web3forms.com)
+
+Until one of those is set, the registration form cannot unlock downloads (by design).

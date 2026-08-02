@@ -48,12 +48,19 @@ extra:
     User-agent: *
     Allow: /
     Sitemap: https://rebash.in/sitemap.xml
+  # Free book downloads — set ONE of these so registrations are emailed to you:
+  # Formspree: https://formspree.io (create a form, paste the form id, e.g. xyzabcde)
+  # Web3Forms: https://web3forms.com (paste the access key)
+  books:
+    formspree_form_id: ""
+    web3forms_access_key: "5ff050ad-3b50-4390-82fa-c4718f60b5d4"
 
 extra_css:
   - assets/stylesheets/custom.css
 
 extra_javascript:
   - assets/javascripts/custom.js
+  - assets/javascripts/books.js
 
 theme:
   name: material

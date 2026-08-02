@@ -29,6 +29,8 @@ REBASH Academy is an educational website for Cloud, DevOps, and related engineer
 
 If you email us, open a GitHub issue, or contact us through linked social profiles, we receive whatever you choose to send (for example your name, email address, and message content).
 
+If you use **free book registration** on the [Free course books](../books/index.md) page, we collect the name, email address, and course interest you submit so we can unlock downloads and send occasional REBASH Academy updates. We process that submission through the form provider configured for the Site (for example Formspree or Web3Forms). You can ask us to remove your details using the [Contact](../contact.md) page.
+
 ### Information collected automatically
 
 When you use the Site, standard technical data may be processed, such as:
@@ -37,7 +39,7 @@ When you use the Site, standard technical data may be processed, such as:
 - Browser type, device type, and referring URL
 - Approximate location derived from IP address (city/region level, not a precise address)
 
-We do **not** require you to create an account to read tutorials.
+We do **not** require you to create an account to read tutorials. Free book downloads ask for a one-time email registration; tutorials on the Site remain readable without registering.
 
 ## Cookies and similar technologies
 
