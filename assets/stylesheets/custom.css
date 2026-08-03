@@ -193,6 +193,20 @@
   color: var(--md-default-fg-color);
 }
 
+/* Keep dark terminal chrome in slate (do not inherit light filename bar) */
+[data-md-color-scheme="slate"] .md-typeset .ra-terminal > .filename,
+[data-md-color-scheme="slate"] .md-typeset .ra-terminal th.filename {
+  background: linear-gradient(180deg, #2a2f38 0%, #21262d 100%);
+  border-color: #30363d;
+  color: #e6edf3;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .ra-terminal > pre > code {
+  background: #0d1117 !important;
+  color: #e6edf3 !important;
+  border-color: #30363d;
+}
+
 [data-md-color-scheme="slate"] .md-typeset .ra-file-code > .filename {
   background: rgba(46, 160, 67, 0.12);
   border-color: rgba(46, 160, 67, 0.35);
