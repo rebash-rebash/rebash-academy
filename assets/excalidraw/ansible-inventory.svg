@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="220" viewBox="0 0 780 220" role="img" aria-label="ansible-inventory.svg">
+<rect width="100%" height="100%" fill="#fffef8"/>
+<text x="390.0" y="28" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Inventory model</text>
+<path d="M 96.6,72.6 L 226.6,73.6 Q 236.6,73.6 236.6,83.6 L 235.7,162 Q 235.7,172 225.7,172 L 96.7,163.2 Q 86.7,163.2 86.7,153.2 L 86.6,82.6 Q 86.6,72.6 96.6,72.6 Z" fill="#00000022" stroke="none"/>
+<path d="M 94,70 L 224,70.2 Q 234,70.2 234,80.2 L 234.1,160 Q 234.1,170 224,170 L 94.1,159.1 Q 84.1,159.1 84.1,149.1 L 94,80 Q 94,70 94,70 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+<text x="159.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="14" font-weight="700" fill="#1e1e1e">INI / YAML</text>
+<text x="159.0" y="127.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">static</text>
+<path d="M 234,115.0 L 244,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+<path d="M 244,115.0 L 237,111.0 M 244,115.0 L 237,119.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+<path d="M 250.6,72.6 L 380.6,73.6 Q 390.6,73.6 390.6,83.6 L 389.7,162 Q 389.7,172 379.7,172 L 250.7,163.2 Q 240.7,163.2 240.7,153.2 L 240.6,82.6 Q 240.6,72.6 250.6,72.6 Z" fill="#00000022" stroke="none"/>
+<path d="M 248,70 L 378,70.2 Q 388,70.2 388,80.2 L 388.1,160 Q 388.1,170 378,170 L 248.1,159.1 Q 238.1,159.1 238.1,149.1 L 248,80 Q 248,70 248,70 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+<text x="313.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="14" font-weight="700" fill="#1e1e1e">Groups</text>
+<text x="313.0" y="127.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">web/db</text>
+<path d="M 388,115.0 L 398,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+<path d="M 398,115.0 L 391,111.0 M 398,115.0 L 391,119.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+<path d="M 404.6,72.6 L 534.6,73.6 Q 544.6,73.6 544.6,83.6 L 543.7,162 Q 543.7,172 533.7,172 L 404.7,163.2 Q 394.7,163.2 394.7,153.2 L 394.6,82.6 Q 394.6,72.6 404.6,72.6 Z" fill="#00000022" stroke="none"/>
+<path d="M 402,70 L 532,70.2 Q 542,70.2 542,80.2 L 542.1,160 Q 542.1,170 532,170 L 402.1,159.1 Q 392.1,159.1 392.1,149.1 L 402,80 Q 402,70 402,70 Z" fill="#ffec99" stroke="#e67700" stroke-width="2"/>
+<text x="467.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="14" font-weight="700" fill="#1e1e1e">group_vars</text>
+<text x="467.0" y="127.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">host_vars</text>
+<path d="M 542,115.0 L 552,115.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+<path d="M 552,115.0 L 545,111.0 M 552,115.0 L 545,119.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+<path d="M 558.6,72.6 L 688.6,73.6 Q 698.6,73.6 698.6,83.6 L 697.7,162 Q 697.7,172 687.7,172 L 558.7,163.2 Q 548.7,163.2 548.7,153.2 L 548.6,82.6 Q 548.6,72.6 558.6,72.6 Z" fill="#00000022" stroke="none"/>
+<path d="M 556,70 L 686,70.2 Q 696,70.2 696,80.2 L 696.1,160 Q 696.1,170 686,170 L 556.1,159.1 Q 546.1,159.1 546.1,149.1 L 556,80 Q 556,70 556,70 Z" fill="#ffc9c9" stroke="#c92a2a" stroke-width="2"/>
+<text x="621.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="14" font-weight="700" fill="#1e1e1e">Dynamic</text>
+<text x="621.0" y="127.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">plugins</text>
+</svg>

@@ -2,2766 +2,2898 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://rebash.in/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/contact/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/about/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ai/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-ad-hoc-commands/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-ci-cd-integration/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-cloud-automation/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-collections-and-galaxy/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-conditionals-and-loops/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-inventory/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-jinja2-templates/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-kubernetes-automation/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-playbooks/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-roles/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-variables-and-facts/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/ansible-vault-and-secrets/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/awx-and-ansible-automation-platform/</loc>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/installing-ansible-and-configuration/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/introduction-to-configuration-management-and-ansible/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/production-ansible-practices/</loc>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/ansible/troubleshooting-ansible/</loc>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/ansible/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture-guides/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture-guides/ai-engineering-platform-blueprint/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture-guides/kubernetes-production-topology/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture-guides/multi-cloud-landing-zone-patterns/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/architecture-guides/secure-software-delivery-architecture/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/applicationsets/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/argo-cd-applications-and-projects/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/argo-cd-architecture-and-components/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/argo-cd-notifications/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/argo-cd-repositories-and-credentials/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/argo-cd-security-rbac-and-sso/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/ci-cd-integration-with-argo-cd/</loc>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/helm-with-argo-cd/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/installing-argo-cd/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/introduction-to-gitops-and-argo-cd/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/kustomize-with-argo-cd/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/multi-cluster-gitops/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/production-gitops-with-argo-cd/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/progressive-delivery-and-sync-windows/</loc>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/synchronisation-sync-options-and-hooks/</loc>
+         <lastmod>2026-08-03</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/argocd/troubleshooting-argo-cd/</loc>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/argocd/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/aws-fundamentals-and-global-infrastructure/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/aws-security-services/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/cicd-on-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/compute-ec2-asg-and-load-balancing/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/containers-ecs-eks-ecr/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/cost-optimisation-on-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/databases-on-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/iam-identity-access-and-organizations/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/infrastructure-as-code-on-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/monitoring-and-observability-on-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/production-aws-landing-zones/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/reliability-and-disaster-recovery/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/serverless-on-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/storage-s3-ebs-efs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/troubleshooting-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/vpc-networking-on-aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/labs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/aws/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/azure/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/blog/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/books/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/capstones/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/ai-for-devops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/beginner/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/cloud-architect/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/cloud-engineer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/devops-engineer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/devsecops-engineer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/kubernetes-engineer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/linux-administrator/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/platform-engineer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/career-paths/site-reliability-engineer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/cicd/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/docker/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/git/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/kubernetes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/linux/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/networking/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/python/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/shell/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/cheatsheets/terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/community/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/devsecops/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/building-images-with-dockerfile/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/container-logging-and-monitoring/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/container-registries-and-distribution/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/container-scanning-and-sbom/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-architecture-and-components/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-capstone-and-next-steps/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-compose-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-in-ci-cd-pipelines/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-installation-and-setup/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-networking-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-performance-and-resource-limits/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-security-hardening/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/docker-swarm-orchestration-basics/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/dockerfile-best-practices-and-multi-stage-builds/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/environment-variables-and-secrets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/from-docker-to-kubernetes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/introduction-to-containers-and-docker/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/production-docker-patterns/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/running-your-first-container/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/troubleshooting-docker-containers/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/volumes-and-persistent-storage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/working-with-docker-images/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/docker/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gcp/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/getting-started/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/advanced-git-workflows/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/basic-git-workflow-add-commit-push/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/branching-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/cherry-pick-and-reflog/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/creating-and-cloning-repositories/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/git-bisect-and-debugging-history/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/git-for-infrastructure-as-code/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/git-hooks-and-automation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/git-in-ci-cd-and-devops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/git-installation-and-configuration/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/git-submodules-and-subtrees/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/git-troubleshooting/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/github-actions-for-devops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/github-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/gitignore-and-gitattributes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/gitops-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/introduction-to-git-and-version-control/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/merging-and-merge-conflicts/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/production-git-practices/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/pull-requests-and-code-review/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/rebasing-and-interactive-rebase/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/repository-management-and-releases/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/signed-commits-and-git-security/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/understanding-the-git-object-model/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/undoing-changes-reset-revert-stash/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/viewing-history-and-diffs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/working-with-remotes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/git/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/artifacts-and-caching/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/cicd-fundamentals-and-github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/composite-actions-and-reusable-workflows/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/docker-pipelines-with-github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/github-actions-basics-workflows-jobs-steps/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/github-hosted-and-self-hosted-runners/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/kubernetes-deployments-with-github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/multi-cloud-deployments-with-github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/production-pipelines-and-environments/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/release-management-and-versioning/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/secrets-variables-and-oidc/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/security-scanning-and-supply-chain/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/terraform-pipelines-with-github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/testing-in-github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/troubleshooting-github-actions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/workflow-syntax-matrix-and-reusable/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/labs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/github-actions/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/artifacts-caches-and-dependencies/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/building-docker-images-in-ci/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/enterprise-gitlab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/gitlab-ci-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/gitlab-projects-mrs-and-releases/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/gitlab-runners-and-executors/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/kubernetes-deploys-and-gitlab-agent/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/multi-cloud-deployments-with-gitlab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/pipeline-design-dags-and-includes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/pipeline-monitoring-and-observability/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/pipeline-syntax-gitlab-ci-yml/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/production-pipelines-and-environments/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/release-management-and-versioning/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/security-scanning-and-devsecops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/terraform-pipelines-in-gitlab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/testing-reports-and-quality-gates/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/troubleshooting-gitlab-ci/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/variables-secrets-and-oidc/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/gitlab/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/grafana/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-architecture-and-components/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-chart-dependencies/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-gitops-integration/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-releases-and-lifecycle/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-security/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-templates-and-go-templating/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-testing-and-validation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/helm-values-and-overrides/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/installing-helm-and-repositories/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/introduction-to-helm/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/production-helm-practices/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/troubleshooting-helm/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/working-with-helm-charts/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/helm/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/aws/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/cicd/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/docker/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/git/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/kubernetes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/linux/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/networking/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/python/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/shell/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/interview/terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/agents-nodes-and-executors/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/docker-with-jenkins-pipeline/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/installing-jenkins-lts/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/introduction-to-jenkins-and-ci-cd/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/jcasc-scaling-and-operations/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/jenkinsfile-in-scm/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/kubernetes-agents-and-deploys/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/managing-jenkins-plugins-tools-and-cli/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/multibranch-pipelines-and-prs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/pipeline-fundamentals-declarative/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/securing-jenkins/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/shared-libraries/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/terraform-pipelines-in-jenkins/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/testing-reports-and-quality-gates/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/troubleshooting-and-upgrades/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/using-jenkins-jobs-views-and-folders/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/labs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/jenkins/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/configmaps-and-secrets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/deployments-managing-replicated-pods/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/gitops-and-cicd-with-kubernetes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/health-checks-probes-and-self-healing/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/helm-package-management/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/ingress-and-external-access/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/installing-kubernetes-and-kubectl/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/introduction-to-kubernetes-and-orchestration/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubectl-essentials-and-workflows/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-architecture-and-components/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-autoscaling/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-capstone-and-next-steps/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-networking-deep-dive/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-objects-labels-and-namespaces/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-production-operations/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-scheduling/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/kubernetes-security-hardening/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/managed-kubernetes-eks-aks-gke/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/monitoring-and-logging-in-kubernetes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/namespaces-and-resource-management/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/persistent-volumes-and-storage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/platform-engineering-on-kubernetes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/pods-the-atomic-unit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/production-kubernetes-excellence/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/production-patterns-hpa-pdb-and-affinity/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/rbac-and-kubernetes-security-basics/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/resource-quotas-and-limit-ranges/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/services-and-cluster-networking/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/troubleshooting-kubernetes-workloads/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/workload-controllers-statefulset-daemonset-jobs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/kubernetes/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/aws-iam-vpc-triage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/aws-ssm-s3/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/cicd-docker-secure-gate/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/cicd-pipeline-triage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/docker-compose-stack-recovery/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/git-history-pr-recovery/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/kubernetes-deployment-triage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-app-server-from-zero/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-firewall-hardening-lab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-install-and-first-boot/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-ops-toolkit-lab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-performance-troubleshooting-lab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-production-incident-triage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-services-and-logs-lab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-ssh-secure-access/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-storage-lab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/linux-users-permissions-lab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/networking-dns-firewall-triage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/networking-edge-failover/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-aws-ec2-inventory/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-azure-resource-inventory/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-certificate-expiry-monitor/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-cicd-automation-tool/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-docker-cleanup-tool/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-gcp-inventory/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-github-repository-auditor/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-json-validator/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-kubernetes-deployment-validator/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-kubernetes-health-checker/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-linux-health-checker/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-log-analyser/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-rest-api-monitoring-service/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-secrets-scanner/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-slack-notification-bot/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-terraform-wrapper/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/python-yaml-config-validator/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-automate-software-installation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-automate-ssh-tasks/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-backup-utility/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-deployment-script/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-first-script/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-linux-operations-toolkit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-monitor-cpu-memory/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-monitor-disk-usage/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-ops-script-hardening/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-parse-json-jq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-parse-yaml-yq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-rotate-logs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-service-health-checker/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-ssl-certificate-monitor/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/shell-user-management-script/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/labs/terraform-plan-review-workflow/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/learning-paths/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/learning-paths/devops-engineer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/learning-paths/linux-for-cloud-devops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/learning-paths/python-for-devops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/legal/disclaimer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/legal/privacy-policy/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/legal/terms-and-conditions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/backup-disaster-recovery-and-capacity/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/boot-process-and-filesystem-hierarchy/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/containers-namespaces-cgroups-and-oci/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/disk-usage-and-file-attributes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/environment-variables-shell-config/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/essential-linux-commands/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/filesystem-paths-links-mounts-and-inodes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/glossary/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/host-monitoring-vmstat-iostat-sar/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/linux-fundamentals-distributions-and-architecture/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/linux-networking-tools/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/logging-syslog-journald-logrotate/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/lvm-swap-and-disk-monitoring/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/package-management/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/permissions-acls-and-special-bits/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/process-management/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/production-linux-hardening-and-performance/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/scheduling-cron-at-and-timers/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/selinux-apparmor-fail2ban-auditd-pam/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/shell-scripting-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/ssh-and-remote-access/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/ssh-hardening-and-firewalls/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/storage-disks-partitions-and-filesystems/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/systemd-services-and-journalctl/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/systemd-targets-timers-and-boot/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/text-processing-grep-sed-awk/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/troubleshooting-linux-systems/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/users-groups-and-sudo/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/linux/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/loki/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/monitoring/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/cloud-networking-vpc-and-subnets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/dns-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/dns-records-and-troubleshooting/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/ethernet-switching-and-vlans/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/firewall-change-control-and-production-acls/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/firewalls-and-access-control/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/glossary/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/http-https-and-application-layer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/icmp-arp-dhcp-and-network-services/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/introduction-to-networking/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/ip-addressing-and-subnetting/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/ip-addressing/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/kubernetes-networking-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/linux-networking-toolkit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/load-balancer-operations-and-health-checks/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/load-balancing-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/nat-and-port-forwarding/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/network-automation-and-monitoring/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/network-incident-response-and-observability/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/network-security-hardening/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/network-segmentation-and-trust-boundaries/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/network-troubleshooting-methodology/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/osi-and-tcp-ip-models/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/osi-model/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/packet-analysis-tcpdump-wireshark/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/production-dns-operations/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/reverse-proxy-and-ingress-basics/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/routing-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/subnetting-and-vlsm/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/tcp-and-udp-deep-dive/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/tcp-ip-model/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/vpn-and-tunneling-basics/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/networking/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/opentelemetry/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/platform-engineering/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/linux-operations-toolkit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/linux-production-operations-platform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/linux-server-health-dashboard/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/linux-system-information-utility/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/python-cloud-operations-toolkit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/python-devops-automation-framework/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/python-infra-inventory-cli/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/python-k8s-ops-toolkit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/python-log-analysis-tool/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/python-log-parser/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/python-platform-engineering-framework/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/shell-linux-administration-toolkit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/shell-linux-automation-scripts/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/shell-production-automation-framework/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/shell-production-operations-toolkit/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/projects/status-api-portfolio/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/prometheus/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/ai-for-devops-openai-mcp-langchain/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/cli-applications-argparse-click-typer/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/cloud-automation-aws-azure-gcp/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/concurrency-threads-asyncio-and-futures/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/configuration-management-and-secrets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/control-flow-conditionals-and-loops/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/data-structures-comprehensions-and-generators/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/docker-sdk-automation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/error-handling-and-exceptions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/file-handling-pathlib-json-yaml-csv/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/functions-parameters-and-scope/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/git-automation-github-and-gitlab/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/glossary/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/infrastructure-automation-terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/kubernetes-python-client-automation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/linux-automation-subprocess-and-psutil/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/logging-and-debugging/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/modules-packages-and-dependencies/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/oop-classes-and-dataclasses/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/packaging-pyproject-and-wheels/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/production-engineering-patterns/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/python-basics-types-and-io/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/python-fundamentals-install-venv-and-tooling/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/rest-apis-requests-auth-and-resilience/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/security-for-devops-python/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/ssh-automation-paramiko-and-fabric/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/testing-with-pytest/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/troubleshooting-python-automation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/python/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/aws-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/cicd-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/docker-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/kubernetes-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/linux-for-cloud-devops-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/linux-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/linux-servers/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/networking-production/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/python-for-devops-engineers-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/python-for-devops-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/shell-scripting-for-devops-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/quizzes/shell-scripting-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/security/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/arrays-and-string-manipulation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/control-flow-conditionals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/error-handling-logging-and-debugging/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/file-operations-in-shell/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/functions-parameters-and-locals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/glossary/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/input-output-redirection-and-pipes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/json-and-yaml-with-jq-yq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/linux-admin-automation/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/loops-for-while-until/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/networking-automation-with-shell/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/process-automation-signals-and-traps/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/production-shell-scripting/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/scheduling-cron-at-and-timers/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/shell-fundamentals-bash-vs-sh-and-execution/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/text-processing-in-shell-scripts/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/troubleshooting-shell-scripts/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/variables-quoting-and-arithmetic/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/writing-your-first-script/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/shell/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/sre/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/technologies/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/tempo/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/data-sources-and-existing-infrastructure/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/faq/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/format-validate-and-terraform-test/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/functions-templates-and-dynamic-blocks/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/hcl-fundamentals-blocks-arguments-and-expressions/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/installing-terraform-and-the-cli-workflow/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/introduction-to-terraform-and-iac/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/kubernetes-infrastructure-with-terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/modules-creating-reusable-infrastructure/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/multi-cloud-terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/production-terraform-patterns/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/providers-and-the-terraform-plugin-model/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/registry-modules-and-composition/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/remote-state-and-backends/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/resources-dependencies-and-meta-arguments/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/roadmap/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/terraform-cloud-and-hcp-terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/terraform-in-ci-cd-pipelines/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/terraform-security-and-secrets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/terraform-state-fundamentals/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/terraform-workflow-init-plan-apply/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/troubleshooting-terraform/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/variables-locals-and-outputs/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/workspaces-and-environment-strategies/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/capstone/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/certifications/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/cheatsheets/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/interview/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/projects/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/terraform/quizzes/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
     <url>
          <loc>https://rebash.in/youtube/</loc>
-         <lastmod>2026-08-02</lastmod>
+         <lastmod>2026-08-03</lastmod>
     </url>
 </urlset>
