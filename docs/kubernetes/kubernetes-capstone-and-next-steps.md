@@ -212,7 +212,7 @@ Build and apply a multi-manifest mini platform in `~/rebash-k8s/capstone` — na
 
 Workspace: `~/rebash-k8s/capstone`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/capstone && cd ~/rebash-k8s/capstone
 ```
 
@@ -226,7 +226,7 @@ You deliver a capstone demo for stakeholders: a small API platform in namespace 
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -238,7 +238,7 @@ metadata:
 
 Create `configmap.yaml`:
 
-```yaml
+```yaml title="configmap.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -254,20 +254,22 @@ data:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/capstone
 kubectl apply -f namespace.yaml
 kubectl apply -f configmap.yaml
 kubectl get configmap capstone-config -n rebash-capstone
 ```
 
-**Expected output:** ConfigMap `capstone-config` with three data keys.
+!!! example "Expected output"
+    ConfigMap `capstone-config` with three data keys.
+
 
 #### Task 2 – Create Deployment and Service
 
 Create `deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -335,7 +337,7 @@ spec:
 
 Create `service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -351,7 +353,7 @@ spec:
 
 Apply and wait for Ready:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/capstone
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
@@ -359,13 +361,15 @@ kubectl rollout status deployment/capstone-api -n rebash-capstone --timeout=120s
 kubectl get deploy,po,svc -n rebash-capstone
 ```
 
-**Expected output:** Deployment Available; 2/2 Pods Ready; Service exists.
+!!! example "Expected output"
+    Deployment Available; 2/2 Pods Ready; Service exists.
+
 
 #### Task 3 – Add NetworkPolicy and verify traffic path
 
 Create `networkpolicy.yaml`:
 
-```yaml
+```yaml title="networkpolicy.yaml"
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -397,7 +401,7 @@ spec:
 
 Apply and test from an in-cluster curl Pod:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/capstone
 kubectl apply -f networkpolicy.yaml
 kubectl run curl-test --rm -it --restart=Never -n rebash-capstone --image=curlimages/curl:8.5.0 -- \
@@ -405,11 +409,13 @@ kubectl run curl-test --rm -it --restart=Never -n rebash-capstone --image=curlim
 kubectl get endpoints capstone-api -n rebash-capstone | tee endpoints.txt
 ```
 
-**Expected output:** curl returns HTML containing `REBASH Capstone API`; Endpoints show Pod IPs.
+!!! example "Expected output"
+    curl returns HTML containing `REBASH Capstone API`; Endpoints show Pod IPs.
+
 
 #### Task 4 – Package capstone evidence tarball
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/capstone
 kubectl get all,configmap,networkpolicy -n rebash-capstone | tee capstone-status.txt
 kubectl describe deploy capstone-api -n rebash-capstone | tee capstone-describe.txt
@@ -417,7 +423,9 @@ tar -czf capstone-evidence.tgz namespace.yaml configmap.yaml deployment.yaml ser
 ls -l capstone-evidence.tgz
 ```
 
-**Expected output:** `capstone-evidence.tgz` lists all manifests and status files.
+!!! example "Expected output"
+    `capstone-evidence.tgz` lists all manifests and status files.
+
 
 ### Validation steps
 
@@ -450,7 +458,7 @@ Add a `PodDisruptionBudget` with `minAvailable: 1` and verify `kubectl get pdb -
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-capstone --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/capstone/*.txt ~/rebash-k8s/capstone/capstone-evidence.tgz
 ```
@@ -520,7 +528,7 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 
 
 
-```bash
+```bash title="Terminal"
 # End-to-end status
 kubectl get deploy,sts,svc,ingress,hpa,pdb -n votestack
 argocd app get votestack-root

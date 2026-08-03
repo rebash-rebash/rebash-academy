@@ -84,7 +84,7 @@ If you equate ping failure with “host down,” you will open wrong tickets. Se
 3. **ICMP** — optional reachability and path messages (filtered often).
 4. **Apps** — TCP/UDP use the resolved path; DNS uses UDP/TCP 53.
 
-```bash
+```bash title="Terminal"
 ip route | awk '/default/ {print; exit}'
 # Then ping that gateway and re-check neighbours
 ```
@@ -132,7 +132,7 @@ On a practice Ubuntu VM, prove ICMP and ARP/neighbour behaviour with `ping` and 
 
 Workspace: `~/rebash-networking/lab08`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab08 && cd ~/rebash-networking/lab08
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -142,7 +142,9 @@ test -n "$(command -v ping)"
 command -v dig >/dev/null || { sudo apt-get update && sudo apt-get install -y dnsutils; }
 ```
 
-**Expected output:** address and route files exist; `dig` is available.
+!!! example "Expected output"
+    address and route files exist; `dig` is available.
+
 
 ### Real-world scenario
 
@@ -152,7 +154,7 @@ Users say “the server is down” because ping failed. You must prove whether I
 
 #### Task 1 – ICMP: localhost and gateway
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab08
 set -euo pipefail
 
@@ -172,11 +174,13 @@ else
 fi
 ```
 
-**Expected output:** localhost ping succeeds; gateway ping recorded when a default route exists.
+!!! example "Expected output"
+    localhost ping succeeds; gateway ping recorded when a default route exists.
+
 
 #### Task 2 – ARP / neighbour table evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab08
 set -euo pipefail
 
@@ -194,11 +198,13 @@ else
 fi
 ```
 
-**Expected output:** after gateway ping, `neigh-gateway.txt` or `neigh-after.txt` shows a neighbour entry when L2 works.
+!!! example "Expected output"
+    after gateway ping, `neigh-gateway.txt` or `neigh-after.txt` shows a neighbour entry when L2 works.
+
 
 #### Task 3 – dig check + read-only DHCP / NM leases
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab08
 set -euo pipefail
 
@@ -240,7 +246,9 @@ tar -czf services-evidence.tgz \
 ls -l services-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `dig-example.txt` has an IPv4 address; `lease-and-time.txt` shows resolv.conf and whatever lease paths exist; archive is non-empty.
+!!! example "Expected output"
+    `dig-example.txt` has an IPv4 address; `lease-and-time.txt` shows resolv.conf and whatever lease paths exist; archive is non-empty.
+
 
 ### Validation steps
 
@@ -272,7 +280,7 @@ Write `triage-services.sh` that prints: default gateway, `ping -c1` exit code to
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab08
 set -euo pipefail
 # Inspection-only lab — optional:

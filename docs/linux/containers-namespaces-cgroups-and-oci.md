@@ -130,7 +130,7 @@ On a practice Ubuntu VM, inspect namespaces and cgroups, create a short-lived us
 
 Workspace: `~/rebash-linux/lab22`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab22 && cd ~/rebash-linux/lab22
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -140,7 +140,9 @@ test -n "$(command -v lsns)"
 test -n "$(command -v unshare)"
 ```
 
-**Expected output:** kernel and cgroup files exist; `lsns` and `unshare` are available.
+!!! example "Expected output"
+    kernel and cgroup files exist; `lsns` and `unshare` are available.
+
 
 ### Real-world scenario
 
@@ -150,7 +152,7 @@ A Kubernetes node shows high disk use and occasional OOM kills. Before you blame
 
 #### Task 1 – Namespaces inventory and a safe unshare demo
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab22
 set -euo pipefail
 
@@ -170,11 +172,13 @@ grep -F 'rebash-lab22-ns' unshare-uts.txt
 ls -l /proc/self/ns | tee self-ns.txt
 ```
 
-**Expected output:** `lsns.txt` lists namespaces; `unshare-uts.txt` shows the temporary hostname; host hostname unchanged.
+!!! example "Expected output"
+    `lsns.txt` lists namespaces; `unshare-uts.txt` shows the temporary hostname; host hostname unchanged.
+
 
 #### Task 2 – cgroup v2 paths and controllers
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab22
 set -euo pipefail
 
@@ -197,11 +201,13 @@ systemd-cgls --no-pager 2>/dev/null | head -n 40 | tee systemd-cgls.txt || \
 grep -E 'MemTotal|MemAvailable' /proc/meminfo | tee meminfo-snip.txt
 ```
 
-**Expected output:** cgroup mount and controllers (or honest hybrid note); `self-cgroup.txt` non-empty.
+!!! example "Expected output"
+    cgroup mount and controllers (or honest hybrid note); `self-cgroup.txt` non-empty.
+
 
 #### Task 3 – OverlayFS, OCI runtime detection, optional engine
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab22
 set -euo pipefail
 
@@ -245,7 +251,9 @@ ls -l container-internals-evidence.tgz | tee evidence-ls.txt
 test -s container-internals-evidence.tgz
 ```
 
-**Expected output:** runtime paths file exists; overlay note or mounts listed; evidence tarball non-empty.
+!!! example "Expected output"
+    runtime paths file exists; overlay note or mounts listed; evidence tarball non-empty.
+
 
 ### Validation steps
 
@@ -277,7 +285,7 @@ Write `~/rebash-linux/lab22/ns-report.sh` that prints: count of namespaces from 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab22
 set -euo pipefail
 # No persistent namespaces from the UTS demo

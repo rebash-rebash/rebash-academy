@@ -152,7 +152,7 @@ Compose a parent chart with a local file dependency on a child subchart, run `he
 
 Workspace: `~/rebash-helm/module-06` on your workstation.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-06/rebash-parent/charts/rebash-lib/templates \
   ~/rebash-helm/module-06/rebash-parent/templates && cd ~/rebash-helm/module-06
 ```
@@ -167,7 +167,7 @@ Your application chart wraps a shared ConfigMap subchart maintained by another s
 
 Create `rebash-parent/charts/rebash-lib/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-lib
 description: Shared ConfigMap subchart for REBASH lab
@@ -178,7 +178,7 @@ appVersion: "1.0"
 
 Create `rebash-parent/charts/rebash-lib/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 configMessage: "hello from rebash-lib subchart"
 ```
 
@@ -199,7 +199,7 @@ data:
 
 Create `rebash-parent/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-parent
 description: Parent chart with local file dependency
@@ -214,7 +214,7 @@ dependencies:
 
 Create `rebash-parent/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginxinc/nginx-unprivileged
@@ -270,7 +270,7 @@ spec:
 
 #### Task 3 – Dependency update, lint, and template
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-06/rebash-parent
 helm dependency update . | tee dep-update-m06.txt
 ls charts/ | tee charts-dir-m06.txt
@@ -283,20 +283,22 @@ grep -q 'overridden from parent values' render-m06.yaml
 grep -q 'kind: Deployment' render-m06.yaml
 ```
 
-**Expected output:** `charts/rebash-lib-0.1.0.tgz` exists; rendered YAML includes ConfigMap with parent override message plus Deployment and Service.
+!!! example "Expected output"
+    `charts/rebash-lib-0.1.0.tgz` exists; rendered YAML includes ConfigMap with parent override message plus Deployment and Service.
+
 
 #### Task 4 – Optional install
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
   name: rebash-helm-m06
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-06
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -308,7 +310,9 @@ else
 fi
 ```
 
-**Expected output:** ConfigMap, Deployment, and Service exist in `rebash-helm-m06`; ConfigMap data shows parent override string.
+!!! example "Expected output"
+    ConfigMap, Deployment, and Service exist in `rebash-helm-m06`; ConfigMap data shows parent override string.
+
 
 ### Validation steps
 
@@ -340,7 +344,7 @@ Add a `condition: rebash-lib.enabled` to the dependency stanza and toggle the su
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall parent-demo -n rebash-helm-m06 2>/dev/null || true
 kubectl delete namespace rebash-helm-m06 --ignore-not-found
 ```

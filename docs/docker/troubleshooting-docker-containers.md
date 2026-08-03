@@ -146,7 +146,7 @@ Deploy a deliberately broken container, diagnose failure with logs and inspect, 
 
 Workspace: `~/rebash-docker/module-16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-16 && cd ~/rebash-docker/module-16
 ```
 
@@ -160,7 +160,7 @@ A deploy rolled out a new image tag; pods (containers) restart in a loop. Logs s
 
 Create `Dockerfile.broken`:
 
-```dockerfile
+```dockerfile title="Dockerfile.broken"
 FROM alpine:3.20
 COPY app.sh /app/app.sh
 RUN chmod +x /app/app.sh
@@ -170,7 +170,7 @@ CMD ["/app/missing-binary.sh"]
 
 Create `app.sh`:
 
-```bash
+```bash title="app.sh"
 #!/bin/sh
 echo "rebash-trouble-lab ok"
 ```
@@ -178,7 +178,7 @@ echo "rebash-trouble-lab ok"
 Build and run the broken image:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-16
 docker build -f Dockerfile.broken -t rebash-trouble-broken:1.0.0 .
 docker run --name rebash-trouble-broken rebash-trouble-broken:1.0.0 2>&1 | tee broken-run.txt || true
@@ -187,14 +187,16 @@ grep -q 'ExitCode=127\|ExitCode=1' broken-inspect.txt || grep -qi 'no such file\
 ```
 {% endraw %}
 
-**Expected output:** Container exits non-zero; `broken-run.txt` or `broken-inspect.txt` references missing executable.
+!!! example "Expected output"
+    Container exits non-zero; `broken-run.txt` or `broken-inspect.txt` references missing executable.
+
 
 #### Task 2 – Diagnose with logs and inspect
 
 Gather troubleshooting evidence:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-16
 docker logs rebash-trouble-broken 2>&1 | tee broken-logs.txt || true
 docker inspect rebash-trouble-broken --format '{{ "{{" }}.Config.Cmd{{ "}}" }}' | tee broken-cmd.txt
@@ -202,13 +204,15 @@ grep -q 'missing-binary' broken-cmd.txt
 ```
 {% endraw %}
 
-**Expected output:** `broken-cmd.txt` shows the wrong CMD path `/app/missing-binary.sh`.
+!!! example "Expected output"
+    `broken-cmd.txt` shows the wrong CMD path `/app/missing-binary.sh`.
+
 
 #### Task 3 – Fix Dockerfile and prove recovery
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM alpine:3.20
 COPY app.sh /app/app.sh
 RUN chmod +x /app/app.sh
@@ -219,7 +223,7 @@ CMD ["/app/app.sh"]
 Rebuild and compare exit codes:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-16
 docker rm rebash-trouble-broken 2>/dev/null || true
 docker build -f Dockerfile -t rebash-trouble-fixed:1.0.0 .
@@ -230,7 +234,9 @@ grep -q 'ExitCode=0' fixed-inspect.txt
 ```
 {% endraw %}
 
-**Expected output:** `fixed-run.txt` prints `rebash-trouble-lab ok`; `fixed-inspect.txt` shows `ExitCode=0`.
+!!! example "Expected output"
+    `fixed-run.txt` prints `rebash-trouble-lab ok`; `fixed-inspect.txt` shows `ExitCode=0`.
+
 
 ### Validation steps
 
@@ -262,7 +268,7 @@ Introduce a second failure mode (wrong `ENTRYPOINT` + `CMD` combo), diagnose wit
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker rm -f rebash-trouble-broken rebash-trouble-fixed 2>/dev/null || true
 docker rmi rebash-trouble-broken:1.0.0 rebash-trouble-fixed:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-16/*.txt

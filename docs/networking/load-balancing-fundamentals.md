@@ -125,7 +125,7 @@ Run two backends on ports **18081** and **18082**, put a balancer on **18080**, 
 
 Workspace: `~/rebash-networking/lab16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab16 && cd ~/rebash-networking/lab16
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -134,7 +134,9 @@ command -v haproxy >/dev/null && echo haproxy=yes | tee -a tools.txt || echo hap
 command -v socat >/dev/null && echo socat=yes | tee -a tools.txt || echo socat=no | tee -a tools.txt
 ```
 
-**Expected output:** `tools.txt` records which balancers exist.
+!!! example "Expected output"
+    `tools.txt` records which balancers exist.
+
 
 ### Real-world scenario
 
@@ -144,14 +146,14 @@ Before buying a cloud load balancer, you prove the design on a laptop: two app i
 
 #### Task 1 – Two Python backends
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab16
 set -euo pipefail
 ```
 
 Create `backend.py`:
 
-```python
+```python title="backend.py"
 #!/usr/bin/env python3
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -174,7 +176,7 @@ HTTPServer.allow_reuse_address = True
 HTTPServer(("127.0.0.1", PORT), H).serve_forever()
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x backend.py
 python3 backend.py A 18081 >backend-a.log 2>&1 &
 echo $! > backend-a.pid
@@ -187,13 +189,15 @@ grep -q 'backend=A' hit-a.txt
 grep -q 'backend=B' hit-b.txt
 ```
 
-**Expected output:** `hit-a.txt` / `hit-b.txt` show `backend=A` and `backend=B`.
+!!! example "Expected output"
+    `hit-a.txt` / `hit-b.txt` show `backend=A` and `backend=B`.
+
 
 #### Task 2 – nginx upstream **or** fallback balancer
 
 Create `nginx-lb.conf`:
 
-```nginx
+```nginx title="nginx-lb.conf"
 worker_processes 1;
 error_log /tmp/rebash-lab16-nginx.err;
 pid /tmp/rebash-lab16-nginx.pid;
@@ -216,7 +220,7 @@ http {
 Create `rr-client.sh` (fallback when nginx is absent):
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 N="${1:-10}"
@@ -230,7 +234,7 @@ done
 ```
 {% endraw %}
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab16
 set -euo pipefail
 
@@ -270,11 +274,13 @@ test "$(cat count-a.txt)" -ge 1
 test "$(cat count-b.txt)" -ge 1
 ```
 
-**Expected output:** `hits.txt` contains both `backend=A` and `backend=B`; `mode.txt` records which path ran.
+!!! example "Expected output"
+    `hits.txt` contains both `backend=A` and `backend=B`; `mode.txt` records which path ran.
+
 
 #### Task 3 – Evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab16
 set -euo pipefail
 
@@ -289,7 +295,9 @@ ls -l lb-evidence.tgz | tee evidence-ls.txt
 test -s lb-evidence.tgz
 ```
 
-**Expected output:** `lb-evidence.tgz` is non-empty and includes the working artefact.
+!!! example "Expected output"
+    `lb-evidence.tgz` is non-empty and includes the working artefact.
+
 
 ### Validation steps
 
@@ -320,7 +328,7 @@ Add an HTTP health note file `health-design.md` (short) listing: check path, int
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab16
 set -euo pipefail
 

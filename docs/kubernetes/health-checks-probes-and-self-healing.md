@@ -223,7 +223,7 @@ Deploy nginx with liveness and readiness probes on `/`, prove Ready replicas and
 
 Workspace: `~/rebash-k8s/module-probes`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-probes && cd ~/rebash-k8s/module-probes
 ```
 
@@ -237,7 +237,7 @@ Before a production rollout, SRE requires probes on the demo web Deployment. You
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -246,7 +246,7 @@ metadata:
 
 Create `web-probes.yaml`:
 
-```yaml
+```yaml title="web-probes.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -297,7 +297,7 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-probes
 kubectl apply -f namespace.yaml
 kubectl apply -f web-probes.yaml
@@ -308,18 +308,22 @@ test "$(cat ready-count.txt)" -ge 2
 kubectl get endpoints web -n rebash-m-probes | tee endpoints-healthy.txt
 ```
 
-**Expected output:** Two Pods `1/1 Ready`; Endpoints list two addresses.
+!!! example "Expected output"
+    Two Pods `1/1 Ready`; Endpoints list two addresses.
+
 
 #### Task 2 – Exec probe check from Pod
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-probes
 POD=$(kubectl get pod -n rebash-m-probes -l app=web -o jsonpath='{.items[0].metadata.name}')
 kubectl exec -n rebash-m-probes "$POD" -- wget -qO- http://127.0.0.1/ | head -n 2 | tee probe-path-ok.txt
 test -s probe-path-ok.txt
 ```
 
-**Expected output:** HTML snippet confirms `/` responds—the same path probes use.
+!!! example "Expected output"
+    HTML snippet confirms `/` responds—the same path probes use.
+
 
 #### Task 3 – Break readiness briefly (bad path manifest)
 
@@ -363,7 +367,7 @@ spec:
 
 Apply broken config, observe NotReady, restore good manifest:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-probes
 kubectl apply -f web-probes-broken.yaml
 sleep 15
@@ -375,7 +379,9 @@ kubectl rollout status deployment/web -n rebash-m-probes --timeout=180s
 kubectl get endpoints web -n rebash-m-probes | tee endpoints-recovered.txt
 ```
 
-**Expected output:** After broken apply, Pods show NotReady and endpoints shrink; re-applying good manifest restores Ready state.
+!!! example "Expected output"
+    After broken apply, Pods show NotReady and endpoints shrink; re-applying good manifest restores Ready state.
+
 
 ### Validation steps
 
@@ -405,7 +411,7 @@ Add a `startupProbe` with `failureThreshold: 30` and `periodSeconds: 2` to `web-
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m-probes --ignore-not-found --wait=true
 ```
 

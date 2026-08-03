@@ -73,7 +73,7 @@ SSH hardening sits between the client and the host kernel. Keys authenticate the
 
 A **host firewall** decides which local ports accept connections. On Ubuntu, **UFW** is a simple front end to `nftables`/`iptables`. On RHEL-like systems, **firewalld** is common. Cloud security groups are a *separate* layer in front of the VM — both must allow SSH for remote access to work.
 
-```bash
+```bash title="Terminal"
 ss -lntp | grep -E ':22\b|sshd' || true
 sudo sshd -T | grep -Ei 'passwordauthentication|permitrootlogin|pubkeyauthentication|maxauthtries'
 sudo ufw status verbose 2>/dev/null || sudo firewall-cmd --list-all 2>/dev/null || true
@@ -143,7 +143,7 @@ On a practice Ubuntu VM, install a lab SSH key, apply a **safe** `sshd` drop-in 
 
 Workspace: `~/rebash-linux/lab20`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab20 && cd ~/rebash-linux/lab20
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -155,7 +155,9 @@ ss -lntp | tee ss-before.txt
 grep -E ':22\b|sshd' ss-before.txt
 ```
 
-**Expected output:** `admin-user.txt` and `ss-before.txt` exist; something is listening on port 22 (or your SSH port).
+!!! example "Expected output"
+    `admin-user.txt` and `ss-before.txt` exist; something is listening on port 22 (or your SSH port).
+
 
 !!! danger "Lockout rules for this lab"
     Do **not** set `PasswordAuthentication no` until you have proven key login in a second session.  
@@ -173,7 +175,7 @@ Security asks you to harden a new Ubuntu app VM before it goes on the public int
 
 Create a key used only for this lab, and capture what `sshd` is currently enforcing.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab20
 set -euo pipefail
 
@@ -198,13 +200,15 @@ sudo sshd -T | grep -Ei \
 ls -l "$KEY" "${KEY}.pub" | tee key-ls.txt
 ```
 
-**Expected output:** `rebash_lab_ed25519` and `.pub` exist; `sshd-T-before.txt` lists effective settings; public key is in `authorized_keys`.
+!!! example "Expected output"
+    `rebash_lab_ed25519` and `.pub` exist; `sshd-T-before.txt` lists effective settings; public key is in `authorized_keys`.
+
 
 #### Task 2 – Safe sshd drop-in, test, reload
 
 Add only safe knobs. Do **not** disable passwords in this task.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab20
 set -euo pipefail
 
@@ -239,13 +243,15 @@ ss -lntp | tee ss-after-reload.txt
 grep -E ':22\b|sshd' ss-after-reload.txt
 ```
 
-**Expected output:** `sshd -t` succeeds; after reload, effective settings show `maxauthtries 4` and `x11forwarding no`; SSH still listens.
+!!! example "Expected output"
+    `sshd -t` succeeds; after reload, effective settings show `maxauthtries 4` and `x11forwarding no`; SSH still listens.
+
 
 #### Task 3 – Firewall: allow SSH first, then enable only if safe
 
 This task never enables UFW unless OpenSSH is already allowed.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab20
 set -euo pipefail
 
@@ -298,7 +304,9 @@ shopt -u nullglob
 ls -l ssh-firewall-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** OpenSSH/22 allow is listed (on UFW hosts); SSH still listens; `ssh-firewall-evidence.tgz` is not empty.
+!!! example "Expected output"
+    OpenSSH/22 allow is listed (on UFW hosts); SSH still listens; `ssh-firewall-evidence.tgz` is not empty.
+
 
 ### Validation steps
 
@@ -333,7 +341,7 @@ Write an executable script `~/rebash-linux/lab20/check-ssh-safe.sh` that exits *
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab20
 set -euo pipefail
 

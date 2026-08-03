@@ -62,7 +62,7 @@ Admin automation sits between operators (or schedulers) and host facts. The scri
 
 **Linux admin automation** uses shell scripts to perform (or prepare) common operations work: disk usage, service health, user inventory, log size checks, and backup wrappers. The tools are familiar — `df`, `du`, `getent`, `id`, `systemctl`, package managers — wrapped with `set -euo pipefail`, clear output, and safe defaults.
 
-```bash
+```bash title="Terminal"
 df -h /
 getent passwd | wc -l
 systemctl is-active ssh 2>/dev/null || true
@@ -127,7 +127,7 @@ Build a read-mostly host health script that checks disk usage, summarises users,
 
 Workspace: `~/rebash-shell/lab12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab12 && cd ~/rebash-shell/lab12
 set -euo pipefail
 hostname | tee hostname.txt
@@ -135,7 +135,9 @@ whoami | tee runner.txt
 df -P / | tee df-root.txt
 ```
 
-**Expected output:** `hostname.txt`, `runner.txt`, and `df-root.txt` exist.
+!!! example "Expected output"
+    `hostname.txt`, `runner.txt`, and `df-root.txt` exist.
+
 
 ### Real-world scenario
 
@@ -147,7 +149,7 @@ Your team wants a lightweight morning check on practice Ubuntu VMs before demos.
 
 Create `host-health.sh`:
 
-```bash
+```bash title="host-health.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -216,7 +218,7 @@ exit "$STATUS"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab12
 set -euo pipefail
 
@@ -224,11 +226,13 @@ chmod +x host-health.sh
 ```
 
 
-**Expected output:** `host-health.sh` is executable.
+!!! example "Expected output"
+    `host-health.sh` is executable.
+
 
 #### Task 2 – Run the report and assert fields
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab12
 set -euo pipefail
 
@@ -244,13 +248,15 @@ grep -q '^overall_exit=' host-report.txt
 cp host-report.txt host-report-okpath.txt
 ```
 
-**Expected output:** Report contains host, disk, users, and service lines.
+!!! example "Expected output"
+    Report contains host, disk, users, and service lines.
+
 
 #### Task 3 – Prove fail path with a low disk threshold
 
 Force a failure without changing the real disk by lowering thresholds.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab12
 set -euo pipefail
 
@@ -268,7 +274,9 @@ tar -czf admin-evidence.tgz \
 ls -l admin-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** Script exits non-zero; fail report shows `WARN` or `FAIL` for disk; archive exists.
+!!! example "Expected output"
+    Script exits non-zero; fail report shows `WARN` or `FAIL` for disk; archive exists.
+
 
 ### Validation steps
 
@@ -301,7 +309,7 @@ Extend `host-health.sh` with a memory line using `/proc/meminfo` (`MemAvailable`
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab12
 set -euo pipefail
 # Keep the script and evidence if you want; otherwise:

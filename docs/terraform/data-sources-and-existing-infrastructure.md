@@ -161,7 +161,7 @@ Read a pre-existing Docker network and config file, call an **external** script 
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-11/{config,scripts} && cd ~/rebash-terraform/module-11
 ```
 
@@ -177,14 +177,14 @@ Your application stack must attach to a **platform-owned Docker network**, read 
 
 Create the platform network outside Terraform (simulating existing infrastructure):
 
-```bash
+```bash title="Terminal"
 docker network create rebash-platform-net | tee platform-net-create.txt
 grep -q 'rebash-platform-net' platform-net-create.txt
 ```
 
 Create `config/existing.env`:
 
-```text
+```text title="existing.env"
 UPSTREAM_SERVICE=payments-api
 UPSTREAM_VERSION=2.4.1
 MAINTENANCE_WINDOW=sunday-02:00-04:00-utc
@@ -192,7 +192,7 @@ MAINTENANCE_WINDOW=sunday-02:00-04:00-utc
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -219,13 +219,13 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `data.tf`:
 
-```hcl
+```hcl title="data.tf"
 data "docker_network" "platform" {
   name = "rebash-platform-net"
 }
@@ -249,7 +249,7 @@ data "http" "terraform_checkpoint" {
 
 Create `scripts/read-owner.sh`:
 
-```bash
+```bash title="read-owner.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 query="$(cat)"
@@ -261,7 +261,7 @@ jq -n --arg owner "$owner_email" --arg service "$service" \
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-11/scripts/read-owner.sh
 cd ~/rebash-terraform/module-11
 terraform init
@@ -269,13 +269,15 @@ echo '{"service":"payments-api"}' | bash scripts/read-owner.sh | grep -q owner_e
 echo "seed OK" | tee seed-ok.txt
 ```
 
-**Expected output:** External script prints JSON with `owner_email`; platform network exists.
+!!! example "Expected output"
+    External script prints JSON with `owner_email`; platform network exists.
+
 
 #### Task 2 – Wire data sources into Docker container and outputs
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 locals {
   config_lines = split("\n", trimspace(data.local_file.platform_config.content))
   upstream_version = [
@@ -308,7 +310,7 @@ resource "docker_container" "app" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "upstream_version" {
   value = local.upstream_version
 }
@@ -329,7 +331,7 @@ output "container_name" {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-11
 terraform validate
 terraform apply -auto-approve
@@ -344,13 +346,15 @@ echo "task2 OK" | tee task2-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Container attached to platform network with owner label from external data.
+!!! example "Expected output"
+    Container attached to platform network with owner label from external data.
+
 
 #### Task 3 – Prove plan changes when upstream file changes
 
 Update `config/existing.env`:
 
-```text
+```text title="existing.env"
 UPSTREAM_SERVICE=payments-api
 UPSTREAM_VERSION=2.5.0
 MAINTENANCE_WINDOW=sunday-02:00-04:00-utc
@@ -359,7 +363,7 @@ MAINTENANCE_WINDOW=sunday-02:00-04:00-utc
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-11
 terraform plan -no-color | tee plan-after-config-change.txt
 grep -q '2.5.0' plan-after-config-change.txt
@@ -371,14 +375,16 @@ echo "task3 OK" | tee task3-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Plan detects container rename from version change; new container running.
+!!! example "Expected output"
+    Plan detects container rename from version change; new container running.
+
 
 #### Task 4 – Data sources evidence script
 
 Create `data-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-11
@@ -393,12 +399,14 @@ echo "data-evidence PASS" | tee data-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-11/data-evidence.sh
 ~/rebash-terraform/module-11/data-evidence.sh
 ```
 
-**Expected output:** `data-evidence-pass.txt` contains `data-evidence PASS`.
+!!! example "Expected output"
+    `data-evidence-pass.txt` contains `data-evidence PASS`.
+
 
 ### Validation steps
 
@@ -442,7 +450,7 @@ output "nginx_image_id" {
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-11
 terraform apply -auto-approve
 terraform output -raw owner_script_sha | grep -q .
@@ -450,7 +458,9 @@ terraform output -raw nginx_image_id | grep -q .
 echo "data challenge OK"
 ```
 
-**Expected output:** Non-empty SHA256 and image ID outputs.
+!!! example "Expected output"
+    Non-empty SHA256 and image ID outputs.
+
 
 ### Learning outcomes
 
@@ -461,7 +471,7 @@ echo "data challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-11
 terraform destroy -auto-approve
 docker network rm rebash-platform-net 2>/dev/null || true

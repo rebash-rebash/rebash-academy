@@ -160,7 +160,7 @@ Author templates that use `if`, `range`, and `include`/`define` helpers, drive o
 
 Workspace: `~/rebash-helm/module-04` on your workstation.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-04/rebash-tpl/templates && cd ~/rebash-helm/module-04
 ```
 
@@ -174,7 +174,7 @@ Your chart must expose optional Ingress for production while staying minimal in 
 
 Create `rebash-tpl/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-tpl
 description: Template features lab chart
@@ -185,7 +185,7 @@ appVersion: "1.27"
 
 Create `rebash-tpl/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginxinc/nginx-unprivileged
@@ -299,7 +299,7 @@ spec:
 
 Create `values-ingress.yaml`:
 
-```yaml
+```yaml title="values-ingress.yaml"
 ingress:
   enabled: true
   host: tpl.lab.example.com
@@ -310,7 +310,7 @@ extraEnv:
     value: "on"
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-04
 helm lint rebash-tpl | tee lint-m04.txt
 helm template tpl-off rebash-tpl --namespace rebash-helm-m04 | tee render-off-m04.yaml
@@ -322,20 +322,22 @@ test "$(cat ingress-off-count-m04.txt)" -eq 0
 test "$(cat ingress-on-count-m04.txt)" -eq 1
 ```
 
-**Expected output:** Ingress absent when disabled (`ingress-off-count-m04.txt` is `0`); Ingress present when enabled (`ingress-on-count-m04.txt` is `1`); `env-debug-m04.txt` shows `LOG_LEVEL` overridden to `debug`.
+!!! example "Expected output"
+    Ingress absent when disabled (`ingress-off-count-m04.txt` is `0`); Ingress present when enabled (`ingress-on-count-m04.txt` is `1`); `env-debug-m04.txt` shows `LOG_LEVEL` overridden to `debug`.
+
 
 #### Task 4 – Optional cluster install (ingress disabled)
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
   name: rebash-helm-m04
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-04
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -346,7 +348,9 @@ else
 fi
 ```
 
-**Expected output:** Deployment and Service Ready in `rebash-helm-m04`; no Ingress object when defaults apply.
+!!! example "Expected output"
+    Deployment and Service Ready in `rebash-helm-m04`; no Ingress object when defaults apply.
+
 
 ### Validation steps
 
@@ -378,7 +382,7 @@ Add a `required` helper call so rendering fails when `ingress.enabled` is true b
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall tpl-off -n rebash-helm-m04 2>/dev/null || true
 kubectl delete namespace rebash-helm-m04 --ignore-not-found
 ```

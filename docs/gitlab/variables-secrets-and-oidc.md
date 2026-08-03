@@ -164,7 +164,7 @@ Workspace: `~/rebash-gitlab/module-06`
 
 File-first lab. Never commit real tokens — use placeholders only.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-06 && cd ~/rebash-gitlab/module-06
 ```
 
@@ -178,7 +178,7 @@ Security review flagged cloud access keys committed in YAML. You refactor the pi
 
 Create `src/deploy_check.py`:
 
-```python
+```python title="deploy_check.py"
 import os
 print("region", os.environ.get("AWS_REGION", "unset"))
 print("deploy ok")
@@ -186,7 +186,7 @@ print("deploy ok")
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 variables:
   AWS_REGION: ap-south-1
   APP_ENV: staging
@@ -222,7 +222,7 @@ deploy_staging:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-06
 python3 -c "
 import yaml
@@ -233,7 +233,9 @@ print('OK no static keys in YAML')
 "
 ```
 
-**Expected output:** Prints `OK no static keys in YAML`.
+!!! example "Expected output"
+    Prints `OK no static keys in YAML`.
+
 
 #### Task 2 – Document OIDC trust configuration
 
@@ -267,7 +269,7 @@ local_simulation:
 
 Validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-06
 python3 -c "
 import yaml
@@ -278,13 +280,15 @@ print('OK oidc-notes', o['oidc_provider']['audience'])
 "
 ```
 
-**Expected output:** Prints `OK oidc-notes https://gitlab.com`.
+!!! example "Expected output"
+    Prints `OK oidc-notes https://gitlab.com`.
+
 
 #### Task 3 – Simulate staging deploy with a local placeholder
 
 Prove the script path without a real secret:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-06
 export AWS_REGION=ap-south-1
 export APP_ENV=staging
@@ -295,7 +299,9 @@ grep -q 'region ap-south-1' vars-out.txt
 grep -q 'deploy ok' vars-out.txt
 ```
 
-**Expected output:** `vars-out.txt` contains both `region ap-south-1` and `deploy ok`.
+!!! example "Expected output"
+    `vars-out.txt` contains both `region ap-south-1` and `deploy ok`.
+
 
 ### Validation steps
 

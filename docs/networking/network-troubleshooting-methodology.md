@@ -77,7 +77,7 @@ A **troubleshooting methodology** is a repeatable path from symptom to root caus
 
 `HOSTALIASES` is a glibc environment variable. It points to a **file** (often under your lab directory) that maps an alias name to another name. Processes that honour it resolve `app.rebash.lab` without editing system `/etc/hosts`. That makes it safe for practice: the override lives only in the lab shell.
 
-```bash
+```bash title="Terminal"
 export HOSTALIASES="$HOME/rebash-networking/lab27/hostaliases"
 getent hosts app.rebash.lab
 ```
@@ -99,7 +99,7 @@ Random `ping` and “restart the pod” waste incidents. A fixed ladder keeps bl
 
 Never skip writing **expected vs actual** at each step. Change configuration only after the layer that failed is named.
 
-```bash
+```bash title="Terminal"
 # Pattern: capture, then decide
 ip -br addr | tee evidence/l1-addr.txt
 ip route get 127.0.0.1 | tee evidence/l3-route.txt
@@ -147,7 +147,7 @@ Under `~/rebash-networking/lab27`, start a local HTTP listener, inject a **lab-o
 
 Workspace: `~/rebash-networking/lab27`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab27/{evidence,www} && cd ~/rebash-networking/lab27
 set -euo pipefail
 whoami | tee evidence/operator.txt
@@ -158,7 +158,9 @@ command -v ip
 command -v ss
 ```
 
-**Expected output:** `evidence/operator.txt` and `evidence/os.txt` exist; `python3`, `curl`, `ip`, and `ss` are found.
+!!! example "Expected output"
+    `evidence/operator.txt` and `evidence/os.txt` exist; `python3`, `curl`, `ip`, and `ss` are found.
+
 
 ### Real-world scenario
 
@@ -170,7 +172,7 @@ A small internal tool should answer on `http://app.rebash.lab:18780/`. After a c
 
 Serve a tiny page on loopback port **18780** only. Keep the process PID in the lab directory.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab27
 set -euo pipefail
 
@@ -189,38 +191,40 @@ curl -fsS http://127.0.0.1:18780/ | tee evidence/curl-direct.txt
 grep -qx 'ok-lab27' evidence/curl-direct.txt
 ```
 
-**Expected output:** `l4-listen-good.txt` shows `127.0.0.1:18780`; `curl-direct.txt` contains `ok-lab27`.
+!!! example "Expected output"
+    `l4-listen-good.txt` shows `127.0.0.1:18780`; `curl-direct.txt` contains `ok-lab27`.
+
 
 #### Task 2 – Inject a lab-only DNS override and wrong client URL
 
 Map `app.rebash.lab` with `HOSTALIASES` (file under the lab root). Point the client config at the **wrong port** `18781` so the failure is local and reversible.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab27
 set -euo pipefail
 ```
 
 Create `hostaliases`:
 
-```text
+```text title="hostaliases"
 app.rebash.lab localhost
 ```
 
 Create `client-broken.env`:
 
-```bash
+```bash title="client-broken.env"
 export HOSTALIASES="$HOME/rebash-networking/lab27/hostaliases"
 export APP_URL="http://app.rebash.lab:18781/"
 ```
 
 Create `client-good.env`:
 
-```bash
+```bash title="client-good.env"
 export HOSTALIASES="$HOME/rebash-networking/lab27/hostaliases"
 export APP_URL="http://app.rebash.lab:18780/"
 ```
 
-```bash
+```bash title="Terminal"
 # glibc HOSTALIASES: alias → canonical name (then normal resolution)
 set -a
 # shellcheck disable=SC1091
@@ -239,20 +243,22 @@ grep -Ei 'refused|Failed to connect|Connection reset|Could not|Couldn.t connect'
   || test -s evidence/curl-broken.err
 ```
 
-**Expected output:** `dns-hostaliases.txt` maps `app.rebash.lab` (via `localhost`); curl to port **18781** fails; `curl-broken-rc.txt` is non-zero.
+!!! example "Expected output"
+    `dns-hostaliases.txt` maps `app.rebash.lab` (via `localhost`); curl to port **18781** fails; `curl-broken-rc.txt` is non-zero.
+
 
 #### Task 3 – L1→L7 checklist script that finds the fault
 
 Run a triage script that writes one evidence file per layer and a final `fault.txt`.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab27
 set -euo pipefail
 ```
 
 Create `triage-l1-l7.sh`:
 
-```bash
+```bash title="triage-l1-l7.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="${1:-$HOME/rebash-networking/lab27}"
@@ -328,7 +334,7 @@ grep -q 'ROOT_CAUSE=client_port_mismatch' "$EV/fault.txt"
 echo "triage_ok"
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x triage-l1-l7.sh
 ./triage-l1-l7.sh "$HOME/rebash-networking/lab27" | tee evidence/triage-run.txt
 grep -q 'ROOT_CAUSE=client_port_mismatch' evidence/fault.txt
@@ -337,7 +343,9 @@ tar -czf methodology-evidence.tgz evidence hostaliases client-broken.env client-
 ls -l methodology-evidence.tgz | tee evidence/evidence-ls.txt
 ```
 
-**Expected output:** `evidence/fault.txt` contains `ROOT_CAUSE=client_port_mismatch`; `methodology-evidence.tgz` is non-empty; `triage-run.txt` ends with `triage_ok`.
+!!! example "Expected output"
+    `evidence/fault.txt` contains `ROOT_CAUSE=client_port_mismatch`; `methodology-evidence.tgz` is non-empty; `triage-run.txt` ends with `triage_ok`.
+
 
 ### Validation steps
 
@@ -369,7 +377,7 @@ Write `fix-client.sh` that sources `client-good.env`, curls `APP_URL`, asserts t
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab27
 set -euo pipefail
 

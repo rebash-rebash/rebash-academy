@@ -124,7 +124,7 @@ Write a minimal JCasC snippet, a backup/restore shell script for your Compose vo
 
 Workspace: `~/rebash-jenkins/module-15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-15 && cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
@@ -139,7 +139,7 @@ Leadership asked: “If the Jenkins disk dies tonight, how long to rebuild?” Y
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 
@@ -148,7 +148,7 @@ mkdir -p jcasc
 
 Create `jcasc/jenkins.yaml`:
 
-```yaml
+```yaml title="jenkins.yaml"
 jenkins:
   systemMessage: "REBASH Academy lab controller — Module 15 JCasC"
   numExecutors: 0
@@ -167,7 +167,7 @@ unclassified:
 
 Create `jcasc/apply-casc.sh`:
 
-```bash
+```bash title="apply-casc.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 : "${CASC_JENKINS_CONFIG:=$(pwd)/jcasc/jenkins.yaml}"
@@ -179,25 +179,27 @@ echo jcasc_bundle_ok
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x jcasc/apply-casc.sh
 ./jcasc/apply-casc.sh | tee jcasc-validate.txt
 ```
 
-**Expected output:** YAML emphasises zero built-in executors and a system message.
+!!! example "Expected output"
+    YAML emphasises zero built-in executors and a system message.
+
 
 #### Task 2 – Backup and restore script (Compose volume)
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
 
 Create `backup-restore.sh`:
 
-```bash
+```bash title="backup-restore.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo "Identify volume: docker volume ls | grep jenkins"
@@ -210,7 +212,7 @@ echo "Restore: extract tarball into volume on disposable controller, then docker
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x backup-restore.sh
 ./backup-restore.sh | tee backup-restore-head.txt
 
@@ -218,20 +220,22 @@ mkdir -p backups
 ls backups | tee backups-dir.txt || true
 ```
 
-**Expected output:** Backup script documents commands; practise when safe on lab.
+!!! example "Expected output"
+    Backup script documents commands; practise when safe on lab.
+
 
 #### Task 3 – Scaling and metrics checklist
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
 
 Create `scale-metrics.yaml`:
 
-```yaml
+```yaml title="scale-metrics.yaml"
 scaling:
   controller: cpu_ram_disk_for_ui_queue_plugins
   agents: labelled_capacity_k8s_or_vms
@@ -250,7 +254,7 @@ logging:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('scale-metrics.yaml') as f:
@@ -260,20 +264,22 @@ print('scale-metrics.yaml OK')
 " | tee scale-metrics-validate.txt
 ```
 
-**Expected output:** Metrics YAML validates.
+!!! example "Expected output"
+    Metrics YAML validates.
+
 
 #### Task 4 – Multi-team folder governance
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
 
 Create `folder-governance.yaml`:
 
-```yaml
+```yaml title="folder-governance.yaml"
 folders:
   - name: rebash-demo
     owners: platform-lab
@@ -295,7 +301,7 @@ rules:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('folder-governance.yaml') as f:
@@ -308,7 +314,9 @@ tar -czf module-15-evidence.tgz jcasc backup-restore.sh scale-metrics.yaml folde
 ls -l module-15-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Governance YAML and evidence archive.
+!!! example "Expected output"
+    Governance YAML and evidence archive.
+
 
 ### Validation steps
 
@@ -339,7 +347,7 @@ Export live configuration from a lab controller (CasC UI download) into `jcasc/e
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Keep backups/ out of public git if it contains real home tarballs
 ls ~/rebash-jenkins/module-15
 ```

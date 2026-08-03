@@ -136,13 +136,15 @@ Create a local Git repository with a parameterised Declarative `Jenkinsfile`, co
 
 Workspace: `~/rebash-jenkins/module-05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-05 && cd ~/rebash-jenkins/module-05
 set -euo pipefail
 git --version | tee git-version.txt
 ```
 
-**Expected output:** Git version line printed.
+!!! example "Expected output"
+    Git version line printed.
+
 
 ### Real-world scenario
 
@@ -154,7 +156,7 @@ Your service repo must own its CI definition. Reviewers rejected a UI-only Pipel
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-05
 set -euo pipefail
 
@@ -165,7 +167,7 @@ git init -b main
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # scm-app
 
 REBASH Jenkins Module 5 — Jenkinsfile in SCM demo.
@@ -173,7 +175,7 @@ REBASH Jenkins Module 5 — Jenkinsfile in SCM demo.
 
 Create `Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 pipeline {
   agent any
   options {
@@ -210,14 +212,16 @@ pipeline {
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 git add README.md Jenkinsfile
 git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Add Declarative Jenkinsfile for Module 5'
 git log -1 --oneline | tee ../commit.txt
 pwd | tee ../repo-path.txt
 ```
 
-**Expected output:** Commit hash in `commit.txt`; absolute repo path in `repo-path.txt`.
+!!! example "Expected output"
+    Commit hash in `commit.txt`; absolute repo path in `repo-path.txt`.
+
 
 #### Task 2 – Configure Pipeline from SCM in Jenkins
 
@@ -234,14 +238,14 @@ pwd | tee ../repo-path.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-05
 set -euo pipefail
 ```
 
 Create `scm-job-config.yaml`:
 
-```yaml
+```yaml title="scm-job-config.yaml"
 job: rebash-demo/scm-pipeline
 definition: pipeline_script_from_scm
 repo_path: fill_from_repo-path.txt
@@ -253,7 +257,7 @@ fallback: push scm-app to remote Git if file:// fails in Dockerised Jenkins
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 from pathlib import Path
@@ -267,7 +271,9 @@ print('scm-job-config.yaml OK')
 " | tee scm-config-validate.txt
 ```
 
-**Expected output:** Config file with your path validates; job configured.
+!!! example "Expected output"
+    Config file with your path validates; job configured.
+
 
 #### Task 3 – Build with parameters and verify SCM load
 
@@ -277,7 +283,7 @@ print('scm-job-config.yaml OK')
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-05/scm-app
 set -euo pipefail
 
@@ -290,31 +296,33 @@ git rev-parse --short HEAD | tee ../head-after-touch.txt
 
 Create `../expected-console-markers.txt`:
 
-```text
+```text title="expected-console-markers.txt"
 Building scm-app for TARGET=
 SCM Pipeline finished:
 ```
 
 Verify:
 
-```bash
+```bash title="Terminal"
 test -f ../second-commit.txt
 ```
 
-**Expected output:** Second commit recorded; paste Console Output to `console.log` after build and grep for markers.
+!!! example "Expected output"
+    Second commit recorded; paste Console Output to `console.log` after build and grep for markers.
+
 
 #### Task 4 – Multibranch readiness checklist
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-05
 set -euo pipefail
 ```
 
 Create `multibranch-readiness.yaml`:
 
-```yaml
+```yaml title="multibranch-readiness.yaml"
 jenkinsfile_at_repo_root: true
 declarative_structure: true
 no_ui_only_secrets: true
@@ -326,7 +334,7 @@ hardcoded_prod_credential_ids: forbidden
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('multibranch-readiness.yaml') as f:
@@ -340,7 +348,9 @@ tar -czf module-05-evidence.tgz scm-app/Jenkinsfile scm-app/README.md scm-job-co
 ls -l module-05-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Archive listed.
+!!! example "Expected output"
+    Archive listed.
+
 
 ### Validation steps
 
@@ -373,7 +383,7 @@ Add a `booleanParam(name: 'RUN_SLOW_TESTS', defaultValue: false)` and a stage wi
 
 Keep `scm-app` and the SCM job for Module 7 experiments. Do not commit real credentials into the repo.
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-jenkins/module-05
 ```
 

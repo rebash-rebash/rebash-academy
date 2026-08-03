@@ -145,7 +145,7 @@ Create a `Host` dataclass with methods, `__post_init__` validation, and `to_dict
 
 Workspace: `~/rebash-python/lab09`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab09 && cd ~/rebash-python/lab09
 set -euo pipefail
 python3 -m venv .venv
@@ -153,7 +153,9 @@ source .venv/bin/activate
 python -c "from dataclasses import dataclass; print('ok')"
 ```
 
-**Expected output:** `ok`; `.venv` exists.
+!!! example "Expected output"
+    `ok`; `.venv` exists.
+
 
 ### Real-world scenario
 
@@ -163,7 +165,7 @@ Your inventory CLI will soon accept YAML hosts. Before wiring files, you model a
 
 #### Task 1 – Define Host dataclass with validation and methods
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab09
 set -euo pipefail
 source .venv/bin/activate
@@ -171,7 +173,7 @@ source .venv/bin/activate
 
 Create `host_model.py`:
 
-```python
+```python title="host_model.py"
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -210,15 +212,17 @@ class Host:
 
 Run:
 
-```bash
+```bash title="Terminal"
 python -c "from host_model import Host; print(Host('web-01','prod','10.0.1.11').label())"
 ```
 
-**Expected output:** `web-01.prod`
+!!! example "Expected output"
+    `web-01.prod`
+
 
 #### Task 2 – Serialise good hosts and reject bad ones
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab09
 set -euo pipefail
 source .venv/bin/activate
@@ -265,11 +269,13 @@ print("errors", len(errors))
 PY
 ```
 
-**Expected output:** `hosts.json` written; three validation errors recorded.
+!!! example "Expected output"
+    `hosts.json` written; three validation errors recorded.
+
 
 #### Task 3 – Reload dicts into Host objects
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab09
 set -euo pipefail
 source .venv/bin/activate
@@ -294,7 +300,9 @@ print((root / "reload-ok.txt").read_text(encoding="utf-8"))
 PY
 ```
 
-**Expected output:** `reload-ok.txt` lists three labels including `web-01.prod`.
+!!! example "Expected output"
+    `reload-ok.txt` lists three labels including `web-01.prod`.
+
 
 ### Validation steps
 
@@ -324,7 +332,7 @@ Add an optional field `tags: list[str]` with `field(default_factory=list)`. Reje
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab09
 set -euo pipefail
 # rm -rf .venv __pycache__ *.py *.json *.txt

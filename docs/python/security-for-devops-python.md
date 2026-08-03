@@ -152,13 +152,15 @@ Under `~/rebash-python/lab25`, build a secret scanner that fails on a planted fa
 
 Workspace: `~/rebash-python/lab25`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab25 && cd ~/rebash-python/lab25
 set -euo pipefail
 python3 --version | tee python-version.txt
 ```
 
-**Expected output:** `python-version.txt` exists and shows Python 3.10+.
+!!! example "Expected output"
+    `python-version.txt` exists and shows Python 3.10+.
+
 
 ### Real-world scenario
 
@@ -172,14 +174,14 @@ Plant a fake key in a sample file, then build a scanner that exits non-zero when
 
 Create `samples/clean_config.txt`:
 
-```text
+```text title="clean_config.txt"
 endpoint=https://example.invalid/api
 timeout_seconds=10
 ```
 
 Create `samples/leaky_config.txt`:
 
-```text
+```text title="leaky_config.txt"
 endpoint=https://example.invalid/api
 REBASH_API_KEY=AKIA_TRAINING_ONLY_FAKEKEY99
 timeout_seconds=10
@@ -187,7 +189,7 @@ timeout_seconds=10
 
 Create `secret_scan.py`:
 
-```python
+```python title="secret_scan.py"
 """Fail if a REBASH_API_KEY-like secret appears in scanned files."""
 from __future__ import annotations
 
@@ -235,7 +237,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab25
 set -euo pipefail
 
@@ -253,14 +255,16 @@ grep -F 'secret-like' scan-leaky.stdout
 ```
 
 
-**Expected output:** clean scan prints `RESULT=ok`; leaky scan exits non-zero with `RESULT=fail`.
+!!! example "Expected output"
+    clean scan prints `RESULT=ok`; leaky scan exits non-zero with `RESULT=fail`.
+
 
 #### Task 2 – Safe subprocess (list args, not shell=True)
 
 
 Create `safe_subprocess_demo.py`:
 
-```python
+```python title="safe_subprocess_demo.py"
 """Demonstrate argv-list subprocess (no shell=True)."""
 from __future__ import annotations
 
@@ -294,7 +298,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab25
 set -euo pipefail
 python3 safe_subprocess_demo.py | tee safe-subprocess.stdout
@@ -305,11 +309,13 @@ grep -F 'shell=True' safe_subprocess_demo.py && exit 1 || true
 grep -F 'subprocess.run' safe_subprocess_demo.py
 ```
 
-**Expected output:** `safe_output=42` and `RESULT=ok`; source has no `shell=True`.
+!!! example "Expected output"
+    `safe_output=42` and `RESULT=ok`; source has no `shell=True`.
+
 
 #### Task 3 – Optional bandit / pip-audit and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab25
 set -euo pipefail
 
@@ -355,7 +361,9 @@ tar -czf lab25-evidence.tgz \
 ls -l lab25-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** status files say `ran` or `skipped`; `lab25-evidence.tgz` is non-empty. Missing scanners is OK.
+!!! example "Expected output"
+    status files say `ran` or `skipped`; `lab25-evidence.tgz` is non-empty. Missing scanners is OK.
+
 
 ### Validation steps
 
@@ -388,7 +396,7 @@ Extend `secret_scan.py` with a `--allowlist` file of path substrings to ignore (
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab25
 set -euo pipefail
 # Remove the intentional leaky sample when finished practising:

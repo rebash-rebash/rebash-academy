@@ -25,7 +25,7 @@ A local **kind** or **minikube** cluster is enough for most labs. Multi-cluster 
 
 Yes for production. Labs may use the `stable` manifest for convenience; pin a release tag from [GitHub Releases](https://github.com/argoproj/argo-cd/releases) in real environments.
 
-```bash
+```bash title="Terminal"
 kubectl create namespace argocd
 kubectl apply -n argocd --server-side --force-conflicts \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -48,7 +48,7 @@ Helm and Go template markers can confuse MkDocs macros. Tutorial fences that con
 
 Local Application examples use a `file://` repository URL. After you create files under `~/rebash-argocd/module-NN`, mirror them for Argo CD:
 
-```bash
+```bash title="Terminal"
 mkdir -p /tmp/rebash-argocd
 rsync -a --delete ~/rebash-argocd/module-NN/ /tmp/rebash-argocd/module-NN/
 ```

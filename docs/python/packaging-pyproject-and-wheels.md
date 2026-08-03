@@ -142,13 +142,15 @@ Under `~/rebash-python/lab23`, create a small installable package with `pyprojec
 
 Workspace: `~/rebash-python/lab23`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab23 && cd ~/rebash-python/lab23
 set -euo pipefail
 python3 --version | tee python-version.txt
 ```
 
-**Expected output:** `python-version.txt` shows Python 3.10+.
+!!! example "Expected output"
+    `python-version.txt` shows Python 3.10+.
+
 
 ### Real-world scenario
 
@@ -158,7 +160,7 @@ Your inventory classifier from the pytest tutorial needs to ship to other teams.
 
 #### Task 1 – Package layout and pyproject.toml
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab23
 set -euo pipefail
 
@@ -167,13 +169,13 @@ mkdir -p src/rebash_invcheck
 
 Create `src/rebash_invcheck/__init__.py`:
 
-```python
+```python title="__init__.py"
 __version__ = "0.1.0"
 ```
 
 Create `src/rebash_invcheck/cli.py`:
 
-```python
+```python title="cli.py"
 from __future__ import annotations
 
 import argparse
@@ -212,7 +214,7 @@ if __name__ == "__main__":
 
 Create `pyproject.toml`:
 
-```toml
+```toml title="pyproject.toml"
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -234,7 +236,7 @@ where = ["src"]
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # rebash-invcheck
 
 Lab package for REBASH Academy Module 23.
@@ -242,7 +244,7 @@ Lab package for REBASH Academy Module 23.
 
 Create `hosts.json`:
 
-```json
+```json title="hosts.json"
 [
   {"name": "web1", "status": "up"},
   {"name": "web2", "status": "down"}
@@ -251,16 +253,18 @@ Create `hosts.json`:
 
 Run:
 
-```bash
+```bash title="Terminal"
 test -f src/rebash_invcheck/cli.py
 test -f pyproject.toml
 ```
 
-**Expected output:** `src/rebash_invcheck/cli.py` and `pyproject.toml` exist.
+!!! example "Expected output"
+    `src/rebash_invcheck/cli.py` and `pyproject.toml` exist.
+
 
 #### Task 2 – Build the wheel
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab23
 set -euo pipefail
 
@@ -274,11 +278,13 @@ test -f dist/rebash_invcheck-0.1.0-py3-none-any.whl || ls dist/*.whl | grep -q r
 deactivate
 ```
 
-**Expected output:** `dist/` contains a `rebash_invcheck-0.1.0-*.whl` file; `build-log.txt` shows a successful build.
+!!! example "Expected output"
+    `dist/` contains a `rebash_invcheck-0.1.0-*.whl` file; `build-log.txt` shows a successful build.
+
 
 If `build` cannot be installed, fall back:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab23
 set -euo pipefail
 python3 -m venv .build-venv
@@ -292,7 +298,7 @@ deactivate
 
 #### Task 3 – Install into a clean venv and run entry point
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab23
 set -euo pipefail
 
@@ -324,7 +330,9 @@ ls -l packaging-lab-evidence.tgz | tee evidence-ls.txt
 test -s packaging-lab-evidence.tgz
 ```
 
-**Expected output:** `cli-out.txt` is `{"healthy": 1, "unhealthy": 1, "unknown": 0}`; entry point resolves inside `.run-venv`.
+!!! example "Expected output"
+    `cli-out.txt` is `{"healthy": 1, "unhealthy": 1, "unknown": 0}`; entry point resolves inside `.run-venv`.
+
 
 ### Validation steps
 
@@ -357,7 +365,7 @@ Add a `pyproject.toml` optional extra `[project.optional-dependencies] dev = ["p
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab23
 set -euo pipefail
 rm -rf .build-venv .run-venv build *.egg-info src/*.egg-info

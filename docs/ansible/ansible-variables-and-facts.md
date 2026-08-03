@@ -167,13 +167,13 @@ Build a playbook that merges **group_vars**, prints facts, **registers** a comma
 
 Workspace: `~/rebash-ansible/module-06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-06/{group_vars,host_vars} && cd ~/rebash-ansible/module-06
 ```
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = ./inventory
 host_key_checking = False
@@ -182,7 +182,7 @@ interpreter_python = auto_silent
 
 Create `inventory`:
 
-```ini
+```ini title="inventory"
 [local]
 localhost ansible_connection=local
 ```
@@ -199,7 +199,7 @@ expected_user: "{{ ansible_user_id | default('unknown') }}"
 
 Create `host_vars/localhost.yml`:
 
-```yaml
+```yaml title="localhost.yml"
 lab_id: module-06
 note: host-specific override demo
 ```
@@ -260,7 +260,7 @@ Create `facts-and-vars.yml`:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-06
 ansible-playbook facts-and-vars.yml --syntax-check | tee syntax-check.txt
 ansible-playbook facts-and-vars.yml | tee playbook-run.txt
@@ -270,11 +270,13 @@ grep -q os_family= ~/rebash-ansible/module-06/reports/facts-summary.txt
 echo "task1 OK" | tee task1-ok.txt
 ```
 
-**Expected output:** Report file exists with `os_family=` line; debug shows `inventory_hostname=localhost`.
+!!! example "Expected output"
+    Report file exists with `os_family=` line; debug shows `inventory_hostname=localhost`.
+
 
 #### Task 2 – Ad-hoc setup and extra-vars precedence demo
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-06
 ansible localhost -m setup -a "filter=ansible_os*" -c local | tee setup-filter.txt
 grep -q ansible_os_family setup-filter.txt
@@ -283,13 +285,15 @@ grep -q override-demo extra-vars-run.txt
 echo "task2 OK" | tee task2-ok.txt
 ```
 
-**Expected output:** Filtered setup shows OS facts; debug output includes `environment=override-demo` from extra-vars winning over group_vars.
+!!! example "Expected output"
+    Filtered setup shows OS facts; debug output includes `environment=override-demo` from extra-vars winning over group_vars.
+
 
 #### Task 3 – Create vars-evidence.sh audit script
 
 Create `vars-evidence.sh`:
 
-```bash
+```bash title="vars-evidence.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-06
@@ -302,12 +306,14 @@ echo "vars-evidence PASS" | tee vars-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-ansible/module-06/vars-evidence.sh
 ~/rebash-ansible/module-06/vars-evidence.sh
 ```
 
-**Expected output:** `vars-evidence-pass.txt` contains `vars-evidence PASS`.
+!!! example "Expected output"
+    `vars-evidence-pass.txt` contains `vars-evidence PASS`.
+
 
 ### Validation steps
 
@@ -349,14 +355,16 @@ Create `assert-os-family.yml` that fails if OS family is unknown:
 
 Run and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-06
 ansible-playbook assert-os-family.yml | tee assert-os.txt
 grep -q 'OS family' assert-os.txt
 echo "assert challenge OK"
 ```
 
-**Expected output:** Play succeeds with success message naming your OS family.
+!!! example "Expected output"
+    Play succeeds with success message naming your OS family.
+
 
 ### Learning outcomes
 
@@ -367,7 +375,7 @@ echo "assert challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-06
 rm -rf ~/rebash-ansible/module-06/reports
 rm -f syntax-check.txt playbook-run.txt task*-ok.txt setup-filter.txt \

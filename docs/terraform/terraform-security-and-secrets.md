@@ -140,7 +140,7 @@ Demonstrate sensitive variable handling, redacted CLI output, and plaintext pers
 
 Workspace: `~/rebash-terraform/module-15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-15 && cd ~/rebash-terraform/module-15
 ```
 
@@ -154,7 +154,7 @@ Security review flagged a service module that passed API tokens into container e
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.9.0"
 
@@ -173,13 +173,13 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "api_token" {
   type        = string
   description = "Placeholder API token — inject from CI secret store in production."
@@ -196,7 +196,7 @@ variable "service_name" {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "service" {
   name         = "nginx:1.27-alpine"
   keep_locally = true
@@ -226,7 +226,7 @@ resource "local_file" "service_config" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "container_name" {
   description = "Running container name."
   value       = docker_container.service.name
@@ -246,7 +246,7 @@ output "service_name" {
 
 Create `.gitignore`:
 
-```gitignore
+```gitignore title=".gitignore"
 .terraform/
 terraform.tfstate
 terraform.tfstate.backup
@@ -257,19 +257,21 @@ generated/
 
 Initialise and validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-15
 mkdir -p generated artefacts
 terraform init | tee artefacts/init.log
 terraform validate | tee artefacts/validate.log
 ```
 
-**Expected output:** `validate.log` contains `Success! The configuration is valid.`
+!!! example "Expected output"
+    `validate.log` contains `Success! The configuration is valid.`
+
 
 #### Task 2 – Apply and observe CLI redaction vs state persistence
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-15
 terraform apply -auto-approve -input=false | tee artefacts/apply.log
 terraform output | tee artefacts/output-redacted.txt
@@ -286,13 +288,15 @@ grep -q '600' artefacts/env-perms.txt || grep -q '0600' artefacts/env-perms.txt
 ```
 {% endraw %}
 
-**Expected output:** CLI output hides token; state **contains** plaintext placeholder; container env has token; config file mode `0600`.
+!!! example "Expected output"
+    CLI output hides token; state **contains** plaintext placeholder; container env has token; config file mode `0600`.
+
 
 #### Task 3 – Document safe injection pattern
 
 Create `secrets.tf.example`:
 
-```hcl
+```hcl title="secrets.tf.example"
 # Production pattern: fetch secrets outside committed files.
 #
 # data "aws_secretsmanager_secret_version" "api" {
@@ -308,7 +312,7 @@ Create `secrets.tf.example`:
 
 Create `terraform.tfvars.example`:
 
-```hcl
+```hcl title="terraform.tfvars.example"
 # Copy to terraform.tfvars locally — never commit real values.
 service_name = "payments-api"
 # api_token    = "<inject-via-TF_VAR_api_token-in-CI>"
@@ -316,20 +320,22 @@ service_name = "payments-api"
 
 Verify examples exist:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-15
 test -f secrets.tf.example
 test -f terraform.tfvars.example
 grep -q 'aws_secretsmanager_secret_version' secrets.tf.example
 ```
 
-**Expected output:** Example files document external injection without activating cloud providers.
+!!! example "Expected output"
+    Example files document external injection without activating cloud providers.
+
 
 #### Task 4 – Export plan JSON for policy stub
 
 Create `policy/deny-plaintext-token.rego.example`:
 
-```rego
+```rego title="deny-plaintext-token.rego.example"
 # Example OPA rule — evaluate against terraform show -json plan output.
 package terraform.security
 
@@ -345,7 +351,7 @@ deny[msg] {
 Generate plan JSON evidence:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-15
 terraform plan -input=false -out=artefacts/security.tfplan | tee artefacts/plan.log
 terraform show -json artefacts/security.tfplan > artefacts/plan.json
@@ -356,7 +362,9 @@ grep -q 'running' artefacts/container-state.txt
 ```
 {% endraw %}
 
-**Expected output:** `plan.json` references `docker_container`; container still running.
+!!! example "Expected output"
+    `plan.json` references `docker_container`; container still running.
+
 
 ### Validation steps
 
@@ -388,7 +396,7 @@ Add a `precondition` on `var.api_token` requiring `length(var.api_token) >= 20` 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-15
 terraform destroy -auto-approve
 rm -rf .terraform generated artefacts

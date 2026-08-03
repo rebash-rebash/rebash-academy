@@ -117,7 +117,7 @@ Create hotfix on `main`, cherry-pick to simulated release branch, deliberately h
 
 Workspace: `~/rebash-git/module-07/cherry-reflog-lab`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-07/cherry-reflog-lab
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ Security team patches `auth.yaml` on `main`. Release branch `release/v1` still s
 
 #### Task 1 – Setup main, release, and hotfix
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07
 set -euo pipefail
 rm -rf cherry-reflog-lab && mkdir cherry-reflog-lab && cd cherry-reflog-lab
@@ -156,11 +156,13 @@ grep -q 'security patch' ../release-log.txt
 cd ..
 ```
 
-**Expected output:** Release branch has hotfix content without beta feature text in auth (only hotfix patch applied).
+!!! example "Expected output"
+    Release branch has hotfix content without beta feature text in auth (only hotfix patch applied).
+
 
 #### Task 2 – Mistaken hard reset
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07/cherry-reflog-lab
 set -euo pipefail
 git switch main
@@ -175,11 +177,13 @@ grep -q 'security patch' <(git log --oneline)
 cd ..
 ```
 
-**Expected output:** After recovery, hotfix commit visible again on main log.
+!!! example "Expected output"
+    After recovery, hotfix commit visible again on main log.
+
 
 #### Task 3 – Evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07/cherry-reflog-lab
 set -euo pipefail
 git log --oneline --all --graph | tee ../cherry-graph.txt
@@ -188,7 +192,9 @@ ls -l ../module-07-cherry-evidence.tgz | tee ../cherry-evidence.txt
 cd ..
 ```
 
-**Expected output:** Tarball with cherry-pick and reflog proof.
+!!! example "Expected output"
+    Tarball with cherry-pick and reflog proof.
+
 
 ### Validation steps
 
@@ -218,7 +224,7 @@ Create branch `recover-test`, make commit, delete branch with `git branch -D`, r
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-07/cherry-reflog-lab
 ```
 

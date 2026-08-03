@@ -137,7 +137,7 @@ Prepare a Multibranch-ready Git repo with two branches, document Multibranch job
 
 Workspace: `~/rebash-jenkins/module-07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-07 && cd ~/rebash-jenkins/module-07
 set -euo pipefail
 git --version | tee git-version.txt
@@ -153,7 +153,7 @@ Your team opens feature branches daily. Platform asks for Multibranch CI with PR
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 
@@ -164,7 +164,7 @@ git init -b main
 
 Create `Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 pipeline {
   agent any
   options { timestamps() }
@@ -194,7 +194,7 @@ pipeline {
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # mb-demo
 
 REBASH Module 7 — Multibranch Pipeline demo.
@@ -202,7 +202,7 @@ REBASH Module 7 — Multibranch Pipeline demo.
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 git add Jenkinsfile README.md
 git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Add Multibranch Jenkinsfile on main'
 
@@ -216,7 +216,9 @@ git branch -vv | tee ../branches.txt
 pwd | tee ../repo-path.txt
 ```
 
-**Expected output:** `main` and `feature/module-07` listed.
+!!! example "Expected output"
+    `main` and `feature/module-07` listed.
+
 
 #### Task 2 – Push (recommended) and write Multibranch config
 
@@ -224,14 +226,14 @@ Push `mb-demo` to GitHub/GitLab (private is fine). Then:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 ```
 
 Create `multibranch-config.yaml`:
 
-```yaml
+```yaml title="multibranch-config.yaml"
 job_path: rebash-demo/mb-demo
 item_type: multibranch_pipeline
 branch_sources:
@@ -255,7 +257,7 @@ trust:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('multibranch-config.yaml') as f:
@@ -267,13 +269,15 @@ print('multibranch-config.yaml OK')
 
 Create the Multibranch item in the UI using your remote. **Scan Repository Now**.
 
-**Expected output:** Child jobs for `main` and `feature/module-07` appear when the remote is reachable.
+!!! example "Expected output"
+    Child jobs for `main` and `feature/module-07` appear when the remote is reachable.
+
 
 #### Task 3 – Collect indexing and build evidence
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 
@@ -284,25 +288,27 @@ git -C mb-demo show feature/module-07:Jenkinsfile | grep -q 'pipeline' | tee ind
 
 Create `expected-branch-markers.txt`:
 
-```text
+```text title="expected-branch-markers.txt"
 BRANCH_NAME=
 Multibranch demo finished:
 ```
 
-**Expected output:** Greps succeed; paste console to `console.log` after builds and grep for `BRANCH_NAME`.
+!!! example "Expected output"
+    Greps succeed; paste console to `console.log` after builds and grep for `BRANCH_NAME`.
+
 
 #### Task 4 – PR isolation checklist
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 ```
 
 Create `pr-isolation.yaml`:
 
-```yaml
+```yaml title="pr-isolation.yaml"
 fork_pr_discovery: disabled_or_sandboxed
 prod_cloud_keys_in_mb_folder: forbidden
 pr_ci_agent_label: isolated_from_prod_deploy
@@ -313,7 +319,7 @@ organisation_folder: after_single_repo_multibranch_stable
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('pr-isolation.yaml') as f:
@@ -326,7 +332,9 @@ tar -czf module-07-evidence.tgz mb-demo/Jenkinsfile mb-demo/README.md multibranc
 ls -l module-07-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Archive created.
+!!! example "Expected output"
+    Archive created.
+
 
 ### Validation steps
 
@@ -359,7 +367,7 @@ Open a pull request from `feature/module-07` into `main` on your host. Enable PR
 
 Keep the Multibranch job for later modules. Delete orphaned experimental branches you no longer need.
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-jenkins/module-07
 ```
 

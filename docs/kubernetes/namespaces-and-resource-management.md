@@ -226,7 +226,7 @@ Create a tenant namespace with ResourceQuota and LimitRange, deploy a constraine
 
 Workspace: `~/rebash-k8s/module-08-ns`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-08-ns && cd ~/rebash-k8s/module-08-ns
 ```
 
@@ -240,7 +240,7 @@ Platform engineering onboards team `payments-dev`. They receive an isolated name
 
 Create `tenant-bootstrap.yaml`:
 
-```yaml
+```yaml title="tenant-bootstrap.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -281,7 +281,7 @@ spec:
 
 Apply and inspect:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08-ns
 kubectl apply -f tenant-bootstrap.yaml
 kubectl describe quota team-quota -n rebash-m08-ns | tee quota-describe.txt
@@ -289,13 +289,15 @@ kubectl describe limitrange defaults -n rebash-m08-ns | tee limitrange-describe.
 grep -E 'pods|cpu|memory' quota-describe.txt
 ```
 
-**Expected output:** Quota and LimitRange active; hard limits show `pods: 2`.
+!!! example "Expected output"
+    Quota and LimitRange active; hard limits show `pods: 2`.
+
 
 #### Task 2 – Allowed Pod within quota
 
 Create `allowed-pod.yaml`:
 
-```yaml
+```yaml title="allowed-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -316,7 +318,7 @@ spec:
 
 Apply and verify usage:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08-ns
 kubectl apply -f allowed-pod.yaml
 kubectl wait --for=condition=Ready pod/api-one -n rebash-m08-ns --timeout=120s
@@ -324,13 +326,15 @@ kubectl describe quota team-quota -n rebash-m08-ns | tee quota-after-one.txt
 grep 'pods' quota-after-one.txt
 ```
 
-**Expected output:** Pod Ready; quota used shows `1` Pod consumed.
+!!! example "Expected output"
+    Pod Ready; quota used shows `1` Pod consumed.
+
 
 #### Task 3 – Prove quota rejection
 
 Create `second-pod.yaml`:
 
-```yaml
+```yaml title="second-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -351,7 +355,7 @@ spec:
 
 Create `third-pod.yaml`:
 
-```yaml
+```yaml title="third-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -372,7 +376,7 @@ spec:
 
 Apply second (should succeed), third (should fail):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08-ns
 kubectl apply -f second-pod.yaml
 kubectl wait --for=condition=Ready pod/api-two -n rebash-m08-ns --timeout=120s
@@ -383,7 +387,9 @@ grep -c Running pods-final.txt | tee running-count.txt
 test "$(cat running-count.txt)" -eq 2
 ```
 
-**Expected output:** Third Pod create fails with quota exceeded; exactly two Running Pods remain.
+!!! example "Expected output"
+    Third Pod create fails with quota exceeded; exactly two Running Pods remain.
+
 
 ### Validation steps
 
@@ -413,7 +419,7 @@ Add `requests.cpu: "300m"` hard limit to the ResourceQuota, keep two Pods at 100
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m08-ns --ignore-not-found --wait=true
 ```
 

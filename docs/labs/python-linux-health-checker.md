@@ -68,7 +68,7 @@ CLI flags --> collect metrics (psutil) --> compare thresholds --> JSON + exit 0|
 
 Linux or WSL2 under `~/rebash-lab-python-health`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-health/out
 cd ~/rebash-lab-python-health
 python3 -m venv .venv && source .venv/bin/activate
@@ -79,7 +79,7 @@ pip install 'psutil>=5.9,<7'
 
 No services required. Confirm baseline:
 
-```bash
+```bash title="Terminal"
 python -c 'import psutil; print(psutil.cpu_count(), round(psutil.virtual_memory().percent,1))'
 ```
 
@@ -111,7 +111,7 @@ If psutil is missing, fall back to parsing `df -P /` with `subprocess.run([...],
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python health_check.py --json
 python health_check.py --disk-warn 1   # should exit 1 on almost any host
 echo $?

@@ -117,7 +117,7 @@ Simulate a platform repo: create `feature/add-healthcheck` and `fix/readiness-pr
 
 Workspace: `~/rebash-git/module-05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-05 && cd ~/rebash-git/module-05
 set -euo pipefail
 ```
@@ -132,7 +132,7 @@ You maintain a Kubernetes manifest repo. Two engineers work in parallel — one 
 
 Create base manifest and branch for healthcheck work.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-05
 set -euo pipefail
 rm -rf branch-lab
@@ -152,13 +152,15 @@ grep -q 'liveness' ../feature-commit.txt
 cd ..
 ```
 
-**Expected output:** Feature branch one commit ahead of `main`.
+!!! example "Expected output"
+    Feature branch one commit ahead of `main`.
+
 
 #### Task 2 – Second branch from main for fix
 
 Switch to `main`, create `fix/readiness-probe`, commit fix independently.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-05/branch-lab
 set -euo pipefail
 git switch main
@@ -172,13 +174,15 @@ git log --oneline --graph --decorate --all | tee ../branch-graph.txt
 cd ..
 ```
 
-**Expected output:** Graph shows two branches diverging from `main`.
+!!! example "Expected output"
+    Graph shows two branches diverging from `main`.
+
 
 #### Task 3 – Merge feature to main and clean up
 
 Merge healthcheck feature; verify branch pointers; prepare evidence.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-05/branch-lab
 set -euo pipefail
 git switch main
@@ -194,7 +198,9 @@ ls -l ../module-05-branch-evidence.tgz | tee ../branch-evidence.txt
 cd ..
 ```
 
-**Expected output:** `main` contains liveness probe; feature branch deleted after merge.
+!!! example "Expected output"
+    `main` contains liveness probe; feature branch deleted after merge.
+
 
 ### Validation steps
 
@@ -224,7 +230,7 @@ Document a one-page `branch-policy.md` in the repo listing allowed prefixes, max
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-05/branch-lab
 ```
 

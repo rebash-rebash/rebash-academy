@@ -120,7 +120,7 @@ Ansible loads inventory from `-i` flag, `ansible.cfg` `inventory` setting, or an
 
 Useful commands:
 
-```bash
+```bash title="Terminal"
 ansible-inventory --list          # JSON merged view
 ansible-inventory --graph         # tree of groups
 ansible-inventory --host localhost
@@ -179,7 +179,7 @@ Create INI and YAML inventories with `group_vars` and `host_vars`, deploy tier-s
 
 Workspace: `~/rebash-ansible/module-03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-03/{group_vars,host_vars} && cd ~/rebash-ansible/module-03
 ```
 
@@ -187,7 +187,7 @@ Copy or recreate minimal `ansible.cfg` from Module 2 (inventory path will vary p
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = ./inventory.ini
 host_key_checking = False
@@ -204,7 +204,7 @@ You maintain three tiers — `local` lab hosts, `web`, and `db` — for a sample
 
 Create `inventory.ini`:
 
-```ini
+```ini title="inventory.ini"
 [local]
 localhost ansible_connection=local
 
@@ -222,7 +222,7 @@ db
 
 Create `group_vars/web.yml`:
 
-```yaml
+```yaml title="web.yml"
 tier: web
 app_port: 8080
 environment: lab
@@ -230,7 +230,7 @@ environment: lab
 
 Create `group_vars/db.yml`:
 
-```yaml
+```yaml title="db.yml"
 tier: db
 db_port: 5432
 environment: lab
@@ -238,14 +238,14 @@ environment: lab
 
 Create `host_vars/localhost.yml`:
 
-```yaml
+```yaml title="localhost.yml"
 lab_role: control-node
 note: primary lab host
 ```
 
 List and validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-03
 ansible-inventory -i inventory.ini --graph | tee inventory-graph-ini.txt
 ansible-inventory -i inventory.ini --list | tee inventory-list-ini.json
@@ -262,13 +262,15 @@ print('INI inventory merge OK')
 " | tee ini-merge-ok.txt
 ```
 
-**Expected output:** Graph shows `lab` with children; `ini-merge-ok.txt` contains `INI inventory merge OK`.
+!!! example "Expected output"
+    Graph shows `lab` with children; `ini-merge-ok.txt` contains `INI inventory merge OK`.
+
 
 #### Task 2 – YAML inventory equivalent
 
 Create `inventory.yml`:
 
-```yaml
+```yaml title="inventory.yml"
 all:
   children:
     local:
@@ -292,7 +294,7 @@ all:
 
 Compare listings:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-03
 ansible-inventory -i inventory.yml --list | tee inventory-list-yml.json
 python3 -c "
@@ -306,13 +308,15 @@ print('YAML inventory OK')
 " | tee yml-inventory-ok.txt
 ```
 
-**Expected output:** `yml-inventory-ok.txt` shows `YAML inventory OK`.
+!!! example "Expected output"
+    `yml-inventory-ok.txt` shows `YAML inventory OK`.
+
 
 #### Task 3 – Deploy tier configs with playbook
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = ./inventory.ini
 host_key_checking = False
@@ -351,7 +355,7 @@ Create `deploy-tier-configs.yml`:
 
 Run against INI inventory:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-03
 ansible-playbook deploy-tier-configs.yml --syntax-check | tee syntax-tier.txt
 ansible-playbook deploy-tier-configs.yml | tee deploy-tier.txt
@@ -363,13 +367,15 @@ grep -q 'lab_role=control-node' ~/rebash-ansible/module-03/tier-configs/localhos
 echo "tier deploy OK" | tee tier-deploy-ok.txt
 ```
 
-**Expected output:** Config files exist per host; web tier shows `app_port=8080`.
+!!! example "Expected output"
+    Config files exist per host; web tier shows `app_port=8080`.
+
 
 #### Task 4 – Fix wrong host_vars filename (failure moment)
 
 Rename breaks host-specific vars — simulate the mistake:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-03
 mv host_vars/localhost.yml host_vars/localhost.yml.bak
 ansible-playbook deploy-tier-configs.yml --limit localhost | tee hostvars-miss.txt
@@ -379,13 +385,15 @@ grep -q 'hostname=localhost' ~/rebash-ansible/module-03/tier-configs/localhost.c
 echo "host_vars fix OK" | tee hostvars-fix-ok.txt
 ```
 
-**Expected output:** After restoring `host_vars/localhost.yml`, localhost config reflects host-specific vars again.
+!!! example "Expected output"
+    After restoring `host_vars/localhost.yml`, localhost config reflects host-specific vars again.
+
 
 #### Task 5 – Inventory audit script
 
 Create `inventory-audit.sh`:
 
-```bash
+```bash title="inventory-audit.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-03
@@ -401,12 +409,14 @@ echo "inventory-audit PASS" | tee inventory-audit-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-ansible/module-03/inventory-audit.sh
 ~/rebash-ansible/module-03/inventory-audit.sh
 ```
 
-**Expected output:** `inventory-audit-pass.txt` contains `inventory-audit PASS`.
+!!! example "Expected output"
+    `inventory-audit-pass.txt` contains `inventory-audit PASS`.
+
 
 ### Validation steps
 
@@ -429,7 +439,7 @@ chmod +x ~/rebash-ansible/module-03/inventory-audit.sh
 
 Add `group_vars/all.yml` with `managed_by: ansible`, re-run `deploy-tier-configs.yml`, and confirm `managed_by` appears in every tier config file under `tier-configs/`.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-03
 ansible-playbook deploy-tier-configs.yml
 grep -l managed_by tier-configs/*.conf | wc -l | tee all-vars-count.txt
@@ -437,7 +447,9 @@ test "$(cat all-vars-count.txt)" -ge 3
 echo "all group_vars visible in tier configs"
 ```
 
-**Expected output:** At least three config files contain `managed_by`.
+!!! example "Expected output"
+    At least three config files contain `managed_by`.
+
 
 ### Learning outcomes
 
@@ -448,7 +460,7 @@ echo "all group_vars visible in tier configs"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-03
 rm -rf ~/rebash-ansible/module-03/tier-configs
 rm -f inventory-graph-ini.txt inventory-list-ini.json ini-merge-ok.txt \

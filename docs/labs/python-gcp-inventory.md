@@ -53,7 +53,7 @@ Fixtures required; `google-cloud-compute` optional. **Estimated cost:** £0.
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-gcp/{fixtures,out}
 cd ~/rebash-lab-python-gcp
 python3 -m venv .venv && source .venv/bin/activate
@@ -63,7 +63,7 @@ python3 -m venv .venv && source .venv/bin/activate
 
 Create `fixtures/instances.json`:
 
-```json
+```json title="instances.json"
 [
   {"name": "api-1", "zone": "europe-west2-a", "status": "RUNNING", "labels": {"owner": "platform"}},
   {"name": "scratch", "zone": "europe-west2-b", "status": "TERMINATED", "labels": {}}
@@ -76,7 +76,7 @@ Create `fixtures/instances.json`:
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python gcp_inventory.py --fixture fixtures/instances.json
 python -c 'import json; assert len(json.load(open("out/missing_labels.json")))==1'
 ```

@@ -68,7 +68,7 @@ Any Linux host. Use lab directories only — never backup real `/`.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/backup/{data,backups,logs}
 cd ~/rebash-lab-shell/backup
 printf 'payload\n' > data/app.txt
@@ -119,7 +119,7 @@ ls -la backups/
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

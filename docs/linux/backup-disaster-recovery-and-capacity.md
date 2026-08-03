@@ -69,7 +69,7 @@ Backups copy data to safe storage; DR restores service within RPO/RTO; capacity 
 | RTO | Max acceptable downtime to recover |
 | Capacity | Headroom for growth and for backup storage |
 
-```bash
+```bash title="Terminal"
 tar -czf backup.tgz data/
 rsync -aH data/ backup-mirror/
 df -hT
@@ -115,7 +115,7 @@ Create sample app data, back it up with `tar` and `rsync`, delete the live data,
 
 Workspace: `~/rebash-linux/lab25`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab25 && cd ~/rebash-linux/lab25
 set -euo pipefail
 sudo apt-get update -qq
@@ -123,7 +123,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y rsync
 df -hT . | tee df-before.txt
 ```
 
-**Expected output:** `rsync` available; capacity snapshot stored.
+!!! example "Expected output"
+    `rsync` available; capacity snapshot stored.
+
 
 ### Real-world scenario
 
@@ -133,7 +135,7 @@ A small app keeps critical config and upload files under one directory. Leadersh
 
 #### Task 1 – Create data and checksum manifest
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab25
 set -euo pipefail
 
@@ -148,11 +150,13 @@ printf 'user-upload-2\n' > appdata/uploads/b.txt
 test -s checksums-before.txt
 ```
 
-**Expected output:** `checksums-before.txt` lists hashes for the three files.
+!!! example "Expected output"
+    `checksums-before.txt` lists hashes for the three files.
+
 
 #### Task 2 – Backup with tar and rsync
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab25
 set -euo pipefail
 
@@ -164,11 +168,13 @@ test -f backups/appdata.tgz
 test -f backups/appdata-mirror/conf/app.env
 ```
 
-**Expected output:** archive and mirror both contain `conf/app.env`; listings captured.
+!!! example "Expected output"
+    archive and mirror both contain `conf/app.env`; listings captured.
+
 
 #### Task 3 – Destroy, restore, verify, capacity + evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab25
 set -euo pipefail
 
@@ -208,7 +214,9 @@ tar -czf backup-dr-evidence.tgz \
 ls -l backup-dr-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** both `cmp` checks succeed; live `appdata` restored; evidence archive exists.
+!!! example "Expected output"
+    both `cmp` checks succeed; live `appdata` restored; evidence archive exists.
+
 
 ### Validation steps
 
@@ -239,7 +247,7 @@ Write `~/rebash-linux/lab25/backup-appdata.sh` that creates a timestamped `backu
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab25
 set -euo pipefail
 # Keep evidence; remove bulky trees if needed:

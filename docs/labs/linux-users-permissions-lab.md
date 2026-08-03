@@ -61,7 +61,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-linux-users
 cd ~/rebash-lab-linux-users
 sudo apt-get update && sudo apt-get install -y acl
@@ -75,7 +75,7 @@ No `rebash-app` group or lab users yet. You will create them.
 
 ### Task 1 — Create group and accounts
 
-```bash
+```bash title="Terminal"
 sudo groupadd --system rebash-app || true
 sudo useradd --system --home /opt/rebash-app --shell /usr/sbin/nologin --gid rebash-app rebash-svc 2>/dev/null || true
 sudo useradd -m -s /bin/bash -G rebash-app alice 2>/dev/null || true
@@ -86,7 +86,7 @@ id alice; id bob; id rebash-svc
 
 ### Task 2 — Shared application tree
 
-```bash
+```bash title="Terminal"
 sudo mkdir -p /opt/rebash-app/{bin,etc,logs}
 sudo chown -R rebash-svc:rebash-app /opt/rebash-app
 sudo chmod 2770 /opt/rebash-app
@@ -102,7 +102,7 @@ Explain why `2770` matters (SGID bit keeps new files in the group).
 
 ### Task 3 — ACL for a read-only auditor
 
-```bash
+```bash title="Terminal"
 sudo useradd -m -s /bin/bash auditor 2>/dev/null || true
 sudo setfacl -m u:auditor:rx /opt/rebash-app
 sudo setfacl -m u:auditor:r /opt/rebash-app/etc/app.conf
@@ -114,7 +114,7 @@ As `auditor` (via `sudo -u auditor`), confirm read of `app.conf` and that write 
 
 ### Task 4 — Limited sudo
 
-```bash
+```bash title="Terminal"
 echo 'alice ALL=(root) NOPASSWD: /usr/bin/systemctl status *, /usr/bin/journalctl *' \
   | sudo tee /etc/sudoers.d/rebash-alice
 sudo chmod 0440 /etc/sudoers.d/rebash-alice
@@ -128,7 +128,7 @@ Confirm alice **cannot** run arbitrary `apt` via sudo.
 
 As a user **not** in `rebash-app` (create `carol` without the group):
 
-```bash
+```bash title="Terminal"
 sudo useradd -m -s /bin/bash carol 2>/dev/null || true
 sudo -u carol cat /opt/rebash-app/etc/app.conf && echo UNEXPECTED || echo "denied (expected)" | tee ~/rebash-lab-linux-users/deny.txt
 ```
@@ -156,7 +156,7 @@ sudo -u carol cat /opt/rebash-app/etc/app.conf && echo UNEXPECTED || echo "denie
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 sudo rm -f /etc/sudoers.d/rebash-alice
 sudo rm -rf /opt/rebash-app
 sudo userdel -r alice 2>/dev/null || true

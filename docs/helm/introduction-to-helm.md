@@ -150,7 +150,7 @@ Author a minimal Helm chart by hand, lint and render it offline, then install a 
 
 Workspace: `~/rebash-helm/module-01` on your workstation; cluster optional until Task 4.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-01/rebash-app/templates && cd ~/rebash-helm/module-01
 ```
 
@@ -164,7 +164,7 @@ Your platform team ships internal services as small Helm charts. Before merging,
 
 Create `rebash-app/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-app
 description: Minimal REBASH introduction chart
@@ -175,7 +175,7 @@ appVersion: "1.27"
 
 Create `rebash-app/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginxinc/nginx-unprivileged
@@ -255,7 +255,7 @@ spec:
 
 #### Task 3 – Lint and render (offline)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-01
 helm lint rebash-app | tee lint-m01.txt
 helm template demo rebash-app --namespace rebash-helm-m01 | tee render-m01.yaml
@@ -265,20 +265,22 @@ grep -q 'kind: Service' render-m01.yaml
 grep -q 'nginxinc/nginx-unprivileged:1.27-alpine' render-m01.yaml
 ```
 
-**Expected output:** `lint-m01.txt` shows 0 chart(s) failed; `kinds-m01.txt` lists Deployment and Service; rendered image uses the pinned tag.
+!!! example "Expected output"
+    `lint-m01.txt` shows 0 chart(s) failed; `kinds-m01.txt` lists Deployment and Service; rendered image uses the pinned tag.
+
 
 #### Task 4 – Install release and prove chart vs release
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
   name: rebash-helm-m01
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-01
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -292,7 +294,9 @@ else
 fi
 ```
 
-**Expected output:** `list-m01.txt` shows release name `demo` with chart `rebash-app-0.1.0`; `chart-vs-release-m01.txt` shows chart metadata (`name`, `version`, `app_version`) distinct from the release name `demo`.
+!!! example "Expected output"
+    `list-m01.txt` shows release name `demo` with chart `rebash-app-0.1.0`; `chart-vs-release-m01.txt` shows chart metadata (`name`, `version`, `app_version`) distinct from the release name `demo`.
+
 
 ### Validation steps
 
@@ -324,7 +328,7 @@ Bump `replicaCount` to `2` in a separate `values-scale.yaml` file, re-run `helm 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall demo -n rebash-helm-m01 2>/dev/null || true
 kubectl delete namespace rebash-helm-m01 --ignore-not-found
 ```

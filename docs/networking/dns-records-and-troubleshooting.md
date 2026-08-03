@@ -135,14 +135,16 @@ Query A/AAAA/MX/TXT/CNAME-related data for public names, deliberately observe **
 
 Workspace: `~/rebash-networking/lab11`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab11 && cd ~/rebash-networking/lab11
 set -euo pipefail
 whoami | tee admin-user.txt
 command -v dig >/dev/null || { sudo apt-get update && sudo apt-get install -y dnsutils; }
 ```
 
-**Expected output:** workspace ready; `dig` present.
+!!! example "Expected output"
+    workspace ready; `dig` present.
+
 
 ### Real-world scenario
 
@@ -152,7 +154,7 @@ Marketing added a TXT verification record and mail still fails; someone else rep
 
 #### Task 1 – Record type sweep for example.com
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab11
 set -euo pipefail
 
@@ -170,11 +172,13 @@ grep -E 'IN[[:space:]]+A|IN[[:space:]]+AAAA|IN[[:space:]]+MX|IN[[:space:]]+TXT|I
   dig-example-A.txt dig-example-MX.txt dig-example-NS.txt
 ```
 
-**Expected output:** A, MX, NS, SOA answers present for `example.com`; TXT often present; AAAA optional.
+!!! example "Expected output"
+    A, MX, NS, SOA answers present for `example.com`; TXT often present; AAAA optional.
+
 
 #### Task 2 – Deliberate NXDOMAIN
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab11
 set -euo pipefail
 
@@ -189,18 +193,20 @@ dig example.com A | tee dig-noerror.txt
 grep -E 'status: NOERROR' dig-noerror.txt
 ```
 
-**Expected output:** missing name shows `NXDOMAIN`; `example.com` shows `NOERROR`.
+!!! example "Expected output"
+    missing name shows `NXDOMAIN`; `example.com` shows `NOERROR`.
+
 
 #### Task 3 – Troubleshooting checklist script (working artefact)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab11
 set -euo pipefail
 ```
 
 Create `dns-troubleshoot.sh`:
 
-```bash
+```bash title="dns-troubleshoot.sh"
 #!/usr/bin/env bash
 # DNS troubleshooting checklist — prints evidence (not a markdown notes file)
 set -euo pipefail
@@ -238,7 +244,7 @@ echo "If wrong IP: check TTL, CNAME chain, split-horizon"
 echo "If mail issue: verify MX priorities and related TXT (SPF)"
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x dns-troubleshoot.sh
 
 ./dns-troubleshoot.sh example.com "$(cat nxdomain-name.txt)" | tee checklist-output.txt
@@ -252,7 +258,9 @@ tar -czf dns-records-evidence.tgz \
 ls -l dns-records-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `dns-troubleshoot.sh` prints numbered sections to `checklist-output.txt`; archive exists.
+!!! example "Expected output"
+    `dns-troubleshoot.sh` prints numbered sections to `checklist-output.txt`; archive exists.
+
 
 ### Validation steps
 
@@ -283,7 +291,7 @@ Add a `CNAME` follow mode to `dns-troubleshoot.sh`: if `dig www.example.com CNAM
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab11
 # Optional: rm -f dns-records-evidence.tgz *.txt
 # Keep dns-troubleshoot.sh if you want it in your toolkit

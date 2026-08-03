@@ -159,7 +159,7 @@ Workspace: `~/rebash-helm/module-08`
 
 Helm 3 against kind/minikube; release namespace `rebash-helm-m08`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-08/validate-chart/templates/tests && cd ~/rebash-helm/module-08
 ```
 
@@ -173,7 +173,7 @@ CI must reject broken charts before merge. Your pipeline runs lint and template 
 
 Create `validate-chart/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: validate-chart
 description: Lab chart for Helm validation gates
@@ -184,7 +184,7 @@ appVersion: "1.27.4"
 
 Create `validate-chart/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginx
@@ -198,7 +198,7 @@ testImage:
 
 Create `validate-chart/templates/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 {% raw %}
 apiVersion: apps/v1
 kind: Deployment
@@ -229,7 +229,7 @@ spec:
 
 Create `validate-chart/templates/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 {% raw %}
 apiVersion: v1
 kind: Service
@@ -247,7 +247,7 @@ spec:
 
 Create `validate-chart/templates/tests/test-connection.yaml`:
 
-```yaml
+```yaml title="test-connection.yaml"
 {% raw %}
 apiVersion: v1
 kind: Pod
@@ -267,7 +267,7 @@ spec:
 
 Run lint and template with debug:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-08
 helm lint ./validate-chart | tee lint.txt
 helm template validate-demo ./validate-chart --debug 2>&1 | tee template-debug.txt
@@ -276,26 +276,30 @@ grep -q 'kind: Deployment' template-debug.txt
 grep -q 'helm.sh/hook: test' template-debug.txt
 ```
 
-**Expected output:** Lint passes; debug render includes Deployment, Service, and the test hook Pod.
+!!! example "Expected output"
+    Lint passes; debug render includes Deployment, Service, and the test hook Pod.
+
 
 #### Task 2 – Dry-run install against the cluster
 
 Prove the chart passes a server-side dry-run before any real apply.
 
-```bash
+```bash title="Terminal"
 kubectl create namespace rebash-helm-m08 --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade --install validate-demo ./validate-chart \
   -n rebash-helm-m08 --dry-run --debug 2>&1 | tee dry-run.txt
 grep -q 'STATUS: pending-install' dry-run.txt || grep -q 'dry run' dry-run.txt
 ```
 
-**Expected output:** Dry-run completes without template errors; manifests appear in `dry-run.txt`.
+!!! example "Expected output"
+    Dry-run completes without template errors; manifests appear in `dry-run.txt`.
+
 
 #### Task 3 – Install and run helm test
 
 Install the release, wait for readiness, then execute chart tests.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-08
 helm upgrade --install validate-demo ./validate-chart \
   -n rebash-helm-m08 --wait --timeout 3m | tee install.txt
@@ -305,7 +309,9 @@ kubectl get pods -n rebash-helm-m08 -l 'helm.sh/hook=test' | tee test-pods.txt
 grep -q 'Succeeded' helm-test.txt || grep -qi 'completed' helm-test.txt
 ```
 
-**Expected output:** `helm-test.txt` reports tests succeeded; test Pod shows `Completed`.
+!!! example "Expected output"
+    `helm-test.txt` reports tests succeeded; test Pod shows `Completed`.
+
 
 ### Validation steps
 
@@ -327,7 +333,7 @@ grep -q 'Succeeded' helm-test.txt || grep -qi 'completed' helm-test.txt
 
 Introduce a deliberate typo in `validate-chart/templates/deployment.yaml` (remove a closing brace from a raw Jinja block), capture the lint or template failure, then restore the file and prove the gate passes again:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-08
 helm lint ./validate-chart 2>&1 | tee lint-broken.txt || true
 helm template validate-demo ./validate-chart 2>&1 | tee template-broken.txt || true
@@ -335,7 +341,9 @@ helm lint ./validate-chart | tee lint-fixed.txt
 grep -q '0 chart(s) failed' lint-fixed.txt
 ```
 
-**Expected output:** Broken chart fails lint or template; fixed chart passes lint cleanly.
+!!! example "Expected output"
+    Broken chart fails lint or template; fixed chart passes lint cleanly.
+
 
 ### Learning outcomes
 
@@ -346,7 +354,7 @@ grep -q '0 chart(s) failed' lint-fixed.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall validate-demo -n rebash-helm-m08 2>/dev/null || true
 kubectl delete namespace rebash-helm-m08 --ignore-not-found
 ```

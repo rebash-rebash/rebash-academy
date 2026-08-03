@@ -48,7 +48,7 @@ Scannable Bash reference for the [Shell Scripting for DevOps Engineers](../shell
 
 ## Bash syntax
 
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -94,7 +94,7 @@ for _ in "${items[@]+"${items[@]}"}"; do count=$((count + 1)); done
 
 ## Loops
 
-```bash
+```bash title="Terminal"
 for host in web db cache; do
   echo "$host"
 done
@@ -142,7 +142,7 @@ die() { log "ERROR: $*"; exit "${2:-1}"; }
 | `cmd <file` | stdin from file |
 | `cmd <<< "text"` | here-string |
 
-```bash
+```bash title="Terminal"
 grep ERROR app.log | tee -a errors.txt | wc -l
 # Always enable pipefail in automation so mid-pipe failures surface
 ```
@@ -159,14 +159,14 @@ grep ERROR app.log | tee -a errors.txt | wc -l
 | `sort \| uniq -c` | Frequency |
 | `xargs -r` | Build command lines (GNU) |
 
-```bash
+```bash title="Terminal"
 df -P -x tmpfs | awk 'NR>1 {print $5, $6}'
 journalctl -u nginx -n 200 --no-pager | grep -E 'error|crit'
 ```
 
 ## jq (JSON)
 
-```bash
+```bash title="Terminal"
 jq -r '.env' status.json
 jq -r '.services[] | select(.status!="ok") | .name' status.json
 jq -r '.services[] | [.name,.status] | @tsv' status.json
@@ -184,7 +184,7 @@ jq -r '.services[] | [.name,.status] | @tsv' status.json
 
 Prefer **mikefarah/yq** v4 syntax:
 
-```bash
+```bash title="Terminal"
 yq -r '.app.name' app.yaml
 yq -r '.app.image + ":" + .app.tag' app.yaml
 yq -e '.app.replicas >= 1' app.yaml

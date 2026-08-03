@@ -138,14 +138,16 @@ Map real Linux tools to OSI layers on a practice Ubuntu VM, run layer-focused co
 
 Workspace: `~/rebash-networking/lab02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab02 && cd ~/rebash-networking/lab02
 set -euo pipefail
 hostname | tee hostname.txt
 command -v ping curl ss ip | tee tools-present.txt
 ```
 
-**Expected output:** `tools-present.txt` lists paths for `ping`, `curl`, `ss`, and `ip`.
+!!! example "Expected output"
+    `tools-present.txt` lists paths for `ping`, `curl`, `ss`, and `ip`.
+
 
 ### Real-world scenario
 
@@ -155,7 +157,7 @@ During an incident bridge, someone asks: “Is this Layer 3 or Layer 7?” You n
 
 #### Task 1 – Layer 1–3 checks with `ip` and `ping`
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab02
 set -euo pipefail
 
@@ -168,11 +170,13 @@ ping -c 3 -W 2 1.1.1.1 2>&1 | tee l3-ping.txt || true
 ping -c 2 127.0.0.1 2>&1 | tee l3-ping-localhost.txt
 ```
 
-**Expected output:** `l1l2-link.txt` shows interface states; `l3-ping-localhost.txt` shows successful replies; Internet ping may succeed or be blocked — both outcomes are recorded.
+!!! example "Expected output"
+    `l1l2-link.txt` shows interface states; `l3-ping-localhost.txt` shows successful replies; Internet ping may succeed or be blocked — both outcomes are recorded.
+
 
 #### Task 2 – Layer 4 with `ss` and Layer 7 with `curl`
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab02
 set -euo pipefail
 
@@ -189,13 +193,15 @@ if command -v dig >/dev/null 2>&1; then
 fi
 ```
 
-**Expected output:** `l4-ss-tuln.txt` lists listening sockets; `l7-curl-verbose.txt` is non-empty (success or connection error text).
+!!! example "Expected output"
+    `l4-ss-tuln.txt` lists listening sockets; `l7-curl-verbose.txt` is non-empty (success or connection error text).
+
 
 #### Task 3 – Optional `tcpdump` sample and layer table artefact
 
 If `tcpdump` is installed, capture a few packets while curling. Always write the layer mapping table (the required artefact).
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab02
 set -euo pipefail
 
@@ -233,7 +239,9 @@ ls -l osi-layer-evidence.tgz | tee evidence-ls.txt
 test -s osi-layer-evidence.tgz
 ```
 
-**Expected output:** `osi-layer-tool-map.txt` exists with the mapping table; `osi-layer-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `osi-layer-tool-map.txt` exists with the mapping table; `osi-layer-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 

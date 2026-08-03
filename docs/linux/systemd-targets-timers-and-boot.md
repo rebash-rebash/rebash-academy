@@ -77,7 +77,7 @@ A **target** is a synchronisation point (a named goal state). A **timer** is a u
 | cron | Simple per-user tables; ubiquitous |
 | systemd timer | Dependencies, journal, jitter, unit hardening |
 
-```bash
+```bash title="Terminal"
 systemctl get-default
 systemctl list-timers --all
 systemd-analyze
@@ -136,7 +136,7 @@ Inspect the default target and boot analysis, create a lab oneshot service activ
 
 Workspace: `~/rebash-linux/lab11`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab11 && cd ~/rebash-linux/lab11
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -144,7 +144,9 @@ systemctl get-default | tee default-target.txt
 sudo -n true 2>/dev/null || sudo -v
 ```
 
-**Expected output:** `default-target.txt` shows something like `multi-user.target` or `graphical.target`.
+!!! example "Expected output"
+    `default-target.txt` shows something like `multi-user.target` or `graphical.target`.
+
 
 ### Real-world scenario
 
@@ -154,7 +156,7 @@ Your platform team wants a small housekeeping job every few minutes on app VMs �
 
 #### Task 1 – Inspect targets and boot analysis
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab11
 set -euo pipefail
 
@@ -170,11 +172,13 @@ grep -E 'Startup finished|multi-user|graphical' analyze.txt default-target.txt |
 test -s analyze-blame.txt
 ```
 
-**Expected output:** default target recorded; `analyze.txt` / blame output non-empty (wording varies by distro version).
+!!! example "Expected output"
+    default target recorded; `analyze.txt` / blame output non-empty (wording varies by distro version).
+
 
 #### Task 2 – Create oneshot service + timer
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab11
 set -euo pipefail
 
@@ -218,11 +222,13 @@ systemctl list-timers --all | tee list-timers.txt
 grep -q 'rebash-lab-timer.timer' list-timers.txt
 ```
 
-**Expected output:** timer is `active`; `list-timers.txt` includes `rebash-lab-timer.timer`.
+!!! example "Expected output"
+    timer is `active`; `list-timers.txt` includes `rebash-lab-timer.timer`.
+
 
 #### Task 3 – Trigger once, prove journal, pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab11
 set -euo pipefail
 
@@ -249,7 +255,9 @@ ls -l targets-timers-evidence.tgz | tee evidence-ls.txt
 test -s targets-timers-evidence.tgz
 ```
 
-**Expected output:** stamp file has a fired line; archive is non-empty.
+!!! example "Expected output"
+    stamp file has a fired line; archive is non-empty.
+
 
 ### Validation steps
 
@@ -281,7 +289,7 @@ Add `RandomizedDelaySec=30` to the lab timer via a drop-in directory `rebash-lab
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab11
 set -euo pipefail
 

@@ -61,7 +61,7 @@ Accounts sprawled across regions. Spreadsheet exports from the console are stale
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-aws/{fixtures,out}
 cd ~/rebash-lab-python-aws
 python3 -m venv .venv && source .venv/bin/activate
@@ -71,7 +71,7 @@ pip install 'boto3>=1.34,<2'
 ## Initial State — fixture
 Create `fixtures/ec2.json`:
 
-```json
+```json title="ec2.json"
 {
   "Reservations": [{
     "Instances": [
@@ -94,7 +94,7 @@ Create `ec2_inventory.py`:
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python ec2_inventory.py --fixture fixtures/ec2.json
 python -c 'import json; d=json.load(open("out/inventory.json")); assert len(d)==2'
 ```

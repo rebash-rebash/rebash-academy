@@ -74,7 +74,7 @@ Boot stages hand control from firmware to the kernel, then to systemd. After the
 
 **FHS** is the agreed directory layout under `/`. You do not need to memorise every path, but you must know the landmarks operators use every day.
 
-```bash
+```bash title="Terminal"
 systemctl get-default
 systemd-analyze
 ls -ld /etc /var /usr /home /tmp /run /boot
@@ -146,14 +146,16 @@ On a practice Ubuntu VM, inspect the boot path and default target, map critical 
 
 Workspace: `~/rebash-linux/lab02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab02 && cd ~/rebash-linux/lab02
 set -euo pipefail
 test -d /etc && test -d /var
 systemctl get-default | tee default-target.txt
 ```
 
-**Expected output:** `default-target.txt` contains a target name such as `multi-user.target` or `graphical.target`.
+!!! example "Expected output"
+    `default-target.txt` contains a target name such as `multi-user.target` or `graphical.target`.
+
 
 ### Real-world scenario
 
@@ -163,7 +165,7 @@ A new Ubuntu VM takes a long time before SSH is ready. Platform asks you to meas
 
 #### Task 1 – Inspect boot and default target
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab02
 set -euo pipefail
 
@@ -180,11 +182,13 @@ journalctl -b -o short-iso --no-pager 2>/dev/null | head -n 40 | tee journal-boo
 grep -E 'Startup finished|multi-user|graphical' analyze.txt || test -s analyze.txt
 ```
 
-**Expected output:** `analyze.txt` shows total startup time; `blame-top.txt` lists units; `default-target.txt` is non-empty.
+!!! example "Expected output"
+    `analyze.txt` shows total startup time; `blame-top.txt` lists units; `default-target.txt` is non-empty.
+
 
 #### Task 2 – Map FHS landmarks and root mount
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab02
 set -euo pipefail
 
@@ -206,11 +210,13 @@ grep -E '^OK\t/(etc|var|usr|boot)$' fhs-check.txt
 test -s root-mount.txt
 ```
 
-**Expected output:** `fhs-check.txt` shows `OK` for `/etc`, `/var`, `/usr`, `/boot`; `root-mount.txt` shows `/` with a real source and filesystem type.
+!!! example "Expected output"
+    `fhs-check.txt` shows `OK` for `/etc`, `/var`, `/usr`, `/boot`; `root-mount.txt` shows `/` with a real source and filesystem type.
+
 
 #### Task 3 – Link boot files to FHS and pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab02
 set -euo pipefail
 
@@ -233,7 +239,9 @@ ls -l boot-fhs-evidence.tgz | tee evidence-ls.txt
 test -s boot-fhs-evidence.tgz
 ```
 
-**Expected output:** `fstab.copy` exists; `boot-fhs-evidence.tgz` is not empty; `/boot` listing is captured.
+!!! example "Expected output"
+    `fstab.copy` exists; `boot-fhs-evidence.tgz` is not empty; `/boot` listing is captured.
+
 
 ### Validation steps
 
@@ -265,7 +273,7 @@ Create an executable script `~/rebash-linux/lab02/fhs-audit.sh` that checks thes
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab02
 # Keep boot-fhs-evidence.tgz and fhs-audit.sh if you created them.
 # rm -f *.txt fstab.copy boot-fhs-evidence.tgz

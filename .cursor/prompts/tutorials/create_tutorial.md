@@ -165,6 +165,8 @@ python3 hello.py | tee hello-out.txt
 
 **Forbidden:** simple/toy labs; validate-only or forever-optional apply; `null`/`local` stubs as the whole lab; note-taking only; `# TODO`; swapping titles on a generic `uname`/`ip` lab; Challenge = “write runbook.md”; creating files with `cat <<EOF` / `echo … > file` (ugly — show the file in a language fence instead).
 
+**Code fences (mandatory):** `title="filename"` on file fences; `title="Terminal"` on command fences; `!!! example "Expected output"` for success. Sample: `docs/labs/sample-code-block-conventions.md`.
+
 Details: `.cursor/prompts/tutorials/create_lab.md`.
 
 **Environment:** state OS/runtime clearly (e.g. Ubuntu 22.04/24.04 disposable VM + sudo; cloud sandbox / kind / LocalStack when the topic needs live infra). Do not imply macOS alone is enough for LVM, SELinux, or firewall labs.

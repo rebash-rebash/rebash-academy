@@ -126,7 +126,7 @@ Inventory plugins via UI and CLI, install or verify a harmless plugin state, def
 
 Workspace: `~/rebash-jenkins/module-10`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-10 && cd ~/rebash-jenkins/module-10
 set -euo pipefail
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller.txt
@@ -146,14 +146,14 @@ Before a platform review you must show a plugin inventory, prove CLI access work
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 ```
 
 Create `plugins.txt`:
 
-```text
+```text title="plugins.txt"
 # Pin core plugins for lab inventory — fill versions from UI or CLI list-plugins
 workflow-aggregator
 git
@@ -164,7 +164,7 @@ branch-api
 
 Verify:
 
-```bash
+```bash title="Terminal"
 # If token exported, capture plugin list head
 if [[ -n "${JENKINS_USER:-}" && -n "${JENKINS_TOKEN:-}" ]]; then
   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth "$JENKINS_USER:$JENKINS_TOKEN" list-plugins \
@@ -177,13 +177,15 @@ fi
 grep -q workflow-aggregator plugins.txt
 ```
 
-**Expected output:** `plugins.txt` pin list present; full inventory when token set.
+!!! example "Expected output"
+    `plugins.txt` pin list present; full inventory when token set.
+
 
 #### Task 2 – Jenkins CLI hello
 
 Verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 
@@ -198,7 +200,7 @@ java -jar jenkins-cli.jar -s "$JENKINS_URL" help 2>&1 | head -n 15 | tee cli-hel
 
 Create `cli-commands.sh`:
 
-```bash
+```bash title="cli-commands.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 : "${JENKINS_URL:=http://127.0.0.1:8080/}"
@@ -210,7 +212,7 @@ java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth "$JENKINS_USER:$JENKINS_TOKEN"
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x cli-commands.sh
 
 if [[ -n "${JENKINS_USER:-}" && -n "${JENKINS_TOKEN:-}" ]]; then
@@ -221,7 +223,9 @@ else
 fi
 ```
 
-**Expected output:** `jenkins-cli.jar` downloaded; CLI help/plugins when token set.
+!!! example "Expected output"
+    `jenkins-cli.jar` downloaded; CLI help/plugins when token set.
+
 
 #### Task 3 – Global tools note
 
@@ -229,14 +233,14 @@ Manage Jenkins → Tools → review JDK installations. Add a JDK entry named `jd
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 ```
 
 Create `tools.yaml`:
 
-```yaml
+```yaml title="tools.yaml"
 static_agents:
   use_tools_block: true
   example:
@@ -251,7 +255,7 @@ lab_observations:
 
 Create `Jenkinsfile.tools`:
 
-```groovy
+```groovy title="Jenkinsfile.tools"
 pipeline {
   agent any
   tools { jdk 'jdk17' }
@@ -265,7 +269,7 @@ pipeline {
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('tools.yaml') as f:
@@ -276,20 +280,22 @@ print('tools.yaml OK')
 grep -q "tools { jdk" Jenkinsfile.tools
 ```
 
-**Expected output:** Strategy YAML and tools Pipeline stub on disk.
+!!! example "Expected output"
+    Strategy YAML and tools Pipeline stub on disk.
+
 
 #### Task 4 – Safe restart drill (lab only)
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 ```
 
 Create `restart-checks.sh`:
 
-```bash
+```bash title="restart-checks.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 URL="${JENKINS_URL:-http://127.0.0.1:8080/login}"
@@ -305,7 +311,7 @@ echo restart_timeout; exit 1
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 chmod +x restart-checks.sh
 
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee after-restart.txt || true
@@ -315,7 +321,9 @@ tar -czf module-10-evidence.tgz plugins.txt tools.yaml Jenkinsfile.tools cli-com
 ls -l module-10-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Restart script and archive created. **Do not** put API tokens in the tarball.
+!!! example "Expected output"
+    Restart script and archive created. **Do not** put API tokens in the tarball.
+
 
 ### Validation steps
 

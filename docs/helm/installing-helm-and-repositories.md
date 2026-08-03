@@ -159,7 +159,7 @@ Write a `verify-helm.sh` script that proves Helm 3 and kubectl connectivity, add
 
 Workspace: `~/rebash-helm/module-02` on your workstation.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-02 && cd ~/rebash-helm/module-02
 ```
 
@@ -173,7 +173,7 @@ Your CI pipeline must fail fast when Helm is missing, the wrong major version is
 
 Create `verify-helm.sh`:
 
-```bash
+```bash title="verify-helm.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -192,7 +192,7 @@ echo "verify-helm.sh: OK"
 
 Run and capture evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-02
 chmod +x verify-helm.sh
 ./verify-helm.sh | tee verify-m02.txt
@@ -200,11 +200,13 @@ grep -q 'verify-helm.sh: OK' verify-m02.txt
 helm version | grep -q 'v3'
 ```
 
-**Expected output:** `verify-m02.txt` ends with `verify-helm.sh: OK`; Helm client reports v3.x.
+!!! example "Expected output"
+    `verify-m02.txt` ends with `verify-helm.sh: OK`; Helm client reports v3.x.
+
 
 #### Task 2 – Add and update a chart repository
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-02
 helm repo add bitnami https://charts.bitnami.com/bitnami 2>/dev/null || true
 helm repo update | tee repo-update-m02.txt
@@ -212,11 +214,13 @@ helm repo list | tee repo-list-m02.txt
 grep -q 'bitnami' repo-list-m02.txt
 ```
 
-**Expected output:** `repo-list-m02.txt` lists `bitnami` with the Bitnami HTTPS URL.
+!!! example "Expected output"
+    `repo-list-m02.txt` lists `bitnami` with the Bitnami HTTPS URL.
+
 
 #### Task 3 – Search and pull evidence (no install required)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-02
 helm search repo bitnami/nginx --versions | head -8 | tee search-nginx-m02.txt
 helm show chart bitnami/nginx | tee show-chart-m02.txt
@@ -224,20 +228,22 @@ grep -q '^name: nginx' show-chart-m02.txt
 grep -q '^version:' show-chart-m02.txt
 ```
 
-**Expected output:** Search returns multiple nginx chart versions; `show-chart-m02.txt` contains chart name and version fields.
+!!! example "Expected output"
+    Search returns multiple nginx chart versions; `show-chart-m02.txt` contains chart name and version fields.
+
 
 #### Task 4 – Optional smoke install into isolated namespace
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
   name: rebash-helm-m02
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-02
 if kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -252,7 +258,9 @@ else
 fi
 ```
 
-**Expected output:** Release `nginx-smoke` appears in `list-m02.txt`, or skip message is recorded.
+!!! example "Expected output"
+    Release `nginx-smoke` appears in `list-m02.txt`, or skip message is recorded.
+
 
 ### Validation steps
 
@@ -285,7 +293,7 @@ Extend `verify-helm.sh` to fail when `kubectl config current-context` contains t
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall nginx-smoke -n rebash-helm-m02 2>/dev/null || true
 kubectl delete namespace rebash-helm-m02 --ignore-not-found
 ```

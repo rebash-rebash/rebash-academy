@@ -159,7 +159,7 @@ Produce a runner decision matrix as validated YAML for three application profile
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-03/.github/workflows && cd ~/rebash-github-actions/module-03
 set -euo pipefail
 ```
@@ -174,7 +174,7 @@ Platform engineering must encode which workloads stay on GitHub-hosted runners a
 
 Create `runner-matrix.yaml`:
 
-```yaml
+```yaml title="runner-matrix.yaml"
 # Runner decision matrix — REBASH Module 3
 profiles:
   - id: A
@@ -201,7 +201,7 @@ rules:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 python3 -c "
@@ -217,13 +217,15 @@ print('runner-matrix.yaml OK')
 wc -l runner-matrix.yaml | tee matrix-lines.txt
 ```
 
-**Expected output:** `runner-matrix.yaml OK`; non-zero line count in `matrix-lines.txt`.
+!!! example "Expected output"
+    `runner-matrix.yaml OK`; non-zero line count in `matrix-lines.txt`.
+
 
 #### Task 2 – Hosted CI workflow (Profile A)
 
 Create `.github/workflows/profile-a-hosted-ci.yml`:
 
-```yaml
+```yaml title="profile-a-hosted-ci.yml"
 name: Profile A — hosted CI
 on:
   pull_request:
@@ -244,20 +246,22 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 grep -q 'runs-on: ubuntu-latest' .github/workflows/profile-a-hosted-ci.yml
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/profile-a-hosted-ci.yml')); print('profile-a OK')"
 ```
 
-**Expected output:** `profile-a OK`
+!!! example "Expected output"
+    `profile-a OK`
+
 
 #### Task 3 – Self-hosted deploy workflow (Profile B)
 
 Create `.github/workflows/profile-b-self-hosted-deploy.yml`:
 
-```yaml
+```yaml title="profile-b-self-hosted-deploy.yml"
 name: Profile B — VPC deploy stub
 on:
   workflow_dispatch:
@@ -280,7 +284,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 grep -q 'self-hosted' .github/workflows/profile-b-self-hosted-deploy.yml
@@ -288,13 +292,15 @@ grep -q 'eks-deploy' .github/workflows/profile-b-self-hosted-deploy.yml
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/profile-b-self-hosted-deploy.yml')); print('profile-b OK')"
 ```
 
-**Expected output:** `profile-b OK`
+!!! example "Expected output"
+    `profile-b OK`
+
 
 #### Task 4 – Validate label contract and archive
 
 Create `label-contract.txt`:
 
-```text
+```text title="label-contract.txt"
 Required labels for platform runners:
 - self-hosted (mandatory for custom runners)
 - linux | windows (OS)
@@ -304,7 +310,7 @@ Jobs must list ALL required labels in runs-on array.
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 grep -q 'mandatory' label-contract.txt
@@ -322,7 +328,9 @@ tar -czf module-03-evidence.tgz runner-matrix.yaml label-contract.txt .github/wo
 ls -l module-03-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `all workflows have runs-on`; tarball created.
+!!! example "Expected output"
+    `all workflows have runs-on`; tarball created.
+
 
 **Optional — register a self-hosted runner:**
 

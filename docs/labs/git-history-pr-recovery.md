@@ -88,7 +88,7 @@ Nothing exists yet. You will create:
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-git
 mkdir -p ~/rebash-lab-git
 cd ~/rebash-lab-git
@@ -103,7 +103,7 @@ git config user.name 'Maintainer'
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # Status Banner
 
 Internal banner text for the status page.
@@ -111,24 +111,26 @@ Internal banner text for the status page.
 
 Create `banner.txt`:
 
-```text
+```text title="banner.txt"
 banner=All systems nominal
 ```
 
 Seed `main`:
 
-```bash
+```bash title="Terminal"
 git add README.md banner.txt
 git commit -m "Initial status banner config"
 git push -u origin main
 cd ..
 ```
 
-**Expected output:** `main` on `origin` has one commit.
+!!! example "Expected output"
+    `main` on `origin` has one commit.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 git --git-dir=origin.git log --oneline main
 ```
 
@@ -138,7 +140,7 @@ git --git-dir=origin.git log --oneline main
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 git clone origin.git contributor
 cd ~/rebash-lab-git/contributor
 git config user.email 'dev@rebash.lab'
@@ -149,20 +151,22 @@ git checkout -b feature/banner-maintenance
 
 Create `banner.txt`:
 
-```text
+```text title="banner.txt"
 banner=Scheduled maintenance window — expect brief blips
 ```
 
 Commit and push the feature branch:
 
-```bash
+```bash title="Terminal"
 git add banner.txt
 git commit -m "Announce maintenance banner"
 git push -u origin feature/banner-maintenance
 cd ..
 ```
 
-**Expected output:** Feature branch exists on `origin`.
+!!! example "Expected output"
+    Feature branch exists on `origin`.
+
 
 ### Task 3 — `main` moves (simulate a teammate)
 
@@ -170,21 +174,21 @@ cd ..
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-git/maintainer
 git pull origin main
 ```
 
 Create `banner.txt`:
 
-```text
+```text title="banner.txt"
 banner=All systems nominal
 owner=platform
 ```
 
 Publish the metadata change:
 
-```bash
+```bash title="Terminal"
 git add banner.txt
 git commit -m "Add banner owner metadata"
 git push origin main
@@ -201,7 +205,7 @@ cd ..
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-git/contributor
 git fetch origin
 git rebase origin/main
@@ -209,7 +213,7 @@ git rebase origin/main
 
 Git should stop on `banner.txt`. Resolve deliberately:
 
-```bash
+```bash title="Terminal"
 # Inspect
 git status
 cat banner.txt
@@ -224,18 +228,20 @@ owner=platform
 
 Continue the rebase:
 
-```bash
+```bash title="Terminal"
 git add banner.txt
 git rebase --continue
 ```
 
 If an editor opens for the commit message, save and close to accept the original message.
 
-**Expected output:** Rebase completes; `git log --oneline --decorate -5` shows your commit on top of the owner metadata commit.
+!!! example "Expected output"
+    Rebase completes; `git log --oneline --decorate -5` shows your commit on top of the owner metadata commit.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 git log --oneline origin/main..HEAD
 cat banner.txt
 ```
@@ -251,7 +257,7 @@ You should see exactly one feature commit ahead of `main`, with both lines prese
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-git/contributor
 ```
 
@@ -263,7 +269,7 @@ API_TOKEN=lab-demo-token-do-not-ship
 
 Stage the mistake commit:
 
-```bash
+```bash title="Terminal"
 git add .env.local
 git commit -m "WIP local env"
 
@@ -272,7 +278,7 @@ git log --oneline -3
 
 **Recover (preferred for already-pushed commits in real life: revert).** Here the bad commit is only local tip — use reset, then keep a revert drill optional:
 
-```bash
+```bash title="Terminal"
 # Soft undo last commit, unstage, delete the secret file
 git reset --soft HEAD~1
 git restore --staged .env.local
@@ -293,11 +299,13 @@ git log --oneline origin/main..HEAD
 # git revert HEAD --no-edit
 ```
 
-**Expected output:** Tip commits contain banner work + gitignore; `.env.local` is untracked/absent.
+!!! example "Expected output"
+    Tip commits contain banner work + gitignore; `.env.local` is untracked/absent.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 git show --name-only --pretty=format: HEAD
 test ! -f .env.local && echo 'secret file removed from worktree'
 ```
@@ -313,7 +321,7 @@ test ! -f .env.local && echo 'secret file removed from worktree'
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-git/contributor
 git push --force-with-lease origin feature/banner-maintenance
 
@@ -321,11 +329,13 @@ git push --force-with-lease origin feature/banner-maintenance
 git log --oneline --graph --decorate origin/main..origin/feature/banner-maintenance
 ```
 
-**Expected output:** Push succeeds; remote feature branch matches your local tip.
+!!! example "Expected output"
+    Push succeeds; remote feature branch matches your local tip.
+
 
 **Validation (lease protection demo):**
 
-```bash
+```bash title="Terminal"
 # Simulate another push you have not fetched (optional)
 cd ~/rebash-lab-git
 git clone origin.git sneaky
@@ -345,7 +355,7 @@ git push --force-with-lease origin feature/banner-maintenance && echo 'UNEXPECTE
 
 Fetch and decide consciously (for the lab, reset to your recovered tip or rebase again). Simplest clean-up for the demo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-git/contributor
 git fetch origin
 git reset --hard origin/feature/banner-maintenance
@@ -385,7 +395,7 @@ For a clean final state, re-checkout your known-good banner + gitignore commits 
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-git
 ```
 

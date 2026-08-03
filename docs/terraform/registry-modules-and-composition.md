@@ -161,7 +161,7 @@ Compose **`cloudposse/label/null`** from the public Registry with a local **Dock
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-09-registry/modules/service && cd ~/rebash-terraform/module-09-registry
 ```
 
@@ -177,7 +177,7 @@ Your platform team mandates **Cloud Posse label** standards for resource names w
 
 Create `modules/service/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -192,7 +192,7 @@ terraform {
 
 Create `modules/service/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "id" {
   type        = string
   description = "Label id from upstream labeling module"
@@ -212,7 +212,7 @@ variable "image" {
 
 Create `modules/service/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "service" {
   name         = var.image
   keep_locally = true
@@ -233,7 +233,7 @@ resource "docker_container" "service" {
 
 Create `modules/service/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "container_id" {
   value = docker_container.service.id
 }
@@ -249,20 +249,22 @@ output "label_id" {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09-registry/modules/service
 terraform init
 terraform validate
 echo "service module validate OK" | tee ../../service-validate-ok.txt
 ```
 
-**Expected output:** Validate succeeds in the module directory.
+!!! example "Expected output"
+    Validate succeeds in the module directory.
+
 
 #### Task 2 – Root composition with Registry label module
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -281,13 +283,13 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "environment" {
   type    = string
   default = "dev"
@@ -296,7 +298,7 @@ variable "environment" {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 module "label" {
   source  = "cloudposse/label/null"
   version = "~> 0.25"
@@ -317,7 +319,7 @@ module "billing_service" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "standard_id" {
   value = module.label.id
 }
@@ -333,7 +335,7 @@ output "container_id" {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09-registry
 terraform init
 terraform plan | tee registry-plan.txt
@@ -343,14 +345,16 @@ grep -q 'docker_container' registry-plan.txt
 echo "registry plan OK" | tee registry-plan-ok.txt
 ```
 
-**Expected output:** Init downloads `cloudposse/label/null`; plan shows Registry module and `docker_container.service`.
+!!! example "Expected output"
+    Init downloads `cloudposse/label/null`; plan shows Registry module and `docker_container.service`.
+
 
 #### Task 3 – Apply and prove container labels operationally
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09-registry
 terraform apply -auto-approve
 terraform output -raw standard_id | tee standard-id.txt
@@ -365,14 +369,16 @@ echo "registry apply OK" | tee registry-apply-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Container is running; `container-labels.json` contains Registry label keys (`rebash`, `dev`, `billing`).
+!!! example "Expected output"
+    Container is running; `container-labels.json` contains Registry label keys (`rebash`, `dev`, `billing`).
+
 
 #### Task 4 – Registry composition evidence script
 
 Create `registry-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-09-registry
@@ -387,12 +393,14 @@ echo "registry-evidence PASS" | tee registry-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-09-registry/registry-evidence.sh
 ~/rebash-terraform/module-09-registry/registry-evidence.sh
 ```
 
-**Expected output:** Container is running; evidence script passes.
+!!! example "Expected output"
+    Container is running; evidence script passes.
+
 
 ### Validation steps
 
@@ -417,7 +425,7 @@ chmod +x ~/rebash-terraform/module-09-registry/registry-evidence.sh
 Pin an exact patch version (`version = "0.25.0"`), add a second `module "catalog_service"` with `name = "catalog"`, apply, and prove two distinct containers:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09-registry
 terraform init -upgrade
 terraform apply -auto-approve
@@ -427,7 +435,9 @@ echo "two-service challenge OK"
 ```
 {% endraw %}
 
-**Expected output:** Two running containers tagged with `Stage=dev`.
+!!! example "Expected output"
+    Two running containers tagged with `Stage=dev`.
+
 
 ### Learning outcomes
 
@@ -438,7 +448,7 @@ echo "two-service challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09-registry
 terraform destroy -auto-approve
 rm -f registry-plan.txt registry-plan-ok.txt standard-id.txt container-labels.json \

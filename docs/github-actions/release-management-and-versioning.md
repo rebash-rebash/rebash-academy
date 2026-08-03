@@ -136,7 +136,7 @@ Simulate SemVer tagging locally, author a release workflow stub triggered by ver
 
 Workspace: `~/rebash-github-actions/module-13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-13/.github/workflows && cd ~/rebash-github-actions/module-13
 set -euo pipefail
 git init -q 2>/dev/null || true
@@ -150,7 +150,7 @@ Platform requires every production release to be a SemVer tag, GitHub Release wi
 
 #### Task 1 – Local SemVer tag practice
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-13
 set -euo pipefail
 
@@ -161,13 +161,15 @@ git tag -a v0.1.0 -m 'lab patch release' 2>/dev/null || git tag v0.1.0
 git tag -l 'v*' | tee tags.txt
 ```
 
-**Expected output:** `v0.1.0` listed in `tags.txt`.
+!!! example "Expected output"
+    `v0.1.0` listed in `tags.txt`.
+
 
 #### Task 2 – Changelog generator script
 
 Create `generate-changelog.sh`:
 
-```bash
+```bash title="generate-changelog.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 prev="${1:-}"
@@ -187,7 +189,7 @@ echo "wrote $out"
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-13
 set -euo pipefail
 chmod +x generate-changelog.sh
@@ -196,7 +198,9 @@ test -s CHANGELOG.md
 head -5 CHANGELOG.md
 ```
 
-**Expected output:** Non-empty `CHANGELOG.md` with commit subjects.
+!!! example "Expected output"
+    Non-empty `CHANGELOG.md` with commit subjects.
+
 
 #### Task 3 – Release workflow stub
 
@@ -253,7 +257,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-13
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml')); print('release workflow OK')"
@@ -261,18 +265,22 @@ grep -q "tags:" .github/workflows/release.yml
 grep -q 'needs: test-gate' .github/workflows/release.yml
 ```
 
-**Expected output:** `release workflow OK`; test gate and tag trigger present.
+!!! example "Expected output"
+    `release workflow OK`; test gate and tag trigger present.
+
 
 #### Task 4 – Offline validation bundle
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-13
 set -euo pipefail
 tar -czf module-13-evidence.tgz .github/workflows/release.yml generate-changelog.sh CHANGELOG.md tags.txt
 ls -l module-13-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence archive created.
+!!! example "Expected output"
+    Evidence archive created.
+
 
 ### Validation steps
 
@@ -304,7 +312,7 @@ Split release into two workflows: (1) `workflow_dispatch` creates a **draft** re
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Keep lab artefacts for portfolio; delete tag locally if rehearsing:
 # git tag -d v0.1.0
 ls ~/rebash-github-actions/module-13

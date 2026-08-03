@@ -83,17 +83,19 @@ Fresh or lightly used Ubuntu server. You will install packages and create lab pa
 
 ### Task 1 — Baseline card
 
-```bash
+```bash title="Terminal"
 hostnamectl | head -5
 timedatectl | grep -iE 'synchronized|NTP' || true
 systemctl is-system-running || true
 ```
 
-**Expected output:** Ubuntu identity; clock sync state known; system running/degraded understood.
+!!! example "Expected output"
+    Ubuntu identity; clock sync state known; system running/degraded understood.
+
 
 ### Task 2 — App on localhost
 
-```bash
+```bash title="Terminal"
 sudo mkdir -p /opt/rebash-lab/app
 sudo tee /opt/rebash-lab/app/server.py >/dev/null <<'EOF'
 #!/usr/bin/env python3
@@ -118,11 +120,13 @@ curl -sS http://127.0.0.1:18080/healthz
 ss -tln | grep 18080
 ```
 
-**Expected output:** JSON OK; listen on `127.0.0.1:18080` only.
+!!! example "Expected output"
+    JSON OK; listen on `127.0.0.1:18080` only.
+
 
 ### Task 3 — nginx reverse proxy + TLS
 
-```bash
+```bash title="Terminal"
 sudo apt update
 sudo apt install -y nginx openssl
 sudo mkdir -p /etc/nginx/ssl /var/www/rebash-lab
@@ -162,11 +166,13 @@ curl -k -sS https://127.0.0.1/ | head -3
 curl -k -sS https://127.0.0.1/api/healthz
 ```
 
-**Expected output:** Static HTML over HTTPS; API JSON via `/api/`.
+!!! example "Expected output"
+    Static HTML over HTTPS; API JSON via `/api/`.
+
 
 ### Task 4 — Firewall posture (UFW)
 
-```bash
+```bash title="Terminal"
 sudo apt install -y ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
@@ -178,14 +184,16 @@ sudo ufw status numbered
 sudo ss -tuln | awk 'NR==1 || /:22 |:80 |:443 |:18080 /'
 ```
 
-**Expected output:** UFW active with 22/80/443; app still on localhost only.
+!!! example "Expected output"
+    UFW active with 22/80/443; app still on localhost only.
+
 
 !!! warning "Keep a console session"
     Confirm SSH still works in a second session before enabling UFW on remote cloud VMs.
 
 ### Task 5 — Backup and restore proof
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-backups
 echo 'lab-state=1' | sudo tee /opt/rebash-lab/app/state.txt
 TS=$(date +%Y%m%d-%H%M%S)
@@ -197,7 +205,9 @@ sudo cat /opt/rebash-lab/app/state.txt
 sha256sum -c ~/rebash-lab-backups/app-$TS.sha256
 ```
 
-**Expected output:** Checksum OK; `lab-state=1` restored.
+!!! example "Expected output"
+    Checksum OK; `lab-state=1` restored.
+
 
 ## Validation
 
@@ -225,7 +235,7 @@ sha256sum -c ~/rebash-lab-backups/app-$TS.sha256
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 sudo kill "$(cat /var/tmp/rebash-lab-app.pid)" 2>/dev/null || true
 sudo rm -f /var/tmp/rebash-lab-app.pid /var/tmp/rebash-lab-app.log
 sudo rm -f /etc/nginx/sites-enabled/rebash-lab

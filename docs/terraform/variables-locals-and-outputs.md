@@ -180,7 +180,7 @@ Build a root module under `~/rebash-terraform/module-07` with validated variable
 
 Workspace: `~/rebash-terraform/module-07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-07 && cd ~/rebash-terraform/module-07
 ```
 
@@ -194,7 +194,7 @@ Platform engineering requires every stack to accept `environment` and `owner` in
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -211,7 +211,7 @@ provider "docker" {}
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "environment" {
   type        = string
   description = "Deployment tier: dev, staging, or prod"
@@ -236,7 +236,7 @@ variable "bootstrap_token" {
 
 Create `locals.tf`:
 
-```hcl
+```hcl title="locals.tf"
 locals {
   name_prefix = "rebash-${var.environment}"
   common_tags = {
@@ -249,7 +249,7 @@ locals {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "alpine" {
   name = "alpine:3.20"
 }
@@ -285,7 +285,7 @@ resource "docker_container" "service" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "service_name" {
   description = "Computed service name from locals"
   value       = local.name_prefix
@@ -305,7 +305,7 @@ output "bootstrap_token" {
 
 Create `terraform.tfvars`:
 
-```hcl
+```hcl title="terraform.tfvars"
 environment     = "dev"
 owner           = "platform-team"
 bootstrap_token = "lab-token-dev-only"
@@ -313,7 +313,7 @@ bootstrap_token = "lab-token-dev-only"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-07
 terraform init
 terraform validate
@@ -322,14 +322,16 @@ grep -q 'docker_container.service' plan.txt
 echo "task1 OK" | tee task1-ok.txt
 ```
 
-**Expected output:** `terraform validate` succeeds; plan shows network, image, and container to create.
+!!! example "Expected output"
+    `terraform validate` succeeds; plan shows network, image, and container to create.
+
 
 #### Task 2 – Apply, inspect outputs, and prove with Docker CLI
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-07
 terraform apply tfplan
 terraform output
@@ -344,13 +346,15 @@ echo "task2 OK" | tee task2-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** `service_name` prints `rebash-dev`; `bootstrap_token` redacted in JSON; container **Up** with owner label; `task2-ok.txt` contains `task2 OK`.
+!!! example "Expected output"
+    `service_name` prints `rebash-dev`; `bootstrap_token` redacted in JSON; container **Up** with owner label; `task2-ok.txt` contains `task2 OK`.
+
 
 #### Task 3 – TF_VAR_ override and validation failure
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-07
 export TF_VAR_environment=staging
 terraform plan -var='owner=ci-pipeline' | tee plan-staging.txt
@@ -361,14 +365,16 @@ unset TF_VAR_environment
 echo "task3 OK" | tee task3-ok.txt
 ```
 
-**Expected output:** Staging plan shows `rebash-staging-svc`; invalid environment plan fails validation with the custom error message.
+!!! example "Expected output"
+    Staging plan shows `rebash-staging-svc`; invalid environment plan fails validation with the custom error message.
+
 
 #### Task 4 – Create vars-evidence.sh audit script
 
 Create `vars-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-07
@@ -384,12 +390,14 @@ echo "vars-evidence PASS" | tee vars-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-07/vars-evidence.sh
 ~/rebash-terraform/module-07/vars-evidence.sh
 ```
 
-**Expected output:** `vars-evidence-pass.txt` contains `vars-evidence PASS`.
+!!! example "Expected output"
+    `vars-evidence-pass.txt` contains `vars-evidence PASS`.
+
 
 ### Validation steps
 
@@ -414,7 +422,7 @@ chmod +x ~/rebash-terraform/module-07/vars-evidence.sh
 
 Create `prod.tfvars`:
 
-```hcl
+```hcl title="prod.tfvars"
 environment     = "prod"
 owner           = "sre-team"
 bootstrap_token = "prod-challenge-token"
@@ -422,14 +430,16 @@ bootstrap_token = "prod-challenge-token"
 
 Run a plan with `-var-file=prod.tfvars` and archive evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-07
 terraform plan -var-file=prod.tfvars | tee plan-prod.txt
 grep -q 'rebash-prod-svc' plan-prod.txt
 echo "prod tfvars challenge OK"
 ```
 
-**Expected output:** Plan references `rebash-prod-svc` container name (plan only — do not apply prod naming if dev stack still exists without destroy first).
+!!! example "Expected output"
+    Plan references `rebash-prod-svc` container name (plan only — do not apply prod naming if dev stack still exists without destroy first).
+
 
 ### Learning outcomes
 
@@ -440,7 +450,7 @@ echo "prod tfvars challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-07
 terraform destroy -auto-approve
 rm -f tfplan plan.txt task*-ok.txt outputs.json service-name.txt docker-ps.txt \

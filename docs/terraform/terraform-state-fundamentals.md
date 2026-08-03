@@ -152,7 +152,7 @@ Apply a Docker stack, inspect and manipulate local state with official CLI comma
 
 Workspace: `~/rebash-terraform/module-08`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-08 && cd ~/rebash-terraform/module-08
 ```
 
@@ -166,7 +166,7 @@ An engineer renamed a resource in code without `terraform state mv`, causing a d
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -183,7 +183,7 @@ provider "docker" {}
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_network" "app" {
   name = "rebash-module-08-net"
 }
@@ -209,7 +209,7 @@ resource "docker_container" "app" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "container_name" {
   value = docker_container.app.name
 }
@@ -218,7 +218,7 @@ output "container_name" {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08
 terraform init
 terraform apply -auto-approve
@@ -232,7 +232,9 @@ echo "task1 OK" | tee task1-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Two resources in state list; container running; `state show` displays labels; `task1-ok.txt` contains `task1 OK`.
+!!! example "Expected output"
+    Two resources in state list; container running; `state show` displays labels; `task1-ok.txt` contains `task1 OK`.
+
 
 #### Task 2 – Rename resource address with state mv
 
@@ -256,7 +258,7 @@ resource "docker_container" "application" {
 
 Update `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "container_name" {
   value = docker_container.application.name
 }
@@ -265,7 +267,7 @@ output "container_name" {
 Move state to match renamed resource:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08
 terraform state mv docker_container.app docker_container.application
 terraform state list | tee state-list-after-mv.txt
@@ -277,7 +279,9 @@ echo "task2 OK" | tee task2-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** No create/destroy for the renamed container; plan exit code 0; same container still running; `task2-ok.txt` contains `task2 OK`.
+!!! example "Expected output"
+    No create/destroy for the renamed container; plan exit code 0; same container still running; `task2-ok.txt` contains `task2 OK`.
+
 
 #### Task 3 – Detect drift via label change and apply replacement
 
@@ -293,7 +297,7 @@ Update the revision label in `main.tf`:
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08
 terraform plan -no-color | tee plan-drift.txt
 grep -E 'must be replaced|forces replacement|docker_container.application' plan-drift.txt
@@ -303,14 +307,16 @@ echo "task3 OK" | tee task3-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Plan shows replacement due to label change (forces replacement on container); after apply, label is `v2`; `task3-ok.txt` contains `task3 OK`.
+!!! example "Expected output"
+    Plan shows replacement due to label change (forces replacement on container); after apply, label is `v2`; `task3-ok.txt` contains `task3 OK`.
+
 
 #### Task 4 – State pull evidence script
 
 Create `state-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-08
@@ -325,12 +331,14 @@ echo "state-evidence PASS" | tee state-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-08/state-evidence.sh
 ~/rebash-terraform/module-08/state-evidence.sh
 ```
 
-**Expected output:** `state-evidence-pass.txt` contains `state-evidence PASS`; `state-pulled.json` is valid state JSON.
+!!! example "Expected output"
+    `state-evidence-pass.txt` contains `state-evidence PASS`; `state-pulled.json` is valid state JSON.
+
 
 ### Validation steps
 
@@ -355,7 +363,7 @@ chmod +x ~/rebash-terraform/module-08/state-evidence.sh
 Remove the network from state without deleting it from Docker:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08
 terraform state rm docker_network.app
 terraform state list | tee state-list-challenge.txt
@@ -365,7 +373,9 @@ echo "state rm challenge OK"
 ```
 {% endraw %}
 
-**Expected output:** Network still exists in Docker; Terraform no longer tracks `docker_network.app` — next plan may propose import or recreate.
+!!! example "Expected output"
+    Network still exists in Docker; Terraform no longer tracks `docker_network.app` — next plan may propose import or recreate.
+
 
 ### Learning outcomes
 
@@ -376,7 +386,7 @@ echo "state rm challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08
 terraform destroy -auto-approve
 rm -f state-list.txt state-show-app.txt task*-ok.txt state-list-after-mv.txt \

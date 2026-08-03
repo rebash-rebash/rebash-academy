@@ -90,7 +90,7 @@ Platform teams build wrappers once so every pipeline behaves the same. Parsing h
 4. **Gate** — CI fails on policy (for example unexpected destroys). Apply only with an explicit flag and human approval.
 5. **State** — `state list` / `state show` are read-sensitive; never print secrets from state into chat logs.
 
-```bash
+```bash title="Terminal"
 terraform fmt -check -recursive
 terraform init -backend=false
 terraform validate
@@ -135,7 +135,7 @@ Under `~/rebash-python/lab19`, create a Docker-provider Terraform module and a P
 
 Workspace: `~/rebash-python/lab19`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab19 && cd ~/rebash-python/lab19
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -143,7 +143,9 @@ docker info | tee docker-info.txt
 terraform version | tee terraform-version.txt
 ```
 
-**Expected output:** `python-version.txt`, `docker-info.txt`, and `terraform-version.txt` are non-empty.
+!!! example "Expected output"
+    `python-version.txt`, `docker-info.txt`, and `terraform-version.txt` are non-empty.
+
 
 ### Real-world scenario
 
@@ -155,7 +157,7 @@ Your platform team wants every pull request to prove Terraform configs are forma
 
 Create `tf/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_version = ">= 1.0"
   required_providers {
@@ -190,7 +192,7 @@ output "container_id" {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab19
 set -euo pipefail
 mkdir -p tf
@@ -199,13 +201,15 @@ grep -q 'lab_marker' tf/main.tf
 wc -l tf/main.tf | tee hcl-lines.txt
 ```
 
-**Expected output:** `hcl-lines.txt` shows a positive line count; `grep` finds `docker_container`.
+!!! example "Expected output"
+    `hcl-lines.txt` shows a positive line count; `grep` finds `docker_container`.
+
 
 #### Task 2 – Python wrapper: validate, plan, apply, destroy
 
 Create `tf_wrapper.py`:
 
-```python
+```python title="tf_wrapper.py"
 #!/usr/bin/env python3
 """Orchestrate terraform/tofu fmt, validate, plan, apply, and destroy for lab19."""
 from __future__ import annotations
@@ -277,7 +281,7 @@ if __name__ == "__main__":
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab19
 set -euo pipefail
 docker info >/dev/null
@@ -288,14 +292,16 @@ docker ps -a --filter name=rebash-python-lab19 --format '{{.Names}}' | tee post-
 ```
 {% endraw %}
 
-**Expected output:** `validate-result.json` has `"ok": true`; container is gone after destroy.
+!!! example "Expected output"
+    `validate-result.json` has `"ok": true`; container is gone after destroy.
+
 
 #### Task 3 – Operational proof script
 
 Create `prove-lifecycle.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/tf"
@@ -313,7 +319,7 @@ echo lab19_lifecycle_ok
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab19
 set -euo pipefail
 chmod +x prove-lifecycle.sh
@@ -328,7 +334,9 @@ ls -l terraform-lab-evidence.tgz | tee evidence-ls.txt
 test -s terraform-lab-evidence.tgz
 ```
 
-**Expected output:** `lifecycle-run.txt` ends with `lab19_lifecycle_ok`; evidence archive is non-empty.
+!!! example "Expected output"
+    `lifecycle-run.txt` ends with `lab19_lifecycle_ok`; evidence archive is non-empty.
+
 
 ### Validation steps
 
@@ -361,7 +369,7 @@ Extend `tf_wrapper.py` so after apply it runs `docker ps --filter name=rebash-py
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab19
 set -euo pipefail
 (cd tf && terraform destroy -auto-approve 2>/dev/null) || true

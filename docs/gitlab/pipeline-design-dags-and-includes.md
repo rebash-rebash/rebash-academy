@@ -165,7 +165,7 @@ Workspace: `~/rebash-gitlab/module-05` with `templates/` and `generated/` subdir
 
 File-first lab. Push to GitLab only when you want includes resolved on the server.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-05/{templates,generated,src} && cd ~/rebash-gitlab/module-05
 ```
 
@@ -179,7 +179,7 @@ Your platform team maintains shared CI templates. Product repos should `include`
 
 Create `templates/lint.yml`:
 
-```yaml
+```yaml title="lint.yml"
 .lint_template:
   stage: lint
   image: python:3.12-alpine
@@ -197,7 +197,7 @@ Create `templates/lint.yml`:
 
 Create `templates/test.yml`:
 
-```yaml
+```yaml title="test.yml"
 .unit_test_template:
   stage: test
   image: python:3.12-alpine
@@ -218,7 +218,7 @@ Create `templates/test.yml`:
 
 Validate templates:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-05
 python3 -c "
 import yaml, pathlib
@@ -228,19 +228,21 @@ for p in pathlib.Path('templates').glob('*.yml'):
 "
 ```
 
-**Expected output:** Two lines starting with `OK templates/`.
+!!! example "Expected output"
+    Two lines starting with `OK templates/`.
+
 
 #### Task 3 – Create app and parent pipeline with includes and needs DAG
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 print("dag-lab ok")
 ```
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 include:
   - local: templates/lint.yml
   - local: templates/test.yml
@@ -268,7 +270,7 @@ integration_test:
 
 Validate all YAML:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-05
 python3 -c "
 import yaml, pathlib
@@ -281,11 +283,13 @@ print('OK DAG needs chain')
 "
 ```
 
-**Expected output:** Three `OK` lines for files plus `OK DAG needs chain`.
+!!! example "Expected output"
+    Three `OK` lines for files plus `OK DAG needs chain`.
+
 
 #### Task 4 – Simulate generated artefact paths locally
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-05
 mkdir -p generated
 python3 -m py_compile src/app.py
@@ -297,7 +301,9 @@ test -f generated/integration.txt
 grep -q 'dag-lab ok' dag-out.txt
 ```
 
-**Expected output:** Both files under `generated/` exist; `dag-out.txt` contains `dag-lab ok`.
+!!! example "Expected output"
+    Both files under `generated/` exist; `dag-out.txt` contains `dag-lab ok`.
+
 
 ### Validation steps
 
@@ -329,7 +335,7 @@ Add `templates/build.yml` with a `.build_template` job that writes `generated/bu
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-gitlab/module-05/generated
 rm -f ~/rebash-gitlab/module-05/dag-out.txt
 # Keep templates/ and .gitlab-ci.yml for module 06

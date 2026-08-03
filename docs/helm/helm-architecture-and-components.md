@@ -153,7 +153,7 @@ Inspect the Helm CLI environment, register a chart repository, install a probe r
 
 Workspace: `~/rebash-helm/module-01-arch` on your workstation with a disposable **kind** cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-01-arch/probe/templates && cd ~/rebash-helm/module-01-arch
 kubectl cluster-info | tee cluster-info.txt
 ```
@@ -166,7 +166,7 @@ You are onboarding to a platform team that documents Helm architecture for audit
 
 #### Task 1 – Verify CLI and cluster context
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-01-arch
 helm version | tee helm-version-m01arch.txt
 helm env | tee helm-env-m01arch.txt
@@ -176,11 +176,13 @@ grep -q 'v3' helm-version-m01arch.txt
 grep -q Ready nodes-wide.txt
 ```
 
-**Expected output:** `helm-version-m01arch.txt` shows `version.BuildInfo{Version:"v3.`; all nodes are Ready.
+!!! example "Expected output"
+    `helm-version-m01arch.txt` shows `version.BuildInfo{Version:"v3.`; all nodes are Ready.
+
 
 #### Task 2 – Register a repository and list indexes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-01-arch
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update | tee repo-update-m01arch.txt
@@ -189,13 +191,15 @@ grep -q 'bitnami' repo-list-m01arch.txt
 helm search repo bitnami/nginx --versions | head -5 | tee search-m01arch.txt
 ```
 
-**Expected output:** `repo-list-m01arch.txt` includes `bitnami` with URL `https://charts.bitnami.com/bitnami`; search returns versioned nginx charts.
+!!! example "Expected output"
+    `repo-list-m01arch.txt` includes `bitnami` with URL `https://charts.bitnami.com/bitnami`; search returns versioned nginx charts.
+
 
 #### Task 3 – Install probe release and inspect release Secrets
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -204,7 +208,7 @@ metadata:
 
 Create `probe/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: probe
 version: 0.1.0
@@ -226,7 +230,7 @@ data:
 
 Install and prove release metadata:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-01-arch
 kubectl apply -f namespace.yaml
 helm upgrade --install arch-probe probe -n rebash-helm-m01-arch --wait --timeout 120s | tee probe-install-m01arch.txt
@@ -238,13 +242,15 @@ grep -q 'arch-probe' helm-list-m01arch.txt
 grep -q 'sh.helm.release' release-secrets-m01arch.txt || test -s release-secrets-m01arch.txt
 ```
 
-**Expected output:** Release `arch-probe` is deployed; `release-secrets-m01arch.txt` lists Helm release Secrets labelled `owner=helm`.
+!!! example "Expected output"
+    Release `arch-probe` is deployed; `release-secrets-m01arch.txt` lists Helm release Secrets labelled `owner=helm`.
+
 
 #### Task 4 – Break and fix a failed upgrade
 
 Simulate a bad values override, observe failure, then recover:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-01-arch
 helm upgrade arch-probe probe -n rebash-helm-m01-arch --set replicaCount=not-a-number 2>helm-upgrade-fail-m01arch.txt || true
 grep -qi 'error\|invalid\|failed' helm-upgrade-fail-m01arch.txt
@@ -253,7 +259,9 @@ helm status arch-probe -n rebash-helm-m01-arch | tee helm-status-m01arch.txt
 grep -q 'deployed' helm-status-m01arch.txt
 ```
 
-**Expected output:** Bad upgrade fails with a clear error; recovery leaves release status `deployed`.
+!!! example "Expected output"
+    Bad upgrade fails with a clear error; recovery leaves release status `deployed`.
+
 
 ### Validation steps
 
@@ -286,7 +294,7 @@ Add a `values.yaml` to `probe/` with `replicaCount: 1` and re-install with `helm
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall arch-probe -n rebash-helm-m01-arch 2>/dev/null || true
 kubectl delete namespace rebash-helm-m01-arch --ignore-not-found
 helm repo remove bitnami 2>/dev/null || true

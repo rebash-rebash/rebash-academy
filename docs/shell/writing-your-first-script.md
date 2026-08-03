@@ -68,7 +68,7 @@ A shell script is a plain text file that:
 2. Contains commands, comments, and (later) functions  
 3. Ends with an exit status that callers can check  
 
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -85,7 +85,7 @@ Ad-hoc history lines have no review trail, no stable exit status, and no safe pl
 
 **Make it runnable**
 
-```bash
+```bash title="Terminal"
 chmod +x greet.sh
 ./greet.sh          # needs execute bit + shebang
 bash greet.sh       # execute bit optional
@@ -104,7 +104,7 @@ bash greet.sh       # execute bit optional
 
 **Strict mode** (from this module onward):
 
-```bash
+```bash title="Terminal"
 set -euo pipefail
 ```
 
@@ -150,14 +150,16 @@ Build a small ops script under `~/rebash-shell/lab02` with shebang, execute bit,
 
 Workspace: `~/rebash-shell/lab02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab02 && cd ~/rebash-shell/lab02
 set -euo pipefail
 whoami | tee lab-user.txt
 command -v bash | tee bash-path.txt
 ```
 
-**Expected output:** `lab-user.txt` and `bash-path.txt` exist; shell is using `set -euo pipefail` for the lab session.
+!!! example "Expected output"
+    `lab-user.txt` and `bash-path.txt` exist; shell is using `set -euo pipefail` for the lab session.
+
 
 ### Real-world scenario
 
@@ -169,7 +171,7 @@ Your team needs a tiny host check script for CI: it must accept a hostname argum
 
 Create `hello.sh`:
 
-```bash
+```bash title="hello.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -178,7 +180,7 @@ printf 'hello from %s\n' "$(hostname -s)" | tee hello.out
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab02
 set -euo pipefail
 
@@ -192,13 +194,15 @@ grep -q 'x' <<< "$(stat -c '%A' hello.sh)"
 ```
 
 
-**Expected output:** `hello.out` has a greeting; `shebang.txt` shows `#!/usr/bin/env bash`; `hello.sh` is executable.
+!!! example "Expected output"
+    `hello.out` has a greeting; `shebang.txt` shows `#!/usr/bin/env bash`; `hello.sh` is executable.
+
 
 #### Task 2 – Arguments, usage message, and exit codes
 
 Create `hostcheck.sh`:
 
-```bash
+```bash title="hostcheck.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -219,7 +223,7 @@ exit 0
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab02
 set -euo pipefail
 
@@ -242,13 +246,15 @@ test ! -s usage.stdout
 ```
 
 
-**Expected output:** `check-labhost.txt` exists; `usage_exit=2`; `usage.stderr` contains `Usage:`.
+!!! example "Expected output"
+    `check-labhost.txt` exists; `usage_exit=2`; `usage.stderr` contains `Usage:`.
+
 
 #### Task 3 – Prove strict mode stops on failure
 
 Create `strict-demo.sh`:
 
-```bash
+```bash title="strict-demo.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -259,7 +265,7 @@ echo "step=2-should-not-run" | tee -a strict-steps.txt
 
 Create `loose-demo.sh`:
 
-```bash
+```bash title="loose-demo.sh"
 #!/bin/bash
 echo "loose-step=1" | tee loose-steps.txt
 false
@@ -268,7 +274,7 @@ echo "loose-step=2" | tee -a loose-steps.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab02
 set -euo pipefail
 
@@ -298,7 +304,9 @@ ls -l first-script-evidence.tgz | tee evidence-ls.txt
 ```
 
 
-**Expected output:** `strict_exit` is non-zero; `strict-steps.txt` has step 1 only; `loose-steps.txt` includes step 2; evidence archive exists.
+!!! example "Expected output"
+    `strict_exit` is non-zero; `strict-steps.txt` has step 1 only; `loose-steps.txt` includes step 2; evidence archive exists.
+
 
 ### Validation steps
 
@@ -329,7 +337,7 @@ Extend `hostcheck.sh` into `hostcheck-v2.sh` that requires **two** arguments (`h
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab02
 rm -f loose-demo.sh strict.stdout strict.stderr usage.stdout
 # Keep hostcheck.sh and the evidence archive for review, or:

@@ -169,7 +169,7 @@ Workspace: `~/rebash-k8s/module-02`
 
 Use a disposable local cluster. Never target a shared production API server.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-02 && cd ~/rebash-k8s/module-02
 ```
 
@@ -183,7 +183,7 @@ Your team ships a onboarding script every new engineer runs on day one. It must 
 
 Create `verify-cluster.sh`:
 
-```bash
+```bash title="verify-cluster.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -221,20 +221,22 @@ spec:
 
 Make executable and run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-02
 chmod +x verify-cluster.sh
 ./verify-cluster.sh | tee verify-run.txt
 grep -q 'all checks passed' verify-run.txt
 ```
 
-**Expected output:** `verify-run.txt` ends with `verify-cluster.sh: all checks passed`; `nodes-wide.txt` shows Ready nodes.
+!!! example "Expected output"
+    `verify-run.txt` ends with `verify-cluster.sh: all checks passed`; `nodes-wide.txt` shows Ready nodes.
+
 
 #### Task 2 – Prove kubeconfig context and namespace isolation
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -243,7 +245,7 @@ metadata:
 
 Apply namespace and confirm context still works:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-02
 kubectl apply -f namespace.yaml
 kubectl config view --minify -o jsonpath='{.contexts[0].context.cluster}{"\n"}{.contexts[0].context.user}{"\n"}' | tee context-details.txt
@@ -251,13 +253,15 @@ kubectl get ns rebash-m02 | tee ns-check.txt
 grep rebash-m02 ns-check.txt
 ```
 
-**Expected output:** Namespace `rebash-m02` appears Active in `ns-check.txt`.
+!!! example "Expected output"
+    Namespace `rebash-m02` appears Active in `ns-check.txt`.
+
 
 #### Task 3 – Server-side dry-run (optional, if supported)
 
 Create `probe-pod.yaml`:
 
-```yaml
+```yaml title="probe-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -277,13 +281,15 @@ spec:
 
 Validate with server dry-run when your cluster supports it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-02
 kubectl apply --dry-run=server -f probe-pod.yaml | tee server-dry-run.txt
 grep -E 'created|configured|unchanged|dry run' server-dry-run.txt
 ```
 
-**Expected output:** Server accepts the manifest (wording varies by kubectl version).
+!!! example "Expected output"
+    Server accepts the manifest (wording varies by kubectl version).
+
 
 ### Validation steps
 
@@ -313,7 +319,7 @@ Extend `verify-cluster.sh` to accept an expected context name as `$1` and exit n
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m02 --ignore-not-found --wait=true
 ```
 

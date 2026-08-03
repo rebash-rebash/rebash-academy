@@ -147,7 +147,7 @@ Build a hardened image with a non-root user, drop Linux capabilities, and run wi
 
 Workspace: `~/rebash-docker/module-11`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
 ```
 
@@ -161,7 +161,7 @@ Security review flagged a legacy container running as root with full capabilitie
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM alpine:3.20
 RUN apk add --no-cache netcat-openbsd \
     && addgroup -S app && adduser -S app -G app \
@@ -177,7 +177,7 @@ CMD ["./server.sh"]
 
 Create `server.sh`:
 
-```bash
+```bash title="server.sh"
 #!/bin/sh
 set -eu
 echo "rebash-sec-lab listening on 8080 as $(id -un)"
@@ -186,20 +186,22 @@ while true; do printf 'HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nok' | nc -l -
 
 Build the image:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-11
 docker build -t rebash-sec-lab:1.0.0 .
 docker images rebash-sec-lab:1.0.0 | tee build-proof.txt
 grep -q rebash-sec-lab build-proof.txt
 ```
 
-**Expected output:** Image `rebash-sec-lab:1.0.0` appears in `build-proof.txt`.
+!!! example "Expected output"
+    Image `rebash-sec-lab:1.0.0` appears in `build-proof.txt`.
+
 
 #### Task 2 – Run with capability drop and read-only rootfs
 
 Run with production-style runtime hardening:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-11
 docker run -d --name rebash-sec-18110 \
   --read-only \
@@ -212,13 +214,15 @@ docker ps --filter name=rebash-sec-18110 --format '{{ "{{" }}.Names{{ "}}" }} {{
 curl -sS http://127.0.0.1:18110/ | tee curl-sec.txt
 ```
 
-**Expected output:** Container is Up; `curl-sec.txt` contains `ok`.
+!!! example "Expected output"
+    Container is Up; `curl-sec.txt` contains `ok`.
+
 
 #### Task 3 – Prove User and CapDrop with inspect
 
 Capture security-relevant fields:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-11
 docker inspect rebash-sec-18110 --format 'User={{ "{{" }}.Config.User{{ "}}" }} CapDrop={{ "{{" }}.HostConfig.CapDrop{{ "}}" }} ReadonlyRootfs={{ "{{" }}.HostConfig.ReadonlyRootfs{{ "}}" }}' | tee inspect-sec.txt
 grep -q 'User=app' inspect-sec.txt
@@ -227,7 +231,9 @@ docker exec rebash-sec-18110 id | tee id-in-container.txt
 grep -q 'uid=100(app)' id-in-container.txt
 ```
 
-**Expected output:** `inspect-sec.txt` shows `User=app`, `CapDrop=[all]`, `ReadonlyRootfs=true`; `id-in-container.txt` shows non-root UID.
+!!! example "Expected output"
+    `inspect-sec.txt` shows `User=app`, `CapDrop=[all]`, `ReadonlyRootfs=true`; `id-in-container.txt` shows non-root UID.
+
 
 ### Validation steps
 
@@ -259,7 +265,7 @@ Add `HEALTHCHECK` using `wget` or a shell probe, rebuild, and capture `docker in
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker rm -f rebash-sec-18110 2>/dev/null || true
 docker rmi rebash-sec-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-11/*.txt

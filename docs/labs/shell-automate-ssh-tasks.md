@@ -63,7 +63,7 @@ Linux with OpenSSH. You may target `127.0.0.1` if key-based localhost SSH works.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/ssh
 cd ~/rebash-lab-shell/ssh
 printf '%s\n' '127.0.0.1' > hosts.txt
@@ -76,7 +76,7 @@ printf '%s\n' '127.0.0.1' > hosts.txt
 
 ### Task 1 — Single-host probe
 
-```bash
+```bash title="Terminal"
 ssh -o BatchMode=yes -o ConnectTimeout=5 127.0.0.1 'uptime' || true
 ```
 
@@ -109,7 +109,7 @@ Document recommended options: `StrictHostKeyChecking=accept-new` (lab only), `Co
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

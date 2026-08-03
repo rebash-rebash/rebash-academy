@@ -61,7 +61,7 @@ Any Linux host or WSL2. Work under `~/rebash-lab-shell`.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell
 cd ~/rebash-lab-shell
 ```
@@ -72,7 +72,7 @@ cd ~/rebash-lab-shell
 
 Create `first-script.sh`:
 
-```bash
+```bash title="first-script.sh"
 #!/usr/bin/env bash
 # first-script.sh — host snapshot for REBASH lab
 # Usage: ./first-script.sh [name]
@@ -87,7 +87,7 @@ exit 0
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x first-script.sh
 ```
 
@@ -140,7 +140,7 @@ Confirm the shebang selects Bash when executed as `./first-script.sh`.
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

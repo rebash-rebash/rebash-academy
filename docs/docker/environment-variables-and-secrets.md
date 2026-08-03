@@ -161,7 +161,7 @@ For local Compose without Swarm, common patterns:
 
 Mount credentials from the host without putting them in the image:
 
-```bash
+```bash title="Terminal"
 docker run -v /secure/path/db-password.txt:/run/secrets/db-password:ro myapp
 ```
 
@@ -205,7 +205,7 @@ Create `.env.example` and a Compose stack using `env_file`, then prove configura
 
 Workspace: `~/rebash-docker/environment-variables-and-secrets`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/environment-variables-and-secrets && cd ~/rebash-docker/environment-variables-and-secrets
 ```
 
@@ -219,7 +219,7 @@ A staging API needs non-secret config (`APP_ENV`, `LOG_LEVEL`) and a lab token s
 
 Create `.env.example`:
 
-```bash
+```bash title=".env.example"
 APP_ENV=lab
 LOG_LEVEL=info
 API_TOKEN=replace-me-locally
@@ -227,7 +227,7 @@ API_TOKEN=replace-me-locally
 
 Create `app.py`:
 
-```python
+```python title="app.py"
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -252,7 +252,7 @@ HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 WORKDIR /app
 COPY app.py .
@@ -262,7 +262,7 @@ CMD ["python", "app.py"]
 
 Copy the example env locally (never commit `.env`):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/environment-variables-and-secrets
 cp .env.example .env
 sed -i.bak 's/replace-me-locally/lab-only-token-18180/' .env 2>/dev/null || \
@@ -270,13 +270,15 @@ sed -i.bak 's/replace-me-locally/lab-only-token-18180/' .env 2>/dev/null || \
 grep -q APP_ENV .env.example
 ```
 
-**Expected output:** `.env.example` exists in the repo tree; `.env` exists locally with a substituted token.
+!!! example "Expected output"
+    `.env.example` exists in the repo tree; `.env` exists locally with a substituted token.
+
 
 #### Task 2 – Compose with env_file
 
 Create `compose.yaml`:
 
-```yaml
+```yaml title="compose.yaml"
 services:
   api:
     build: .
@@ -289,7 +291,7 @@ services:
 
 Start and verify HTTP without dumping secrets:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/environment-variables-and-secrets
 docker compose up -d --build
 curl -sS http://127.0.0.1:18180/config | tee config-safe.txt
@@ -297,14 +299,16 @@ grep -q 'env=lab token_set=True' config-safe.txt
 grep -qv 'lab-only-token' config-safe.txt
 ```
 
-**Expected output:** `config-safe.txt` shows `env=lab` and `token_set=True` but not the raw token.
+!!! example "Expected output"
+    `config-safe.txt` shows `env=lab` and `token_set=True` but not the raw token.
+
 
 #### Task 3 – Prove env presence via inspect (redacted check)
 
 Confirm variables are injected without echoing values:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/environment-variables-and-secrets
 CID="$(docker compose ps -q api)"
 docker inspect "$CID" --format '{{ "{{" }}range .Config.Env{{ "}}" }}{{ "{{" }}.{{ "}}" }}{{ "{{" }}println{{ "}}" }}{{ "{{" }}end{{ "}}" }}' | grep -E '^APP_ENV=|^LOG_LEVEL=|^API_TOKEN=' | sed 's/API_TOKEN=.*/API_TOKEN=<redacted>/' | tee env-keys.txt
@@ -313,7 +317,9 @@ grep -q 'API_TOKEN=<redacted>' env-keys.txt
 ```
 {% endraw %}
 
-**Expected output:** `env-keys.txt` lists keys with token redacted in the evidence file.
+!!! example "Expected output"
+    `env-keys.txt` lists keys with token redacted in the evidence file.
+
 
 ### Validation steps
 
@@ -345,7 +351,7 @@ Move `API_TOKEN` to a Docker Swarm secret or bind-mounted file (`/run/secrets/ap
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/environment-variables-and-secrets
 docker compose down -v --remove-orphans
 docker rmi rebash-env-lab:1.0.0 2>/dev/null || true
@@ -395,7 +401,7 @@ Confirm the lab before moving on:
 
 Applications should read secrets from files when available, falling back only in development:
 
-```bash
+```bash title="Terminal"
 #!/bin/sh
 set -eu
 if [ -f /run/secrets/database_url ]; then

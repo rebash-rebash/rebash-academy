@@ -136,7 +136,7 @@ Under `~/rebash-python/lab20`, generate lab-only SSH keys, then prove connectivi
 
 Workspace: `~/rebash-python/lab20`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab20 && cd ~/rebash-python/lab20
 set -euo pipefail
 python3 -m venv .venv
@@ -147,7 +147,9 @@ python -m pip install -q 'paramiko>=3.4'
 python -c 'import paramiko; print(paramiko.__version__)' | tee paramiko-version.txt
 ```
 
-**Expected output:** `paramiko-version.txt` contains a version such as `3.x`.
+!!! example "Expected output"
+    `paramiko-version.txt` contains a version such as `3.x`.
+
 
 ### Real-world scenario
 
@@ -159,7 +161,7 @@ You need a small inventory script that runs `uname -a` on jump hosts. Security a
 
 Create keys **only** under the lab directory. Do not touch `~/.ssh/id_*`.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab20
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -171,14 +173,16 @@ ls -l lab_ed25519 lab_ed25519.pub | tee key-ls.txt
 chmod 600 lab_ed25519
 ```
 
-**Expected output:** `key-ls.txt` lists private and public key files; private key mode is restrictive.
+!!! example "Expected output"
+    `key-ls.txt` lists private and public key files; private key mode is restrictive.
+
 
 #### Task 2 – Connect, BatchMode, or mock
 
 
 Create `ssh_lab.py`:
 
-```python
+```python title="ssh_lab.py"
 #!/usr/bin/env python3
 """Try Paramiko localhost, then OpenSSH BatchMode, then mock."""
 from __future__ import annotations
@@ -302,7 +306,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab20
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -311,11 +315,13 @@ python ssh_lab.py | tee ssh-run.txt
 python -c 'import json; d=json.load(open("ssh-result.json")); assert d["ok"] is True'
 ```
 
-**Expected output:** `ssh-result.json` has `"ok": true` and `"mode"` of `paramiko`, `openssh`, or `mock`.
+!!! example "Expected output"
+    `ssh-result.json` has `"ok": true` and `"mode"` of `paramiko`, `openssh`, or `mock`.
+
 
 #### Task 3 – Evidence and key hygiene note
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab20
 set -euo pipefail
 
@@ -331,7 +337,9 @@ ls -l ssh-lab-evidence.tgz | tee evidence-ls.txt
 test -s ssh-lab-evidence.tgz
 ```
 
-**Expected output:** Evidence archive exists; private key is **not** required inside the tarball (public key only).
+!!! example "Expected output"
+    Evidence archive exists; private key is **not** required inside the tarball (public key only).
+
 
 ### Validation steps
 
@@ -364,7 +372,7 @@ Add `fabric_probe.py` that defines a Fabric `@task` (or a thin wrapper class if 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab20
 set -euo pipefail
 # Remove ONLY lab keys in this directory — never rm ~/.ssh/id_*

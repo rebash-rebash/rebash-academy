@@ -176,7 +176,7 @@ Workspace: `~/rebash-gitlab/module-16`
 
 File-first lab. Metrics export integrates with observability stacks when pushed to GitLab.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-16 && cd ~/rebash-gitlab/module-16
 set -euo pipefail
 ```
@@ -191,7 +191,7 @@ Site Reliability Engineering (SRE) needs pipeline duration, queue time, and fail
 
 Create `collect-pipeline-evidence.sh`:
 
-```bash
+```bash title="collect-pipeline-evidence.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 out="${1:-pipeline-evidence.json}"
@@ -220,7 +220,7 @@ PY
 
 Run with simulated variables:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 chmod +x collect-pipeline-evidence.sh
@@ -229,13 +229,15 @@ CI_PIPELINE_ID=9001 CI_PIPELINE_DURATION=87 CI_PIPELINE_STATUS=failed CI_FAILED_
 python3 -c "import json; d=json.load(open('evidence.json')); assert d['status']=='failed'; print('evidence OK', d['pipeline_id'])"
 ```
 
-**Expected output:** `wrote evidence.json` then `evidence OK 9001`
+!!! example "Expected output"
+    `wrote evidence.json` then `evidence OK 9001`
+
 
 #### Task 2 – Metrics export stub
 
 Create `metrics-export.yaml`:
 
-```yaml
+```yaml title="metrics-export.yaml"
 # Module 16 — pipeline metrics stub (offline)
 exporter: gitlab-ci-metrics-stub
 metrics:
@@ -259,7 +261,7 @@ alerts:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 python3 -c "
@@ -271,7 +273,9 @@ print('metrics-export.yaml OK')
 "
 ```
 
-**Expected output:** `metrics-export.yaml OK`
+!!! example "Expected output"
+    `metrics-export.yaml OK`
+
 
 #### Task 3 – GitLab CI observability job stub
 
@@ -302,7 +306,7 @@ collect-evidence:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 python3 -c "
@@ -314,13 +318,15 @@ print('gitlab-ci OK')
 grep -q 'python:3.12-alpine' .gitlab-ci.yml
 ```
 
-**Expected output:** `gitlab-ci OK`
+!!! example "Expected output"
+    `gitlab-ci OK`
+
 
 #### Task 4 – Bundle validation
 
 Create `validate-observability.sh`:
 
-```bash
+```bash title="validate-observability.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 ./collect-pipeline-evidence.sh /tmp/evidence-check.json
@@ -331,14 +337,16 @@ echo 'module-16 observability lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 chmod +x validate-observability.sh
 ./validate-observability.sh | tee validation.txt
 ```
 
-**Expected output:** `module-16 observability lab passed`
+!!! example "Expected output"
+    `module-16 observability lab passed`
+
 
 ### Validation steps
 
@@ -371,7 +379,7 @@ Extend `collect-pipeline-evidence.sh` to accept a second argument — path to a 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-16/evidence.json /tmp/evidence-check.json 2>/dev/null || true
 ls ~/rebash-gitlab/module-16
 ```

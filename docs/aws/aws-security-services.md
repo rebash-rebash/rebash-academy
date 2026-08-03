@@ -186,7 +186,7 @@ Workspace: `~/rebash-aws/module-10`
 
 Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-aws/module-10 && cd ~/rebash-aws/module-10
 ```
 
@@ -200,19 +200,21 @@ Security asks for evidence that **AWS Security Services — Keys, Secrets, and D
 
 Every AWS change starts by knowing which account/role you are.
 
-```bash
+```bash title="Terminal"
 aws sts get-caller-identity | tee identity.json
 aws configure get region || true
 test -s identity.json
 ```
 
-**Expected output:** JSON includes Account, Arn, and UserId.
+!!! example "Expected output"
+    JSON includes Account, Arn, and UserId.
+
 
 #### Task 2 – Collect topic signals
 
 Inventory the service surface related to this module.
 
-```bash
+```bash title="Terminal"
 aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
 aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
 tee notes.txt << 'EOF'
@@ -221,7 +223,9 @@ EOF
 cat notes.txt
 ```
 
-**Expected output:** Evidence files created even if some APIs are denied.
+!!! example "Expected output"
+    Evidence files created even if some APIs are denied.
+
 
 ### Validation steps
 

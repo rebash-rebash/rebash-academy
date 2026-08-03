@@ -98,7 +98,7 @@ Secrets scanner in CI, coverage gate, operator runbook, architecture diagram.
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 uv sync   # or pip install -e ".[dev]"
 pytest -q
 rebash-ops --help

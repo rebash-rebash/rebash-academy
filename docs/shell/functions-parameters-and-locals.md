@@ -139,14 +139,16 @@ Under `~/rebash-shell/lab07`, create `lib.sh` with `log`, `dump_args`, and `requ
 
 Workspace: `~/rebash-shell/lab07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab07/out
 cd ~/rebash-shell/lab07
 set -euo pipefail
 bash --version | head -n1 | tee out/bash-version.txt
 ```
 
-**Expected output:** `out/bash-version.txt` mentions `bash`.
+!!! example "Expected output"
+    `out/bash-version.txt` mentions `bash`.
+
 
 ### Real-world scenario
 
@@ -158,7 +160,7 @@ Your platform team wants every ops script on the jump server to share one loggin
 
 Create `lib.sh`:
 
-```bash
+```bash title="lib.sh"
 #!/usr/bin/env bash
 # Shared helpers for REBASH lab07 — source this file; do not execute alone.
 
@@ -206,7 +208,7 @@ set_local_name() {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab07
 set -euo pipefail
 
@@ -217,13 +219,15 @@ log "lib sourced"
 ```
 
 
-**Expected output:** No error; a log line appears on stderr with a timestamp.
+!!! example "Expected output"
+    No error; a log line appears on stderr with a timestamp.
+
 
 #### Task 2 – `main.sh` proves `"$@"`, `"$*"`, and locals
 
 Create `main.sh`:
 
-```bash
+```bash title="main.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -249,7 +253,7 @@ printf 'require_ok=1\n' | tee "$outdir/require-ok.txt"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab07
 set -euo pipefail
 
@@ -260,11 +264,13 @@ chmod +x main.sh
 ```
 
 
-**Expected output:** `out/local-name.txt` is `inside-function`; `out/global-name.txt` stays `global-name`; `args-at.txt` has two `AT:` lines; `args-star.txt` is one joined `STAR:` line.
+!!! example "Expected output"
+    `out/local-name.txt` is `inside-function`; `out/global-name.txt` stays `global-name`; `args-at.txt` has two `AT:` lines; `args-star.txt` is one joined `STAR:` line.
+
 
 #### Task 3 – Failure path and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab07
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -284,7 +290,9 @@ tar -czf out/functions-evidence.tgz \
 ls -l out/functions-evidence.tgz | tee out/evidence-ls.txt
 ```
 
-**Expected output:** `require_missing_rc=1`; evidence archive is not empty.
+!!! example "Expected output"
+    `require_missing_rc=1`; evidence archive is not empty.
+
 
 ### Validation steps
 
@@ -315,7 +323,7 @@ Add `retry()` to `lib.sh` with signature `retry <max> <command…>` that runs th
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab07
 # Keep out/ and scripts for review, or:
 # rm -rf ~/rebash-shell/lab07

@@ -73,7 +73,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 export LAB_PREFIX="rebash-ssm-s3-$(whoami | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | cut -c1-12)"
 export AWS_REGION="${AWS_REGION:-eu-west-2}"
 export AWS_PAGER=""
@@ -99,7 +99,7 @@ You will create:
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 aws s3api create-bucket --bucket "$BUCKET_NAME" \
   --create-bucket-configuration LocationConstraint="$AWS_REGION" 2>/dev/null \
   || aws s3api create-bucket --bucket "$BUCKET_NAME"
@@ -112,11 +112,13 @@ aws s3api get-public-access-block --bucket "$BUCKET_NAME" --output table
 echo "BUCKET_NAME=$BUCKET_NAME" | tee ~/rebash-lab-ssm-s3.env
 ```
 
-**Expected output:** All four Block Public Access flags `true`.
+!!! example "Expected output"
+    All four Block Public Access flags `true`.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 aws s3api head-bucket --bucket "$BUCKET_NAME" && echo "bucket exists"
 ```
 
@@ -167,7 +169,9 @@ echo "ROLE_NAME=$ROLE_NAME PROFILE_NAME=$PROFILE_NAME" | tee -a ~/rebash-lab-ssm
 sleep 10
 ```
 
-**Expected output:** Role, inline S3 policy, and instance profile created.
+!!! example "Expected output"
+    Role, inline S3 policy, and instance profile created.
+
 
 ### Task 3 — Create VPC and security group (no public SSH)
 
@@ -196,11 +200,13 @@ SG_ID="$(aws ec2 create-security-group --group-name "${LAB_PREFIX}-no-ssh" \
 echo "VPC_ID=$VPC_ID SUBNET_ID=$SUBNET_ID SG_ID=$SG_ID" | tee -a ~/rebash-lab-ssm-s3.env
 ```
 
-**Expected output:** SG created with **zero** ingress rules.
+!!! example "Expected output"
+    SG created with **zero** ingress rules.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-ssm-s3.env
 aws ec2 describe-security-groups --group-ids "$SG_ID" \
   --query 'SecurityGroups[0].IpPermissions' --output text
@@ -213,7 +219,7 @@ aws ec2 describe-security-groups --group-ids "$SG_ID" \
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-ssm-s3.env
 
 AMI_ID="$(aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
@@ -232,7 +238,9 @@ aws ec2 wait instance-running --instance-ids "$INSTANCE_ID"
 echo "INSTANCE_ID=$INSTANCE_ID" | tee -a ~/rebash-lab-ssm-s3.env
 ```
 
-**Expected output:** Instance `running`; no public SSH rule added.
+!!! example "Expected output"
+    Instance `running`; no public SSH rule added.
+
 
 ### Task 5 — Wait for SSM registration
 
@@ -240,7 +248,7 @@ echo "INSTANCE_ID=$INSTANCE_ID" | tee -a ~/rebash-lab-ssm-s3.env
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-ssm-s3.env
 
 for i in $(seq 1 24); do
@@ -256,7 +264,9 @@ aws ssm describe-instance-information \
   --filters "Key=InstanceIds,Values=$INSTANCE_ID" --output table
 ```
 
-**Expected output:** `PingStatus` = `Online`.
+!!! example "Expected output"
+    `PingStatus` = `Online`.
+
 
 !!! note "No SSM Online?"
     Check the instance profile attachment, outbound internet or VPC endpoints for SSM, and that the SSM agent is running (default on AL2023).
@@ -267,7 +277,7 @@ aws ssm describe-instance-information \
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-ssm-s3.env
 aws ssm start-session --target "$INSTANCE_ID"
 ```
@@ -280,7 +290,9 @@ curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ | head
 exit
 ```
 
-**Expected output:** Shell on the instance; instance role name visible via IMDS path.
+!!! example "Expected output"
+    Shell on the instance; instance role name visible via IMDS path.
+
 
 **Validation:** Document that you never opened port 22 in the security group.
 
@@ -292,7 +304,7 @@ exit
 
 Run a non-interactive command via SSM:
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-ssm-s3.env
 
 aws ssm send-command \
@@ -315,11 +327,13 @@ aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_I
   --query '[Status, StandardOutputContent, StandardErrorContent]' --output text
 ```
 
-**Expected output:** Status `Success`; stdout includes `"ok":true`.
+!!! example "Expected output"
+    Status `Success`; stdout includes `"ok":true`.
+
 
 **Validation from your workstation:**
 
-```bash
+```bash title="Terminal"
 aws s3 cp "s3://${BUCKET_NAME}/runs/artefact.json" -
 ```
 
@@ -329,7 +343,7 @@ aws s3 cp "s3://${BUCKET_NAME}/runs/artefact.json" -
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-ssm-s3.env
 aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
   --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
@@ -347,7 +361,9 @@ PUB="$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
 [ -n "$PUB" ] && nc -zv -w 3 "$PUB" 22 2>&1 || echo "no public IP or SSH blocked"
 ```
 
-**Expected output:** No SG rule for port 22; connection refused or timeout if probed.
+!!! example "Expected output"
+    No SG rule for port 22; connection refused or timeout if probed.
+
 
 ### Task 9 — Cleanup and destroy
 
@@ -355,7 +371,7 @@ PUB="$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-ssm-s3.env
 
 aws ec2 terminate-instances --instance-ids "$INSTANCE_ID"
@@ -379,7 +395,9 @@ rm -f ~/rebash-lab-ssm-s3.env
 echo "Lab destroyed."
 ```
 
-**Expected output:** Instance terminated; bucket gone; IAM role removed.
+!!! example "Expected output"
+    Instance terminated; bucket gone; IAM role removed.
+
 
 ## Validation
 

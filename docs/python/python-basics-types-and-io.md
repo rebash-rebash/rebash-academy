@@ -139,7 +139,7 @@ Under `~/rebash-python/lab02`, build `parse_input.py` that reads a hostname argu
 
 Workspace: `~/rebash-python/lab02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab02 && cd ~/rebash-python/lab02
 set -euo pipefail
 python3 -m venv .venv
@@ -149,7 +149,9 @@ python -V | tee python-version.txt
 python -c 'import sys; assert sys.version_info >= (3, 11)'
 ```
 
-**Expected output:** venv active; version file shows 3.11+.
+!!! example "Expected output"
+    venv active; version file shows 3.11+.
+
 
 ### Real-world scenario
 
@@ -159,7 +161,7 @@ A junior engineer wrote a host check that treated every string as truthy and pri
 
 #### Task 1 – Create the parser script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab02
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -168,7 +170,7 @@ source .venv/bin/activate
 
 Create `parse_input.py`:
 
-```python
+```python title="parse_input.py"
 """Parse hostname/port/flags for a tiny DevOps input contract."""
 from __future__ import annotations
 
@@ -228,15 +230,17 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 test -f parse_input.py
 ```
 
-**Expected output:** `parse_input.py` exists in the lab folder.
+!!! example "Expected output"
+    `parse_input.py` exists in the lab folder.
+
 
 #### Task 2 – Happy-path run with args and stdin
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab02
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -248,11 +252,13 @@ grep -F 'port=8080' happy.txt
 grep -F 'ready=true' happy.txt
 ```
 
-**Expected output:** `happy.txt` contains the three result lines with correct values.
+!!! example "Expected output"
+    `happy.txt` contains the three result lines with correct values.
+
 
 #### Task 3 – Conversion asserts and negative tests
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab02
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -289,7 +295,9 @@ tar -czf lab02-evidence.tgz parse_input.py happy.txt bad-port.err bad-bool.err f
 ls -l lab02-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** both negative tests exit `2` with clear stderr; `format-demo.txt` ends with `format-ok`; evidence archive exists.
+!!! example "Expected output"
+    both negative tests exit `2` with clear stderr; `format-demo.txt` ends with `format-ok`; evidence archive exists.
+
 
 ### Validation steps
 
@@ -320,7 +328,7 @@ Extend `parse_input.py` (or add `parse_input_v2.py`) so an optional third argume
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab02
 set -euo pipefail
 deactivate 2>/dev/null || true

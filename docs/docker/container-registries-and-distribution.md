@@ -153,7 +153,7 @@ Workspace: `~/rebash-docker/module-10`
 
 Local Docker daemon only — no cloud registry login required.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-10 && cd ~/rebash-docker/module-10
 ```
 
@@ -167,7 +167,7 @@ Your platform team mirrors release images to an air-gapped cluster. Before promo
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM alpine:3.20
 RUN echo "rebash-registry-lab v1" > /version.txt
 CMD ["cat", "/version.txt"]
@@ -176,7 +176,7 @@ CMD ["cat", "/version.txt"]
 Build with a semver tag and a local alias:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-10
 docker build -t rebash-registry-lab:1.0.0 -t rebash-registry-lab:local .
 docker images rebash-registry-lab --format '{{ "{{" }}.Repository{{ "}}" }}:{{ "{{" }}.Tag{{ "}}" }} {{ "{{" }}.ID{{ "}}" }}' | tee image-tags.txt
@@ -184,14 +184,16 @@ grep -q 'rebash-registry-lab:1.0.0' image-tags.txt
 ```
 {% endraw %}
 
-**Expected output:** `image-tags.txt` lists both tags pointing at the same image ID.
+!!! example "Expected output"
+    `image-tags.txt` lists both tags pointing at the same image ID.
+
 
 #### Task 2 – Record digest metadata and export offline bundle
 
 Capture `Id` and `RepoDigests` (often empty until a registry push) and save a tarball:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-10
 docker inspect rebash-registry-lab:1.0.0 --format 'Id={{ "{{" }}.Id{{ "}}" }} RepoDigests={{ "{{" }}.RepoDigests{{ "}}" }}' | tee digest-id.txt
 docker save rebash-registry-lab:1.0.0 -o rebash-registry-lab-1.0.0.tar
@@ -200,14 +202,16 @@ ls -lh rebash-registry-lab-1.0.0.tar | tee tar-size.txt
 ```
 {% endraw %}
 
-**Expected output:** `digest-id.txt` contains `Id=sha256:…`; the tarball is non-empty.
+!!! example "Expected output"
+    `digest-id.txt` contains `Id=sha256:…`; the tarball is non-empty.
+
 
 #### Task 3 – Load tarball and prove identity
 
 Remove local tags, reload from the tarball, and confirm the same `Id`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-10
 ORIG_ID="$(grep -o 'Id=sha256:[a-f0-9]*' digest-id.txt | cut -d= -f2)"
 docker rmi rebash-registry-lab:1.0.0 rebash-registry-lab:local 2>/dev/null || true
@@ -221,7 +225,9 @@ docker run --rm rebash-registry-lab:offline | tee run-offline.txt
 ```
 {% endraw %}
 
-**Expected output:** `reloaded-id.txt` matches the original `Id`; `run-offline.txt` prints `rebash-registry-lab v1`.
+!!! example "Expected output"
+    `reloaded-id.txt` matches the original `Id`; `run-offline.txt` prints `rebash-registry-lab v1`.
+
 
 ### Validation steps
 
@@ -253,7 +259,7 @@ Run `registry:2.8` as `rebash-local-registry` on host port `50100`, push `rebash
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-10
 docker rm -f rebash-local-registry 2>/dev/null || true
 docker rmi rebash-registry-lab:1.0.0 rebash-registry-lab:local rebash-registry-lab:offline 2>/dev/null || true

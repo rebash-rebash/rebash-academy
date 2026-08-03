@@ -147,7 +147,7 @@ Workspace: `~/rebash-docker/module-01-arch`
 
 Local Docker daemon. Evidence files only — no long-running containers required.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-01-arch && cd ~/rebash-docker/module-01-arch
 ```
 
@@ -162,7 +162,7 @@ A developer reports “Docker is broken” after switching laptops. Before you r
 The CLI and daemon can differ; record both sides explicitly.
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-01-arch
 docker version | tee docker-version.txt
 docker version --format 'Client={{ "{{" }}.Client.Version{{ "}}" }} Server={{ "{{" }}.Server.Version{{ "}}" }}' | tee version-split.txt
@@ -171,14 +171,16 @@ grep -q 'Server:' docker-version.txt
 ```
 {% endraw %}
 
-**Expected output:** `docker-version.txt` shows Client and Server blocks; `version-split.txt` has both version strings on one line.
+!!! example "Expected output"
+    `docker-version.txt` shows Client and Server blocks; `version-split.txt` has both version strings on one line.
+
 
 #### Task 2 – Engine info and storage driver
 
 `docker info` reveals runtime, cgroup driver, and storage driver — common root causes when containers fail to start.
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-01-arch
 docker info | tee docker-info.txt
 docker info --format 'StorageDriver={{ "{{" }}.Driver{{ "}}" }} CgroupDriver={{ "{{" }}.CgroupDriver{{ "}}" }}' | tee info-drivers.txt
@@ -187,13 +189,15 @@ test -s info-drivers.txt
 ```
 {% endraw %}
 
-**Expected output:** `docker-info.txt` is multi-line; `info-drivers.txt` names the storage and cgroup drivers.
+!!! example "Expected output"
+    `docker-info.txt` is multi-line; `info-drivers.txt` names the storage and cgroup drivers.
+
 
 #### Task 3 – Context and disk footprint
 
 Contexts route the CLI; `docker system df` shows image/container/volume pressure on the node.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-01-arch
 docker context ls | tee docker-contexts.txt
 docker system df | tee docker-system-df.txt
@@ -201,7 +205,9 @@ grep -q 'CURRENT' docker-contexts.txt
 grep -E 'Images|Containers|Local Volumes' docker-system-df.txt
 ```
 
-**Expected output:** `docker-contexts.txt` marks the current context with `*`; `docker-system-df.txt` lists Images, Containers, and Local Volumes rows.
+!!! example "Expected output"
+    `docker-contexts.txt` marks the current context with `*`; `docker-system-df.txt` lists Images, Containers, and Local Volumes rows.
+
 
 ### Validation steps
 
@@ -222,7 +228,7 @@ grep -E 'Images|Containers|Local Volumes' docker-system-df.txt
 Switch context temporarily (if a second context exists), re-run `docker context ls`, then switch back and append a one-line note to `docker-contexts.txt`.
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-01-arch
 ALT="$(docker context ls --format '{{ "{{" }}.Name{{ "}}" }}' | grep -v "$(docker context show)" | head -n 1 || true)"
 if [ -n "$ALT" ]; then
@@ -234,7 +240,9 @@ echo "Active context after lab: $(docker context show)" | tee -a docker-contexts
 ```
 {% endraw %}
 
-**Expected output:** If an alternate context exists, `docker-contexts-alt.txt` shows the switch; the final line names the restored active context.
+!!! example "Expected output"
+    If an alternate context exists, `docker-contexts-alt.txt` shows the switch; the final line names the restored active context.
+
 
 ### Learning outcomes
 
@@ -246,7 +254,7 @@ echo "Active context after lab: $(docker context show)" | tee -a docker-contexts
 
 No containers were created. Remove evidence files if you do not need them:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-01-arch
 rm -f docker-version.txt version-split.txt docker-info.txt info-drivers.txt \
   docker-contexts.txt docker-contexts-alt.txt docker-system-df.txt 2>/dev/null || true

@@ -82,7 +82,7 @@ Design production networks · Troubleshoot connectivity · Configure Linux netwo
 
 All course diagrams for rewritten modules live in [`docs/assets/excalidraw/`](../assets/excalidraw/) as `.svg` plus editable `.excalidraw` sources. Regenerate with:
 
-```bash
+```bash title="Terminal"
 python3 scripts/generate-excalidraw-svg.py
 ```
 

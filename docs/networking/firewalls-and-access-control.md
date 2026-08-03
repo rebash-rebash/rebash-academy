@@ -69,7 +69,7 @@ Policy is evaluated at one or more layers: cloud edge (security group / NACL), h
 
 A firewall rule matches fields such as direction, protocol, port, and source/destination, then **accepts** or **drops/rejects**. On Ubuntu, **UFW** is a simpler front end over iptables/nftables. **nftables** is the modern Linux packet filter. Cloud **security groups** are usually stateful virtual firewalls on Elastic Network Interfaces; **network ACLs** are often subnet-level and closer to stateless.
 
-```bash
+```bash title="Terminal"
 sudo ufw status verbose 2>/dev/null || true
 sudo nft list ruleset 2>/dev/null | head -n 40 || true
 ss -lntu | head
@@ -133,7 +133,7 @@ Inspect the host firewall safely, add a **temporary** allow for a localhost-only
 
 Workspace: `~/rebash-networking/lab14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab14 && cd ~/rebash-networking/lab14
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -142,7 +142,9 @@ command -v ufw >/dev/null && echo ufw=yes | tee fw-tools.txt || echo ufw=no | te
 command -v nft >/dev/null && echo nft=yes | tee -a fw-tools.txt || echo nft=no | tee -a fw-tools.txt
 ```
 
-**Expected output:** `listen-before.txt` and `fw-tools.txt` exist.
+!!! example "Expected output"
+    `listen-before.txt` and `fw-tools.txt` exist.
+
 
 ### Real-world scenario
 
@@ -152,7 +154,7 @@ You must open a temporary diagnostics port for a local health probe on a practic
 
 #### Task 1 – Status first (and protect SSH)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab14
 set -euo pipefail
 
@@ -173,13 +175,15 @@ fi
 ss -lnt '( sport = :22 )' 2>/dev/null | tee ssh-listen.txt || true
 ```
 
-**Expected output:** Status files exist; SSH allow is recorded when UFW is present. You remain logged in.
+!!! example "Expected output"
+    Status files exist; SSH allow is recorded when UFW is present. You remain logged in.
+
 
 #### Task 2 – Temporary localhost service + firewall allow
 
 Use port **18080** so you do not collide with real web servers. Bind to `127.0.0.1` only.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab14
 set -euo pipefail
 
@@ -213,11 +217,13 @@ curl -sS --max-time 3 http://127.0.0.1:18080/ | tee curl-local.txt
 grep -q 'rebash-lab14-ok' curl-local.txt
 ```
 
-**Expected output:** `curl-local.txt` contains `rebash-lab14-ok`. UFW status (if present) shows the lab allow.
+!!! example "Expected output"
+    `curl-local.txt` contains `rebash-lab14-ok`. UFW status (if present) shows the lab allow.
+
 
 #### Task 3 – Remove lab rule and pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab14
 set -euo pipefail
 
@@ -246,7 +252,9 @@ ls -l firewall-evidence.tgz | tee evidence-ls.txt
 test -s firewall-evidence.tgz
 ```
 
-**Expected output:** Lab port rule removed (or noted); `firewall-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    Lab port rule removed (or noted); `firewall-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -278,7 +286,7 @@ Create script `sg-checklist.sh` that prints a three-line checklist comparing **h
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab14
 set -euo pipefail
 

@@ -150,7 +150,7 @@ Define a ResourceQuota and LimitRange, run a Pod that fits within both, then pro
 
 Workspace: `~/rebash-k8s/module-08-quota` on a disposable kind or minikube cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-08-quota && cd ~/rebash-k8s/module-08-quota
 ```
 
@@ -164,7 +164,7 @@ A platform team shares one cluster between several product squads. You must cap 
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -175,7 +175,7 @@ metadata:
 
 Create `resourcequota.yaml`:
 
-```yaml
+```yaml title="resourcequota.yaml"
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -190,7 +190,7 @@ spec:
 
 Create `limitrange.yaml`:
 
-```yaml
+```yaml title="limitrange.yaml"
 apiVersion: v1
 kind: LimitRange
 metadata:
@@ -212,19 +212,21 @@ spec:
 
 Apply and describe the quota:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08-quota
 kubectl apply -f namespace.yaml -f resourcequota.yaml -f limitrange.yaml
 kubectl describe resourcequota billing-quota -n rebash-m08-quota | tee quota-describe.txt
 ```
 
-**Expected output:** `quota-describe.txt` shows `hard` limits for pods, CPU, and memory.
+!!! example "Expected output"
+    `quota-describe.txt` shows `hard` limits for pods, CPU, and memory.
+
 
 #### Task 2 – Pod that fits within quota
 
 Create `pod-ok.yaml`:
 
-```yaml
+```yaml title="pod-ok.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -246,14 +248,16 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08-quota
 kubectl apply -f pod-ok.yaml
 kubectl wait --for=condition=Ready pod/billing-worker -n rebash-m08-quota --timeout=120s
 kubectl describe resourcequota billing-quota -n rebash-m08-quota | tee quota-after-ok.txt
 ```
 
-**Expected output:** Pod is `Running`; `quota-after-ok.txt` shows `used` CPU and memory incremented.
+!!! example "Expected output"
+    Pod is `Running`; `quota-after-ok.txt` shows `used` CPU and memory incremented.
+
 
 #### Task 3 – Rejected over-limit Pod
 
@@ -281,14 +285,16 @@ spec:
 
 Attempt to apply and capture the rejection:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08-quota
 kubectl apply -f pod-over.yaml 2>&1 | tee quota-reject.txt || true
 kubectl get events -n rebash-m08-quota --field-selector involvedObject.name=billing-hog --sort-by=.lastTimestamp | tail -n 5 | tee quota-events.txt
 grep -Ei 'exceeded quota|limit|forbidden|maximum' quota-reject.txt quota-events.txt
 ```
 
-**Expected output:** Apply fails or Pod never becomes Ready; output mentions quota or LimitRange maximum (wording varies by cluster version).
+!!! example "Expected output"
+    Apply fails or Pod never becomes Ready; output mentions quota or LimitRange maximum (wording varies by cluster version).
+
 
 ### Validation steps
 
@@ -319,7 +325,7 @@ Fill the quota with a second fitting Pod (`billing-worker-2` at 100m CPU), then 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m08-quota --ignore-not-found
 ```
 

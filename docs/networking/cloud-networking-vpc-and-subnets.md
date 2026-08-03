@@ -74,7 +74,7 @@ A multi-AZ VPC keeps the internet edge in public subnets and apps/data in privat
 
 A VPC (or VNet) is an isolated IP network you own inside a cloud region. You pick a CIDR (for example `10.0.0.0/16`), create **subnets** (often `/24` per tier per AZ), attach **route tables**, and control access with stateful filters (Security Groups / NSGs / VPC firewall rules) plus optional stateless NACLs.
 
-```bash
+```bash title="Terminal"
 # Read-only AWS example (never create paid resources in this tutorial)
 aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table
 ```
@@ -131,7 +131,7 @@ Collect **read-only** VPC / subnet / route-table evidence with AWS CLI if config
 
 Workspace: `~/rebash-networking/lab19`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab19 && cd ~/rebash-networking/lab19
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -139,7 +139,9 @@ ip -br a | tee host-addrs.txt
 command -v aws >/dev/null 2>&1 && aws --version | tee aws-version.txt || echo "aws-cli: not installed" | tee aws-version.txt
 ```
 
-**Expected output:** workspace exists; `admin-user.txt` and `host-addrs.txt` are non-empty.
+!!! example "Expected output"
+    workspace exists; `admin-user.txt` and `host-addrs.txt` are non-empty.
+
 
 ### Real-world scenario
 
@@ -149,7 +151,7 @@ Security asks for proof of your VPC layout before a peer review: which CIDRs, wh
 
 #### Task 1 – Choose path: AWS read-only or local simulation
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab19
 set -euo pipefail
 
@@ -162,13 +164,15 @@ fi
 echo "lab19-path=${PATH_CHOICE}" | tee lab-path.txt
 ```
 
-**Expected output:** `lab-path.txt` contains `aws` or `local`.
+!!! example "Expected output"
+    `lab-path.txt` contains `aws` or `local`.
+
 
 #### Task 2A – AWS path (read-only describe only)
 
 Skip this task if `lab-path.txt` says `local`.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab19
 set -euo pipefail
 grep -q '=aws$' lab-path.txt
@@ -205,13 +209,15 @@ PY
 test -s vpcs.txt && test -s subnets.txt && test -s route-tables.json
 ```
 
-**Expected output:** tables/JSON files exist; summary counts route tables and IGW/NAT mentions. No resources are created.
+!!! example "Expected output"
+    tables/JSON files exist; summary counts route tables and IGW/NAT mentions. No resources are created.
+
 
 #### Task 2B – Local path (namespace public/private simulation)
 
 Skip this task if `lab-path.txt` says `aws`.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab19
 set -euo pipefail
 grep -q '=local$' lab-path.txt
@@ -267,11 +273,13 @@ sudo ip netns exec lab19-router sysctl -w net.ipv4.ip_forward=1 >/dev/null
 sudo ip netns exec lab19-private ping -c 2 -W 2 10.19.1.10 | tee ping-private-to-public.txt
 ```
 
-**Expected output:** `local-vpc-sim.txt` shows `10.19.1.0/24` public and `10.19.2.0/24` private with defaults via the router; ping succeeds.
+!!! example "Expected output"
+    `local-vpc-sim.txt` shows `10.19.1.0/24` public and `10.19.2.0/24` private with defaults via the router; ping succeeds.
+
 
 #### Task 3 – Evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab19
 set -euo pipefail
 
@@ -288,7 +296,9 @@ ls -l vpc-evidence.tgz | tee evidence-ls.txt
 test -s vpc-evidence.tgz
 ```
 
-**Expected output:** `vpc-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `vpc-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -319,7 +329,7 @@ Extend the local simulation (or document from AWS evidence) with a short script 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab19
 set -euo pipefail
 

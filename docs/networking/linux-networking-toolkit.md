@@ -75,7 +75,7 @@ Each tool interrogates a layer of the local stack and the path beyond. Your scri
 | `traceroute` / `tracepath` | Where does the path fail or slow down? |
 | `curl` | Does the application protocol succeed (HTTP status, TLS)? |
 
-```bash
+```bash title="Terminal"
 ip -br addr
 ip route
 ss -lntu
@@ -95,7 +95,7 @@ Incidents often mix DNS, firewall, and application failures. Without a toolkit o
 5. **App** — `curl -I` / `curl -v` to the URL.  
 6. **Pack** — tar the text outputs for the ticket.
 
-```bash
+```bash title="Terminal"
 curl -sS -o /dev/null -w '%{http_code}\n' https://example.com/
 ```
 
@@ -132,14 +132,16 @@ Build and run `netdiag.sh` that collects `ip`, `ss`, `dig`, path, and `curl` evi
 
 Workspace: `~/rebash-networking/lab15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab15 && cd ~/rebash-networking/lab15
 set -euo pipefail
 whoami | tee admin-user.txt
 uname -a | tee uname.txt
 ```
 
-**Expected output:** workspace exists; identity files written.
+!!! example "Expected output"
+    workspace exists; identity files written.
+
 
 ### Real-world scenario
 
@@ -149,7 +151,7 @@ A teammate reports “the API is down”. You are on a jump host and must produc
 
 #### Task 1 – Manual toolkit pass
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab15
 set -euo pipefail
 
@@ -176,18 +178,20 @@ fi
 curl -sSI --max-time 10 https://example.com/ 2>&1 | tee 07-curl-headers.txt || true
 ```
 
-**Expected output:** files `01`–`07` exist; dig/curl may vary with network policy but commands must run.
+!!! example "Expected output"
+    files `01`–`07` exist; dig/curl may vary with network policy but commands must run.
+
 
 #### Task 2 – Cohesive diagnostic script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab15
 set -euo pipefail
 ```
 
 Create `netdiag.sh`:
 
-```bash
+```bash title="netdiag.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 TARGET_HOST="${1:-example.com}"
@@ -230,18 +234,20 @@ tar -czf "$OUT/../evidence.tgz" -C "$OUT" .
 ls -l "$OUT/../evidence.tgz"
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x netdiag.sh
 ./netdiag.sh example.com https://example.com/ ./diag-out
 test -s evidence.tgz
 ls -l evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `netdiag.sh` is executable; `evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `netdiag.sh` is executable; `evidence.tgz` is non-empty.
+
 
 #### Task 3 – Quick asserts on the pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab15
 set -euo pipefail
 
@@ -250,7 +256,9 @@ grep -E 'ip-addr|ss-listen|dig|curl' evidence-list.txt
 test -f netdiag.sh
 ```
 
-**Expected output:** tarball listing includes the core artefact names.
+!!! example "Expected output"
+    tarball listing includes the core artefact names.
+
 
 ### Validation steps
 
@@ -281,7 +289,7 @@ Extend `netdiag.sh` to accept `TARGET_HOST` and write an extra `ss -tn state est
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab15
 # Keep netdiag.sh and evidence.tgz for your notes; remove temp dir if desired:
 # rm -rf diag-out

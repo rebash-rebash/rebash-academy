@@ -118,7 +118,7 @@ Measure `dig` timing, build a SOA/NS check script for a domain, and capture `+st
 
 Workspace: `~/rebash-networking/lab24`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab24 && cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="${DOMAIN:-example.com}"
@@ -127,7 +127,9 @@ command -v dig | tee dig-path.txt
 dig -v 2>&1 | head -n 1 | tee dig-version.txt || true
 ```
 
-**Expected output:** `domain.txt` set; `dig` found.
+!!! example "Expected output"
+    `domain.txt` set; `dig` found.
+
 
 ### Real-world scenario
 
@@ -137,7 +139,7 @@ Before a blue/green cutover, SRE asks you to prove you can measure resolver late
 
 #### Task 1 – dig timing with +stats
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="$(cut -d= -f2 domain.txt)"
@@ -150,11 +152,13 @@ grep -E 'Query time:|ANSWER SECTION|IN[[:space:]]+A' dig-a-stats.txt | tee dig-t
 test -s dig-a-stats.txt
 ```
 
-**Expected output:** `dig-a-stats.txt` includes `Query time:` and an answer or status.
+!!! example "Expected output"
+    `dig-a-stats.txt` includes `Query time:` and an answer or status.
+
 
 #### Task 2 – SOA/NS check script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="$(cut -d= -f2 domain.txt)"
@@ -162,7 +166,7 @@ DOMAIN="$(cut -d= -f2 domain.txt)"
 
 Create `check-soa-ns.sh`:
 
-```bash
+```bash title="check-soa-ns.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 DOMAIN="${1:?usage: check-soa-ns.sh domain}"
@@ -199,17 +203,19 @@ else
 fi
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x check-soa-ns.sh
 ./check-soa-ns.sh "$DOMAIN" .
 test -s soa-answer.txt && test -s ns-answer.txt && test -s ttl-risk.txt
 ```
 
-**Expected output:** NS/SOA files exist; `ttl-risk.txt` explains cache delay using the measured TTL.
+!!! example "Expected output"
+    NS/SOA files exist; `ttl-risk.txt` explains cache delay using the measured TTL.
+
 
 #### Task 3 – Recursive vs authoritative comparison + evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="$(cut -d= -f2 domain.txt)"
@@ -231,7 +237,9 @@ tar -czf dns-ops-evidence.tgz \
 ls -l dns-ops-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** comparison file and non-empty archive.
+!!! example "Expected output"
+    comparison file and non-empty archive.
+
 
 ### Validation steps
 
@@ -261,7 +269,7 @@ Extend `check-soa-ns.sh` to loop all NS hosts from `ns-answer.txt` and write `ns
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab24
 set -euo pipefail
 # Query-only lab — keep evidence or remove:

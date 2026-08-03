@@ -120,7 +120,7 @@ Create a three-commit history with a branch merge, produce graph and diff artefa
 
 Workspace: `~/rebash-git/module-03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-03/history-lab && cd ~/rebash-git/module-03/history-lab
 set -euo pipefail
 ```
@@ -135,7 +135,7 @@ An on-call engineer needs to know which commit raised the replica count in `depl
 
 Create a repo with three commits touching a deploy manifest.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03
 set -euo pipefail
 rm -rf history-lab
@@ -156,13 +156,15 @@ git log --oneline | tee ../history-log.txt
 test "$(git rev-list --count HEAD)" -eq 3
 ```
 
-**Expected output:** Three commits; `history-log.txt` lists them newest-first.
+!!! example "Expected output"
+    Three commits; `history-log.txt` lists them newest-first.
+
 
 #### Task 2 – Graph, show, and range diff
 
 Export visual history and compare first vs last commit on the manifest.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03/history-lab
 set -euo pipefail
 git log --oneline --graph --decorate --all | tee ../history-graph.txt
@@ -173,13 +175,15 @@ grep -q 'replicas: 2' ../history-deploy-diff.txt
 git log -1 --format='%H %s' HEAD | tee ../history-head.txt
 ```
 
-**Expected output:** Graph file shows linear history; diff shows replica change from 1 to 2.
+!!! example "Expected output"
+    Graph file shows linear history; diff shows replica change from 1 to 2.
+
 
 #### Task 3 – Blame and staged diff drill
 
 Modify a line, inspect blame before commit, then compare cached diff.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03/history-lab
 set -euo pipefail
 printf 'replicas: 3\n' > k8s/deploy.yaml
@@ -196,7 +200,9 @@ tar -czf ../module-03-history-evidence.tgz -C .. \
 ls -l ../module-03-history-evidence.tgz | tee ../history-evidence.txt
 ```
 
-**Expected output:** Blame after commit points at the scaling commit; cached diff captured before commit.
+!!! example "Expected output"
+    Blame after commit points at the scaling commit; cached diff captured before commit.
+
 
 ### Validation steps
 
@@ -226,7 +232,7 @@ Create a short-lived branch `hotfix/log-level`, change one line in `RUNBOOK.md`,
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-03/history-lab
 # rm -rf ~/rebash-git/module-03/history-lab  # optional
 ```

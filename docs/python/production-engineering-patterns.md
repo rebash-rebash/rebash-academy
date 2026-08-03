@@ -158,14 +158,16 @@ Build a small production-style CLI under `~/rebash-python/lab24` that uses struc
 
 Workspace: `~/rebash-python/lab24`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab24 && cd ~/rebash-python/lab24
 set -euo pipefail
 python3 --version | tee python-version.txt
 test -n "$(command -v python3)"
 ```
 
-**Expected output:** `python-version.txt` shows Python 3.10 or newer.
+!!! example "Expected output"
+    `python-version.txt` shows Python 3.10 or newer.
+
 
 ### Real-world scenario
 
@@ -179,7 +181,7 @@ Create the core module. The fake probe fails twice, then succeeds. The circuit o
 
 Create `resilient_job.py`:
 
-```python
+```python title="resilient_job.py"
 """Production patterns lab: structured logs, retry, circuit, idempotent write."""
 from __future__ import annotations
 
@@ -332,18 +334,20 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab24
 set -euo pipefail
 python3 -m py_compile resilient_job.py
 ```
 
 
-**Expected output:** `py_compile` exits 0 with no traceback.
+!!! example "Expected output"
+    `py_compile` exits 0 with no traceback.
+
 
 #### Task 2 – Dry-run, live run, and idempotent second run
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab24
 set -euo pipefail
 
@@ -361,11 +365,13 @@ grep -F 'RESULT=ok action=unchanged' run-idem.stdout
 grep -F 'event=idempotent_skip' run-idem.stderr
 ```
 
-**Expected output:** dry-run does not create the file; first live run writes; second live run reports `unchanged`.
+!!! example "Expected output"
+    dry-run does not create the file; first live run writes; second live run reports `unchanged`.
+
 
 #### Task 3 – Circuit open path and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab24
 set -euo pipefail
 
@@ -388,7 +394,9 @@ tar -czf lab24-evidence.tgz \
 ls -l lab24-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** circuit run exits non-zero with `RESULT=fail`; `lab24-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    circuit run exits non-zero with `RESULT=fail`; `lab24-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -421,7 +429,7 @@ Add a `--job-id` CLI flag. Include `job_id` in every structured log line and ins
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab24
 set -euo pipefail
 # Keep evidence if you want it for a portfolio; otherwise:

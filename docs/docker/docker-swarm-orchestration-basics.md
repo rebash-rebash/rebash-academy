@@ -127,7 +127,7 @@ Never run an even number of managers — use 1, 3, or 5.
 
 **Overlay** driver creates a VXLAN network spanning all Swarm nodes. Services on the same overlay resolve each other by **service name** via embedded DNS.
 
-```bash
+```bash title="Terminal"
 docker network create -d overlay mynet
 ```
 
@@ -211,7 +211,7 @@ Initialise a single-node Swarm, deploy a replicated HTTP service, verify tasks w
 
 Workspace: `~/rebash-docker/docker-swarm-orchestration-basics`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/docker-swarm-orchestration-basics && cd ~/rebash-docker/docker-swarm-orchestration-basics
 ```
 
@@ -224,7 +224,7 @@ Your team still runs a legacy Swarm cluster for one internal tool. You need to p
 #### Task 1 – Initialise Swarm
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/docker-swarm-orchestration-basics
 docker swarm init 2>&1 | tee swarm-init.txt || true
 docker info --format 'Swarm={{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}' | tee swarm-info.txt
@@ -232,13 +232,15 @@ grep -q 'Swarm=active' swarm-info.txt
 ```
 {% endraw %}
 
-**Expected output:** `swarm-info.txt` shows `Swarm=active`.
+!!! example "Expected output"
+    `swarm-info.txt` shows `Swarm=active`.
+
 
 #### Task 2 – Create overlay network and service
 
 Create `compose-swarm.yaml`:
 
-```yaml
+```yaml title="compose-swarm.yaml"
 services:
   web:
     image: nginx:1.27-alpine
@@ -258,7 +260,7 @@ networks:
 
 Deploy the stack:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/docker-swarm-orchestration-basics
 docker network create -d overlay rebash-swarm-net 2>/dev/null || true
 docker service create --name rebash-swarm-web \
@@ -270,11 +272,13 @@ docker service ls | tee swarm-services.txt
 grep -q rebash-swarm-web swarm-services.txt
 ```
 
-**Expected output:** `swarm-services.txt` lists `rebash-swarm-web` with 2/2 replicas (may take a few seconds).
+!!! example "Expected output"
+    `swarm-services.txt` lists `rebash-swarm-web` with 2/2 replicas (may take a few seconds).
+
 
 #### Task 3 – Verify tasks and HTTP
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/docker-swarm-orchestration-basics
 sleep 10
 docker service ps rebash-swarm-web --no-trunc | tee swarm-ps.txt
@@ -283,7 +287,9 @@ curl -sI http://127.0.0.1:18190 | head -n 1 | tee swarm-http.txt
 grep -q '200' swarm-http.txt
 ```
 
-**Expected output:** `swarm-ps.txt` shows Running tasks; `swarm-http.txt` contains HTTP 200.
+!!! example "Expected output"
+    `swarm-ps.txt` shows Running tasks; `swarm-http.txt` contains HTTP 200.
+
 
 ### Validation steps
 
@@ -315,7 +321,7 @@ Perform a rolling update to `nginx:1.27-alpine` with `--update-delay 10s` and ca
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker service rm rebash-swarm-web 2>/dev/null || true
 docker network rm rebash-swarm-net 2>/dev/null || true
 docker swarm leave --force 2>/dev/null || true
@@ -353,7 +359,7 @@ Confirm the lab before moving on:
 
 ### Essential Swarm commands
 
-```bash
+```bash title="Terminal"
 # Cluster
 docker swarm init | join | leave
 docker node ls | inspect | update | rm
@@ -374,7 +380,7 @@ docker network create -d overlay NAME
 
 ### Drain a node for maintenance
 
-```bash
+```bash title="Terminal"
 docker node update --availability drain node-worker-2
 docker node ps node-worker-2    # tasks rescheduled elsewhere
 # perform maintenance
@@ -385,7 +391,7 @@ docker node update --availability active node-worker-2
 
 From any task on the overlay network:
 
-```bash
+```bash title="Terminal"
 docker exec -it TASK_ID sh
 wget -qO- http://api:3000/health
 ```

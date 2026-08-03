@@ -70,7 +70,7 @@ A shell is a **command interpreter**. It reads text from a keyboard or a script 
 | dash | `/bin/dash` (often linked as `/bin/sh`) | POSIX-focused; common as `sh` on Ubuntu |
 | zsh | `/usr/bin/zsh` | Popular interactive shell; not required here |
 
-```bash
+```bash title="Terminal"
 echo "$BASH_VERSION"          # set only when the interpreter is Bash
 readlink -f /bin/sh           # often .../dash on Ubuntu
 ls -l /bin/sh
@@ -89,7 +89,7 @@ DevOps work mixes three worlds: your laptop terminal, remote SSH sessions, and h
 
 `source script.sh` (or `. script.sh`) runs in the **current** shell. That loads functions into your session, but `exit` or `cd` inside the file also affect your live terminal. Prefer a separate process (`./script.sh` or `bash script.sh`) for jobs.
 
-```bash
+```bash title="Terminal"
 echo "options=$-"
 # Interactive Bash often includes 'i' in $-
 bash -c 'echo noninteractive options=$-'
@@ -135,14 +135,16 @@ On Ubuntu, fingerprint Bash vs `sh`/dash, compare interactive and non-interactiv
 
 Workspace: `~/rebash-shell/lab01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab01 && cd ~/rebash-shell/lab01
 whoami | tee lab-user.txt
 bash --version | head -n1 | tee bash-version.txt
 readlink -f /bin/sh | tee sh-target.txt
 ```
 
-**Expected output:** `bash-version.txt` shows a Bash version line; `sh-target.txt` usually contains `dash` on Ubuntu.
+!!! example "Expected output"
+    `bash-version.txt` shows a Bash version line; `sh-target.txt` usually contains `dash` on Ubuntu.
+
 
 ### Real-world scenario
 
@@ -156,7 +158,7 @@ Write the same test twice: once for Bash, once for `sh`. Bash accepts `[[ ]]`. P
 
 Create `bash-only.sh`:
 
-```bash
+```bash title="bash-only.sh"
 #!/usr/bin/env bash
 # Bash-only test: [[ ]] is not POSIX
 if [[ -n "${HOME:-}" ]]; then
@@ -170,7 +172,7 @@ fi
 
 Create `sh-posix.sh`:
 
-```bash
+```bash title="sh-posix.sh"
 #!/bin/sh
 # Same idea with POSIX [ ] so dash can run it
 if [ -n "${HOME:-}" ]; then
@@ -183,7 +185,7 @@ fi
 
 Create `bashism-under-sh.sh`:
 
-```bash
+```bash title="bashism-under-sh.sh"
 #!/bin/sh
 if [[ -n "$HOME" ]]; then
   echo should-not-reach
@@ -192,7 +194,7 @@ fi
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab01
 
 chmod +x bash-only.sh sh-posix.sh
@@ -208,14 +210,16 @@ test -s bashism-error.txt
 ```
 
 
-**Expected output:** `bash-run.txt` contains `bash_ok=yes`; `sh-run.txt` contains `sh_ok=yes`; `bashism-error.txt` shows an error about `[[` (wording varies by dash version).
+!!! example "Expected output"
+    `bash-run.txt` contains `bash_ok=yes`; `sh-run.txt` contains `sh_ok=yes`; `bashism-error.txt` shows an error about `[[` (wording varies by dash version).
+
 
 #### Task 2 – Interactive vs non-interactive fingerprint
 
 Capture `$-` and a small environment sample from your current shell and from a non-interactive `bash -c` child.
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab01
 
 {
@@ -243,13 +247,15 @@ grep -q 'options_interactive=' fingerprint-interactive.txt
 ```
 {% endraw %}
 
-**Expected output:** Non-interactive fingerprint shows `has_i_flag=no`. Your interactive `$-` often includes `i` when you run these lines in a normal terminal.
+!!! example "Expected output"
+    Non-interactive fingerprint shows `has_i_flag=no`. Your interactive `$-` often includes `i` when you run these lines in a normal terminal.
+
 
 #### Task 3 – Thin PATH simulation (cron/CI style)
 
 Simulate a minimal environment like many schedulers: only `/usr/bin` and `/bin`. Show that a command on an extended PATH can disappear.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab01
 
 # Record full PATH and where common tools resolve
@@ -283,7 +289,9 @@ tar -czf shell-fundamentals-evidence.tgz \
 ls -l shell-fundamentals-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `path-thin.txt` shows `PATH=/usr/bin:/bin`; evidence archive is non-empty.
+!!! example "Expected output"
+    `path-thin.txt` shows `PATH=/usr/bin:/bin`; evidence archive is non-empty.
+
 
 ### Validation steps
 
@@ -314,7 +322,7 @@ Create `interpreter-report.sh` that accepts one argument (a script path), prints
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab01
 rm -f bashism-under-sh.sh bashism-sh.out
 # Keep evidence archive and fingerprint files for review, or remove all:

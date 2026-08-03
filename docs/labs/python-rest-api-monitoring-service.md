@@ -52,7 +52,7 @@ httpx. **Estimated cost:** £0.
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-monitor/{fixtures,out}
 cd ~/rebash-lab-python-monitor
 python3 -m venv .venv && source .venv/bin/activate
@@ -63,7 +63,7 @@ pip install 'httpx>=0.27,<1' 'PyYAML>=6.0,<7'
 
 Create `targets.yaml`:
 
-```yaml
+```yaml title="targets.yaml"
 targets:
   - name: httpbin-get
     url: https://httpbin.org/status/200
@@ -75,7 +75,7 @@ targets:
 
 Create `fixtures/results.json`:
 
-```json
+```json title="results.json"
 [
   {"name": "httpbin-get", "ok": true, "status": 200, "latency_ms": 120},
   {"name": "httpbin-404", "ok": false, "status": 404, "latency_ms": 110}
@@ -88,7 +88,7 @@ Create `fixtures/results.json`:
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python monitor_apis.py --targets targets.yaml --fixture fixtures/results.json; echo $?  # 1
 ```
 

@@ -153,14 +153,16 @@ Under `~/rebash-shell/lab08`, build a script that creates an indexed array of se
 
 Workspace: `~/rebash-shell/lab08`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab08/out
 cd ~/rebash-shell/lab08
 set -euo pipefail
 bash --version | head -n1 | tee out/bash-version.txt
 ```
 
-**Expected output:** `out/bash-version.txt` mentions `bash`.
+!!! example "Expected output"
+    `out/bash-version.txt` mentions `bash`.
+
 
 ### Real-world scenario
 
@@ -172,7 +174,7 @@ A deploy helper must accept a list of services, including one display name with 
 
 Create `array-demo.sh`:
 
-```bash
+```bash title="array-demo.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 outdir="./out"
@@ -196,7 +198,7 @@ grep -F 'svc=auth api' "$outdir/services-listed.txt"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
@@ -205,13 +207,15 @@ chmod +x array-demo.sh
 ```
 
 
-**Expected output:** `array-count.txt` is `count=4`; `services-listed.txt` has four `svc=` lines including `svc=auth api` as one line.
+!!! example "Expected output"
+    `array-count.txt` is `count=4`; `services-listed.txt` has four `svc=` lines including `svc=auth api` as one line.
+
 
 #### Task 2 – String length, slice, and replace
 
 Create `string-demo.sh`:
 
-```bash
+```bash title="string-demo.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 outdir="./out"
@@ -236,7 +240,7 @@ grep -qx 'backup=billing-prod-backup.tar' "$outdir/backup-name.txt"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
@@ -245,13 +249,15 @@ chmod +x string-demo.sh
 ```
 
 
-**Expected output:** slice starts with `billing`; replace lowercases only via pattern `Prod`→`prod`; backup name is `billing-prod-backup.tar`.
+!!! example "Expected output"
+    slice starts with `billing`; replace lowercases only via pattern `Prod`→`prod`; backup name is `billing-prod-backup.tar`.
+
 
 #### Task 3 – Combine array + strings and pack evidence
 
 Create `build-names.sh`:
 
-```bash
+```bash title="build-names.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 outdir="./out"
@@ -268,7 +274,7 @@ test "$(wc -l <"$outdir/artefact-names.txt" | tr -d ' ')" -eq 3
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
@@ -284,7 +290,9 @@ ls -l out/arrays-evidence.tgz | tee out/evidence-ls.txt
 ```
 
 
-**Expected output:** three artefact names; evidence archive is not empty.
+!!! example "Expected output"
+    three artefact names; evidence archive is not empty.
+
 
 ### Validation steps
 
@@ -315,7 +323,7 @@ Write `assoc-lite.sh` that uses a Bash **associative** array (`declare -A ports`
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab08
 # Keep out/ for review, or: rm -rf ~/rebash-shell/lab08
 ```

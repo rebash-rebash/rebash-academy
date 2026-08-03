@@ -93,7 +93,7 @@ Multi-cloud organisations standardise on Ansible for bootstrapping, drift remedi
 
 **AWS credential environment variables (common):**
 
-```bash
+```bash title="Terminal"
 export AWS_ACCESS_KEY_ID=...
 export AWS_SECRET_ACCESS_KEY=...
 export AWS_SESSION_TOKEN=...   # when using STS
@@ -142,7 +142,7 @@ Install cloud collections locally, create inventory and playbooks that provision
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-12/{inventory,playbooks,scripts}
 cd ~/rebash-ansible/module-12
 ```
@@ -178,7 +178,7 @@ all:
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = inventory/cloud-stub.yml
 host_key_checking = False
@@ -188,7 +188,7 @@ host_key_checking = False
 
 Create `collections/requirements.yml`:
 
-```yaml
+```yaml title="requirements.yml"
 ---
 collections:
   - name: amazon.aws
@@ -201,7 +201,7 @@ collections:
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = inventory/cloud-stub.yml
 collections_paths = ./collections:~/.ansible/collections
@@ -210,14 +210,16 @@ host_key_checking = False
 
 Install collections:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-12
 ansible-galaxy collection install -r collections/requirements.yml -p ./collections --force-with-deps | tee galaxy-install.txt
 ansible-galaxy collection list amazon.aws | tee collection-list-aws.txt
 grep -q amazon.aws collection-list-aws.txt
 ```
 
-**Expected output:** `amazon.aws` appears in collection list output.
+!!! example "Expected output"
+    `amazon.aws` appears in collection list output.
+
 
 #### Task 3 – Playbook that writes cloud resource registry files
 
@@ -304,7 +306,7 @@ Create `templates/gcp-resource.json.j2`:
 
 Run playbook:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-12
 mkdir -p templates
 ansible-playbook playbooks/provision-local-registry.yml --syntax-check
@@ -316,13 +318,15 @@ grep -q 'google.cloud.gcp_compute_instance' ~/rebash-ansible/module-12/registry/
 echo "registry apply OK" | tee registry-ok.txt
 ```
 
-**Expected output:** Three JSON files under `registry/` with correct FQCN module names and inventory vars.
+!!! example "Expected output"
+    Three JSON files under `registry/` with correct FQCN module names and inventory vars.
+
 
 #### Task 4 – cloud-matrix.yaml and Python validator
 
 Create `cloud-matrix.yaml`:
 
-```yaml
+```yaml title="cloud-matrix.yaml"
 ---
 # REBASH Module 12 — Ansible cloud collection module matrix (offline reference)
 schema_version: 1
@@ -360,7 +364,7 @@ playbook_stubs:
 
 Create `scripts/validate-cloud-matrix.py`:
 
-```python
+```python title="validate-cloud-matrix.py"
 #!/usr/bin/env python3
 """Validate cloud-matrix.yaml structure and FQCN prefixes."""
 from __future__ import annotations
@@ -420,14 +424,16 @@ if __name__ == "__main__":
 
 Validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-12
 chmod +x scripts/validate-cloud-matrix.py
 python3 scripts/validate-cloud-matrix.py | tee validate-matrix.txt
 grep -q 'cloud-matrix.yaml OK' validate-matrix.txt
 ```
 
-**Expected output:** `cloud-matrix.yaml OK` with three cloud collection names listed.
+!!! example "Expected output"
+    `cloud-matrix.yaml OK` with three cloud collection names listed.
+
 
 ### Validation steps
 
@@ -460,7 +466,7 @@ Add `requirements.yml` referencing the three cloud collections with pins, extend
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-ansible/module-12/run-stubs.txt ~/rebash-ansible/module-12/validate-matrix.txt
 # Keep stubs for portfolio review
 ```

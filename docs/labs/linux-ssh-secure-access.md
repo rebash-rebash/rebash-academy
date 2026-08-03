@@ -61,7 +61,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-linux-ssh
 cd ~/rebash-lab-linux-ssh
 ```
@@ -86,7 +86,7 @@ ssh-copy-id -i ~/.ssh/rebash_lab_ed25519.pub USER@HOST
 
 **On the server (as the target user):**
 
-```bash
+```bash title="Terminal"
 chmod 700 ~/.ssh
 chmod 600 ~/.ssh/authorized_keys
 ls -la ~/.ssh
@@ -94,13 +94,13 @@ ls -la ~/.ssh
 
 Test a **new** session:
 
-```bash
+```bash title="Terminal"
 ssh -i ~/.ssh/rebash_lab_ed25519 USER@HOST 'echo OK && whoami'
 ```
 
 ### Task 2 — Snapshot current sshd settings
 
-```bash
+```bash title="Terminal"
 sudo cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config.pre-lab
 sudo sshd -T | egrep '^(passwordauthentication|permitrootlogin|pubkeyauthentication|challengeresponseauthentication|kbdinteractiveauthentication) ' \
   | tee ~/rebash-lab-linux-ssh/sshd-before.txt
@@ -110,7 +110,7 @@ sudo sshd -T | egrep '^(passwordauthentication|permitrootlogin|pubkeyauthenticat
 
 Prefer a drop-in over editing the whole file when supported:
 
-```bash
+```bash title="Terminal"
 sudo mkdir -p /etc/ssh/sshd_config.d
 sudo tee /etc/ssh/sshd_config.d/99-rebash-lab.conf >/dev/null <<'EOF'
 PasswordAuthentication no
@@ -131,13 +131,13 @@ Keep your **existing** SSH session open until a new key login succeeds.
 
 From the client, attempt password auth (should fail):
 
-```bash
+```bash title="Terminal"
 ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no USER@HOST || echo "password refused (expected)"
 ```
 
 Confirm key auth still works. Record results:
 
-```bash
+```bash title="Terminal"
 sudo sshd -T | egrep '^(passwordauthentication|permitrootlogin|pubkeyauthentication) ' \
   | tee ~/rebash-lab-linux-ssh/sshd-after.txt
 ```
@@ -146,7 +146,7 @@ sudo sshd -T | egrep '^(passwordauthentication|permitrootlogin|pubkeyauthenticat
 
 If `ufw` is active, ensure SSH is allowed **before** enabling UFW:
 
-```bash
+```bash title="Terminal"
 sudo ufw status || true
 sudo ufw allow OpenSSH
 ```
@@ -174,7 +174,7 @@ sudo ufw allow OpenSSH
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 # Restore previous config if this was only a lab host
 sudo rm -f /etc/ssh/sshd_config.d/99-rebash-lab.conf
 sudo cp -a /etc/ssh/sshd_config.pre-lab /etc/ssh/sshd_config 2>/dev/null || true

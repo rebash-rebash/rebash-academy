@@ -139,7 +139,7 @@ Workspace: `~/rebash-jenkins/module-06`
 
 Reuse Module 2 Compose network when possible. Default controller URL `http://127.0.0.1:8080/`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-06 && cd ~/rebash-jenkins/module-06
 set -euo pipefail
 docker --version | tee docker-version.txt
@@ -157,14 +157,14 @@ In Jenkins: **Manage Jenkins → Nodes** → built-in node → set **Number of e
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
 
 Create `builtin-policy.yaml`:
 
-```yaml
+```yaml title="builtin-policy.yaml"
 production:
   builtin_node_executors: 0
 lab:
@@ -174,7 +174,7 @@ lab:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('builtin-policy.yaml') as f:
@@ -185,7 +185,9 @@ print('builtin-policy.yaml OK')
 date -u +%Y-%m-%dT%H:%M:%SZ | tee builtin-policy-applied.txt
 ```
 
-**Expected output:** Policy YAML validates; timestamp recorded when applied in UI.
+!!! example "Expected output"
+    Policy YAML validates; timestamp recorded when applied in UI.
+
 
 #### Task 2 – Prepare agent launcher script and sample agent container
 
@@ -203,14 +205,14 @@ In Jenkins UI:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
 
 Create `agent-launcher.sh`:
 
-```bash
+```bash title="agent-launcher.sh"
 #!/usr/bin/env bash
 # Paste JENKINS_SECRET from the UI — do not commit real values
 set -euo pipefail
@@ -226,13 +228,13 @@ docker run -d --name jenkins-agent \
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x agent-launcher.sh
 ```
 
 Create `agent-node.yaml`:
 
-```yaml
+```yaml title="agent-node.yaml"
 name: docker-agent-1
 labels:
   - rebash-agent
@@ -243,7 +245,7 @@ launch: inbound
 
 Create `label-pipeline.Jenkinsfile`:
 
-```groovy
+```groovy title="label-pipeline.Jenkinsfile"
 pipeline {
   agent { label 'rebash-agent' }
   options { timestamps() }
@@ -267,7 +269,7 @@ pipeline {
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 test -f label-pipeline.Jenkinsfile
 python3 -c "
 import yaml
@@ -278,7 +280,9 @@ print('agent-node.yaml OK')
 " | tee agent-node-validate.txt
 ```
 
-**Expected output:** Launcher script and Jenkinsfile created. Start the agent with the secret from your UI (do not commit secrets).
+!!! example "Expected output"
+    Launcher script and Jenkinsfile created. Start the agent with the secret from your UI (do not commit secrets).
+
 
 #### Task 3 – Run a Pipeline on the label
 
@@ -289,14 +293,14 @@ print('agent-node.yaml OK')
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
 
 Create `assert-agent.sh`:
 
-```bash
+```bash title="assert-agent.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 LOG="${1:-console.log}"
@@ -307,31 +311,33 @@ echo "agent run evidence OK"
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x assert-agent.sh
 ```
 
 Create `expected-agent-markers.txt`:
 
-```text
+```text title="expected-agent-markers.txt"
 Running on labelled agent
 Agent pipeline:
 ```
 
-**Expected output:** Successful build on `rebash-agent` after agent is online; paste console to `console.log` and run `./assert-agent.sh console.log`.
+!!! example "Expected output"
+    Successful build on `rebash-agent` after agent is online; paste console to `console.log` and run `./assert-agent.sh console.log`.
+
 
 #### Task 4 – Tools awareness sheet
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
 
 Create `tools.yaml`:
 
-```yaml
+```yaml title="tools.yaml"
 location: Manage Jenkins/Tools
 static_agents:
   pattern: tools block with jdk name
@@ -344,7 +350,7 @@ lab_jdk_entries: fill from UI if present
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('tools.yaml') as f:
@@ -358,7 +364,9 @@ grep -R "JENKINS_SECRET=" -n agent-launcher.sh 2>/dev/null | grep -v ':#' && ech
 ls -l module-06-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence archive; secret scan warning if you pasted secrets into files.
+!!! example "Expected output"
+    Evidence archive; secret scan warning if you pasted secrets into files.
+
 
 ### Validation steps
 
@@ -389,7 +397,7 @@ Add a second label `heavy` on the same agent and a Pipeline stage that uses `age
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Stop agent container when finished
 docker rm -f jenkins-agent 2>/dev/null || true
 # Keep controller volume; keep built-in executors at 0 if agent remains available

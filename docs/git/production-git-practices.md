@@ -121,7 +121,7 @@ Research three workflows, commit `branch-strategy.yaml` with decision matrix fie
 
 Workspace: `~/rebash-git/module-17`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
 set -euo pipefail
 ```
@@ -136,7 +136,7 @@ You lead platform engineering for a SaaS with daily deploys and quarterly compli
 
 Create `branch-strategy.yaml`:
 
-```yaml
+```yaml title="branch-strategy.yaml"
 context:
   product: SaaS platform
   deploy_cadence: daily_staging
@@ -180,7 +180,7 @@ review_date: '2027-02-01'
 
 Validate the strategy file:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-17
 set -euo pipefail
 rm -rf governance-lab
@@ -194,13 +194,15 @@ test "$(cat ../strategy-option-count.txt)" -ge 3
 cd ..
 ```
 
-**Expected output:** Branch strategy YAML with three-way comparison and explicit decision.
+!!! example "Expected output"
+    Branch strategy YAML with three-way comparison and explicit decision.
+
 
 #### Task 2 – Sample branch policy YAML artefact
 
 Create `SAMPLE_BRANCH_POLICY.yaml`:
 
-```yaml
+```yaml title="SAMPLE_BRANCH_POLICY.yaml"
 branch_naming:
   allowed_prefixes:
     - feature/
@@ -233,7 +235,7 @@ gitops:
 
 Commit the policy sample:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-17/governance-lab
 set -euo pipefail
 grep -q 'require_signed_commits' SAMPLE_BRANCH_POLICY.yaml
@@ -242,13 +244,15 @@ git commit -m 'chore: branch strategy YAML and sample policy'
 cd ..
 ```
 
-**Expected output:** Machine-readable policy sample committed.
+!!! example "Expected output"
+    Machine-readable policy sample committed.
+
 
 #### Task 3 – Validation script and evidence
 
 Create `validate-policy.sh`:
 
-```bash
+```bash title="validate-policy.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 grep -q 'main' SAMPLE_BRANCH_POLICY.yaml
@@ -270,7 +274,7 @@ echo 'policy_ok'
 
 Run validation and archive evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-17/governance-lab
 set -euo pipefail
 chmod +x validate-policy.sh
@@ -283,7 +287,9 @@ ls -l ../module-17-governance-evidence.tgz | tee ../governance-evidence.txt
 cd ..
 ```
 
-**Expected output:** validate-policy.sh passes; evidence tarball created.
+!!! example "Expected output"
+    validate-policy.sh passes; evidence tarball created.
+
 
 ### Validation steps
 
@@ -313,7 +319,7 @@ Add `rulesets_mapping` keys to `branch-strategy.yaml` mapping each policy rule t
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-17/governance-lab
 ```
 

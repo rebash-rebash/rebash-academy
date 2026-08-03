@@ -146,7 +146,7 @@ Under `~/rebash-python/lab16`, create a local Git repository with Python-driven 
 
 Workspace: `~/rebash-python/lab16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab16 && cd ~/rebash-python/lab16
 set -euo pipefail
 python3 -m venv .venv
@@ -157,7 +157,9 @@ python -m pip install 'requests>=2.31,<3'
 git --version | tee git-version.txt
 ```
 
-**Expected output:** `git-version.txt` contains a Git version string.
+!!! example "Expected output"
+    `git-version.txt` contains a Git version string.
+
 
 ### Real-world scenario
 
@@ -170,7 +172,7 @@ Your team wants a small release helper that records the latest commit on a polic
 
 Create `local_git_lab.py`:
 
-```python
+```python title="local_git_lab.py"
 #!/usr/bin/env python3
 """Create a disposable repo and two commits — lab directory only."""
 from __future__ import annotations
@@ -235,7 +237,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab16
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -245,14 +247,16 @@ test -s local-git-evidence.json
 test -d sample-repo/.git
 ```
 
-**Expected output:** `local-git-evidence.json` shows at least two commits; `sample-repo/.git` exists.
+!!! example "Expected output"
+    `local-git-evidence.json` shows at least two commits; `sample-repo/.git` exists.
+
 
 #### Task 2 – Read-only public GitHub API (or skip)
 
 
 Create `forge_readonly.py`:
 
-```python
+```python title="forge_readonly.py"
 #!/usr/bin/env python3
 """Read-only public GitHub API canary — no mutations."""
 from __future__ import annotations
@@ -311,7 +315,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab16
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -320,14 +324,16 @@ python forge_readonly.py | tee forge-run.txt
 test -s forge-evidence.json
 ```
 
-**Expected output:** `forge-evidence.json` with `mode` `live` (status 200) or `skipped` on network errors — both acceptable.
+!!! example "Expected output"
+    `forge-evidence.json` with `mode` `live` (status 200) or `skipped` on network errors — both acceptable.
+
 
 #### Task 3 – Evidence pack and mutate refusal
 
 
 Create `pack_evidence.py`:
 
-```python
+```python title="pack_evidence.py"
 import json
 from pathlib import Path
 
@@ -342,7 +348,7 @@ print("evidence ok")
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab16
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -357,7 +363,9 @@ grep -F 'REFUSED' mutate-denied.txt
 python pack_evidence.py
 ```
 
-**Expected output:** mutate refused; `lab16-evidence.json` merges local + forge facts.
+!!! example "Expected output"
+    mutate refused; `lab16-evidence.json` merges local + forge facts.
+
 
 ### Validation steps
 
@@ -388,7 +396,7 @@ Extend `local_git_lab.py` to create a branch `lab16/challenge`, commit a file `n
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab16
 deactivate 2>/dev/null || true
 # rm -rf sample-repo .venv

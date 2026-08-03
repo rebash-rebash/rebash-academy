@@ -66,7 +66,7 @@ Clients hit the load balancer; the balancer probes backends and sends traffic on
 
 A load balancer distributes connections across backends. A **health check** periodically asks each backend if it is ready. Failed checks remove the target from the pool (after unhealthy thresholds). **Draining** stops new connections while in-flight requests finish.
 
-```bash
+```bash title="Terminal"
 curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8081/health
 ```
 
@@ -113,14 +113,16 @@ Start two local HTTP backends with `/health`, run a health-check script that cur
 
 Workspace: `~/rebash-networking/lab25`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab25 && cd ~/rebash-networking/lab25
 set -euo pipefail
 whoami | tee admin-user.txt
 python3 --version | tee python-version.txt
 ```
 
-**Expected output:** workspace ready; Python available.
+!!! example "Expected output"
+    workspace ready; Python available.
+
 
 ### Real-world scenario
 
@@ -130,14 +132,14 @@ Before changing a cloud target group, you rehearse health-check behaviour locall
 
 #### Task 1 – Create backends with /health
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab25
 set -euo pipefail
 ```
 
 Create `backend_server.py`:
 
-```python
+```python title="backend_server.py"
 #!/usr/bin/env python3
 """Tiny backend with /health for LB health-check labs."""
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -194,11 +196,13 @@ grep -q '^ok A' health-a-initial.txt
 grep -q '^ok B' health-b-initial.txt
 ```
 
-**Expected output:** both `/health` responses start with `ok`.
+!!! example "Expected output"
+    both `/health` responses start with `ok`.
+
 
 #### Task 2 – Health-check script across the pool
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab25
 set -euo pipefail
 ```
@@ -206,7 +210,7 @@ set -euo pipefail
 Create `healthcheck.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 OUT="${1:-pool-health.tsv}"
@@ -245,7 +249,7 @@ exit 0
 ```
 {% endraw %}
 
-```bash
+```bash title="Terminal"
 chmod +x healthcheck.sh
 
 ./healthcheck.sh pool-health.tsv \
@@ -254,11 +258,13 @@ chmod +x healthcheck.sh
 test "$(cat summary.txt)" = "summary_unhealthy=0"
 ```
 
-**Expected output:** both targets HEALTHY; script exits 0.
+!!! example "Expected output"
+    both targets HEALTHY; script exits 0.
+
 
 #### Task 3 – Fail one backend and detect it
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab25
 set -euo pipefail
 
@@ -291,7 +297,9 @@ tar -czf lb-ops-evidence.tgz \
 ls -l lb-ops-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** script detects B as UNHEALTHY while A stays HEALTHY; restore succeeds; archive exists.
+!!! example "Expected output"
+    script detects B as UNHEALTHY while A stays HEALTHY; restore succeeds; archive exists.
+
 
 ### Validation steps
 
@@ -321,7 +329,7 @@ Write `mini-lb.sh` that loops backends in order (round-robin) for `/` requests, 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab25
 set -euo pipefail
 if [[ -f backend-a.pid ]]; then kill "$(cat backend-a.pid)" 2>/dev/null || true; fi

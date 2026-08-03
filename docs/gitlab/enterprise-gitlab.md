@@ -176,7 +176,7 @@ Workspace: `~/rebash-gitlab/module-18`
 
 File-first lab. Compliance pipelines apply at the GitLab instance or group level when configured by administrators.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-18/ci/compliance && cd ~/rebash-gitlab/module-18
 set -euo pipefail
 ```
@@ -191,7 +191,7 @@ Enterprise platform teams require every project pipeline to include audit and po
 
 Create `group-policy.yaml`:
 
-```yaml
+```yaml title="group-policy.yaml"
 # Module 18 — group-level CI policy (offline reference)
 group: rebash-platform
 minimum_gitlab_version: "16.0"
@@ -215,7 +215,7 @@ audit:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 python3 -c "
@@ -227,7 +227,9 @@ print('group-policy.yaml OK')
 "
 ```
 
-**Expected output:** `group-policy.yaml OK`
+!!! example "Expected output"
+    `group-policy.yaml OK`
+
 
 #### Task 2 – Compliance pipeline include
 
@@ -263,7 +265,7 @@ secret-pattern-scan:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 python3 -c "
@@ -276,7 +278,9 @@ print('compliance-pipeline.yml OK')
 grep -q 'alpine:3.20' ci/compliance/compliance-pipeline.yml
 ```
 
-**Expected output:** `compliance-pipeline.yml OK`
+!!! example "Expected output"
+    `compliance-pipeline.yml OK`
+
 
 #### Task 3 – Project pipeline with include
 
@@ -305,13 +309,13 @@ unit-tests:
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 print("enterprise-lab-ok")
 ```
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 python3 -c "
@@ -325,13 +329,15 @@ python3 -m py_compile src/app.py
 python3 src/app.py | tee app-out.txt
 ```
 
-**Expected output:** `gitlab-ci OK`; script prints `enterprise-lab-ok`
+!!! example "Expected output"
+    `gitlab-ci OK`; script prints `enterprise-lab-ok`
+
 
 #### Task 4 – Enterprise validation bundle
 
 Create `validate-enterprise.sh`:
 
-```bash
+```bash title="validate-enterprise.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('group-policy.yaml')); yaml.safe_load(open('ci/compliance/compliance-pipeline.yml')); yaml.safe_load(open('.gitlab-ci.yml'))"
@@ -342,14 +348,16 @@ echo 'module-18 enterprise lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 chmod +x validate-enterprise.sh
 ./validate-enterprise.sh | tee validation.txt
 ```
 
-**Expected output:** `module-18 enterprise lab passed`
+!!! example "Expected output"
+    `module-18 enterprise lab passed`
+
 
 ### Validation steps
 
@@ -382,7 +390,7 @@ Document how GitLab **Compliance pipelines** at the group level differ from proj
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-18/app-out.txt 2>/dev/null || true
 ls ~/rebash-gitlab/module-18
 ```

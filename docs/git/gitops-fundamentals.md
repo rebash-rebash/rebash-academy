@@ -123,7 +123,7 @@ Create GitOps repo skeleton with `apps/` base manifest and `clusters/dev/` overl
 
 Workspace: `~/rebash-git/module-12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-12 && cd ~/rebash-git/module-12
 set -euo pipefail
 ```
@@ -138,7 +138,7 @@ Platform team standardises on `apps/` + `clusters/` split. You onboard a new `pa
 
 Create `apps/payments/base/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -160,7 +160,7 @@ spec:
 
 Create `apps/payments/base/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -169,7 +169,7 @@ resources:
 
 Initialise the GitOps repo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-12
 set -euo pipefail
 rm -rf gitops-lab
@@ -184,13 +184,15 @@ test -f apps/payments/base/deployment.yaml
 cd ..
 ```
 
-**Expected output:** Base app committed under `apps/payments/base`.
+!!! example "Expected output"
+    Base app committed under `apps/payments/base`.
+
 
 #### Task 2 – clusters/dev overlay
 
 Create `clusters/dev/apps/payments/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -202,7 +204,7 @@ images:
 
 Commit the overlay:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-12/gitops-lab
 set -euo pipefail
 git add clusters/
@@ -211,13 +213,15 @@ grep -q '1.0.0-dev.1' clusters/dev/apps/payments/kustomization.yaml
 cd ..
 ```
 
-**Expected output:** Dev overlay references base and pins dev tag.
+!!! example "Expected output"
+    Dev overlay references base and pins dev tag.
+
 
 #### Task 3 – Promotion simulation and sync checks script
 
 Create `gitops-sync-check.sh`:
 
-```bash
+```bash title="gitops-sync-check.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 test -f apps/payments/base/deployment.yaml
@@ -230,7 +234,7 @@ echo 'layout_ok'
 
 Promote the dev tag and validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-12/gitops-lab
 set -euo pipefail
 sed -i.bak 's/1.0.0-dev.1/1.0.0-dev.2/' clusters/dev/apps/payments/kustomization.yaml
@@ -248,7 +252,9 @@ ls -l ../module-12-gitops-evidence.tgz | tee ../gitops-evidence.txt
 cd ..
 ```
 
-**Expected output:** Tag bump commit; sync check script validates layout and pinned tag.
+!!! example "Expected output"
+    Tag bump commit; sync check script validates layout and pinned tag.
+
 
 ### Validation steps
 
@@ -278,7 +284,7 @@ Add `clusters/prod/apps/payments/` with tag `1.0.0`, extend `gitops-sync-check.s
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-12/gitops-lab
 ```
 

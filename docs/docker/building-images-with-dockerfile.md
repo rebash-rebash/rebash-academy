@@ -149,7 +149,7 @@ Workspace: `~/rebash-docker/module-05/app`
 
 Host port **18085** is used for this build lab.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
 ```
 
@@ -163,7 +163,7 @@ You package an internal status page for a microservice. Instead of pulling a gen
 
 Create `index.html`:
 
-```html
+```html title="index.html"
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><title>REBASH mod05</title></head>
@@ -173,35 +173,41 @@ Create `index.html`:
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM nginx:1.27-alpine
 COPY index.html /usr/share/nginx/html/index.html
 EXPOSE 80
 ```
 
-**Expected output:** Both files exist in `~/rebash-docker/module-05/app/`.
+!!! example "Expected output"
+    Both files exist in `~/rebash-docker/module-05/app/`.
+
 
 #### Task 2 – Build and tag the image
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-05/app
 docker build -t rebash-mod05:local .
 docker image ls rebash-mod05:local | tee build-ls.txt
 grep -q 'rebash-mod05' build-ls.txt
 ```
 
-**Expected output:** `build-ls.txt` lists `rebash-mod05` with tag `local`.
+!!! example "Expected output"
+    `build-ls.txt` lists `rebash-mod05` with tag `local`.
+
 
 #### Task 3 – Run and verify HTTP body
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-05/app
 docker run -d --name rebash-mod05-web -p 18085:80 rebash-mod05:local
 curl -s http://127.0.0.1:18085/ | tee build-curl.txt
 grep -q 'rebash-mod05 build ok' build-curl.txt
 ```
 
-**Expected output:** `build-curl.txt` contains the heading text from `index.html`.
+!!! example "Expected output"
+    `build-curl.txt` contains the heading text from `index.html`.
+
 
 ### Validation steps
 
@@ -223,13 +229,13 @@ Add a `.dockerignore` that excludes `*.txt` evidence files, rebuild with tag `re
 
 Create `.dockerignore`:
 
-```text
+```text title=".dockerignore"
 *.txt
 ```
 
 Build and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-05/app
 docker build -t rebash-mod05:v2 .
 docker rm -f rebash-mod05-web 2>/dev/null || true
@@ -238,7 +244,9 @@ curl -s http://127.0.0.1:18085/ | grep -q 'rebash-mod05 build ok'
 echo 'v2 ok' | tee build-v2.txt
 ```
 
-**Expected output:** `build-v2.txt` contains `v2 ok`; curl still returns the custom heading.
+!!! example "Expected output"
+    `build-v2.txt` contains `v2 ok`; curl still returns the custom heading.
+
 
 ### Learning outcomes
 
@@ -248,7 +256,7 @@ echo 'v2 ok' | tee build-v2.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-05/app
 docker rm -f rebash-mod05-web 2>/dev/null || true
 docker rmi rebash-mod05:local rebash-mod05:v2 2>/dev/null || true

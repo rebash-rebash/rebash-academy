@@ -64,7 +64,7 @@ Platform owns dozens of application repos. Auditors need a dry report for compli
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-gh/{fixtures,out}
 cd ~/rebash-lab-python-gh
 python3 -m venv .venv && source .venv/bin/activate
@@ -74,7 +74,7 @@ pip install 'httpx>=0.27,<1'
 ## Initial State — fixture path (required)
 Create `fixtures/repos.json`:
 
-```json
+```json title="repos.json"
 [
   {"full_name": "acme/payments", "private": false, "default_branch": "main",
    "has_branch_protection": false, "has_codeowners": false, "archived": false},
@@ -103,7 +103,7 @@ Write `out/findings.json` and print a short summary. Exit `0` always for audit-o
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python audit_repos.py --fixture fixtures/repos.json
 python -c 'import json; print(len(json.load(open("out/findings.json"))))'
 ```

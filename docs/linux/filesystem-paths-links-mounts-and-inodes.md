@@ -74,7 +74,7 @@ Names in directories point to inodes. Hard links share one inode. Symlinks store
 | Symlink | Special file holding a path string |
 | Mount point | Directory where another filesystem is attached |
 
-```bash
+```bash title="Terminal"
 ls -li
 ln file hardlink
 ln -s /etc/hosts hosts.link
@@ -94,7 +94,7 @@ Deploy tools often create `current` → `releases/2026-08-02`. If the symlink br
 4. `readlink` / `readlink -f` show or fully resolve the target.
 5. `mount` / `findmnt` show how devices and bind mounts attach to directories; persist with `/etc/fstab` or systemd `.mount` units (by UUID preferred).
 
-```bash
+```bash title="Terminal"
 echo hello > a.txt
 ln a.txt b.txt
 ls -li a.txt b.txt
@@ -145,7 +145,7 @@ On a practice Ubuntu VM, prove path types, hard links, symlinks, and mounts with
 
 Workspace: `~/rebash-linux/lab04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab04 && cd ~/rebash-linux/lab04
 set -euo pipefail
 rm -rf pathlab
@@ -153,7 +153,9 @@ mkdir -p pathlab && cd pathlab
 pwd | tee ../pwd-pathlab.txt
 ```
 
-**Expected output:** `pwd-pathlab.txt` ends with `pathlab`.
+!!! example "Expected output"
+    `pwd-pathlab.txt` ends with `pathlab`.
+
 
 ### Real-world scenario
 
@@ -163,7 +165,7 @@ Your team deploys an app by unpacking a release directory and flipping a `curren
 
 #### Task 1 – Absolute vs relative paths
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab04/pathlab
 set -euo pipefail
 
@@ -189,11 +191,13 @@ grep -Ei 'No such file|cannot' ~/rebash-linux/lab04/relative-fail.txt
 test -s ~/rebash-linux/lab04/abs-path.txt
 ```
 
-**Expected output:** relative and absolute reads succeed from `pathlab`; from `/tmp` the relative read fails and is recorded in `relative-fail.txt`.
+!!! example "Expected output"
+    relative and absolute reads succeed from `pathlab`; from `/tmp` the relative read fails and is recorded in `relative-fail.txt`.
+
 
 #### Task 2 – Inodes, hard links, and symlinks
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab04/pathlab
 set -euo pipefail
 
@@ -217,11 +221,13 @@ test "$(readlink releases/v1/data.sym)" = "data.bin"
 grep -q 'payload' releases/v1/data-hard.bin
 ```
 
-**Expected output:** `inode-hardlinks.txt` shows the same inode for both hard links; `stat-hard.txt` shows link count ≥ 2; `current-resolved.txt` points at `…/releases/v1`.
+!!! example "Expected output"
+    `inode-hardlinks.txt` shows the same inode for both hard links; `stat-hard.txt` shows link count ≥ 2; `current-resolved.txt` points at `…/releases/v1`.
+
 
 #### Task 3 – Mounts, inode capacity, evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab04
 set -euo pipefail
 
@@ -248,7 +254,9 @@ ls -l paths-links-evidence.tgz | tee evidence-ls.txt
 test -s paths-links-evidence.tgz
 ```
 
-**Expected output:** `findmnt-home.txt` shows the mount that holds your home; `dfi-pathlab.txt` shows inode use; evidence archive is non-empty.
+!!! example "Expected output"
+    `findmnt-home.txt` shows the mount that holds your home; `dfi-pathlab.txt` shows inode use; evidence archive is non-empty.
+
 
 ### Validation steps
 
@@ -280,7 +288,7 @@ Create `pathlab/releases/v2/app.txt` with content `v2 app`, then atomically repo
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab04
 # rm -rf pathlab *.txt paths-links-evidence.tgz
 ```

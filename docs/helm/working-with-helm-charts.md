@@ -147,7 +147,7 @@ Build a complete application chart layout — `Chart.yaml`, `values.yaml`, `_hel
 
 Workspace: `~/rebash-helm/module-03` on your workstation.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-03/rebash-platform/templates && cd ~/rebash-helm/module-03
 ```
 
@@ -161,7 +161,7 @@ Your platform team publishes a standard web chart for product squads. Reviewers 
 
 Create `rebash-platform/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-platform
 description: REBASH platform web chart with full layout
@@ -175,7 +175,7 @@ maintainers:
 
 Create `rebash-platform/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 nameOverride: ""
 fullnameOverride: ""
@@ -191,7 +191,7 @@ resources: {}
 
 Create `.helmignore`:
 
-```
+```text title=".helmignore"
 # VCS and editor noise
 .git/
 .idea/
@@ -297,7 +297,7 @@ Check pods:
 
 #### Task 3 – Lint, template, and kind inventory
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-03
 helm lint rebash-platform | tee lint-m03.txt
 helm template platform-demo rebash-platform --namespace rebash-helm-m03 | tee render-m03.yaml
@@ -308,20 +308,22 @@ helm show chart rebash-platform | tee show-chart-m03.txt
 helm show values rebash-platform | tee show-values-m03.txt
 ```
 
-**Expected output:** `lint-m03.txt` reports 0 failures; `kinds-m03.txt` shows exactly one Deployment and one Service.
+!!! example "Expected output"
+    `lint-m03.txt` reports 0 failures; `kinds-m03.txt` shows exactly one Deployment and one Service.
+
 
 #### Task 4 – Optional install and NOTES proof
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
   name: rebash-helm-m03
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-03
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -333,7 +335,9 @@ else
 fi
 ```
 
-**Expected output:** `notes-m03.txt` contains release name and kubectl hint from `NOTES.txt`.
+!!! example "Expected output"
+    `notes-m03.txt` contains release name and kubectl hint from `NOTES.txt`.
+
 
 ### Validation steps
 
@@ -365,7 +369,7 @@ Add a `templates/configmap.yaml` driven by `values.yaml` key `configMessage`, re
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall platform-demo -n rebash-helm-m03 2>/dev/null || true
 kubectl delete namespace rebash-helm-m03 --ignore-not-found
 ```

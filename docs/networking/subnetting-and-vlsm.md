@@ -131,7 +131,7 @@ Calculate a `/24` → `/26` split with `ipcalc` and/or Python, verify interface 
 
 Workspace: `~/rebash-networking/lab05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab05 && cd ~/rebash-networking/lab05
 set -euo pipefail
 hostname | tee hostname.txt
@@ -139,7 +139,9 @@ python3 --version | tee python-version.txt
 command -v ipcalc >/dev/null 2>&1 && ipcalc --version 2>&1 | tee ipcalc-version.txt || echo "ipcalc not installed" | tee ipcalc-version.txt
 ```
 
-**Expected output:** Python version recorded; `ipcalc-version.txt` either shows a version or “not installed”.
+!!! example "Expected output"
+    Python version recorded; `ipcalc-version.txt` either shows a version or “not installed”.
+
 
 ### Real-world scenario
 
@@ -149,7 +151,7 @@ Your team receives `192.168.10.0/24` for a small non-production VPC style lab pl
 
 #### Task 1 – Calculate with `ipcalc` when available
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab05
 set -euo pipefail
 
@@ -168,18 +170,20 @@ else
 fi
 ```
 
-**Expected output:** Either full `ipcalc` tables for base and four `/26` networks, or a clear note that Python will carry the lab.
+!!! example "Expected output"
+    Either full `ipcalc` tables for base and four `/26` networks, or a clear note that Python will carry the lab.
+
 
 #### Task 2 – Python `/24` → `/26` calculator (required artefact)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab05
 set -euo pipefail
 ```
 
 Create `subnet_split.py`:
 
-```python
+```python title="subnet_split.py"
 #!/usr/bin/env python3
 """Split a base IPv4 network into equal longer prefixes (REBASH lab05)."""
 from __future__ import annotations
@@ -232,7 +236,7 @@ if __name__ == "__main__":
     main()
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x subnet_split.py
 python3 subnet_split.py | tee subnet-split-run.txt
 test "$(wc -l < subnet-split.txt | tr -d ' ')" -eq 4
@@ -240,11 +244,13 @@ grep -F '192.168.10.0/26' subnet-split.txt
 grep -F '192.168.10.192/26' subnet-split.txt
 ```
 
-**Expected output:** Exactly four lines in `subnet-split.txt`, including `.0/26` and `.192/26`; JSON twin file written.
+!!! example "Expected output"
+    Exactly four lines in `subnet-split.txt`, including `.0/26` and `.192/26`; JSON twin file written.
+
 
 #### Task 3 – Compare with live `ip addr` prefixes (read-only) and pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab05
 set -euo pipefail
 
@@ -264,13 +270,13 @@ ip -4 -o addr show | tee live-ip4-oneline.txt
 
 Create `safety-note.txt`:
 
-```text
+```text title="safety-note.txt"
 REBASH lab05 safety: calculations only.
 No ip addr add, no route changes, no cloud VPC edits.
 Compare planned /26 table in subnet-split.txt with any live prefixes above.
 ```
 
-```bash
+```bash title="Terminal"
 tar -czf subnetting-evidence.tgz \
   hostname.txt python-version.txt ipcalc-version.txt base-cidr.txt \
   ipcalc-base.txt ipcalc-subnets.txt \
@@ -280,7 +286,9 @@ ls -l subnetting-evidence.tgz | tee evidence-ls.txt
 test -s subnetting-evidence.tgz
 ```
 
-**Expected output:** `live-prefix-compare.txt` lists real host prefixes; `subnetting-evidence.tgz` is non-empty; no new addresses were configured.
+!!! example "Expected output"
+    `live-prefix-compare.txt` lists real host prefixes; `subnetting-evidence.tgz` is non-empty; no new addresses were configured.
+
 
 ### Validation steps
 
@@ -312,7 +320,7 @@ Write `vlsm_plan.py` that takes a base `10.0.0.0/24` and allocates **unequal** s
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab05
 set -euo pipefail
 # Nothing to revert on the network stack if you followed the lab

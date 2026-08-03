@@ -125,7 +125,7 @@ Publish a minimal VPC module, tag `v0.1.0`, consume it from a root stack via Git
 
 Workspace: `~/rebash-git/module-13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-13 && cd ~/rebash-git/module-13
 set -euo pipefail
 ```
@@ -140,7 +140,7 @@ Platform team releases `terraform-s3-bucket` module v0.1.0; application stack pi
 
 Create `.gitignore`:
 
-```gitignore
+```gitignore title=".gitignore"
 .terraform/
 *.tfstate
 *.tfstate.*
@@ -149,7 +149,7 @@ Create `.gitignore`:
 
 Create `bucket/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 variable "name" { type = string }
 resource "aws_s3_bucket" "this" {
   bucket = var.name
@@ -159,19 +159,19 @@ output "bucket_name" { value = aws_s3_bucket.this.bucket }
 
 Create `bucket/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "name" { type = string }
 ```
 
 Create `bucket/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "bucket_name" { value = aws_s3_bucket.this.bucket }
 ```
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # terraform-s3-bucket module
 
 Version with git tags v0.x.y
@@ -179,7 +179,7 @@ Version with git tags v0.x.y
 
 Initialise the module repo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-13
 set -euo pipefail
 rm -rf module-s3 stack-app
@@ -193,11 +193,13 @@ git commit -m 'feat: initial s3 bucket module'
 cd ..
 ```
 
-**Expected output:** Module repo with bucket/ subdirectory.
+!!! example "Expected output"
+    Module repo with bucket/ subdirectory.
+
 
 #### Task 2 – Tag v0.1.0
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-13/module-s3
 set -euo pipefail
 git tag -a v0.1.0 -m 'Release v0.1.0 — initial bucket module'
@@ -206,7 +208,9 @@ grep -q 'v0.1.0' ../module-tags.txt
 cd ..
 ```
 
-**Expected output:** Annotated tag v0.1.0 on module repo.
+!!! example "Expected output"
+    Annotated tag v0.1.0 on module repo.
+
 
 #### Task 3 – Root stack consumes module via local Git path + ref file
 
@@ -223,20 +227,20 @@ module "logs" {
 
 Create `.gitignore`:
 
-```gitignore
+```gitignore title=".gitignore"
 .terraform/
 *.tfstate*
 ```
 
 Create `MODULE_VERSION`:
 
-```text
+```text title="MODULE_VERSION"
 v0.1.0
 ```
 
 Validate and commit:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-13
 set -euo pipefail
 mkdir stack-app && cd stack-app
@@ -254,7 +258,9 @@ ls -l ../module-13-iac-evidence.tgz | tee ../iac-evidence.txt
 cd ..
 ```
 
-**Expected output:** Stack validates; MODULE_VERSION records pin.
+!!! example "Expected output"
+    Stack validates; MODULE_VERSION records pin.
+
 
 ### Validation steps
 
@@ -284,7 +290,7 @@ Bump module to v0.2.0 with a new optional variable; update stack MODULE_VERSION 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-13/
 ```
 

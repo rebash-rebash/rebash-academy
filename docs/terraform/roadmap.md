@@ -64,7 +64,7 @@ Follow the course in order for the smoothest path from first HCL file to product
 
 Regenerate Excalidraw SVGs after editing the generator:
 
-```bash
+```bash title="Terminal"
 python3 scripts/generate-excalidraw-svg.py
 ```
 

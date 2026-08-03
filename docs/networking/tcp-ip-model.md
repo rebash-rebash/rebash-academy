@@ -84,7 +84,7 @@ Packet flows, security groups, network policies, and service meshes are easier w
 4. **Link** delivers frames to the next hop on the local network.
 5. On the receiver, the path reverses up the stack to the listening application.
 
-```bash
+```bash title="Terminal"
 ss -tuln
 curl -v --max-time 8 -o /dev/null https://example.com
 ```
@@ -131,14 +131,16 @@ Build an OSI↔TCP/IP mapping artefact with concrete protocol examples, then cap
 
 Workspace: `~/rebash-networking/lab03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab03 && cd ~/rebash-networking/lab03
 set -euo pipefail
 hostname | tee hostname.txt
 command -v ss curl ip | tee tools-present.txt
 ```
 
-**Expected output:** `tools-present.txt` shows `ss`, `curl`, and `ip`.
+!!! example "Expected output"
+    `tools-present.txt` shows `ss`, `curl`, and `ip`.
+
 
 ### Real-world scenario
 
@@ -148,14 +150,14 @@ A new engineer asks whether “security groups are Layer 3 or Layer 4.” You pr
 
 #### Task 1 – Write the OSI↔TCP/IP mapping artefact
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab03
 set -euo pipefail
 ```
 
 Create `osi-tcpip-map.txt`:
 
-```text
+```text title="osi-tcpip-map.txt"
 TCP/IP layer | OSI layers (approx) | Protocols (examples)        | Linux evidence idea
 Application  | 5–7                 | HTTP, HTTPS, DNS, SSH       | curl -v, dig
 Transport    | 4                   | TCP, UDP                    | ss -tuln
@@ -169,16 +171,18 @@ Concrete walkthrough for HTTPS GET example.com:
 4. Link: frames to the local gateway MAC
 ```
 
-```bash
+```bash title="Terminal"
 cat osi-tcpip-map.txt
 grep -E 'Application|Transport|Internet|Link' osi-tcpip-map.txt
 ```
 
-**Expected output:** `osi-tcpip-map.txt` contains all four TCP/IP layer names and the HTTPS walkthrough.
+!!! example "Expected output"
+    `osi-tcpip-map.txt` contains all four TCP/IP layer names and the HTTPS walkthrough.
+
 
 #### Task 2 – Transport evidence with `ss -tuln`
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab03
 set -euo pipefail
 
@@ -193,11 +197,13 @@ ip neigh show | tee ip-neigh.txt || true
 ip -br link | tee ip-br-link.txt
 ```
 
-**Expected output:** `ss-tuln.txt` exists; `ss-listen-tcp-count.txt` contains a number (zero is possible on a minimal VM).
+!!! example "Expected output"
+    `ss-tuln.txt` exists; `ss-listen-tcp-count.txt` contains a number (zero is possible on a minimal VM).
+
 
 #### Task 3 – Application evidence with `curl -v` and pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab03
 set -euo pipefail
 
@@ -222,7 +228,9 @@ ls -l tcpip-stack-evidence.tgz | tee evidence-ls.txt
 test -s tcpip-stack-evidence.tgz
 ```
 
-**Expected output:** `curl-verbose.txt` is non-empty; `tcpip-stack-evidence.tgz` is created and non-empty.
+!!! example "Expected output"
+    `curl-verbose.txt` is non-empty; `tcpip-stack-evidence.tgz` is created and non-empty.
+
 
 ### Validation steps
 
@@ -253,7 +261,7 @@ Create executable script `~/rebash-networking/lab03/stack-probe.sh` that: (1) wr
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab03
 set -euo pipefail
 # No persistent routes or firewall changes in the main lab

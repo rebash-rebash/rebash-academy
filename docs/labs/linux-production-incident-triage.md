@@ -93,7 +93,7 @@ Your job is to discover the breakage through logs — do not skip ahead by readi
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sudo useradd --system --home /opt/rebash-api --shell /usr/sbin/nologin rebash-api 2>/dev/null || true
 sudo mkdir -p /opt/rebash-api/bin /var/lib/rebash-api
 sudo tee /opt/rebash-api/bin/server.py >/dev/null <<'EOF'
@@ -122,11 +122,13 @@ sudo chmod 755 /opt/rebash-api/bin/server.py
 sudo chown -R rebash-api:rebash-api /opt/rebash-api /var/lib/rebash-api
 ```
 
-**Expected output:** Commands complete with no errors. `/opt/rebash-api/bin/server.py` exists and is executable.
+!!! example "Expected output"
+    Commands complete with no errors. `/opt/rebash-api/bin/server.py` exists and is executable.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 sudo -u rebash-api test -x /opt/rebash-api/bin/server.py && echo "binary OK"
 ```
 
@@ -138,7 +140,7 @@ sudo -u rebash-api test -x /opt/rebash-api/bin/server.py && echo "binary OK"
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sudo tee /etc/systemd/system/rebash-api.service >/dev/null <<'EOF'
 [Unit]
 Description=REBASH demo API
@@ -163,11 +165,13 @@ sudo systemctl enable --now rebash-api.service || true
 sudo systemctl status rebash-api.service --no-pager || true
 ```
 
-**Expected output:** `systemctl status` shows **failed** or repeated restart attempts. Do not “fix” yet.
+!!! example "Expected output"
+    `systemctl status` shows **failed** or repeated restart attempts. Do not “fix” yet.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 systemctl is-failed rebash-api.service || systemctl is-active rebash-api.service
 ```
 
@@ -181,7 +185,7 @@ You should see `failed` (or brief `activating` then fail).
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 systemctl status rebash-api.service --no-pager -l
 journalctl -u rebash-api.service -n 50 --no-pager
 journalctl -u rebash-api.service -p err..alert --no-pager | tail -20
@@ -189,7 +193,9 @@ systemctl cat rebash-api.service
 ls -la /opt/rebash-api /opt/rebash-api/bin
 ```
 
-**Expected output:** Journal lines referencing a missing file or exit status; `systemctl cat` shows the wrong `ExecStart` path.
+!!! example "Expected output"
+    Journal lines referencing a missing file or exit status; `systemctl cat` shows the wrong `ExecStart` path.
+
 
 **Validation:** Write down (in your notes) one sentence for **symptom** and one for **likely cause**.
 
@@ -201,7 +207,7 @@ ls -la /opt/rebash-api /opt/rebash-api/bin
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sudo tee /etc/systemd/system/rebash-api.service >/dev/null <<'EOF'
 [Unit]
 Description=REBASH demo API
@@ -228,11 +234,13 @@ sudo systemctl restart rebash-api.service
 sudo systemctl status rebash-api.service --no-pager -l
 ```
 
-**Expected output:** `Active: active (running)` and a main PID listed.
+!!! example "Expected output"
+    `Active: active (running)` and a main PID listed.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 systemctl is-active rebash-api.service
 curl -sS http://127.0.0.1:8080/healthz
 ```
@@ -245,7 +253,7 @@ Expected JSON includes `"status":"ok"`.
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sleep 3
 systemctl is-active rebash-api.service
 journalctl -u rebash-api.service -n 20 --no-pager
@@ -253,7 +261,9 @@ ss -tlnp | grep 8080 || sudo ss -tlnp | grep 8080
 curl -sS http://127.0.0.1:8080/ | head -c 200; echo
 ```
 
-**Expected output:** Still `active`; listener on `127.0.0.1:8080`; health JSON returns.
+!!! example "Expected output"
+    Still `active`; listener on `127.0.0.1:8080`; health JSON returns.
+
 
 **Validation:** Service stays active for at least 30 seconds without entering failed state.
 
@@ -284,7 +294,7 @@ curl -sS http://127.0.0.1:8080/ | head -c 200; echo
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 sudo systemctl disable --now rebash-api.service || true
 sudo rm -f /etc/systemd/system/rebash-api.service
 sudo systemctl daemon-reload

@@ -193,7 +193,7 @@ Encode the secrets hierarchy as YAML, write workflows referencing secrets and va
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-05/.github/workflows ~/rebash-github-actions/module-05/oidc && cd ~/rebash-github-actions/module-05
 set -euo pipefail
 ```
@@ -208,7 +208,7 @@ Security review blocked deploy workflows until you encode where secrets live, pr
 
 Create `secrets-hierarchy.yaml`:
 
-```yaml
+```yaml title="secrets-hierarchy.yaml"
 # Secrets and variables hierarchy
 levels:
   - scope: repository_secret
@@ -239,7 +239,7 @@ rules:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 python3 -c "
@@ -253,7 +253,9 @@ print('secrets-hierarchy.yaml OK')
 "
 ```
 
-**Expected output:** `secrets-hierarchy.yaml OK`
+!!! example "Expected output"
+    `secrets-hierarchy.yaml OK`
+
 
 #### Task 2 – Workflow with vars and secret references (stub values)
 
@@ -291,7 +293,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 grep -q 'vars.AWS_REGION' .github/workflows/deploy-with-secrets.yml
@@ -300,13 +302,15 @@ grep -q 'id-token: write' .github/workflows/deploy-with-secrets.yml
 python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/deploy-with-secrets.yml')); assert d['permissions']['id-token']=='write'; print('secrets workflow OK')"
 ```
 
-**Expected output:** `secrets workflow OK`
+!!! example "Expected output"
+    `secrets workflow OK`
+
 
 #### Task 3 – OIDC trust policy sketch
 
 Create `oidc/aws-trust-policy.json`:
 
-```json
+```json title="aws-trust-policy.json"
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -332,18 +336,20 @@ Create `oidc/aws-trust-policy.json`:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 python3 -c "import json; d=json.load(open('oidc/aws-trust-policy.json')); assert d['Statement'][0]['Action']=='sts:AssumeRoleWithWebIdentity'; print('trust policy JSON OK')"
 grep -q 'token.actions.githubusercontent.com' oidc/aws-trust-policy.json
 ```
 
-**Expected output:** `trust policy JSON OK`
+!!! example "Expected output"
+    `trust policy JSON OK`
+
 
 #### Task 4 – Simulate offline deploy check and archive
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 
@@ -357,7 +363,9 @@ tar -czf module-05-evidence.tgz secrets-hierarchy.yaml .github/workflows/deploy-
 ls -l module-05-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Tarball created.
+!!! example "Expected output"
+    Tarball created.
+
 
 **Optional — configure OIDC on AWS:**
 

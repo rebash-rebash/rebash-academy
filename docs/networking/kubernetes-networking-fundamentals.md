@@ -79,7 +79,7 @@ Service VIP to Pod endpoints (same idea as a load balancer pool):
 | Ingress / Gateway | L7 HTTP(S) routing to Services |
 | NetworkPolicy | Declarative allow-list for Pod traffic |
 
-```bash
+```bash title="Terminal"
 kubectl get pods -o wide
 kubectl get svc,endpoints
 kubectl get endpointslices
@@ -136,7 +136,7 @@ If `kubectl` can reach a cluster, gather Pod/Service/Endpoint evidence. Otherwis
 
 Workspace: `~/rebash-networking/lab18`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab18 && cd ~/rebash-networking/lab18
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -147,7 +147,9 @@ if command -v kubectl >/dev/null 2>&1; then
 fi
 ```
 
-**Expected output:** tools/context files exist; cluster may be absent (dry-run path still valid).
+!!! example "Expected output"
+    tools/context files exist; cluster may be absent (dry-run path still valid).
+
 
 ### Real-world scenario
 
@@ -157,14 +159,14 @@ On-call asks whether a Service has endpoints after a deploy. You either inspect 
 
 #### Task 1 – Write reference manifests (always)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab18
 set -euo pipefail
 ```
 
 Create `deploy-svc.yaml`:
 
-```yaml
+```yaml title="deploy-svc.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -202,7 +204,7 @@ spec:
   type: ClusterIP
 ```
 
-```bash
+```bash title="Terminal"
 # Structural validation without apply (works offline)
 python3 - << 'PY' | tee yaml-validate.txt
 import sys
@@ -222,11 +224,13 @@ if command -v kubectl >/dev/null 2>&1; then
 fi
 ```
 
-**Expected output:** `yaml-validate.txt` shows `yaml-basic-ok`; dry-run OK when kubectl exists.
+!!! example "Expected output"
+    `yaml-validate.txt` shows `yaml-basic-ok`; dry-run OK when kubectl exists.
+
 
 #### Task 2 – Live inspect **or** offline endpoint story
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab18
 set -euo pipefail
 
@@ -250,7 +254,7 @@ else
 
 Create `endpoints-story.txt`:
 
-```text
+```text title="endpoints-story.txt"
 When the Deployment is applied and Pods become Ready:
   kubectl get endpoints rebash-netdemo
 should list Pod IPs:container ports matching the Service selector.
@@ -258,7 +262,7 @@ Empty endpoints ⇒ selector/labels mismatch or Pods not Ready.
 DNS name in-cluster: rebash-netdemo.<namespace>.svc.cluster.local
 ```
 
-```bash
+```bash title="Terminal"
   cp endpoints-story.txt endpoints.txt
   echo "offline — no cluster destroy performed" | tee safety.txt
 fi
@@ -266,18 +270,20 @@ fi
 test -f mode.txt
 ```
 
-**Expected output:** `mode.txt` is `live` or `offline-dry-run` with matching evidence files.
+!!! example "Expected output"
+    `mode.txt` is `live` or `offline-dry-run` with matching evidence files.
+
 
 #### Task 3 – NetworkPolicy sample + evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab18
 set -euo pipefail
 ```
 
 Create `netpol-sample.yaml`:
 
-```yaml
+```yaml title="netpol-sample.yaml"
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -307,7 +313,7 @@ spec:
           port: 53
 ```
 
-```bash
+```bash title="Terminal"
 python3 - << 'PY' | tee netpol-validate.txt
 text = open("netpol-sample.yaml").read()
 assert "kind: NetworkPolicy" in text
@@ -332,7 +338,9 @@ ls -l k8s-net-evidence.tgz | tee evidence-ls.txt
 test -s k8s-net-evidence.tgz
 ```
 
-**Expected output:** NetworkPolicy YAML validated; `k8s-net-evidence.tgz` non-empty. No cluster deleted.
+!!! example "Expected output"
+    NetworkPolicy YAML validated; `k8s-net-evidence.tgz` non-empty. No cluster deleted.
+
 
 ### Validation steps
 
@@ -363,7 +371,7 @@ Add `ingress-sample.yaml` with an Ingress for `host: netdemo.lab.local` → Serv
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab18
 set -euo pipefail
 # Safe cleanup: local files only. Do NOT destroy clusters.

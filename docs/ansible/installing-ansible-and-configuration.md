@@ -115,7 +115,7 @@ interpreter_python = auto_silent
 
 Verify install:
 
-```bash
+```bash title="Terminal"
 ansible --version
 which ansible
 ansible-config dump | grep DEFAULT_INVENTORY
@@ -158,7 +158,7 @@ Install **ansible-core**, create project `ansible.cfg` and inventory, write `ver
 
 Workspace: `~/rebash-ansible/module-02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-02 && cd ~/rebash-ansible/module-02
 ```
 
@@ -181,26 +181,28 @@ pipx list | tee ~/rebash-ansible/module-02/pipx-list.txt
 
 **Option B — pip user install:**
 
-```bash
+```bash title="Terminal"
 python3 -m pip install --user ansible-core
 python3 -m pip show ansible-core | tee ~/rebash-ansible/module-02/pip-show-ansible.txt
 ```
 
 Verify CLI:
 
-```bash
+```bash title="Terminal"
 ansible --version | tee ~/rebash-ansible/module-02/ansible-version.txt
 grep -qi 'ansible core' ~/rebash-ansible/module-02/ansible-version.txt
 echo "install OK" | tee ~/rebash-ansible/module-02/install-ok.txt
 ```
 
-**Expected output:** `ansible-version.txt` lists **ansible core** version (2.16+ or 2.18+); `install-ok.txt` contains `install OK`.
+!!! example "Expected output"
+    `ansible-version.txt` lists **ansible core** version (2.16+ or 2.18+); `install-ok.txt` contains `install OK`.
+
 
 #### Task 2 – Create ansible.cfg and inventory
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = ./inventory
 host_key_checking = False
@@ -214,14 +216,14 @@ become = False
 
 Create `inventory`:
 
-```ini
+```ini title="inventory"
 [local]
 localhost ansible_connection=local
 ```
 
 Confirm config resolution:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-02
 ansible-config dump --only-changed | tee ansible-config-dump.txt
 grep -q 'DEFAULT_HOST_KEY_CHECKING(/.*ansible.cfg)' ansible-config-dump.txt || \
@@ -236,13 +238,15 @@ print('cfg inventory OK')
 " | tee cfg-inventory-ok.txt
 ```
 
-**Expected output:** `cfg-inventory-ok.txt` shows `cfg inventory OK`; config dump reflects project `ansible.cfg`.
+!!! example "Expected output"
+    `cfg-inventory-ok.txt` shows `cfg inventory OK`; config dump reflects project `ansible.cfg`.
+
 
 #### Task 3 – Create deploy-config playbook and verify script
 
 Create `files/lab.conf`:
 
-```
+```text title="lab.conf"
 ansible_core=installed
 lab=module-02
 ```
@@ -274,7 +278,7 @@ Create `deploy-config.yml`:
 
 Create `verify-ansible.sh`:
 
-```bash
+```bash title="verify-ansible.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -292,7 +296,7 @@ echo "verify-ansible.sh PASS" | tee verify-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-02
 chmod +x verify-ansible.sh
 ./verify-ansible.sh
@@ -300,7 +304,9 @@ grep -q 'verify-ansible.sh PASS' verify-pass.txt
 cat ~/rebash-ansible/module-02/config/lab.conf | tee config-proof.txt
 ```
 
-**Expected output:** `verify-pass.txt` contains `verify-ansible.sh PASS`; `config/lab.conf` exists with `lab=module-02`.
+!!! example "Expected output"
+    `verify-pass.txt` contains `verify-ansible.sh PASS`; `config/lab.conf` exists with `lab=module-02`.
+
 
 ### Validation steps
 
@@ -322,7 +328,7 @@ cat ~/rebash-ansible/module-02/config/lab.conf | tee config-proof.txt
 
 Create `show-config-source.sh` that prints which file set `DEFAULT_INVENTORY`:
 
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-02
@@ -333,12 +339,14 @@ echo "config source captured"
 
 Run and archive:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-ansible/module-02/show-config-source.sh
 ~/rebash-ansible/module-02/show-config-source.sh | tee challenge-config.txt
 ```
 
-**Expected output:** Line showing inventory setting and originating `ansible.cfg` path.
+!!! example "Expected output"
+    Line showing inventory setting and originating `ansible.cfg` path.
+
 
 ### Learning outcomes
 
@@ -351,7 +359,7 @@ chmod +x ~/rebash-ansible/module-02/show-config-source.sh
 
 Keep `ansible.cfg`, `inventory`, and scripts for later modules. Remove transient evidence only:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-02
 rm -f verify-version.txt verify-ping.txt verify-config-head.txt verify-pass.txt \
   ansible-config-dump.txt inventory-from-cfg.json cfg-inventory-ok.txt \

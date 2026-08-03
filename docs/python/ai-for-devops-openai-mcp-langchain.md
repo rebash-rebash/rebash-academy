@@ -152,7 +152,7 @@ Build an offline-first runbook assistant under `~/rebash-python/lab26` with a mo
 
 Workspace: `~/rebash-python/lab26`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab26 && cd ~/rebash-python/lab26
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -164,7 +164,9 @@ else
 fi
 ```
 
-**Expected output:** `key-status.txt` says `present` or `absent` — never prints the key value.
+!!! example "Expected output"
+    `key-status.txt` says `present` or `absent` — never prints the key value.
+
 
 ### Real-world scenario
 
@@ -177,7 +179,7 @@ Your SRE team wants a CLI that turns a short incident blurb into suggested runbo
 
 Create `ai_runbook.py`:
 
-```python
+```python title="ai_runbook.py"
 """Offline-first AI runbook helper for DevOps (mock LLM + optional OpenAI)."""
 from __future__ import annotations
 
@@ -325,17 +327,19 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab26
 set -euo pipefail
 python3 -m py_compile ai_runbook.py
 ```
 
-**Expected output:** `py_compile` succeeds.
+!!! example "Expected output"
+    `py_compile` succeeds.
+
 
 #### Task 2 – Offline run (force mock) and secret-like input block
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab26
 set -euo pipefail
 
@@ -363,11 +367,13 @@ test "$rc" -eq 2
 grep -F 'secret_like_input_blocked' run-blocked.stderr
 ```
 
-**Expected output:** mock run prints suggestions and `RESULT=ok`; secret-like symptom exits 2.
+!!! example "Expected output"
+    mock run prints suggestions and `RESULT=ok`; secret-like symptom exits 2.
+
 
 #### Task 3 – Optional real API path and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab26
 set -euo pipefail
 
@@ -395,7 +401,9 @@ tar -czf lab26-evidence.tgz \
 ls -l lab26-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** auto path still ends with `RESULT=ok`; prompt sample has guardrail text and no `sk-` secret; evidence archive exists.
+!!! example "Expected output"
+    auto path still ends with `RESULT=ok`; prompt sample has guardrail text and no `sk-` secret; evidence archive exists.
+
 
 ### Validation steps
 
@@ -428,7 +436,7 @@ Add a `--tools-demo` flag that prints a fake MCP/LangChain-style tool request JS
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab26
 set -euo pipefail
 rm -rf __pycache__

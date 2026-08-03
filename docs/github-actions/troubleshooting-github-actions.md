@@ -135,7 +135,7 @@ Simulate failure categories locally, build a diagnostic shell script that emits 
 
 Workspace: `~/rebash-github-actions/module-16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-16/.github/workflows && cd ~/rebash-github-actions/module-16
 set -euo pipefail
 ```
@@ -150,7 +150,7 @@ On-call engineer receives alert: workflow failed. You produce a diagnostic scrip
 
 Create `simulate-failures.sh`:
 
-```bash
+```bash title="simulate-failures.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo '=== auth fail simulation ==='
@@ -164,20 +164,22 @@ echo 'If step A and B fail, fix A first' | tee ladder-rule.txt
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 chmod +x simulate-failures.sh
 ./simulate-failures.sh
 ```
 
-**Expected output:** Sample files `auth-fail-sample.txt`, `cache-key-sample.txt`, `ladder-rule.txt` created.
+!!! example "Expected output"
+    Sample files `auth-fail-sample.txt`, `cache-key-sample.txt`, `ladder-rule.txt` created.
+
 
 #### Task 2 – Troubleshooting diagnostic script
 
 Create `troubleshoot.sh`:
 
-```bash
+```bash title="troubleshoot.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 {
@@ -217,20 +219,22 @@ echo 'troubleshoot.sh OK'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 chmod +x troubleshoot.sh
 ./troubleshoot.sh
 ```
 
-**Expected output:** `troubleshoot.sh OK`; `diagnose.txt` contains ladder and auth sections.
+!!! example "Expected output"
+    `troubleshoot.sh OK`; `diagnose.txt` contains ladder and auth sections.
+
 
 #### Task 3 – Diagnostic workflow with job summary
 
 Create `.github/workflows/diagnostics.yml`:
 
-```yaml
+```yaml title="diagnostics.yml"
 name: Diagnostics
 on:
   workflow_dispatch:
@@ -259,18 +263,20 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/diagnostics.yml')); print('diagnostics workflow OK')"
 grep -q 'GITHUB_STEP_SUMMARY' .github/workflows/diagnostics.yml
 ```
 
-**Expected output:** `diagnostics workflow OK`
+!!! example "Expected output"
+    `diagnostics workflow OK`
+
 
 #### Task 4 – Lint workflows and bundle evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 
@@ -284,7 +290,9 @@ tar -czf module-16-evidence.tgz diagnose.txt troubleshoot.sh .github/workflows/d
 ls -l module-16-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence archive listed in `evidence.txt`.
+!!! example "Expected output"
+    Evidence archive listed in `evidence.txt`.
+
 
 ### Validation steps
 
@@ -316,7 +324,7 @@ Add a workflow job that deliberately fails auth check in a safe way (mock) and e
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-github-actions/module-16
 ```
 

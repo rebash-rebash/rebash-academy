@@ -135,7 +135,7 @@ On a practice Ubuntu VM, generate a lab-only Ed25519 key, enable passwordless SS
 
 Workspace: `~/rebash-linux/lab15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab15 && cd ~/rebash-linux/lab15
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -148,7 +148,9 @@ sudo systemctl enable --now ssh
 sudo systemctl is-active ssh | tee sshd-active.txt
 ```
 
-**Expected output:** `sshd-active.txt` contains `active`.
+!!! example "Expected output"
+    `sshd-active.txt` contains `active`.
+
 
 ### Real-world scenario
 
@@ -158,7 +160,7 @@ A new engineer needs repeatable SSH access to a bastion: key-based login, a shor
 
 #### Task 1 – Generate lab key and install for localhost
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab15
 set -euo pipefail
 
@@ -187,11 +189,13 @@ ssh -i ./rebash_lab_ed25519 \
 grep -q OK ssh-localhost.txt
 ```
 
-**Expected output:** `ssh-localhost.txt` shows `OK`, your hostname, and your username.
+!!! example "Expected output"
+    `ssh-localhost.txt` shows `OK`, your hostname, and your username.
+
 
 #### Task 2 – Client config Host alias
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab15
 set -euo pipefail
 
@@ -227,11 +231,13 @@ ssh -o BatchMode=yes rebash-lab15 'uptime; echo CONFIG_OK' | tee ssh-alias.txt
 grep -q CONFIG_OK ssh-alias.txt
 ```
 
-**Expected output:** `ssh-alias.txt` contains `CONFIG_OK` and an `uptime` line.
+!!! example "Expected output"
+    `ssh-alias.txt` contains `CONFIG_OK` and an `uptime` line.
+
 
 #### Task 3 – scp, rsync, and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab15
 set -euo pipefail
 
@@ -261,7 +267,9 @@ tar -czf ssh-evidence.tgz \
 ls -l ssh-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** scp and rsync verify files exist; `ssh-evidence.tgz` is present; private key is **not** inside the archive.
+!!! example "Expected output"
+    scp and rsync verify files exist; `ssh-evidence.tgz` is present; private key is **not** inside the archive.
+
 
 ### Validation steps
 
@@ -294,7 +302,7 @@ Create a second key `rebash_lab_ed25519_b`, append its public key to `~/.ssh/aut
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab15
 set -euo pipefail
 

@@ -178,7 +178,7 @@ Workspace: `~/rebash-gitlab/module-14`
 
 File-first lab. Release jobs execute on GitLab when tags are pushed.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-14 && cd ~/rebash-gitlab/module-14
 set -euo pipefail
 ```
@@ -193,13 +193,13 @@ Release managers require every production cut to be an immutable SemVer tag with
 
 Create `VERSION`:
 
-```text
+```text title="VERSION"
 0.1.0
 ```
 
 Create `CHANGELOG.md`:
 
-```markdown
+```markdown title="CHANGELOG.md"
 # Changelog
 
 ## Unreleased
@@ -213,7 +213,7 @@ Create `CHANGELOG.md`:
 
 Verify locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION | tee version-check.txt
@@ -221,13 +221,15 @@ test -s CHANGELOG.md
 head -5 CHANGELOG.md
 ```
 
-**Expected output:** `0.1.0` in `version-check.txt`; changelog headings visible.
+!!! example "Expected output"
+    `0.1.0` in `version-check.txt`; changelog headings visible.
+
 
 #### Task 2 – Changelog generator script
 
 Create `generate-changelog.sh`:
 
-```bash
+```bash title="generate-changelog.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 version="$(tr -d '[:space:]' < VERSION)"
@@ -242,7 +244,7 @@ echo "wrote ${out} for v${version}"
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 chmod +x generate-changelog.sh
@@ -251,7 +253,9 @@ test -s RELEASE_NOTES.md
 grep -q '0.1.0' RELEASE_NOTES.md
 ```
 
-**Expected output:** `wrote RELEASE_NOTES.md for v0.1.0`
+!!! example "Expected output"
+    `wrote RELEASE_NOTES.md for v0.1.0`
+
 
 #### Task 3 – GitLab release pipeline
 
@@ -296,7 +300,7 @@ release:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 python3 -c "
@@ -311,11 +315,13 @@ grep -q 'release-cli:latest' .gitlab-ci.yml
 grep -q 'generate-changelog.sh' .gitlab-ci.yml
 ```
 
-**Expected output:** `gitlab-ci OK`; release-cli image and changelog script referenced.
+!!! example "Expected output"
+    `gitlab-ci OK`; release-cli image and changelog script referenced.
+
 
 #### Task 4 – Simulate tag metadata locally
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 echo 'v0.1.0-lab' > TAG.sim
@@ -325,7 +331,9 @@ test -f dist-notes.md
 echo 'module-14 release lab passed' | tee validation.txt
 ```
 
-**Expected output:** Tag rules listed; `module-14 release lab passed`
+!!! example "Expected output"
+    Tag rules listed; `module-14 release lab passed`
+
 
 ### Validation steps
 
@@ -358,7 +366,7 @@ Add a `workflow: rules` block so release pipelines run only on tags matching `/^
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-14/TAG.sim ~/rebash-gitlab/module-14/dist-notes.md 2>/dev/null || true
 ls ~/rebash-gitlab/module-14
 ```

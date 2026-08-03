@@ -141,7 +141,7 @@ Under `~/rebash-networking/lab29`, simulate a failed local dependency, run a tim
 
 Workspace: `~/rebash-networking/lab29`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab29/{evidence,bin} && cd ~/rebash-networking/lab29
 set -euo pipefail
 whoami | tee evidence/operator.txt
@@ -152,7 +152,9 @@ command -v ss
 command -v ip
 ```
 
-**Expected output:** timestamps and tool paths recorded; workspace ready.
+!!! example "Expected output"
+    timestamps and tool paths recorded; workspace ready.
+
 
 ### Real-world scenario
 
@@ -164,7 +166,7 @@ On-call gets a page: “payments edge cannot reach dependency `dep.rebash.lab:18
 
 Do **not** start a listener on `18990`. Prove curl fails. Optionally start a control listener on `18991` so the bundle shows contrast.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab29
 set -euo pipefail
 
@@ -204,20 +206,22 @@ grep -Ei 'refused|Failed to connect|Could not|Couldn.t connect|Connection reset'
 ss -lnt | tee evidence/ss-before-collect.txt
 ```
 
-**Expected output:** control curl succeeds; dependency curl fails; `curl-dep-rc.txt` is non-zero.
+!!! example "Expected output"
+    control curl succeeds; dependency curl fails; `curl-dep-rc.txt` is non-zero.
+
 
 #### Task 2 – Timeline collector script (`ss`, `ip`, journal, curl)
 
 Create `bin/collect-incident.sh` that writes a timeline and copies probe outputs into `bundle/`.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab29
 set -euo pipefail
 ```
 
 Create `bin/collect-incident.sh`:
 
-```bash
+```bash title="collect-incident.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="${1:-$HOME/rebash-networking/lab29}"
@@ -271,7 +275,7 @@ echo "$STAMP" > "$BUNDLE/meta/collected-at-utc.txt"
 echo "bundle_ready=$BUNDLE"
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x bin/collect-incident.sh
 ./bin/collect-incident.sh "$HOME/rebash-networking/lab29" | tee evidence/collect-run.txt
 test -s bundle/timeline.txt
@@ -279,20 +283,22 @@ test -s bundle/host/ss-lntu.txt
 test -s bundle/probes/curl-dep.err
 ```
 
-**Expected output:** `bundle/timeline.txt` has UTC steps; `host/` and `probes/` files exist; dependency probe still failing.
+!!! example "Expected output"
+    `bundle/timeline.txt` has UTC steps; `host/` and `probes/` files exist; dependency probe still failing.
+
 
 #### Task 3 – Severity classification artefact and `incident-bundle.tgz`
 
 Classify severity from probe exit codes and write both JSON and text; pack the bundle.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab29
 set -euo pipefail
 ```
 
 Create `bin/classify-severity.py`:
 
-```python
+```python title="classify-severity.py"
 #!/usr/bin/env python3
 """Classify a simple lab incident from probe return codes and ss listeners."""
 from __future__ import annotations
@@ -357,7 +363,7 @@ if dep_rc != 0 and ctl_rc == 0 and sev != "SEV-2":
     raise SystemExit("expected SEV-2 for dep-down control-up lab")
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x bin/classify-severity.py
 python3 bin/classify-severity.py "$HOME/rebash-networking/lab29" | tee evidence/classify-run.txt
 grep -q '"severity": "SEV-2"' bundle/severity.json
@@ -370,7 +376,9 @@ tar -tzf incident-bundle.tgz | tee evidence/bundle-list.txt
 grep -q 'severity.json' evidence/bundle-list.txt
 ```
 
-**Expected output:** `severity.json` and `severity.txt` show **SEV-2**; `incident-bundle.tgz` lists `bundle/severity.json` and host/probe files.
+!!! example "Expected output"
+    `severity.json` and `severity.txt` show **SEV-2**; `incident-bundle.tgz` lists `bundle/severity.json` and host/probe files.
+
 
 ### Validation steps
 
@@ -402,7 +410,7 @@ Extend `bin/classify-severity.py` (or add `bin/classify-severity-v2.py`) so that
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab29
 set -euo pipefail
 

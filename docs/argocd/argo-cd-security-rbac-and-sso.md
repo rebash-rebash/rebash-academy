@@ -135,7 +135,7 @@ Apply a restricted AppProject and RBAC ConfigMap on a **kind** cluster, sync an 
 
 Runtime: **kind** cluster with Argo CD control plane — client dry-run alone is not sufficient for this lab.
 
-```bash
+```bash title="Terminal"
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-11/{rbac,projects,apps} && cd ~/rebash-argocd/module-11
@@ -152,7 +152,7 @@ Your platform team onboarded Team Alpha. They may sync only from approved GitHub
 
 Create `rbac/argocd-rbac-cm-patch.yaml`:
 
-```yaml
+```yaml title="argocd-rbac-cm-patch.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -176,7 +176,7 @@ data:
 
 Apply and verify the default role:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-11
 kubectl apply -f rbac/argocd-rbac-cm-patch.yaml | tee rbac-apply-m11.txt
 kubectl -n argocd get configmap argocd-rbac-cm \
@@ -184,13 +184,15 @@ kubectl -n argocd get configmap argocd-rbac-cm \
 grep -q 'readonly' policy-default-m11.txt
 ```
 
-**Expected output:** ConfigMap applied; `policy.default` is `role:readonly`.
+!!! example "Expected output"
+    ConfigMap applied; `policy.default` is `role:readonly`.
+
 
 #### Task 2 – Create and apply restricted AppProject
 
 Create `projects/team-alpha-project.yaml`:
 
-```yaml
+```yaml title="team-alpha-project.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
@@ -226,7 +228,7 @@ spec:
 
 Apply and verify destination fence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-11
 kubectl apply -f projects/team-alpha-project.yaml | tee project-apply-m11.txt
 kubectl get appproject team-alpha -n argocd \
@@ -234,13 +236,15 @@ kubectl get appproject team-alpha -n argocd \
 grep -q 'rebash-argocd-m11' project-ns-m11.txt
 ```
 
-**Expected output:** AppProject `team-alpha` exists; destination namespace is `rebash-argocd-m11`.
+!!! example "Expected output"
+    AppProject `team-alpha` exists; destination namespace is `rebash-argocd-m11`.
+
 
 #### Task 3 – Sync allowed Application and prove health
 
 Create `apps/team-alpha-guestbook.yaml`:
 
-```yaml
+```yaml title="team-alpha-guestbook.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -265,7 +269,7 @@ spec:
 
 Apply and wait for sync:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-11
 kubectl apply -f apps/team-alpha-guestbook.yaml | tee app-apply-m11.txt
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
@@ -277,7 +281,9 @@ kubectl get deploy,svc -n rebash-argocd-m11 | tee workloads-m11.txt
 grep -q 'Synced' sync-health-m11.txt
 ```
 
-**Expected output:** Application Synced and Healthy; guestbook Deployment and Service run in `rebash-argocd-m11`.
+!!! example "Expected output"
+    Application Synced and Healthy; guestbook Deployment and Service run in `rebash-argocd-m11`.
+
 
 #### Task 4 – Diagnose AppProject rejection and fix
 
@@ -302,7 +308,7 @@ spec:
 
 Apply and capture the rejection:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-11
 kubectl apply -f apps/team-alpha-bad-repo.yaml | tee bad-app-apply-m11.txt
 sleep 5
@@ -316,7 +322,7 @@ Document repository credential pattern (template only — never apply with real 
 
 Create `projects/repo-credential-secret.example.yaml`:
 
-```yaml
+```yaml title="repo-credential-secret.example.yaml"
 apiVersion: v1
 kind: Secret
 metadata:
@@ -334,12 +340,14 @@ stringData:
   password: "<replace-with-PAT-from-vault>"
 ```
 
-```bash
+```bash title="Terminal"
 grep -q 'argocd.argoproj.io/secret-type: repository' projects/repo-credential-secret.example.yaml
 echo 'repo-secret-template: OK' | tee repo-secret-template-m11.txt
 ```
 
-**Expected output:** Bad Application shows a condition message about repository not permitted; template documents Secret shape without applying credentials.
+!!! example "Expected output"
+    Bad Application shows a condition message about repository not permitted; template documents Secret shape without applying credentials.
+
 
 ### Validation steps
 
@@ -372,7 +380,7 @@ Extend `rbac/argocd-rbac-cm-patch.yaml` with a `readonly` role that may `get` al
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application team-alpha-guestbook team-alpha-bad-repo -n argocd --ignore-not-found
 kubectl delete appproject team-alpha -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m11 --ignore-not-found

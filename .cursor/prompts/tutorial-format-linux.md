@@ -117,15 +117,25 @@ Required subsections (order fixed):
 
 **Task shape (mandatory):**
 
-```text
-Create `<filename>`:
-<language fence with full file contents>
+````markdown
+Create `main.tf`:
 
-Run / verify:
-<short bash fence>
-
-**Expected output:** …
+```hcl title="main.tf"
+# file contents
 ```
+
+```bash title="Terminal"
+terraform apply -auto-approve
+```
+
+!!! example "Expected output"
+    Apply succeeds; resource exists.
+````
+
+- File fences: language + `title="filename"` (green file chrome)  
+- Command fences: `bash` + `title="Terminal"` (dark terminal chrome)  
+- Success: `!!! example "Expected output"` — not only `**Expected output:**`  
+- Review sample: `docs/labs/sample-code-block-conventions.md`  
 
 Do **not** create files with `cat <<EOF`, `echo … > file`, or `printf` redirection. Those look ugly and hide the real file. Show the file in its own fence; use bash only to run and prove.
 

@@ -161,7 +161,7 @@ Workspace: `~/rebash-helm/module-07`
 
 Helm 3 against kind/minikube; release namespace `rebash-helm-m07`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-07/lifecycle-chart/templates && cd ~/rebash-helm/module-07
 ```
 
@@ -175,7 +175,7 @@ Platform ops must deploy version 1 of an internal web chart, scale it for a traf
 
 Create `lifecycle-chart/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: lifecycle-chart
 description: Lab chart for release lifecycle practice
@@ -186,7 +186,7 @@ appVersion: "1.27.4"
 
 Create `lifecycle-chart/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginx
@@ -197,7 +197,7 @@ service:
 
 Create `lifecycle-chart/templates/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 {% raw %}
 apiVersion: apps/v1
 kind: Deployment
@@ -228,7 +228,7 @@ spec:
 
 Create `lifecycle-chart/templates/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 {% raw %}
 apiVersion: v1
 kind: Service
@@ -246,20 +246,22 @@ spec:
 
 Lint and render:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-07
 helm lint ./lifecycle-chart | tee lint.txt
 helm template lifecycle-demo ./lifecycle-chart | grep -E '^kind:' | sort | uniq -c | tee kinds.txt
 grep -q '0 chart(s) failed' lint.txt
 ```
 
-**Expected output:** `lint.txt` reports zero failures; `kinds.txt` lists Deployment and Service.
+!!! example "Expected output"
+    `lint.txt` reports zero failures; `kinds.txt` lists Deployment and Service.
+
 
 #### Task 2 – Install revision 1
 
 Install the first revision and capture status evidence.
 
-```bash
+```bash title="Terminal"
 kubectl create namespace rebash-helm-m07 --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade --install lifecycle-demo ./lifecycle-chart \
   -n rebash-helm-m07 --wait --timeout 3m | tee install-rev1.txt
@@ -267,13 +269,15 @@ helm status lifecycle-demo -n rebash-helm-m07 | tee status-rev1.txt
 kubectl get deploy lifecycle-demo-web -n rebash-helm-m07 -o jsonpath='{.spec.replicas}{"\n"}' | tee replicas-rev1.txt
 ```
 
-**Expected output:** `status-rev1.txt` shows `STATUS: deployed`; `replicas-rev1.txt` contains `1`.
+!!! example "Expected output"
+    `status-rev1.txt` shows `STATUS: deployed`; `replicas-rev1.txt` contains `1`.
+
 
 #### Task 3 – Upgrade to revision 2 with values override
 
 Create `rev2-values.yaml`:
 
-```yaml
+```yaml title="rev2-values.yaml"
 replicaCount: 3
 image:
   repository: nginx
@@ -284,7 +288,7 @@ service:
 
 Upgrade and prove the replica change:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-07
 helm template lifecycle-demo ./lifecycle-chart -f rev2-values.yaml | grep 'replicas:' | head -1 | tee render-rev2.txt
 helm upgrade lifecycle-demo ./lifecycle-chart \
@@ -294,13 +298,15 @@ kubectl get deploy lifecycle-demo-web -n rebash-helm-m07 -o jsonpath='{.spec.rep
 grep -q ' 2 ' history.txt
 ```
 
-**Expected output:** `history.txt` lists revisions 1 and 2; `replicas-rev2.txt` contains `3`.
+!!! example "Expected output"
+    `history.txt` lists revisions 1 and 2; `replicas-rev2.txt` contains `3`.
+
 
 #### Task 4 – Roll back to revision 1
 
 Roll back and confirm the prior replica count returns.
 
-```bash
+```bash title="Terminal"
 helm rollback lifecycle-demo 1 -n rebash-helm-m07 --wait --timeout 3m | tee rollback.txt
 helm history lifecycle-demo -n rebash-helm-m07 | tee history-after-rollback.txt
 helm status lifecycle-demo -n rebash-helm-m07 | tee status-after-rollback.txt
@@ -309,7 +315,9 @@ grep -q 'superseded' history-after-rollback.txt
 grep -q '^1$' replicas-after-rollback.txt
 ```
 
-**Expected output:** `history-after-rollback.txt` shows revision 3 as deployed (rollback revision); `replicas-after-rollback.txt` contains `1`.
+!!! example "Expected output"
+    `history-after-rollback.txt` shows revision 3 as deployed (rollback revision); `replicas-after-rollback.txt` contains `1`.
+
 
 ### Validation steps
 
@@ -340,7 +348,7 @@ service:
   port: 80
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-07
 helm upgrade lifecycle-demo ./lifecycle-chart \
   -n rebash-helm-m07 -f bad-image-values.yaml --atomic --wait --timeout 2m 2>&1 | tee atomic-fail.txt || true
@@ -348,7 +356,9 @@ helm history lifecycle-demo -n rebash-helm-m07 | tee history-after-atomic.txt
 helm status lifecycle-demo -n rebash-helm-m07 | grep -E 'STATUS|REVISION' | tee status-after-atomic.txt
 ```
 
-**Expected output:** Upgrade fails; release status remains deployed on the last successful revision.
+!!! example "Expected output"
+    Upgrade fails; release status remains deployed on the last successful revision.
+
 
 ### Learning outcomes
 
@@ -359,7 +369,7 @@ helm status lifecycle-demo -n rebash-helm-m07 | grep -E 'STATUS|REVISION' | tee 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall lifecycle-demo -n rebash-helm-m07 2>/dev/null || true
 kubectl delete namespace rebash-helm-m07 --ignore-not-found
 ```

@@ -97,14 +97,14 @@ Your job is to prove each layer with evidence before fixing it.
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-edge/{backend-a,backend-b}
 cd ~/rebash-lab-edge
 ```
 
 Create `backend-a/server.py`:
 
-```python
+```python title="server.py"
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -129,7 +129,7 @@ HTTPServer(("127.0.0.1", 18081), Handler).serve_forever()
 
 Create `backend-b/server.py`:
 
-```python
+```python title="server.py"
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -152,7 +152,7 @@ class Handler(BaseHTTPRequestHandler):
 HTTPServer(("127.0.0.1", 18082), Handler).serve_forever()
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x backend-a/server.py backend-b/server.py
 python3 backend-a/server.py >/tmp/rebash-edge-a.log 2>&1 &
 echo $! > /tmp/rebash-edge-a.pid
@@ -165,11 +165,11 @@ curl -sS http://127.0.0.1:18082/healthz
 ss -tlnp | grep -E '1808[12]'
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - Backend A JSON includes `"backend":"A"`
+    - Backend B JSON includes `"backend":"B"`
+    - `ss` shows LISTEN on `127.0.0.1:18081` and `127.0.0.1:18082`
 
-- Backend A JSON includes `"backend":"A"`
-- Backend B JSON includes `"backend":"B"`
-- `ss` shows LISTEN on `127.0.0.1:18081` and `127.0.0.1:18082`
 
 **Validation:** Both health endpoints return HTTP 200 with distinct body markers.
 
@@ -181,14 +181,14 @@ ss -tlnp | grep -E '1808[12]'
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sudo apt update
 sudo apt install -y haproxy curl dig dnsutils
 ```
 
 Create `haproxy.cfg`:
 
-```text
+```text title="haproxy.cfg"
 global
     log /dev/log local0
     maxconn 2048
@@ -213,7 +213,7 @@ backend status_pool
     server backend_b 127.0.0.1:18082 check inter 2s fall 3 rise 2
 ```
 
-```bash
+```bash title="Terminal"
 sudo cp haproxy.cfg /etc/haproxy/haproxy.cfg
 sudo haproxy -c -f /etc/haproxy/haproxy.cfg
 sudo systemctl restart haproxy
@@ -221,15 +221,15 @@ sudo systemctl is-active haproxy
 ss -tlnp | grep 18080
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - `Configuration file is valid`
+    - haproxy `active`
+    - LISTEN on `127.0.0.1:18080`
 
-- `Configuration file is valid`
-- haproxy `active`
-- LISTEN on `127.0.0.1:18080`
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 for i in {1..6}; do curl -sS http://127.0.0.1:18080/healthz; echo; done
 ```
 
@@ -243,7 +243,7 @@ You should see alternating `"backend":"A"` and `"backend":"B"` responses (round-
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sudo cp /etc/hosts /etc/hosts.rebash-edge.bak
 grep -q 'edge.rebash.lab' /etc/hosts || echo '127.0.0.1 edge.rebash.lab' | sudo tee -a /etc/hosts
 
@@ -252,11 +252,11 @@ dig +short edge.rebash.lab A || true
 curl -sS http://edge.rebash.lab:18080/healthz
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - `getent` shows `127.0.0.1 edge.rebash.lab`
+    - `dig` typically returns **empty** (no public zone) — note the contrast
+    - `curl` via FQDN returns JSON through HAProxy
 
-- `getent` shows `127.0.0.1 edge.rebash.lab`
-- `dig` typically returns **empty** (no public zone) — note the contrast
-- `curl` via FQDN returns JSON through HAProxy
 
 **Validation:** Record one line: "Applications resolve edge to 127.0.0.1; dig shows public DNS has no record."
 
@@ -271,7 +271,7 @@ curl -sS http://edge.rebash.lab:18080/healthz
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 # Baseline: both backends in rotation
 for i in {1..4}; do curl -sS http://edge.rebash.lab:18080/healthz; echo; done
 
@@ -284,11 +284,11 @@ for i in {1..5}; do curl -sS http://edge.rebash.lab:18080/healthz; echo; done
 ss -tlnp | grep -E '1808[12]' || true
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - After kill: every response shows `"backend":"A"` only
+    - `ss` still shows 18081 listening; 18082 absent
+    - HAProxy continues serving on 18080
 
-- After kill: every response shows `"backend":"A"` only
-- `ss` still shows 18081 listening; 18082 absent
-- HAProxy continues serving on 18080
 
 **Validation:** Write one sentence explaining `inter`, `fall`, and `rise` timing for this config.
 
@@ -302,7 +302,7 @@ ss -tlnp | grep -E '1808[12]' || true
 
 **5a — Wrong hosts entry:**
 
-```bash
+```bash title="Terminal"
 sudo sed -i.bak-edge '/edge.rebash.lab/d' /etc/hosts
 echo '127.0.0.99 edge.rebash.lab' | sudo tee -a /etc/hosts
 
@@ -311,14 +311,16 @@ curl -v --connect-timeout 3 http://edge.rebash.lab:18080/healthz || true
 curl -sS http://127.0.0.1:18080/healthz
 ```
 
-**Expected output:** FQDN `curl` fails (connection to `.99`); direct IP to HAProxy still works — DNS/hosts fault, not LB down.
+!!! example "Expected output"
+    FQDN `curl` fails (connection to `.99`); direct IP to HAProxy still works — DNS/hosts fault, not LB down.
+
 
 **5b — Firewall deny on edge port (Linux):**
 
 !!! warning "Console session required"
     Confirm you have console access before adding deny rules on cloud VMs.
 
-```bash
+```bash title="Terminal"
 # Restore correct hosts first if you ran 5a
 sudo sed -i.bak-edge '/edge.rebash.lab/d' /etc/hosts
 echo '127.0.0.1 edge.rebash.lab' | sudo tee -a /etc/hosts
@@ -334,7 +336,9 @@ curl -v --connect-timeout 3 http://edge.rebash.lab:18080/healthz || true
 ss -tlnp | grep 18080
 ```
 
-**Expected output:** `ss` shows HAProxy still listening; `curl` fails (reset/timeout) — path/ACL fault, not process crash.
+!!! example "Expected output"
+    `ss` shows HAProxy still listening; `curl` fails (reset/timeout) — path/ACL fault, not process crash.
+
 
 **Validation:** Capture three evidence lines in notes:
 
@@ -348,7 +352,7 @@ ss -tlnp | grep 18080
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 # Fix hosts
 sudo sed -i.bak-restore '/edge.rebash.lab/d' /etc/hosts
 echo '127.0.0.1 edge.rebash.lab' | sudo tee -a /etc/hosts
@@ -372,10 +376,10 @@ curl -sS -o /dev/null -w "HTTP %{http_code} connect %{time_connect}s\n" http://e
 for i in {1..4}; do curl -sS http://edge.rebash.lab:18080/healthz; echo; done
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - HTTP 200 with low connect time
+    - Round-robin resumes if both backends are UP (A and B alternating)
 
-- HTTP 200 with low connect time
-- Round-robin resumes if both backends are UP (A and B alternating)
 
 **Validation:** All checks in the Validation table below pass.
 
@@ -385,7 +389,7 @@ for i in {1..4}; do curl -sS http://edge.rebash.lab:18080/healthz; echo; done
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 kill "$(cat /tmp/rebash-edge-a.pid)" 2>/dev/null || true
 kill "$(cat /tmp/rebash-edge-b.pid)" 2>/dev/null || true
 kill $(lsof -t -i:18081 -i:18082) 2>/dev/null || true
@@ -407,7 +411,9 @@ sudo systemctl stop haproxy 2>/dev/null || true
 rm -rf ~/rebash-lab-edge
 ```
 
-**Expected output:** No listeners on 18080–18082; hosts restored; lab directory removed.
+!!! example "Expected output"
+    No listeners on 18080–18082; hosts restored; lab directory removed.
+
 
 ## Validation
 

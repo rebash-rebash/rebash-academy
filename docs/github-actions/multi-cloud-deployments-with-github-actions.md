@@ -140,7 +140,7 @@ Author three OIDC deploy workflow **stubs** (AWS, Azure, GCP), validate YAML off
 
 Workspace: `~/rebash-github-actions/module-10`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-10/.github/workflows && cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -156,7 +156,7 @@ A platform team standardises multi-cloud deploy workflows. You deliver reviewed 
 
 Create `.github/workflows/deploy-aws-stub.yml`:
 
-```yaml
+```yaml title="deploy-aws-stub.yml"
 name: Deploy AWS (stub)
 on:
   workflow_dispatch:
@@ -183,20 +183,22 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/deploy-aws-stub.yml')); print('aws stub OK')"
 grep -q 'id-token: write' .github/workflows/deploy-aws-stub.yml
 ```
 
-**Expected output:** `aws stub OK`; OIDC permission present.
+!!! example "Expected output"
+    `aws stub OK`; OIDC permission present.
+
 
 #### Task 2 – Azure and GCP OIDC stubs
 
 Create `.github/workflows/deploy-azure-stub.yml`:
 
-```yaml
+```yaml title="deploy-azure-stub.yml"
 name: Deploy Azure (stub)
 on:
   workflow_dispatch:
@@ -224,7 +226,7 @@ jobs:
 
 Create `.github/workflows/deploy-gcp-stub.yml`:
 
-```yaml
+```yaml title="deploy-gcp-stub.yml"
 name: Deploy GCP (stub)
 on:
   workflow_dispatch:
@@ -251,7 +253,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 -c "
@@ -262,13 +264,15 @@ for p in pathlib.Path('.github/workflows').glob('deploy-*-stub.yml'):
 "
 ```
 
-**Expected output:** All three stub files parse successfully.
+!!! example "Expected output"
+    All three stub files parse successfully.
+
 
 #### Task 3 – Multi-cloud OIDC matrix
 
 Create `multi-cloud-oidc.yaml`:
 
-```yaml
+```yaml title="multi-cloud-oidc.yaml"
 # Multi-cloud OIDC comparison (Module 10 lab)
 clouds:
   aws:
@@ -298,7 +302,7 @@ trust_subjects:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 -c "
@@ -315,11 +319,13 @@ tar -czf module-10-evidence.tgz .github/workflows/*.yml multi-cloud-oidc.yaml
 ls -l module-10-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `multi-cloud-oidc.yaml OK`; comparison matrix and evidence archive created.
+!!! example "Expected output"
+    `multi-cloud-oidc.yaml OK`; comparison matrix and evidence archive created.
+
 
 #### Task 4 – Validate permissions pattern across stubs
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 
@@ -330,7 +336,9 @@ done
 echo 'all stubs follow staging + manual dispatch pattern'
 ```
 
-**Expected output:** `all stubs follow staging + manual dispatch pattern`
+!!! example "Expected output"
+    `all stubs follow staging + manual dispatch pattern`
+
 
 ### Validation steps
 
@@ -362,7 +370,7 @@ Add a reusable workflow `cloud-login.yml` with `workflow_call` inputs for `cloud
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Keep stubs under ~/rebash-github-actions/module-10 for portfolio review
 ls ~/rebash-github-actions/module-10/.github/workflows/
 ```

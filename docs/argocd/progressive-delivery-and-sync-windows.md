@@ -131,7 +131,7 @@ Deploy a health-aware Application on a **kind** cluster with an AppProject sync 
 
 Runtime: **kind** cluster with Argo CD — offline scripts alone are not sufficient for this lab.
 
-```bash
+```bash title="Terminal"
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-13/{windows,manifests,apps} && cd ~/rebash-argocd/module-13
@@ -149,7 +149,7 @@ Production apps auto-sync only outside business hours, but manual sync must rema
 
 Create `windows/platform-project.yaml`:
 
-```yaml
+```yaml title="platform-project.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
@@ -181,7 +181,7 @@ spec:
 
 Apply and verify sync window configuration:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-13
 kubectl apply -f windows/platform-project.yaml | tee project-apply-m13.txt
 kubectl get appproject platform-prod -n argocd \
@@ -190,13 +190,15 @@ kubectl get appproject platform-prod -n argocd \
 grep -q 'deny manualSync=true' sync-window-m13.txt
 ```
 
-**Expected output:** AppProject applied; deny window allows manual sync override.
+!!! example "Expected output"
+    AppProject applied; deny window allows manual sync override.
+
 
 #### Task 2 – Create local manifests and Application
 
 Create `manifests/deployment-demo.yaml`:
 
-```yaml
+```yaml title="deployment-demo.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -235,7 +237,7 @@ spec:
 
 Create `manifests/service-demo.yaml`:
 
-```yaml
+```yaml title="service-demo.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -251,7 +253,7 @@ spec:
 
 Create `apps/demo-api-prod.yaml`:
 
-```yaml
+```yaml title="demo-api-prod.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -276,7 +278,7 @@ spec:
 
 Register local repo path and apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-13
 cp -a ~/rebash-argocd/module-13 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f apps/demo-api-prod.yaml | tee app-apply-m13.txt
@@ -286,13 +288,15 @@ kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
 kubectl get deploy,pods -n rebash-argocd-m13 | tee workloads-good-m13.txt
 ```
 
-**Expected output:** Application Synced; `demo-api` Deployment with 2 ready pods in `rebash-argocd-m13`.
+!!! example "Expected output"
+    Application Synced; `demo-api` Deployment with 2 ready pods in `rebash-argocd-m13`.
+
 
 #### Task 3 – Break health with bad image and capture history
 
 Create `manifests/deployment-demo-broken.yaml`:
 
-```yaml
+```yaml title="deployment-demo-broken.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -325,7 +329,7 @@ spec:
 
 Replace the good manifest and sync:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-13
 cp manifests/deployment-demo-broken.yaml manifests/deployment-demo.yaml
 cp -a ~/rebash-argocd/module-13 /tmp/rebash-argocd/ 2>/dev/null || true
@@ -338,13 +342,15 @@ argocd app history demo-api-prod | tee history-before-rollback-m13.txt
 grep -Ei 'Degraded|Progressing|Missing|Invalid' broken-health-m13.txt
 ```
 
-**Expected output:** Health shows Degraded or Progressing; history lists at least two revisions.
+!!! example "Expected output"
+    Health shows Degraded or Progressing; history lists at least two revisions.
+
 
 #### Task 4 – Roll back and prove recovery
 
 Roll back to the first (good) revision in history:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-13
 argocd app history demo-api-prod | tee history-before-rollback-m13.txt
 argocd app rollback demo-api-prod 0 | tee rollback-action-m13.txt
@@ -356,7 +362,9 @@ kubectl get pods -n rebash-argocd-m13 | tee pods-after-rollback-m13.txt
 grep -q 'Healthy' rollback-after-m13.txt
 ```
 
-**Expected output:** After rollback, Application Health returns to Healthy and pods are Running.
+!!! example "Expected output"
+    After rollback, Application Health returns to Healthy and pods are Running.
+
 
 ### Validation steps
 
@@ -389,7 +397,7 @@ Add an Argo Rollout manifest stub under `manifests/rollout-demo.yaml` (canary st
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application demo-api-prod -n argocd --ignore-not-found
 kubectl delete appproject platform-prod -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m13 --ignore-not-found

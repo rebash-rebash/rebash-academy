@@ -162,7 +162,7 @@ Workspace: `~/rebash-helm/module-10`
 
 Offline Helm render; optional cluster for later Argo CD sync. Namespace for future deploys: `rebash-helm-m10`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-10/charts/rebash-app/templates \
   ~/rebash-helm/module-10/envs/dev \
   ~/rebash-helm/module-10/envs/prod \
@@ -179,7 +179,7 @@ Platform engineering stores one application chart in Git with environment-specif
 
 Create `charts/rebash-app/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-app
 description: Sample app chart for GitOps layout
@@ -190,7 +190,7 @@ appVersion: "1.27.4"
 
 Create `charts/rebash-app/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginx
@@ -209,7 +209,7 @@ resources:
 
 Create `charts/rebash-app/templates/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 {% raw %}
 apiVersion: apps/v1
 kind: Deployment
@@ -242,7 +242,7 @@ spec:
 
 Create `charts/rebash-app/templates/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 {% raw %}
 apiVersion: v1
 kind: Service
@@ -260,19 +260,21 @@ spec:
 
 Lint the chart:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-10
 helm lint ./charts/rebash-app | tee lint.txt
 grep -q '0 chart(s) failed' lint.txt
 ```
 
-**Expected output:** Chart lint passes with zero failures.
+!!! example "Expected output"
+    Chart lint passes with zero failures.
+
 
 #### Task 2 – Add environment value overlays
 
 Create `envs/dev/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginx
@@ -284,7 +286,7 @@ ingress:
 
 Create `envs/prod/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 3
 image:
   repository: nginx
@@ -303,7 +305,7 @@ resources:
 
 Render dev and prod offline and compare replica counts:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-10
 helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml \
   | grep 'replicas:' | head -1 | tee dev-replicas.txt
@@ -313,13 +315,15 @@ grep -q 'replicas: 1' dev-replicas.txt
 grep -q 'replicas: 3' prod-replicas.txt
 ```
 
-**Expected output:** Dev render shows one replica; prod render shows three.
+!!! example "Expected output"
+    Dev render shows one replica; prod render shows three.
+
 
 #### Task 3 – Create an Argo CD Application stub
 
 Create `argocd/application-dev.yaml`:
 
-```yaml
+```yaml title="application-dev.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -347,7 +351,7 @@ spec:
 
 Validate the Application manifest and capture offline render evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-10
 kubectl apply --dry-run=client -f argocd/application-dev.yaml 2>&1 | tee argocd-dryrun.txt || true
 helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml \
@@ -355,7 +359,9 @@ helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml \
 grep -q 'Deployment' dev-kinds.txt
 ```
 
-**Expected output:** Application YAML is valid client-side; dev template lists Deployment (and Service if rendered).
+!!! example "Expected output"
+    Application YAML is valid client-side; dev template lists Deployment (and Service if rendered).
+
 
 ### Validation steps
 
@@ -398,13 +404,15 @@ spec:
     createNamespace: true
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-10
 kubectl apply --dry-run=client -f flux/helmrelease-dev.yaml 2>&1 | tee flux-dryrun.txt || true
 helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml | grep -q 'kind: Deployment'
 ```
 
-**Expected output:** HelmRelease YAML validates client-side; offline render still succeeds.
+!!! example "Expected output"
+    HelmRelease YAML validates client-side; offline render still succeeds.
+
 
 ### Learning outcomes
 
@@ -417,7 +425,7 @@ helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml | grep 
 
 No cluster resources are created in the offline path. If you installed manually for experimentation:
 
-```bash
+```bash title="Terminal"
 helm uninstall rebash-app-dev -n rebash-helm-m10 2>/dev/null || true
 kubectl delete namespace rebash-helm-m10 --ignore-not-found
 rm -rf ~/rebash-helm/module-10

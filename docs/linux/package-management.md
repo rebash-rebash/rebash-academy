@@ -72,7 +72,7 @@ Repositories publish packages. The package manager resolves dependencies, instal
 
 Packages bring version metadata, dependencies, and a file inventory the OS can verify.
 
-```bash
+```bash title="Terminal"
 sudo apt-get update
 apt-cache policy curl
 dpkg -l curl
@@ -91,7 +91,7 @@ Manual binaries under `/usr/local` drift and are hard to patch. Unpatched kernel
 5. **Hold / pin** — stop a package from upgrading until you are ready (`apt-mark hold` on Ubuntu).
 6. **Remove** — `apt-get remove` (keep config) or `purge` (remove config too); clean unused deps with `autoremove`.
 
-```bash
+```bash title="Terminal"
 sudo apt-get install -y tree
 apt-mark showhold
 sudo apt-mark hold tree
@@ -138,7 +138,7 @@ On a practice Ubuntu VM, install `tree`, prove it with queries, place and remove
 
 Workspace: `~/rebash-linux/lab16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab16 && cd ~/rebash-linux/lab16
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -147,7 +147,9 @@ printf '%s\n' "$NAME" "$VERSION_ID" | tee os-release.txt
 sudo -n true 2>/dev/null || sudo -v
 ```
 
-**Expected output:** `os-release.txt` shows Ubuntu (or Debian).
+!!! example "Expected output"
+    `os-release.txt` shows Ubuntu (or Debian).
+
 
 ### Real-world scenario
 
@@ -157,7 +159,7 @@ Your team standardises a small diagnostic tool on bastion hosts. Change control 
 
 #### Task 1 – Update metadata and install `tree`
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab16
 set -euo pipefail
 
@@ -169,11 +171,13 @@ tree --version | tee tree-version.txt
 test -x "$(command -v tree)"
 ```
 
-**Expected output:** `tree` is on `PATH`; `tree-version.txt` shows a version string.
+!!! example "Expected output"
+    `tree` is on `PATH`; `tree-version.txt` shows a version string.
+
 
 #### Task 2 – Query policy, files, and hold
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab16
 set -euo pipefail
 
@@ -190,11 +194,13 @@ grep -qx tree apt-showhold.txt
 apt-get -s upgrade 2>/dev/null | tee apt-sim-upgrade.txt || true
 ```
 
-**Expected output:** policy shows an installed version; `apt-showhold.txt` lists `tree`.
+!!! example "Expected output"
+    policy shows an installed version; `apt-showhold.txt` lists `tree`.
+
 
 #### Task 3 – Unhold, remove, evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab16
 set -euo pipefail
 
@@ -227,7 +233,9 @@ tar -czf package-evidence.tgz \
 ls -l package-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** hold removed; package removed (or marked not installed); `package-evidence.tgz` exists.
+!!! example "Expected output"
+    hold removed; package removed (or marked not installed); `package-evidence.tgz` exists.
+
 
 ### Validation steps
 
@@ -259,7 +267,7 @@ Install `jq`, record `apt-cache policy jq` and `jq --version`, hold `jq`, prove 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab16
 set -euo pipefail
 sudo apt-mark unhold tree 2>/dev/null || true

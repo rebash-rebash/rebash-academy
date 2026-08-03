@@ -66,7 +66,7 @@ Linux host under `~/rebash-lab-shell/toolkit`.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/toolkit/{bin,lib,cmd,reports,logs}
 cd ~/rebash-lab-shell/toolkit
 ```
@@ -118,7 +118,7 @@ Implement thin wrappers that call patterns from earlier labs (disk threshold, ta
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

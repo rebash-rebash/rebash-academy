@@ -79,7 +79,7 @@ All course diagrams are **Excalidraw** sources under `docs/assets/excalidraw/`. 
 
 Regenerate rendered SVGs after editing `.excalidraw` sources:
 
-```bash
+```bash title="Terminal"
 python3 scripts/generate-excalidraw-svg.py
 ```
 

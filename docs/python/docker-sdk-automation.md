@@ -138,7 +138,7 @@ Under `~/rebash-python/lab17`, inventory Docker with the SDK or CLI when availab
 
 Workspace: `~/rebash-python/lab17`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab17/fixtures && cd ~/rebash-python/lab17
 set -euo pipefail
 python3 -m venv .venv
@@ -149,7 +149,9 @@ python -m pip install 'docker>=7,<8' || true
 command -v docker >/dev/null && docker version 2>/dev/null | head -n 20 | tee docker-server-version.txt || echo "no-daemon" | tee docker-server-version.txt
 ```
 
-**Expected output:** venv ready; `docker-server-version.txt` has version text or `no-daemon`.
+!!! example "Expected output"
+    venv ready; `docker-server-version.txt` has version text or `no-daemon`.
+
 
 ### Real-world scenario
 
@@ -162,7 +164,7 @@ Build agents are running out of disk. Before any cleanup policy, platform wants 
 
 Create `fixtures/version.json`:
 
-```json
+```json title="version.json"
 {
   "Client": {"Version": "27.0.0"},
   "Server": {"Version": "27.0.0", "Os": "linux", "Arch": "amd64"}
@@ -171,7 +173,7 @@ Create `fixtures/version.json`:
 
 Create `fixtures/ps.json`:
 
-```json
+```json title="ps.json"
 {
   "containers": [
     {"Id": "abc123", "Names": ["/rebash-lab-web"], "Status": "Up 2 hours", "Image": "nginx:1.27"},
@@ -182,7 +184,7 @@ Create `fixtures/ps.json`:
 
 Create `fixtures/images.json`:
 
-```json
+```json title="images.json"
 {
   "images": [
     {"Id": "sha256:111", "Tags": ["nginx:1.27"], "Size": 187000000},
@@ -193,20 +195,22 @@ Create `fixtures/images.json`:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab17
 set -euo pipefail
 echo "fixtures ok"
 ```
 
-**Expected output:** `fixtures ok`; three JSON files present.
+!!! example "Expected output"
+    `fixtures ok`; three JSON files present.
+
 
 #### Task 2 – Inventory client (live or dry-run)
 
 
 Create `docker_inventory.py`:
 
-```python
+```python title="docker_inventory.py"
 #!/usr/bin/env python3
 """Read-only Docker inventory — SDK, CLI, or fixtures. No deletes."""
 from __future__ import annotations
@@ -337,7 +341,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab17
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -346,14 +350,16 @@ python docker_inventory.py | tee inventory-run.txt
 test -s docker-inventory.json
 ```
 
-**Expected output:** `docker-inventory.json` with `mode` of `live-sdk`, `live-cli`, or `dry-run-fixture`; policy read-only.
+!!! example "Expected output"
+    `docker-inventory.json` with `mode` of `live-sdk`, `live-cli`, or `dry-run-fixture`; policy read-only.
+
 
 #### Task 3 – Force fixture, refuse destructive flags, pack evidence
 
 
 Create `pack_evidence.py`:
 
-```python
+```python title="pack_evidence.py"
 import json
 from pathlib import Path
 d = json.loads(Path("docker-inventory.json").read_text(encoding="utf-8"))
@@ -363,7 +369,7 @@ print("evidence ok")
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab17
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -381,7 +387,9 @@ grep -F 'REFUSED' prune-denied.txt
 python pack_evidence.py
 ```
 
-**Expected output:** fixture mode works; `--prune` exits 2; `lab17-evidence.json` written.
+!!! example "Expected output"
+    fixture mode works; `--prune` exits 2; `lab17-evidence.json` written.
+
 
 ### Validation steps
 
@@ -412,7 +420,7 @@ Add a **dry-run cleanup plan** function that lists image tags from the inventory
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab17
 deactivate 2>/dev/null || true
 # This lab does not remove host images/containers.

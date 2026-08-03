@@ -158,7 +158,7 @@ Build a small host probe under `~/rebash-python/lab13` that runs `uname` (and `i
 
 Workspace: `~/rebash-python/lab13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab13 && cd ~/rebash-python/lab13
 set -euo pipefail
 python3 -m venv .venv
@@ -169,7 +169,9 @@ python -m pip install 'psutil>=5.9,<7'
 python -c "import sys; print(sys.version)" | tee python-version.txt
 ```
 
-**Expected output:** `python-version.txt` exists; `psutil` installs in the venv (if pip fails, continue — Task 2 treats psutil as optional).
+!!! example "Expected output"
+    `python-version.txt` exists; `psutil` installs in the venv (if pip fails, continue — Task 2 treats psutil as optional).
+
 
 ### Real-world scenario
 
@@ -182,7 +184,7 @@ Your platform team wants a lightweight agentless check on new Ubuntu build VMs: 
 
 Create `host_probe.py`:
 
-```python
+```python title="host_probe.py"
 #!/usr/bin/env python3
 """Safe host facts via subprocess — no shell=True."""
 from __future__ import annotations
@@ -263,7 +265,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab13
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -273,14 +275,16 @@ test -s host-evidence.json
 python -c 'import json; d=json.load(open("host-evidence.json")); assert d["commands"][0]["ok"]; print("uname_ok")'
 ```
 
-**Expected output:** `wrote …/host-evidence.json`; assert prints `uname_ok`; `host-evidence.json` is non-empty.
+!!! example "Expected output"
+    `wrote …/host-evidence.json`; assert prints `uname_ok`; `host-evidence.json` is non-empty.
+
 
 #### Task 2 – Optional psutil CPU/memory sample
 
 
 Create `metrics_sample.py`:
 
-```python
+```python title="metrics_sample.py"
 #!/usr/bin/env python3
 """Optional psutil sample; degrades cleanly if missing."""
 from __future__ import annotations
@@ -317,7 +321,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab13
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -327,14 +331,16 @@ test -s metrics.json
 python -c 'import json; d=json.load(open("metrics.json")); assert "psutil" in d; print("metrics_ok", d["psutil"])'
 ```
 
-**Expected output:** `metrics.json` exists; if `psutil` installed, `"psutil": true` with numeric samples; otherwise a clear `reason`.
+!!! example "Expected output"
+    `metrics.json` exists; if `psutil` installed, `"psutil": true` with numeric samples; otherwise a clear `reason`.
+
 
 #### Task 3 – Merge evidence pack
 
 
 Create `merge_evidence.py`:
 
-```python
+```python title="merge_evidence.py"
 import json
 from pathlib import Path
 
@@ -349,7 +355,7 @@ assert host["commands"][0]["ok"]
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab13
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -358,7 +364,9 @@ python merge_evidence.py
 ls -l lab13-evidence.json host-evidence.json metrics.json | tee evidence-ls.txt
 ```
 
-**Expected output:** `lab13-evidence.json` exists; `evidence-ls.txt` lists the three JSON files.
+!!! example "Expected output"
+    `lab13-evidence.json` exists; `evidence-ls.txt` lists the three JSON files.
+
 
 ### Validation steps
 
@@ -389,7 +397,7 @@ Extend `host_probe.py` with a `--json-path` CLI flag (use `argparse`) that write
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab13
 set -euo pipefail
 deactivate 2>/dev/null || true

@@ -152,7 +152,7 @@ Maintain base `values.yaml` plus environment overlays (`values-dev.yaml`, `value
 
 Workspace: `~/rebash-helm/module-05` on your workstation.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-05/rebash-values/templates && cd ~/rebash-helm/module-05
 ```
 
@@ -166,7 +166,7 @@ The same chart promotes from dev (single replica, debug logging) to production (
 
 Create `rebash-values/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-values
 description: Values override lab chart
@@ -177,7 +177,7 @@ appVersion: "1.27"
 
 Create `rebash-values/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginxinc/nginx-unprivileged
@@ -243,7 +243,7 @@ spec:
 
 Create `values-dev.yaml`:
 
-```yaml
+```yaml title="values-dev.yaml"
 replicaCount: 1
 appEnv: dev
 logLevel: debug
@@ -253,7 +253,7 @@ ingress:
 
 Create `values-prod.yaml`:
 
-```yaml
+```yaml title="values-prod.yaml"
 replicaCount: 3
 appEnv: production
 logLevel: warn
@@ -264,7 +264,7 @@ ingress:
 
 #### Task 3 – Render and diff merge order
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-05
 helm template vals-dev rebash-values -f values-dev.yaml --namespace rebash-helm-m05 | tee render-dev-m05.yaml
 helm template vals-prod rebash-values \
@@ -281,20 +281,22 @@ grep -q 'value: warn' log-prod-m05.txt
 diff -u render-dev-m05.yaml render-prod-m05.yaml | tee diff-dev-prod-m05.txt || true
 ```
 
-**Expected output:** Dev render shows `replicas: 1` and `LOG_LEVEL` `debug`; prod render (later file wins) shows `replicas: 3` and `LOG_LEVEL` `warn`; `diff-dev-prod-m05.txt` highlights changes.
+!!! example "Expected output"
+    Dev render shows `replicas: 1` and `LOG_LEVEL` `debug`; prod render (later file wins) shows `replicas: 3` and `LOG_LEVEL` `warn`; `diff-dev-prod-m05.txt` highlights changes.
+
 
 #### Task 4 – Optional install with prod overlay
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
   name: rebash-helm-m05
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-05
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -309,7 +311,9 @@ else
 fi
 ```
 
-**Expected output:** Deployment shows three replicas when install runs; `live-values-m05.txt` reflects merged effective values.
+!!! example "Expected output"
+    Deployment shows three replicas when install runs; `live-values-m05.txt` reflects merged effective values.
+
 
 ### Validation steps
 
@@ -341,7 +345,7 @@ Add `--set replicaCount=5` to the prod template command and show it overrides `v
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall vals-prod -n rebash-helm-m05 2>/dev/null || true
 kubectl delete namespace rebash-helm-m05 --ignore-not-found
 ```

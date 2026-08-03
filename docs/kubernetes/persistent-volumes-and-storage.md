@@ -157,7 +157,7 @@ Provision a PVC, mount it in a Pod, write data, delete the Pod, recreate it, and
 
 Workspace: `~/rebash-k8s/module-07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-07 && cd ~/rebash-k8s/module-07
 kubectl get storageclass | tee storageclasses.txt
 ```
@@ -172,7 +172,7 @@ A stateful demo app stores upload metadata on disk. You must prove that deleting
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -181,7 +181,7 @@ metadata:
 
 Create `pvc.yaml`:
 
-```yaml
+```yaml title="pvc.yaml"
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -197,7 +197,7 @@ spec:
 
 Create `writer-pod.yaml`:
 
-```yaml
+```yaml title="writer-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -219,7 +219,7 @@ spec:
 
 Apply and write:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-07
 kubectl apply -f namespace.yaml
 kubectl apply -f pvc.yaml
@@ -230,13 +230,15 @@ kubectl logs writer -n rebash-m07 | tee write-log.txt
 grep rebash-persist write-log.txt | tee persist-token.txt
 ```
 
-**Expected output:** PVC Bound; log line contains `rebash-persist-<timestamp>`.
+!!! example "Expected output"
+    PVC Bound; log line contains `rebash-persist-<timestamp>`.
+
 
 #### Task 2 – Delete Pod and recreate reader
 
 Create `reader-pod.yaml`:
 
-```yaml
+```yaml title="reader-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -258,7 +260,7 @@ spec:
 
 Recreate and verify same file:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-07
 kubectl delete pod writer -n rebash-m07 --wait=true
 kubectl apply -f reader-pod.yaml
@@ -268,18 +270,22 @@ TOKEN=$(cat persist-token.txt)
 grep -F "$(echo "$TOKEN" | tail -n1)" read-log.txt
 ```
 
-**Expected output:** `read-log.txt` contains the same token written in Task 1.
+!!! example "Expected output"
+    `read-log.txt` contains the same token written in Task 1.
+
 
 #### Task 3 – PVC status evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-07
 kubectl get pvc data -n rebash-m07 | tee pvc-bound.txt
 kubectl describe pvc data -n rebash-m07 | sed -n '/Status:/,/Events:/p' | tee pvc-describe.txt
 grep Bound pvc-bound.txt
 ```
 
-**Expected output:** PVC remains Bound with same volume after Pod replacement.
+!!! example "Expected output"
+    PVC remains Bound with same volume after Pod replacement.
+
 
 ### Validation steps
 
@@ -309,7 +315,7 @@ Add `storageClassName: standard` explicitly to `pvc.yaml` (match your cluster’
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m07 --ignore-not-found --wait=true
 ```
 

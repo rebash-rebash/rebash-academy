@@ -173,7 +173,7 @@ Workspace: `~/rebash-gitlab/module-17`
 
 File-first lab. Broken YAML fails locally before wasting runner minutes.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-17 && cd ~/rebash-gitlab/module-17
 set -euo pipefail
 ```
@@ -211,13 +211,13 @@ test:
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 print("ok")
 ```
 
 Validate and capture the failure:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 python3 -m py_compile src/app.py
@@ -231,7 +231,9 @@ grep -q 'lintt' .gitlab-ci.yml.broken
 echo 'broken config confirmed' | tee before-status.txt
 ```
 
-**Expected output:** `broken config confirmed`; typo `lintt` visible in needs.
+!!! example "Expected output"
+    `broken config confirmed`; typo `lintt` visible in needs.
+
 
 #### Task 2 – Fixed pipeline (after)
 
@@ -265,7 +267,7 @@ test:
 
 Validate the fix:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 python3 -c "
@@ -278,11 +280,13 @@ grep -q 'python:3.12-alpine' .gitlab-ci.yml
 ! grep -q 'lintt' .gitlab-ci.yml
 ```
 
-**Expected output:** `fixed gitlab-ci OK` with job keys; no `lintt` typo.
+!!! example "Expected output"
+    `fixed gitlab-ci OK` with job keys; no `lintt` typo.
+
 
 #### Task 3 – Simulate job scripts locally
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 python3 -m py_compile src/app.py
@@ -291,13 +295,15 @@ test "$(cat out.txt)" = 'ok'
 echo 'local script simulation passed' | tee after-scripts.txt
 ```
 
-**Expected output:** `local script simulation passed`
+!!! example "Expected output"
+    `local script simulation passed`
+
 
 #### Task 4 – Before/after validation report
 
 Create `validate-fix.sh`:
 
-```bash
+```bash title="validate-fix.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 grep -q 'lintt' .gitlab-ci.yml.broken
@@ -309,14 +315,16 @@ echo 'module-17 troubleshooting lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 chmod +x validate-fix.sh
 ./validate-fix.sh | tee validation.txt
 ```
 
-**Expected output:** `module-17 troubleshooting lab passed`
+!!! example "Expected output"
+    `module-17 troubleshooting lab passed`
+
 
 ### Validation steps
 
@@ -349,7 +357,7 @@ Add a third broken variant `.gitlab-ci.yml.runner-mismatch` where jobs require t
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-17/out.txt 2>/dev/null || true
 ls ~/rebash-gitlab/module-17
 ```

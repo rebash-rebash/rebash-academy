@@ -126,7 +126,7 @@ Contrast an ad-hoc folder timeline with a Git commit timeline for the same infra
 
 Workspace: `~/rebash-git/module-01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 set -euo pipefail
 ```
@@ -139,7 +139,7 @@ A platform team still shares “prod-firewall-rules-FINAL.docx” over chat. You
 
 #### Task 1 – Simulate change history without Git
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-01
 set -euo pipefail
 
@@ -154,11 +154,13 @@ diff -u firewall-notes-v1.txt firewall-notes-v2.txt | tee ../without-git-diff.tx
 cd ..
 ```
 
-**Expected output:** Multiple copies and a diff file — history is manual and easy to lose.
+!!! example "Expected output"
+    Multiple copies and a diff file — history is manual and easy to lose.
+
 
 #### Task 2 – Same change as Git commits
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-01
 set -euo pipefail
 
@@ -184,7 +186,9 @@ tar -czf module-01-evidence.tgz without-git-listing.txt without-git-diff.txt wit
 ls -l module-01-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Two commits on `main`; working tree clean; evidence tarball with log and status files.
+!!! example "Expected output"
+    Two commits on `main`; working tree clean; evidence tarball with log and status files.
+
 
 ### Validation steps
 
@@ -213,7 +217,7 @@ Add a third commit that *removes* the SSH allow line and use `git log -p -1` to 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Keep evidence; remove when finished:
 # rm -rf ~/rebash-git/module-01
 ls ~/rebash-git/module-01

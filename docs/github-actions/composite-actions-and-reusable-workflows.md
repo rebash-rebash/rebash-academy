@@ -133,7 +133,7 @@ Build a **composite action** (setup + validate marker file) and a **reusable wor
 
 Workspace: `~/rebash-github-actions/module-14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-lab,workflows} && cd ~/rebash-github-actions/module-14
 set -euo pipefail
 ```
@@ -178,22 +178,26 @@ runs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/actions/setup-lab/action.yml')); print('composite action OK')"
 grep -q 'using: composite' .github/actions/setup-lab/action.yml
 ```
 
-**Expected output:** `composite action OK`
+!!! example "Expected output"
+    `composite action OK`
+
 
 Note: The `action.yml` above uses GitHub expressions in the lab file on disk — in MkDocs the tutorial wraps those fences in raw Jinja blocks. For offline simulation, run the shell steps manually:
 
-```bash
+```bash title="Terminal"
 mkdir -p out && echo 'lab=module-14' > out/module-14.txt && test -s out/module-14.txt
 ```
 
-**Expected output:** Silent success (exit 0).
+!!! example "Expected output"
+    Silent success (exit 0).
+
 
 #### Task 2 – Reusable workflow
 
@@ -231,20 +235,22 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci-reusable.yml')); print('reusable workflow OK')"
 grep -q 'workflow_call' .github/workflows/ci-reusable.yml
 ```
 
-**Expected output:** `reusable workflow OK`
+!!! example "Expected output"
+    `reusable workflow OK`
+
 
 #### Task 3 – Caller workflow (pair)
 
 Create `.github/workflows/caller.yml`:
 
-```yaml
+```yaml title="caller.yml"
 name: Caller
 on:
   push:
@@ -263,20 +269,22 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/caller.yml')); print('caller workflow OK')"
 grep -q 'uses: ./.github/workflows/ci-reusable.yml' .github/workflows/caller.yml
 ```
 
-**Expected output:** `caller workflow OK`
+!!! example "Expected output"
+    `caller workflow OK`
+
 
 #### Task 4 – Validate pair and export reusable contract
 
 Create `reusable-contract.yaml`:
 
-```yaml
+```yaml title="reusable-contract.yaml"
 # Module 14 reusable contract — machine-readable platform API
 composite:
   path: .github/actions/setup-lab
@@ -309,7 +317,7 @@ pinning:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "
@@ -326,7 +334,9 @@ tar -czf module-14-evidence.tgz .github/actions/setup-lab/action.yml .github/wor
 ls -l module-14-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `reusable-contract.yaml OK`; evidence archive with composite + reusable + caller.
+!!! example "Expected output"
+    `reusable-contract.yaml OK`; evidence archive with composite + reusable + caller.
+
 
 ### Validation steps
 
@@ -358,7 +368,7 @@ Publish the reusable workflow pattern to a second folder `module-14-consumer/` w
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-github-actions/module-14/.github
 ```
 

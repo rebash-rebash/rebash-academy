@@ -157,7 +157,7 @@ Build a **network** stack and an **application** stack under `~/rebash-terraform
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-08-remote/{network,app} && cd ~/rebash-terraform/module-08-remote
 ```
 
@@ -173,7 +173,7 @@ The platform team owns a **network** stack that exports a Docker network name an
 
 Create `~/rebash-terraform/module-08-remote/network/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -194,7 +194,7 @@ provider "docker" {}
 
 Create `~/rebash-terraform/module-08-remote/network/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 locals {
   cidr_label = "10.0.0.0/16"
 }
@@ -211,7 +211,7 @@ resource "docker_network" "platform" {
 
 Create `~/rebash-terraform/module-08-remote/network/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "network_id" {
   description = "Docker network identifier"
   value       = docker_network.platform.id
@@ -231,7 +231,7 @@ output "cidr_label" {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08-remote/network
 mkdir -p state
 terraform init
@@ -244,13 +244,15 @@ echo "network task OK" | tee network-task-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** State file at `network/state/network.tfstate`; network exists in Docker; outputs include `cidr_label`.
+!!! example "Expected output"
+    State file at `network/state/network.tfstate`; network exists in Docker; outputs include `cidr_label`.
+
 
 #### Task 2 – Application stack consuming remote state
 
 Create `~/rebash-terraform/module-08-remote/app/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -271,7 +273,7 @@ provider "docker" {}
 
 Create `~/rebash-terraform/module-08-remote/app/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 data "terraform_remote_state" "network" {
   backend = "local"
 
@@ -308,7 +310,7 @@ resource "docker_container" "app" {
 
 Create `~/rebash-terraform/module-08-remote/app/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "attached_cidr" {
   value = data.terraform_remote_state.network.outputs.cidr_label
 }
@@ -321,7 +323,7 @@ output "attached_network" {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08-remote/app
 mkdir -p state
 terraform init
@@ -336,7 +338,9 @@ echo "app task OK" | tee app-task-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** App plan shows remote state read; container attached to `rebash-module-08-remote-net`; output `attached_cidr` equals `10.0.0.0/16`.
+!!! example "Expected output"
+    App plan shows remote state read; container attached to `rebash-module-08-remote-net`; output `attached_cidr` equals `10.0.0.0/16`.
+
 
 #### Task 3 – Prove dependency when network output changes
 
@@ -351,7 +355,7 @@ locals {
 Apply network, then re-plan app:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08-remote/network
 terraform apply -auto-approve
 cd ~/rebash-terraform/module-08-remote/app
@@ -364,14 +368,16 @@ echo "dependency task OK" | tee dependency-task-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** App stack plans an update when network CIDR output changes; container label updates after apply.
+!!! example "Expected output"
+    App stack plans an update when network CIDR output changes; container label updates after apply.
+
 
 #### Task 4 – Remote state evidence script
 
 Create `~/rebash-terraform/module-08-remote/remote-state-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 NET=~/rebash-terraform/module-08-remote/network
@@ -387,12 +393,14 @@ echo "remote-state-evidence PASS" | tee remote-state-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-08-remote/remote-state-evidence.sh
 ~/rebash-terraform/module-08-remote/remote-state-evidence.sh
 ```
 
-**Expected output:** `remote-state-evidence-pass.txt` contains `remote-state-evidence PASS`.
+!!! example "Expected output"
+    `remote-state-evidence-pass.txt` contains `remote-state-evidence PASS`.
+
 
 ### Validation steps
 
@@ -429,7 +437,7 @@ Create `~/rebash-terraform/module-08-remote/app/backend-config.hcl` documenting 
 Validate app stack still passes:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08-remote/app
 terraform validate
 docker network inspect rebash-module-08-remote-net --format '{{.Name}}' | grep -q rebash-module-08-remote-net
@@ -437,7 +445,9 @@ echo "backend config challenge OK"
 ```
 {% endraw %}
 
-**Expected output:** Validate succeeds; network still present in Docker.
+!!! example "Expected output"
+    Validate succeeds; network still present in Docker.
+
 
 ### Learning outcomes
 
@@ -448,7 +458,7 @@ echo "backend config challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-08-remote/app && terraform destroy -auto-approve
 cd ~/rebash-terraform/module-08-remote/network && terraform destroy -auto-approve
 rm -f ~/rebash-terraform/module-08-remote/network/network-outputs.json network-task-ok.txt

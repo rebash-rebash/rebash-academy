@@ -129,7 +129,7 @@ Scaffold an `apps/` + `clusters/dev` GitOps layout, apply an Application and App
 
 Runtime: **kind** cluster with Argo CD — tarball-only validation is not sufficient for this lab.
 
-```bash
+```bash title="Terminal"
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-15/{apps/demo-api/base,clusters/dev,argocd/bootstrap,scripts} \
@@ -146,7 +146,7 @@ You are bootstrapping a platform GitOps repo. Application bases live under `apps
 
 Create `apps/demo-api/base/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -159,7 +159,7 @@ commonLabels:
 
 Create `apps/demo-api/base/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -183,7 +183,7 @@ spec:
 
 Create `apps/demo-api/base/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -198,18 +198,20 @@ spec:
 
 Verify base renders:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-15
 kubectl kustomize apps/demo-api/base | grep -q 'kind: Deployment' && echo 'app-base: OK' | tee app-base-m15.txt
 ```
 
-**Expected output:** Base kustomization renders Deployment and Service.
+!!! example "Expected output"
+    Base kustomization renders Deployment and Service.
+
 
 #### Task 2 – Create cluster dev overlay
 
 Create `clusters/dev/namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -220,7 +222,7 @@ metadata:
 
 Create `clusters/dev/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: rebash-argocd-m15-dev
@@ -234,19 +236,21 @@ commonLabels:
 
 Verify overlay:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-15
 kubectl kustomize clusters/dev | grep 'rebash-argocd-m15-dev' | tee kustomize-ns-m15.txt
 kubectl kustomize clusters/dev | grep -q 'kind: Deployment' && echo 'kustomize: OK' | tee kustomize-m15.txt
 ```
 
-**Expected output:** Overlay renders Deployment into namespace `rebash-argocd-m15-dev`.
+!!! example "Expected output"
+    Overlay renders Deployment into namespace `rebash-argocd-m15-dev`.
+
 
 #### Task 3 – Apply Application and prove sync
 
 Create `argocd/bootstrap/application-dev.yaml`:
 
-```yaml
+```yaml title="application-dev.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -271,7 +275,7 @@ spec:
 
 Publish repo path and sync:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-15
 cp -a ~/rebash-argocd/module-15 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f argocd/bootstrap/application-dev.yaml | tee app-apply-m15.txt
@@ -282,7 +286,9 @@ kubectl get deploy,svc -n rebash-argocd-m15-dev | tee workloads-m15.txt
 grep -q 'Synced' wait-synced-m15.txt
 ```
 
-**Expected output:** Application Synced; `dev-demo-api` Deployment and Service run in `rebash-argocd-m15-dev`.
+!!! example "Expected output"
+    Application Synced; `dev-demo-api` Deployment and Service run in `rebash-argocd-m15-dev`.
+
 
 #### Task 4 – Apply ApplicationSet and export DR evidence
 
@@ -322,7 +328,7 @@ spec:
 
 Create `scripts/export-argocd-dr.sh`:
 
-```bash
+```bash title="export-argocd-dr.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 OUT="${1:-dr-export-m15.yaml}"
@@ -335,7 +341,7 @@ wc -l "${OUT}"
 
 Apply ApplicationSet and export (remove direct Application first so ApplicationSet owns `demo-api-dev`):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-15
 kubectl delete application demo-api-dev -n argocd --ignore-not-found
 kubectl apply -f argocd/bootstrap/applicationset-clusters.yaml | tee appset-apply-m15.txt
@@ -348,7 +354,9 @@ grep -q 'demo-api-dev' applications-list-m15.txt
 grep -q 'kind: Application' dr-export-m15.yaml
 ```
 
-**Expected output:** ApplicationSet creates `demo-api-dev` Application; DR export YAML contains Application kinds.
+!!! example "Expected output"
+    ApplicationSet creates `demo-api-dev` Application; DR export YAML contains Application kinds.
+
 
 ### Validation steps
 
@@ -380,7 +388,7 @@ Add `clusters/prod/kustomization.yaml` with a strategic merge patch setting `rep
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete applicationset platform-clusters -n argocd --ignore-not-found
 kubectl delete application demo-api-dev -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m15-dev --ignore-not-found

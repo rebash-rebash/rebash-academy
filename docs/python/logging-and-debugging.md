@@ -145,7 +145,7 @@ Configure logging to both stderr and a file, emit messages at multiple levels, p
 
 Workspace: `~/rebash-python/lab10`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab10 && cd ~/rebash-python/lab10
 set -euo pipefail
 python3 -m venv .venv
@@ -153,7 +153,9 @@ source .venv/bin/activate
 python -c "import logging; print('ok')"
 ```
 
-**Expected output:** `ok`
+!!! example "Expected output"
+    `ok`
+
 
 ### Real-world scenario
 
@@ -163,7 +165,7 @@ Your inventory loader will run in CI. Platform asks for INFO lines on stderr for
 
 #### Task 1 – Configure file + stderr logging
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
@@ -171,7 +173,7 @@ source .venv/bin/activate
 
 Create `app_logging.py`:
 
-```python
+```python title="app_logging.py"
 from __future__ import annotations
 
 import logging
@@ -213,15 +215,17 @@ def run_demo(log_path: Path) -> None:
 
 Run:
 
-```bash
+```bash title="Terminal"
 test -f app_logging.py
 ```
 
-**Expected output:** File `app_logging.py` created (no run yet).
+!!! example "Expected output"
+    File `app_logging.py` created (no run yet).
+
 
 #### Task 2 – Run demo and prove log lines
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
@@ -261,11 +265,13 @@ print("proof ok")
 PY
 ```
 
-**Expected output:** Log lines printed; `log-proof.txt` shows `has_exception=yes`; `inventory.log` is non-empty.
+!!! example "Expected output"
+    Log lines printed; `log-proof.txt` shows `has_exception=yes`; `inventory.log` is non-empty.
+
 
 #### Task 3 – Optional breakpoint behind a flag
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
@@ -273,7 +279,7 @@ source .venv/bin/activate
 
 Create `maybe_debug.py`:
 
-```python
+```python title="maybe_debug.py"
 from __future__ import annotations
 
 import os
@@ -305,7 +311,9 @@ REBASH_DEBUG=0 python maybe_debug.py | tee task3-debug.txt
 test -s task3-debug.txt
 ```
 
-**Expected output:** `maybe_debug ok` without entering pdb when `REBASH_DEBUG` is not `1`.
+!!! example "Expected output"
+    `maybe_debug ok` without entering pdb when `REBASH_DEBUG` is not `1`.
+
 
 ### Validation steps
 
@@ -335,7 +343,7 @@ Add a `RotatingFileHandler` (from `logging.handlers`) with `maxBytes=2000` and `
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab10
 set -euo pipefail
 # rm -rf .venv __pycache__ *.py *.log* *.txt

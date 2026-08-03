@@ -121,7 +121,7 @@ Implement `try`/`except`/`else`/`finally`, a custom `InventoryError`, and a retr
 
 Workspace: `~/rebash-python/lab08`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab08 && cd ~/rebash-python/lab08
 set -euo pipefail
 python3 -m venv .venv
@@ -129,7 +129,9 @@ source .venv/bin/activate
 python -c "import sys; print(sys.version)"
 ```
 
-**Expected output:** Python 3.12+ version string; `.venv` exists.
+!!! example "Expected output"
+    Python 3.12+ version string; `.venv` exists.
+
 
 ### Real-world scenario
 
@@ -139,7 +141,7 @@ Inventory fetch is flaky. You need retries for transient errors, a custom except
 
 #### Task 1 – Custom exception with try/except/else/finally
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
@@ -147,7 +149,7 @@ source .venv/bin/activate
 
 Create `inventory_errors.py`:
 
-```python
+```python title="inventory_errors.py"
 from __future__ import annotations
 
 from pathlib import Path
@@ -177,7 +179,7 @@ def load_inventory(path: Path, cleanup_log: Path | None = None) -> str:
 
 Run:
 
-```bash
+```bash title="Terminal"
 python << 'PY'
 from pathlib import Path
 from inventory_errors import InventoryError, load_inventory
@@ -204,11 +206,13 @@ print("task1 ok")
 PY
 ```
 
-**Expected output:** `task1 ok`; `finally-log.txt` says `finally-ran`; missing/empty error files exist.
+!!! example "Expected output"
+    `task1 ok`; `finally-log.txt` says `finally-ran`; missing/empty error files exist.
+
 
 #### Task 2 – Retry helper with intentional fail path
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
@@ -216,7 +220,7 @@ source .venv/bin/activate
 
 Create `retry_helper.py`:
 
-```python
+```python title="retry_helper.py"
 from __future__ import annotations
 
 import time
@@ -251,7 +255,7 @@ def retry(
 
 Run:
 
-```bash
+```bash title="Terminal"
 python << 'PY'
 from pathlib import Path
 from retry_helper import RetryError, retry
@@ -282,11 +286,13 @@ print("task2 ok")
 PY
 ```
 
-**Expected output:** `task2 ok`; `task2-retry-ok.txt` shows `result=ready`; `task2-retry-fail.txt` mentions failed attempts.
+!!! example "Expected output"
+    `task2 ok`; `task2-retry-ok.txt` shows `result=ready`; `task2-retry-fail.txt` mentions failed attempts.
+
 
 #### Task 3 – CLI-style exit codes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
@@ -294,7 +300,7 @@ source .venv/bin/activate
 
 Create `run_check.py`:
 
-```python
+```python title="run_check.py"
 from __future__ import annotations
 
 import sys
@@ -338,7 +344,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 python run_check.py ok | tee task3-ok.txt
 test "$(python run_check.py ok >/dev/null; echo $?)" -eq 0
 test "$(python run_check.py missing >/dev/null 2>task3-missing.err; echo $?)" -eq 2
@@ -346,7 +352,9 @@ test "$(python run_check.py retry-fail >/dev/null 2>task3-retry.err; echo $?)" -
 echo "exit-codes-ok" | tee task3-summary.txt
 ```
 
-**Expected output:** `task3-ok.txt` shows host count; exit code 2 for missing; exit code 3 for retry-fail; `task3-summary.txt` says `exit-codes-ok`.
+!!! example "Expected output"
+    `task3-ok.txt` shows host count; exit code 2 for missing; exit code 3 for retry-fail; `task3-summary.txt` says `exit-codes-ok`.
+
 
 ### Validation steps
 
@@ -376,7 +384,7 @@ Extend `retry_helper.py` with a `on_retry` callback that appends one line per at
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab08
 set -euo pipefail
 # rm -rf .venv __pycache__ *.py *.txt *.err

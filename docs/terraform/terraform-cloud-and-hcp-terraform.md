@@ -164,7 +164,7 @@ Workspace: `~/rebash-terraform/module-13`
 
 Local Terraform with Docker provider. No HCP organisation required — HCP concepts are theory; runs mirror remote-run discipline locally.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-13/artefacts && cd ~/rebash-terraform/module-13
 ```
 
@@ -178,7 +178,7 @@ Your platform team is preparing a repository for HCP Terraform adoption. Leaders
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.9.0"
 
@@ -207,13 +207,13 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "environment" {
   type        = string
   description = "Workspace environment label mirrored in HCP variable sets."
@@ -234,7 +234,7 @@ variable "service_name" {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "bootstrap" {
   name         = "nginx:1.27-alpine"
   keep_locally = true
@@ -273,7 +273,7 @@ resource "local_file" "run_summary" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "run_summary_path" {
   description = "Path to the generated run summary artefact."
   value       = local_file.run_summary.filename
@@ -292,14 +292,14 @@ output "environment" {
 
 Create `workspace.auto.tfvars.example`:
 
-```hcl
+```hcl title="workspace.auto.tfvars.example"
 environment  = "dev"
 service_name = "platform-bootstrap"
 ```
 
 Create `cloud.tf.example`:
 
-```hcl
+```hcl title="cloud.tf.example"
 # Example HCP Terraform binding — enable only when migrating off local state.
 #
 # terraform {
@@ -314,20 +314,22 @@ Create `cloud.tf.example`:
 
 Initialise and validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-13
 cp workspace.auto.tfvars.example workspace.auto.tfvars
 terraform init | tee artefacts/init.log
 terraform validate | tee artefacts/validate.log
 ```
 
-**Expected output:** `init.log` ends with `Terraform has been successfully initialized.` and `validate.log` contains `Success! The configuration is valid.`
+!!! example "Expected output"
+    `init.log` ends with `Terraform has been successfully initialized.` and `validate.log` contains `Success! The configuration is valid.`
+
 
 #### Task 2 – Produce and review a saved plan (remote-run artefact)
 
 Remote runs always produce a reviewable plan before apply. Mirror that locally.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-13
 terraform plan -input=false -out=run.tfplan | tee artefacts/plan.log
 terraform show -no-color run.tfplan | tee artefacts/plan-review.txt
@@ -335,14 +337,16 @@ grep -q 'docker_container.bootstrap' artefacts/plan-review.txt
 grep -q 'local_file.run_summary' artefacts/plan-review.txt
 ```
 
-**Expected output:** `plan.log` shows `Plan: 3 to add`; `artefacts/plan-review.txt` lists container and run summary resources.
+!!! example "Expected output"
+    `plan.log` shows `Plan: 3 to add`; `artefacts/plan-review.txt` lists container and run summary resources.
+
 
 #### Task 3 – Apply the saved plan and capture run metadata
 
 Applying the exact plan binary is what HCP Terraform does after approval — not a fresh implicit plan.
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-13
 terraform apply -input=false run.tfplan | tee artefacts/apply.log
 terraform output -json | tee artefacts/outputs.json
@@ -354,13 +358,15 @@ grep -q 'platform-bootstrap-dev' artefacts/container-ps.txt
 ```
 {% endraw %}
 
-**Expected output:** `apply.log` ends with `Apply complete!`; container running; `artefacts/run-summary.txt` contains `environment=dev`.
+!!! example "Expected output"
+    `apply.log` ends with `Apply complete!`; container running; `artefacts/run-summary.txt` contains `environment=dev`.
+
 
 #### Task 4 – Document workspace variable mapping
 
 Create `docs/hcp-workspace-mapping.md`:
 
-```markdown
+```markdown title="hcp-workspace-mapping.md"
 # HCP workspace mapping (lab)
 
 | HCP workspace | Terraform variable set | Cloud account |
@@ -375,7 +381,7 @@ Policies: require `managed_by = terraform` tag; deny public object storage.
 Verify the file exists:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-13
 test -f docs/hcp-workspace-mapping.md
 grep -q 'platform-bootstrap-prod' docs/hcp-workspace-mapping.md
@@ -385,7 +391,9 @@ grep -q 'terraform' artefacts/label-proof.txt
 ```
 {% endraw %}
 
-**Expected output:** Mapping file documents prod workspace separation; container carries `managed_by=terraform` label.
+!!! example "Expected output"
+    Mapping file documents prod workspace separation; container carries `managed_by=terraform` label.
+
 
 ### Validation steps
 
@@ -417,7 +425,7 @@ Add a `policies/tags-required.sentinel.example` comment sketch requiring `manage
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-13
 terraform destroy -auto-approve
 rm -rf .terraform run.tfplan terraform.tfstate terraform.tfstate.backup artefacts

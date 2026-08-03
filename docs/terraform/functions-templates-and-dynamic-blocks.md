@@ -168,7 +168,7 @@ Render a service env file with **`templatefile`**, build tag maps with **`merge`
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-10/{templates,config} && cd ~/rebash-terraform/module-10
 ```
 
@@ -184,7 +184,7 @@ Platform engineering generates per-service **environment files** from a template
 
 Create `templates/service.env.tftpl`:
 
-```text
+```text title="service.env.tftpl"
 SERVICE_NAME=${service_name}
 ENVIRONMENT=${environment}
 PORT=${port}
@@ -193,7 +193,7 @@ OWNER=${owner}
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -212,13 +212,13 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "service_name" {
   type    = string
   default = "billing"
@@ -258,7 +258,7 @@ variable "config_mounts" {
 
 Create `locals.tf`:
 
-```hcl
+```hcl title="locals.tf"
 locals {
   base_tags = {
     managed_by  = "terraform"
@@ -282,19 +282,19 @@ locals {
 
 Create `config/app.conf`:
 
-```text
+```text title="app.conf"
 log_level=info
 ```
 
 Create `config/logging.conf`:
 
-```text
+```text title="logging.conf"
 format=json
 ```
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "local_file" "service_env" {
   filename = "${path.module}/rendered/service.env"
   content  = local.rendered_env
@@ -330,7 +330,7 @@ resource "docker_container" "service" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "tag_lines" {
   value = local.tag_lines
 }
@@ -347,7 +347,7 @@ output "mount_count" {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-10
 terraform init
 terraform apply -auto-approve
@@ -361,13 +361,15 @@ echo "task1 OK" | tee task1-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Container running with merged labels and two bind mounts.
+!!! example "Expected output"
+    Container running with merged labels and two bind mounts.
+
 
 #### Task 2 – Conditional and for expression overrides
 
 Create `terraform.tfvars`:
 
-```hcl
+```hcl title="terraform.tfvars"
 environment  = "prod"
 port         = 443
 extra_tags   = { cost_centre = "CC-200", tier = "critical" }
@@ -375,7 +377,7 @@ extra_tags   = { cost_centre = "CC-200", tier = "critical" }
 
 Create `locals_override.tf`:
 
-```hcl
+```hcl title="locals_override.tf"
 locals {
   replica_hint = var.environment == "prod" ? "multi-az" : "single-instance"
   critical_keys = [for k, v in local.merged_tags : k if v == "critical"]
@@ -397,7 +399,7 @@ output "critical_keys" {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-10
 terraform apply -auto-approve
 terraform output -raw replica_hint | tee replica-hint.txt
@@ -409,7 +411,9 @@ echo "task2 OK" | tee task2-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** `replica_hint` is `multi-az`; new `billing-prod` container is running.
+!!! example "Expected output"
+    `replica_hint` is `multi-az`; new `billing-prod` container is running.
+
 
 #### Task 3 – Extend dynamic mounts and prove plan diff
 
@@ -425,14 +429,14 @@ Add a third mount to `variables.tf` default list in `config_mounts`:
 
 Create `config/metrics.conf`:
 
-```text
+```text title="metrics.conf"
 scrape_interval=30s
 ```
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-10
 terraform plan -no-color | tee plan-third-mount.txt
 grep -q 'metrics.conf' plan-third-mount.txt
@@ -443,14 +447,16 @@ echo "task3 OK" | tee task3-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Plan shows mount update; container has three bind mounts.
+!!! example "Expected output"
+    Plan shows mount update; container has three bind mounts.
+
 
 #### Task 4 – Expressions evidence script
 
 Create `expressions-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-10
@@ -465,12 +471,14 @@ echo "expressions-evidence PASS" | tee expressions-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-10/expressions-evidence.sh
 ~/rebash-terraform/module-10/expressions-evidence.sh
 ```
 
-**Expected output:** `expressions-evidence-pass.txt` contains `expressions-evidence PASS`.
+!!! example "Expected output"
+    `expressions-evidence-pass.txt` contains `expressions-evidence PASS`.
+
 
 ### Validation steps
 
@@ -495,7 +503,7 @@ chmod +x ~/rebash-terraform/module-10/expressions-evidence.sh
 Add `{ source = "config/secrets.conf", target = "/etc/app/secrets.conf" }` only when `var.environment == "prod"` using a conditional in locals, re-apply, and count prod-only mounts:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-10
 # Extend locals with prod_config_mounts using conditional ? :
 terraform apply -auto-approve
@@ -505,7 +513,9 @@ echo "conditional mount challenge OK"
 ```
 {% endraw %}
 
-**Expected output:** Prod container includes the secrets mount path.
+!!! example "Expected output"
+    Prod container includes the secrets mount path.
+
 
 ### Learning outcomes
 
@@ -516,7 +526,7 @@ echo "conditional mount challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-10
 terraform destroy -auto-approve
 rm -rf rendered config task*-ok.txt replica-hint.txt prod-container.txt \

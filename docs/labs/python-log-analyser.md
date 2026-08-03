@@ -77,7 +77,7 @@ Any Linux host or WSL2. Work under `~/rebash-lab-python`.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python/{logs,out}
 cd ~/rebash-lab-python
 python3 -m venv .venv
@@ -88,7 +88,7 @@ source .venv/bin/activate
 
 Create `logs/app-a.log`:
 
-```text
+```text title="app-a.log"
 2026-07-28T10:01:02Z INFO  request_id=abc status=200
 2026-07-28T10:01:05Z ERROR request_id=def status=500 msg="timeout"
 2026-07-28T10:01:06Z WARN  request_id=ghi status=429 msg="rate limited"
@@ -97,7 +97,7 @@ Create `logs/app-a.log`:
 
 Create `logs/app-b.log`:
 
-```text
+```text title="app-b.log"
 2026-07-28T11:00:00Z INFO  request_id=mno status=200
 2026-07-28T11:00:01Z INFO  request_id=pqr status=201
 2026-07-28T11:00:02Z ERROR request_id=stu status=502 msg="bad gateway"
@@ -108,7 +108,7 @@ Create `logs/app-b.log`:
 
 ### Step 1 – Skeleton and venv check
 
-```bash
+```bash title="Terminal"
 which python
 python -c 'import sys; print(sys.version)'
 ```
@@ -156,7 +156,7 @@ Add `--input` / `--output` flags so the script is reusable in CI.
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-python
 source .venv/bin/activate
 python analyse_logs.py

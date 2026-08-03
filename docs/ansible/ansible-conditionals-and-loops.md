@@ -139,7 +139,7 @@ Build a localhost playbook that installs packages with `loop` + `when`, then dem
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-07/{playbooks,files}
 cd ~/rebash-ansible/module-07
 ```
@@ -195,7 +195,7 @@ Create `playbooks/conditionals-loops.yml`:
 
 Syntax-check and run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-07
 ansible-playbook playbooks/conditionals-loops.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/conditionals-loops.yml | tee run-conditionals.txt
@@ -203,13 +203,15 @@ grep -q 'PLAY RECAP' run-conditionals.txt
 grep -q 'phantom-agent' run-conditionals.txt || true
 ```
 
-**Expected output:** Syntax check passes; recap shows `ok=` tasks; debug lines include `phantom-agent` with `skipped=True` (or task omitted from changed count).
+!!! example "Expected output"
+    Syntax check passes; recap shows `ok=` tasks; debug lines include `phantom-agent` with `skipped=True` (or task omitted from changed count).
+
 
 #### Task 2 – Until retry demo script
 
 Create `files/wait-for-ready.sh`:
 
-```bash
+```bash title="wait-for-ready.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 COUNTER_FILE="${1:-/tmp/rebash-ready.counter}"
@@ -231,7 +233,7 @@ exit 0
 
 Make it executable:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-ansible/module-07/files/wait-for-ready.sh
 rm -f /tmp/rebash-ready.counter
 ```
@@ -268,7 +270,7 @@ Create `playbooks/until-retry.yml`:
 
 Run and capture evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-07
 rm -f /tmp/rebash-ready.counter
 ansible-playbook playbooks/until-retry.yml | tee run-until.txt
@@ -276,17 +278,21 @@ grep -q 'Attempts=3' run-until.txt
 grep -q 'STATUS=ready' run-until.txt
 ```
 
-**Expected output:** Play succeeds after three attempts; debug shows `Attempts=3` and `STATUS=ready`.
+!!! example "Expected output"
+    Play succeeds after three attempts; debug shows `Attempts=3` and `STATUS=ready`.
+
 
 #### Task 4 – Assert idempotency on second run
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-07
 ansible-playbook playbooks/until-retry.yml | tee run-until-idempotent.txt
 grep -q 'changed=0' run-until-idempotent.txt || grep -q 'changed=1' run-until-idempotent.txt
 ```
 
-**Expected output:** Second run completes immediately (attempt counter file already at ready state); playbook recap shows success.
+!!! example "Expected output"
+    Second run completes immediately (attempt counter file already at ready state); playbook recap shows success.
+
 
 ### Validation steps
 
@@ -319,7 +325,7 @@ Create `playbooks/challenge-failed-when.yml` that runs `grep NONEXISTENT /etc/ho
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f /tmp/rebash-ready.counter
 # Keep ~/rebash-ansible/module-07 for portfolio review
 ```

@@ -146,7 +146,7 @@ Reproduce and fix a configuration validate failure, demonstrate recreate behavio
 
 Workspace: `~/rebash-terraform/module-20`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-20/{configs,evidence,scripts}
 ```
 
@@ -162,7 +162,7 @@ A teammate pushed a hotfix during an incident and bypassed CI. The root fails `t
 
 Create `configs/broken/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
@@ -176,7 +176,7 @@ terraform {
 
 Create `configs/broken/providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
@@ -197,14 +197,16 @@ resource "docker_container" "app" {
 
 Run validate and save failure output:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-20/configs/broken
 terraform init -input=false
 terraform validate > ../../evidence/validate-before.txt 2>&1 || true
 grep -Ei 'undeclared|reference|variable' ../../evidence/validate-before.txt
 ```
 
-**Expected output:** Non-zero exit; log mentions undeclared `var.release_version`.
+!!! example "Expected output"
+    Non-zero exit; log mentions undeclared `var.release_version`.
+
 
 #### Task 2 – Fix configuration and prove validate passes
 
@@ -212,13 +214,13 @@ Create `configs/fixed/versions.tf` (same as broken).
 
 Create `configs/fixed/providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `configs/fixed/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "release_version" {
   type    = string
   default = "1.0.0"
@@ -227,7 +229,7 @@ variable "release_version" {
 
 Create `configs/fixed/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "app" {
   name         = "nginx:1.27-alpine"
   keep_locally = true
@@ -253,21 +255,23 @@ output "container_name" {
 
 Run validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform init -input=false
 terraform validate | tee ../../evidence/validate-after.txt
 grep -q 'Success' ../../evidence/validate-after.txt
 ```
 
-**Expected output:** `Success! The configuration is valid.`
+!!! example "Expected output"
+    `Success! The configuration is valid.`
+
 
 #### Task 3 – Apply, remove from state, and observe recreate plan
 
 Apply the fixed configuration:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform apply -auto-approve
 terraform state list | tee ../../evidence/state-list.txt
@@ -281,7 +285,7 @@ grep -q 'rebash-troubleshoot-1.0.0' ../../evidence/container-before-rm.txt
 Remove the resource from state without destroying the container:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform state rm docker_container.app
 terraform state list | tee ../../evidence/state-after-rm.txt
@@ -295,12 +299,14 @@ grep -q 'create' ../../evidence/plan-after-rm.txt
 ```
 {% endraw %}
 
-**Expected output:** Container still running in Docker; state empty of `app`; plan wants to create `docker_container.app` again (name conflict risk — document in interview answer).
+!!! example "Expected output"
+    Container still running in Docker; state empty of `app`; plan wants to create `docker_container.app` again (name conflict risk — document in interview answer).
+
 
 Re-apply to restore consistent state (may require removing orphan container first):
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-20/configs/fixed
 docker rm -f rebash-troubleshoot-1.0.0 2>/dev/null || true
 terraform apply -auto-approve
@@ -310,7 +316,9 @@ grep -q 'rebash-troubleshoot-1.0.0' ../../evidence/container-after-reapply.txt
 ```
 {% endraw %}
 
-**Expected output:** Container recreated and tracked in state again.
+!!! example "Expected output"
+    Container recreated and tracked in state again.
+
 
 #### Task 4 – Refactor with `moved` after rename
 
@@ -337,7 +345,7 @@ output "container_name" {
 
 Create `configs/fixed/moved.tf`:
 
-```hcl
+```hcl title="moved.tf"
 moved {
   from = docker_container.app
   to   = docker_container.workload
@@ -347,7 +355,7 @@ moved {
 Plan and confirm move without destroy:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform plan -no-color | tee ../../evidence/plan-after-moved.txt
 grep -q 'workload' ../../evidence/plan-after-moved.txt
@@ -359,14 +367,16 @@ grep -q 'true' ../../evidence/container-still-running-after-moved.txt
 ```
 {% endraw %}
 
-**Expected output:** Plan shows address move; same container still running (no replace).
+!!! example "Expected output"
+    Plan shows address move; same container still running (no replace).
+
 
 #### Task 5 – Collect debug logs with a triage script
 
 Create `scripts/triage.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -391,7 +401,7 @@ echo "Wrote $LOG"
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-20/scripts/triage.sh
 ~/rebash-terraform/module-20/scripts/triage.sh ~/rebash-terraform/module-20/configs/fixed
 test -s ~/rebash-terraform/module-20/evidence/triage.log
@@ -399,7 +409,9 @@ grep -q 'Plan:' ~/rebash-terraform/module-20/evidence/triage.log
 grep -q 'rebash-troubleshoot' ~/rebash-terraform/module-20/evidence/triage.log
 ```
 
-**Expected output:** `evidence/triage.log` contains validate, plan, and docker ps sections.
+!!! example "Expected output"
+    `evidence/triage.log` contains validate, plan, and docker ps sections.
+
 
 ### Validation steps
 
@@ -433,7 +445,7 @@ Extend `scripts/triage.sh` to accept a second argument `strict` that exits non-z
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform destroy -auto-approve
 docker rm -f rebash-troubleshoot-1.0.0 2>/dev/null || true

@@ -161,7 +161,7 @@ Create a namespace and two Deployments with distinct label sets, then filter wor
 
 Workspace: `~/rebash-k8s/module-03-labels`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-03-labels && cd ~/rebash-k8s/module-03-labels
 ```
 
@@ -175,7 +175,7 @@ Two squads share a staging namespace: payments runs `api` tier Pods; storefront 
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -187,7 +187,7 @@ metadata:
 
 Create `payments-deploy.yaml`:
 
-```yaml
+```yaml title="payments-deploy.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -218,20 +218,22 @@ spec:
 
 Apply and wait:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-03-labels
 kubectl apply -f namespace.yaml
 kubectl apply -f payments-deploy.yaml
 kubectl rollout status deployment/payments-api -n rebash-m03-labels --timeout=120s
 ```
 
-**Expected output:** Deployment `payments-api` becomes Available.
+!!! example "Expected output"
+    Deployment `payments-api` becomes Available.
+
 
 #### Task 2 – Storefront Deployment with different labels
 
 Create `storefront-deploy.yaml`:
 
-```yaml
+```yaml title="storefront-deploy.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -262,7 +264,7 @@ spec:
 
 Apply and list all Pods:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-03-labels
 kubectl apply -f storefront-deploy.yaml
 kubectl rollout status deployment/storefront-web -n rebash-m03-labels --timeout=120s
@@ -271,11 +273,13 @@ grep -c Running all-pods.txt | tee running-count.txt
 test "$(cat running-count.txt)" -ge 2
 ```
 
-**Expected output:** At least two Running Pods with different `team` and `tier` labels.
+!!! example "Expected output"
+    At least two Running Pods with different `team` and `tier` labels.
+
 
 #### Task 3 – Filter with label selectors
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-03-labels
 kubectl get pods -n rebash-m03-labels -l team=payments | tee selector-payments.txt
 kubectl get pods -n rebash-m03-labels -l tier=web | tee selector-web.txt
@@ -285,7 +289,9 @@ grep storefront selector-web.txt
 grep -E 'payments-api|storefront-web' selector-teams.txt
 ```
 
-**Expected output:** Each selector returns only matching workloads; `team=payments` lists payments Pods only.
+!!! example "Expected output"
+    Each selector returns only matching workloads; `team=payments` lists payments Pods only.
+
 
 ### Validation steps
 
@@ -315,7 +321,7 @@ Add `environment: lab` to both pod templates, then list every Pod with `-l 'envi
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m03-labels --ignore-not-found --wait=true
 ```
 

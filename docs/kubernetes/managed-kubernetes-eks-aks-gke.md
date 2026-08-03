@@ -159,7 +159,7 @@ Bootstrap a **kind** cluster, run a kubeconfig context checklist against it, app
 
 Workspace: `~/rebash-k8s/module-19`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-19 && cd ~/rebash-k8s/module-19
 kind create cluster --name rebash-m19 2>/dev/null || kind get clusters | grep -q rebash-m19
 kubectl cluster-info | tee cluster-info.txt
@@ -177,7 +177,7 @@ Your team evaluates EKS, AKS, and GKE for a migration. Platform engineers run a 
 
 Create `kubeconfig-context-check.sh`:
 
-```bash
+```bash title="kubeconfig-context-check.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -207,7 +207,7 @@ echo "Checklist complete. Review ${OUT} before targeting production contexts." |
 
 Run against your local context:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-19
 chmod +x kubeconfig-context-check.sh
 ./kubeconfig-context-check.sh context-check.txt
@@ -215,13 +215,15 @@ grep -q 'kubeconfig context checklist' context-check.txt
 grep -q 'cluster info' context-check.txt
 ```
 
-**Expected output:** `context-check.txt` lists current context, API server URL, and cluster-info output.
+!!! example "Expected output"
+    `context-check.txt` lists current context, API server URL, and cluster-info output.
+
 
 #### Task 3 – Apply labelled namespace and inspect node metadata
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -234,7 +236,7 @@ metadata:
 
 Apply and capture managed-style metadata:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-19
 kubectl apply -f namespace.yaml
 kubectl get ns rebash-managed-lab --show-labels | tee namespace-evidence.txt
@@ -243,11 +245,13 @@ grep -q 'rebash-managed-lab' namespace-evidence.txt
 grep -q 'local-kind' namespace-evidence.txt
 ```
 
-**Expected output:** Namespace is `Active` with labels; `node-provider-metadata.txt` shows empty or local provider IDs (kind differs from EKS/AKS/GKE cloud provider IDs).
+!!! example "Expected output"
+    Namespace is `Active` with labels; `node-provider-metadata.txt` shows empty or local provider IDs (kind differs from EKS/AKS/GKE cloud provider IDs).
+
 
 #### Task 4 – Pack evidence for review
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-19
 tar -czf module-19-managed-evidence.tgz \
   cluster-info.txt nodes-ready.txt context-check.txt \
@@ -257,7 +261,9 @@ ls -l module-19-managed-evidence.tgz | tee evidence-ls.txt
 test -s module-19-managed-evidence.tgz
 ```
 
-**Expected output:** Evidence tarball is non-empty and includes context check plus namespace/node metadata.
+!!! example "Expected output"
+    Evidence tarball is non-empty and includes context check plus namespace/node metadata.
+
 
 ### Validation steps
 
@@ -290,7 +296,7 @@ Add one line to `node-provider-metadata.txt` explaining which field EKS would po
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-managed-lab --ignore-not-found --wait=true
 kind delete cluster --name rebash-m19 2>/dev/null || true
 rm -f ~/rebash-k8s/module-19/context-check.txt ~/rebash-k8s/module-19/namespace-evidence.txt ~/rebash-k8s/module-19/module-19-managed-evidence.tgz

@@ -73,7 +73,7 @@ Ad-hoc invocations follow the same path as playbook tasks: inventory → connect
 
 Syntax pattern:
 
-```bash
+```bash title="Terminal"
 ansible <pattern> -m <module> -a "<module args>" [-i inventory] [-c local] [-b]
 ```
 
@@ -120,7 +120,7 @@ Prefer modules that report **`changed: false`** on second run (idempotent).
 
 Examples (localhost lab):
 
-```bash
+```bash title="Terminal"
 ansible localhost -m ping -c local
 ansible localhost -m file -a "path=/tmp/ansible-lab state=touch mode=0644" -c local
 ansible localhost -m command -a "uname -r" -c local
@@ -168,13 +168,13 @@ Execute ad-hoc modules against localhost, create files under `~/rebash-ansible/m
 
 Workspace: `~/rebash-ansible/module-04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-04 && cd ~/rebash-ansible/module-04
 ```
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = ./inventory
 host_key_checking = False
@@ -183,7 +183,7 @@ interpreter_python = auto_silent
 
 Create `inventory`:
 
-```ini
+```ini title="inventory"
 [local]
 localhost ansible_connection=local
 ```
@@ -198,7 +198,7 @@ During a staging incident, you verify Ansible can still reach hosts, drop a mark
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-04
 ansible local -m ping | tee adhoc-ping.txt
 ansible local -m command -a "uname -s" | tee adhoc-uname.txt
@@ -209,20 +209,22 @@ grep -q adhoc_ok adhoc-shell.txt
 echo "task1 OK" | tee task1-ok.txt
 ```
 
-**Expected output:** `task1-ok.txt` shows `task1 OK`; ping returns pong.
+!!! example "Expected output"
+    `task1-ok.txt` shows `task1 OK`; ping returns pong.
+
 
 #### Task 2 – file module under lab workspace
 
 Create `files/marker.txt`:
 
-```
+```text title="marker.txt"
 rebash-adhoc-marker
 module-04
 ```
 
 Run file and copy modules:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-04
 ansible local -m file -a "path=~/rebash-ansible/module-04/labdir state=directory mode=0755" | tee adhoc-mkdir.txt
 ansible local -m copy -a "src=files/marker.txt dest=~/rebash-ansible/module-04/labdir/marker.txt mode=0644" | tee adhoc-copy.txt
@@ -233,13 +235,15 @@ test -f ~/rebash-ansible/module-04/labdir/touched.txt
 echo "task2 OK" | tee task2-ok.txt
 ```
 
-**Expected output:** `labdir/marker.txt` and `touched.txt` exist; `task2-ok.txt` shows `task2 OK`.
+!!! example "Expected output"
+    `labdir/marker.txt` and `touched.txt` exist; `task2-ok.txt` shows `task2 OK`.
+
 
 #### Task 3 – package module (safe local check) and evidence script
 
 Query package state without forcing install (works on apt/dnf systems):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-04
 ansible local -m package -a "name=python3 state=present" | tee adhoc-package.txt
 grep -q '"failed": false' adhoc-package.txt || grep -q SUCCESS adhoc-package.txt
@@ -247,7 +251,7 @@ grep -q '"failed": false' adhoc-package.txt || grep -q SUCCESS adhoc-package.txt
 
 Create `ad-hoc-evidence.sh`:
 
-```bash
+```bash title="ad-hoc-evidence.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-04
@@ -260,12 +264,14 @@ echo "ad-hoc-evidence PASS" | tee evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-ansible/module-04/ad-hoc-evidence.sh
 ~/rebash-ansible/module-04/ad-hoc-evidence.sh
 ```
 
-**Expected output:** `evidence-pass.txt` contains `ad-hoc-evidence PASS`.
+!!! example "Expected output"
+    `evidence-pass.txt` contains `ad-hoc-evidence PASS`.
+
 
 !!! note "service module caveat"
     **`ansible -m service`** requires systemd (or supported init). On minimal lab VMs run: `ansible local -m service -a "name=ssh state=started" -b` only if systemd manages `ssh`. Skip or document failure on WSL/containers without init.
@@ -291,7 +297,7 @@ chmod +x ~/rebash-ansible/module-04/ad-hoc-evidence.sh
 
 Create `adhoc-idempotency-check.sh` that runs the same `file` task twice and greps for `"changed": false` on the second run:
 
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-04
@@ -301,7 +307,9 @@ grep -q '"changed": false' idempotent-run2.txt
 echo "idempotency OK"
 ```
 
-**Expected output:** Second run reports `"changed": false`.
+!!! example "Expected output"
+    Second run reports `"changed": false`.
+
 
 ### Learning outcomes
 
@@ -312,7 +320,7 @@ echo "idempotency OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-04
 ansible local -m file -a "path=~/rebash-ansible/module-04/labdir state=absent"
 rm -f adhoc-*.txt task*-ok.txt evidence-*.txt idempotent-run*.txt

@@ -114,7 +114,7 @@ Build a tiny repo and inspect blob, tree, and commit objects with `cat-file` and
 
 Workspace: `~/rebash-git/module-01-objects`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-01-objects && cd ~/rebash-git/module-01-objects
 set -euo pipefail
 ```
@@ -127,7 +127,7 @@ An engineer claims “the file disappeared from Git.” You must prove whether t
 
 #### Task 1 – Create two commits with inspectable content
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-01-objects
 set -euo pipefail
 
@@ -145,11 +145,13 @@ git log --oneline | tee ../log.txt
 cd ..
 ```
 
-**Expected output:** Two commits listed in `log.txt`.
+!!! example "Expected output"
+    Two commits listed in `log.txt`.
+
 
 #### Task 2 – Resolve HEAD and inspect commit → tree → blob
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-01-objects/demo
 set -euo pipefail
 
@@ -168,11 +170,13 @@ grep -q 'blob' ../blob-type.txt
 grep -q 'ConfigMap' ../blob.txt
 ```
 
-**Expected output:** Commit points at a tree; tree lists `app.yaml` blob; blob contains ConfigMap YAML.
+!!! example "Expected output"
+    Commit points at a tree; tree lists `app.yaml` blob; blob contains ConfigMap YAML.
+
 
 #### Task 3 – Show two blobs differ after the edit
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-01-objects/demo
 set -euo pipefail
 
@@ -184,7 +188,9 @@ tar -czf ../module-01-objects-evidence.tgz -C .. log.txt head.txt head-type.txt 
 ls -l ../module-01-objects-evidence.tgz | tee ../evidence.txt
 ```
 
-**Expected output:** Different blob IDs for the two file versions; evidence archive created.
+!!! example "Expected output"
+    Different blob IDs for the two file versions; evidence archive created.
+
 
 ### Validation steps
 
@@ -212,7 +218,7 @@ Create an annotated tag `v0.1.0` on `HEAD` and run `git cat-file -p v0.1.0` to s
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-01-objects
 ```
 

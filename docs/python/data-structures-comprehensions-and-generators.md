@@ -143,7 +143,7 @@ Under `~/rebash-python/lab05`, create sample logs and `log_stats.py` that uses l
 
 Workspace: `~/rebash-python/lab05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab05 && cd ~/rebash-python/lab05
 set -euo pipefail
 python3 -m venv .venv
@@ -153,7 +153,9 @@ python -c 'import sys; assert sys.version_info >= (3, 11)'
 python -V | tee python-version.txt
 ```
 
-**Expected output:** venv ready; version file present.
+!!! example "Expected output"
+    venv ready; version file present.
+
 
 ### Real-world scenario
 
@@ -163,7 +165,7 @@ A service writes large access/error logs on a jump host. You need a safe summary
 
 #### Task 1 – Fixture log and stats script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab05
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -172,7 +174,7 @@ source .venv/bin/activate
 
 Create `app.log`:
 
-```text
+```text title="app.log"
 2026-08-02T10:00:01Z INFO web-01 ready
 2026-08-02T10:00:02Z ERROR web-01 upstream timeout
 2026-08-02T10:00:03Z INFO web-02 ready
@@ -184,7 +186,7 @@ Create `app.log`:
 
 Create `log_stats.py`:
 
-```python
+```python title="log_stats.py"
 """Comprehensions + generator for log summaries."""
 from __future__ import annotations
 
@@ -252,7 +254,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 # Build a larger stream file for the generator demo (still small enough for lab)
 python - << 'PY'
 from pathlib import Path
@@ -269,11 +271,13 @@ test -f log_stats.py
 test -f app-large.log
 ```
 
-**Expected output:** `app.log`, `app-large.log`, and `log_stats.py` created; large file line count printed.
+!!! example "Expected output"
+    `app.log`, `app-large.log`, and `log_stats.py` created; large file line count printed.
+
 
 #### Task 2 – Run asserts and save output
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab05
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -285,11 +289,13 @@ grep -F 'large_error_count=3000' stats-output.txt
 grep -F 'web-01' stats-output.txt
 ```
 
-**Expected output:** all asserts pass; output shows counts and `large_error_count=3000`.
+!!! example "Expected output"
+    all asserts pass; output shows counts and `large_error_count=3000`.
+
 
 #### Task 3 – Comprehension micro-checks
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab05
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -315,7 +321,9 @@ ls -l lab05-evidence.tgz | tee evidence-ls.txt
 rm -f app-large.log
 ```
 
-**Expected output:** comprehension demo passes; evidence archive created; large log removed after proof.
+!!! example "Expected output"
+    comprehension demo passes; evidence archive created; large log removed after proof.
+
 
 ### Validation steps
 
@@ -346,7 +354,7 @@ Add `top_hosts.py` that streams `app.log` with a generator, counts ERROR lines *
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab05
 set -euo pipefail
 deactivate 2>/dev/null || true

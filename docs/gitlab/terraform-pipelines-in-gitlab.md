@@ -163,7 +163,7 @@ Workspace: `~/rebash-gitlab/module-10`
 
 File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-10 && cd ~/rebash-gitlab/module-10
 set -euo pipefail
 ```
@@ -219,7 +219,7 @@ output "url" {
 
 Init, validate, and plan against the Docker provider:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-10
 set -euo pipefail
 docker info >/dev/null
@@ -231,7 +231,9 @@ test -f tfplan
 grep -q 'docker_container.rebash_lab' plan.txt
 ```
 
-**Expected output:** `plan.txt` shows `docker_container.rebash_lab` will be created; `tfplan` exists.
+!!! example "Expected output"
+    `plan.txt` shows `docker_container.rebash_lab` will be created; `tfplan` exists.
+
 
 #### Task 2 – GitLab CI pipeline (fmt / validate / plan)
 
@@ -296,7 +298,7 @@ terraform-plan:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-10
 set -euo pipefail
 python3 -c "
@@ -310,14 +312,16 @@ print('gitlab-ci OK', list(d))
 grep -q 'hashicorp/terraform:1.5.7' .gitlab-ci.yml
 ```
 
-**Expected output:** `gitlab-ci OK` with job keys; pinned Terraform image present.
+!!! example "Expected output"
+    `gitlab-ci OK` with job keys; pinned Terraform image present.
+
 
 #### Task 3 – Apply, prove the container, and destroy locally
 
 Create `pipeline-simulate.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
@@ -338,14 +342,16 @@ echo 'module-10 terraform lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-10
 set -euo pipefail
 chmod +x pipeline-simulate.sh
 ./pipeline-simulate.sh | tee validation.txt
 ```
 
-**Expected output:** `container-proof.txt` shows `rebash-gitlab-tf-lab` running; script ends with `module-10 terraform lab passed`.
+!!! example "Expected output"
+    `container-proof.txt` shows `rebash-gitlab-tf-lab` running; script ends with `module-10 terraform lab passed`.
+
 
 ### Validation steps
 
@@ -378,7 +384,7 @@ Add a manual `terraform-apply` job on the default branch that downloads the plan
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-10
 terraform destroy -input=false -auto-approve 2>/dev/null || true
 docker rm -f rebash-gitlab-tf-lab 2>/dev/null || true

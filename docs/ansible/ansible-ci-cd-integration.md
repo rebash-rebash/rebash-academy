@@ -127,7 +127,7 @@ Create a minimal Ansible repo layout with a GitHub Actions workflow (syntax-chec
 
 Workspace: `~/rebash-ansible/module-14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-14 && cd ~/rebash-ansible/module-14
 ansible --version | tee ansible-version.txt
 ```
@@ -142,7 +142,7 @@ Your team stores Ansible in GitHub. Security requires every pull request to pass
 
 Create `inventories/ci/hosts.yml`:
 
-```yaml
+```yaml title="hosts.yml"
 all:
   hosts:
     localhost:
@@ -182,7 +182,7 @@ Create `site.yml`:
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = inventories/ci/hosts.yml
 host_key_checking = False
@@ -192,7 +192,7 @@ interpreter_python = auto_silent
 
 Verify locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-14
 ansible-playbook --syntax-check site.yml | tee local-syntax.txt
 ansible-playbook site.yml | tee local-apply.txt
@@ -201,7 +201,9 @@ grep -q ci_gate=passed ~/rebash-ansible/module-14/ci-artifacts/gate-marker.txt
 echo "local apply OK" | tee local-apply-ok.txt
 ```
 
-**Expected output:** Syntax check and apply succeed; `gate-marker.txt` contains `ci_gate=passed`.
+!!! example "Expected output"
+    Syntax check and apply succeed; `gate-marker.txt` contains `ci_gate=passed`.
+
 
 #### Task 2 – Create GitHub Actions workflow
 
@@ -255,7 +257,7 @@ jobs:
 
 Validate workflow YAML offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-14
 python3 - <<'PY' | tee github-yaml-validate.txt
 import yaml
@@ -269,13 +271,15 @@ PY
 grep -q 'OK github workflow' github-yaml-validate.txt
 ```
 
-**Expected output:** PyYAML parses the workflow; jobs key contains `syntax-check`.
+!!! example "Expected output"
+    PyYAML parses the workflow; jobs key contains `syntax-check`.
+
 
 #### Task 3 – Create GitLab CI stub
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 stages:
   - validate
 
@@ -295,7 +299,7 @@ ansible-syntax-check:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-14
 python3 - <<'PY' | tee gitlab-yaml-validate.txt
 import yaml
@@ -307,11 +311,13 @@ PY
 grep -q 'OK gitlab ci' gitlab-yaml-validate.txt
 ```
 
-**Expected output:** GitLab stub parses; job name present.
+!!! example "Expected output"
+    GitLab stub parses; job name present.
+
 
 #### Task 4 – Package CI evidence tarball
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-14
 tar -czf module-14-evidence.tgz \
   site.yml ansible.cfg inventories/ .github/ .gitlab-ci.yml \
@@ -321,7 +327,9 @@ ls -lh module-14-evidence.tgz | tee tarball.txt
 test -s module-14-evidence.tgz
 ```
 
-**Expected output:** Non-empty evidence archive with playbook and pipeline definitions.
+!!! example "Expected output"
+    Non-empty evidence archive with playbook and pipeline definitions.
+
 
 ### Validation steps
 
@@ -352,7 +360,7 @@ Add an `ansible-lint` job (install `ansible-lint` via pip) that runs against `si
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-ansible/module-14
 ```
 

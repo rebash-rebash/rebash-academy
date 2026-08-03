@@ -69,7 +69,7 @@ Any Linux host or WSL2. Work under `~/rebash-lab-shell`.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/{inbox,safe-target}
 cd ~/rebash-lab-shell
 printf 'x\n' > "inbox/my file.txt"
@@ -80,7 +80,7 @@ printf 'y\n' > inbox/keep.txt
 
 Create `cleanup-broken.sh`:
 
-```bash
+```bash title="cleanup-broken.sh"
 #!/bin/bash
 TARGET=$1
 grep ERROR /var/log/syslog | wc -l
@@ -90,7 +90,7 @@ echo SUCCESS
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x cleanup-broken.sh
 ```
 
@@ -160,7 +160,7 @@ Run two copies in parallel to confirm locking.
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

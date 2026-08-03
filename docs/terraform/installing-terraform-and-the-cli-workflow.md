@@ -110,7 +110,7 @@ Production teams document:
 
 Verify after install:
 
-```bash
+```bash title="Terminal"
 terraform version
 # Terraform v1.9.x
 # on linux_amd64
@@ -200,7 +200,7 @@ Install or verify Terraform, create a version-pinned root module with the **`kre
 
 Workspace: `~/rebash-terraform/module-02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-02 && cd ~/rebash-terraform/module-02
 ```
 
@@ -216,7 +216,7 @@ Your platform team publishes a **golden Terraform version** (1.9.x) and requires
 
 Create `install-check.sh`:
 
-```bash
+```bash title="install-check.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-02
@@ -228,12 +228,14 @@ echo "CLI evidence OK" | tee cli-evidence.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-02/install-check.sh
 ~/rebash-terraform/module-02/install-check.sh
 ```
 
-**Expected output:** `terraform-version.txt` shows `Terraform v1.x.x`; `cli-evidence.txt` contains `CLI evidence OK`.
+!!! example "Expected output"
+    `terraform-version.txt` shows `Terraform v1.x.x`; `cli-evidence.txt` contains `CLI evidence OK`.
+
 
 If Terraform is missing, install via HashiCorp packages ([Install Terraform](https://developer.hashicorp.com/terraform/install)) or tfenv, then re-run the script.
 
@@ -241,7 +243,7 @@ If Terraform is missing, install via HashiCorp packages ([Install Terraform](htt
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0, < 2.0.0"
 
@@ -258,20 +260,22 @@ provider "docker" {}
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_network" "install_marker" {
   name = "rebash-module-02-net"
 }
 ```
 
-**Expected output:** `versions.tf` and `main.tf` exist with pinned `source` and `version` for the Docker provider.
+!!! example "Expected output"
+    `versions.tf` and `main.tf` exist with pinned `source` and `version` for the Docker provider.
+
 
 #### Task 3 – Init, apply, and verify Registry provider layout
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-02
 terraform fmt -recursive
 terraform init | tee init-output.txt
@@ -286,7 +290,9 @@ echo "provider install evidence OK" | tee provider-evidence.txt
 ```
 {% endraw %}
 
-**Expected output:** `init-output.txt` shows Docker provider installed; `provider-files.txt` lists plugin binaries under `.terraform/providers/registry.terraform.io/kreuzwerker/`; `docker-net.txt` contains `rebash-module-02-net`; `provider-evidence.txt` contains `provider install evidence OK`.
+!!! example "Expected output"
+    `init-output.txt` shows Docker provider installed; `provider-files.txt` lists plugin binaries under `.terraform/providers/registry.terraform.io/kreuzwerker/`; `docker-net.txt` contains `rebash-module-02-net`; `provider-evidence.txt` contains `provider install evidence OK`.
+
 
 ### Validation steps
 
@@ -311,7 +317,7 @@ echo "provider install evidence OK" | tee provider-evidence.txt
 Create `pin-report.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-02
@@ -331,12 +337,14 @@ docker network inspect rebash-module-02-net --format '{{.Name}}' | grep -q rebas
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-02/pin-report.sh
 ~/rebash-terraform/module-02/pin-report.sh
 ```
 
-**Expected output:** `pin-report.txt` contains `pinned toolchain OK` with your version string; network inspect succeeds.
+!!! example "Expected output"
+    `pin-report.txt` contains `pinned toolchain OK` with your version string; network inspect succeeds.
+
 
 ### Learning outcomes
 
@@ -347,7 +355,7 @@ chmod +x ~/rebash-terraform/module-02/pin-report.sh
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-02
 terraform destroy -auto-approve
 rm -f terraform-version.txt terraform-version.json cli-evidence.txt \

@@ -166,7 +166,7 @@ Author a minimal Helm chart (`Chart.yaml`, `values.yaml`, `templates/deployment.
 
 Workspace: `~/rebash-k8s/module-14` on your workstation with a disposable **kind** cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-14/rebash-web/templates && cd ~/rebash-k8s/module-14
 kubectl cluster-info | tee cluster-info.txt
 kubectl get nodes | tee nodes-ready.txt
@@ -183,7 +183,7 @@ Your team packages internal microservices as Helm charts for GitOps. Before open
 
 Create `rebash-web/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-web
 description: Minimal REBASH lab web chart
@@ -194,7 +194,7 @@ appVersion: "1.27.4"
 
 Create `rebash-web/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginxinc/nginx-unprivileged
@@ -254,7 +254,7 @@ Create `rebash-web/templates/_helpers.tpl`:
 
 #### Task 3 – Lint and render offline
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-14
 helm lint rebash-web | tee helm-lint-m14.txt
 helm template rebash-web-demo rebash-web --namespace rebash-m14 | tee helm-template-m14.yaml
@@ -262,20 +262,22 @@ grep -q 'kind: Deployment' helm-template-m14.yaml
 grep -q 'nginxinc/nginx-unprivileged:1.27-alpine' helm-template-m14.yaml
 ```
 
-**Expected output:** `helm lint` reports 0 chart(s) failed; rendered YAML contains a Deployment with the pinned image.
+!!! example "Expected output"
+    `helm lint` reports 0 chart(s) failed; rendered YAML contains a Deployment with the pinned image.
+
 
 #### Task 4 – Install to kind and prove Ready Pods
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
   name: rebash-m14
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-14
 kubectl apply -f namespace.yaml
 helm upgrade --install rebash-web-demo rebash-web -n rebash-m14 --wait --timeout 120s | tee helm-install-m14.txt
@@ -285,7 +287,9 @@ kubectl get pods -n rebash-m14 -o wide | tee pods-ready-m14.txt
 grep -q Running pods-ready-m14.txt
 ```
 
-**Expected output:** Release installs; Pods reach Ready; `pods-ready-m14.txt` shows `Running`.
+!!! example "Expected output"
+    Release installs; Pods reach Ready; `pods-ready-m14.txt` shows `Running`.
+
 
 ### Validation steps
 
@@ -316,7 +320,7 @@ Add a `Service` template exposing port 8080 and re-run `helm template`; verify S
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall rebash-web-demo -n rebash-m14 2>/dev/null || true
 kubectl delete namespace rebash-m14 --ignore-not-found
 ```

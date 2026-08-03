@@ -149,7 +149,7 @@ Author a GitHub Actions plan workflow and a local CI simulator script that runs 
 
 Workspace: `~/rebash-terraform/module-16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-16/{.github/workflows,infra,scripts,artefacts} && cd ~/rebash-terraform/module-16
 ```
 
@@ -163,7 +163,7 @@ Platform engineering requires every infrastructure pull request to upload a save
 
 Create `infra/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.9.0"
 
@@ -178,13 +178,13 @@ terraform {
 
 Create `infra/providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `infra/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "ci_demo" {
   name         = "nginx:1.27-alpine"
   keep_locally = true
@@ -209,7 +209,7 @@ resource "docker_container" "ci_demo" {
 
 Create `infra/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "container_name" {
   value = docker_container.ci_demo.name
 }
@@ -221,13 +221,15 @@ output "purpose" {
 
 Validate locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-16/infra
 terraform init -backend=false | tee ../artefacts/init.log
 terraform validate | tee ../artefacts/validate.log
 ```
 
-**Expected output:** `artefacts/validate.log` contains `Success! The configuration is valid.`
+!!! example "Expected output"
+    `artefacts/validate.log` contains `Success! The configuration is valid.`
+
 
 #### Task 2 – Author GitHub Actions plan workflow
 
@@ -288,21 +290,23 @@ jobs:
 
 Verify YAML file exists:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-16
 test -f .github/workflows/terraform-plan.yml
 grep -q 'terraform fmt -check' .github/workflows/terraform-plan.yml
 grep -q 'upload-artifact' .github/workflows/terraform-plan.yml
 ```
 
-**Expected output:** Both `grep` commands exit 0.
+!!! example "Expected output"
+    Both `grep` commands exit 0.
+
 
 #### Task 3 – Local CI simulator (fmt, validate, plan, apply)
 
 Create `scripts/simulate-ci.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -328,7 +332,7 @@ echo "simulate-ci: OK"
 
 Run the simulator:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-16
 chmod +x scripts/simulate-ci.sh
 ./scripts/simulate-ci.sh | tee artefacts/simulate-ci.log
@@ -337,14 +341,16 @@ grep -q 'docker_container.ci_demo' artefacts/plan-review.txt
 grep -q 'running' artefacts/container-ps.txt
 ```
 
-**Expected output:** Plan review lists container; apply creates running `module-16-cicd-lab` container.
+!!! example "Expected output"
+    Plan review lists container; apply creates running `module-16-cicd-lab` container.
+
 
 #### Task 4 – Prove saved-plan apply discipline
 
 Re-run plan and apply saved artefact explicitly (merge simulation):
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-16/infra
 terraform plan -input=false -out=../artefacts/merge.tfplan | tee ../artefacts/plan-merge.log
 terraform apply -input=false ../artefacts/merge.tfplan | tee ../artefacts/apply-merge.log
@@ -354,7 +360,9 @@ grep -q 'terraform' ../artefacts/label-proof.txt
 ```
 {% endraw %}
 
-**Expected output:** No unexpected changes on re-apply; container label `managed_by=terraform`.
+!!! example "Expected output"
+    No unexpected changes on re-apply; container label `managed_by=terraform`.
+
 
 ### Validation steps
 
@@ -386,7 +394,7 @@ Add `.github/workflows/terraform-apply.yml` with {% raw %}`push`{% endraw %} to 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-16/infra
 terraform destroy -auto-approve
 cd ~/rebash-terraform/module-16

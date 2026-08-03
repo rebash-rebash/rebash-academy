@@ -116,7 +116,7 @@ Mental model: **configuration + state → plan → apply → updated state**.
 4. **Apply** — After approval, Terraform calls provider APIs in dependency order and writes new state.
 5. **Destroy** — `terraform destroy` removes managed resources in safe order (when you intentionally tear down).
 
-```bash
+```bash title="Terminal"
 # Conceptual daily loop (Module 3 goes deep on each command)
 terraform fmt -recursive
 terraform validate
@@ -196,7 +196,7 @@ Declare a **declarative Docker stack** (network + container) with the `kreuzwerk
 
 Workspace: `~/rebash-terraform/module-01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-01 && cd ~/rebash-terraform/module-01
 ```
 
@@ -212,7 +212,7 @@ You join a platform team replacing manual `docker network create` and `docker ru
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_version = ">= 1.5.0, < 2.0.0"
 
@@ -249,13 +249,15 @@ resource "docker_container" "web" {
 }
 ```
 
-**Expected output:** `main.tf` exists with one network, one image, and one container resource.
+!!! example "Expected output"
+    `main.tf` exists with one network, one image, and one container resource.
+
 
 #### Task 2 – Init, plan, and apply the stack
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-01
 terraform init | tee init-log.txt
 terraform plan -no-color | tee plan-log.txt
@@ -264,14 +266,16 @@ grep -q 'docker_container.web' plan-log.txt
 terraform apply -auto-approve | tee apply-log.txt
 ```
 
-**Expected output:** `init-log.txt` shows `kreuzwerker/docker` installed; `plan-log.txt` lists three resources to create; `apply-log.txt` ends with `Apply complete!`.
+!!! example "Expected output"
+    `init-log.txt` shows `kreuzwerker/docker` installed; `plan-log.txt` lists three resources to create; `apply-log.txt` ends with `Apply complete!`.
+
 
 #### Task 3 – Prove infrastructure with Docker CLI
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-01
 docker ps --filter name=rebash-module-01-web --format '{{.Names}} {{.Status}}' | tee docker-ps.txt
 grep -q 'rebash-module-01-web' docker-ps.txt
@@ -282,7 +286,9 @@ echo "iac docker proof OK" | tee iac-evidence.txt
 ```
 {% endraw %}
 
-**Expected output:** `docker-ps.txt` shows `rebash-module-01-web Up ...`; `docker-net.txt` contains `rebash-module-01-net`; `iac-evidence.txt` contains `iac docker proof OK`.
+!!! example "Expected output"
+    `docker-ps.txt` shows `rebash-module-01-web Up ...`; `docker-net.txt` contains `rebash-module-01-net`; `iac-evidence.txt` contains `iac docker proof OK`.
+
 
 ### Validation steps
 
@@ -308,7 +314,7 @@ echo "iac docker proof OK" | tee iac-evidence.txt
 Create `declarative-proof.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-01
@@ -321,12 +327,14 @@ echo "declarative workflow proof complete"
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-01/declarative-proof.sh
 ~/rebash-terraform/module-01/declarative-proof.sh | tee challenge-result.txt
 ```
 
-**Expected output:** Plan exit code 0 (no pending changes); `challenge-result.txt` ends with `declarative workflow proof complete`.
+!!! example "Expected output"
+    Plan exit code 0 (no pending changes); `challenge-result.txt` ends with `declarative workflow proof complete`.
+
 
 ### Learning outcomes
 
@@ -338,7 +346,7 @@ chmod +x ~/rebash-terraform/module-01/declarative-proof.sh
 ### Cleanup
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-01
 terraform destroy -auto-approve
 docker ps -a --filter name=rebash-module-01-web --format '{{.Names}}' | grep -q . && docker rm -f rebash-module-01-web || true

@@ -140,7 +140,7 @@ Produce a hardening checklist against your lab controller, create a folder-scope
 
 Workspace: `~/rebash-jenkins/module-11`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-11 && cd ~/rebash-jenkins/module-11
 set -euo pipefail
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller.txt
@@ -158,14 +158,14 @@ In UI: Manage Jenkins → Security. Record realm and authorisation strategy in t
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-11
 set -euo pipefail
 ```
 
 Create `security-policy.yaml`:
 
-```yaml
+```yaml title="security-policy.yaml"
 authentication:
   realm: fill_from_ui
   admin_account_count: fill_from_ui
@@ -186,7 +186,7 @@ script_console:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('security-policy.yaml') as f:
@@ -197,7 +197,9 @@ print('security-policy.yaml OK')
 " | tee security-policy-validate.txt
 ```
 
-**Expected output:** YAML validates required keys; fill UI values after inspection.
+!!! example "Expected output"
+    YAML validates required keys; fill UI values after inspection.
+
 
 #### Task 2 – Folder-scoped dummy credential
 
@@ -207,14 +209,14 @@ print('security-policy.yaml OK')
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-11
 set -euo pipefail
 ```
 
 Create `credential-config.yaml`:
 
-```yaml
+```yaml title="credential-config.yaml"
 id: rebash-demo-dummy
 kind: secret_text
 scope: folder_rebash-demo
@@ -224,7 +226,7 @@ value_storage: jenkins_credentials_store_only
 
 Create `creds-pipeline.Jenkinsfile`:
 
-```groovy
+```groovy title="creds-pipeline.Jenkinsfile"
 pipeline {
   agent any
   stages {
@@ -251,20 +253,22 @@ PY
 
 Create job `rebash-demo/creds-safe-demo` with this script and build it. Console must **not** print `not-a-real-secret`.
 
-**Expected output:** Build success; length line only.
+!!! example "Expected output"
+    Build success; length line only.
+
 
 #### Task 3 – Multibranch hygiene policy
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-11
 set -euo pipefail
 ```
 
 Create `multibranch-hygiene.yaml`:
 
-```yaml
+```yaml title="multibranch-hygiene.yaml"
 prod_deploy_credentials_separate_from_pr_jobs: true
 fork_pr_discovery: disabled_or_sandboxed_agents
 jenkinsfile_prod_credential_ids: forbidden_for_pr_jobs
@@ -275,7 +279,7 @@ lab_decision: fill_after_controller_review
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('multibranch-hygiene.yaml') as f:
@@ -285,20 +289,22 @@ print('multibranch-hygiene.yaml OK')
 " | tee mb-hygiene-validate.txt
 ```
 
-**Expected output:** Hygiene YAML validates.
+!!! example "Expected output"
+    Hygiene YAML validates.
+
 
 #### Task 4 – Evidence pack
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-11
 set -euo pipefail
 ```
 
 Create `hardening-checks.sh`:
 
-```bash
+```bash title="hardening-checks.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "
@@ -314,7 +320,7 @@ echo hardening_checks_ok
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 chmod +x hardening-checks.sh
 ./hardening-checks.sh | tee hardening-checks.txt
 
@@ -322,7 +328,9 @@ tar -czf module-11-evidence.tgz security-policy.yaml multibranch-hygiene.yaml cr
 ls -l module-11-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Archive without real secrets.
+!!! example "Expected output"
+    Archive without real secrets.
+
 
 ### Validation steps
 
@@ -354,7 +362,7 @@ Create two users (or simulate with RBAC): `dev-user` with Job/Build in `rebash-d
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Delete dummy credential after lab if desired
 ls ~/rebash-jenkins/module-11
 ```

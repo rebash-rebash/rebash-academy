@@ -91,14 +91,14 @@ Your job is to discover both through evidence.
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-net
 cd ~/rebash-lab-net
 ```
 
 Create `server.py`:
 
-```python
+```python title="server.py"
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -121,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
 HTTPServer(("127.0.0.1", 18080), Handler).serve_forever()
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x server.py
 python3 server.py >/tmp/rebash-status.log 2>&1 &
 echo $! > /tmp/rebash-status.pid
@@ -129,11 +129,13 @@ sleep 1
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18080/healthz
 ```
 
-**Expected output:** `200`
+!!! example "Expected output"
+    `200`
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 ss -ltnp | grep 18080 || lsof -nP -iTCP:18080 -sTCP:LISTEN
 ```
 
@@ -147,7 +149,7 @@ You should see a LISTEN on `127.0.0.1:18080`.
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 # Backup once
 sudo cp /etc/hosts /etc/hosts.rebash-lab.bak
 
@@ -161,11 +163,11 @@ dig +short status.rebash.lab A || true
 curl -v --connect-timeout 3 http://status.rebash.lab:18080/healthz || true
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - `getent` / `ping` shows `127.0.0.99`
+    - `dig` typically returns **empty** (public DNS has no such name) — that contrast is the lesson
+    - `curl` fails with connection refused / timeout to `.99`, not an HTTP 5xx
 
-- `getent` / `ping` shows `127.0.0.99`
-- `dig` typically returns **empty** (public DNS has no such name) — that contrast is the lesson
-- `curl` fails with connection refused / timeout to `.99`, not an HTTP 5xx
 
 **Validation:** Write one line: “Hostname resolves to X; listener is on Y.”
 
@@ -178,7 +180,7 @@ curl -v --connect-timeout 3 http://status.rebash.lab:18080/healthz || true
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 # Find the lab line
 grep -n 'status.rebash.lab' /etc/hosts
 
@@ -190,7 +192,9 @@ getent hosts status.rebash.lab
 curl -sS -o /dev/null -w "%{http_code}\n" http://status.rebash.lab:18080/healthz
 ```
 
-**Expected output:** `getent` shows `127.0.0.1`; `curl` returns `200` **if** no firewall fault is active yet.
+!!! example "Expected output"
+    `getent` shows `127.0.0.1`; `curl` returns `200` **if** no firewall fault is active yet.
+
 
 **Hints:** If `sed -i` differs on macOS, edit with `sudo nano /etc/hosts` and keep a single `127.0.0.1 status.rebash.lab` line.
 
@@ -205,7 +209,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://status.rebash.lab:18080/healthz
 
 **Linux (ufw or iptables):**
 
-```bash
+```bash title="Terminal"
 # Confirm DNS is healthy first
 getent hosts status.rebash.lab
 curl -sS -o /dev/null -w "%{http_code}\n" http://status.rebash.lab:18080/healthz
@@ -223,11 +227,13 @@ curl -v --connect-timeout 3 http://status.rebash.lab:18080/healthz || true
 ss -ltn | grep 18080
 ```
 
-**Expected output:** Listener still shown by `ss`, but `curl` fails (reset/timeout). That split means **path/ACL**, not “app crashed”.
+!!! example "Expected output"
+    Listener still shown by `ss`, but `curl` fails (reset/timeout). That split means **path/ACL**, not “app crashed”.
+
 
 **Fix:**
 
-```bash
+```bash title="Terminal"
 if command -v ufw >/dev/null; then
   sudo ufw delete deny 18080/tcp || true
 else
@@ -240,7 +246,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://status.rebash.lab:18080/healthz
 
 **macOS alternative (no pf):** stop the listener to simulate “security change took the port offline”, then restore:
 
-```bash
+```bash title="Terminal"
 kill "$(cat /tmp/rebash-status.pid)" 2>/dev/null || true
 curl -v --connect-timeout 2 http://status.rebash.lab:18080/healthz || true
 python3 ~/rebash-lab-net/server.py >/tmp/rebash-status.log 2>&1 &
@@ -290,7 +296,7 @@ Write three bullets:
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 # Stop demo service
 kill "$(cat /tmp/rebash-status.pid)" 2>/dev/null || true
 rm -f /tmp/rebash-status.pid /tmp/rebash-status.log

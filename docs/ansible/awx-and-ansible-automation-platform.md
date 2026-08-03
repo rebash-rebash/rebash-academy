@@ -129,7 +129,7 @@ Create the Ansible project layout AWX would sync (`site.yml`, inventories, roles
 
 Workspace: `~/rebash-ansible/module-15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-15/{playbooks,inventories/staging,roles/common/{tasks,defaults}} && cd ~/rebash-ansible/module-15
 ```
 
@@ -146,7 +146,7 @@ Your platform architect wants a working automation repo before the cluster team 
 
 Create `inventories/staging/hosts.yml`:
 
-```yaml
+```yaml title="hosts.yml"
 all:
   children:
     app:
@@ -157,7 +157,7 @@ all:
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = inventories/staging/hosts.yml
 roles_path = roles
@@ -167,7 +167,7 @@ interpreter_python = auto_silent
 
 Create `roles/common/defaults/main.yml`:
 
-```yaml
+```yaml title="main.yml"
 common_marker_path: ~/rebash-ansible/module-15/staging-marker.txt
 common_banner: "AWX-ready baseline"
 ```
@@ -187,7 +187,7 @@ Create `roles/common/tasks/main.yml`:
 
 Create `playbooks/site.yml`:
 
-```yaml
+```yaml title="site.yml"
 ---
 - name: AWX job template equivalent — site play
   hosts: app
@@ -196,11 +196,13 @@ Create `playbooks/site.yml`:
     - common
 ```
 
-**Expected output:** Directory tree matches AWX Project expectations.
+!!! example "Expected output"
+    Directory tree matches AWX Project expectations.
+
 
 #### Task 2 – Run site playbook (job template simulation)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-15
 ansible-playbook playbooks/site.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/site.yml | tee site-run.txt
@@ -210,7 +212,9 @@ cat ~/rebash-ansible/module-15/staging-marker.txt | tee marker-proof.txt
 echo "site play OK" | tee site-ok.txt
 ```
 
-**Expected output:** Play succeeds; marker file contains `AWX-ready baseline`.
+!!! example "Expected output"
+    Play succeeds; marker file contains `AWX-ready baseline`.
+
 
 #### Task 3 – Job template metadata file (for AWX import reference)
 
@@ -233,7 +237,7 @@ job_template:
 
 Verify playbook path exists:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-15
 test -f playbooks/site.yml
 test -f inventories/staging/hosts.yml
@@ -241,11 +245,13 @@ grep -q 'site-staging' awx-job-template-ref.yaml
 echo "job template ref OK" | tee jt-ref-ok.txt
 ```
 
-**Expected output:** Reference file documents AWX mapping; all referenced paths exist on disk.
+!!! example "Expected output"
+    Reference file documents AWX mapping; all referenced paths exist on disk.
+
 
 #### Task 4 – Idempotent re-run and evidence tarball
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-15
 ansible-playbook playbooks/site.yml | tee site-run2.txt
 grep -E 'changed=0|changed=1' site-run2.txt | tail -1 | tee idempotency-line.txt
@@ -256,7 +262,9 @@ ls -lh module-15-evidence.tgz | tee tarball.txt
 test -s module-15-evidence.tgz
 ```
 
-**Expected output:** Second run shows minimal changes; tarball includes playbook tree and run logs.
+!!! example "Expected output"
+    Second run shows minimal changes; tarball includes playbook tree and run logs.
+
 
 ### Validation steps
 
@@ -289,7 +297,7 @@ Add `inventories/production/hosts.yml` with a different host entry and a `--chec
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-ansible/module-15/staging-marker.txt ~/rebash-ansible/module-15/module-15-evidence.tgz
 ```
 

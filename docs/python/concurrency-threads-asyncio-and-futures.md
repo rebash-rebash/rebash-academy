@@ -135,13 +135,15 @@ Under `~/rebash-python/lab21`, run sequential versus `ThreadPoolExecutor` (and o
 
 Workspace: `~/rebash-python/lab21`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab21 && cd ~/rebash-python/lab21
 set -euo pipefail
 python3 --version | tee python-version.txt
 ```
 
-**Expected output:** `python-version.txt` shows Python 3.10 or newer.
+!!! example "Expected output"
+    `python-version.txt` shows Python 3.10 or newer.
+
 
 ### Real-world scenario
 
@@ -154,7 +156,7 @@ Your health-check tool pings twenty internal endpoints every minute. A sequentia
 
 Create `fanout_checks.py`:
 
-```python
+```python title="fanout_checks.py"
 #!/usr/bin/env python3
 """Compare sequential vs ThreadPoolExecutor (and asyncio) localhost checks."""
 from __future__ import annotations
@@ -266,16 +268,18 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab21
 set -euo pipefail
 ```
 
-**Expected output:** File `fanout_checks.py` exists (run in Task 2).
+!!! example "Expected output"
+    File `fanout_checks.py` exists (run in Task 2).
+
 
 #### Task 2 – Run and assert timing evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab21
 set -euo pipefail
 
@@ -297,11 +301,13 @@ else:
 PY
 ```
 
-**Expected output:** `timing-evidence.json` shows 20 successful checks; thread pool time is usually clearly lower than sequential (for example ~0.2s vs ~1.0s with 50ms sleeps).
+!!! example "Expected output"
+    `timing-evidence.json` shows 20 successful checks; thread pool time is usually clearly lower than sequential (for example ~0.2s vs ~1.0s with 50ms sleeps).
+
 
 #### Task 3 – Pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab21
 set -euo pipefail
 
@@ -311,7 +317,9 @@ ls -l concurrency-lab-evidence.tgz | tee evidence-ls.txt
 test -s concurrency-lab-evidence.tgz
 ```
 
-**Expected output:** Non-empty `concurrency-lab-evidence.tgz`.
+!!! example "Expected output"
+    Non-empty `concurrency-lab-evidence.tgz`.
+
 
 ### Validation steps
 
@@ -344,7 +352,7 @@ Add a `ProcessPoolExecutor` path that hashes large byte strings (CPU-bound) and 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab21
 set -euo pipefail
 # Server is daemonised per run and shut down in finally — nothing left listening

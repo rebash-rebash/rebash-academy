@@ -75,7 +75,7 @@ One configuration code path; workspace selection switches which state file Terra
 
 **Workspaces** are named state instances for a single root module:
 
-```bash
+```bash title="Terminal"
 terraform workspace new dev
 terraform workspace new staging
 terraform workspace select dev
@@ -149,7 +149,7 @@ Create **dev** and **staging** workspaces, apply environment-specific **Docker c
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-12 && cd ~/rebash-terraform/module-12
 ```
 
@@ -165,7 +165,7 @@ A platform team uses one service module for **dev** and **staging**, deploying d
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -180,13 +180,13 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "owner" {
   type    = string
   default = "platform-team"
@@ -195,7 +195,7 @@ variable "owner" {
 
 Create `locals.tf`:
 
-```hcl
+```hcl title="locals.tf"
 locals {
   workspace_replicas = {
     dev     = 1
@@ -209,7 +209,7 @@ locals {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "env_marker" {
   name         = "nginx:1.27-alpine"
   keep_locally = true
@@ -232,7 +232,7 @@ resource "docker_container" "env_marker" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "active_workspace" {
   value = terraform.workspace
 }
@@ -248,21 +248,23 @@ output "container_ids" {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-12
 terraform init
 terraform validate
 echo "config OK" | tee config-ok.txt
 ```
 
-**Expected output:** Validate succeeds in default workspace.
+!!! example "Expected output"
+    Validate succeeds in default workspace.
+
 
 #### Task 2 – Create dev workspace and apply
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-12
 terraform workspace new dev
 terraform workspace select dev
@@ -278,14 +280,16 @@ echo "dev workspace OK" | tee dev-ws-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Active workspace `dev`; one container `rebash-dev-0`; state file under `terraform.tfstate.d/dev/`.
+!!! example "Expected output"
+    Active workspace `dev`; one container `rebash-dev-0`; state file under `terraform.tfstate.d/dev/`.
+
 
 #### Task 3 – Create staging workspace and apply
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-12
 terraform workspace new staging
 terraform workspace select staging
@@ -303,14 +307,16 @@ echo "staging workspace OK" | tee staging-ws-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Staging has two containers; dev container still running — states are isolated.
+!!! example "Expected output"
+    Staging has two containers; dev container still running — states are isolated.
+
 
 #### Task 4 – Workspace evidence script
 
 Create `workspace-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-12
@@ -329,12 +335,14 @@ echo "workspace-evidence PASS" | tee workspace-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-12/workspace-evidence.sh
 ~/rebash-terraform/module-12/workspace-evidence.sh
 ```
 
-**Expected output:** Dev has 1 container, staging has 2; evidence script passes.
+!!! example "Expected output"
+    Dev has 1 container, staging has 2; evidence script passes.
+
 
 ### Validation steps
 
@@ -359,7 +367,7 @@ chmod +x ~/rebash-terraform/module-12/workspace-evidence.sh
 Add **`prod`** to `workspace_replicas` with value `3`, create workspace, apply, and verify without touching dev/staging containers:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-12
 # Add prod = 3 to locals.workspace_replicas in locals.tf
 terraform workspace new prod
@@ -372,7 +380,9 @@ echo "prod workspace challenge OK"
 ```
 {% endraw %}
 
-**Expected output:** Prod shows 3 containers; dev unchanged at 1.
+!!! example "Expected output"
+    Prod shows 3 containers; dev unchanged at 1.
+
 
 ### Learning outcomes
 
@@ -383,7 +393,7 @@ echo "prod workspace challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-12
 terraform workspace select prod 2>/dev/null && terraform destroy -auto-approve || true
 terraform workspace select staging && terraform destroy -auto-approve

@@ -175,7 +175,7 @@ Workspace: `~/rebash-gitlab/module-15`
 
 File-first lab. Environment approvals apply when pushed to GitLab.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-15 && cd ~/rebash-gitlab/module-15
 set -euo pipefail
 ```
@@ -252,7 +252,7 @@ deploy-production:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-15
 set -euo pipefail
 python3 -c "
@@ -267,13 +267,15 @@ grep -q 'alpine:3.20' .gitlab-ci.yml
 grep -q 'SAME digest' .gitlab-ci.yml
 ```
 
-**Expected output:** `gitlab-ci OK`; manual production gate and digest promotion present.
+!!! example "Expected output"
+    `gitlab-ci OK`; manual production gate and digest promotion present.
+
 
 #### Task 2 – Deployment strategies reference
 
 Create `deployment-strategies.yaml`:
 
-```yaml
+```yaml title="deployment-strategies.yaml"
 strategies:
   blue_green:
     description: Maintain blue (current) and green (new) stacks
@@ -291,7 +293,7 @@ gitlab_environments:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-15
 set -euo pipefail
 python3 -c "
@@ -303,13 +305,15 @@ print('deployment-strategies.yaml OK')
 "
 ```
 
-**Expected output:** `deployment-strategies.yaml OK`
+!!! example "Expected output"
+    `deployment-strategies.yaml OK`
+
 
 #### Task 3 – Simulate digest promotion locally
 
 Create `simulate-promote.sh`:
 
-```bash
+```bash title="simulate-promote.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo 'sha256:lab-local' > digest.txt
@@ -322,14 +326,16 @@ echo 'module-15 promotion lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-15
 set -euo pipefail
 chmod +x simulate-promote.sh
 ./simulate-promote.sh | tee validation.txt
 ```
 
-**Expected output:** `module-15 promotion lab passed`
+!!! example "Expected output"
+    `module-15 promotion lab passed`
+
 
 ### Validation steps
 
@@ -362,7 +368,7 @@ Add a `rollback-production` manual job that accepts a `PRIOR_DIGEST` variable an
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-15/digest.txt 2>/dev/null || true
 ls ~/rebash-gitlab/module-15
 ```

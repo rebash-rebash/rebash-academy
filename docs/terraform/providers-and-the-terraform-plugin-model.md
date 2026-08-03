@@ -221,7 +221,7 @@ Configure **default and aliased** `kreuzwerker/docker` providers, pin versions, 
 
 Workspace: `~/rebash-terraform/module-05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-05 && cd ~/rebash-terraform/module-05
 ```
 
@@ -235,7 +235,7 @@ Your team runs **primary and replica** automation cells (two AWS accounts or reg
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0, < 2.0.0"
 
@@ -250,7 +250,7 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {
   # default — represents "primary" cell
 }
@@ -260,13 +260,15 @@ provider "docker" {
 }
 ```
 
-**Expected output:** `versions.tf` and `providers.tf` with default and `replica` alias for Docker.
+!!! example "Expected output"
+    `versions.tf` and `providers.tf` with default and `replica` alias for Docker.
+
 
 #### Task 2 – Bind resources to provider configurations
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "primary_cell" {
   type    = string
   default = "primary"
@@ -280,7 +282,7 @@ variable "replica_cell" {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "alpine" {
   name = "alpine:3.20"
 }
@@ -342,7 +344,7 @@ resource "docker_container" "replica_marker" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "primary_network" {
   value = docker_network.primary.name
 }
@@ -360,14 +362,16 @@ output "replica_container" {
 }
 ```
 
-**Expected output:** Resources explicitly use default or `docker.replica` provider.
+!!! example "Expected output"
+    Resources explicitly use default or `docker.replica` provider.
+
 
 #### Task 3 – Init, apply, and verify routing evidence
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-05
 terraform fmt -recursive
 terraform init | tee init.txt
@@ -383,13 +387,15 @@ echo "provider routing OK" | tee provider-evidence.txt
 ```
 {% endraw %}
 
-**Expected output:** Both networks and containers exist; labels distinguish cells; `provider-evidence.txt` contains `provider routing OK`.
+!!! example "Expected output"
+    Both networks and containers exist; labels distinguish cells; `provider-evidence.txt` contains `provider routing OK`.
+
 
 #### Task 4 – Diagnose missing provider binding (fix exercise)
 
 Simulate a common mistake: temporarily remove `provider = docker.replica` from `docker_network.replica` in `main.tf` (comment the line or delete it), then run plan:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-05
 terraform plan -no-color | tee plan-alias-bug.txt
 ```
@@ -402,14 +408,16 @@ Restore the line:
 
 Re-plan and confirm only the intended replica resources use the alias:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-05
 terraform plan -detailed-exitcode -no-color | tee plan-alias-fixed.txt || ec=$?
 test "${ec:-0}" -eq 0
 echo "alias fix OK" | tee alias-fix.txt
 ```
 
-**Expected output:** With binding removed, plan may try to recreate replica resources on the default provider; after restore, plan shows no changes (`alias fix OK`).
+!!! example "Expected output"
+    With binding removed, plan may try to recreate replica resources on the default provider; after restore, plan shows no changes (`alias fix OK`).
+
 
 ### Validation steps
 
@@ -435,7 +443,7 @@ echo "alias fix OK" | tee alias-fix.txt
 Create `verify-alias.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-05
@@ -449,12 +457,14 @@ echo "alias state evidence OK"
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-05/verify-alias.sh
 ~/rebash-terraform/module-05/verify-alias.sh | tee challenge-provider.txt
 ```
 
-**Expected output:** `challenge-provider.txt` contains `alias state evidence OK`.
+!!! example "Expected output"
+    `challenge-provider.txt` contains `alias state evidence OK`.
+
 
 ### Learning outcomes
 
@@ -465,7 +475,7 @@ chmod +x ~/rebash-terraform/module-05/verify-alias.sh
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-05
 terraform destroy -auto-approve
 rm -f init.txt apply.txt providers-mirror.txt provider-evidence.txt plan-alias-bug.txt \

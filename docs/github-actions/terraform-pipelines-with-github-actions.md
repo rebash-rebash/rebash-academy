@@ -131,7 +131,7 @@ Create a Docker-backed Terraform module, run init/plan/apply/destroy locally, au
 
 Workspace: `~/rebash-github-actions/module-09`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-09/{.github/workflows,tf-demo} && cd ~/rebash-github-actions/module-09
 set -euo pipefail
 docker info | tee docker-info.txt
@@ -189,7 +189,7 @@ output "url" {
 
 Validate and plan locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-09/tf-demo
 set -euo pipefail
 docker info >/dev/null
@@ -202,7 +202,9 @@ grep -q 'docker_container.rebash' ../plan.txt
 cd ..
 ```
 
-**Expected output:** `plan.txt` shows `docker_container.rebash` will be created; `tfplan` exists.
+!!! example "Expected output"
+    `plan.txt` shows `docker_container.rebash` will be created; `tfplan` exists.
+
 
 #### Task 2 – Plan workflow (pull requests plan only)
 
@@ -253,14 +255,16 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-09
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform-plan.yml')); print('plan workflow OK')"
 grep -q 'upload-artifact' .github/workflows/terraform-plan.yml
 ```
 
-**Expected output:** `plan workflow OK`; artefact upload step present.
+!!! example "Expected output"
+    `plan workflow OK`; artefact upload step present.
+
 
 #### Task 3 – Gated apply workflow (main + environment)
 
@@ -306,7 +310,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-09
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform-apply.yml')); print('apply workflow OK')"
@@ -314,14 +318,16 @@ grep -q 'environment: production' .github/workflows/terraform-apply.yml
 grep -q 'terraform apply' .github/workflows/terraform-apply.yml
 ```
 
-**Expected output:** `apply workflow OK`; environment protection hook present.
+!!! example "Expected output"
+    `apply workflow OK`; environment protection hook present.
+
 
 #### Task 4 – Apply, prove, destroy, and record policy
 
 Create `destroy-checks.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 LAB_TTL_HOURS=24
@@ -349,7 +355,7 @@ echo 'destroy-checks passed'
 
 Run and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-09
 set -euo pipefail
 chmod +x destroy-checks.sh
@@ -360,7 +366,9 @@ tar -czf module-09-evidence.tgz tf-demo/main.tf .github/workflows/*.yml destroy-
 ls -l module-09-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `destroy-checks passed`; `container-proof.txt` shows the lab container; evidence archive created.
+!!! example "Expected output"
+    `destroy-checks passed`; `container-proof.txt` shows the lab container; evidence archive created.
+
 
 ### Validation steps
 
@@ -393,7 +401,7 @@ Add a `concurrency:` group keyed on {% raw %}`terraform-${{ github.ref }}`{% end
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-09/tf-demo
 terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f rebash-gha-tf-lab 2>/dev/null || true

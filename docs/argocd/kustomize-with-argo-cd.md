@@ -101,7 +101,7 @@ Many platform and SRE teams prefer Kustomize because output is plain YAML — ea
 
 Build locally:
 
-```bash
+```bash title="Terminal"
 kubectl kustomize ~/rebash-argocd/module-08/overlays/staging
 ```
 
@@ -147,7 +147,7 @@ Create a Kustomize base and staging overlay under `~/rebash-argocd/module-08`, p
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-08/base \
   ~/rebash-argocd/module-08/overlays/staging \
   ~/rebash-argocd/module-08/apps && cd ~/rebash-argocd/module-08
@@ -165,7 +165,7 @@ A product team maintains one base guestbook Deployment. Staging overlay adds `na
 
 Create `base/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -177,7 +177,7 @@ commonLabels:
 
 Create `base/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -201,7 +201,7 @@ spec:
 
 Create `base/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -216,20 +216,22 @@ spec:
 
 Verify base build:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-08
 kubectl kustomize base | tee build-base-m08.yaml
 grep -q 'kind: Deployment' build-base-m08.yaml
 grep -q 'nginxinc/nginx-unprivileged:1.27-alpine' build-base-m08.yaml
 ```
 
-**Expected output:** Base renders Deployment and Service with original image tag.
+!!! example "Expected output"
+    Base renders Deployment and Service with original image tag.
+
 
 #### Task 2 – Staging overlay with prefix and images transformer
 
 Create `overlays/staging/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: rebash-argocd-m08
@@ -258,7 +260,7 @@ patches:
 
 Build staging overlay:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-08
 kubectl kustomize overlays/staging | tee build-staging-m08.yaml
 grep 'name: stg-guestbook' build-staging-m08.yaml | tee name-prefix-m08.txt
@@ -268,13 +270,15 @@ grep -q 'stg-guestbook' name-prefix-m08.txt
 grep -q 'replicas: 2' replicas-m08.txt
 ```
 
-**Expected output:** Resources named `stg-guestbook`; two replicas; namespace `rebash-argocd-m08` set on all objects.
+!!! example "Expected output"
+    Resources named `stg-guestbook`; two replicas; namespace `rebash-argocd-m08` set on all objects.
+
 
 #### Task 3 – Argo CD Application for overlay path
 
 Create `apps/application-kustomize-staging.yaml`:
 
-```yaml
+```yaml title="application-kustomize-staging.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -299,7 +303,7 @@ spec:
 
 Optional inline kustomize overrides on Application (documented alternative) — create `apps/application-kustomize-inline.yaml`:
 
-```yaml
+```yaml title="application-kustomize-inline.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -322,20 +326,22 @@ spec:
 
 Validate Application and compare offline build:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-08
 kubectl apply --dry-run=client -f apps/application-kustomize-staging.yaml 2>&1 | tee app-kust-dryrun-m08.txt
 python3 -c "import yaml; yaml.safe_load_all(open('build-staging-m08.yaml')); print('YAML OK')" | tee yaml-ok-m08.txt
 grep 'environment: staging' build-staging-m08.yaml | head -1 | tee label-evidence-m08.txt
 ```
 
-**Expected output:** Application validates; built YAML parses; staging label present on resources.
+!!! example "Expected output"
+    Application validates; built YAML parses; staging label present on resources.
+
 
 #### Task 4 – Apply Application and prove sync
 
 Register the lab path with Argo CD (file repo) — copy manifests to `/tmp` if using `file://` URLs:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-08
 sudo mkdir -p /tmp/rebash-argocd && sudo cp -a ~/rebash-argocd/module-08 /tmp/rebash-argocd/ 2>/dev/null || \
   cp -a ~/rebash-argocd/module-08 /tmp/rebash-argocd/
@@ -350,7 +356,9 @@ grep -q 'stg-guestbook' resources-m08.txt
 echo "kustomize sync OK" | tee kustomize-sync-ok-m08.txt
 ```
 
-**Expected output:** Application `Synced`; Deployment `stg-guestbook` and Service in `rebash-argocd-m08`.
+!!! example "Expected output"
+    Application `Synced`; Deployment `stg-guestbook` and Service in `rebash-argocd-m08`.
+
 
 ### Validation steps
 
@@ -383,7 +391,7 @@ Add `overlays/prod/` with `namePrefix: prod-`, three replicas, and a different `
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application rebash-kustomize-staging -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m08 --ignore-not-found
 ```

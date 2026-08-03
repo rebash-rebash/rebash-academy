@@ -148,7 +148,7 @@ Workspace: `~/rebash-docker/module-04`
 
 Enough disk for one small image tar (~10 MB for Alpine).
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-04 && cd ~/rebash-docker/module-04
 ```
 
@@ -161,7 +161,7 @@ Your team mirrors images to an air-gapped registry. Before promoting `alpine:3.2
 #### Task 1 – Pull, tag, and list
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-04
 docker pull alpine:3.20 | tee pull-alpine.txt
 docker tag alpine:3.20 rebash/alpine-lab:3.20
@@ -170,12 +170,14 @@ grep -q 'rebash/alpine-lab' image-ls.txt
 ```
 {% endraw %}
 
-**Expected output:** `pull-alpine.txt` shows pull progress; `image-ls.txt` lists both `alpine` and `rebash/alpine-lab` tags.
+!!! example "Expected output"
+    `pull-alpine.txt` shows pull progress; `image-ls.txt` lists both `alpine` and `rebash/alpine-lab` tags.
+
 
 #### Task 2 – History and inspect Id/Digest
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-04
 docker image history alpine:3.20 --no-trunc=false | tee image-history.txt
 docker image inspect alpine:3.20 --format 'Id={{ "{{" }}.Id{{ "}}" }} Digest={{ "{{" }}index .RepoDigests 0{{ "}}" }}' | tee image-id-digest.txt
@@ -184,11 +186,13 @@ test -s image-history.txt
 ```
 {% endraw %}
 
-**Expected output:** `image-history.txt` shows layer steps; `image-id-digest.txt` includes a sha256 Id and a RepoDigests entry.
+!!! example "Expected output"
+    `image-history.txt` shows layer steps; `image-id-digest.txt` includes a sha256 Id and a RepoDigests entry.
+
 
 #### Task 3 – Save, remove local tag, and load
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-04
 docker save rebash/alpine-lab:3.20 -o rebash-alpine-lab-3.20.tar
 ls -lh rebash-alpine-lab-3.20.tar | tee tar-ls.txt
@@ -198,7 +202,9 @@ docker image ls rebash/alpine-lab:3.20 | tee reload-ls.txt
 grep -q 'rebash/alpine-lab' reload-ls.txt
 ```
 
-**Expected output:** Tar file is non-empty; after load, `reload-ls.txt` shows `rebash/alpine-lab:3.20` again.
+!!! example "Expected output"
+    Tar file is non-empty; after load, `reload-ls.txt` shows `rebash/alpine-lab:3.20` again.
+
 
 ### Validation steps
 
@@ -219,7 +225,7 @@ grep -q 'rebash/alpine-lab' reload-ls.txt
 Load the tar on a “clean” name only, then compare digests before and after:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-04
 docker tag alpine:3.20 rebash/alpine-lab:3.20
 DIGEST_BEFORE="$(docker image inspect alpine:3.20 --format '{{ "{{" }}index .RepoDigests 0{{ "}}" }}')"
@@ -232,7 +238,9 @@ grep -q 'before=sha256:' digest-compare.txt
 ```
 {% endraw %}
 
-**Expected output:** `digest-compare.txt` shows matching sha256 digests before and after reload.
+!!! example "Expected output"
+    `digest-compare.txt` shows matching sha256 digests before and after reload.
+
 
 ### Learning outcomes
 
@@ -242,7 +250,7 @@ grep -q 'before=sha256:' digest-compare.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-04
 docker rmi rebash/alpine-lab:3.20 alpine:3.20 2>/dev/null || true
 rm -f rebash-alpine-lab-3.20.tar alpine-only.tar 2>/dev/null || true

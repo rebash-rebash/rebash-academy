@@ -119,7 +119,7 @@ Write a proposed nft/ufw rule file with rollback comments, build a validation sc
 
 Workspace: `~/rebash-networking/lab26`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab26 && cd ~/rebash-networking/lab26
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -128,7 +128,9 @@ command -v iptables >/dev/null 2>&1 && iptables --version | tee iptables-version
 command -v ufw >/dev/null 2>&1 && ufw version | tee ufw-version.txt || echo "ufw: not installed" | tee ufw-version.txt
 ```
 
-**Expected output:** tool versions recorded.
+!!! example "Expected output"
+    tool versions recorded.
+
 
 ### Real-world scenario
 
@@ -138,14 +140,14 @@ A developer asks to open a temporary port for a local diagnostic listener. You r
 
 #### Task 1 – Proposed rule file with rollback notes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab26
 set -euo pipefail
 ```
 
 Create `proposed-lab26.nft`:
 
-```nft
+```nft title="proposed-lab26.nft"
 # CHANGE REQUEST (lab26)
 # Ticket: LAB-26-LOCALHOST
 # Intent: Allow TCP 18090 only on loopback for a temporary diagnostic listener
@@ -174,29 +176,31 @@ table inet rebash_lab26 {
 
 Create `proposed-lab26.ufw.txt`:
 
-```text
+```text title="proposed-lab26.ufw.txt"
 # UFW-style proposal (documentation artefact — not auto-applied in this lab)
 # ufw allow from 127.0.0.1 to 127.0.0.1 port 18090 proto tcp
 # ROLLBACK: ufw delete allow from 127.0.0.1 to 127.0.0.1 port 18090 proto tcp
 # NEVER in this lab: ufw deny 22 / ufw --force reset / default deny without console access
 ```
 
-```bash
+```bash title="Terminal"
 test -s proposed-lab26.nft && test -s proposed-lab26.ufw.txt
 ```
 
-**Expected output:** proposal files exist with rollback comments.
+!!! example "Expected output"
+    proposal files exist with rollback comments.
+
 
 #### Task 2 – Validation script (syntax and safety checks)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab26
 set -euo pipefail
 ```
 
 Create `validate-firewall-change.sh`:
 
-```bash
+```bash title="validate-firewall-change.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 FILE="${1:-proposed-lab26.nft}"
@@ -238,17 +242,19 @@ pass "isolated lab table present"
 echo "validation_ok=1" | tee -a "$report"
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x validate-firewall-change.sh
 ./validate-firewall-change.sh proposed-lab26.nft
 grep -q 'validation_ok=1' validation-report.txt
 ```
 
-**Expected output:** `validation-report.txt` shows PASS lines and `validation_ok=1`.
+!!! example "Expected output"
+    `validation-report.txt` shows PASS lines and `validation_ok=1`.
+
 
 #### Task 3 – Temporary localhost apply, prove, evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab26
 set -euo pipefail
 
@@ -298,7 +304,9 @@ tar -czf firewall-change-evidence.tgz \
 ls -l firewall-change-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** localhost curl succeeds; listener bound to loopback; evidence archive created. Remote SSH path untouched.
+!!! example "Expected output"
+    localhost curl succeeds; listener bound to loopback; evidence archive created. Remote SSH path untouched.
+
 
 ### Validation steps
 
@@ -328,7 +336,7 @@ Extend `validate-firewall-change.sh` to require these comment headers: `Ticket:`
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab26
 set -euo pipefail
 

@@ -148,7 +148,7 @@ Stand up a production-minded Compose stack with pinned tags, non-root user, heal
 
 Workspace: `~/rebash-docker/module-17`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
 ```
 
@@ -162,7 +162,7 @@ You are hardening a small edge API before production. Requirements: pinned image
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
@@ -174,7 +174,7 @@ CMD ["python", "app.py"]
 
 Create `app.py`:
 
-```python
+```python title="app.py"
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class H(BaseHTTPRequestHandler):
@@ -198,7 +198,7 @@ HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 
 Create `compose.yaml`:
 
-```yaml
+```yaml title="compose.yaml"
 services:
   edge:
     build:
@@ -222,18 +222,20 @@ services:
 
 Start the stack:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-17
 docker compose up -d --build
 docker compose ps | tee prod-ps.txt
 grep -q rebash-prod-lab prod-ps.txt
 ```
 
-**Expected output:** Service shows running in `prod-ps.txt`.
+!!! example "Expected output"
+    Service shows running in `prod-ps.txt`.
+
 
 #### Task 2 – HTTP and health verification
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-17
 sleep 15
 curl -sS http://127.0.0.1:18170/healthz | tee prod-health.txt
@@ -242,12 +244,14 @@ grep -q ok prod-health.txt
 grep -q rebash-prod-lab prod-root.txt
 ```
 
-**Expected output:** Health returns `ok`; root path returns `rebash-prod-lab`.
+!!! example "Expected output"
+    Health returns `ok`; root path returns `rebash-prod-lab`.
+
 
 #### Task 3 – Prove production controls via inspect
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-17
 CID="$(docker compose ps -q edge)"
 docker inspect "$CID" --format 'User={{ "{{" }}.Config.User{{ "}}" }} Restart={{ "{{" }}.HostConfig.RestartPolicy.Name{{ "}}" }} Health={{ "{{" }}.State.Health.Status{{ "}}" }}' | tee prod-inspect.txt
@@ -258,7 +262,9 @@ grep -q 'rebash-prod-lab' prod-labels.txt
 ```
 {% endraw %}
 
-**Expected output:** Inspect shows non-root user, restart policy, labels, and health status.
+!!! example "Expected output"
+    Inspect shows non-root user, restart policy, labels, and health status.
+
 
 ### Validation steps
 
@@ -289,7 +295,7 @@ Add a `deploy.resources.limits` block (Compose v3+) for memory and prove limits 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-17
 docker compose down -v --remove-orphans
 docker rmi rebash-prod-lab:1.0.0 2>/dev/null || true

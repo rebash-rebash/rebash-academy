@@ -178,13 +178,15 @@ Author a multi-stage Declarative Pipeline on disk, load it into a Pipeline job u
 
 Workspace: `~/rebash-jenkins/module-04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-04 && cd ~/rebash-jenkins/module-04
 set -euo pipefail
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller-login.txt
 ```
 
-**Expected output:** HTTP response code from the controller.
+!!! example "Expected output"
+    HTTP response code from the controller.
+
 
 ### Real-world scenario
 
@@ -196,14 +198,14 @@ Your squad must replace a Freestyle “build and hope” job with a Declarative 
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 ```
 
 Create `Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 pipeline {
   agent any
   options {
@@ -250,14 +252,16 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 grep -q 'pipeline {' Jenkinsfile
 grep -q 'stage('\''Build'\'')' Jenkinsfile || grep -q 'stage("Build")' Jenkinsfile || grep -q "stage('Build')" Jenkinsfile
 grep -q 'post {' Jenkinsfile
 wc -l Jenkinsfile | tee jenkinsfile-lines.txt
 ```
 
-**Expected output:** Non-zero line count; structure checks pass.
+!!! example "Expected output"
+    Non-zero line count; structure checks pass.
+
 
 #### Task 2 – Create or update the Pipeline job
 
@@ -271,14 +275,14 @@ In Jenkins:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 ```
 
 Create `job-config.yaml`:
 
-```yaml
+```yaml title="job-config.yaml"
 folder: rebash-demo
 job: declarative-basics
 definition: pipeline_script_ui
@@ -288,7 +292,7 @@ next_module: jenkinsfile-in-scm
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('job-config.yaml') as f:
@@ -298,7 +302,9 @@ print('job-config.yaml OK')
 " | tee job-config-validate.txt
 ```
 
-**Expected output:** Job saved; `job-config.yaml` validates.
+!!! example "Expected output"
+    Job saved; `job-config.yaml` validates.
+
 
 #### Task 3 – Run the Pipeline and capture console proof
 
@@ -308,14 +314,14 @@ print('job-config.yaml OK')
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 ```
 
 Create `expected-console-markers.txt`:
 
-```text
+```text title="expected-console-markers.txt"
 Building rebash-demo
 Running unit placeholder
 Packaging placeholder
@@ -325,7 +331,7 @@ All stages green
 
 Create `assert-console.sh`:
 
-```bash
+```bash title="assert-console.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 LOG="${1:-console.log}"
@@ -338,7 +344,7 @@ echo "console markers OK"
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x assert-console.sh
 
 # Local syntax sanity (not a Jenkins validator, but catches truncation)
@@ -346,7 +352,9 @@ grep -c 'stage' Jenkinsfile | tee stage-count.txt
 test "$(cat stage-count.txt)" -ge 3
 ```
 
-**Expected output:** At least three `stage` occurrences; after a Jenkins run, paste Console Output to `console.log` and run `./assert-console.sh console.log`.
+!!! example "Expected output"
+    At least three `stage` occurrences; after a Jenkins run, paste Console Output to `console.log` and run `./assert-console.sh console.log`.
+
 
 #### Task 4 – Break-fix drill (optional but recommended)
 
@@ -354,7 +362,7 @@ Temporarily change the Test stage to `sh 'false'`, Save, Build Now, observe `fai
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 
@@ -363,7 +371,7 @@ cp Jenkinsfile Jenkinsfile.good
 
 Create `Jenkinsfile.fail`:
 
-```groovy
+```groovy title="Jenkinsfile.fail"
 pipeline {
   agent any
   options { timestamps() }
@@ -390,13 +398,15 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 grep -q "sh 'false'" Jenkinsfile.fail
 grep -q 'Investigate console' Jenkinsfile.fail
 diff -q Jenkinsfile Jenkinsfile.good && echo 'good copy retained' | tee failure-drill.txt
 ```
 
-**Expected output:** Failing variant and good copy on disk; swap into the job to observe FAILURE, then restore `Jenkinsfile.good`.
+!!! example "Expected output"
+    Failing variant and good copy on disk; swap into the job to observe FAILURE, then restore `Jenkinsfile.good`.
+
 
 ### Validation steps
 
@@ -429,7 +439,7 @@ Add a `parallel` test block under a `stage('Test')` with two steps `Unit` and `L
 
 Keep `declarative-basics` and the Module 2 volume. Remove only experimental failing jobs you no longer need.
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-jenkins/module-04
 ```
 

@@ -70,14 +70,14 @@ By the end of this lab, you will be able to:
 
 Local Kubernetes (kind/minikube). Confirm:
 
-```bash
+```bash title="Terminal"
 kubectl cluster-info
 kubectl get nodes
 ```
 
 Workspace:
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-k8s && cd ~/rebash-lab-k8s
 ```
 
@@ -91,7 +91,7 @@ On-call receives an alert: `web` Deployment in `rebash-triage-lab` has zero Read
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -102,7 +102,7 @@ metadata:
 
 Create `web-broken.yaml`:
 
-```yaml
+```yaml title="web-broken.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -160,7 +160,7 @@ spec:
 
 Apply and confirm failure:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-k8s
 kubectl apply -f namespace.yaml
 kubectl apply -f web-broken.yaml
@@ -168,13 +168,15 @@ kubectl rollout status deployment/web -n rebash-triage-lab --timeout=60s || true
 kubectl get pods -n rebash-triage-lab -l app=web
 ```
 
-**Expected output:** Pods `0/1 Ready` or restarting; Events will mention probe failures (nginx has no `/healthz`).
+!!! example "Expected output"
+    Pods `0/1 Ready` or restarting; Events will mention probe failures (nginx has no `/healthz`).
+
 
 ### Task 2 — Triage with kubectl
 
 Gather evidence before patching.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-k8s
 kubectl get deploy,po,svc -n rebash-triage-lab -o wide | tee before-resources.txt
 kubectl describe deploy web -n rebash-triage-lab | tee before-describe.txt
@@ -184,13 +186,15 @@ kubectl get events -n rebash-triage-lab --sort-by=.lastTimestamp | tail -n 20 | 
 grep -Ei 'probe|healthz|unhealthy' before-events.txt before-pod-describe.txt
 ```
 
-**Expected output:** Readiness/liveness failures on `/healthz`.
+!!! example "Expected output"
+    Readiness/liveness failures on `/healthz`.
+
 
 ### Task 3 — Apply fixed manifest and roll out
 
 Create `web-fixed.yaml`:
 
-```yaml
+```yaml title="web-fixed.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -236,18 +240,20 @@ spec:
 
 Apply and verify Ready:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-k8s
 kubectl apply -f web-fixed.yaml
 kubectl rollout status deploy/web -n rebash-triage-lab --timeout=120s
 kubectl get po -n rebash-triage-lab -l app=web | tee after-pods.txt
 ```
 
-**Expected output:** `successfully rolled out`; Pods `1/1 Ready`.
+!!! example "Expected output"
+    `successfully rolled out`; Pods `1/1 Ready`.
+
 
 ### Task 4 — Verify via Service and port-forward
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-k8s
 kubectl port-forward -n rebash-triage-lab svc/web 18081:80 &
 PF_PID=$!
@@ -258,7 +264,9 @@ kill "${PF_PID}" 2>/dev/null || true
 grep -q '200' http-code.txt
 ```
 
-**Expected output:** HTTP 200 and nginx welcome HTML.
+!!! example "Expected output"
+    HTTP 200 and nginx welcome HTML.
+
 
 ### Task 5 — Optional second failure (bad image tag)
 
@@ -317,7 +325,9 @@ kubectl apply -f web-fixed.yaml
 kubectl rollout status deploy/web -n rebash-triage-lab --timeout=120s
 ```
 
-**Expected output:** Image pull errors in Events, then recovery after restoring a real tag.
+!!! example "Expected output"
+    Image pull errors in Events, then recovery after restoring a real tag.
+
 
 Archive evidence:
 

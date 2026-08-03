@@ -73,7 +73,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 export LAB_PREFIX="rebash-docker-gate-$(whoami | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | cut -c1-12)"
 mkdir -p ~/rebash-lab-docker-gate && cd ~/rebash-lab-docker-gate
 git init -b main
@@ -95,7 +95,7 @@ You will build a minimal Flask status API, containerise it, and wire a pipeline 
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-docker-gate
 
 mkdir -p app
@@ -131,7 +131,9 @@ EOF
 docker build -t rebash-status:local . 2>/dev/null || echo "Local Docker optional — continue to CI"
 ```
 
-**Expected output:** Dockerfile and app present; optional local build succeeds.
+!!! example "Expected output"
+    Dockerfile and app present; optional local build succeeds.
+
 
 ### Task 2 — GitLab CI pipeline with build and scan
 
@@ -140,7 +142,7 @@ docker build -t rebash-status:local . 2>/dev/null || echo "Local Docker optional
 **Instructions:**
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cat > .gitlab-ci.yml <<'EOF'
 stages:
   - build
@@ -207,7 +209,9 @@ git commit -m "feat: docker build, scan gate, manual staging deploy"
 ```
 {% endraw %}
 
-**Expected output:** Valid YAML with three stages and manual deploy job.
+!!! example "Expected output"
+    Valid YAML with three stages and manual deploy job.
+
 
 ### Task 3 — Push and verify build + scan pass
 
@@ -215,14 +219,16 @@ git commit -m "feat: docker build, scan gate, manual staging deploy"
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 git remote add origin "git@gitlab.com:YOUR_GROUP/${LAB_PREFIX}.git"
 git push -u origin main
 ```
 
 Watch **build-image** and **scan-image** complete. **deploy-staging** should appear as **manual** (play button).
 
-**Expected output:** Build and scan green; deploy waiting for manual action.
+!!! example "Expected output"
+    Build and scan green; deploy waiting for manual action.
+
 
 **Validation:** Pipeline graph shows `build → scan → deploy(staging)` with deploy paused.
 
@@ -234,14 +240,16 @@ Watch **build-image** and **scan-image** complete. **deploy-staging** should app
 
 Add a failing label to the Dockerfile:
 
-```bash
+```bash title="Terminal"
 sed -i.bak '/^CMD/i LABEL scan-override=fail' Dockerfile
 git add Dockerfile
 git commit -m "test: inject scan policy failure"
 git push origin main
 ```
 
-**Expected output:** **scan-image** fails; **deploy-staging** does not run.
+!!! example "Expected output"
+    **scan-image** fails; **deploy-staging** does not run.
+
 
 **Validation:** Scan job log contains `CRITICAL: policy marker`.
 
@@ -251,12 +259,14 @@ git push origin main
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 git revert HEAD --no-edit
 git push origin main
 ```
 
-**Expected output:** Scan passes again; manual deploy available.
+!!! example "Expected output"
+    Scan passes again; manual deploy available.
+
 
 ### Task 6 — Manual approval and staging deploy
 
@@ -268,7 +278,9 @@ git push origin main
 2. Click **Play** on **deploy-staging**
 3. Confirm job log shows the immutable `$CI_COMMIT_SHA` tag
 
-**Expected output:** Deploy job succeeds after manual trigger.
+!!! example "Expected output"
+    Deploy job succeeds after manual trigger.
+
 
 **Validation:** Job log line contains `Deploying immutable tag` with registry path and SHA.
 
@@ -280,7 +292,9 @@ git push origin main
 
 In GitLab: **Settings → CI/CD → Protected environments** — protect `staging` so only Maintainers may deploy. Re-run manual deploy as Developer (should be denied) and as Maintainer (should succeed).
 
-**Expected output:** RBAC enforced on manual job.
+!!! example "Expected output"
+    RBAC enforced on manual job.
+
 
 ### Task 8 — Real scanner swap (optional extension)
 
@@ -297,7 +311,9 @@ Replace `scan-image` script with:
         aquasec/trivy:latest image --exit-code 1 --severity CRITICAL "$IMAGE_TAG"
 ```
 
-**Expected output:** Trivy exits non-zero on CRITICAL CVEs in base image — tune `--ignore-unfixed` per team policy.
+!!! example "Expected output"
+    Trivy exits non-zero on CRITICAL CVEs in base image — tune `--ignore-unfixed` per team policy.
+
 
 ## Validation
 
@@ -332,7 +348,7 @@ Replace `scan-image` script with:
 
 Delete images from GitLab Container Registry and remove the lab project when finished.
 
-```bash
+```bash title="Terminal"
 cd ~ && rm -rf ~/rebash-lab-docker-gate
 ```
 

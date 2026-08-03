@@ -122,7 +122,7 @@ Create `.github/workflows/gitops-promote.yml` (with GitHub expression escaping f
 
 Workspace: `~/rebash-argocd/module-14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-14/{.github/workflows,config/clusters/dev,argocd,validation}
 cd ~/rebash-argocd/module-14
 ```
@@ -137,13 +137,13 @@ Your team builds `demo-api` in an app repo. A separate `platform-gitops` repo ho
 
 Create `config/clusters/dev/image-tag.txt`:
 
-```
+```text title="image-tag.txt"
 1.0.0
 ```
 
 Create `config/clusters/dev/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -158,7 +158,7 @@ generatorOptions:
 
 Create `config/clusters/dev/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -182,20 +182,22 @@ spec:
             - containerPort: 8080
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-14
 grep -q '1.0.0' config/clusters/dev/image-tag.txt
 python3 -c "import yaml; yaml.safe_load(open('config/clusters/dev/kustomization.yaml'))"
 echo 'config-layout: OK' | tee validation/config-layout.txt
 ```
 
-**Expected output:** Config directory structure validates.
+!!! example "Expected output"
+    Config directory structure validates.
+
 
 #### Task 2 – Create GitHub Actions promotion workflow
 
 Create `.github/workflows/gitops-promote.yml`:
 
-```yaml
+```yaml title="gitops-promote.yml"
 {% raw %}
 name: GitOps Promote Tag
 
@@ -252,7 +254,7 @@ jobs:
 
 Validate workflow file exists and key steps present:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-14
 grep -q 'workflow_dispatch' .github/workflows/gitops-promote.yml
 grep -q 'image_tag' .github/workflows/gitops-promote.yml
@@ -260,13 +262,15 @@ grep -q 'config/clusters/dev/image-tag.txt' .github/workflows/gitops-promote.yml
 echo 'workflow: OK' | tee validation/workflow-check.txt
 ```
 
-**Expected output:** Workflow contains dispatch input and tag file path.
+!!! example "Expected output"
+    Workflow contains dispatch input and tag file path.
+
 
 #### Task 3 – Create Argo CD Application
 
 Create `argocd/application-dev.yaml`:
 
-```yaml
+```yaml title="application-dev.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -293,7 +297,7 @@ spec:
 
 Offline validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-14
 python3 -c "import yaml; yaml.safe_load(open('argocd/application-dev.yaml'))" \
   && echo 'application: OK' | tee validation/application.txt
@@ -301,13 +305,15 @@ kubectl apply --dry-run=client -f argocd/application-dev.yaml 2>&1 | tee validat
 grep -q 'config/clusters/dev' argocd/application-dev.yaml
 ```
 
-**Expected output:** Application YAML parses; path matches config layout.
+!!! example "Expected output"
+    Application YAML parses; path matches config layout.
+
 
 #### Task 4 – Apply Application and prove sync (kind + Argo CD required)
 
 Copy config to `/tmp` for local file repo if needed, apply Application, and verify sync:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-14
 cp -a ~/rebash-argocd/module-14/config /tmp/rebash-argocd-module-14/ 2>/dev/null || true
 # Update argocd/application-dev.yaml repoURL to your Git remote or use file:// after copying to /tmp
@@ -322,7 +328,9 @@ grep -q 'config/clusters/dev' argocd/application-dev.yaml
 echo "gitops apply OK" | tee gitops-apply-ok-m14.txt
 ```
 
-**Expected output:** Application syncs; Deployment and ConfigMap exist in `demo-api-dev`.
+!!! example "Expected output"
+    Application syncs; Deployment and ConfigMap exist in `demo-api-dev`.
+
 
 ### Validation steps
 
@@ -353,7 +361,7 @@ Extend the workflow with a job that runs `kubectl kustomize config/clusters/dev`
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-argocd/module-14
 ```
 

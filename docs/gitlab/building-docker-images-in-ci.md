@@ -167,7 +167,7 @@ Workspace: `~/rebash-gitlab/module-08`
 
 File-first lab. YAML validates without Docker; build steps are optional locally.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-08/src && cd ~/rebash-gitlab/module-08
 ```
 
@@ -181,13 +181,13 @@ Your team ships containerised services. Security requires pinned base images and
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 print("docker-ci ok")
 ```
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 WORKDIR /app
 COPY src/app.py .
@@ -196,19 +196,21 @@ CMD ["python", "app.py"]
 
 Verify Dockerfile syntax offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-08
 grep -q 'FROM python:3.12-alpine' Dockerfile
 grep -q 'COPY src/app.py' Dockerfile
 ```
 
-**Expected output:** Both greps succeed silently.
+!!! example "Expected output"
+    Both greps succeed silently.
+
 
 #### Task 2 – Author the Docker build pipeline stub
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 variables:
   DOCKER_DRIVER: overlay2
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
@@ -235,7 +237,7 @@ docker_build:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-08
 python3 -c "
 import yaml
@@ -246,13 +248,15 @@ print('OK docker build stub')
 "
 ```
 
-**Expected output:** Prints `OK docker build stub`.
+!!! example "Expected output"
+    Prints `OK docker build stub`.
+
 
 #### Task 3 – Optional local build; required offline simulation
 
 If Docker Engine is installed:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-08
 docker build -t rebash-module-08:lab .
 docker run --rm rebash-module-08:lab | tee docker-out.txt
@@ -261,13 +265,15 @@ grep -q 'docker-ci ok' docker-out.txt
 
 If Docker is not available, simulate the run path:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-08
 python3 src/app.py | tee docker-out.txt
 grep -q 'docker-ci ok' docker-out.txt
 ```
 
-**Expected output:** `docker-out.txt` contains `docker-ci ok`.
+!!! example "Expected output"
+    `docker-out.txt` contains `docker-ci ok`.
+
 
 ### Validation steps
 
@@ -299,7 +305,7 @@ Add a `kaniko_build` job using `gcr.io/kaniko-project/executor:v1.23.2-debug` as
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker rmi rebash-module-08:lab 2>/dev/null || true
 rm -f ~/rebash-gitlab/module-08/docker-out.txt
 # Keep Dockerfile and .gitlab-ci.yml for module 09

@@ -68,7 +68,7 @@ TCP builds a connection with a three-way handshake before data. UDP sends datagr
 
 A **port** is a 16-bit number that identifies an application endpoint on a host. A **socket** is the local address + port (and for TCP, the remote pair) that the kernel tracks. **TCP** provides a byte stream with acknowledgements, retransmission, and congestion control. **UDP** provides datagrams with no built-in delivery guarantee — Domain Name System (DNS), QUIC, and many discovery protocols use it.
 
-```bash
+```bash title="Terminal"
 ss -lntu | head
 ```
 
@@ -82,7 +82,7 @@ ss -lntu | head
 
 **UDP:** no handshake. `ss -lu` shows listening UDP sockets; “connected” UDP is optional and means the kernel remembers a default peer.
 
-```bash
+```bash title="Terminal"
 # Listen TCP on localhost (lab uses explicit ports)
 nc -l 127.0.0.1 19090
 ```
@@ -124,7 +124,7 @@ Prove TCP and UDP behaviour on localhost with `nc`, inspect states with `ss`, an
 
 Workspace: `~/rebash-networking/lab09`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab09 && cd ~/rebash-networking/lab09
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -134,7 +134,9 @@ command -v curl | tee tools-curl.txt
 ss -lntu | head -n 40 | tee ss-baseline.txt
 ```
 
-**Expected output:** tool paths recorded; baseline `ss` snapshot saved.
+!!! example "Expected output"
+    tool paths recorded; baseline `ss` snapshot saved.
+
 
 ### Real-world scenario
 
@@ -144,7 +146,7 @@ An API owner says “the load balancer is broken.” You must show whether anyth
 
 #### Task 1 – TCP listen / connect on localhost
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab09
 set -euo pipefail
 
@@ -169,11 +171,13 @@ kill "$(cat tcp-server.pid)" 2>/dev/null || true
 wait "$(cat tcp-server.pid)" 2>/dev/null || true
 ```
 
-**Expected output:** `ss-tcp-listen.txt` shows LISTEN on `19090`; `tcp-payload.txt` contains `rebash-tcp-ok`.
+!!! example "Expected output"
+    `ss-tcp-listen.txt` shows LISTEN on `19090`; `tcp-payload.txt` contains `rebash-tcp-ok`.
+
 
 #### Task 2 – UDP localhost demo
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab09
 set -euo pipefail
 
@@ -194,11 +198,13 @@ kill "$(cat udp-server.pid)" 2>/dev/null || true
 wait "$(cat udp-server.pid)" 2>/dev/null || true
 ```
 
-**Expected output:** UDP listener visible in `ss`; `udp-payload.txt` contains `rebash-udp-ok`.
+!!! example "Expected output"
+    UDP listener visible in `ss`; `udp-payload.txt` contains `rebash-udp-ok`.
+
 
 #### Task 3 – curl timings + evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab09
 set -euo pipefail
 
@@ -218,7 +224,9 @@ tar -czf tcp-udp-evidence.tgz \
 ls -l tcp-udp-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** timings file has numeric fields; HTTPS `http_code` is often `200` (or another valid code if the edge changes); archive exists.
+!!! example "Expected output"
+    timings file has numeric fields; HTTPS `http_code` is often `200` (or another valid code if the edge changes); archive exists.
+
 
 ### Validation steps
 
@@ -250,7 +258,7 @@ Write `prove-states.sh` that: starts `nc -l 127.0.0.1 19092` in the background, 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab09
 set -euo pipefail
 kill "$(cat tcp-server.pid 2>/dev/null)" 2>/dev/null || true

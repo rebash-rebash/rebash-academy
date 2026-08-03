@@ -137,7 +137,7 @@ Build a minimal Helm chart locally, add environment value overlays, render with 
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-07/charts/rebash-guestbook/templates \
   ~/rebash-argocd/module-07/envs \
   ~/rebash-argocd/module-07/apps && cd ~/rebash-argocd/module-07
@@ -155,7 +155,7 @@ A platform team standardises on an internal guestbook chart fork. Developers tes
 
 Create `charts/rebash-guestbook/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: rebash-guestbook
 description: Minimal guestbook chart for Argo CD Helm lab
@@ -166,7 +166,7 @@ appVersion: "1.0"
 
 Create `charts/rebash-guestbook/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginxinc/nginx-unprivileged
@@ -230,19 +230,21 @@ spec:
 
 Lint the chart:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-07
 helm lint charts/rebash-guestbook | tee lint-m07.txt
 grep -q 'Lint OK' lint-m07.txt || grep -q '0 chart(s) failed' lint-m07.txt
 ```
 
-**Expected output:** `helm lint` reports no errors.
+!!! example "Expected output"
+    `helm lint` reports no errors.
+
 
 #### Task 2 – Environment value overlays
 
 Create `envs/values-dev.yaml`:
 
-```yaml
+```yaml title="values-dev.yaml"
 replicaCount: 1
 guestbook:
   environment: dev
@@ -251,7 +253,7 @@ guestbook:
 
 Create `envs/values-staging.yaml`:
 
-```yaml
+```yaml title="values-staging.yaml"
 replicaCount: 2
 guestbook:
   environment: staging
@@ -260,7 +262,7 @@ guestbook:
 
 Render offline with merged values:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-07
 helm template guestbook-dev charts/rebash-guestbook \
   -f envs/values-dev.yaml \
@@ -274,13 +276,15 @@ grep -q 'replicas: 1' replicas-dev-m07.txt
 grep -q 'replicas: 2' replicas-staging-m07.txt
 ```
 
-**Expected output:** Dev render shows one replica; staging shows two after overlay merge.
+!!! example "Expected output"
+    Dev render shows one replica; staging shows two after overlay merge.
+
 
 #### Task 3 – Argo CD Application with valueFiles
 
 Create `apps/application-helm-dev.yaml`:
 
-```yaml
+```yaml title="application-helm-dev.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -338,7 +342,7 @@ spec:
 
 Validate Application and rendered kinds:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-07
 kubectl apply --dry-run=client -f apps/application-helm-local.yaml 2>&1 | tee app-helm-dryrun-m07.txt
 python3 -c "import yaml,sys; yaml.safe_load_all(open('render-staging-m07.yaml')); print('YAML OK')" | tee yaml-check-m07.txt
@@ -346,11 +350,13 @@ grep -E '^kind:' render-staging-m07.yaml | sort | uniq -c | tee kinds-m07.txt
 grep -q 'Deployment' kinds-m07.txt
 ```
 
-**Expected output:** Application passes client dry-run; rendered YAML parses; Deployment and Service kinds present.
+!!! example "Expected output"
+    Application passes client dry-run; rendered YAML parses; Deployment and Service kinds present.
+
 
 #### Task 4 – Apply Helm Application and prove sync
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-07
 cp -a ~/rebash-argocd/module-07 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f apps/application-helm-local.yaml | tee app-helm-apply-m07.txt
@@ -390,14 +396,16 @@ spec:
 
 Compare source types:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-07
 grep 'repoURL:' apps/application-helm-local.yaml apps/application-helm-oci-stub.yaml | tee source-compare-m07.txt
 grep -q 'file://' source-compare-m07.txt
 grep -q 'oci://' source-compare-m07.txt
 ```
 
-**Expected output:** Git-based Helm Application syncs; Deployment and Service run in `rebash-argocd-m07`; OCI stub documents alternate source pattern.
+!!! example "Expected output"
+    Git-based Helm Application syncs; Deployment and Service run in `rebash-argocd-m07`; OCI stub documents alternate source pattern.
+
 
 ### Validation steps
 
@@ -430,7 +438,7 @@ Add a third values file `envs/values-prod.yaml` with `replicaCount: 3` and an in
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application rebash-guestbook-local -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m07 --ignore-not-found
 ```

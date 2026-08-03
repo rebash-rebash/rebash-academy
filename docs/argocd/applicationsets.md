@@ -160,7 +160,7 @@ Create an ApplicationSet with a **list** generator for dev and staging environme
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-09/overlays/{dev,staging} \
   ~/rebash-argocd/module-09/appsets && cd ~/rebash-argocd/module-09
 ```
@@ -177,7 +177,7 @@ A platform team onboards internal tools using a list generator for known environ
 
 Create `overlays/dev/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: rebash-argocd-m09-dev
@@ -187,7 +187,7 @@ resources:
 
 Create `overlays/dev/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -211,7 +211,7 @@ spec:
 
 Create `overlays/staging/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: rebash-argocd-m09-staging
@@ -221,7 +221,7 @@ resources:
 
 Create `overlays/staging/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -245,7 +245,7 @@ spec:
 
 Verify overlays build:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-09
 kubectl kustomize overlays/dev | grep 'replicas:' | tee dev-replicas-m09.txt
 kubectl kustomize overlays/staging | grep 'replicas:' | tee staging-replicas-m09.txt
@@ -253,7 +253,9 @@ grep -q 'replicas: 1' dev-replicas-m09.txt
 grep -q 'replicas: 2' staging-replicas-m09.txt
 ```
 
-**Expected output:** Dev overlay one replica; staging two replicas.
+!!! example "Expected output"
+    Dev overlay one replica; staging two replicas.
+
 
 #### Task 2 – ApplicationSet with list generator
 
@@ -337,7 +339,7 @@ spec:
 
 Create `scripts/validate_appset.py`:
 
-```python
+```python title="validate_appset.py"
 #!/usr/bin/env python3
 """Validate ApplicationSet YAML structure offline."""
 import sys
@@ -390,7 +392,7 @@ if __name__ == "__main__":
 
 Run validation:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-09
 mkdir -p scripts
 chmod +x scripts/validate_appset.py
@@ -399,13 +401,15 @@ grep -q 'OK: validated' validate-m09.txt
 kubectl apply --dry-run=client -f appsets/applicationset-list.yaml 2>&1 | tee kubectl-dryrun-m09.txt
 ```
 
-**Expected output:** Python script reports OK; kubectl client dry-run accepts the list ApplicationSet.
+!!! example "Expected output"
+    Python script reports OK; kubectl client dry-run accepts the list ApplicationSet.
+
 
 #### Task 4 – Apply and verify generated Applications
 
 Copy lab to `/tmp` for `file://` repo URL if needed, then apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-09
 cp -a ~/rebash-argocd/module-09 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f appsets/applicationset-list.yaml | tee appset-apply-m09.txt
@@ -420,7 +424,9 @@ grep -q appset-demo dev-deploy-m09.txt
 echo "ApplicationSet apply OK" | tee appset-apply-ok-m09.txt
 ```
 
-**Expected output:** Applications `rebash-demo-dev` and `rebash-demo-staging` exist; dev Application syncs and Deployment runs in `rebash-argocd-m09-dev`.
+!!! example "Expected output"
+    Applications `rebash-demo-dev` and `rebash-demo-staging` exist; dev Application syncs and Deployment runs in `rebash-argocd-m09-dev`.
+
 
 ### Validation steps
 
@@ -453,7 +459,7 @@ Author a **matrix** generator stub combining a two-element list (`dev`, `staging
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete applicationset rebash-appset-list -n argocd --ignore-not-found
 kubectl delete application rebash-demo-dev rebash-demo-staging -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m09-dev rebash-argocd-m09-staging --ignore-not-found

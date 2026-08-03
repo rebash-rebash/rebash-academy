@@ -149,7 +149,7 @@ Create a sample host inventory, write it as JSON, YAML, and CSV under `~/rebash-
 
 Workspace: `~/rebash-python/lab07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab07 && cd ~/rebash-python/lab07
 set -euo pipefail
 python3 -m venv .venv
@@ -159,7 +159,9 @@ python -m pip install 'PyYAML>=6.0'
 python -c "import yaml, json, csv; from pathlib import Path; print('ok')"
 ```
 
-**Expected output:** `ok` printed; `.venv` exists under `lab07`.
+!!! example "Expected output"
+    `ok` printed; `.venv` exists under `lab07`.
+
 
 ### Real-world scenario
 
@@ -169,7 +171,7 @@ Your team keeps a small host inventory for a practice environment. Ops wants the
 
 #### Task 1 – Write inventory with pathlib, JSON, YAML, and CSV
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab07
 set -euo pipefail
 source .venv/bin/activate
@@ -209,11 +211,13 @@ for p in sorted(data_dir.iterdir()):
 PY
 ```
 
-**Expected output:** Three files under `data/` with non-zero sizes: `inventory.json`, `inventory.yaml`, `inventory.csv`.
+!!! example "Expected output"
+    Three files under `data/` with non-zero sizes: `inventory.json`, `inventory.yaml`, `inventory.csv`.
+
 
 #### Task 2 – Round-trip validate JSON, YAML, and CSV
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab07
 set -euo pipefail
 source .venv/bin/activate
@@ -252,11 +256,13 @@ print(report.read_text(encoding="utf-8"))
 PY
 ```
 
-**Expected output:** `roundtrip-ok.txt` shows `status=ok` and three host names.
+!!! example "Expected output"
+    `roundtrip-ok.txt` shows `status=ok` and three host names.
+
 
 #### Task 3 – Evidence pack with shutil
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab07
 set -euo pipefail
 source .venv/bin/activate
@@ -282,7 +288,9 @@ PY
 ls -l inventory-evidence.tar.gz | tee evidence-ls.txt
 ```
 
-**Expected output:** `inventory-evidence.tar.gz` exists and `evidence-ls.txt` shows a non-zero size.
+!!! example "Expected output"
+    `inventory-evidence.tar.gz` exists and `evidence-ls.txt` shows a non-zero size.
+
 
 ### Validation steps
 
@@ -312,7 +320,7 @@ Add a fourth host `cache-01` (`env=prod`, `ip=10.0.3.11`) to all three formats w
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab07
 set -euo pipefail
 # Keep the evidence archive if you want it; otherwise remove lab artefacts:

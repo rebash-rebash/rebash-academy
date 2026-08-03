@@ -166,13 +166,15 @@ Encode CI/CD stages and the GitHub Actions workflow lifecycle as validated YAML,
 
 Workspace: `~/rebash-github-actions/module-01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-01 && cd ~/rebash-github-actions/module-01
 set -euo pipefail
 pwd | tee pwd-start.txt
 ```
 
-**Expected output:** `pwd-start.txt` ends with `module-01`.
+!!! example "Expected output"
+    `pwd-start.txt` ends with `module-01`.
+
 
 ### Real-world scenario
 
@@ -186,7 +188,7 @@ Encode a stage map in YAML that separates “prove the change” from “ship th
 
 Create `ci-cd-stages.yaml`:
 
-```yaml
+```yaml title="ci-cd-stages.yaml"
 # CI/CD stage map — REBASH GitHub Actions Module 1
 continuous_integration:
   trigger: every pull request or push to feature branches
@@ -228,7 +230,7 @@ github_actions_mapping:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 python3 -c "
@@ -244,13 +246,15 @@ print('ci-cd-stages.yaml OK')
 wc -l ci-cd-stages.yaml | tee stage-map-lines.txt
 ```
 
-**Expected output:** `ci-cd-stages.yaml OK`; `stage-map-lines.txt` shows a non-zero line count.
+!!! example "Expected output"
+    `ci-cd-stages.yaml OK`; `stage-map-lines.txt` shows a non-zero line count.
+
 
 #### Task 2 – Encode the workflow lifecycle
 
 Create `workflow-lifecycle.yaml`:
 
-```yaml
+```yaml title="workflow-lifecycle.yaml"
 # GitHub Actions workflow lifecycle
 reference_diagram: docs/assets/excalidraw/gha-workflow-lifecycle.svg
 stages:
@@ -276,7 +280,7 @@ stages:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 python3 -c "
@@ -290,7 +294,9 @@ print('workflow-lifecycle.yaml OK')
 "
 ```
 
-**Expected output:** `workflow-lifecycle.yaml OK`
+!!! example "Expected output"
+    `workflow-lifecycle.yaml OK`
+
 
 #### Task 3 – Write a minimal stub workflow
 
@@ -298,7 +304,7 @@ Create a workflow that uses `workflow_dispatch` (manual trigger) so you can vali
 
 Create `.github/workflows/ci.yml`:
 
-```yaml
+```yaml title="ci.yml"
 name: REBASH Module 1 CI stub
 on:
   workflow_dispatch:
@@ -322,7 +328,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 mkdir -p .github/workflows
@@ -333,13 +339,15 @@ grep -q 'runs-on: ubuntu-latest' .github/workflows/ci.yml
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('workflow OK')"
 ```
 
-**Expected output:** Prints `workflow OK`; file exists under `.github/workflows/`.
+!!! example "Expected output"
+    Prints `workflow OK`; file exists under `.github/workflows/`.
+
 
 #### Task 4 – Dry-run shell steps and archive evidence
 
 Prove the `run:` block works locally, then bundle artefacts.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 
@@ -356,7 +364,9 @@ tar -czf module-01-evidence.tgz \
 ls -l module-01-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `module-01-evidence.tgz` exists; `evidence.txt` shows its size.
+!!! example "Expected output"
+    `module-01-evidence.tgz` exists; `evidence.txt` shows its size.
+
 
 **Optional — push to GitHub:**
 

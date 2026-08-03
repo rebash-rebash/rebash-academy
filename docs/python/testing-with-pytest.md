@@ -138,7 +138,7 @@ Under `~/rebash-python/lab22`, implement a small host inventory module and pytes
 
 Workspace: `~/rebash-python/lab22`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab22 && cd ~/rebash-python/lab22
 set -euo pipefail
 python3 -m venv .venv
@@ -149,7 +149,9 @@ python -m pip install -q pytest
 python -c 'import pytest; print(pytest.__version__)' | tee pytest-version.txt
 ```
 
-**Expected output:** `pytest-version.txt` shows a pytest version.
+!!! example "Expected output"
+    `pytest-version.txt` shows a pytest version.
+
 
 ### Real-world scenario
 
@@ -159,7 +161,7 @@ Your team maintains a tiny inventory helper that loads host JSON and classifies 
 
 #### Task 1 – Inventory module
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab22
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -170,7 +172,7 @@ mkdir -p inventory tests
 
 Create `inventory/__init__.py`:
 
-```python
+```python title="__init__.py"
 """Small host inventory helpers for the pytest lab."""
 from .hosts import classify, load_hosts, summarise
 
@@ -179,7 +181,7 @@ __all__ = ["classify", "load_hosts", "summarise"]
 
 Create `inventory/hosts.py`:
 
-```python
+```python title="hosts.py"
 from __future__ import annotations
 
 import json
@@ -218,7 +220,7 @@ def fetch_remote_status(url: str, timeout: float = 5.0) -> dict[str, Any]:
 
 Create `sample-hosts.json`:
 
-```json
+```json title="sample-hosts.json"
 [
   {"name": "web1", "status": "up"},
   {"name": "web2", "status": "down"},
@@ -228,7 +230,7 @@ Create `sample-hosts.json`:
 
 Run:
 
-```bash
+```bash title="Terminal"
 python - << 'PY'
 from pathlib import Path
 from inventory import load_hosts, summarise
@@ -236,11 +238,13 @@ print(summarise(load_hosts(Path("sample-hosts.json"))))
 PY
 ```
 
-**Expected output:** A dict similar to `{'healthy': 1, 'unhealthy': 1, 'unknown': 1}`.
+!!! example "Expected output"
+    A dict similar to `{'healthy': 1, 'unhealthy': 1, 'unknown': 1}`.
+
 
 #### Task 2 – pytest suite with fixture and mock
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab22
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -249,7 +253,7 @@ source .venv/bin/activate
 
 Create `tests/test_hosts.py`:
 
-```python
+```python title="test_hosts.py"
 from __future__ import annotations
 
 import json
@@ -318,16 +322,18 @@ def test_fetch_remote_status_mocked() -> None:
 
 Run:
 
-```bash
+```bash title="Terminal"
 python -m pytest -q | tee pytest-q.txt
 grep -E 'passed|failed' pytest-q.txt
 ```
 
-**Expected output:** `pytest -q` reports all tests passed (for example `5 passed` or similar count).
+!!! example "Expected output"
+    `pytest -q` reports all tests passed (for example `5 passed` or similar count).
+
 
 #### Task 3 – Evidence (optional coverage)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab22
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -347,7 +353,9 @@ ls -l pytest-lab-evidence.tgz | tee evidence-ls.txt
 test -s pytest-lab-evidence.tgz
 ```
 
-**Expected output:** Evidence archive exists; `pytest-q.txt` shows a green run.
+!!! example "Expected output"
+    Evidence archive exists; `pytest-q.txt` shows a green run.
+
 
 ### Validation steps
 
@@ -385,7 +393,7 @@ python -m pytest -q   # must still be green without the env var (integration ski
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab22
 set -euo pipefail
 rm -rf .venv .pytest_cache .coverage htmlcov

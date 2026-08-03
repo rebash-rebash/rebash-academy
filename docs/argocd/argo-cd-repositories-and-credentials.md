@@ -164,7 +164,7 @@ Create a repository Secret template with placeholders for private Git, register 
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-05 && cd ~/rebash-argocd/module-05
 ```
 
@@ -178,7 +178,7 @@ Platform engineering must document how application teams register private GitHub
 
 Create `repository-private-template.yaml`:
 
-```yaml
+```yaml title="repository-private-template.yaml"
 apiVersion: v1
 kind: Secret
 metadata:
@@ -198,7 +198,7 @@ stringData:
 
 Validate YAML without applying placeholders to cluster:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-05
 kubectl apply --dry-run=client -f repository-private-template.yaml | tee repo-template-dryrun-m05.txt
 grep -q 'repository-private-github-template' repo-template-dryrun-m05.txt
@@ -206,13 +206,15 @@ grep -q 'argocd.argoproj.io/secret-type' repository-private-template.yaml
 echo "repository template validated (not applied)" | tee repo-template-summary-m05.txt
 ```
 
-**Expected output:** Dry-run succeeds; summary confirms template was not applied with real credentials.
+!!! example "Expected output"
+    Dry-run succeeds; summary confirms template was not applied with real credentials.
+
 
 #### Task 2 – Public repo Application (no secret required)
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -223,7 +225,7 @@ metadata:
 
 Create `application-public-repo.yaml`:
 
-```yaml
+```yaml title="application-public-repo.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -248,18 +250,20 @@ spec:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-05
 kubectl apply -f namespace.yaml
 kubectl apply -f application-public-repo.yaml | tee application-apply-m05.txt
 kubectl get application rebash-public-repo-demo -n argocd | tee application-get-m05.txt
 ```
 
-**Expected output:** Application created; controller begins sync without repository Secret.
+!!! example "Expected output"
+    Application created; controller begins sync without repository Secret.
+
 
 #### Task 3 – Prove repository connection and sync
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-05
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
   application/rebash-public-repo-demo -n argocd --timeout=300s | tee wait-synced-m05.txt
@@ -271,7 +275,9 @@ kubectl get deploy,svc -n rebash-argocd-m05 | tee workloads-m05.txt
 echo "public repo connected via sync" | tee repo-connected-m05.txt
 ```
 
-**Expected output:** Application Synced; `argocd repo list` shows public repo with Successful connection (implicit credential-free); workloads exist in `rebash-argocd-m05`.
+!!! example "Expected output"
+    Application Synced; `argocd repo list` shows public repo with Successful connection (implicit credential-free); workloads exist in `rebash-argocd-m05`.
+
 
 #### Task 4 – Helm/OCI repository reference manifest
 
@@ -298,14 +304,16 @@ stringData:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-05
 kubectl apply --dry-run=client -f repository-oci-template.yaml | tee oci-template-dryrun-m05.txt
 grep -q 'enableOCI' repository-oci-template.yaml
 echo "OCI template validated" | tee oci-template-summary-m05.txt
 ```
 
-**Expected output:** Client dry-run passes; file documents OCI Helm credential shape.
+!!! example "Expected output"
+    Client dry-run passes; file documents OCI Helm credential shape.
+
 
 CLI equivalents (reference):
 
@@ -351,7 +359,7 @@ Create `repository-ssh-template.yaml` with `sshPrivateKey: |` placeholder block 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application rebash-public-repo-demo -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m05 --ignore-not-found
 # Do not leave real credential secrets in argocd namespace

@@ -166,7 +166,7 @@ Deploy a backend Service with Endpoints, prove CoreDNS resolution from a client 
 
 Workspace: `~/rebash-k8s/module-11` on a disposable lab cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
 ```
 
@@ -180,7 +180,7 @@ An on-call engineer reports intermittent 503 errors. You must verify Service End
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -189,7 +189,7 @@ metadata:
 
 Create `backend.yaml`:
 
-```yaml
+```yaml title="backend.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -216,7 +216,7 @@ spec:
 
 Create `service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -232,7 +232,7 @@ spec:
 
 Apply and check Endpoints:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-11
 kubectl apply -f namespace.yaml -f backend.yaml -f service.yaml
 kubectl rollout status deployment/api-backend -n rebash-m11 --timeout=120s
@@ -240,13 +240,15 @@ kubectl get endpoints api-svc -n rebash-m11 | tee endpoints-m11.txt
 kubectl get svc api-svc -n rebash-m11 -o wide | tee svc-m11.txt
 ```
 
-**Expected output:** Endpoints show at least one IP address; Service has ClusterIP.
+!!! example "Expected output"
+    Endpoints show at least one IP address; Service has ClusterIP.
+
 
 #### Task 2 – Client Pod, DNS, and connectivity
 
 Create `client-pod.yaml`:
 
-```yaml
+```yaml title="client-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -263,7 +265,7 @@ spec:
 
 Apply and test DNS plus HTTP:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-11
 kubectl apply -f client-pod.yaml
 kubectl wait --for=condition=Ready pod/net-client -n rebash-m11 --timeout=120s
@@ -274,13 +276,15 @@ kubectl get pods -n kube-system -l k8s-app=kube-dns -o wide 2>/dev/null | tee co
   kubectl get pods -n kube-system -l k8s-app=coredns -o wide | tee coredns-m11.txt
 ```
 
-**Expected output:** DNS resolves; `curl-m11.txt` contains `ok-from-backend`; CoreDNS Pods are Running.
+!!! example "Expected output"
+    DNS resolves; `curl-m11.txt` contains `ok-from-backend`; CoreDNS Pods are Running.
+
 
 #### Task 3 – NetworkPolicy deny then allow
 
 Create `networkpolicy-deny.yaml`:
 
-```yaml
+```yaml title="networkpolicy-deny.yaml"
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -297,7 +301,7 @@ spec:
 
 Create `networkpolicy-allow.yaml`:
 
-```yaml
+```yaml title="networkpolicy-allow.yaml"
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -321,7 +325,7 @@ spec:
 
 Test policy effect (skip deny test if your CNI does not enforce policies):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-11
 kubectl apply -f networkpolicy-deny.yaml
 if kubectl exec -n rebash-m11 net-client -- wget -qO- --timeout=3 http://api-svc 2>netpol-deny.txt; then
@@ -335,7 +339,9 @@ kubectl exec -n rebash-m11 net-client -- wget -qO- http://api-svc | tee netpol-a
 grep -q 'ok-from-backend' netpol-allow.txt
 ```
 
-**Expected output:** With enforcing CNI, traffic fails under deny and succeeds under allow; otherwise document CNI limitation.
+!!! example "Expected output"
+    With enforcing CNI, traffic fails under deny and succeeds under allow; otherwise document CNI limitation.
+
 
 ### Validation steps
 
@@ -366,7 +372,7 @@ Add a label `tier: frontend` to the client Pod and tighten the allow policy to r
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m11 --ignore-not-found
 ```
 

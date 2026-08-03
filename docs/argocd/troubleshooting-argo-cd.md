@@ -126,7 +126,7 @@ Create a broken Application (bad Git path), diagnose with kubectl/argocd CLI, fi
 
 Workspace: `~/rebash-argocd/module-16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-16/{apps,scripts,validation}
 cd ~/rebash-argocd/module-16
 ```
@@ -143,7 +143,7 @@ A developer typo'd `source.path` in an Application (`clusters/devv` instead of `
 
 Create `apps/broken-application.yaml`:
 
-```yaml
+```yaml title="broken-application.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -169,7 +169,7 @@ Capture before evidence:
 
 Create `scripts/capture-app-state.sh`:
 
-```bash
+```bash title="capture-app-state.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 APP="${1:-demo-api-broken}"
@@ -190,7 +190,7 @@ if command -v argocd >/dev/null 2>&1; then
 fi
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-16
 chmod +x scripts/capture-app-state.sh
 python3 -c "import yaml; yaml.safe_load(open('apps/broken-application.yaml'))"
@@ -198,13 +198,15 @@ grep -q 'clusters/devv' apps/broken-application.yaml
 echo 'broken-app-yaml: OK' | tee validation/broken-yaml.txt
 ```
 
-**Expected output:** Broken path `devv` present in manifest.
+!!! example "Expected output"
+    Broken path `devv` present in manifest.
+
 
 #### Task 2 – Apply broken app and diagnose
 
 When cluster available:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-16
 kubectl apply -f apps/broken-application.yaml
 sleep 5
@@ -215,20 +217,22 @@ grep -E 'path|ComparisonError|Failed' validation/before-describe.txt || true
 
 Offline diagnosis checklist (no cluster):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-16
 echo 'Diagnosis: spec.source.path typo clusters/devv' | tee validation/diagnosis.txt
 echo 'Fix: change path to clusters/dev' | tee -a validation/diagnosis.txt
 grep -q 'devv' validation/diagnosis.txt
 ```
 
-**Expected output:** Before state shows sync error or path not found; diagnosis documents typo.
+!!! example "Expected output"
+    Before state shows sync error or path not found; diagnosis documents typo.
+
 
 #### Task 3 – Create fixed Application and capture after evidence
 
 Create `apps/fixed-application.yaml`:
 
-```yaml
+```yaml title="fixed-application.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -250,7 +254,7 @@ spec:
       - CreateNamespace=true
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-16
 python3 -c "import yaml; yaml.safe_load(open('apps/fixed-application.yaml'))"
 grep -q 'clusters/dev' apps/fixed-application.yaml
@@ -260,20 +264,22 @@ kubectl apply --dry-run=client -f apps/fixed-application.yaml 2>&1 | tee validat
 
 When cluster available:
 
-```bash
+```bash title="Terminal"
 kubectl apply -f apps/fixed-application.yaml
 sleep 5
 ./scripts/capture-app-state.sh demo-api-broken argocd validation/after-state.txt
 diff -u validation/before-state.txt validation/after-state.txt | tee validation/before-after.diff || true
 ```
 
-**Expected output:** Fixed path validates; after state differs from before in diff file.
+!!! example "Expected output"
+    Fixed path validates; after state differs from before in diff file.
+
 
 #### Task 4 – Drift and health quick checks (reference commands)
 
 Create `scripts/triage-commands.sh`:
 
-```bash
+```bash title="triage-commands.sh"
 #!/usr/bin/env bash
 # Reference triage — run against real app name in lab cluster
 APP="${1:-demo-api-broken}"
@@ -283,7 +289,7 @@ kubectl get pods -n demo-api-dev 2>/dev/null || true
 kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller --tail=20 2>/dev/null || true
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-argocd/module-16/scripts/triage-commands.sh
 echo 'triage-script: OK' | tee validation/triage-script.txt
 ```
@@ -318,7 +324,7 @@ Add a second broken manifest `apps/broken-destination.yaml` pointing at namespac
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application demo-api-broken -n argocd --ignore-not-found
 rm -rf ~/rebash-argocd/module-16
 ```

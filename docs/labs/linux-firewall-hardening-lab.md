@@ -64,7 +64,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-linux-firewall
 cd ~/rebash-lab-linux-firewall
 ```
@@ -77,7 +77,7 @@ UFW may be inactive. SSH should already work via keys.
 
 ### Task 1 — Pre-change evidence
 
-```bash
+```bash title="Terminal"
 sudo ufw status verbose | tee ~/rebash-lab-linux-firewall/ufw-before.txt
 ss -tulpn | tee ~/rebash-lab-linux-firewall/ss-before.txt
 ip -br a
@@ -85,7 +85,7 @@ ip -br a
 
 ### Task 2 — Default deny and allow SSH
 
-```bash
+```bash title="Terminal"
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow OpenSSH
@@ -97,7 +97,7 @@ Confirm a **new** SSH session still connects before closing the old one.
 
 ### Task 3 — Optional HTTP allow + local listener
 
-```bash
+```bash title="Terminal"
 # Tiny local listener for the lab (loopback demo — still practise the allow rule)
 python3 - <<'PY' &
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -119,7 +119,7 @@ From another host (if any), confirm 8080 is reachable only when allowed; then de
 
 Run automated checks that prove the host posture (not a handwritten checklist):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-linux-firewall
 set -euo pipefail
 
@@ -146,11 +146,13 @@ chmod +x hardening-checks.sh
 test -s hardening-evidence.txt
 ```
 
-**Expected output:** `hardening-evidence.txt` shows UFW active, OpenSSH/22 allow, and current listeners.
+!!! example "Expected output"
+    `hardening-evidence.txt` shows UFW active, OpenSSH/22 allow, and current listeners.
+
 
 ### Task 5 — Negative check
 
-```bash
+```bash title="Terminal"
 sudo ufw deny 8080/tcp || sudo ufw delete allow 8080/tcp
 sudo ufw status numbered | tee ~/rebash-lab-linux-firewall/ufw-numbered.txt
 ```
@@ -178,7 +180,7 @@ sudo ufw status numbered | tee ~/rebash-lab-linux-firewall/ufw-numbered.txt
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 if [[ -f ~/rebash-lab-linux-firewall/http.pid ]]; then kill "$(cat ~/rebash-lab-linux-firewall/http.pid)" 2>/dev/null || true; fi
 sudo ufw delete allow 8080/tcp 2>/dev/null || true
 # Optional: disable UFW on disposable lab only

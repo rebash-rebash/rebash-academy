@@ -66,7 +66,7 @@ Hardening control points sit at the edge, the host, and the trust boundaries bet
 
 Hardening reduces **attack surface**: fewer public listeners, tighter allow lists, safer kernel network defaults, and encrypted admin paths. Practical Zero Trust means you do not trust “inside the VPC” alone — you still authenticate and segment.
 
-```bash
+```bash title="Terminal"
 ss -lntu
 sysctl net.ipv4.ip_forward net.ipv4.conf.all.accept_redirects
 ```
@@ -114,14 +114,16 @@ On a practice Ubuntu VM, read key network sysctl values, check where `sshd` list
 
 Workspace: `~/rebash-networking/lab21`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab21 && cd ~/rebash-networking/lab21
 set -euo pipefail
 whoami | tee admin-user.txt
 uname -a | tee uname.txt
 ```
 
-**Expected output:** workspace files created.
+!!! example "Expected output"
+    workspace files created.
+
 
 ### Real-world scenario
 
@@ -131,7 +133,7 @@ Security asks for a quick network exposure baseline on a new Ubuntu VM before it
 
 #### Task 1 – Read network sysctl baseline
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab21
 set -euo pipefail
 
@@ -152,11 +154,13 @@ set -euo pipefail
 test -s sysctl-net.txt
 ```
 
-**Expected output:** `sysctl-net.txt` lists forwarding, redirects, and related values.
+!!! example "Expected output"
+    `sysctl-net.txt` lists forwarding, redirects, and related values.
+
 
 #### Task 2 – Check sshd listen addresses
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab21
 set -euo pipefail
 
@@ -175,18 +179,20 @@ set -euo pipefail
 test -s sshd-listen-check.txt
 ```
 
-**Expected output:** evidence of SSH listen address/port (or an honest “not found”).
+!!! example "Expected output"
+    evidence of SSH listen address/port (or an honest “not found”).
+
 
 #### Task 3 – Listening ports inventory script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab21
 set -euo pipefail
 ```
 
 Create `inventory-listeners.sh`:
 
-```bash
+```bash title="inventory-listeners.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 OUT="${1:-listeners-inventory.txt}"
@@ -210,7 +216,7 @@ if ss -lntu | grep -E '0\.0\.0\.0:(3306|5432|6379|27017)\b' >/dev/null 2>&1; the
 fi
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x inventory-listeners.sh
 ./inventory-listeners.sh listeners-inventory.txt
 test -s listeners-inventory.txt
@@ -222,7 +228,9 @@ tar -czf hardening-evidence.tgz \
 ls -l hardening-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** script is executable; `listeners-inventory.txt` and `hardening-evidence.tgz` exist.
+!!! example "Expected output"
+    script is executable; `listeners-inventory.txt` and `hardening-evidence.tgz` exist.
+
 
 ### Validation steps
 
@@ -252,7 +260,7 @@ Extend `inventory-listeners.sh` to write a second file `listeners.csv` with colu
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab21
 set -euo pipefail
 # Read-mostly lab — nothing to revert on the host firewall

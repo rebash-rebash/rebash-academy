@@ -52,7 +52,7 @@ Python stdlib. **Estimated cost:** £0.
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-secrets/{sample/{ok,bad},out}
 cd ~/rebash-lab-python-secrets
 python3 -m venv .venv && source .venv/bin/activate
@@ -60,7 +60,7 @@ python3 -m venv .venv && source .venv/bin/activate
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 echo 'api_url: https://example.com' > sample/ok/config.yaml
 printf 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE\n' > sample/bad/leaked.env
 printf '-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA PRIVATE KEY-----\n' > sample/bad/id_rsa
@@ -72,7 +72,7 @@ Create `secrets_scan.py --path sample` writing `out/findings.json`. Exit `0` on 
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python secrets_scan.py --path sample/ok; echo $?    # 0
 python secrets_scan.py --path sample/bad; echo $?   # 1
 ```

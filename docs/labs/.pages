@@ -3,6 +3,7 @@ icon: material/flask
 
 nav:
   - Overview: index.md
+  - Sample — Code block conventions: sample-code-block-conventions.md
   - Linux:
     - Install Linux and First Boot: linux-install-and-first-boot.md
     - Configure SSH Secure Access: linux-ssh-secure-access.md

@@ -75,7 +75,7 @@ A **process** is an instance of a running programme. Important fields include PI
 | `nohup` | Survive terminal hangup (ad hoc) |
 | systemd service | Supervised long-running work |
 
-```bash
+```bash title="Terminal"
 ps -eo pid,ppid,user,stat,pcpu,pmem,cmd --sort=-pcpu | head
 ```
 
@@ -132,14 +132,16 @@ On a practice Ubuntu VM, start lab worker processes, inspect them with `ps`, adj
 
 Workspace: `~/rebash-linux/lab09`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab09 && cd ~/rebash-linux/lab09
 set -euo pipefail
 whoami | tee lab-user.txt
 ps -p $$ -o pid,ppid,cmd | tee shell-ps.txt
 ```
 
-**Expected output:** `lab-user.txt` and `shell-ps.txt` exist; your shell PID is listed.
+!!! example "Expected output"
+    `lab-user.txt` and `shell-ps.txt` exist; your shell PID is listed.
+
 
 ### Real-world scenario
 
@@ -149,7 +151,7 @@ A batch “report” job was started in SSH and is still consuming CPU after the
 
 #### Task 1 – Start workers and inspect with ps
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab09
 set -euo pipefail
 
@@ -167,11 +169,13 @@ grep -q "$W1" workers-ps.txt
 grep -q "$W2" workers-ps.txt
 ```
 
-**Expected output:** both PIDs appear in `workers-ps.txt` with command `sleep 3600`.
+!!! example "Expected output"
+    both PIDs appear in `workers-ps.txt` with command `sleep 3600`.
+
 
 #### Task 2 – Renice and job-control style background proof
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab09
 set -euo pipefail
 
@@ -190,11 +194,13 @@ ps -p "$W3" -o pid,ni,cmd | tee worker3-nice.txt
 awk 'NR==2 {exit !($2 == 15)}' worker3-nice.txt
 ```
 
-**Expected output:** worker1 niceness is `10`; worker3 niceness is `15`.
+!!! example "Expected output"
+    worker1 niceness is `10`; worker3 niceness is `15`.
+
 
 #### Task 3 – Graceful stop with TERM and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab09
 set -euo pipefail
 
@@ -236,7 +242,9 @@ ls -l process-evidence.tgz | tee evidence-ls.txt
 test -s process-evidence.tgz
 ```
 
-**Expected output:** `stop-ok.txt` and `kill-demo.txt` exist; no lab `sleep 3600` workers remain; archive is non-empty.
+!!! example "Expected output"
+    `stop-ok.txt` and `kill-demo.txt` exist; no lab `sleep 3600` workers remain; archive is non-empty.
+
 
 ### Validation steps
 
@@ -267,7 +275,7 @@ Write `~/rebash-linux/lab09/graceful-stop.sh` that: (1) starts `sleep 120` in th
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab09
 set -euo pipefail
 # Stop any leftover lab sleeps matching our pattern

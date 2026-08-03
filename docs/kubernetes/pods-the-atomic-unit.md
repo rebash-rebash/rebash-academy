@@ -151,7 +151,7 @@ Create a Pod from YAML with labels and resource requests, prove it reaches Ready
 
 Workspace: `~/rebash-k8s/module-03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-03 && cd ~/rebash-k8s/module-03
 ```
 
@@ -165,7 +165,7 @@ You debug a one-off batch container before the team wraps it in a Deployment. Yo
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -174,7 +174,7 @@ metadata:
 
 Create `pod.yaml`:
 
-```yaml
+```yaml title="pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -202,7 +202,7 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-03
 kubectl apply -f namespace.yaml
 kubectl apply -f pod.yaml
@@ -211,24 +211,28 @@ kubectl get pod web -n rebash-m03 -o wide | tee pod-ready.txt
 grep -q '1/1' pod-ready.txt
 ```
 
-**Expected output:** Pod `web` shows `1/1 Running` with a node assignment.
+!!! example "Expected output"
+    Pod `web` shows `1/1 Running` with a node assignment.
+
 
 #### Task 2 – Exec and capture evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-03
 kubectl exec -n rebash-m03 web -- wget -qO- http://127.0.0.1/ | head -n 5 | tee exec-html.txt
 kubectl describe pod web -n rebash-m03 | sed -n '/Labels:/,/Conditions:/p' | tee pod-labels.txt
 grep tier pod-labels.txt
 ```
 
-**Expected output:** HTML from nginx in `exec-html.txt`; labels include `tier=frontend`.
+!!! example "Expected output"
+    HTML from nginx in `exec-html.txt`; labels include `tier=frontend`.
+
 
 #### Task 3 – Delete Pod and test restartPolicy Never
 
 Create `fail-pod.yaml`:
 
-```yaml
+```yaml title="fail-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -246,7 +250,7 @@ spec:
 
 Apply, wait for terminal phase, and record:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-03
 kubectl delete pod web -n rebash-m03 --wait=true
 kubectl apply -f fail-pod.yaml
@@ -256,7 +260,9 @@ grep -E 'Failed|Error|Completed' fail-pod-status.txt
 kubectl delete pod fail-once -n rebash-m03 --ignore-not-found
 ```
 
-**Expected output:** `web` removed; `fail-once` reaches `Failed`/`Error` and does not restart because `restartPolicy` is `Never`.
+!!! example "Expected output"
+    `web` removed; `fail-once` reaches `Failed`/`Error` and does not restart because `restartPolicy` is `Never`.
+
 
 ### Validation steps
 
@@ -287,7 +293,7 @@ Create `sidecar-pod.yaml` with two containers sharing the Pod network (nginx + b
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m03 --ignore-not-found --wait=true
 ```
 

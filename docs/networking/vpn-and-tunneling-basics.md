@@ -72,7 +72,7 @@ A VPN creates a protected path over an untrusted network. The **outer** packet g
 - **WireGuard** — simple keys, UDP, popular for modern overlays
 - **TLS-based VPN** (for example OpenVPN-style) — sometimes easier through strict egress
 
-```bash
+```bash title="Terminal"
 # Dynamic SOCKS proxy over SSH (remote-access style demo)
 ssh -D 1080 -N -f user@bastion.example.com
 ```
@@ -124,7 +124,7 @@ Prove a tunnel or VPN-like path on a practice Ubuntu VM: prefer `ssh -D` SOCKS a
 
 Workspace: `~/rebash-networking/lab20`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab20 && cd ~/rebash-networking/lab20
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -132,7 +132,9 @@ command -v ssh | tee ssh-path.txt
 command -v wg >/dev/null 2>&1 && wg --version 2>&1 | tee wg-version.txt || echo "wg: not installed" | tee wg-version.txt
 ```
 
-**Expected output:** workspace ready; `ssh-path.txt` exists.
+!!! example "Expected output"
+    workspace ready; `ssh-path.txt` exists.
+
 
 ### Real-world scenario
 
@@ -142,7 +144,7 @@ An engineer needs a safe way to reach an internal HTTP service without opening t
 
 #### Task 1 – Inventory and choose demo path
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -162,13 +164,15 @@ fi
 echo "demo=${DEMO}" | tee demo-path.txt
 ```
 
-**Expected output:** `demo-path.txt` is `socks`, `wireguard`, or `namespace`.
+!!! example "Expected output"
+    `demo-path.txt` is `socks`, `wireguard`, or `namespace`.
+
 
 #### Task 2 – SOCKS (`ssh -D`) or WireGuard inspect or namespace tunnel
 
 **Path A — SOCKS over SSH to localhost** (when sshd listens on 22):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -188,7 +192,7 @@ fi
 
 **Path B — WireGuard already up:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -201,7 +205,7 @@ fi
 
 **Path C — Namespace GRE/veth tunnel:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -239,11 +243,13 @@ if grep -q '=namespace$' demo-path.txt; then
 fi
 ```
 
-**Expected output:** SOCKS listener + proxied HTTP snippet, or `wg show` output, or successful GRE ping over `10.20.0.0/30`.
+!!! example "Expected output"
+    SOCKS listener + proxied HTTP snippet, or `wg show` output, or successful GRE ping over `10.20.0.0/30`.
+
 
 #### Task 3 – Evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -256,7 +262,9 @@ ls -l vpn-evidence.tgz | tee evidence-ls.txt
 test -s vpn-evidence.tgz
 ```
 
-**Expected output:** `vpn-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `vpn-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -287,7 +295,7 @@ Write `tunnel-check.sh` that: (1) prints whether port `11080` is listening, (2) 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab20
 set -euo pipefail
 

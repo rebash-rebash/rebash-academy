@@ -165,7 +165,7 @@ Build a two-job workflow that uploads a build artefact, downloads it in a deploy
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-06/{demo-app/dist,.github/workflows} && cd ~/rebash-github-actions/module-06
 set -euo pipefail
 ```
@@ -178,7 +178,7 @@ Release engineering requires build once, deploy many: the compile job uploads a 
 
 #### Task 1 – Create build output and requirements file
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 echo "app-version=2.4.1" > demo-app/dist/version.txt
@@ -186,14 +186,14 @@ echo "app-version=2.4.1" > demo-app/dist/version.txt
 
 Create `demo-app/requirements.txt`:
 
-```text
+```text title="requirements.txt"
 # Stub requirements for cache key lab
 requests==2.32.3
 ```
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 test -s demo-app/dist/version.txt
@@ -201,13 +201,15 @@ grep -q 'requests' demo-app/requirements.txt
 python3 -c "import hashlib; h=hashlib.sha256(open('demo-app/requirements.txt','rb').read()).hexdigest()[:12]; open('req-hash.txt','w').write(h); print('hash', h)"
 ```
 
-**Expected output:** Prints `hash` followed by 12 hex characters.
+!!! example "Expected output"
+    Prints `hash` followed by 12 hex characters.
+
 
 #### Task 2 – Write build and deploy workflow with artefacts
 
 Create `.github/workflows/build-deploy-artifacts.yml`:
 
-```yaml
+```yaml title="build-deploy-artifacts.yml"
 name: Build and deploy with artifacts
 on:
   workflow_dispatch:
@@ -246,7 +248,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 grep -q 'upload-artifact@v4' .github/workflows/build-deploy-artifacts.yml
@@ -255,7 +257,9 @@ grep -q 'needs: build' .github/workflows/build-deploy-artifacts.yml
 python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/build-deploy-artifacts.yml')); assert 'deploy' in d['jobs'] and d['jobs']['deploy']['needs']=='build'; print('artifact workflow OK')"
 ```
 
-**Expected output:** `artifact workflow OK`
+!!! example "Expected output"
+    `artifact workflow OK`
+
 
 #### Task 3 – Add cache workflow stub
 
@@ -291,7 +295,7 @@ jobs:
 
 Validate offline (substitute your hash from `req-hash.txt` into the workflow file before parsing):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 REQ_HASH=$(cat req-hash.txt)
@@ -301,11 +305,13 @@ grep -q 'restore-keys' .github/workflows/cache-pip.resolved.yml
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/cache-pip.resolved.yml')); print('cache workflow OK')"
 ```
 
-**Expected output:** `cache workflow OK`
+!!! example "Expected output"
+    `cache workflow OK`
+
 
 #### Task 4 – Simulate artefact handoff locally
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 
@@ -324,7 +330,9 @@ ls -l module-06-evidence.tgz | tee evidence.txt
 echo "local artefact simulation OK"
 ```
 
-**Expected output:** `local artefact simulation OK`
+!!! example "Expected output"
+    `local artefact simulation OK`
+
 
 ### Validation steps
 

@@ -66,7 +66,7 @@ Probes and exporters feed metrics and alerts; humans keep runbooks next to thres
 
 Automation expresses desired network state in code. Monitoring continuously checks that the live path still matches intent. Synthetics hit a URL or TCP port from outside or from another VPC so you notice DNS, routing, and certificate failures that host CPU metrics miss.
 
-```bash
+```bash title="Terminal"
 # Minimal synthetic idea
 curl -o /dev/null -sS -w '%{http_code} %{time_total}\n' https://example.com
 ```
@@ -122,14 +122,16 @@ Write `net-probe.sh` that probes a target with `ping` and `curl`, records timest
 
 Workspace: `~/rebash-networking/lab23`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab23 && cd ~/rebash-networking/lab23
 set -euo pipefail
 whoami | tee admin-user.txt
 command -v curl ping ss | tee tools.txt
 ```
 
-**Expected output:** tools listed; workspace ready.
+!!! example "Expected output"
+    tools listed; workspace ready.
+
 
 ### Real-world scenario
 
@@ -139,14 +141,14 @@ Your team lacks Prometheus for a small environment but still needs a cron-friend
 
 #### Task 1 – Create the probe script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab23
 set -euo pipefail
 ```
 
 Create `net-probe.sh`:
 
-```bash
+```bash title="net-probe.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -215,15 +217,17 @@ echo "OK: http=${http_code} latency=${time_total}s"
 rm -f /tmp/net-probe-ping.$$ /tmp/net-probe-curl-err.$$ /tmp/net-probe-alert.$$
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x net-probe.sh
 ```
 
-**Expected output:** executable `net-probe.sh` exists.
+!!! example "Expected output"
+    executable `net-probe.sh` exists.
+
 
 #### Task 2 – Run successful probe and inspect metrics
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab23
 set -euo pipefail
 
@@ -235,11 +239,13 @@ tail -n 3 metrics.tsv | tee metrics-tail.txt
 grep -E 'timestamp|example.com' metrics.tsv >/dev/null
 ```
 
-**Expected output:** metrics row appended; probe prints `OK` (or `ALERT` if the network blocks outbound HTTPS — then note it and continue with Task 3 using a local target).
+!!! example "Expected output"
+    metrics row appended; probe prints `OK` (or `ALERT` if the network blocks outbound HTTPS — then note it and continue with Task 3 using a local target).
+
 
 #### Task 3 – Force a threshold alert
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab23
 set -euo pipefail
 
@@ -260,7 +266,9 @@ tar -czf monitoring-evidence.tgz \
 ls -l monitoring-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** exit code `2` with an `ALERT` line; `alert.log` and archive exist.
+!!! example "Expected output"
+    exit code `2` with an `ALERT` line; `alert.log` and archive exist.
+
 
 ### Validation steps
 
@@ -290,7 +298,7 @@ Add a `-c` / cron mode note in script comments and a second check: fail if `ss -
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab23
 set -euo pipefail
 # Optional: rm -f monitoring-evidence.tgz metrics.tsv alert.log

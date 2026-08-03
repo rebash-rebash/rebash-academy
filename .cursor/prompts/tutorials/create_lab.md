@@ -142,24 +142,31 @@ Keep each task **straight and readable** — Microsoft Learn style:
 
 #### Canonical pattern (preferred)
 
+Use Material fence titles: files get `title="filename"`, commands get `title="Terminal"`.  
+Put success criteria in `!!! example "Expected output"` (not only bold prose).  
+Always set a language tag. Optional: `linenums="1"` on long files (40+ lines).
+
+Review sample: `docs/labs/sample-code-block-conventions.md`.
+
 ````markdown
 #### Task 1 – Create and run a hello script
 
 Create `hello.py` in the lab directory:
 
-```python
+```python title="hello.py"
 print("hello from rebash")
 ```
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-<tech>/labNN
 python3 hello.py | tee hello-out.txt
 grep -q 'hello from rebash' hello-out.txt
 ```
 
-**Expected output:** `hello-out.txt` contains `hello from rebash`.
+!!! example "Expected output"
+    `hello-out.txt` contains `hello from rebash`.
 ````
 
 #### Multi-file example
@@ -169,7 +176,7 @@ grep -q 'hello from rebash' hello-out.txt
 
 Create `compose.yaml`:
 
-```yaml
+```yaml title="compose.yaml"
 services:
   jenkins:
     image: jenkins/jenkins:lts-jdk17
@@ -183,13 +190,14 @@ volumes:
 
 Start and check:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 docker compose up -d
 docker compose ps | tee compose-ps.txt
 ```
 
-**Expected output:** `compose-ps.txt` shows the `jenkins` service running.
+!!! example "Expected output"
+    `compose-ps.txt` shows the `jenkins` service running.
 ````
 
 #### File-creation rules

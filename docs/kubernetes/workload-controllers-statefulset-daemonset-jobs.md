@@ -158,7 +158,7 @@ Create a batch Job and a CronJob from YAML, wait for Job completion, and capture
 
 Workspace: `~/rebash-k8s/module-04-ctl`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-04-ctl && cd ~/rebash-k8s/module-04-ctl
 ```
 
@@ -172,7 +172,7 @@ The data team needs a one-off migration Job and a nightly CronJob stub for cache
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -181,7 +181,7 @@ metadata:
 
 Create `migrate-job.yaml`:
 
-```yaml
+```yaml title="migrate-job.yaml"
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -206,7 +206,7 @@ spec:
 
 Apply and wait for completion:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-04-ctl
 kubectl apply -f namespace.yaml
 kubectl apply -f migrate-job.yaml
@@ -217,13 +217,15 @@ kubectl logs -n rebash-m04-ctl job/migrate-once | tee job-logs.txt
 grep -q 'migration complete' job-logs.txt
 ```
 
-**Expected output:** Job status `Complete`; logs contain `migration complete`.
+!!! example "Expected output"
+    Job status `Complete`; logs contain `migration complete`.
+
 
 #### Task 2 – CronJob stub
 
 Create `cache-cronjob.yaml`:
 
-```yaml
+```yaml title="cache-cronjob.yaml"
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -249,7 +251,7 @@ spec:
 
 Apply and verify schedule:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-04-ctl
 kubectl apply -f cache-cronjob.yaml
 kubectl get cronjob cache-warm -n rebash-m04-ctl | tee cronjob.txt
@@ -259,7 +261,9 @@ kubectl wait --for=condition=complete job/cache-warm-manual -n rebash-m04-ctl --
 kubectl get jobs -n rebash-m04-ctl | tee all-jobs.txt
 ```
 
-**Expected output:** CronJob listed with schedule; manual Job from CronJob completes.
+!!! example "Expected output"
+    CronJob listed with schedule; manual Job from CronJob completes.
+
 
 #### Task 3 – Contrast with Deployment (optional DaemonSet note)
 
@@ -290,14 +294,16 @@ spec:
 
 Apply and compare statuses:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-04-ctl
 kubectl apply -f web-deploy.yaml
 kubectl get deploy,job,cronjob -n rebash-m04-ctl | tee controllers-summary.txt
 grep -E 'migrate-once|cache-warm|web' controllers-summary.txt
 ```
 
-**Expected output:** Job Complete, CronJob scheduled, Deployment Available—three controller types side by side.
+!!! example "Expected output"
+    Job Complete, CronJob scheduled, Deployment Available—three controller types side by side.
+
 
 ### Validation steps
 
@@ -327,7 +333,7 @@ Add a `concurrencyPolicy: Forbid` field to the CronJob manifest so overlapping r
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m04-ctl --ignore-not-found --wait=true
 ```
 

@@ -68,7 +68,7 @@ Shell networking helpers call remote endpoints and local sockets, then write evi
 - **`dig` / `getent hosts`** — Domain Name System (DNS) lookups
 - **SSH / `scp` / `rsync`** — remote access and file sync (use with key hygiene; not the focus of the lab)
 
-```bash
+```bash title="Terminal"
 curl -fsS --connect-timeout 3 --max-time 10 -o /dev/null -w '%{http_code}\n' https://example.com
 ss -lntu
 ip -br addr
@@ -86,7 +86,7 @@ Deploy pipelines need a quick “is the service up?” check. Incidents need a t
 4. **DNS (optional)** — `getent hosts name` or `dig +short` when debugging names.  
 5. **Remote file ops** — `scp` / `rsync` for copies; keep keys and host-key policy under team standards.
 
-```bash
+```bash title="Terminal"
 for i in 1 2 3; do
   code=$(curl -fsS --connect-timeout 3 --max-time 10 \
     -o /dev/null -w '%{http_code}' "$URL") && break
@@ -137,7 +137,7 @@ Build `healthcheck.sh` that retries `curl` against a URL with timeouts, prove su
 
 Workspace: `~/rebash-shell/lab13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab13 && cd ~/rebash-shell/lab13
 set -euo pipefail
 command -v curl | tee curl-path.txt
@@ -145,7 +145,9 @@ command -v ss | tee ss-path.txt
 command -v ip | tee ip-path.txt
 ```
 
-**Expected output:** Paths for `curl`, `ss`, and `ip` are recorded.
+!!! example "Expected output"
+    Paths for `curl`, `ss`, and `ip` are recorded.
+
 
 ### Real-world scenario
 
@@ -157,7 +159,7 @@ After each deploy to a practice VM, CI should confirm the health URL answers wit
 
 Create `healthcheck.sh`:
 
-```bash
+```bash title="healthcheck.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -199,7 +201,7 @@ exit 1
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab13
 set -euo pipefail
 
@@ -210,11 +212,13 @@ grep -q 'health=OK' health-result.txt
 ```
 
 
-**Expected output:** `health-result.txt` contains `health=OK` and an HTTP 2xx/3xx code.
+!!! example "Expected output"
+    `health-result.txt` contains `health=OK` and an HTTP 2xx/3xx code.
+
 
 #### Task 2 – Fail path with a bad URL
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab13
 set -euo pipefail
 
@@ -230,11 +234,13 @@ test "$ec" -ne 0
 grep -q 'health=FAIL' health-result-fail.txt
 ```
 
-**Expected output:** Non-zero exit; `health-result-fail.txt` contains `health=FAIL`.
+!!! example "Expected output"
+    Non-zero exit; `health-result-fail.txt` contains `health=FAIL`.
+
 
 #### Task 3 – ss/ip snapshot (read-only)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab13
 set -euo pipefail
 
@@ -259,7 +265,9 @@ tar -czf net-evidence.tgz \
 ls -l net-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `net-snapshot.txt` is non-empty; `net-evidence.tgz` exists. No firewall commands were run.
+!!! example "Expected output"
+    `net-snapshot.txt` is non-empty; `net-evidence.tgz` exists. No firewall commands were run.
+
 
 ### Validation steps
 
@@ -292,7 +300,7 @@ Add optional header support: if `HEALTH_HEADER` is set (for example `X-Lab: reba
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab13
 set -euo pipefail
 # Keep evidence if you want; otherwise:

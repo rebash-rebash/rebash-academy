@@ -83,7 +83,7 @@ collections:
 
 Install command:
 
-```bash
+```bash title="Terminal"
 ansible-galaxy collection install -r collections/requirements.yml -p ./collections
 ```
 
@@ -134,7 +134,7 @@ Create `collections/requirements.yml`, install pinned collections into `./collec
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-10/collections
 cd ~/rebash-ansible/module-10
 ```
@@ -151,7 +151,7 @@ Your platform team maintains a golden `requirements.yml` committed to Git. CI ru
 
 Create `collections/requirements.yml`:
 
-```yaml
+```yaml title="requirements.yml"
 ---
 # REBASH Academy Module 10 — collection pins for lab and CI
 collections:
@@ -172,7 +172,7 @@ collections:
 
 Create `scripts/validate-requirements.py`:
 
-```python
+```python title="validate-requirements.py"
 #!/usr/bin/env python3
 """Validate collections/requirements.yml structure (offline)."""
 from __future__ import annotations
@@ -231,20 +231,22 @@ if __name__ == "__main__":
 
 Run validation:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-10
 chmod +x scripts/validate-requirements.py
 python3 scripts/validate-requirements.py | tee validate-requirements.txt
 grep -q 'requirements.yml OK' validate-requirements.txt
 ```
 
-**Expected output:** `collections/requirements.yml OK (5 collections)` and list of collection names.
+!!! example "Expected output"
+    `collections/requirements.yml OK (5 collections)` and list of collection names.
+
 
 #### Task 3 – ansible.cfg collections path
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 collections_paths = ./collections:~/.ansible/collections:/usr/share/ansible/collections
 inventory = inventory/localhost.yml
@@ -253,7 +255,7 @@ host_key_checking = False
 
 Create `inventory/localhost.yml`:
 
-```yaml
+```yaml title="localhost.yml"
 ---
 all:
   hosts:
@@ -265,7 +267,7 @@ all:
 
 Install collections (required — not optional):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-10
 ansible-galaxy collection install -r collections/requirements.yml -p ./collections --force-with-deps | tee galaxy-install.txt
 test -d collections/ansible_collections/ansible/posix
@@ -275,7 +277,7 @@ echo 'collections installed' | tee install-proof.txt
 
 Create `files/hosts.csv`:
 
-```csv
+```csv title="hosts.csv"
 hostname,role,port
 web1,web,8080
 db1,db,5432
@@ -319,7 +321,7 @@ Create `playbooks/read-inventory-csv.yml`:
 
 Run the playbook:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-10
 ansible-playbook playbooks/read-inventory-csv.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/read-inventory-csv.yml | tee playbook-run.txt
@@ -328,7 +330,9 @@ grep -q 'host_count=2' ~/rebash-ansible/module-10/reports/csv-summary.txt
 cat ~/rebash-ansible/module-10/reports/csv-summary.txt | tee csv-summary-proof.txt
 ```
 
-**Expected output:** Play succeeds; `csv-summary.txt` shows `host_count=2` and `first_host=web1`.
+!!! example "Expected output"
+    Play succeeds; `csv-summary.txt` shows `host_count=2` and `first_host=web1`.
+
 
 ### Validation steps
 
@@ -361,7 +365,7 @@ Extend `validate-requirements.py` to fail if any version string is exactly `*`. 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-ansible/module-10/reports
 # Optional: rm -rf ~/rebash-ansible/module-10/collections/ansible_collections
 ```

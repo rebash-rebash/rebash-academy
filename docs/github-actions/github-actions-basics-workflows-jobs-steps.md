@@ -194,7 +194,7 @@ Complete `.github/workflows/ci.yml` with checkout, environment variables, a cont
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-02 && cd ~/rebash-github-actions/module-02
 set -euo pipefail
 ```
@@ -209,7 +209,7 @@ Your team’s first production workflow must run on every pull request to `main`
 
 Create the directory layout, then add the test script and README.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-02
 set -euo pipefail
 mkdir -p demo-app/tests .github/workflows
@@ -217,7 +217,7 @@ mkdir -p demo-app/tests .github/workflows
 
 Create `demo-app/tests/run-tests.sh`:
 
-```bash
+```bash title="run-tests.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo "Running stub unit tests..."
@@ -227,7 +227,7 @@ echo "ALL TESTS PASSED"
 
 Create `demo-app/README.md`:
 
-````markdown
+````markdown title="README.md"
 # Demo app for Module 2 CI lab
 
 Minimal fixture used by the CI workflow stub. Run tests locally:
@@ -246,7 +246,9 @@ test -x demo-app/tests/run-tests.sh
 grep -q 'ALL TESTS PASSED' demo-app/tests/run-tests.sh
 ```
 
-**Expected output:** Script is executable; grep succeeds.
+!!! example "Expected output"
+    Script is executable; grep succeeds.
+
 
 #### Task 2 – Write the CI workflow
 
@@ -307,7 +309,9 @@ grep -q 'github.ref_name' .github/workflows/ci.yml
 grep -q 'working-directory: demo-app/tests' .github/workflows/ci.yml
 ```
 
-**Expected output:** All greps succeed.
+!!! example "Expected output"
+    All greps succeed.
+
 
 #### Task 3 – Validate YAML structure
 
@@ -328,7 +332,9 @@ print('structure OK')
 "
 ```
 
-**Expected output:** `structure OK`
+!!! example "Expected output"
+    `structure OK`
+
 
 #### Task 4 – Simulate workflow shell steps locally
 
@@ -347,7 +353,9 @@ grep -q 'ALL TESTS PASSED' ../../test-output.txt
 echo "local simulation OK"
 ```
 
-**Expected output:** `local simulation OK`
+!!! example "Expected output"
+    `local simulation OK`
+
 
 **Optional — run on GitHub:**
 

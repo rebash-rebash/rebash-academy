@@ -86,7 +86,7 @@ Security groups, Kubernetes pod CIDRs, VPN tunnels, and allow-lists are all addr
 3. **Decide local vs remote** — same network prefix → neighbours; otherwise → gateway/route.
 4. **Classify** — compare the address to well-known ranges before you open firewall tickets.
 
-```bash
+```bash title="Terminal"
 ip -br a
 ip -4 addr show
 ping -c 2 127.0.0.1
@@ -129,7 +129,7 @@ Show IPv4 CIDR on interfaces, classify addresses as private/public/loopback/link
 
 Workspace: `~/rebash-networking/lab04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab04 && cd ~/rebash-networking/lab04
 set -euo pipefail
 hostname | tee hostname.txt
@@ -137,7 +137,9 @@ python3 --version | tee python-version.txt
 command -v ip ping | tee tools-present.txt
 ```
 
-**Expected output:** Python 3 version line printed; `ip` and `ping` present.
+!!! example "Expected output"
+    Python 3 version line printed; `ip` and `ping` present.
+
 
 ### Real-world scenario
 
@@ -147,7 +149,7 @@ A security review asks: “List every IPv4 address on this jump host and mark wh
 
 #### Task 1 – Show IPv4 CIDR on interfaces
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab04
 set -euo pipefail
 
@@ -161,18 +163,20 @@ awk '{for(i=1;i<=NF;i++) if($i ~ /^inet$/) print $(i+1)}' ip4-addr.txt \
 test -s ipv4-cidrs.txt
 ```
 
-**Expected output:** `ipv4-cidrs.txt` contains at least `127.0.0.1/8` (loopback) and usually one more CIDR on a NIC.
+!!! example "Expected output"
+    `ipv4-cidrs.txt` contains at least `127.0.0.1/8` (loopback) and usually one more CIDR on a NIC.
+
 
 #### Task 2 – Private vs public classification script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab04
 set -euo pipefail
 ```
 
 Create `classify_ipv4.py`:
 
-```python
+```python title="classify_ipv4.py"
 #!/usr/bin/env python3
 """Classify IPv4 addresses for REBASH lab04."""
 import ipaddress
@@ -215,17 +219,19 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x classify_ipv4.py
 python3 classify_ipv4.py | tee classify-run.txt
 grep -E 'loopback|private|public|link-local' ipv4-classification.txt
 ```
 
-**Expected output:** `ipv4-classification.txt` labels each CIDR; loopback appears as `loopback`; typical LAN/VPC addresses appear as private.
+!!! example "Expected output"
+    `ipv4-classification.txt` labels each CIDR; loopback appears as `loopback`; typical LAN/VPC addresses appear as private.
+
 
 #### Task 3 – Safe pings and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab04
 set -euo pipefail
 
@@ -257,7 +263,9 @@ ls -l ip-addressing-evidence.tgz | tee evidence-ls.txt
 test -s ip-addressing-evidence.tgz
 ```
 
-**Expected output:** localhost ping succeeds; evidence tarball is non-empty; link-local file either shows a ping or an honest “none” message.
+!!! example "Expected output"
+    localhost ping succeeds; evidence tarball is non-empty; link-local file either shows a ping or an honest “none” message.
+
 
 ### Validation steps
 
@@ -288,7 +296,7 @@ Extend `classify_ipv4.py` (or add `classify_ipv4_extra.py`) so it also reads add
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab04
 set -euo pipefail
 # No routes or firewall rules were added

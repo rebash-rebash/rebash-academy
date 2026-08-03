@@ -168,7 +168,7 @@ Workspace: `~/rebash-gitlab/module-04`
 
 File-first lab. Push to GitLab only when you want to inspect `$CI_*` values on a runner.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-04/src && cd ~/rebash-gitlab/module-04
 ```
 
@@ -182,26 +182,28 @@ Reviewers rejected your team's pipeline because feature branches triggered deplo
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 APP_NAME = "rebash-syntax-lab"
 print(APP_NAME)
 ```
 
 Run locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-04
 python3 src/app.py | tee app-name.txt
 grep -q 'rebash-syntax-lab' app-name.txt
 ```
 
-**Expected output:** `app-name.txt` contains `rebash-syntax-lab`.
+!!! example "Expected output"
+    `app-name.txt` contains `rebash-syntax-lab`.
+
 
 #### Task 2 – Author the full pipeline syntax file
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -246,7 +248,7 @@ test:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-04
 python3 -c "
 import yaml
@@ -258,13 +260,15 @@ print('OK syntax lab')
 "
 ```
 
-**Expected output:** Prints `OK syntax lab`.
+!!! example "Expected output"
+    Prints `OK syntax lab`.
+
 
 #### Task 3 – Simulate lint artefact and test locally
 
 Reproduce the artefact hand-off without a runner:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-04
 python3 -m py_compile src/app.py
 echo "lint ok for rebash-syntax-lab" > lint-report.txt
@@ -273,7 +277,9 @@ python3 src/app.py | tee test-out.txt
 grep -q 'rebash-syntax-lab' test-out.txt
 ```
 
-**Expected output:** `lint-report.txt` exists; `test-out.txt` contains `rebash-syntax-lab`.
+!!! example "Expected output"
+    `lint-report.txt` exists; `test-out.txt` contains `rebash-syntax-lab`.
+
 
 ### Validation steps
 
@@ -305,7 +311,7 @@ Add `interruptible: true` to `lint` and `test` so newer pipeline runs cancel out
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-04/app-name.txt ~/rebash-gitlab/module-04/lint-report.txt ~/rebash-gitlab/module-04/test-out.txt
 # Keep src/ and .gitlab-ci.yml for module 05
 ```

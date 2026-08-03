@@ -167,7 +167,7 @@ Workspace: `~/rebash-gitlab/module-02`
 
 File-first lab. Push to GitLab only when you want MR and branch pipelines on a runner.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-02 && cd ~/rebash-gitlab/module-02
 ```
 
@@ -181,7 +181,7 @@ Your platform team requires every service repo to document MR expectations and e
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # rebash-gitlab-module-02
 
 Sample service for GitLab projects, merge requests, and releases.
@@ -195,13 +195,15 @@ Sample service for GitLab projects, merge requests, and releases.
 
 Verify the file exists:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-02
 test -s README.md
 head -3 README.md | tee readme-head.txt
 ```
 
-**Expected output:** `readme-head.txt` shows the project title and description lines.
+!!! example "Expected output"
+    `readme-head.txt` shows the project title and description lines.
+
 
 #### Task 2 – Define the MR checklist policy
 
@@ -227,7 +229,7 @@ branch_protection:
 
 Validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-02
 python3 -c "
 import yaml
@@ -238,19 +240,21 @@ print('OK mr-policy', p['version'])
 "
 ```
 
-**Expected output:** Prints `OK mr-policy 1`.
+!!! example "Expected output"
+    Prints `OK mr-policy 1`.
+
 
 #### Task 3 – Author branch-aware CI with workflow rules
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 print("module-02 ok")
 ```
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -290,7 +294,7 @@ release_job:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-02
 python3 -c "
 import yaml
@@ -302,13 +306,15 @@ print('OK', jobs)
 "
 ```
 
-**Expected output:** Prints `OK` with the three job names.
+!!! example "Expected output"
+    Prints `OK` with the three job names.
+
 
 #### Task 4 – Simulate default-branch scripts locally
 
 Prove the compliance job logic without a runner:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-02
 python3 -m py_compile src/app.py
 python3 src/app.py | tee branch-out.txt
@@ -316,7 +322,9 @@ test -f README.md && test -f mr-policy.yaml
 grep -q 'module-02 ok' branch-out.txt
 ```
 
-**Expected output:** Compile succeeds; `branch-out.txt` contains `module-02 ok`; policy files exist.
+!!! example "Expected output"
+    Compile succeeds; `branch-out.txt` contains `module-02 ok`; policy files exist.
+
 
 ### Validation steps
 
@@ -348,7 +356,7 @@ Add `CHANGELOG.md` with a `## 0.1.0` section and extend `release_job` to `cat CH
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-02/readme-head.txt ~/rebash-gitlab/module-02/branch-out.txt
 # Keep project files for module 03
 ```

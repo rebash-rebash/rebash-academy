@@ -140,7 +140,7 @@ Author a promotion workflow with staging and production environments (YAML stubs
 
 Workspace: `~/rebash-github-actions/module-15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-15/.github/workflows && cd ~/rebash-github-actions/module-15
 set -euo pipefail
 ```
@@ -206,7 +206,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/promote.yml')); print('promote workflow OK')"
@@ -214,7 +214,9 @@ grep -q 'environment:' .github/workflows/promote.yml
 grep -q 'deploy-production' .github/workflows/promote.yml
 ```
 
-**Expected output:** `promote workflow OK`; staging and production environments referenced.
+!!! example "Expected output"
+    `promote workflow OK`; staging and production environments referenced.
+
 
 #### Task 2 – Rollback workflow stub
 
@@ -248,20 +250,22 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/rollback.yml')); print('rollback workflow OK')"
 grep -q 'workflow_dispatch' .github/workflows/rollback.yml
 ```
 
-**Expected output:** `rollback workflow OK`
+!!! example "Expected output"
+    `rollback workflow OK`
+
 
 #### Task 3 – Deployment strategies as YAML
 
 Create `deployment-strategies.yaml`:
 
-```yaml
+```yaml title="deployment-strategies.yaml"
 # Deployment strategies (Module 15)
 strategies:
   blue_green:
@@ -287,7 +291,7 @@ github_environments:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 python3 -c "
@@ -300,13 +304,15 @@ print('deployment-strategies.yaml OK')
 "
 ```
 
-**Expected output:** `deployment-strategies.yaml OK`
+!!! example "Expected output"
+    `deployment-strategies.yaml OK`
+
 
 #### Task 4 – Offline validation bundle
 
 Create `validate-module-15.sh`:
 
-```bash
+```bash title="validate-module-15.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/promote.yml')); yaml.safe_load(open('.github/workflows/rollback.yml')); yaml.safe_load(open('deployment-strategies.yaml'))"
@@ -317,7 +323,7 @@ echo 'module-15 validation passed'
 
 Run and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 chmod +x validate-module-15.sh
@@ -326,7 +332,9 @@ tar -czf module-15-evidence.tgz .github/workflows/*.yml deployment-strategies.ya
 ls -l module-15-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `module-15 validation passed`
+!!! example "Expected output"
+    `module-15 validation passed`
+
 
 ### Validation steps
 
@@ -359,7 +367,7 @@ Add `concurrency: group: production` with `cancel-in-progress: false` on product
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-github-actions/module-15/.github/workflows/
 ```
 

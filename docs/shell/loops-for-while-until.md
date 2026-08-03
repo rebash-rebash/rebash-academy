@@ -65,7 +65,7 @@ Loops sit between your script and the tools it calls. Input lists and streams en
 
 A **`for`** loop walks a fixed list, a range, or a glob. A **`while`** loop repeats while a test or command returns success (exit status 0). An **`until`** loop repeats while the test fails — useful for “wait until ready”. **`break`** leaves the nearest loop; **`continue`** skips the rest of the current iteration.
 
-```bash
+```bash title="Terminal"
 for host in web01 web02 web03; do
   printf 'check %s\n' "$host"
 done
@@ -145,14 +145,16 @@ Build a small batch processor under `~/rebash-shell/lab06` that: (1) loops over 
 
 Workspace: `~/rebash-shell/lab06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab06/samples ~/rebash-shell/lab06/out
 cd ~/rebash-shell/lab06
 set -euo pipefail
 bash --version | head -n1 | tee out/bash-version.txt
 ```
 
-**Expected output:** `out/bash-version.txt` exists and mentions `bash`.
+!!! example "Expected output"
+    `out/bash-version.txt` exists and mentions `bash`.
+
 
 ### Real-world scenario
 
@@ -166,7 +168,7 @@ Create sample logs (including one empty file), then count lines with a guarded g
 
 Create `count-logs.sh`:
 
-```bash
+```bash title="count-logs.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 shopt -s nullglob
@@ -191,7 +193,7 @@ test -s "$outdir/file-counts.txt"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab06
 set -euo pipefail
 
@@ -208,7 +210,9 @@ grep -F 'empty' out/skipped.txt
 ```
 
 
-**Expected output:** `out/file-counts.txt` lists `app-a.log` and `app-b.log` with line counts; `out/skipped.txt` mentions the empty file; `readme.txt` is not counted.
+!!! example "Expected output"
+    `out/file-counts.txt` lists `app-a.log` and `app-b.log` with line counts; `out/skipped.txt` mentions the empty file; `readme.txt` is not counted.
+
 
 #### Task 2 – `while read` stream and `break` on sentinel
 
@@ -216,7 +220,7 @@ Build a host list and process lines until a `STOP` marker.
 
 Create `hosts.txt`:
 
-```text
+```text title="hosts.txt"
 web01
 web02
 STOP
@@ -225,7 +229,7 @@ web03
 
 Create `read-hosts.sh`:
 
-```bash
+```bash title="read-hosts.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 outfile="${1:-./out/hosts-processed.txt}"
@@ -245,7 +249,7 @@ grep -q 'web02' "$outfile"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab06
 set -euo pipefail
 
@@ -254,7 +258,9 @@ chmod +x read-hosts.sh
 ```
 
 
-**Expected output:** `out/hosts-processed.txt` has `web01` and `web02` only; `out/break-note.txt` records the break; `web03` is absent.
+!!! example "Expected output"
+    `out/hosts-processed.txt` has `web01` and `web02` only; `out/break-note.txt` records the break; `web03` is absent.
+
 
 #### Task 3 – Bounded `until` wait and evidence pack
 
@@ -262,7 +268,7 @@ Simulate a late “ready” flag, then pack proof files.
 
 Create `wait-ready.sh`:
 
-```bash
+```bash title="wait-ready.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 max=10
@@ -281,7 +287,7 @@ test -s ./ready.flag
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab06
 set -euo pipefail
 
@@ -302,7 +308,9 @@ ls -l out/loop-evidence.tgz | tee out/evidence-ls.txt
 ```
 
 
-**Expected output:** `out/until-ready.txt` shows a small attempt count; `out/loop-evidence.tgz` is not empty.
+!!! example "Expected output"
+    `out/until-ready.txt` shows a small attempt count; `out/loop-evidence.tgz` is not empty.
+
 
 ### Validation steps
 
@@ -333,7 +341,7 @@ Extend `count-logs.sh` into `count-logs-max.sh` that accepts a maximum line coun
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab06
 set -euo pipefail
 rm -f ready.flag

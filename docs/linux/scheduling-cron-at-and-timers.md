@@ -72,7 +72,7 @@ Schedulers trigger work later. Cron and `at` run commands directly; systemd time
 | `at` | One-shot “run this once later” |
 | systemd timer | Services already modelled as units; better journal integration |
 
-```bash
+```bash title="Terminal"
 crontab -l
 atq
 systemctl list-timers --all
@@ -131,7 +131,7 @@ Create a user cron job, an `at` job, and a systemd user-space **system** timer t
 
 Workspace: `~/rebash-linux/lab17`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab17 && cd ~/rebash-linux/lab17
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -145,7 +145,9 @@ sudo systemctl is-active cron | tee cron-active.txt
 sudo systemctl is-active atd | tee atd-active.txt
 ```
 
-**Expected output:** `cron` and `atd` are `active`.
+!!! example "Expected output"
+    `cron` and `atd` are `active`.
+
 
 ### Real-world scenario
 
@@ -155,7 +157,7 @@ Ops wants a small health stamp every minute for a practice app, a one-shot remin
 
 #### Task 1 – User crontab job with absolute paths
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab17
 set -euo pipefail
 
@@ -193,11 +195,13 @@ test -f "$LOG"
 grep cron-ok "$LOG" | tee cron-heartbeat-proof.txt
 ```
 
-**Expected output:** `cron-heartbeat.log` contains a timestamp and `cron-ok` within about one minute.
+!!! example "Expected output"
+    `cron-heartbeat.log` contains a timestamp and `cron-ok` within about one minute.
+
 
 #### Task 2 – One-shot `at` job
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab17
 set -euo pipefail
 
@@ -220,11 +224,13 @@ cat "$AT_LOG" | tee at-job-proof.txt
 grep -q at-ok at-job-proof.txt
 ```
 
-**Expected output:** `atq` showed a job; `at-job.log` contains `at-ok`.
+!!! example "Expected output"
+    `atq` showed a job; `at-job.log` contains `at-ok`.
+
 
 #### Task 3 – systemd service + timer
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab17
 set -euo pipefail
 
@@ -283,7 +289,9 @@ tar -czf schedule-evidence.tgz \
 ls -l schedule-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `list-timers.txt` shows `rebash-lab17.timer`; `timer-heartbeat.log` contains `timer-ok`; journal shows the service run.
+!!! example "Expected output"
+    `list-timers.txt` shows `rebash-lab17.timer`; `timer-heartbeat.log` contains `timer-ok`; journal shows the service run.
+
 
 ### Validation steps
 
@@ -315,7 +323,7 @@ Add `Persistent=true` to the timer (or create `rebash-lab17-persist.timer`) and 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab17
 set -euo pipefail
 

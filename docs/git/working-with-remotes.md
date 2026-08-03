@@ -118,7 +118,7 @@ Simulate origin + mirror remotes with bare repos, push feature branch, fetch/pru
 
 Workspace: `~/rebash-git/module-08`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-08 && cd ~/rebash-git/module-08
 set -euo pipefail
 ```
@@ -131,7 +131,7 @@ Your app repo pushes to GitHub (`origin`) and an internal mirror (`mirror`) for 
 
 #### Task 1 – Setup app, origin bare, mirror bare
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-08
 set -euo pipefail
 rm -rf app remotes origin.git mirror.git
@@ -153,11 +153,13 @@ grep -c 'origin\|mirror' ../remotes-v.txt | grep -q '4'
 cd ..
 ```
 
-**Expected output:** Both remotes have main; two push URLs configured.
+!!! example "Expected output"
+    Both remotes have main; two push URLs configured.
+
 
 #### Task 2 – Feature branch push and multi-fetch
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-08/app
 set -euo pipefail
 git switch -c feature/remote-demo
@@ -172,11 +174,13 @@ grep -q 'mirror/feature/remote-demo' ../remote-branches.txt
 cd ..
 ```
 
-**Expected output:** Remote-tracking branches visible for both remotes.
+!!! example "Expected output"
+    Remote-tracking branches visible for both remotes.
+
 
 #### Task 3 – Delete remote branch and prune
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-08/app
 set -euo pipefail
 git push origin --delete feature/remote-demo
@@ -191,7 +195,9 @@ ls -l ../module-08-remote-evidence.tgz | tee ../remote-evidence.txt
 cd ..
 ```
 
-**Expected output:** origin feature ref pruned locally; mirror still has feature ref until deleted separately.
+!!! example "Expected output"
+    origin feature ref pruned locally; mirror still has feature ref until deleted separately.
+
 
 ### Validation steps
 
@@ -221,7 +227,7 @@ Add read-only remote `upstream` pointing at a third bare clone of initial commit
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-08/
 ```
 

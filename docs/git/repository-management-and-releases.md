@@ -116,7 +116,7 @@ Simulate three semver releases with annotated tags and auto-generated `release-n
 
 Workspace: `~/rebash-git/module-14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-14 && cd ~/rebash-git/module-14
 set -euo pipefail
 ```
@@ -129,7 +129,7 @@ Internal CLI tool `rebash-deploy` ships semver tags; release manager produces no
 
 #### Task 1 – Initialise repo with version file
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-14
 set -euo pipefail
 rm -rf release-lab
@@ -141,19 +141,19 @@ git config user.name 'REBASH Lab'
 
 Create `VERSION`:
 
-```text
+```text title="VERSION"
 0.1.0
 ```
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # rebash-deploy
 ```
 
 Commit and tag:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 git add .
@@ -163,13 +163,15 @@ test -f VERSION
 grep -q '0.1.0' VERSION
 ```
 
-**Expected output:** `VERSION` is `0.1.0` and annotated tag `v0.1.0` exists.
+!!! example "Expected output"
+    `VERSION` is `0.1.0` and annotated tag `v0.1.0` exists.
+
 
 #### Task 2 – Minor and patch commits with tags
 
 Create `cli.sh`:
 
-```bash
+```bash title="cli.sh"
 #!/usr/bin/env bash
 # rebash-deploy stub
 deploy --dry-run
@@ -183,7 +185,7 @@ Replace `VERSION` with:
 
 Commit and tag the minor release:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 chmod +x cli.sh
@@ -209,7 +211,7 @@ Replace `VERSION` with:
 
 Commit and tag the patch:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 git add cli.sh VERSION
@@ -219,11 +221,13 @@ git tag -l 'v*' | tee ../all-tags.txt
 grep -q 'v0.2.1' ../all-tags.txt
 ```
 
-**Expected output:** Three semver tags (`v0.1.0`, `v0.2.0`, `v0.2.1`) listed in `all-tags.txt`.
+!!! example "Expected output"
+    Three semver tags (`v0.1.0`, `v0.2.0`, `v0.2.1`) listed in `all-tags.txt`.
+
 
 #### Task 3 – Generate release notes artefact
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 {
@@ -244,7 +248,9 @@ ls -l ../module-14-release-evidence.tgz | tee ../release-evidence.txt
 cd ..
 ```
 
-**Expected output:** Release notes list commits between tags; evidence archived.
+!!! example "Expected output"
+    Release notes list commits between tags; evidence archived.
+
 
 ### Validation steps
 
@@ -274,7 +280,7 @@ Create `repo-layout.yaml` declaring `layout: monorepo` or `polyrepo` with `team_
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-14/release-lab
 ```
 

@@ -70,7 +70,7 @@ Python tooling sits between your shell and your scripts. The interpreter runs co
 
 **pip** is the package installer that ships with the venv. **uv** is a fast alternative that can create venvs and install packages. **Poetry** manages both dependencies and packaging for larger apps. Start with `venv` + `pip`; add uv or Poetry when the team standardises on them.
 
-```bash
+```bash title="Terminal"
 python3 -V
 python3 -m venv .venv
 source .venv/bin/activate
@@ -133,7 +133,7 @@ Create `~/rebash-python/lab01` with a Python 3.11+ venv, install a tiny package,
 
 Workspace: `~/rebash-python/lab01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab01 && cd ~/rebash-python/lab01
 set -euo pipefail
 python3 -V | tee python-version.txt
@@ -141,7 +141,9 @@ command -v python3 | tee python-path.txt
 python3 -c 'import sys; assert sys.version_info >= (3, 11), sys.version'
 ```
 
-**Expected output:** `python-version.txt` shows Python 3.11 or newer; the assert exits 0.
+!!! example "Expected output"
+    `python-version.txt` shows Python 3.11 or newer; the assert exits 0.
+
 
 ### Real-world scenario
 
@@ -151,7 +153,7 @@ Your team is starting a small inventory helper for a practice Ubuntu VM. Platfor
 
 #### Task 1 – Create and activate the virtual environment
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab01
 set -euo pipefail
 
@@ -165,11 +167,13 @@ test -x .venv/bin/python
 grep -F '.venv' venv-python-path.txt
 ```
 
-**Expected output:** `venv-python-path.txt` contains `.venv`; versions match a 3.11+ interpreter.
+!!! example "Expected output"
+    `venv-python-path.txt` contains `.venv`; versions match a 3.11+ interpreter.
+
 
 #### Task 2 – Install a package and freeze requirements
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab01
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -182,11 +186,13 @@ grep -E '^rich==' requirements-full.txt | tee requirements.txt
 test -s requirements.txt
 ```
 
-**Expected output:** `requirements.txt` contains a line like `rich==13.9.4`.
+!!! example "Expected output"
+    `requirements.txt` contains a line like `rich==13.9.4`.
+
 
 #### Task 3 – Write and run a hello script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab01
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -195,7 +201,7 @@ source .venv/bin/activate
 
 Create `hello.py`:
 
-```python
+```python title="hello.py"
 """Minimal DevOps hello — proves the venv interpreter runs project code."""
 from __future__ import annotations
 
@@ -220,7 +226,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 python hello.py | tee hello-output.txt
 grep -F 'Hello from REBASH' hello-output.txt
 grep -F '.venv' hello-output.txt
@@ -232,7 +238,9 @@ tar -czf lab01-evidence.tgz \
 ls -l lab01-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `hello-output.txt` shows the greeting and a `.venv` executable path; `lab01-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `hello-output.txt` shows the greeting and a `.venv` executable path; `lab01-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -265,7 +273,7 @@ Add `check_env.py` that exits `0` only if (1) `sys.prefix` contains `.venv`, (2)
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab01
 set -euo pipefail
 deactivate 2>/dev/null || true

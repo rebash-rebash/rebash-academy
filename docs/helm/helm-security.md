@@ -158,7 +158,7 @@ Workspace: `~/rebash-helm/module-09`
 
 Helm 3 against kind/minikube; release namespace `rebash-helm-m09`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-09/secure-chart/templates && cd ~/rebash-helm/module-09
 ```
 
@@ -172,7 +172,7 @@ Security review flagged a chart that ran as root and embedded database passwords
 
 Create `secure-chart/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: secure-chart
 description: Lab chart for Helm security baseline
@@ -183,7 +183,7 @@ appVersion: "1.27.4"
 
 Create `secure-chart/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginx
@@ -204,7 +204,7 @@ externalSecret:
 
 Create `secure-chart/templates/serviceaccount.yaml`:
 
-```yaml
+```yaml title="serviceaccount.yaml"
 {% raw %}
 {{- if .Values.serviceAccount.create }}
 apiVersion: v1
@@ -220,7 +220,7 @@ metadata:
 
 Create `secure-chart/templates/_helpers.tpl`:
 
-```yaml
+```yaml title="_helpers.tpl"
 {% raw %}
 {{- define "secure-chart.fullname" -}}
 {{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" -}}
@@ -230,7 +230,7 @@ Create `secure-chart/templates/_helpers.tpl`:
 
 Create `secure-chart/templates/role.yaml`:
 
-```yaml
+```yaml title="role.yaml"
 {% raw %}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -245,7 +245,7 @@ rules:
 
 Create `secure-chart/templates/rolebinding.yaml`:
 
-```yaml
+```yaml title="rolebinding.yaml"
 {% raw %}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -264,7 +264,7 @@ roleRef:
 
 Create `secure-chart/templates/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 {% raw %}
 apiVersion: apps/v1
 kind: Deployment
@@ -310,7 +310,7 @@ spec:
 
 Prove security settings in rendered output (offline):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-09
 helm lint ./secure-chart | tee lint.txt
 helm template secure-demo ./secure-chart 2>&1 | tee render.txt
@@ -323,7 +323,9 @@ grep -qv 'password: changeme' render.txt
 grep -q '0 chart(s) failed' lint.txt
 ```
 
-**Expected output:** Rendered manifest includes non-root context, RBAC objects, and a `secretKeyRef` — no plaintext password in values or render output.
+!!! example "Expected output"
+    Rendered manifest includes non-root context, RBAC objects, and a `secretKeyRef` — no plaintext password in values or render output.
+
 
 #### Task 2 – Create the external Secret and install
 
@@ -331,7 +333,7 @@ Create the Secret outside the chart (simulating external-secrets or sealed secre
 
 Create `external-secret.yaml`:
 
-```yaml
+```yaml title="external-secret.yaml"
 apiVersion: v1
 kind: Secret
 metadata:
@@ -344,7 +346,7 @@ stringData:
 
 Install and verify RBAC bindings:
 
-```bash
+```bash title="Terminal"
 kubectl create namespace rebash-helm-m09 --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f external-secret.yaml
 helm upgrade --install secure-demo ./secure-chart \
@@ -355,7 +357,9 @@ grep -q '101' run-as.txt
 grep -q 'secure-demo-secure-chart' rbac.txt
 ```
 
-**Expected output:** ServiceAccount, Role, and RoleBinding exist; Deployment runs as UID 101.
+!!! example "Expected output"
+    ServiceAccount, Role, and RoleBinding exist; Deployment runs as UID 101.
+
 
 ### Validation steps
 
@@ -406,12 +410,14 @@ networkPolicy:
   enabled: false
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-09
 helm template secure-demo ./secure-chart --set networkPolicy.enabled=true | grep -q 'kind: NetworkPolicy'
 ```
 
-**Expected output:** Render includes a NetworkPolicy when the flag is enabled.
+!!! example "Expected output"
+    Render includes a NetworkPolicy when the flag is enabled.
+
 
 ### Learning outcomes
 
@@ -422,7 +428,7 @@ helm template secure-demo ./secure-chart --set networkPolicy.enabled=true | grep
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall secure-demo -n rebash-helm-m09 2>/dev/null || true
 kubectl delete namespace rebash-helm-m09 --ignore-not-found
 ```

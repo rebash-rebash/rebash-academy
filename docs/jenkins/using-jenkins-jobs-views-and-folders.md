@@ -144,13 +144,15 @@ Workspace: `~/rebash-jenkins/module-03`
 
 Controller: `http://127.0.0.1:8080/` (adjust if you remapped ports).
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-03 && cd ~/rebash-jenkins/module-03
 set -euo pipefail
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller-login.txt
 ```
 
-**Expected output:** HTTP code (commonly `200` or `403` still proves the UI responds).
+!!! example "Expected output"
+    HTTP code (commonly `200` or `403` still proves the UI responds).
+
 
 ### Real-world scenario
 
@@ -162,7 +164,7 @@ Two product squads will share one lab controller this quarter. You must create a
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 
@@ -171,7 +173,7 @@ mkdir -p folders/rebash-demo folders/team-platform folders/team-payments views
 
 Create `jobs-manifest.yaml`:
 
-```yaml
+```yaml title="jobs-manifest.yaml"
 folders:
   - name: rebash-demo
     purpose: shared demos for the course
@@ -194,7 +196,7 @@ rules:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('jobs-manifest.yaml') as f:
@@ -207,7 +209,9 @@ print('jobs-manifest.yaml OK')
 find folders views -type d | sort | tee folder-layout.txt
 ```
 
-**Expected output:** `manifest-validate.txt` shows OK; `folder-layout.txt` lists the directory tree.
+!!! example "Expected output"
+    `manifest-validate.txt` shows OK; `folder-layout.txt` lists the directory tree.
+
 
 #### Task 2 – Create a Folder in the UI
 
@@ -234,14 +238,14 @@ pipeline {
 
 Then record evidence locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 ```
 
 Create `hello-pipeline.Jenkinsfile`:
 
-```groovy
+```groovy title="hello-pipeline.Jenkinsfile"
 pipeline {
   agent any
   stages {
@@ -256,7 +260,7 @@ pipeline {
 
 Create `pipeline-vs-freestyle.txt`:
 
-```text
+```text title="pipeline-vs-freestyle.txt"
 pipeline_job=hello-pipeline.Jenkinsfile
 freestyle_legacy=recognition_only
 review_in_git=pipeline
@@ -265,13 +269,15 @@ multibranch=first_class_pipeline
 
 Verify:
 
-```bash
+```bash title="Terminal"
 test -f hello-pipeline.Jenkinsfile
 grep -q 'pipeline_job=' pipeline-vs-freestyle.txt
 printf 'ui_job_created=rebash-demo/hello-pipeline\n' | tee ui-evidence.txt
 ```
 
-**Expected output:** Files present; Jenkins build console shows the echo line.
+!!! example "Expected output"
+    Files present; Jenkins build console shows the echo line.
+
 
 #### Task 3 – Create a List View
 
@@ -283,14 +289,14 @@ In Jenkins:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 ```
 
 Create `views/course-labs.yaml`:
 
-```yaml
+```yaml title="course-labs.yaml"
 name: course-labs
 type: list
 filter: rebash-demo.*
@@ -300,7 +306,7 @@ jobs_visible:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('views/course-labs.yaml') as f:
@@ -310,20 +316,22 @@ print('course-labs.yaml OK')
 " | tee view-validate.txt
 ```
 
-**Expected output:** View validates; view visible in the UI.
+!!! example "Expected output"
+    View validates; view visible in the UI.
+
 
 #### Task 4 – Map credentials entry points
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 ```
 
 Create `credentials-paths.txt`:
 
-```text
+```text title="credentials-paths.txt"
 global=Manage Jenkins/Credentials
 folder=rebash-demo/Credentials
 job=avoid embedding secrets in shell steps
@@ -332,13 +340,15 @@ rule=reference credential IDs from Pipeline in later modules
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 grep -q 'global=' credentials-paths.txt
 tar -czf module-03-evidence.tgz jobs-manifest.yaml views/course-labs.yaml hello-pipeline.Jenkinsfile pipeline-vs-freestyle.txt credentials-paths.txt folder-layout.txt ui-evidence.txt *.txt
 ls -l module-03-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Archive created.
+!!! example "Expected output"
+    Archive created.
+
 
 ### Validation steps
 
@@ -371,7 +381,7 @@ Create a second folder `team-platform` and a Pipeline job `controller-health` th
 
 Keep the controller and `rebash-demo` folder for Module 4. Optionally delete failed experimental jobs only.
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-jenkins/module-03
 # Controller: leave Compose running/stopped with volume intact
 ```

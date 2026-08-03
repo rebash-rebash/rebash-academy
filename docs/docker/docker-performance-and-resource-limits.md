@@ -147,7 +147,7 @@ Run a CPU/memory hungry container with `--memory` and `--cpus` limits, then prov
 
 Workspace: `~/rebash-docker/module-14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
 ```
 
@@ -161,7 +161,7 @@ A batch worker spikes CPU and RSS during peak load. Platform policy caps it at 2
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM alpine:3.20
 RUN apk add --no-cache stress-ng
 CMD ["stress-ng", "--vm", "1", "--vm-bytes", "200M", "--cpu", "2", "--timeout", "120s", "--metrics-brief"]
@@ -169,21 +169,23 @@ CMD ["stress-ng", "--vm", "1", "--vm-bytes", "200M", "--cpu", "2", "--timeout", 
 
 Build:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-14
 docker build -t rebash-perf-lab:1.0.0 .
 docker images rebash-perf-lab:1.0.0 | tee perf-build.txt
 grep -q rebash-perf-lab perf-build.txt
 ```
 
-**Expected output:** Image `rebash-perf-lab:1.0.0` listed in `perf-build.txt`.
+!!! example "Expected output"
+    Image `rebash-perf-lab:1.0.0` listed in `perf-build.txt`.
+
 
 #### Task 2 – Run with memory and CPU limits
 
 Apply cgroup limits at runtime:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-14
 docker run -d --name rebash-perf-18140 \
   --memory 256m \
@@ -194,14 +196,16 @@ grep -q rebash-perf-18140 perf-run.txt
 ```
 {% endraw %}
 
-**Expected output:** Container shows as Up in `perf-run.txt`.
+!!! example "Expected output"
+    Container shows as Up in `perf-run.txt`.
+
 
 #### Task 3 – Prove limits via inspect and stats
 
 Capture configured limits and live usage:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-14
 docker inspect rebash-perf-18140 --format 'Memory={{ "{{" }}.HostConfig.Memory{{ "}}" }} NanoCpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}' | tee limits-inspect.txt
 grep -q 'Memory=268435456' limits-inspect.txt
@@ -211,7 +215,9 @@ docker logs rebash-perf-18140 2>&1 | tail -5 | tee perf-logs.txt
 ```
 {% endraw %}
 
-**Expected output:** `limits-inspect.txt` shows `Memory=268435456` (256 MiB) and `NanoCpus=500000000` (0.5 CPU); stats line shows memory at or below ~256 MiB.
+!!! example "Expected output"
+    `limits-inspect.txt` shows `Memory=268435456` (256 MiB) and `NanoCpus=500000000` (0.5 CPU); stats line shows memory at or below ~256 MiB.
+
 
 ### Validation steps
 
@@ -242,7 +248,7 @@ Add `--memory-swap 256m` (disable swap) and compare OOM behaviour; record whethe
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker rm -f rebash-perf-18140 2>/dev/null || true
 docker rmi rebash-perf-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-14/*.txt

@@ -121,7 +121,7 @@ Execution flow:
 
 Commands:
 
-```bash
+```bash title="Terminal"
 ansible-playbook site.yml --syntax-check
 ansible-playbook site.yml --list-tasks
 ansible-playbook site.yml --check
@@ -169,13 +169,13 @@ Create **`site.yml`** with config tasks, a notified handler, and tags; pass synt
 
 Workspace: `~/rebash-ansible/module-05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-05/{files,group_vars} && cd ~/rebash-ansible/module-05
 ```
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = ./inventory
 host_key_checking = False
@@ -184,14 +184,14 @@ interpreter_python = auto_silent
 
 Create `inventory`:
 
-```ini
+```ini title="inventory"
 [local]
 localhost ansible_connection=local
 ```
 
 Create `group_vars/local.yml`:
 
-```yaml
+```yaml title="local.yml"
 app_name: rebash-lab
 app_root: "~/rebash-ansible/module-05/app"
 ```
@@ -206,7 +206,7 @@ You package a baseline playbook that creates app directories, drops a config fil
 
 Create `files/app.conf`:
 
-```
+```text title="app.conf"
 app_name=rebash-lab
 listen=8080
 ```
@@ -258,18 +258,20 @@ Create `site.yml`:
 
 Syntax-check:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-05
 ansible-playbook site.yml --syntax-check | tee syntax-check.txt
 grep -qi 'playbook.*syntax ok' syntax-check.txt || grep -qi 'Syntax OK' syntax-check.txt || test ${PIPESTATUS[0]} -eq 0
 echo "syntax OK" | tee syntax-ok.txt
 ```
 
-**Expected output:** Syntax-check exits 0; `syntax-ok.txt` created.
+!!! example "Expected output"
+    Syntax-check exits 0; `syntax-ok.txt` created.
+
 
 #### Task 2 – List tasks and run full playbook
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-05
 ansible-playbook site.yml --list-tasks | tee list-tasks.txt
 ansible-playbook site.yml | tee playbook-run1.txt
@@ -280,11 +282,13 @@ test -f ~/rebash-ansible/module-05/app/deploy-marker.txt
 echo "run1 OK" | tee run1-ok.txt
 ```
 
-**Expected output:** Handler debug message appears on first run (config changed); app files exist; `run1-ok.txt` shows `run1 OK`.
+!!! example "Expected output"
+    Handler debug message appears on first run (config changed); app files exist; `run1-ok.txt` shows `run1 OK`.
+
 
 #### Task 3 – Tag-filtered second run (idempotency + handler silence)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-05
 ansible-playbook site.yml --tags deploy | tee playbook-run2-tags.txt
 ansible-playbook site.yml | tee playbook-run3-idempotent.txt
@@ -292,7 +296,9 @@ grep -q 'changed=0' playbook-run3-idempotent.txt || grep -q 'changed=0.*unreacha
 echo "tags and idempotency OK" | tee run3-ok.txt
 ```
 
-**Expected output:** Third run shows zero or minimal changes; handler skipped when config unchanged.
+!!! example "Expected output"
+    Third run shows zero or minimal changes; handler skipped when config unchanged.
+
 
 ### Validation steps
 
@@ -316,7 +322,7 @@ echo "tags and idempotency OK" | tee run3-ok.txt
 
 Add a **`verify-playbook.sh`** script:
 
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-05
@@ -328,7 +334,9 @@ ansible-playbook site.yml --tags baseline --check | tee check-baseline.txt
 echo "verify-playbook PASS" | tee verify-playbook-pass.txt
 ```
 
-**Expected output:** `verify-playbook-pass.txt` contains PASS; tags listed.
+!!! example "Expected output"
+    `verify-playbook-pass.txt` contains PASS; tags listed.
+
 
 ### Learning outcomes
 
@@ -339,7 +347,7 @@ echo "verify-playbook PASS" | tee verify-playbook-pass.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-05
 rm -rf ~/rebash-ansible/module-05/app
 rm -f syntax-check.txt syntax-ok.txt list-tasks.txt playbook-run*.txt run*-ok.txt \

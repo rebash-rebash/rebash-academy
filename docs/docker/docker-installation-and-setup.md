@@ -147,7 +147,7 @@ Workspace: `~/rebash-docker/module-02`
 
 Local Docker daemon. The script stays in your lab folder for re-runs after upgrades.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-02 && cd ~/rebash-docker/module-02
 ```
 
@@ -162,7 +162,7 @@ After provisioning a CI runner or engineer laptop, platform teams require a repe
 Create `verify-docker.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -185,32 +185,36 @@ OUT="${1:-verify-docker.log}"
 
 Make it executable and dry-run syntax:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-02
 chmod +x verify-docker.sh
 bash -n verify-docker.sh
 ```
 
-**Expected output:** `bash -n` exits 0; script is executable.
+!!! example "Expected output"
+    `bash -n` exits 0; script is executable.
+
 
 #### Task 2 – Run verification and capture log
 
 Execute the script and assert the daemon responded.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-02
 ./verify-docker.sh verify-docker.log
 grep -q 'Server:' verify-docker.log
 grep -q 'Hello from Docker' verify-docker.log
 ```
 
-**Expected output:** `verify-docker.log` contains Server version lines and the hello-world greeting.
+!!! example "Expected output"
+    `verify-docker.log` contains Server version lines and the hello-world greeting.
+
 
 #### Task 3 – Alpine smoke and context proof
 
 Pin a small image for a second smoke test; record active context.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-02
 docker run --rm alpine:3.20 echo 'alpine smoke ok' | tee alpine-smoke.txt
 docker context show | tee active-context.txt
@@ -218,7 +222,9 @@ grep -q 'alpine smoke ok' alpine-smoke.txt
 test -s active-context.txt
 ```
 
-**Expected output:** `alpine-smoke.txt` prints `alpine smoke ok`; `active-context.txt` names the current context (often `default`).
+!!! example "Expected output"
+    `alpine-smoke.txt` prints `alpine smoke ok`; `active-context.txt` names the current context (often `default`).
+
 
 ### Validation steps
 
@@ -239,14 +245,16 @@ test -s active-context.txt
 Extend the script to fail fast when `docker info` reports `LiveRestoreEnabled` as false on a production checklist — append a grep check to `verify-docker.sh` after the info block:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 docker info --format '{{ "{{" }}.LiveRestoreEnabled{{ "}}" }}' | tee liverestore.txt
 ```
 {% endraw %}
 
 Re-run `./verify-docker.sh verify-docker-v2.log` and keep both logs.
 
-**Expected output:** `liverestore.txt` contains `true` or `false`; second log file exists.
+!!! example "Expected output"
+    `liverestore.txt` contains `true` or `false`; second log file exists.
+
 
 ### Learning outcomes
 
@@ -256,7 +264,7 @@ Re-run `./verify-docker.sh verify-docker-v2.log` and keep both logs.
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-02
 docker rmi hello-world alpine:3.20 2>/dev/null || true
 ```

@@ -121,7 +121,7 @@ Create parent repo with local bare submodule remote, add submodule for a mini Te
 
 Workspace: `~/rebash-git/related/submodules`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/related/submodules && cd ~/rebash-git/related/submodules
 set -euo pipefail
 ```
@@ -134,7 +134,7 @@ Platform monorepo embeds `modules/vpc` submodule from internal bare remote; CI m
 
 #### Task 1 – Create module bare remote and parent with submodule
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/submodules
 set -euo pipefail
 rm -rf mod-repo parent-app clone-test remotes
@@ -163,11 +163,13 @@ grep -q 'submodule' .gitmodules
 cd ..
 ```
 
-**Expected output:** `.gitmodules` exists; submodule checked out with Terraform stub.
+!!! example "Expected output"
+    `.gitmodules` exists; submodule checked out with Terraform stub.
+
 
 #### Task 2 – Clone with recurse-submodules
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/submodules
 set -euo pipefail
 git clone --recurse-submodules parent-app clone-test
@@ -177,11 +179,13 @@ grep -q 'modules/vpc' submodule-status.txt
 cd ..
 ```
 
-**Expected output:** Fresh clone has populated submodule directory.
+!!! example "Expected output"
+    Fresh clone has populated submodule directory.
+
 
 #### Task 3 – Bump submodule and subtree vendor stub
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/submodules/mod-repo
 set -euo pipefail
 echo '# v2 note' >> vpc/main.tf
@@ -203,7 +207,9 @@ ls -l ../related-submodules-evidence.tgz | tee ../submodules-evidence.txt
 cd ..
 ```
 
-**Expected output:** Parent records new submodule SHA; evidence tarball created.
+!!! example "Expected output"
+    Parent records new submodule SHA; evidence tarball created.
+
 
 ### Validation steps
 
@@ -233,7 +239,7 @@ Run `git clone` **without** `--recurse-submodules`, observe empty dir, fix with 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/related/submodules/
 ```
 

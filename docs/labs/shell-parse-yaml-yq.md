@@ -63,7 +63,7 @@ Host with yq available.
 
 Create `app.yaml`:
 
-```yaml
+```yaml title="app.yaml"
 app:
   name: payments
   image: ghcr.io/example/payments
@@ -75,7 +75,7 @@ app:
 
 Run:
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/yaml
 cd ~/rebash-lab-shell/yaml
 ```
@@ -85,7 +85,7 @@ cd ~/rebash-lab-shell/yaml
 
 ### Task 1 — Query with yq
 
-```bash
+```bash title="Terminal"
 yq -r '.app.name' app.yaml
 yq -r '.app.tag' app.yaml
 yq -r '.app.replicas' app.yaml
@@ -124,7 +124,7 @@ Exit 2 if any required key is null/missing (`yq` + test).
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

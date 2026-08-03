@@ -164,7 +164,7 @@ Create a Deployment from YAML, scale replicas, trigger a rollout restart, inspec
 
 Workspace: `~/rebash-k8s/module-04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-04 && cd ~/rebash-k8s/module-04
 ```
 
@@ -178,7 +178,7 @@ You deploy version 1 of an internal demo API (nginx stand-in). Product asks for 
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -187,7 +187,7 @@ metadata:
 
 Create `web-deploy.yaml`:
 
-```yaml
+```yaml title="web-deploy.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -219,7 +219,7 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-04
 kubectl apply -f namespace.yaml
 kubectl apply -f web-deploy.yaml
@@ -227,7 +227,9 @@ kubectl rollout status deployment/web -n rebash-m04 --timeout=120s
 kubectl get deploy web -n rebash-m04 | tee deploy-v1.txt
 ```
 
-**Expected output:** Deployment Available with `1/1` ready replicas.
+!!! example "Expected output"
+    Deployment Available with `1/1` ready replicas.
+
 
 #### Task 2 – Scale and rollout restart
 
@@ -265,7 +267,7 @@ spec:
 
 Scale and restart:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-04
 kubectl apply -f web-deploy-scaled.yaml
 kubectl rollout status deployment/web -n rebash-m04 --timeout=180s
@@ -276,7 +278,9 @@ kubectl rollout restart deployment/web -n rebash-m04
 kubectl rollout status deployment/web -n rebash-m04 --timeout=180s
 ```
 
-**Expected output:** Three Running Pods; restart completes with all replicas Ready again.
+!!! example "Expected output"
+    Three Running Pods; restart completes with all replicas Ready again.
+
 
 #### Task 3 – History and undo after bad image
 
@@ -310,7 +314,7 @@ spec:
 
 Apply bad revision, observe failure, undo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-04
 kubectl apply -f web-deploy-bad.yaml
 kubectl rollout status deployment/web -n rebash-m04 --timeout=60s || true
@@ -322,7 +326,9 @@ kubectl get pods -n rebash-m04 -l app=web -o wide | tee undo-evidence.txt
 grep -c Running undo-evidence.txt
 ```
 
-**Expected output:** Bad rollout shows ImagePull errors; after `rollout undo`, Pods return to Running with good image.
+!!! example "Expected output"
+    Bad rollout shows ImagePull errors; after `rollout undo`, Pods return to Running with good image.
+
 
 ### Validation steps
 
@@ -352,7 +358,7 @@ After a successful rollout, change pod template label `version` to `v2` and imag
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m04 --ignore-not-found --wait=true
 ```
 

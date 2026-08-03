@@ -167,7 +167,7 @@ Practise declarative and imperative kubectl workflows: apply a Deployment from Y
 
 Workspace: `~/rebash-k8s/module-02-kubectl`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-02-kubectl && cd ~/rebash-k8s/module-02-kubectl
 ```
 
@@ -181,7 +181,7 @@ A developer asks you to deploy a small web tier for a demo, confirm it is health
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -190,7 +190,7 @@ metadata:
 
 Create `web-deploy.yaml`:
 
-```yaml
+```yaml title="web-deploy.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -224,7 +224,7 @@ spec:
 
 Apply and wait:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-02-kubectl
 kubectl apply -f namespace.yaml
 kubectl apply -f web-deploy.yaml
@@ -232,13 +232,15 @@ kubectl rollout status deployment/web -n rebash-m02-kubectl --timeout=120s
 kubectl get deploy,pod -n rebash-m02-kubectl -o wide | tee apply-evidence.txt
 ```
 
-**Expected output:** Deployment `web` Available; Pod `1/1 Ready` in `apply-evidence.txt`.
+!!! example "Expected output"
+    Deployment `web` Available; Pod `1/1 Ready` in `apply-evidence.txt`.
+
 
 #### Task 2 – Describe, logs, and exec
 
 Inspect the running Pod the way you would during triage.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-02-kubectl
 kubectl describe deployment web -n rebash-m02-kubectl | tee describe-deploy.txt
 kubectl logs -n rebash-m02-kubectl -l app=web --tail=20 | tee logs-web.txt
@@ -246,13 +248,15 @@ kubectl exec -n rebash-m02-kubectl deploy/web -- wget -qO- http://127.0.0.1/ | h
 grep -qi nginx exec-curl.txt || test -s exec-curl.txt
 ```
 
-**Expected output:** HTML snippet or non-empty response in `exec-curl.txt`; logs file captured.
+!!! example "Expected output"
+    HTML snippet or non-empty response in `exec-curl.txt`; logs file captured.
+
 
 #### Task 3 – Explain, compare imperative delete
 
 Learn schema with `explain`, then remove the workload declaratively.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-02-kubectl
 kubectl explain deployment.spec.template.spec.containers.resources | head -n 15 | tee explain-resources.txt
 grep -q resources explain-resources.txt
@@ -261,7 +265,9 @@ kubectl get deploy web -n rebash-m02-kubectl 2>&1 | tee delete-check.txt || true
 grep -q 'NotFound' delete-check.txt || ! kubectl get deploy web -n rebash-m02-kubectl >/dev/null 2>&1
 ```
 
-**Expected output:** `explain` documents resource fields; Deployment no longer exists after delete.
+!!! example "Expected output"
+    `explain` documents resource fields; Deployment no longer exists after delete.
+
 
 ### Validation steps
 
@@ -291,7 +297,7 @@ Re-apply `web-deploy.yaml`, run `kubectl get deploy web -n rebash-m02-kubectl -o
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m02-kubectl --ignore-not-found --wait=true
 ```
 

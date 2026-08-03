@@ -133,7 +133,7 @@ Under `~/rebash-python/lab04`, build `healthcheck.py` with helpers (defaults, kw
 
 Workspace: `~/rebash-python/lab04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab04 && cd ~/rebash-python/lab04
 set -euo pipefail
 python3 -m venv .venv
@@ -143,7 +143,9 @@ python -c 'import sys; assert sys.version_info >= (3, 11)'
 python -V | tee python-version.txt
 ```
 
-**Expected output:** venv active; version recorded.
+!!! example "Expected output"
+    venv active; version recorded.
+
 
 ### Real-world scenario
 
@@ -153,7 +155,7 @@ Your team wants a tiny disk/CPU style health helper for a practice host metric f
 
 #### Task 1 – Implement helpers and main
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab04
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -162,7 +164,7 @@ source .venv/bin/activate
 
 Create `healthcheck.py`:
 
-```python
+```python title="healthcheck.py"
 """Function-based health check with defaults, kwargs, and exit codes."""
 from __future__ import annotations
 
@@ -234,15 +236,17 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 test -f healthcheck.py
 ```
 
-**Expected output:** `healthcheck.py` written.
+!!! example "Expected output"
+    `healthcheck.py` written.
+
 
 #### Task 2 – Exercise defaults, kwargs, and exit codes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab04
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -270,11 +274,13 @@ test "$(cat crit.code)" = "2"
 test "$(cat custom.code)" = "1"
 ```
 
-**Expected output:** messages match levels; exit codes `0`/`1`/`2`/`1` respectively.
+!!! example "Expected output"
+    messages match levels; exit codes `0`/`1`/`2`/`1` respectively.
+
 
 #### Task 3 – Pack evidence and negative usage
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab04
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -291,7 +297,9 @@ tar -czf lab04-evidence.tgz healthcheck.py ok.out warn.out crit.out custom.out *
 ls -l lab04-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** missing args → exit `2` and usage on stderr; evidence archive exists.
+!!! example "Expected output"
+    missing args → exit `2` and usage on stderr; evidence archive exists.
+
 
 ### Validation steps
 
@@ -323,7 +331,7 @@ Add `batch_check.py` that defines `run_many(hosts: list[str], used: list[int], *
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab04
 set -euo pipefail
 deactivate 2>/dev/null || true

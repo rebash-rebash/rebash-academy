@@ -62,7 +62,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-linux-storage
 cd ~/rebash-lab-linux-storage
 ```
@@ -104,7 +104,7 @@ If the partition node differs, set `PART` from `lsblk` output and update `loop.e
 
 ### Task 3 — Filesystem and mount
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-linux-storage/loop.env
 # Adjust PART if needed
 sudo mkfs.ext4 -L rebash-data "$PART"
@@ -119,7 +119,7 @@ findmnt /srv/rebash-data
 
 ### Task 4 — Persist with fstab (careful)
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-linux-storage/loop.env
 sudo cp -a /etc/fstab /etc/fstab.pre-lab
 echo "UUID=$UUID  /srv/rebash-data  ext4  defaults,nofail,x-systemd.device-timeout=5  0  2" \
@@ -169,7 +169,7 @@ If comfortable, create a second 512 MiB image, `pvcreate`/`vgcreate`/`lvcreate`,
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 sudo umount /srv/rebash-data 2>/dev/null || true
 sudo sed -i '\#/srv/rebash-data#d' /etc/fstab
 # Or restore: sudo cp -a /etc/fstab.pre-lab /etc/fstab

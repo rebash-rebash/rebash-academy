@@ -154,7 +154,7 @@ Create a reusable **`service`** child module that provisions a Docker network an
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-09/modules/service && cd ~/rebash-terraform/module-09
 ```
 
@@ -168,7 +168,7 @@ Platform engineering ships a **`service`** module that enforces naming, tags, an
 
 Create `~/rebash-terraform/module-09/modules/service/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -183,7 +183,7 @@ terraform {
 
 Create `~/rebash-terraform/module-09/modules/service/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "service_name" {
   type        = string
   description = "Short service identifier"
@@ -202,7 +202,7 @@ variable "owner" {
 
 Create `~/rebash-terraform/module-09/modules/service/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 locals {
   full_name = "${var.service_name}-${var.environment}"
   common_tags = {
@@ -242,7 +242,7 @@ resource "docker_container" "service" {
 
 Create `~/rebash-terraform/module-09/modules/service/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "service_full_name" {
   description = "Computed service name"
   value       = local.full_name
@@ -261,20 +261,22 @@ output "network_name" {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09/modules/service
 terraform init
 terraform validate
 echo "child module validate OK" | tee child-validate-ok.txt
 ```
 
-**Expected output:** Validate succeeds in the module directory (isolated syntax check).
+!!! example "Expected output"
+    Validate succeeds in the module directory (isolated syntax check).
+
 
 #### Task 2 – Root module calling the child twice
 
 Create `~/rebash-terraform/module-09/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
 
@@ -291,7 +293,7 @@ provider "docker" {}
 
 Create `~/rebash-terraform/module-09/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "environment" {
   type    = string
   default = "dev"
@@ -300,7 +302,7 @@ variable "environment" {
 
 Create `~/rebash-terraform/module-09/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 module "billing" {
   source = "./modules/service"
 
@@ -320,7 +322,7 @@ module "catalog" {
 
 Create `~/rebash-terraform/module-09/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "billing_service_name" {
   value = module.billing.service_full_name
 }
@@ -340,7 +342,7 @@ output "container_names" {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09
 terraform init
 terraform plan | tee root-plan.txt
@@ -356,14 +358,16 @@ echo "root apply OK" | tee root-apply-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** Two module instances in plan; outputs show `billing-dev` and `catalog-dev`; both containers running.
+!!! example "Expected output"
+    Two module instances in plan; outputs show `billing-dev` and `catalog-dev`; both containers running.
+
 
 #### Task 3 – Inspect module addresses in state
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09
 terraform state list | tee module-state-list.txt
 grep -q 'module.billing.docker_container.service' module-state-list.txt
@@ -376,14 +380,16 @@ echo "state inspect OK" | tee state-inspect-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** State addresses include module prefix paths; billing labels reference `finance-team`; two dedicated networks exist.
+!!! example "Expected output"
+    State addresses include module prefix paths; billing labels reference `finance-team`; two dedicated networks exist.
+
 
 #### Task 4 – Module evidence script
 
 Create `~/rebash-terraform/module-09/module-evidence.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-09
@@ -398,12 +404,14 @@ echo "module-evidence PASS" | tee module-evidence-pass.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-09/module-evidence.sh
 ~/rebash-terraform/module-09/module-evidence.sh
 ```
 
-**Expected output:** `module-evidence-pass.txt` contains `module-evidence PASS`.
+!!! example "Expected output"
+    `module-evidence-pass.txt` contains `module-evidence PASS`.
+
 
 ### Validation steps
 
@@ -451,7 +459,7 @@ output "audit_service_name" {
 Apply:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09
 terraform apply -auto-approve
 docker ps --filter name=audit-dev-svc --format '{{.Names}}' | grep -q audit-dev-svc
@@ -459,7 +467,9 @@ echo "third module challenge OK"
 ```
 {% endraw %}
 
-**Expected output:** Audit container running; output includes `audit-dev`.
+!!! example "Expected output"
+    Audit container running; output includes `audit-dev`.
+
 
 ### Learning outcomes
 
@@ -470,7 +480,7 @@ echo "third module challenge OK"
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-09
 terraform destroy -auto-approve
 rm -f child-validate-ok.txt root-plan.txt root-outputs.json root-apply-ok.txt \

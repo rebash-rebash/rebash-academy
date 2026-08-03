@@ -123,7 +123,7 @@ Build a small IaC-style repo with two atomic commits (README + Terraform stub), 
 
 Workspace: `~/rebash-git/module-03` (extends the create/clone lab)
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-03 && cd ~/rebash-git/module-03
 set -euo pipefail
 ```
@@ -138,7 +138,7 @@ Your platform team stores Terraform in Git. A colleague already pushed an initia
 
 Start from a clean app directory linked to a bare remote.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03
 set -euo pipefail
 rm -rf workflow-app remotes/workflow.git
@@ -162,7 +162,9 @@ grep -q 'Your branch is up to date with' ../after-first-push.txt
 cd ..
 ```
 
-**Expected output:** One commit on `main`; push succeeds; status shows tracking `origin/main`.
+!!! example "Expected output"
+    One commit on `main`; push succeeds; status shows tracking `origin/main`.
+
 
 #### Task 2 – Second change, selective staging only for Terraform
 
@@ -170,7 +172,7 @@ Add infrastructure file without touching README again.
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_version = ">= 1.5.0"
 }
@@ -178,7 +180,7 @@ terraform {
 
 Stage and commit only the Terraform file:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03/workflow-app
 set -euo pipefail
 git status --short | tee ../status-before-tf.txt
@@ -192,13 +194,15 @@ test "$(git rev-list --count HEAD)" -eq 2
 cd ..
 ```
 
-**Expected output:** Two commits locally; `main.tf` staged alone; README not in second commit.
+!!! example "Expected output"
+    Two commits locally; `main.tf` staged alone; README not in second commit.
+
 
 #### Task 3 – Push and verify remote history
 
 Publish the second commit and assert remote matches.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03/workflow-app
 set -euo pipefail
 git push
@@ -214,7 +218,9 @@ ls -l ../module-03-workflow-evidence.tgz | tee ../workflow-evidence.txt
 cd ..
 ```
 
-**Expected output:** Remote has two commits; local branch tracks `origin/main`; evidence archive created.
+!!! example "Expected output"
+    Remote has two commits; local branch tracks `origin/main`; evidence archive created.
+
 
 ### Validation steps
 
@@ -244,7 +250,7 @@ Use `git add -p` on a file where you intentionally mix a comment change and a lo
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Keep evidence for portfolio; remove working copy if needed:
 # rm -rf ~/rebash-git/module-03/workflow-app
 ls ~/rebash-git/module-03/*evidence* 2>/dev/null || true

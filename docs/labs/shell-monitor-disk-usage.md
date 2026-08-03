@@ -62,7 +62,7 @@ Any Linux host.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/monitor
 cd ~/rebash-lab-shell/monitor
 ```
@@ -73,7 +73,7 @@ cd ~/rebash-lab-shell/monitor
 
 Create `check-disk.sh`:
 
-```bash
+```bash title="check-disk.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 THRESH="${1:-80}"
@@ -97,7 +97,7 @@ exit 0
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x check-disk.sh
 ./check-disk.sh 80
 ./check-disk.sh 1 || true
@@ -128,7 +128,7 @@ chmod +x check-disk.sh
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

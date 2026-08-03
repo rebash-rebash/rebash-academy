@@ -67,7 +67,7 @@ Scripts orchestrate existing Linux tools; safe defaults stop silent failures fro
 | `set -o pipefail` | Pipeline fails if any stage fails |
 | Exit code | `0` ok; non-zero means failure to callers |
 
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 echo "hello"
@@ -112,13 +112,15 @@ Write `hostcheck.sh` that validates an argument directory, checks disk free spac
 
 Workspace: `~/rebash-linux/lab-shell`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab-shell && cd ~/rebash-linux/lab-shell
 set -euo pipefail
 bash --version | head -n 1 | tee bash-version.txt
 ```
 
-**Expected output:** Bash version line stored.
+!!! example "Expected output"
+    Bash version line stored.
+
 
 ### Real-world scenario
 
@@ -128,7 +130,7 @@ On-call wants a tiny pre-deploy check on practice VMs: “can we write to the ap
 
 #### Task 1 – Create `hostcheck.sh`
 
-```bash
+```bash title="hostcheck.sh"
 cd ~/rebash-linux/lab-shell
 set -euo pipefail
 
@@ -182,11 +184,13 @@ chmod +x hostcheck.sh
 test -x hostcheck.sh
 ```
 
-**Expected output:** executable `hostcheck.sh` exists.
+!!! example "Expected output"
+    executable `hostcheck.sh` exists.
+
 
 #### Task 2 – Successful run
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab-shell
 set -euo pipefail
 
@@ -197,11 +201,13 @@ grep -F 'RESULT=PASS' hostcheck-success.log
 grep -F 'write_probe=ok' hostcheck-success.log
 ```
 
-**Expected output:** script exits 0; success log contains `RESULT=PASS`.
+!!! example "Expected output"
+    script exits 0; success log contains `RESULT=PASS`.
+
 
 #### Task 3 – Failure paths + evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab-shell
 set -euo pipefail
 
@@ -238,7 +244,9 @@ tar -czf shell-evidence.tgz \
 ls -l shell-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** exit codes `2`, `1`, `1` for the three failure cases; evidence archive exists.
+!!! example "Expected output"
+    exit codes `2`, `1`, `1` for the three failure cases; evidence archive exists.
+
 
 ### Validation steps
 
@@ -269,7 +277,7 @@ Extend `hostcheck.sh` with an optional third argument `--json` that prints a one
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab-shell
 set -euo pipefail
 rm -rf appdir

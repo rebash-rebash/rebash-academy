@@ -118,7 +118,7 @@ Create a 512 MiB disk image, attach it as a loop device, partition and format 
 
 Workspace: `~/rebash-linux/lab12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab12 && cd ~/rebash-linux/lab12
 set -euo pipefail
 sudo apt-get update -qq
@@ -127,7 +127,9 @@ lsblk -f | tee lsblk-before.txt
 df -h . | tee df-home.txt
 ```
 
-**Expected output:** `lsblk-before.txt` exists; enough free space on the home filesystem.
+!!! example "Expected output"
+    `lsblk-before.txt` exists; enough free space on the home filesystem.
+
 
 ### Real-world scenario
 
@@ -137,7 +139,7 @@ A new empty data volume will be attached to an app VM later. Before you touch a 
 
 #### Task 1 – Create disk image and attach loop device
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab12
 set -euo pipefail
 
@@ -149,11 +151,13 @@ lsblk -f "$LOOP" | tee lsblk-loop.txt
 echo "Using loop device: $LOOP"
 ```
 
-**Expected output:** `loop-device.txt` contains a path such as `/dev/loop0`; `lsblk` shows the loop disk.
+!!! example "Expected output"
+    `loop-device.txt` contains a path such as `/dev/loop0`; `lsblk` shows the loop disk.
+
 
 #### Task 2 – Partition, format, and capture UUID
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab12
 set -euo pipefail
 LOOP="$(cat loop-device.txt)"
@@ -177,11 +181,13 @@ test -n "$UUID"
 echo "$UUID" | tee uuid.txt
 ```
 
-**Expected output:** `uuid.txt` holds a UUID; `blkid.txt` shows `TYPE="ext4"` and label `rebashlab12`.
+!!! example "Expected output"
+    `uuid.txt` holds a UUID; `blkid.txt` shows `TYPE="ext4"` and label `rebashlab12`.
+
 
 #### Task 3 – Mount by UUID, prove write, evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab12
 set -euo pipefail
 UUID="$(cat uuid.txt)"
@@ -201,7 +207,9 @@ tar -czf storage-evidence.tgz \
 ls -l storage-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `findmnt-lab.txt` shows `/mnt/rebash-lab12`; `mount-proof.txt` contains `hello-storage`; evidence archive exists.
+!!! example "Expected output"
+    `findmnt-lab.txt` shows `/mnt/rebash-lab12`; `mount-proof.txt` contains `hello-storage`; evidence archive exists.
+
 
 ### Validation steps
 
@@ -232,7 +240,7 @@ Unmount `/mnt/rebash-lab12`, remount using the **LABEL** (`rebashlab12`) instead
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab12
 set -euo pipefail
 

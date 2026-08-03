@@ -142,7 +142,7 @@ Build a production-style `modules/` + `live/dev` + `live/prod` layout with pinne
 
 Workspace: `~/rebash-terraform/module-19`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-19/{modules/greeting,live/dev,live/prod,scripts}
 ```
 
@@ -158,7 +158,7 @@ Platform engineering requires every new service repo to boot-strap with separate
 
 Create `modules/greeting/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
@@ -172,7 +172,7 @@ terraform {
 
 Create `modules/greeting/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "greeting" {
   type        = string
   description = "Label value for the greeting container"
@@ -191,7 +191,7 @@ variable "environment" {
 
 Create `modules/greeting/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_image" "greeting" {
   name         = "nginx:1.27-alpine"
   keep_locally = true
@@ -210,7 +210,7 @@ resource "docker_container" "greeting" {
 
 Create `modules/greeting/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "container_name" {
   value = docker_container.greeting.name
 }
@@ -222,20 +222,22 @@ output "label" {
 
 Run module validation:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-19/modules/greeting
 terraform init
 terraform validate
 echo "module validate OK" | tee ../../evidence/module-validate-ok.txt
 ```
 
-**Expected output:** `Success! The configuration is valid.`
+!!! example "Expected output"
+    `Success! The configuration is valid.`
+
 
 #### Task 2 – Wire live/dev and live/prod roots with separate state
 
 Create `live/dev/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
@@ -249,13 +251,13 @@ terraform {
 
 Create `live/dev/providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `live/dev/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 module "greeting" {
   source      = "../../modules/greeting"
   greeting    = var.greeting
@@ -273,7 +275,7 @@ output "container_name" {
 
 Create `live/dev/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "greeting" {
   type    = string
   default = "hello-dev"
@@ -282,7 +284,7 @@ variable "greeting" {
 
 Create `live/dev/terraform.tfvars`:
 
-```hcl
+```hcl title="terraform.tfvars"
 greeting = "hello-dev"
 ```
 
@@ -290,13 +292,13 @@ Create `live/prod/versions.tf` (same content as dev `versions.tf`).
 
 Create `live/prod/providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `live/prod/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 module "greeting" {
   source      = "../../modules/greeting"
   greeting    = var.greeting
@@ -310,7 +312,7 @@ output "label" {
 
 Create `live/prod/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "greeting" {
   type    = string
   default = "hello-prod"
@@ -319,13 +321,13 @@ variable "greeting" {
 
 Create `live/prod/terraform.tfvars`:
 
-```hcl
+```hcl title="terraform.tfvars"
 greeting = "hello-prod"
 ```
 
 Initialise and plan dev with a saved plan file:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-19/live/dev
 terraform init
 terraform plan -out=tfplan
@@ -333,12 +335,14 @@ terraform show -no-color tfplan | tee ../../evidence/plan-dev.txt
 grep -q 'module.greeting.docker_container.greeting' ../../evidence/plan-dev.txt
 ```
 
-**Expected output:** Plan shows one create for `docker_container.greeting`.
+!!! example "Expected output"
+    Plan shows one create for `docker_container.greeting`.
+
 
 #### Task 3 – Apply dev with saved plan and prove container
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-19/live/dev
 terraform apply tfplan
 terraform output -raw label | tee ../../evidence/output-dev.txt
@@ -351,11 +355,13 @@ grep -q 'hello-dev' ../../evidence/dev-label.txt
 ```
 {% endraw %}
 
-**Expected output:** `greeting-dev` container running with label `hello-dev`.
+!!! example "Expected output"
+    `greeting-dev` container running with label `hello-dev`.
+
 
 Initialise prod separately:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-19/live/prod
 terraform init
 terraform plan -no-color | tee ../../evidence/plan-prod.txt
@@ -363,7 +369,9 @@ grep -q 'module.greeting.docker_container.greeting' ../../evidence/plan-prod.txt
 ! grep -q 'hello-dev' ../../evidence/plan-prod.txt
 ```
 
-**Expected output:** Prod plan is independent; no dev greeting string in prod plan.
+!!! example "Expected output"
+    Prod plan is independent; no dev greeting string in prod plan.
+
 
 #### Task 4 – Refactor with `moved` and add CI validation script
 
@@ -383,7 +391,7 @@ resource "docker_container" "message" {
 
 Update `modules/greeting/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "container_name" {
   value = docker_container.message.name
 }
@@ -401,7 +409,7 @@ moved {
 Re-plan dev:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-19/live/dev
 terraform plan -no-color | tee ../../evidence/plan-after-moved.txt
 grep -q 'has moved to' ../../evidence/plan-after-moved.txt || grep -q 'moved' ../../evidence/plan-after-moved.txt
@@ -411,12 +419,14 @@ docker ps --filter "name=greeting-dev" --format '{{.Names}}' | grep -q 'greeting
 ```
 {% endraw %}
 
-**Expected output:** Plan reports address move; container still running after apply.
+!!! example "Expected output"
+    Plan reports address move; container still running after apply.
+
 
 Create `scripts/ci-validate.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -435,14 +445,16 @@ echo "CI validation complete — see evidence/plan-ci.txt"
 
 Run:
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-19/evidence
 chmod +x ~/rebash-terraform/module-19/scripts/ci-validate.sh
 ~/rebash-terraform/module-19/scripts/ci-validate.sh
 test -s ~/rebash-terraform/module-19/evidence/plan-ci.txt
 ```
 
-**Expected output:** Script exits 0; container running; `evidence/plan-ci.txt` non-empty.
+!!! example "Expected output"
+    Script exits 0; container running; `evidence/plan-ci.txt` non-empty.
+
 
 ### Validation steps
 
@@ -477,7 +489,7 @@ Add a `live/staging` root with its own tfvars and extend `scripts/ci-validate.sh
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-19/live/dev && terraform destroy -auto-approve
 cd ~/rebash-terraform/module-19/live/prod && terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f greeting-dev greeting-prod greeting-staging 2>/dev/null || true

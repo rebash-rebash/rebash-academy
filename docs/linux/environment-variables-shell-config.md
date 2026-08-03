@@ -103,7 +103,7 @@ Inspect the environment, install a lab `/etc/profile.d` script, prove a login sh
 
 Workspace: `~/rebash-linux/lab-env`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab-env && cd ~/rebash-linux/lab-env
 set -euo pipefail
 echo "$SHELL" | tee shell.txt
@@ -111,7 +111,9 @@ printenv PATH | tee path.txt
 printenv HOME USER | tee home-user.txt
 ```
 
-**Expected output:** `shell.txt` shows a bash path; PATH and HOME captured.
+!!! example "Expected output"
+    `shell.txt` shows a bash path; PATH and HOME captured.
+
 
 ### Real-world scenario
 
@@ -121,7 +123,7 @@ Your team wants every engineer login on a practice jump VM to see `REBASH_LAB_EN
 
 #### Task 1 – Export and one-shot override
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 
@@ -137,11 +139,13 @@ echo 'oneshot-not-in-parent=ok' | tee oneshot-scope.txt
 test "$(cat export-session.txt)" = 'session-value'
 ```
 
-**Expected output:** exported value persists in the shell; oneshot value does not remain in the parent environment.
+!!! example "Expected output"
+    exported value persists in the shell; oneshot value does not remain in the parent environment.
+
 
 #### Task 2 – `/etc/profile.d` drop-in (login shell)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 
@@ -159,11 +163,13 @@ test "$(cat profile-d-login.txt)" = '1'
 bash -c 'printenv REBASH_LAB_ENV || true' | tee profile-d-nologin.txt || true
 ```
 
-**Expected output:** `profile-d-login.txt` is `1`. Non-login output may be empty — that difference is the lesson.
+!!! example "Expected output"
+    `profile-d-login.txt` is `1`. Non-login output may be empty — that difference is the lesson.
+
 
 #### Task 3 – systemd Environment= + evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 
@@ -192,7 +198,9 @@ tar -czf env-evidence.tgz \
 ls -l env-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `unit-env.txt` contains `lab` and `1`; evidence archive exists.
+!!! example "Expected output"
+    `unit-env.txt` contains `lab` and `1`; evidence archive exists.
+
 
 ### Validation steps
 
@@ -223,7 +231,7 @@ Create `/etc/profile.d/rebash-lab-path.sh` that **prepends** `$HOME/rebash-linux
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 sudo rm -f /etc/profile.d/rebash-lab-env.sh /etc/profile.d/rebash-lab-path.sh

@@ -120,7 +120,7 @@ Build a local "forge readiness" repo with Issue templates, `repo-settings.yaml` 
 
 Workspace: `~/rebash-git/module-09`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-09 && cd ~/rebash-git/module-09
 set -euo pipefail
 ```
@@ -135,7 +135,7 @@ Platform team onboards a new Terraform module repository to GitHub next sprint. 
 
 Create `.github/ISSUE_TEMPLATE/infra-change.md`:
 
-```markdown
+```markdown title="infra-change.md"
 ---
 name: Infrastructure change
 about: Request a Terraform or pipeline change
@@ -150,7 +150,7 @@ labels: type:infra
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # module-vpc
 
 Terraform VPC module — GitHub onboarding pending.
@@ -158,7 +158,7 @@ Terraform VPC module — GitHub onboarding pending.
 
 Initialise the repo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-09
 set -euo pipefail
 rm -rf github-lab
@@ -173,13 +173,15 @@ test -f .github/ISSUE_TEMPLATE/infra-change.md
 cd ..
 ```
 
-**Expected output:** Issue template committed in standard `.github` path.
+!!! example "Expected output"
+    Issue template committed in standard `.github` path.
+
 
 #### Task 2 – Repo settings YAML and validation script
 
 Create `repo-settings.yaml`:
 
-```yaml
+```yaml title="repo-settings.yaml"
 default_branch: main
 branch_protection:
   main:
@@ -200,7 +202,7 @@ visibility: private
 
 Create `validate-settings.sh`:
 
-```bash
+```bash title="validate-settings.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 grep -q 'default_branch: main' repo-settings.yaml
@@ -211,7 +213,7 @@ echo 'settings_ok'
 
 Validate and commit:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-09/github-lab
 set -euo pipefail
 chmod +x validate-settings.sh
@@ -222,11 +224,13 @@ git commit -m 'chore: add repo settings YAML and validator'
 cd ..
 ```
 
-**Expected output:** Machine-readable settings YAML passes validation script.
+!!! example "Expected output"
+    Machine-readable settings YAML passes validation script.
+
 
 #### Task 3 – Tag and release notes (local release simulation)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-09/github-lab
 set -euo pipefail
 git tag -a v0.1.0 -m 'Initial lab release — Issue template and repo settings YAML'
@@ -252,7 +256,9 @@ ls -l ../module-09-github-evidence.tgz | tee ../github-evidence.txt
 cd ..
 ```
 
-**Expected output:** Annotated tag v0.1.0; `release-notes-v0.1.0.txt` generated from log.
+!!! example "Expected output"
+    Annotated tag v0.1.0; `release-notes-v0.1.0.txt` generated from log.
+
 
 ### Validation steps
 
@@ -282,7 +288,7 @@ If you have GitHub access: create a private sandbox repo, push this lab, open on
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-09/github-lab
 ```
 

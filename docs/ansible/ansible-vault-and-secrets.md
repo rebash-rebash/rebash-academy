@@ -68,7 +68,7 @@ Vault encrypts YAML on disk; Ansible decrypts in memory on the control node duri
 
 **Ansible Vault** applies symmetric encryption to whole files or embedded strings (`!vault |` blocks). Common commands:
 
-```bash
+```bash title="Terminal"
 ansible-vault create secrets.yml
 ansible-vault encrypt secrets.yml
 ansible-vault edit secrets.yml
@@ -135,7 +135,7 @@ Create `group_vars/all/secrets.yml` in plaintext, encrypt with `ansible-vault` u
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-11/{playbooks,group_vars/all,inventory}
 cd ~/rebash-ansible/module-11
 ```
@@ -144,7 +144,7 @@ Add `.vault_pass` to a local `.gitignore` in the lab folder (do not commit):
 
 Create `.gitignore`:
 
-```gitignore
+```gitignore title=".gitignore"
 .vault_pass
 *.retry
 ```
@@ -161,7 +161,7 @@ Application DB credentials live in encrypted `group_vars/all/secrets.yml`. Deplo
 
 Create `group_vars/all/secrets.yml`:
 
-```yaml
+```yaml title="secrets.yml"
 ---
 # LAB ONLY — encrypt before any commit to shared Git
 vault_db_user: rebash_app
@@ -176,13 +176,13 @@ app_label: rebash-module-11
 
 Create `.vault_pass`:
 
-```text
+```text title=".vault_pass"
 rebash-lab-vault
 ```
 
 Restrict permissions:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-11
 chmod 600 .vault_pass
 grep -qxF '.vault_pass' .gitignore
@@ -190,31 +190,35 @@ grep -qxF '.vault_pass' .gitignore
 
 #### Task 3 – Encrypt secrets
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-11
 ansible-vault encrypt group_vars/all/secrets.yml --vault-password-file .vault_pass | tee encrypt-log.txt
 head -1 group_vars/all/secrets.yml | tee vault-header.txt
 grep -q 'ANSIBLE_VAULT' vault-header.txt
 ```
 
-**Expected output:** First line of `secrets.yml` starts with `$ANSIBLE_VAULT`; file is ciphertext.
+!!! example "Expected output"
+    First line of `secrets.yml` starts with `$ANSIBLE_VAULT`; file is ciphertext.
+
 
 View without permanent decrypt:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-11
 ansible-vault view group_vars/all/secrets.yml --vault-password-file .vault_pass | tee vault-view.txt
 grep -q 'vault_db_user' vault-view.txt
 grep -q 'lab-only-not-production' vault-view.txt
 ```
 
-**Expected output:** View shows decrypted content in terminal only; file on disk stays encrypted.
+!!! example "Expected output"
+    View shows decrypted content in terminal only; file on disk stays encrypted.
+
 
 #### Task 4 – Playbook using encrypted vars
 
 Create `inventory/localhost.yml`:
 
-```yaml
+```yaml title="localhost.yml"
 ---
 all:
   hosts:
@@ -224,7 +228,7 @@ all:
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = inventory/localhost.yml
 host_key_checking = False
@@ -256,7 +260,7 @@ Create `playbooks/use-secrets.yml`:
 
 Run with vault password file:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-11
 ansible-playbook playbooks/use-secrets.yml --vault-password-file .vault_pass | tee run-vault.txt
 grep -q 'PLAY RECAP' run-vault.txt
@@ -264,11 +268,13 @@ grep -q 'configured-user=rebash_app' /tmp/rebash-vault-proof.txt
 grep -q 'lab-only-not-production' run-vault.txt && echo 'FAIL secret in log' && exit 1 || echo 'OK no password in stdout'
 ```
 
-**Expected output:** Play succeeds; proof file contains username only; playbook stdout does not contain the password string.
+!!! example "Expected output"
+    Play succeeds; proof file contains username only; playbook stdout does not contain the password string.
+
 
 #### Task 5 – Rekey demonstration (rotation habit)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-11
 echo 'rebash-lab-vault-rotated' > .vault_pass.new
 chmod 600 .vault_pass.new
@@ -277,7 +283,9 @@ mv .vault_pass.new .vault_pass
 ansible-vault view group_vars/all/secrets.yml --vault-password-file .vault_pass | grep -q vault_db_user
 ```
 
-**Expected output:** Rekey succeeds; view works with new password file.
+!!! example "Expected output"
+    Rekey succeeds; view works with new password file.
+
 
 ### Validation steps
 
@@ -310,7 +318,7 @@ Split secrets into `group_vars/all/vault.yml` (encrypted) and `group_vars/all/ma
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f /tmp/rebash-vault-proof.txt ~/rebash-ansible/module-11/.vault_pass.new
 # Remove lab dir when finished; never push .vault_pass or plaintext secrets
 ```

@@ -120,7 +120,7 @@ Apply notification triggers and templates on a **kind** cluster, subscribe an Ap
 
 Runtime: **kind** cluster with Argo CD — offline YAML parsing alone is not sufficient for this lab.
 
-```bash
+```bash title="Terminal"
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-12/{notifications,apps} && cd ~/rebash-argocd/module-12
@@ -186,7 +186,7 @@ data:
 
 Apply and verify the controller reloads config:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-12
 kubectl apply -f notifications/argocd-notifications-cm.yaml | tee notif-cm-apply-m12.txt
 kubectl get configmap argocd-notifications-cm -n argocd \
@@ -194,13 +194,15 @@ kubectl get configmap argocd-notifications-cm -n argocd \
 grep -q 'slack-token' notif-service-m12.txt
 ```
 
-**Expected output:** ConfigMap applied; service references `$slack-token` placeholder.
+!!! example "Expected output"
+    ConfigMap applied; service references `$slack-token` placeholder.
+
 
 #### Task 2 – Apply Secret placeholder and subscribe Application
 
 Create `notifications/argocd-notifications-secret-lab.yaml`:
 
-```yaml
+```yaml title="argocd-notifications-secret-lab.yaml"
 apiVersion: v1
 kind: Secret
 metadata:
@@ -217,7 +219,7 @@ stringData:
 
 Create `apps/demo-notify.yaml`:
 
-```yaml
+```yaml title="demo-notify.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -245,7 +247,7 @@ spec:
 
 Apply Secret and Application, wait for initial sync:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-12
 kubectl apply -f notifications/argocd-notifications-secret-lab.yaml | tee notif-secret-apply-m12.txt
 kubectl apply -f apps/demo-notify.yaml | tee app-apply-m12.txt
@@ -254,13 +256,15 @@ kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
 kubectl get deploy -n rebash-argocd-m12 | tee workloads-initial-m12.txt
 ```
 
-**Expected output:** Application Synced; guestbook workloads exist in `rebash-argocd-m12`.
+!!! example "Expected output"
+    Application Synced; guestbook workloads exist in `rebash-argocd-m12`.
+
 
 #### Task 3 – Force sync failure and prove trigger evaluation
 
 Create `apps/demo-notify-broken.yaml`:
 
-```yaml
+```yaml title="demo-notify-broken.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -288,7 +292,7 @@ spec:
 
 Apply broken manifest and capture failure state:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-12
 kubectl apply -f apps/demo-notify-broken.yaml | tee broken-app-apply-m12.txt
 sleep 15
@@ -301,13 +305,15 @@ grep -Ei 'demo-notify|sync-failed|trigger|notify' notif-controller-logs-m12.txt 
   grep -Ei 'Failed|Error' sync-failed-state-m12.txt
 ```
 
-**Expected output:** Application sync fails (Failed/Error phase or OutOfSync with operation error); notifications controller logs mention `demo-notify` or trigger evaluation.
+!!! example "Expected output"
+    Application sync fails (Failed/Error phase or OutOfSync with operation error); notifications controller logs mention `demo-notify` or trigger evaluation.
+
 
 #### Task 4 – Fix manifest and prove recovery
 
 Restore the working Application manifest:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-12
 kubectl apply -f apps/demo-notify.yaml | tee fixed-app-apply-m12.txt
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
@@ -318,7 +324,9 @@ kubectl get application demo-notify -n argocd \
 grep -q 'Synced' recovered-health-m12.txt
 ```
 
-**Expected output:** Application returns to Synced and Healthy after path fix.
+!!! example "Expected output"
+    Application returns to Synced and Healthy after path fix.
+
 
 ### Validation steps
 
@@ -351,7 +359,7 @@ Add a generic webhook service entry and an `on-deployed` trigger that fires only
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application demo-notify -n argocd --ignore-not-found
 kubectl delete secret argocd-notifications-secret -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m12 --ignore-not-found

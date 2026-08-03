@@ -116,13 +116,15 @@ Create three namespaces (`dmz`, `app`, `db`) linked with veth pairs through a ti
 
 Workspace: `~/rebash-networking/lab22`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab22 && cd ~/rebash-networking/lab22
 set -euo pipefail
 whoami | tee admin-user.txt
 ```
 
-**Expected output:** workspace ready.
+!!! example "Expected output"
+    workspace ready.
+
 
 ### Real-world scenario
 
@@ -132,7 +134,7 @@ Your platform team wants a simple proof that the edge tier cannot open the datab
 
 #### Task 1 – Build dmz / app / db namespaces
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab22
 set -euo pipefail
 
@@ -175,11 +177,13 @@ sudo ip netns exec lab22-rtr sysctl -w net.ipv4.ip_forward=1 >/dev/null
 sudo ip -n lab22-rtr addr | tee topology-addrs.txt
 ```
 
-**Expected output:** three tiers addressing through `lab22-rtr`.
+!!! example "Expected output"
+    three tiers addressing through `lab22-rtr`.
+
 
 #### Task 2 – Enforce deny DMZ→DB with router iptables / nft
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab22
 set -euo pipefail
 
@@ -200,11 +204,13 @@ sudo ip netns exec lab22-rtr iptables -A FORWARD -s 10.22.1.0/24 -d 10.22.3.0/24
 sudo ip netns exec lab22-rtr iptables -L FORWARD -n -v | tee forward-rules.txt
 ```
 
-**Expected output:** FORWARD policy DROP with allow dmz→app and app→db; dmz→db rejected.
+!!! example "Expected output"
+    FORWARD policy DROP with allow dmz→app and app→db; dmz→db rejected.
+
 
 #### Task 3 – Reachability matrix (allow and deny proof)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab22
 set -euo pipefail
 
@@ -234,7 +240,9 @@ tar -czf segmentation-evidence.tgz \
 ls -l segmentation-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** matrix shows ALLOW for dmz→app and app→db, **DENY** for dmz→db.
+!!! example "Expected output"
+    matrix shows ALLOW for dmz→app and app→db, **DENY** for dmz→db.
+
 
 ### Validation steps
 
@@ -264,7 +272,7 @@ Add a tiny HTTP service in `lab22-app` on port `8080` (`python3 -m http.server` 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab22
 set -euo pipefail
 for ns in lab22-dmz lab22-app lab22-db lab22-rtr; do

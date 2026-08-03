@@ -77,7 +77,7 @@ A **distribution** ships:
 
 **User space** is everything that is not the kernel: daemons, CLI tools, libraries under `/usr`, and your applications. The **shell** (`bash`, `zsh`, `sh`) interprets commands. The **terminal** (or terminal emulator) is the window or SSH session that shows text and sends keystrokes. The kernel connects them with a TTY or PTY device.
 
-```bash
+```bash title="Terminal"
 uname -r
 cat /etc/os-release
 echo "$SHELL"
@@ -96,7 +96,7 @@ Cloud VM images, container base images, and CI runners are chosen by **distro fa
 4. You connect with SSH into a **PTY**; a **shell** process reads your commands and starts child processes.
 5. Those processes call the **kernel** through system calls.
 
-```bash
+```bash title="Terminal"
 hostnamectl          # OS pretty name, kernel, architecture
 ps -p $$ -o pid,tty,comm,args
 ls -l /proc/$$/exe   # which shell binary this session uses
@@ -148,7 +148,7 @@ On a practice Ubuntu VM, identify the distribution and architecture layers, prov
 
 Workspace: `~/rebash-linux/lab01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab01 && cd ~/rebash-linux/lab01
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -156,7 +156,9 @@ uname -s | tee kernel-name.txt
 test "$(uname -s)" = "Linux"
 ```
 
-**Expected output:** `lab-user.txt` and `kernel-name.txt` exist; `kernel-name.txt` contains `Linux`.
+!!! example "Expected output"
+    `lab-user.txt` and `kernel-name.txt` exist; `kernel-name.txt` contains `Linux`.
+
 
 ### Real-world scenario
 
@@ -166,7 +168,7 @@ Your team received a new Ubuntu cloud image for application servers. Before the 
 
 #### Task 1 – Identify distribution and package family
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab01
 set -euo pipefail
 
@@ -188,11 +190,13 @@ grep -E '^(ID|VERSION_ID|ID_LIKE)=' os-release.txt
 test -s package-family.txt
 ```
 
-**Expected output:** `os-release.txt` shows Ubuntu (or your distro); `package-family.txt` says `apt` on Ubuntu; `distro-summary.txt` has `ID` and `VERSION_ID`.
+!!! example "Expected output"
+    `os-release.txt` shows Ubuntu (or your distro); `package-family.txt` says `apt` on Ubuntu; `distro-summary.txt` has `ID` and `VERSION_ID`.
+
 
 #### Task 2 – Map kernel versus user space
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab01
 set -euo pipefail
 
@@ -214,11 +218,13 @@ test -s kernel-release.txt
 test -s proc-version.txt
 ```
 
-**Expected output:** `kernel-release.txt` shows a version like `6.x.x-…`; `bash-path.txt` points under `/usr` or `/bin`; `proc-version.txt` mentions Linux.
+!!! example "Expected output"
+    `kernel-release.txt` shows a version like `6.x.x-…`; `bash-path.txt` points under `/usr` or `/bin`; `proc-version.txt` mentions Linux.
+
 
 #### Task 3 – Prove shell versus terminal, then pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab01
 set -euo pipefail
 
@@ -240,7 +246,9 @@ ls -l linux-identity-evidence.tgz | tee evidence-ls.txt
 test -s linux-identity-evidence.tgz
 ```
 
-**Expected output:** `tty.txt` shows a pts or tty device; `shell-process.txt` shows your shell (often `bash`); evidence archive is not empty.
+!!! example "Expected output"
+    `tty.txt` shows a pts or tty device; `shell-process.txt` shows your shell (often `bash`); evidence archive is not empty.
+
 
 ### Validation steps
 
@@ -263,7 +271,7 @@ test -s linux-identity-evidence.tgz
 
 Write an executable script `~/rebash-linux/lab01/host-identity.sh` that prints four labelled lines: `distro=`, `kernel=`, `package_family=`, and `shell=`, using `/etc/os-release`, `uname -r`, package-manager detection, and `$SHELL`. Run it and save output to `host-identity-out.txt`. Keep the script as your stretch artefact.
 
-```bash
+```bash title="Terminal"
 # After you create the script:
 chmod +x ~/rebash-linux/lab01/host-identity.sh
 ~/rebash-linux/lab01/host-identity.sh | tee ~/rebash-linux/lab01/host-identity-out.txt
@@ -278,7 +286,7 @@ chmod +x ~/rebash-linux/lab01/host-identity.sh
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab01
 # Keep the evidence archive and challenge script if you want them for your notes.
 # To remove lab text files only:

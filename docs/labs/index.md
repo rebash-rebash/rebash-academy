@@ -12,6 +12,12 @@ tags:
 Every lab is a realistic scenario: you get a goal, a broken or empty environment, and
 validation steps. Work through them after the matching tutorial modules.
 
+## Samples
+
+| Lab | Notes |
+|-----|--------|
+| [Sample — Code block conventions](sample-code-block-conventions.md) | UX review: filename titles, Terminal fences, expected-output admonitions |
+
 ## Linux
 
 | Lab | Difficulty | Time |

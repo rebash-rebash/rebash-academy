@@ -176,7 +176,7 @@ Workspace: `~/rebash-gitlab/module-12`
 
 File-first lab. Analysers run on GitLab runners when templates are included; this lab validates structure locally.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-12 && cd ~/rebash-gitlab/module-12
 set -euo pipefail
 ```
@@ -191,7 +191,7 @@ Security engineering requires secret detection on every merge request and Static
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 """Module 12 lab fixture — no real secrets."""
 
 def greet(name: str) -> str:
@@ -200,20 +200,22 @@ def greet(name: str) -> str:
 
 Verify locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 python3 -m py_compile src/app.py
 python3 -c "from src.app import greet; assert greet('lab') == 'hello, lab'"
 ```
 
-**Expected output:** No compile errors; assertion passes silently.
+!!! example "Expected output"
+    No compile errors; assertion passes silently.
+
 
 #### Task 2 – Security policy gates
 
 Create `security-policy.yaml`:
 
-```yaml
+```yaml title="security-policy.yaml"
 # Module 12 — severity gates (offline policy document)
 scanners:
   secret_detection:
@@ -238,7 +240,7 @@ sbom:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 python3 -c "
@@ -250,7 +252,9 @@ print('security-policy.yaml OK')
 "
 ```
 
-**Expected output:** `security-policy.yaml OK`
+!!! example "Expected output"
+    `security-policy.yaml OK`
+
 
 #### Task 3 – DevSecOps pipeline stubs
 
@@ -289,7 +293,7 @@ build-image-stub:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 python3 -c "
@@ -304,13 +308,15 @@ grep -q 'Security/SAST' .gitlab-ci.yml
 grep -q 'alpine:3.20' .gitlab-ci.yml
 ```
 
-**Expected output:** `gitlab-ci OK`; SAST template and pinned image referenced.
+!!! example "Expected output"
+    `gitlab-ci OK`; SAST template and pinned image referenced.
+
 
 #### Task 4 – Offline validation bundle
 
 Create `validate-devsecops.sh`:
 
-```bash
+```bash title="validate-devsecops.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); yaml.safe_load(open('security-policy.yaml'))"
@@ -321,14 +327,16 @@ echo 'module-12 devsecops lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 chmod +x validate-devsecops.sh
 ./validate-devsecops.sh | tee validation.txt
 ```
 
-**Expected output:** `module-12 devsecops lab passed`
+!!! example "Expected output"
+    `module-12 devsecops lab passed`
+
 
 ### Validation steps
 
@@ -361,7 +369,7 @@ Add a stub `container_scan` job that declares `dependencies: [build-image-stub]`
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-gitlab/module-12/src/__pycache__ 2>/dev/null || true
 ls ~/rebash-gitlab/module-12
 ```

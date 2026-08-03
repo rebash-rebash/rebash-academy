@@ -118,7 +118,7 @@ Capture a production-style audit snapshot, install lab sysctl and limits drop-in
 
 Workspace: `~/rebash-linux/lab24`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab24 && cd ~/rebash-linux/lab24
 set -euo pipefail
 sudo apt-get update -qq
@@ -126,7 +126,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y chrony
 timedatectl | tee timedatectl.txt
 ```
 
-**Expected output:** chrony present; `timedatectl.txt` shows clock sync fields.
+!!! example "Expected output"
+    chrony present; `timedatectl.txt` shows clock sync fields.
+
 
 ### Real-world scenario
 
@@ -136,7 +138,7 @@ Security and platform teams ask for a baseline on a new Ubuntu app VM: time sync
 
 #### Task 1 – Audit snapshot
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab24
 set -euo pipefail
 
@@ -151,11 +153,13 @@ df -hT | tee df.txt
 free -h | tee free.txt
 ```
 
-**Expected output:** audit files exist; sysctl values captured before change.
+!!! example "Expected output"
+    audit files exist; sysctl values captured before change.
+
 
 #### Task 2 – Lab sysctl drop-in
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab24
 set -euo pipefail
 
@@ -175,11 +179,13 @@ test "$(sysctl -n fs.file-max)" -eq "$AFTER_MAX"
 test "$(sysctl -n net.ipv4.ip_forward)" -eq 0
 ```
 
-**Expected output:** `sysctl-after.txt` shows the new `fs.file-max` and `ip_forward = 0`.
+!!! example "Expected output"
+    `sysctl-after.txt` shows the new `fs.file-max` and `ip_forward = 0`.
+
 
 #### Task 3 – Limits drop-in + evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab24
 set -euo pipefail
 
@@ -206,7 +212,9 @@ tar -czf production-evidence.tgz \
 ls -l production-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** limits file installed; pam_limits referenced; evidence archive exists.
+!!! example "Expected output"
+    limits file installed; pam_limits referenced; evidence archive exists.
+
 
 ### Validation steps
 
@@ -237,7 +245,7 @@ Create a systemd **service drop-in** directory for an existing unit you are allo
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab24
 set -euo pipefail
 sudo rm -f /etc/sysctl.d/99-rebash-lab24.conf

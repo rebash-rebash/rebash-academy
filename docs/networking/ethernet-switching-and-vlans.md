@@ -67,7 +67,7 @@ Layer 2 sits under routing. Hosts share a broadcast domain (often one VLAN ≈ o
 
 A **MAC address** is a 48-bit Layer 2 identifier (six hex octets, for example `02:42:ac:11:00:02`). An **Ethernet II** frame carries destination MAC, source MAC, an **EtherType** (for example `0x0800` for IPv4), and a payload. A **switch** (or Linux bridge) forwards frames inside one broadcast domain. A **VLAN** is a logical segment tagged with a numeric **VLAN ID** (1–4094). Access ports carry one VLAN untagged toward a host; **trunk** ports carry many VLANs with **IEEE 802.1Q** tags.
 
-```bash
+```bash title="Terminal"
 ip -br link
 ip link show
 ```
@@ -85,7 +85,7 @@ Cloud VPC subnets, Docker `bridge` networks, and Kubernetes node fabrics are vir
 
 On Linux, a **bridge** (`ip link add type bridge`) behaves like a small software switch. **Network namespaces** give you isolated network stacks so you can attach virtual Ethernet (`veth`) pairs to a bridge and prove Layer 2 connectivity without buying hardware.
 
-```bash
+```bash title="Terminal"
 # Conceptual — lab uses safer scripted steps
 sudo ip link add br-lab type bridge
 sudo ip netns add ns-a
@@ -134,7 +134,7 @@ On a practice Ubuntu VM, inspect Layer 2 state (MAC, link, optional bridge), the
 
 Workspace: `~/rebash-networking/lab07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab07 && cd ~/rebash-networking/lab07
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -143,7 +143,9 @@ test -n "$(command -v ip)"
 sudo -n true 2>/dev/null || sudo -v
 ```
 
-**Expected output:** `admin-user.txt` and `host-links.txt` exist; `sudo` works.
+!!! example "Expected output"
+    `admin-user.txt` and `host-links.txt` exist; `sudo` works.
+
 
 ### Real-world scenario
 
@@ -155,7 +157,7 @@ A new microservice will sit on an internal segment. Platform asks you to prove y
 
 Record MACs and any existing bridges. Prefer read-only inspection.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab07
 set -euo pipefail
 
@@ -170,13 +172,15 @@ ip -o link show | awk -F': ' '$2 != "lo" {print}' | tee macs.txt
 grep -E 'link/ether|^[0-9]+:' macs.txt || test -s macs.txt
 ```
 
-**Expected output:** `macs.txt` shows at least one `link/ether` line (or interface entries); bridge list may be empty.
+!!! example "Expected output"
+    `macs.txt` shows at least one `link/ether` line (or interface entries); bridge list may be empty.
+
 
 #### Task 2 – Namespace + bridge Layer 2 simulation (safe lab)
 
 Create a disposable bridge and two namespaces connected by `veth` pairs. Assign IPs only inside the lab bridge — do not change your default route.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab07
 set -euo pipefail
 
@@ -217,20 +221,22 @@ bridge link | tee bridge-ports.txt 2>/dev/null || ip link show master rebash-br0
 grep -E '1 received|2 received|bytes from' ns-ping.txt
 ```
 
-**Expected output:** ping between namespaces succeeds; `ns-neigh.txt` shows a neighbour; bridge ports list both `veth-*-br` sides.
+!!! example "Expected output"
+    ping between namespaces succeeds; `ns-neigh.txt` shows a neighbour; bridge ports list both `veth-*-br` sides.
+
 
 #### Task 3 – VLAN ID concepts (document + evidence pack)
 
 Do **not** create `eth0.100` on your uplink. Record VLAN ideas as a checklist script output for the ticket.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab07
 set -euo pipefail
 ```
 
 Create `vlan-concepts.sh`:
 
-```bash
+```bash title="vlan-concepts.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo "=== VLAN concept checklist (lab07) ==="
@@ -243,7 +249,7 @@ echo "Cloud note: providers often hide tags; isolation appears as separate subne
 echo "Lab bridge rebash-br0 used private 10.255.77.0/24 — not your uplink"
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x vlan-concepts.sh
 ./vlan-concepts.sh | tee vlan-concepts.txt
 
@@ -257,7 +263,9 @@ tar -czf l2-evidence.tgz \
 ls -l l2-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `vlan-concepts.txt` lists access vs trunk and VLAN ID range; `l2-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `vlan-concepts.txt` lists access vs trunk and VLAN ID range; `l2-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -289,7 +297,7 @@ Write `bridge-fdb-dump.sh` that runs `bridge fdb show rebash-br0 2>/dev/null || 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab07
 set -euo pipefail
 

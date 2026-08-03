@@ -124,7 +124,7 @@ Create a deliberately broken playbook that fails `--syntax-check`, fix it, demon
 
 Workspace: `~/rebash-ansible/module-17`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-17/{inventories,playbooks} && cd ~/rebash-ansible/module-17
 ```
 
@@ -138,7 +138,7 @@ A teammate pushed a hotfix playbook during an incident. CI was bypassed. You mus
 
 Create `inventories/lab/hosts.yml`:
 
-```yaml
+```yaml title="hosts.yml"
 all:
   hosts:
     localhost:
@@ -160,20 +160,22 @@ Create `playbooks/broken-site.yml` with an intentional YAML error (bad indent on
 
 Run syntax-check and save failure evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-17
 ansible-playbook --syntax-check -i inventories/lab playbooks/broken-site.yml \
   > syntax-before.txt 2>&1 || true
 grep -Ei 'error|yaml|while scanning' syntax-before.txt
 ```
 
-**Expected output:** Non-zero exit; log contains YAML/syntax error text.
+!!! example "Expected output"
+    Non-zero exit; log contains YAML/syntax error text.
+
 
 #### Task 2 – Fix playbook and capture passing syntax-check
 
 Create `playbooks/fixed-site.yml`:
 
-```yaml
+```yaml title="fixed-site.yml"
 ---
 - name: Fixed site play
   hosts: localhost
@@ -186,7 +188,7 @@ Create `playbooks/fixed-site.yml`:
 
 Run syntax-check on fixed playbook:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-17
 ansible-playbook --syntax-check -i inventories/lab playbooks/fixed-site.yml \
   | tee syntax-after.txt
@@ -194,13 +196,15 @@ grep -q 'playbook: playbooks/fixed-site.yml' syntax-after.txt
 ! grep -Ei 'error|fatal' syntax-after.txt
 ```
 
-**Expected output:** Syntax check passes; no error/fatal lines in output.
+!!! example "Expected output"
+    Syntax check passes; no error/fatal lines in output.
+
 
 #### Task 3 – Demonstrate inventory host miss
 
 Create `playbooks/needs-app-group.yml`:
 
-```yaml
+```yaml title="needs-app-group.yml"
 ---
 - name: Play targeting missing group
   hosts: app
@@ -222,18 +226,20 @@ all:
 
 Run with verbosity and capture zero-host behaviour:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-17
 ansible-playbook -i inventories/missing-app playbooks/needs-app-group.yml -vv \
   | tee inventory-miss.txt
 grep -Ei 'skipping.*no hosts matched|empty|0 hosts' inventory-miss.txt
 ```
 
-**Expected output:** Play skips or reports no matching hosts for `app`.
+!!! example "Expected output"
+    Play skips or reports no matching hosts for `app`.
+
 
 Fix inventory — create `inventories/with-app/hosts.yml`:
 
-```yaml
+```yaml title="hosts.yml"
 all:
   children:
     app:
@@ -244,7 +250,7 @@ all:
 
 Re-run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-17
 ansible-playbook -i inventories/with-app playbooks/needs-app-group.yml \
   | tee inventory-hit.txt
@@ -252,13 +258,15 @@ grep -q 'app tier task' inventory-hit.txt
 grep -q 'PLAY RECAP' inventory-hit.txt
 ```
 
-**Expected output:** Debug message appears; play completes.
+!!! example "Expected output"
+    Debug message appears; play completes.
+
 
 #### Task 4 – Module failure demo with -vvv evidence
 
 Create `playbooks/module-fail.yml`:
 
-```yaml
+```yaml title="module-fail.yml"
 ---
 - name: Module failure demo
   hosts: localhost
@@ -277,7 +285,7 @@ Create `playbooks/module-fail.yml`:
 
 Run with high verbosity:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-17
 ansible-playbook -i inventories/lab playbooks/module-fail.yml -vvv \
   | tee module-fail-vvv.txt
@@ -285,11 +293,13 @@ grep -q 'rc' module-fail-vvv.txt
 grep -q 'this-binary-does-not-exist-rebash' module-fail-vvv.txt
 ```
 
-**Expected output:** Verbose log shows command and non-zero return code in registered var.
+!!! example "Expected output"
+    Verbose log shows command and non-zero return code in registered var.
+
 
 #### Task 5 – Package before/after evidence tarball
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-17
 tar -czf module-17-evidence.tgz \
   inventories/ playbooks/ \
@@ -299,7 +309,9 @@ ls -lh module-17-evidence.tgz | tee tarball.txt
 test -s module-17-evidence.tgz
 ```
 
-**Expected output:** Tarball contains broken vs fixed syntax logs and inventory miss/hit proof.
+!!! example "Expected output"
+    Tarball contains broken vs fixed syntax logs and inventory miss/hit proof.
+
 
 ### Validation steps
 
@@ -331,7 +343,7 @@ Add a `block`/`rescue` wrapper around the failing command task that writes a one
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-ansible/module-17
 ```
 

@@ -217,7 +217,7 @@ Build a multi-file HCL root module that accepts **variables**, computes **locals
 
 Workspace: `~/rebash-terraform/module-04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-04 && cd ~/rebash-terraform/module-04
 ```
 
@@ -231,7 +231,7 @@ Platform engineering publishes a **service catalog** snippet per environment: te
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "environment" {
   type        = string
   description = "Environment name (dev, staging, prod)"
@@ -259,7 +259,7 @@ variable "extra_tags" {
 
 Create `locals.tf`:
 
-```hcl
+```hcl title="locals.tf"
 locals {
   name_prefix = format("%s-%s", var.team, var.environment)
   service_csv = join(",", var.services)
@@ -274,13 +274,15 @@ locals {
 }
 ```
 
-**Expected output:** `variables.tf` and `locals.tf` with four variables and three local computations.
+!!! example "Expected output"
+    `variables.tf` and `locals.tf` with four variables and three local computations.
+
 
 #### Task 2 – Network, image, containers, outputs, and provider pins
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0, < 2.0.0"
 
@@ -297,7 +299,7 @@ provider "docker" {}
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_network" "services" {
   name = "${local.name_prefix}-net"
 }
@@ -330,7 +332,7 @@ resource "docker_container" "service" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "network_name" {
   description = "Docker network hosting all services"
   value       = docker_network.services.name
@@ -352,13 +354,15 @@ output "common_tags" {
 }
 ```
 
-**Expected output:** Four additional files wiring Docker resources to locals and outputs.
+!!! example "Expected output"
+    Four additional files wiring Docker resources to locals and outputs.
+
 
 #### Task 3 – Apply with tfvars and verify outputs
 
 Create `lab.auto.tfvars`:
 
-```hcl
+```hcl title="lab.auto.tfvars"
 environment = "staging"
 team        = "payments"
 services    = ["ledger", "gateway"]
@@ -370,7 +374,7 @@ extra_tags = {
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-04
 terraform fmt -recursive
 terraform init | tee init.txt
@@ -385,7 +389,9 @@ echo "HCL lab OK" | tee hcl-evidence.txt
 ```
 {% endraw %}
 
-**Expected output:** `outputs.json` contains `payments-staging`; `docker-ps.txt` lists both service containers **Up**; label `cost_center=CC-42` on ledger container; `hcl-evidence.txt` contains `HCL lab OK`.
+!!! example "Expected output"
+    `outputs.json` contains `payments-staging`; `docker-ps.txt` lists both service containers **Up**; label `cost_center=CC-42` on ledger container; `hcl-evidence.txt` contains `HCL lab OK`.
+
 
 ### Validation steps
 
@@ -410,7 +416,7 @@ echo "HCL lab OK" | tee hcl-evidence.txt
 Create `hcl-inspect.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-04
@@ -429,12 +435,14 @@ docker ps --filter name=payments-staging --format '{{.Names}}' | wc -l | grep -q
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-04/hcl-inspect.sh
 ~/rebash-terraform/module-04/hcl-inspect.sh
 ```
 
-**Expected output:** `challenge-hcl.txt` contains `expression inspect OK`; exactly two containers match the prefix.
+!!! example "Expected output"
+    `challenge-hcl.txt` contains `expression inspect OK`; exactly two containers match the prefix.
+
 
 ### Learning outcomes
 
@@ -445,7 +453,7 @@ chmod +x ~/rebash-terraform/module-04/hcl-inspect.sh
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-04
 terraform destroy -auto-approve
 rm -f init.txt apply.txt outputs.json hcl-evidence.txt prefix.txt challenge-hcl.txt docker-ps.txt

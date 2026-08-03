@@ -150,7 +150,7 @@ Build a small lab image, attach a placeholder SBOM JSON, run Trivy when availabl
 
 Workspace: `~/rebash-docker/module-12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-12 && cd ~/rebash-docker/module-12
 ```
 
@@ -164,7 +164,7 @@ Your pipeline must block merges when critical CVEs appear in base images. You bu
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM alpine:3.20
 RUN apk add --no-cache python3 py3-pip \
     && pip3 install --no-cache-dir flask==3.0.3
@@ -177,7 +177,7 @@ CMD ["python3", "app.py"]
 
 Create `app.py`:
 
-```python
+```python title="app.py"
 from flask import Flask
 app = Flask(__name__)
 
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
 Build and smoke-test:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-12
 docker build -t rebash-scan-lab:1.0.0 .
 docker run -d --name rebash-scan-18120 -p 18120:5000 rebash-scan-lab:1.0.0
@@ -200,13 +200,15 @@ curl -sS http://127.0.0.1:18120/health | tee health-scan.txt
 grep -q '"status":"ok"' health-scan.txt
 ```
 
-**Expected output:** `health-scan.txt` contains JSON with `"status":"ok"`.
+!!! example "Expected output"
+    `health-scan.txt` contains JSON with `"status":"ok"`.
+
 
 #### Task 2 – Add SBOM placeholder and scan
 
 Create `sbom-placeholder.json`:
 
-```json
+```json title="sbom-placeholder.json"
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
@@ -228,7 +230,7 @@ Create `sbom-placeholder.json`:
 Scan with Trivy if present; otherwise document packages via `docker inspect`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-12
 if command -v trivy >/dev/null 2>&1; then
   trivy image --severity HIGH,CRITICAL --format table rebash-scan-lab:1.0.0 | tee scan-results.txt
@@ -241,13 +243,15 @@ test -s sbom-placeholder.json
 ```
 {% endraw %}
 
-**Expected output:** `scan-results.txt` is non-empty; `sbom-placeholder.json` validates as JSON.
+!!! example "Expected output"
+    `scan-results.txt` is non-empty; `sbom-placeholder.json` validates as JSON.
+
 
 #### Task 3 – Gate with check script
 
 Create `check-scan.sh`:
 
-```bash
+```bash title="check-scan.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 RESULTS="${1:-scan-results.txt}"
@@ -263,14 +267,16 @@ echo "Scan gate passed (or fallback documented)"
 
 Run the gate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-12
 chmod +x check-scan.sh
 ./check-scan.sh scan-results.txt sbom-placeholder.json | tee gate-result.txt
 test -s gate-result.txt
 ```
 
-**Expected output:** Script exits 0 or 2 with a message in `gate-result.txt`; SBOM JSON parses successfully.
+!!! example "Expected output"
+    Script exits 0 or 2 with a message in `gate-result.txt`; SBOM JSON parses successfully.
+
 
 ### Validation steps
 
@@ -302,7 +308,7 @@ Export a real SBOM with `trivy image --format cyclonedx rebash-scan-lab:1.0.0 -o
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker rm -f rebash-scan-18120 2>/dev/null || true
 docker rmi rebash-scan-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-12/*.txt

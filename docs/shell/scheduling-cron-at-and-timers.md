@@ -63,7 +63,7 @@ Schedulers start your script on a timetable. The script writes evidence (a times
 
 **cron** runs commands on a repeating calendar (`minute hour day month weekday`). User crontabs are edited with `crontab -e` and listed with `crontab -l`. **`at`** runs a command once at a given time (`atq` lists, `atrm` removes). **systemd timers** pair a `.timer` unit with a `.service` unit; user timers live under `~/.config/systemd/user/`.
 
-```bash
+```bash title="Terminal"
 crontab -l
 systemctl --user list-timers
 atq
@@ -128,7 +128,7 @@ Create `stamp.sh` that writes UTC timestamps, schedule it with a **user crontab*
 
 Workspace: `~/rebash-shell/lab15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab15 && cd ~/rebash-shell/lab15
 set -euo pipefail
 whoami | tee runner.txt
@@ -137,7 +137,9 @@ command -v crontab >/dev/null && echo 'crontab=yes' | tee scheduler-tools.txt ||
 systemctl --user status >/dev/null 2>&1 && echo 'user_systemd=yes' | tee -a scheduler-tools.txt || echo 'user_systemd=no' | tee -a scheduler-tools.txt
 ```
 
-**Expected output:** `runner.txt`, `home.txt`, and `scheduler-tools.txt` exist.
+!!! example "Expected output"
+    `runner.txt`, `home.txt`, and `scheduler-tools.txt` exist.
+
 
 ### Real-world scenario
 
@@ -149,7 +151,7 @@ You need a tiny heartbeat file for a practice monitoring demo: every minute, app
 
 Create `stamp.sh`:
 
-```bash
+```bash title="stamp.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 LAB="${HOME}/rebash-shell/lab15"
@@ -160,7 +162,7 @@ echo "stamped=yes" >> "$LAB/stamp-run.log"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab15
 set -euo pipefail
 
@@ -174,13 +176,15 @@ grep -E '^[0-9]{4}-' stamps.txt | tee stamps-manual.txt
 ```
 
 
-**Expected output:** `stamps.txt` has at least one UTC timestamp line.
+!!! example "Expected output"
+    `stamps.txt` has at least one UTC timestamp line.
+
 
 #### Task 2 – Schedule with crontab or systemd --user timer
 
 Create `$HOME/.config/systemd/user/rebash-lab15-stamp.service`:
 
-```ini
+```ini title="rebash-lab15-stamp.service"
 [Unit]
 Description=REBASH lab15 stamp script
 
@@ -192,7 +196,7 @@ WorkingDirectory=%h/rebash-shell/lab15
 
 Create `$HOME/.config/systemd/user/rebash-lab15-stamp.timer`:
 
-```ini
+```ini title="rebash-lab15-stamp.timer"
 [Unit]
 Description=REBASH lab15 stamp timer (every minute)
 
@@ -207,7 +211,7 @@ WantedBy=timers.target
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab15
 set -euo pipefail
 LAB="$HOME/rebash-shell/lab15"
@@ -244,11 +248,13 @@ fi
 ```
 
 
-**Expected output:** `schedule-type.txt` is `cron` or `systemd-user`; list file shows the lab job.
+!!! example "Expected output"
+    `schedule-type.txt` is `cron` or `systemd-user`; list file shows the lab job.
+
 
 #### Task 3 – Prove run, list jobs, prepare cleanup notes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab15
 set -euo pipefail
 
@@ -298,7 +304,9 @@ tar -czf schedule-evidence.tgz \
 ls -l schedule-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `stamps.txt` gained a line; `prove.txt` records proof; archive exists; schedule still listed until Cleanup.
+!!! example "Expected output"
+    `stamps.txt` gained a line; `prove.txt` records proof; archive exists; schedule still listed until Cleanup.
+
 
 ### Validation steps
 
@@ -331,7 +339,7 @@ Add `stamp-once.sh` that uses `at` **if** `atd`/`at` works: schedule one run one
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab15
 set -euo pipefail
 LAB="$HOME/rebash-shell/lab15"

@@ -139,7 +139,7 @@ Build `filter_inventory.py` under `~/rebash-python/lab03` that filters a sample 
 
 Workspace: `~/rebash-python/lab03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab03 && cd ~/rebash-python/lab03
 set -euo pipefail
 python3 -m venv .venv
@@ -149,7 +149,9 @@ python -c 'import sys; assert sys.version_info >= (3, 11)'
 python -V | tee python-version.txt
 ```
 
-**Expected output:** venv ready; version file written.
+!!! example "Expected output"
+    venv ready; version file written.
+
 
 ### Real-world scenario
 
@@ -159,7 +161,7 @@ Operations keeps a flat inventory of hosts with environment tags. Nightly automa
 
 #### Task 1 – Sample inventory and filter script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -168,7 +170,7 @@ source .venv/bin/activate
 
 Create `inventory.txt`:
 
-```text
+```text title="inventory.txt"
 # name,env,status
 web-01,prod,active
 web-02,prod,draining
@@ -181,7 +183,7 @@ db-02,prod,active
 
 Create `filter_inventory.py`:
 
-```python
+```python title="filter_inventory.py"
 """Filter inventory rows with conditionals and loops."""
 from __future__ import annotations
 
@@ -249,16 +251,18 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 test -f inventory.txt
 test -f filter_inventory.py
 ```
 
-**Expected output:** `inventory.txt` and `filter_inventory.py` exist.
+!!! example "Expected output"
+    `inventory.txt` and `filter_inventory.py` exist.
+
 
 #### Task 2 – Run filter and capture evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -270,11 +274,13 @@ grep -F 'count=2' filter-output.txt
 grep -F 'probe_attempts=2' filter-output.txt
 ```
 
-**Expected output:** only the first two prod/active hosts; probe attempts equal 2.
+!!! example "Expected output"
+    only the first two prod/active hosts; probe attempts equal 2.
+
 
 #### Task 3 – match routing and continue/break checks
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -283,7 +289,7 @@ source .venv/bin/activate
 
 Create `route_status.py`:
 
-```python
+```python title="route_status.py"
 """match-based status router (Python 3.10+)."""
 from __future__ import annotations
 
@@ -320,7 +326,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 python route_status.py | tee route-output.txt
 grep -F 'active:run-checks|draining:no-new-traffic' route-output.txt
 
@@ -328,7 +334,9 @@ tar -czf lab03-evidence.tgz inventory.txt filter_inventory.py filter-output.txt 
 ls -l lab03-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** route demo stops after `draining` (does not include `down`); evidence archive created.
+!!! example "Expected output"
+    route demo stops after `draining` (does not include `down`); evidence archive created.
+
 
 ### Validation steps
 
@@ -360,7 +368,7 @@ Add `filter_by_env.py` that reads `inventory.txt`, accepts an env name as `sys.a
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab03
 set -euo pipefail
 deactivate 2>/dev/null || true

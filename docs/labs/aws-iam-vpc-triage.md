@@ -78,7 +78,7 @@ By the end of this lab, you will be able to:
 
 Use a dedicated lab AWS account or a sandbox OU. Set a consistent prefix:
 
-```bash
+```bash title="Terminal"
 export LAB_PREFIX="rebash-iam-vpc-$(whoami | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | cut -c1-12)"
 export AWS_REGION="${AWS_REGION:-eu-west-2}"
 export AWS_PAGER=""
@@ -106,20 +106,20 @@ Your job is to prove each layer with CLI evidence before fixing it.
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 aws sts get-caller-identity --output table
 aws configure get region
 echo "LAB_PREFIX=$LAB_PREFIX AWS_REGION=$AWS_REGION"
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - Account ID, ARN, and UserId displayed
+    - Region matches your intended lab region (e.g. `eu-west-2`)
 
-- Account ID, ARN, and UserId displayed
-- Region matches your intended lab region (e.g. `eu-west-2`)
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 aws sts get-caller-identity --query 'Arn' --output text | grep -q 'arn:aws' && echo "identity OK"
 ```
 
@@ -164,11 +164,13 @@ aws ec2 authorize-security-group-ingress --group-id "$SG_ID" --protocol tcp --po
 echo "VPC_ID=$VPC_ID SUBNET_ID=$SUBNET_ID SG_ID=$SG_ID RTB_ID=$RTB_ID" | tee ~/rebash-lab-iam-vpc.env
 ```
 
-**Expected output:** Resource IDs printed; no CLI errors.
+!!! example "Expected output"
+    Resource IDs printed; no CLI errors.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-iam-vpc.env
 aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
   --query 'RouteTables[0].Routes[?DestinationCidrBlock==`0.0.0.0/0`].GatewayId' --output text | grep -q "$IGW_ID" && echo "default route OK"
@@ -180,7 +182,7 @@ aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-iam-vpc.env
 
 AMI_ID="$(aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
@@ -213,7 +215,9 @@ sleep 30
 curl -sS -o /dev/null -w "HTTP %{http_code}\n" "http://${PUBLIC_IP}/"
 ```
 
-**Expected output:** `HTTP 200`
+!!! example "Expected output"
+    `HTTP 200`
+
 
 **Validation:** Response body contains `"ok":true`.
 
@@ -227,7 +231,7 @@ curl -sS -o /dev/null -w "HTTP %{http_code}\n" "http://${PUBLIC_IP}/"
 
 Create a restricted IAM user in the console (or via CLI) with **no** EC2 describe permissions — for example attach only `AWSSupportAccess` or a custom deny. Configure a second profile:
 
-```bash
+```bash title="Terminal"
 # Example profile name — adjust to your setup
 export AWS_PROFILE=lab-restricted
 aws sts get-caller-identity --output table
@@ -236,7 +240,9 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" 2>&1 | tee /tmp/rebash-
 grep -i 'AccessDenied\|UnauthorizedOperation' /tmp/rebash-iam-deny.log && echo "IAM fault reproduced"
 ```
 
-**Expected output:** `AccessDenied` or `UnauthorizedOperation` — **not** a timeout.
+!!! example "Expected output"
+    `AccessDenied` or `UnauthorizedOperation` — **not** a timeout.
+
 
 **Validation:** Write one line: “Symptom is IAM denial; instance may still be reachable.”
 
@@ -260,7 +266,9 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
   --query 'Reservations[0].Instances[0].State.Name' --output text
 ```
 
-**Expected output:** `HTTP 200` and instance state `running`.
+!!! example "Expected output"
+    `HTTP 200` and instance state `running`.
+
 
 **Validation:** You can articulate: restricted profile → CLI deny; admin profile → describe works; curl still 200.
 
@@ -270,14 +278,16 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-iam-vpc.env
 aws ec2 revoke-security-group-ingress --group-id "$SG_ID" --protocol tcp --port 80 --cidr "${MY_IP}/32"
 sleep 5
 curl -sS -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 5 "http://${PUBLIC_IP}/" || echo "curl failed as expected"
 ```
 
-**Expected output:** Connection timeout or failed curl — instance still `running`.
+!!! example "Expected output"
+    Connection timeout or failed curl — instance still `running`.
+
 
 ### Task 7 — Triage with describe-security-groups
 
@@ -285,7 +295,7 @@ curl -sS -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 5 "http://${PUB
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 aws ec2 describe-security-groups --group-ids "$SG_ID" \
   --query 'SecurityGroups[0].IpPermissions[?FromPort==`80`]' --output table
 
@@ -293,7 +303,9 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
   --query 'Reservations[0].Instances[0].SecurityGroups' --output table
 ```
 
-**Expected output:** Empty or no rule allowing TCP 80 from your IP.
+!!! example "Expected output"
+    Empty or no rule allowing TCP 80 from your IP.
+
 
 **Validation:** One-line root cause: “SG missing ingress tcp/80 from operator CIDR.”
 
@@ -309,7 +321,9 @@ aws ec2 authorize-security-group-ingress --group-id "$SG_ID" --protocol tcp --po
 curl -sS "http://${PUBLIC_IP}/"
 ```
 
-**Expected output:** JSON body with `"ok":true`.
+!!! example "Expected output"
+    JSON body with `"ok":true`.
+
 
 ### Task 9 — Inject route table fault
 
@@ -317,14 +331,16 @@ curl -sS "http://${PUBLIC_IP}/"
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-iam-vpc.env
 aws ec2 delete-route --route-table-id "$RTB_ID" --destination-cidr-block 0.0.0.0/0
 sleep 5
 curl -sS -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 5 "http://${PUBLIC_IP}/" || echo "curl failed as expected"
 ```
 
-**Expected output:** Timeout or connection failure.
+!!! example "Expected output"
+    Timeout or connection failure.
+
 
 ### Task 10 — Triage with describe-route-tables
 
@@ -332,7 +348,7 @@ curl -sS -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 5 "http://${PUB
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
   --query 'RouteTables[0].Routes[*].[DestinationCidrBlock,GatewayId,State]' --output table
 
@@ -340,7 +356,9 @@ aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC
   --query 'InternetGateways[0].InternetGatewayId' --output text
 ```
 
-**Expected output:** No active `0.0.0.0/0` → `igw-…` route.
+!!! example "Expected output"
+    No active `0.0.0.0/0` → `igw-…` route.
+
 
 **Validation:** Root cause sentence mentions route table, not IAM.
 
@@ -350,7 +368,7 @@ aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-iam-vpc.env
 aws ec2 create-route --route-table-id "$RTB_ID" --destination-cidr-block 0.0.0.0/0 \
   --gateway-id "$IGW_ID"
@@ -359,7 +377,9 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
   --query 'Reservations[0].Instances[0].[State.Name,PublicIpAddress]' --output text
 ```
 
-**Expected output:** `HTTP 200` with low connect time.
+!!! example "Expected output"
+    `HTTP 200` with low connect time.
+
 
 ### Task 12 — Cleanup and destroy
 
@@ -367,7 +387,7 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 source ~/rebash-lab-iam-vpc.env
 
 aws ec2 terminate-instances --instance-ids "$INSTANCE_ID"
@@ -383,7 +403,9 @@ rm -f ~/rebash-lab-iam-vpc.env /tmp/rebash-iam-deny.log
 echo "Lab resources destroyed."
 ```
 
-**Expected output:** No errors; `describe-instances` for terminated ID shows `terminated`.
+!!! example "Expected output"
+    No errors; `describe-instances` for terminated ID shows `terminated`.
+
 
 !!! tip "Stuck dependencies"
     If VPC delete fails, ensure the instance terminated, ENIs released, and no NAT Gateway remains in the VPC.

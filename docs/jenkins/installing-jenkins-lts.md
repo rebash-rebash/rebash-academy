@@ -141,14 +141,16 @@ Start Jenkins LTS with Compose, capture the initial admin password, complete the
 
 Workspace: `~/rebash-jenkins/module-02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-02 && cd ~/rebash-jenkins/module-02
 set -euo pipefail
 docker version | tee docker-version.txt
 docker compose version | tee compose-version.txt
 ```
 
-**Expected output:** Client/server version lines; Compose version printed.
+!!! example "Expected output"
+    Client/server version lines; Compose version printed.
+
 
 ### Real-world scenario
 
@@ -160,14 +162,14 @@ Your team needs a disposable but realistic Jenkins LTS for Pipeline labs. You mu
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 ```
 
 Create `compose.yaml`:
 
-```yaml
+```yaml title="compose.yaml"
 services:
   jenkins:
     image: jenkins/jenkins:lts-jdk17
@@ -186,18 +188,20 @@ volumes:
 
 Start and verify:
 
-```bash
+```bash title="Terminal"
 docker compose pull
 docker compose up -d
 docker compose ps | tee compose-ps.txt
 docker compose logs --tail=40 jenkins | tee boot.log
 ```
 
-**Expected output:** Service `running` (or healthy); logs show Jenkins starting. If port 8080 is busy, change the left-hand port mapping and re-up.
+!!! example "Expected output"
+    Service `running` (or healthy); logs show Jenkins starting. If port 8080 is busy, change the left-hand port mapping and re-up.
+
 
 #### Task 2 – Wait for Jenkins and read the initial admin password
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 
@@ -218,7 +222,9 @@ test -s initialAdminPassword.txt
 wc -c initialAdminPassword.txt | tee password-bytes.txt
 ```
 
-**Expected output:** Non-empty `initialAdminPassword.txt`. Open `http://127.0.0.1:8080/` and paste that password into **Unlock Jenkins**.
+!!! example "Expected output"
+    Non-empty `initialAdminPassword.txt`. Open `http://127.0.0.1:8080/` and paste that password into **Unlock Jenkins**.
+
 
 #### Task 3 – Complete the wizard and capture non-secret evidence
 
@@ -231,7 +237,7 @@ In the browser (do not automate credentials into Git):
 
 Then capture non-secret evidence from the shell:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 
@@ -244,11 +250,13 @@ docker compose exec -T jenkins bash -lc 'test -d /var/jenkins_home/plugins && ec
 grep -qE '^(200|403|503)$' http-login-code.txt 2>/dev/null || grep -qE '^(200|403|503)$' http-root-code.txt
 ```
 
-**Expected output:** HTTP code file shows a response; listing includes paths such as `secrets`, `plugins`, or `users` after the wizard.
+!!! example "Expected output"
+    HTTP code file shows a response; listing includes paths such as `secrets`, `plugins`, or `users` after the wizard.
+
 
 #### Task 4 – Prove persistence across restart (keep volume)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 
@@ -262,7 +270,9 @@ docker volume ls | grep jenkins | tee volumes.txt
 test -s volumes.txt
 ```
 
-**Expected output:** Controller comes back; volume name containing `jenkins` still listed. You should still log in with the **admin user**, not the initial unlock password.
+!!! example "Expected output"
+    Controller comes back; volume name containing `jenkins` still listed. You should still log in with the **admin user**, not the initial unlock password.
+
 
 ### Validation steps
 
@@ -284,7 +294,7 @@ test -s volumes.txt
 
 Pin a specific LTS image digest or minor tag (for example check [Docker Hub tags](https://hub.docker.com/r/jenkins/jenkins/tags) and replace `lts-jdk17` with a dated tag in `compose.yaml`). Recreate the stack with `docker compose up -d --pull always` and prove the tag with:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 docker compose images | tee images.txt
 grep jenkins images.txt
@@ -301,7 +311,7 @@ grep jenkins images.txt
 
 **Keep the controller for Modules 3+ (recommended):**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 docker compose stop
 # volume jenkins_home retained
@@ -309,14 +319,14 @@ docker compose stop
 
 **Full lab reset (destroys JENKINS_HOME):**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-02
 docker compose down -v
 ```
 
 Remove `initialAdminPassword.txt` from shared machines after unlock:
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-jenkins/module-02/initialAdminPassword.txt
 ```
 

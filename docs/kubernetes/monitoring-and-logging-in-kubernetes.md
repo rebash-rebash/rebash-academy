@@ -155,7 +155,7 @@ Deploy a logging workload, collect Events and container logs into evidence files
 
 Workspace: `~/rebash-k8s/module-12` on a disposable lab cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
 ```
 
@@ -169,7 +169,7 @@ During a production incident, the first questions are: *What did the Pod log?* a
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -178,7 +178,7 @@ metadata:
 
 Create `deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -215,20 +215,22 @@ spec:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-12
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/log-demo -n rebash-m12 --timeout=120s
 kubectl get pods -n rebash-m12 -l app=log-demo | tee pods-m12.txt
 ```
 
-**Expected output:** `log-demo` Pod is Running.
+!!! example "Expected output"
+    `log-demo` Pod is Running.
+
 
 #### Task 2 – Collect Events and logs
 
 Create `collect-evidence.sh`:
 
-```bash
+```bash title="collect-evidence.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 NS="rebash-m12"
@@ -244,7 +246,7 @@ echo "wrote evidence to $OUT"
 
 Run the script:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-12
 chmod +x collect-evidence.sh
 ./collect-evidence.sh .
@@ -252,13 +254,15 @@ grep -q 'demo-tick' logs-m12.txt
 grep -q 'log-demo' describe-m12.txt
 ```
 
-**Expected output:** `logs-m12.txt` contains `demo-tick` lines; `events-m12.txt` lists recent namespace Events.
+!!! example "Expected output"
+    `logs-m12.txt` contains `demo-tick` lines; `events-m12.txt` lists recent namespace Events.
+
 
 #### Task 3 – Metrics Server check with fallback
 
 Create `check-metrics.sh`:
 
-```bash
+```bash title="check-metrics.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 if kubectl top nodes >/dev/null 2>&1; then
@@ -273,14 +277,16 @@ fi
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-12
 chmod +x check-metrics.sh
 ./check-metrics.sh
 test -s metrics-nodes-m12.txt || test -s metrics-fallback-m12.txt
 ```
 
-**Expected output:** Either node/pod usage tables, or `metrics-fallback-m12.txt` explaining Metrics Server is missing.
+!!! example "Expected output"
+    Either node/pod usage tables, or `metrics-fallback-m12.txt` explaining Metrics Server is missing.
+
 
 ### Validation steps
 
@@ -311,7 +317,7 @@ Simulate a crash: change the container command to `exit 1`, re-apply, then captu
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m12 --ignore-not-found
 ```
 

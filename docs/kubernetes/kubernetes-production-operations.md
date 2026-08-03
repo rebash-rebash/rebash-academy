@@ -165,7 +165,7 @@ Create a production operations checklist YAML, an etcd backup drill script that 
 
 Workspace: `~/rebash-k8s/module-17`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-17 && cd ~/rebash-k8s/module-17
 ```
 
@@ -179,7 +179,7 @@ Before a control-plane upgrade, SREs run a pre-flight checklist, confirm etcd ba
 
 Create `prod-ops-checklist.yaml`:
 
-```yaml
+```yaml title="prod-ops-checklist.yaml"
 # Production operations pre-flight checklist (Module 17)
 cluster:
   capture:
@@ -211,7 +211,7 @@ drain:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-17
 set -euo pipefail
 python3 -c "
@@ -223,13 +223,15 @@ print('prod-ops-checklist.yaml OK')
 "
 ```
 
-**Expected output:** `prod-ops-checklist.yaml OK`
+!!! example "Expected output"
+    `prod-ops-checklist.yaml OK`
+
 
 #### Task 2 – Create etcd backup reference and drill script
 
 Create `etcd-backup-commands.txt`:
 
-```text
+```text title="etcd-backup-commands.txt"
 # Production self-managed cluster example (DO NOT RUN on kind/minikube):
 # ETCDCTL_API=3 etcdctl snapshot save /var/backups/etcd-$(date +%F).db \
 #   --endpoints=https://127.0.0.1:2379 \
@@ -242,7 +244,7 @@ Create `etcd-backup-commands.txt`:
 
 Create `etcd-backup-drill.sh`:
 
-```bash
+```bash title="etcd-backup-drill.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -276,7 +278,7 @@ echo "DRY-RUN complete. Evidence written to ${EVIDENCE_DIR}/"
 
 Run the drill:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-17
 chmod +x etcd-backup-drill.sh
 ./etcd-backup-drill.sh | tee drill-run.txt
@@ -285,13 +287,15 @@ test -f evidence/nodes.txt
 grep -q 'DRY-RUN ONLY' drill-run.txt
 ```
 
-**Expected output:** `checklist parsed OK`; evidence files under `evidence/`; drill log states dry-run only.
+!!! example "Expected output"
+    `checklist parsed OK`; evidence files under `evidence/`; drill log states dry-run only.
+
 
 #### Task 3 – Apply checklist namespace and capture handover bundle
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -303,7 +307,7 @@ metadata:
 
 Apply and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-17
 kubectl apply -f namespace.yaml
 kubectl get ns rebash-prodops-lab | tee evidence/namespace.txt
@@ -311,7 +315,9 @@ tar -czf module-17-prodops-evidence.tgz prod-ops-checklist.yaml etcd-backup-comm
 ls -l module-17-prodops-evidence.tgz
 ```
 
-**Expected output:** Namespace `Active`; tarball lists checklist, script, and evidence files.
+!!! example "Expected output"
+    Namespace `Active`; tarball lists checklist, script, and evidence files.
+
 
 ### Validation steps
 
@@ -344,7 +350,7 @@ Extend `prod-ops-checklist.yaml` with a `post_upgrade` section listing three val
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-prodops-lab --ignore-not-found --wait=true
 rm -rf ~/rebash-k8s/module-17/evidence ~/rebash-k8s/module-17/drill-run.txt ~/rebash-k8s/module-17/module-17-prodops-evidence.tgz
 ```

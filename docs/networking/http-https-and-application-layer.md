@@ -67,7 +67,7 @@ Client → DNS → TCP connect → TLS handshake (HTTPS) → HTTP request/respon
 
 An HTTP **request** has a method (`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, …), a path, headers (`Host`, `User-Agent`, `Authorization`, …), and an optional body. A **response** has a **status code** (1xx–5xx), headers, and an optional body. **HTTPS** wraps that exchange in TLS so the path is encrypted and the server presents a **certificate** the client can verify.
 
-```bash
+```bash title="Terminal"
 curl -sI https://example.com | head
 ```
 
@@ -82,7 +82,7 @@ A **502 Bad Gateway** usually means the proxy could not get a valid response fro
 3. Send HTTP request (HTTP/1.1, HTTP/2, or HTTP/3 depending on stack).
 4. Read status + headers; then body if requested.
 
-```bash
+```bash title="Terminal"
 curl -vI https://example.com
 # Look for lines like: SSL connection using TLSv1.3 / … cipher …
 ```
@@ -124,7 +124,7 @@ Capture verbose HTTPS headers and TLS lines from `https://example.com`, optional
 
 Workspace: `~/rebash-networking/lab12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab12 && cd ~/rebash-networking/lab12
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -134,7 +134,9 @@ mkdir -p site
 echo 'rebash lab12 http ok' > site/index.html
 ```
 
-**Expected output:** tools recorded; `site/index.html` exists.
+!!! example "Expected output"
+    tools recorded; `site/index.html` exists.
+
 
 ### Real-world scenario
 
@@ -144,7 +146,7 @@ Users report “the website is down.” You must show whether DNS works, whether
 
 #### Task 1 – curl verbose HTTPS headers and TLS
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab12
 set -euo pipefail
 
@@ -163,11 +165,13 @@ grep -E 'http_code=|appconnect=' curl-example.timings.txt
 test -s curl-example.tls.txt
 ```
 
-**Expected output:** headers show an HTTP status line; `curl-example.tls.txt` has TLS/cipher or certificate-related lines; timings include `appconnect` (TLS).
+!!! example "Expected output"
+    headers show an HTTP status line; `curl-example.tls.txt` has TLS/cipher or certificate-related lines; timings include `appconnect` (TLS).
+
 
 #### Task 2 – Optional local python http.server
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab12
 set -euo pipefail
 
@@ -185,18 +189,20 @@ kill "$(cat http-server.pid)" 2>/dev/null || true
 wait "$(cat http-server.pid)" 2>/dev/null || true
 ```
 
-**Expected output:** local response is HTTP 200 with body `rebash lab12 http ok`.
+!!! example "Expected output"
+    local response is HTTP 200 with body `rebash lab12 http ok`.
+
 
 #### Task 3 – Evidence pack + tiny compare script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab12
 set -euo pipefail
 ```
 
 Create `http-evidence.sh`:
 
-```bash
+```bash title="http-evidence.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo "=== HTTPS example.com status ==="
@@ -209,7 +215,7 @@ else
 fi
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x http-evidence.sh
 ./http-evidence.sh | tee http-evidence-run.txt
 
@@ -221,7 +227,9 @@ tar -czf http-https-evidence.tgz \
 ls -l http-https-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `http-evidence-run.txt` shows a status code; archive is non-empty.
+!!! example "Expected output"
+    `http-evidence-run.txt` shows a status code; archive is non-empty.
+
 
 ### Validation steps
 
@@ -252,7 +260,7 @@ Write `tls-summary.sh` that runs `curl -vI https://example.com` and prints only 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab12
 set -euo pipefail
 kill "$(cat http-server.pid 2>/dev/null)" 2>/dev/null || true

@@ -57,7 +57,7 @@ Teams paste raw plan logs into Slack. You need a short resource-change summary f
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-tf/{fixtures,out}
 cd ~/rebash-lab-python-tf
 python3 -m venv .venv && source .venv/bin/activate
@@ -66,7 +66,7 @@ python3 -m venv .venv && source .venv/bin/activate
 ## Initial State — fixture plan
 Create `fixtures/plan.json`:
 
-```json
+```json title="plan.json"
 {
   "resource_changes": [
     {"address": "aws_instance.web", "change": {"actions": ["update"]}},
@@ -85,7 +85,7 @@ Create `tfwrap.py`:
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python tfwrap.py summary --fixture fixtures/plan.json
 python -c 'import json; print(json.load(open("out/summary.json")))'
 ```

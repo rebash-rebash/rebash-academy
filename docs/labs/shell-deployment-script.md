@@ -64,7 +64,7 @@ Linux host; deploy only under lab paths.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/deploy/{releases,shared,logs}
 cd ~/rebash-lab-shell/deploy
 mkdir -p artefact
@@ -115,7 +115,7 @@ readlink current
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

@@ -62,7 +62,7 @@ Shared build hosts hit disk alerts weekly. Manual `docker system prune` is too b
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-docker/{fixtures,out}
 cd ~/rebash-lab-python-docker
 python3 -m venv .venv && source .venv/bin/activate
@@ -72,7 +72,7 @@ pip install 'docker>=7.0,<8'
 ## Initial State — fixture (always available)
 Create `fixtures/dangling.json`:
 
-```json
+```json title="dangling.json"
 {
   "images": [
     {"id": "sha256:aaa", "tags": [], "size": 120000000, "dangling": true},
@@ -101,7 +101,7 @@ Only with `--apply` (and not with `--fixture`), remove dangling images. Print wh
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python docker_cleanup.py --fixture fixtures/dangling.json
 python docker_cleanup.py --fixture fixtures/dangling.json --apply  # must refuse or no-op safely
 # If daemon available:

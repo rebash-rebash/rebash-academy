@@ -63,7 +63,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-linux-perf
 cd ~/rebash-lab-linux-perf
 sudo apt-get update && sudo apt-get install -y sysstat
@@ -90,7 +90,7 @@ You will create a worker unit and optional stress scripts. Use a disposable VM â
 
 ### Task 2 â€” Install a flaky worker unit
 
-```bash
+```bash title="Terminal"
 cat > ~/rebash-lab-linux-perf/worker.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -179,7 +179,7 @@ Write `~/rebash-lab-linux-perf/incident.md` with: timeline, signals, root cause 
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 sudo systemctl disable --now rebash-worker.service 2>/dev/null || true
 sudo rm -f /etc/systemd/system/rebash-worker.service
 sudo systemctl daemon-reload

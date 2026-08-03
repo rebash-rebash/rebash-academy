@@ -67,7 +67,7 @@ Raw text enters a pipeline: select (`grep`) → transform (`sed`) → field logi
 - **`sed`** — stream editor; common ops are substitute (`s/old/new/`) and delete lines.
 - **`awk`** — split each line into fields (`$1`, `$2`, …), filter, and print summaries.
 
-```bash
+```bash title="Terminal"
 grep -E 'ERROR|FATAL' app.log
 sed -E 's/Prod/prod/g' app.log
 awk -F' ' '/ERROR/ { print $1, $3 }' app.log
@@ -85,7 +85,7 @@ Manual scrolling does not scale in an incident. A scripted pipeline gives the sa
 4. **Compose in Bash** — redirect to `out/*.txt`, then assert with `test` / `grep -q`.
 5. **Fail loudly** — `set -euo pipefail` so a broken stage fails the script.
 
-```bash
+```bash title="Terminal"
 set -euo pipefail
 grep -E 'ERROR' sample.log \
   | sed -E 's/[[:space:]]+/ /g' \
@@ -134,14 +134,16 @@ Under `~/rebash-shell/lab10`, create sample logs, write `report.sh` that runs a 
 
 Workspace: `~/rebash-shell/lab10`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab10/out ~/rebash-shell/lab10/fixtures
 cd ~/rebash-shell/lab10
 set -euo pipefail
 bash --version | head -n1 | tee out/bash-version.txt
 ```
 
-**Expected output:** `out/bash-version.txt` mentions `bash`.
+!!! example "Expected output"
+    `out/bash-version.txt` mentions `bash`.
+
 
 ### Real-world scenario
 
@@ -153,7 +155,7 @@ After a deploy, on-call wants a one-page summary from the app log: count of `ERR
 
 Create `fixtures/app.log`:
 
-```text
+```text title="app.log"
 2026-08-02T10:00:01Z INFO billing payment ok
 2026-08-02T10:00:02Z WARN catalog cache miss
 2026-08-02T10:00:03Z ERROR billing db timeout
@@ -166,7 +168,7 @@ Create `fixtures/app.log`:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab10
 set -euo pipefail
 
@@ -175,13 +177,15 @@ test "$(wc -l <fixtures/app.log | tr -d ' ')" -eq 8
 ```
 
 
-**Expected output:** `out/fixture-wc.txt` shows 8 lines.
+!!! example "Expected output"
+    `out/fixture-wc.txt` shows 8 lines.
+
 
 #### Task 2 – `grep` + `sed` + `awk` report script with asserts
 
 Create `report.sh`:
 
-```bash
+```bash title="report.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -219,7 +223,7 @@ printf 'report_ok=1\n' | tee out/report-ok.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab10
 set -euo pipefail
 
@@ -228,11 +232,13 @@ chmod +x report.sh
 ```
 
 
-**Expected output:** `severity-counts.txt` has `ERROR 3` and `WARN 2`; `error-services.txt` lists `auth`, `billing`, `catalog`; `report-ok=1`.
+!!! example "Expected output"
+    `severity-counts.txt` has `ERROR 3` and `WARN 2`; `error-services.txt` lists `auth`, `billing`, `catalog`; `report-ok=1`.
+
 
 #### Task 3 – Extra pipeline view and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab10
 set -euo pipefail
 
@@ -248,7 +254,9 @@ tar -czf out/textproc-evidence.tgz \
 ls -l out/textproc-evidence.tgz | tee out/evidence-ls.txt
 ```
 
-**Expected output:** `service-freq.txt` shows counts; evidence archive is not empty.
+!!! example "Expected output"
+    `service-freq.txt` shows counts; evidence archive is not empty.
+
 
 ### Validation steps
 
@@ -279,7 +287,7 @@ Extend `report.sh` into `report-window.sh` that accepts an optional ISO-ish pref
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab10
 # Keep fixtures/ and out/ for review, or:
 # rm -rf ~/rebash-shell/lab10

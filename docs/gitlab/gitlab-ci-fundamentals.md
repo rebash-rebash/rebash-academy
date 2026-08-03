@@ -172,7 +172,7 @@ Workspace: `~/rebash-gitlab/module-01`
 
 File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-01/src && cd ~/rebash-gitlab/module-01
 ```
 
@@ -186,26 +186,28 @@ Your squad is onboarding a new microservice repository. The platform team requir
 
 Create `src/app.py`:
 
-```python
+```python title="app.py"
 """Minimal service entrypoint for GitLab CI fundamentals lab."""
 print("ok")
 ```
 
 Verify the script runs:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-01
 python3 src/app.py | tee app-out.txt
 grep -q '^ok$' app-out.txt
 ```
 
-**Expected output:** `app-out.txt` contains exactly `ok`.
+!!! example "Expected output"
+    `app-out.txt` contains exactly `ok`.
+
 
 #### Task 2 – Author the pipeline with stages and needs
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 stages:
   - lint
   - test
@@ -227,7 +229,7 @@ test:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-01
 python3 -c "
 import yaml
@@ -238,20 +240,24 @@ print('OK', sorted(k for k in d if k != 'stages'))
 "
 ```
 
-**Expected output:** Prints `OK` followed by job keys (`lint`, `test`); no YAML exception.
+!!! example "Expected output"
+    Prints `OK` followed by job keys (`lint`, `test`); no YAML exception.
+
 
 #### Task 3 – Simulate job scripts locally
 
 Run the same commands the runner would execute:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-01
 python3 -m py_compile src/app.py
 python3 src/app.py | tee simulate-out.txt
 test "$(cat simulate-out.txt)" = 'ok'
 ```
 
-**Expected output:** Compile succeeds with no output; `simulate-out.txt` is `ok`.
+!!! example "Expected output"
+    Compile succeeds with no output; `simulate-out.txt` is `ok`.
+
 
 ### Validation steps
 
@@ -283,7 +289,7 @@ Add a top-level `default:` block with `image: python:3.12-alpine` and remove dup
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-01/app-out.txt ~/rebash-gitlab/module-01/simulate-out.txt
 # Keep src/ and .gitlab-ci.yml for the next module
 ```

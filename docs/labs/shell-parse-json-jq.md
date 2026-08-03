@@ -63,7 +63,7 @@ Any host with jq installed.
 
 Create `status.json`:
 
-```json
+```json title="status.json"
 {
   "env": "lab",
   "services": [
@@ -76,7 +76,7 @@ Create `status.json`:
 
 Run:
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/json
 cd ~/rebash-lab-shell/json
 ```
@@ -86,7 +86,7 @@ cd ~/rebash-lab-shell/json
 
 ### Task 1 — Basic queries
 
-```bash
+```bash title="Terminal"
 jq -r '.env' status.json
 jq -r '.services[] | select(.status!="ok") | .name' status.json
 ```
@@ -101,7 +101,7 @@ jq -r '.services[] | select(.status!="ok") | .name' status.json
 
 Prefer streaming:
 
-```bash
+```bash title="Terminal"
 jq -r '.services[] | [.name,.status,.latency_ms] | @tsv' status.json \
   | while IFS=$'\t' read -r name status latency; do
       printf '%-10s %-10s %s\n' "$name" "$status" "$latency"
@@ -124,7 +124,7 @@ jq -r '.services[] | [.name,.status,.latency_ms] | @tsv' status.json \
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

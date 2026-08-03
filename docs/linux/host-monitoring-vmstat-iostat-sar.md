@@ -113,7 +113,7 @@ Install sysstat, capture baseline `vmstat`/`iostat`/`sar` output, create a short
 
 Workspace: `~/rebash-linux/lab19`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab19 && cd ~/rebash-linux/lab19
 set -euo pipefail
 sudo apt-get update -qq
@@ -122,7 +122,9 @@ command -v vmstat; command -v iostat; command -v sar
 vmstat -V 2>&1 | head -n 1 | tee sysstat-tools.txt || true
 ```
 
-**Expected output:** `vmstat`, `iostat`, and `sar` are on `PATH`.
+!!! example "Expected output"
+    `vmstat`, `iostat`, and `sar` are on `PATH`.
+
 
 ### Real-world scenario
 
@@ -132,7 +134,7 @@ Users say a practice API VM is slow. Before you resize the instance, you capture
 
 #### Task 1 – Baseline samples
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab19
 set -euo pipefail
 
@@ -144,11 +146,13 @@ sar -u 1 3 | tee sar-u-before.txt
 sar -d 1 3 | tee sar-d-before.txt 2>/dev/null || echo 'sar -d unavailable' | tee sar-d-before.txt
 ```
 
-**Expected output:** baseline files exist; `vmstat-before.txt` has a header and several data rows.
+!!! example "Expected output"
+    baseline files exist; `vmstat-before.txt` has a header and several data rows.
+
 
 #### Task 2 – Controlled load + capture during load
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab19
 set -euo pipefail
 
@@ -168,11 +172,13 @@ rm -f load.bin
 kill "$(cat cpu-load.pid)" 2>/dev/null || true
 ```
 
-**Expected output:** `vmstat-during.txt` / `iostat-during.txt` captured while load ran; `load.bin` removed.
+!!! example "Expected output"
+    `vmstat-during.txt` / `iostat-during.txt` captured while load ran; `load.bin` removed.
+
 
 #### Task 3 – After sample + evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab19
 set -euo pipefail
 
@@ -193,7 +199,9 @@ tar -czf hostmon-evidence.tgz \
 ls -l hostmon-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** evidence archive exists; during/after samples recorded.
+!!! example "Expected output"
+    evidence archive exists; during/after samples recorded.
+
 
 ### Validation steps
 
@@ -224,7 +232,7 @@ Write `~/rebash-linux/lab19/quick-host-check.sh` that prints timestamp, `uptime`
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab19
 set -euo pipefail
 rm -f load.bin cpu-load.pid dd-load.pid

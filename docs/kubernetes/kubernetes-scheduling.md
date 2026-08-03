@@ -164,7 +164,7 @@ Label a node, deploy a Pod with `nodeSelector`, and prove the scheduler placed i
 
 Workspace: `~/rebash-k8s/module-09` on kind or minikube.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
 ```
 
@@ -178,7 +178,7 @@ Your data platform team runs batch workers that must land on nodes tagged `workl
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -189,7 +189,7 @@ metadata:
 
 Apply the namespace and label the first worker node (safe on single-node kind/minikube labs):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-09
 kubectl apply -f namespace.yaml
 NODE="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')"
@@ -198,13 +198,15 @@ kubectl get node "$NODE" --show-labels | tee node-labels.txt
 grep -q 'rebash.io/workload=batch' node-labels.txt
 ```
 
-**Expected output:** `node-labels.txt` includes `rebash.io/workload=batch`.
+!!! example "Expected output"
+    `node-labels.txt` includes `rebash.io/workload=batch`.
+
 
 #### Task 2 – Deployment with nodeSelector
 
 Create `deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -234,19 +236,21 @@ spec:
 
 Apply and wait for rollout:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-09
 kubectl apply -f deployment.yaml
 kubectl rollout status deployment/batch-worker -n rebash-m09 --timeout=120s
 ```
 
-**Expected output:** `deployment "batch-worker" successfully rolled out`.
+!!! example "Expected output"
+    `deployment "batch-worker" successfully rolled out`.
+
 
 #### Task 3 – Scheduling evidence
 
 Prove the Pod landed on the labelled node:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-09
 kubectl get pods -n rebash-m09 -o wide | tee schedule-wide.txt
 POD="$(kubectl get pod -n rebash-m09 -l app=batch-worker -o jsonpath='{.items[0].metadata.name}')"
@@ -254,7 +258,9 @@ kubectl describe pod "$POD" -n rebash-m09 | tee schedule-describe.txt
 grep -E 'Node:|Node-Selectors|rebash.io/workload' schedule-describe.txt
 ```
 
-**Expected output:** `schedule-wide.txt` shows the Pod `NODE` column matching the labelled node; `schedule-describe.txt` lists `Node-Selectors: rebash.io/workload=batch`.
+!!! example "Expected output"
+    `schedule-wide.txt` shows the Pod `NODE` column matching the labelled node; `schedule-describe.txt` lists `Node-Selectors: rebash.io/workload=batch`.
+
 
 ### Validation steps
 
@@ -285,7 +291,7 @@ Add `pod-anti-affinity` so two replicas of `batch-worker` prefer different nodes
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m09 --ignore-not-found
 NODE="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)"
 if [ -n "$NODE" ]; then kubectl label node "$NODE" rebash.io/workload- 2>/dev/null || true; fi

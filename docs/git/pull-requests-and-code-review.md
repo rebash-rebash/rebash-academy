@@ -118,7 +118,7 @@ Create repo with CODEOWNERS and `branch-protection.yaml`; simulate feature PR vi
 
 Workspace: `~/rebash-git/module-10`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-10 && cd ~/rebash-git/module-10
 set -euo pipefail
 ```
@@ -133,7 +133,7 @@ Terraform change adds S3 bucket module. Platform team must review all `*.tf` via
 
 Create `.github/CODEOWNERS`:
 
-```text
+```text title="CODEOWNERS"
 # Platform owns all Terraform
 *.tf @platform-team
 /.github/workflows/ @devops-team
@@ -141,7 +141,7 @@ Create `.github/CODEOWNERS`:
 
 Create `branch-protection.yaml`:
 
-```yaml
+```yaml title="branch-protection.yaml"
 protected_branches:
   main:
     require_pull_request: true
@@ -155,7 +155,7 @@ protected_branches:
 
 Create `validate-branch-protection.sh`:
 
-```bash
+```bash title="validate-branch-protection.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 grep -q 'require_codeowners: true' branch-protection.yaml
@@ -166,13 +166,13 @@ echo 'protection_ok'
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # app
 ```
 
 Bootstrap the PR lab repo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-10
 set -euo pipefail
 rm -rf pr-lab
@@ -190,13 +190,15 @@ grep -q 'platform-team' .github/CODEOWNERS
 cd ..
 ```
 
-**Expected output:** CODEOWNERS and branch protection YAML validated on main.
+!!! example "Expected output"
+    CODEOWNERS and branch protection YAML validated on main.
+
 
 #### Task 2 – Feature branch and review findings from git commands
 
 Create `s3.tf`:
 
-```hcl
+```hcl title="s3.tf"
 resource "aws_s3_bucket" "logs" {
   bucket = "rebash-logs-lab"
 }
@@ -204,7 +206,7 @@ resource "aws_s3_bucket" "logs" {
 
 Commit the feature and capture review findings:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-10/pr-lab
 set -euo pipefail
 git switch -c feature/add-s3-module
@@ -231,11 +233,13 @@ test "$(git rev-list --count main..HEAD)" -eq 2
 cd ..
 ```
 
-**Expected output:** Two commits ahead of main; `review-findings.txt` generated from git log/diff.
+!!! example "Expected output"
+    Two commits ahead of main; `review-findings.txt` generated from git log/diff.
+
 
 #### Task 3 – Simulated approved merge
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-10/pr-lab
 set -euo pipefail
 git switch main
@@ -249,7 +253,9 @@ ls -l ../module-10-pr-evidence.tgz | tee ../pr-evidence.txt
 cd ..
 ```
 
-**Expected output:** Merge commit on main; S3 tf present; graph shows merge node.
+!!! example "Expected output"
+    Merge commit on main; S3 tf present; graph shows merge node.
+
 
 ### Validation steps
 
@@ -279,7 +285,7 @@ Add CODEOWNERS line for `**/production/** @sre-oncall` and extend `review-findin
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-10/pr-lab
 ```
 

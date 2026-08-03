@@ -119,7 +119,7 @@ Create a repository with a sample `validate.yml` workflow that runs shell valida
 
 Workspace: `~/rebash-git/module-11`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-11 && cd ~/rebash-git/module-11
 set -euo pipefail
 ```
@@ -134,7 +134,7 @@ Platform team requires every PR touching `*.tf` to run a lightweight validate wo
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_version = ">= 1.5.0"
 }
@@ -142,7 +142,7 @@ terraform {
 
 Initialise the repo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-11
 set -euo pipefail
 rm -rf actions-lab
@@ -156,7 +156,9 @@ git commit -m 'chore: terraform stub'
 cd ..
 ```
 
-**Expected output:** Minimal Terraform file on main.
+!!! example "Expected output"
+    Minimal Terraform file on main.
+
 
 #### Task 2 – Write validate workflow (MkDocs-safe pattern documented)
 
@@ -204,7 +206,7 @@ jobs:
 
 Commit the workflow:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-11/actions-lab
 set -euo pipefail
 git add .github/workflows/validate.yml
@@ -213,13 +215,15 @@ grep -q 'validate:' .github/workflows/validate.yml
 cd ..
 ```
 
-**Expected output:** Workflow committed with path filters and least-privilege permissions.
+!!! example "Expected output"
+    Workflow committed with path filters and least-privilege permissions.
+
 
 #### Task 3 – Local validation of workflow structure
 
 Simulate CI checks without GitHub using shell and optional Python.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-11/actions-lab
 set -euo pipefail
 terraform fmt -check -recursive 2>/dev/null || terraform fmt -recursive && terraform fmt -check -recursive
@@ -238,7 +242,9 @@ ls -l ../module-11-actions-evidence.tgz | tee ../actions-evidence.txt
 cd ..
 ```
 
-**Expected output:** Terraform validate succeeds; workflow name grep matches.
+!!! example "Expected output"
+    Terraform validate succeeds; workflow name grep matches.
+
 
 ### Validation steps
 
@@ -268,7 +274,7 @@ Add a `workflow_dispatch` trigger and a `concurrency` group keyed on `${ github.
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-11/actions-lab
 ```
 

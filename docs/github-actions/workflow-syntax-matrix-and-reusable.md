@@ -208,7 +208,7 @@ Build a matrix CI workflow, a conditional deploy stub, and a reusable workflow p
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-04/.github/workflows && cd ~/rebash-github-actions/module-04
 set -euo pipefail
 ```
@@ -251,7 +251,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 grep -q 'strategy:' .github/workflows/matrix-ci.yml
@@ -259,13 +259,15 @@ grep -q 'matrix:' .github/workflows/matrix-ci.yml
 python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/matrix-ci.yml')); assert 'node' in d['jobs']['test']['strategy']['matrix']; print('matrix OK')"
 ```
 
-**Expected output:** `matrix OK`
+!!! example "Expected output"
+    `matrix OK`
+
 
 #### Task 2 – Conditional deploy stub
 
 Create `.github/workflows/conditional-deploy.yml`:
 
-```yaml
+```yaml title="conditional-deploy.yml"
 name: Conditional deploy stub
 on:
   push:
@@ -292,14 +294,16 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 grep -q "if: github.ref ==" .github/workflows/conditional-deploy.yml
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/conditional-deploy.yml')); print('conditional OK')"
 ```
 
-**Expected output:** `conditional OK`
+!!! example "Expected output"
+    `conditional OK`
+
 
 #### Task 3 – Reusable workflow callee and caller
 
@@ -333,7 +337,7 @@ jobs:
 
 Create `.github/workflows/caller-pipeline.yml`:
 
-```yaml
+```yaml title="caller-pipeline.yml"
 name: Caller pipeline
 on:
   workflow_dispatch:
@@ -348,7 +352,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 grep -q 'workflow_call' .github/workflows/reusable-deploy.yml
@@ -366,11 +370,13 @@ print('reusable OK')
 "
 ```
 
-**Expected output:** `reusable OK`
+!!! example "Expected output"
+    `reusable OK`
+
 
 #### Task 4 – Simulate matrix outputs locally and archive
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 
@@ -385,7 +391,9 @@ tar -czf module-04-evidence.tgz .github/workflows/ node-*.txt callee-out.txt
 ls -l module-04-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Tarball created; greps succeed.
+!!! example "Expected output"
+    Tarball created; greps succeed.
+
 
 ### Validation steps
 

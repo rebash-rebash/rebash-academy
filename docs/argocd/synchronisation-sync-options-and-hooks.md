@@ -154,7 +154,7 @@ Create two declarative Applications — one with `prune: false` and one with `pr
 
 Workspace: `~/rebash-argocd/module-06` on your workstation.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-06/manifests ~/rebash-argocd/module-06/apps && cd ~/rebash-argocd/module-06
 ```
 
@@ -170,7 +170,7 @@ A platform team enables automated sync for a microservice in staging with selfHe
 
 Create `manifests/namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -179,7 +179,7 @@ metadata:
 
 Create `manifests/configmap-app.yaml`:
 
-```yaml
+```yaml title="configmap-app.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -193,7 +193,7 @@ data:
 
 Create `manifests/deployment-demo.yaml`:
 
-```yaml
+```yaml title="deployment-demo.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -220,20 +220,22 @@ spec:
 
 Apply base manifests once so the namespace exists for offline testing:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-06
 kubectl apply -f manifests/namespace.yaml
 kubectl apply --dry-run=client -f manifests/configmap-app.yaml -f manifests/deployment-demo.yaml | tee dryrun-base-m06.txt
 grep -q 'configmap/rebash-sync-demo' dryrun-base-m06.txt
 ```
 
-**Expected output:** Client dry-run succeeds; ConfigMap and Deployment validate.
+!!! example "Expected output"
+    Client dry-run succeeds; ConfigMap and Deployment validate.
+
 
 #### Task 2 – Application with automated sync and prune disabled
 
 Create `apps/application-no-prune.yaml`:
 
-```yaml
+```yaml title="application-no-prune.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -259,7 +261,7 @@ spec:
 
 For a **local Git path** (preferred when you control the repo), create `apps/application-local-no-prune.yaml`:
 
-```yaml
+```yaml title="application-local-no-prune.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -284,7 +286,7 @@ spec:
 
 Create `apps/application-local-prune.yaml`:
 
-```yaml
+```yaml title="application-local-prune.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -310,20 +312,22 @@ spec:
 
 Validate Application YAML:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-06
 kubectl apply --dry-run=client -f apps/application-local-no-prune.yaml 2>&1 | tee app-no-prune-dryrun-m06.txt
 kubectl apply --dry-run=client -f apps/application-local-prune.yaml 2>&1 | tee app-prune-dryrun-m06.txt
 grep -q 'application.argoproj.io/rebash-sync-local-no-prune' app-no-prune-dryrun-m06.txt || grep -q 'configured' app-no-prune-dryrun-m06.txt
 ```
 
-**Expected output:** Both Application manifests pass client-side validation.
+!!! example "Expected output"
+    Both Application manifests pass client-side validation.
+
 
 #### Task 3 – PreSync hook Job
 
 Create `manifests/hook-presync-job.yaml`:
 
-```yaml
+```yaml title="hook-presync-job.yaml"
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -350,14 +354,16 @@ spec:
 
 Validate hook manifest:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-06
 kubectl apply --dry-run=client -f manifests/hook-presync-job.yaml | tee hook-dryrun-m06.txt
 grep -q 'job.batch/rebash-presync-check' hook-dryrun-m06.txt
 grep -q 'PreSync' manifests/hook-presync-job.yaml && echo "hook annotation present"
 ```
 
-**Expected output:** Job validates; annotation `PreSync` is present in the file.
+!!! example "Expected output"
+    Job validates; annotation `PreSync` is present in the file.
+
 
 #### Task 4 – Apply Applications and prove sync status
 
@@ -365,7 +371,7 @@ Adjust the `repoURL` in local Application manifests if your path differs from `f
 
 Apply Applications and prove sync status (Argo CD required):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-06
 cp -a ~/rebash-argocd/module-06 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f apps/application-local-no-prune.yaml
@@ -383,7 +389,7 @@ echo "sync apply OK" | tee sync-apply-ok-m06.txt
 
 Demonstrate prune difference offline by removing `manifests/deployment-demo.yaml` from the tracked set and comparing spec:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-06
 grep 'prune:' apps/application-local-no-prune.yaml | tee prune-false-m06.txt
 grep 'prune:' apps/application-local-prune.yaml | tee prune-true-m06.txt
@@ -391,7 +397,9 @@ grep -q 'prune: false' prune-false-m06.txt
 grep -q 'prune: true' prune-true-m06.txt
 ```
 
-**Expected output:** With Argo CD running, Applications report `Synced` and `Healthy` when manifests are valid; prune settings differ between the two Application specs; PreSync Job appears in `jobs-m06.txt` after sync when hooks are included in source.
+!!! example "Expected output"
+    With Argo CD running, Applications report `Synced` and `Healthy` when manifests are valid; prune settings differ between the two Application specs; PreSync Job appears in `jobs-m06.txt` after sync when hooks are included in source.
+
 
 ### Validation steps
 
@@ -424,7 +432,7 @@ Add a **PostSync** hook Job that writes a timestamp to a ConfigMap (working arte
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application rebash-sync-local-no-prune rebash-sync-local-prune -n argocd --ignore-not-found
 kubectl delete -f ~/rebash-argocd/module-06/manifests/ --ignore-not-found
 kubectl delete namespace rebash-argocd-m06 --ignore-not-found

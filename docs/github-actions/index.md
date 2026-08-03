@@ -84,7 +84,7 @@ Reusable workflows · self-hosted runners · OIDC · multi-cloud · Kubernetes �
 
 Excalidraw SVGs live under `docs/assets/excalidraw/` — including `gha-architecture.svg`, `gha-workflow-lifecycle.svg`, `gha-terraform-pipeline.svg`, `gha-multi-cloud.svg`, `gha-security.svg`, `gha-testing.svg`, `gha-release-pipeline.svg`, `gha-reusable-components.svg`, `gha-production.svg`, and `gha-troubleshooting.svg`.
 
-```bash
+```bash title="Terminal"
 python3 scripts/generate-excalidraw-svg.py
 ```
 

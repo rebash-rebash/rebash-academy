@@ -194,7 +194,7 @@ Build a multi-service Compose application (API + web) with Dockerfiles, healthch
 
 Workspace: `~/rebash-docker/docker-capstone-and-next-steps`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/docker-capstone-and-next-steps/{api,web} && cd ~/rebash-docker/docker-capstone-and-next-steps
 ```
 
@@ -208,7 +208,7 @@ You are delivering a minimal status platform to another team. They need Compose 
 
 Create `api/Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 WORKDIR /app
 COPY server.py .
@@ -219,7 +219,7 @@ CMD ["python", "server.py"]
 
 Create `api/server.py`:
 
-```python
+```python title="server.py"
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 
@@ -247,7 +247,7 @@ HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 
 Create `web/Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 WORKDIR /app
 COPY proxy.py .
@@ -258,7 +258,7 @@ CMD ["python", "proxy.py"]
 
 Create `web/proxy.py`:
 
-```python
+```python title="proxy.py"
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.request import urlopen
 import os
@@ -288,7 +288,7 @@ HTTPServer(("0.0.0.0", 8000), H).serve_forever()
 
 Create `compose.yaml`:
 
-```yaml
+```yaml title="compose.yaml"
 services:
   api:
     build: ./api
@@ -320,7 +320,7 @@ services:
 
 Deploy:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/docker-capstone-and-next-steps
 docker compose up -d --build
 sleep 20
@@ -328,11 +328,13 @@ docker compose ps | tee capstone-ps.txt
 grep -q rebash-capstone capstone-ps.txt
 ```
 
-**Expected output:** Both services running in `capstone-ps.txt`.
+!!! example "Expected output"
+    Both services running in `capstone-ps.txt`.
+
 
 #### Task 3 – End-to-end proof and evidence tarball
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/docker-capstone-and-next-steps
 curl -sS http://127.0.0.1:18210/healthz | tee capstone-web-health.txt
 curl -sS http://127.0.0.1:18210/ | tee capstone-web-root.txt
@@ -343,7 +345,9 @@ test -s capstone-evidence.tar.gz
 ls -lh capstone-evidence.tar.gz | tee capstone-tar.txt
 ```
 
-**Expected output:** JSON status from `/`; `capstone-evidence.tar.gz` is non-empty.
+!!! example "Expected output"
+    JSON status from `/`; `capstone-evidence.tar.gz` is non-empty.
+
 
 ### Validation steps
 
@@ -375,7 +379,7 @@ Add a non-root `USER` to both Dockerfiles, rebuild, and prove UID in `docker com
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/docker-capstone-and-next-steps
 docker compose down -v --remove-orphans
 docker rmi rebash-capstone-api:1.0.0 rebash-capstone-web:1.0.0 2>/dev/null || true
@@ -411,7 +415,7 @@ Confirm the lab before moving on:
 
 
 
-```bash
+```bash title="Terminal"
 # Smoke test (scripts/smoke-test.sh)
 curl -sf "$BASE_URL/api/health" | grep -q ok && curl -sf "$BASE_URL/" -o /dev/null
 

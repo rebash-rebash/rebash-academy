@@ -156,7 +156,7 @@ Deploy nginx behind a ClusterIP Service, reach it by DNS from a debug Pod, and c
 
 Workspace: `~/rebash-k8s/module-05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-05 && cd ~/rebash-k8s/module-05
 ```
 
@@ -170,7 +170,7 @@ Your microservice `web` must be reachable at a stable DNS name inside the cluste
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -179,7 +179,7 @@ metadata:
 
 Create `web-stack.yaml`:
 
-```yaml
+```yaml title="web-stack.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -225,7 +225,7 @@ spec:
 
 Apply and verify endpoints:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-05
 kubectl apply -f namespace.yaml
 kubectl apply -f web-stack.yaml
@@ -234,13 +234,15 @@ kubectl get svc,endpoints -n rebash-m05 | tee svc-endpoints.txt
 grep web svc-endpoints.txt
 ```
 
-**Expected output:** Service `web` has Endpoints with two Pod IPs.
+!!! example "Expected output"
+    Service `web` has Endpoints with two Pod IPs.
+
 
 #### Task 2 – Curl by DNS from debug Pod
 
 Create `debug-pod.yaml`:
 
-```yaml
+```yaml title="debug-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -256,7 +258,7 @@ spec:
 
 Apply and read result:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-05
 kubectl apply -f debug-pod.yaml
 kubectl wait --for=condition=Ready pod/curl-debug -n rebash-m05 --timeout=120s
@@ -264,11 +266,13 @@ kubectl logs curl-debug -n rebash-m05 | tee curl-dns.txt
 grep -q 200 curl-dns.txt
 ```
 
-**Expected output:** `curl-dns.txt` contains `200`.
+!!! example "Expected output"
+    `curl-dns.txt` contains `200`.
+
 
 #### Task 3 – EndpointSlice evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-05
 kubectl get endpointslices -n rebash-m05 | tee endpointslices.txt
 kubectl get endpointslices -n rebash-m05 -o yaml | grep -E 'addresses:|ready:' | tee endpointslices-detail.txt
@@ -276,7 +280,9 @@ test -s endpointslices-detail.txt
 kubectl delete pod curl-debug -n rebash-m05 --ignore-not-found --wait=true
 ```
 
-**Expected output:** EndpointSlice lists ready addresses backing Service `web`.
+!!! example "Expected output"
+    EndpointSlice lists ready addresses backing Service `web`.
+
 
 ### Validation steps
 
@@ -306,7 +312,7 @@ Scale Deployment to three replicas in `web-stack.yaml`, re-apply, and prove Endp
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m05 --ignore-not-found --wait=true
 ```
 

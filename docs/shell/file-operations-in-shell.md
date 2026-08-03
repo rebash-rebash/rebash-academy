@@ -139,7 +139,7 @@ Under `~/rebash-shell/lab09`, create an incoming tree, find `*.conf` files, stag
 
 Workspace: `~/rebash-shell/lab09`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab09/{incoming,published,out}
 cd ~/rebash-shell/lab09
 set -euo pipefail
@@ -147,7 +147,9 @@ bash --version | head -n1 | tee out/bash-version.txt
 command -v mktemp | tee out/mktemp-path.txt
 ```
 
-**Expected output:** `out/bash-version.txt` and `out/mktemp-path.txt` are non-empty.
+!!! example "Expected output"
+    `out/bash-version.txt` and `out/mktemp-path.txt` are non-empty.
+
 
 ### Real-world scenario
 
@@ -157,7 +159,7 @@ A small app drops config snippets into `incoming/`. Your job must copy only `*.c
 
 #### Task 1 – Seed incoming files and discover with `find`
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab09
 set -euo pipefail
 
@@ -172,13 +174,15 @@ grep -F 'app.conf' out/found-confs.txt
 ! grep -F 'readme.txt' out/found-confs.txt
 ```
 
-**Expected output:** exactly two `*.conf` paths listed; `readme.txt` absent.
+!!! example "Expected output"
+    exactly two `*.conf` paths listed; `readme.txt` absent.
+
 
 #### Task 2 – Stage with `mktemp`, safe `cp`/`mv`, publish
 
 Create `publish-confs.sh`:
 
-```bash
+```bash title="publish-confs.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(cd "$(dirname "$0")" && pwd)"
@@ -207,7 +211,7 @@ grep -F 'app-a' out/published-manifest.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab09
 set -euo pipefail
 
@@ -216,13 +220,15 @@ chmod +x publish-confs.sh
 ```
 
 
-**Expected output:** `published/app-a/app.conf` and `published/app-b/app.conf` exist; manifest lists both mappings; temp stage directory is removed by `trap`.
+!!! example "Expected output"
+    `published/app-a/app.conf` and `published/app-b/app.conf` exist; manifest lists both mappings; temp stage directory is removed by `trap`.
+
 
 #### Task 3 – Optional lock with `flock` and evidence pack
 
 Create `locked-publish.sh`:
 
-```bash
+```bash title="locked-publish.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(cd "$(dirname "$0")" && pwd)"
@@ -247,7 +253,7 @@ grep -q 'lock_acquired=1' out/lock-status.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab09
 set -euo pipefail
 
@@ -262,7 +268,9 @@ ls -l out/fileops-evidence.tgz | tee out/evidence-ls.txt
 ```
 
 
-**Expected output:** `lock-status.txt` shows `lock_acquired=1` (or `flock_missing=1` if `flock` is unavailable); evidence archive is not empty.
+!!! example "Expected output"
+    `lock-status.txt` shows `lock_acquired=1` (or `flock_missing=1` if `flock` is unavailable); evidence archive is not empty.
+
 
 ### Validation steps
 
@@ -293,7 +301,7 @@ Write `safe-backup.sh` that: creates `backup/` with `mkdir -p`, copies every pub
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab09
 set -euo pipefail
 rm -f out/publish.lock

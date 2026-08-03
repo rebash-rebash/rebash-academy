@@ -235,7 +235,7 @@ Build a Docker stack combining **`count`**, **`for_each`**, **`depends_on`**, an
 
 Workspace: `~/rebash-terraform/module-06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-06 && cd ~/rebash-terraform/module-06
 ```
 
@@ -249,7 +249,7 @@ You deploy a **platform bootstrap** pattern: shared Docker network, zone-scoped 
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0, < 2.0.0"
 
@@ -266,7 +266,7 @@ provider "docker" {}
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "zones" {
   type    = list(string)
   default = ["zone-a", "zone-b", "zone-c"]
@@ -283,7 +283,7 @@ variable "services" {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_network" "platform" {
   name = "rebash-module-06-net"
 }
@@ -356,14 +356,16 @@ resource "docker_container" "gateway" {
 }
 ```
 
-**Expected output:** Configuration defines network, three counted zone containers, two keyed service containers, and a gateway with lifecycle and depends_on.
+!!! example "Expected output"
+    Configuration defines network, three counted zone containers, two keyed service containers, and a gateway with lifecycle and depends_on.
+
 
 #### Task 2 – Apply and verify addresses
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-06
 terraform fmt -recursive
 terraform init | tee init.txt
@@ -380,7 +382,9 @@ echo "resource graph OK" | tee resource-evidence.txt
 ```
 {% endraw %}
 
-**Expected output:** State lists indexed and keyed addresses; `docker-ps.txt` shows six containers on the network; `resource-evidence.txt` contains `resource graph OK`.
+!!! example "Expected output"
+    State lists indexed and keyed addresses; `docker-ps.txt` shows six containers on the network; `resource-evidence.txt` contains `resource graph OK`.
+
 
 #### Task 3 – Prove lifecycle ignore_changes and diagnose drift
 
@@ -395,7 +399,7 @@ Add a label to `docker_container.gateway` in `main.tf` inside the resource block
 
 Run plan — `ignore_changes = [labels]` should suppress the diff:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-06
 terraform plan -no-color | tee plan-ignore.txt
 grep -q 'No changes' plan-ignore.txt
@@ -405,7 +409,7 @@ echo "lifecycle ignore demo OK" | tee lifecycle-evidence.txt
 Simulate out-of-band failure — remove one zone container manually:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 docker rm -f rebash-module-06-zone-b
 terraform plan -no-color | tee plan-drift.txt
 grep -q 'docker_container.zone_sidecar[1]' plan-drift.txt
@@ -416,7 +420,9 @@ echo "drift fix OK" | tee drift-evidence.txt
 ```
 {% endraw %}
 
-**Expected output:** Label change plan shows **no changes**; after manual `docker rm`, plan proposes recreate; apply restores zone-b; `drift-evidence.txt` contains `drift fix OK`.
+!!! example "Expected output"
+    Label change plan shows **no changes**; after manual `docker rm`, plan proposes recreate; apply restores zone-b; `drift-evidence.txt` contains `drift fix OK`.
+
 
 ### Validation steps
 
@@ -441,7 +447,7 @@ echo "drift fix OK" | tee drift-evidence.txt
 
 Create `expand-services.tf`:
 
-```hcl
+```hcl title="expand-services.tf"
 variable "extra_services" {
   type = map(string)
   default = {
@@ -476,7 +482,7 @@ resource "docker_container" "extra_service" {
 Apply the extension:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-06
 terraform apply -auto-approve | tee challenge-apply.txt
 docker ps --filter name=rebash-module-06-scheduler --format '{{.Names}}' | grep -q scheduler
@@ -485,7 +491,9 @@ echo "for_each extension OK" | tee challenge-resource.txt
 ```
 {% endraw %}
 
-**Expected output:** Scheduler container running with `extra=true` label; `challenge-resource.txt` contains `for_each extension OK`.
+!!! example "Expected output"
+    Scheduler container running with `extra=true` label; `challenge-resource.txt` contains `for_each extension OK`.
+
 
 ### Learning outcomes
 
@@ -496,7 +504,7 @@ echo "for_each extension OK" | tee challenge-resource.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-06
 terraform destroy -auto-approve
 rm -f init.txt apply.txt state-list.txt plan-ignore.txt plan-drift.txt apply-fix.txt \

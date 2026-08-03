@@ -54,7 +54,7 @@ Python 3.12+, PyYAML. **Estimated cost:** £0.
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-cicd/{steps,out}
 cd ~/rebash-lab-python-cicd
 python3 -m venv .venv && source .venv/bin/activate
@@ -65,7 +65,7 @@ pip install 'PyYAML>=6.0,<7' pytest
 
 Create `pipeline.yaml`:
 
-```yaml
+```yaml title="pipeline.yaml"
 name: local-ci
 fail_fast: true
 steps:
@@ -77,14 +77,14 @@ steps:
 
 Create `tests/test_sanity.py`:
 
-```python
+```python title="test_sanity.py"
 def test_ok():
     assert 1 + 1 == 2
 ```
 
 Prepare remaining files:
 
-```bash
+```bash title="Terminal"
 mkdir -p tests
 ```
 
@@ -99,7 +99,7 @@ Create `cicd_run.py --config pipeline.yaml`:
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python cicd_run.py --config pipeline.yaml --dry-run
 python cicd_run.py --config pipeline.yaml; echo $?  # 0 if pytest present
 # Break a test and confirm exit 1

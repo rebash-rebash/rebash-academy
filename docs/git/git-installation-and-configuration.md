@@ -117,7 +117,7 @@ Verify Git, configure a **local** lab identity and defaults, detect SSH vs HTTPS
 
 Workspace: `~/rebash-git/module-02`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-02 && cd ~/rebash-git/module-02
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ A new starter’s first commits hit the company GitHub as `ubuntu@ip-10-0-0-5`. 
 
 #### Task 1 – Version and install check
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-02
 set -euo pipefail
 
@@ -144,11 +144,13 @@ fi
 test -s git-version.txt
 ```
 
-**Expected output:** A Git version line like `git version 2.x.y`.
+!!! example "Expected output"
+    A Git version line like `git version 2.x.y`.
+
 
 #### Task 2 – Local repo config (not global)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-02
 set -euo pipefail
 
@@ -167,13 +169,15 @@ grep -q 'lab@rebash.local' ../identity-commit.txt
 cd ..
 ```
 
-**Expected output:** Local config lists name/email; latest commit uses lab identity.
+!!! example "Expected output"
+    Local config lists name/email; latest commit uses lab identity.
+
 
 #### Task 3 – Auth mode detection and SSH key evidence
 
 Create `detect-auth-mode.sh`:
 
-```bash
+```bash title="detect-auth-mode.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 ssh_url='git@github.com:ORG/REPO.git'
@@ -190,7 +194,7 @@ git config --local --get-regexp 'user\.|init\.defaultBranch|core\.editor' 2>/dev
 
 Run diagnostics and pack evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-02
 set -euo pipefail
 
@@ -212,7 +216,9 @@ tar -czf module-02-evidence.tgz git-version.txt git-path.txt local-config.txt id
 ls -l module-02-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `auth-mode.txt` records SSH/HTTPS URL patterns; evidence archive includes config and key status.
+!!! example "Expected output"
+    `auth-mode.txt` records SSH/HTTPS URL patterns; evidence archive includes config and key status.
+
 
 ### Validation steps
 
@@ -240,7 +246,7 @@ Run `git config --global --get user.email` (read-only) and append `global_email=
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Remove disposable lab key if you created id_ed25519_rebash_lab and will not use it:
 # rm -f ~/.ssh/id_ed25519_rebash_lab ~/.ssh/id_ed25519_rebash_lab.pub
 ls ~/rebash-git/module-02

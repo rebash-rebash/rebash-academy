@@ -109,7 +109,7 @@ A Compose file lists `services:` with images or build contexts, environment, por
 
 Compose v2 command shape:
 
-```bash
+```bash title="Terminal"
 docker compose version
 docker compose -f compose.yaml up -d
 ```
@@ -150,7 +150,7 @@ Workspace: `~/rebash-docker/module-09`
 
 Host port **18087** maps to the web service.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
 ```
 
@@ -164,7 +164,7 @@ Locally you replicate a minimal production pair: nginx serves a static page whil
 
 Create `html/index.html`:
 
-```html
+```html title="index.html"
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><title>REBASH mod09</title></head>
@@ -174,7 +174,7 @@ Create `html/index.html`:
 
 Create `compose.yaml`:
 
-```yaml
+```yaml title="compose.yaml"
 services:
   web:
     image: nginx:1.27-alpine
@@ -194,11 +194,13 @@ volumes:
   redis-data:
 ```
 
-**Expected output:** `compose.yaml` and `html/index.html` exist in the lab directory.
+!!! example "Expected output"
+    `compose.yaml` and `html/index.html` exist in the lab directory.
+
 
 #### Task 2 – Start stack and check status
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-09
 docker compose up -d
 docker compose ps | tee compose-ps.txt
@@ -207,11 +209,13 @@ curl -s http://127.0.0.1:18087/ | tee compose-curl.txt
 grep -q 'compose stack ok' compose-curl.txt
 ```
 
-**Expected output:** `compose-ps.txt` shows web and redis running; curl returns the custom heading.
+!!! example "Expected output"
+    `compose-ps.txt` shows web and redis running; curl returns the custom heading.
+
 
 #### Task 3 – Prove Redis volume and fetch logs
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-09
 docker compose exec redis redis-cli PING | tee redis-ping.txt
 grep -q 'PONG' redis-ping.txt
@@ -219,7 +223,9 @@ docker compose logs --tail=10 web | tee compose-web-logs.txt
 test -s compose-web-logs.txt
 ```
 
-**Expected output:** `redis-ping.txt` is `PONG`; web logs captured.
+!!! example "Expected output"
+    `redis-ping.txt` is `PONG`; web logs captured.
+
 
 ### Validation steps
 
@@ -251,14 +257,16 @@ Add under `web:` in `compose.yaml`:
 
 Reconcile and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-09
 docker compose up -d
 docker compose ps | tee compose-ps-health.txt
 grep -i 'healthy\|running' compose-ps-health.txt
 ```
 
-**Expected output:** After a short wait, `compose-ps-health.txt` shows web as healthy or running with healthcheck configured.
+!!! example "Expected output"
+    After a short wait, `compose-ps-health.txt` shows web as healthy or running with healthcheck configured.
+
 
 ### Learning outcomes
 
@@ -268,7 +276,7 @@ grep -i 'healthy\|running' compose-ps-health.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-09
 docker compose down -v
 docker rmi nginx:1.27-alpine redis:7.4-alpine 2>/dev/null || true

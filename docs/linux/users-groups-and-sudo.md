@@ -88,7 +88,7 @@ Who can become root is one of the most important security decisions on a server.
 4. **Use sudo** — `sudo -l` shows your rules; `sudo -u otheruser command` runs a command as another user.
 5. **Edit sudo rules** — use only `visudo` (or `visudo -f /etc/sudoers.d/file`) so a syntax error does not lock you out.
 
-```bash
+```bash title="Terminal"
 sudo useradd -m -s /bin/bash appuser
 sudo usermod -aG sudo appuser          # Ubuntu example — the lab uses a tighter rule
 sudo visudo -f /etc/sudoers.d/99-lab   # always check syntax
@@ -135,7 +135,7 @@ On a practice Ubuntu VM, create a team group, one human lab user, one system ser
 
 Workspace: `~/rebash-linux/lab06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab06 && cd ~/rebash-linux/lab06
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -144,7 +144,9 @@ test -n "$(command -v sudo)"
 sudo -n true 2>/dev/null || sudo -v
 ```
 
-**Expected output:** `admin-user.txt` and `admin-id.txt` exist; `sudo` works (you may enter your password once).
+!!! example "Expected output"
+    `admin-user.txt` and `admin-id.txt` exist; `sudo` works (you may enter your password once).
+
 
 ### Real-world scenario
 
@@ -156,7 +158,7 @@ Your team is setting up a new Ubuntu VM for a small application. Security asks f
 
 Create the accounts first. Add sudo rules only after that.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab06
 set -euo pipefail
 
@@ -183,13 +185,15 @@ getent group rebash-lab | tee group-rebash-lab.txt
 grep -E 'rebash-alice|rebash-svc' /etc/passwd | tee passwd-snippet.txt
 ```
 
-**Expected output:** `id-alice.txt` shows group `rebash-lab`; `id-svc.txt` shows a `nologin` shell (or similar) and the lab group; `group-rebash-lab.txt` lists the members (exact format can vary a little).
+!!! example "Expected output"
+    `id-alice.txt` shows group `rebash-lab`; `id-svc.txt` shows a `nologin` shell (or similar) and the lab group; `group-rebash-lab.txt` lists the members (exact format can vary a little).
+
 
 #### Task 2 – Limited sudoers file
 
 Allow `rebash-alice` to run **only** `systemctl status` and `systemctl restart` for a sample service name. We check syntax and `sudo -l`. The service does not need to exist yet.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab06
 set -euo pipefail
 
@@ -211,13 +215,15 @@ sudo -u rebash-alice sudo -l | tee sudo-l-alice.txt
 grep -F 'systemctl' sudo-l-alice.txt
 ```
 
-**Expected output:** `visudo -c` says the file is OK; `sudo-l-alice.txt` lists the two `systemctl` paths (and not `ALL`).
+!!! example "Expected output"
+    `visudo -c` says the file is OK; `sudo-l-alice.txt` lists the two `systemctl` paths (and not `ALL`).
+
 
 #### Task 3 – Negative test and evidence pack
 
 Prove that alice is **not** full root, then pack the proof files.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab06
 set -euo pipefail
 
@@ -235,7 +241,9 @@ tar -czf identity-evidence.tgz \
 ls -l identity-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `/bin/true` with sudo is denied; `identity-evidence.tgz` is not empty.
+!!! example "Expected output"
+    `/bin/true` with sudo is denied; `identity-evidence.tgz` is not empty.
+
 
 ### Validation steps
 
@@ -268,7 +276,7 @@ Create user `rebash-bob`, add him to `rebash-lab`, and add a **second** sudoers 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab06
 set -euo pipefail
 

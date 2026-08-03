@@ -95,7 +95,7 @@ Every deploy, health check, and on-call page assumes a working path. If DNS is w
 4. **Name resolution** — applications ask DNS for names; the host uses resolvers listed under `/etc/resolv.conf` or `systemd-resolved`.
 5. **Path** — packets leave the NIC, cross switches/routers, and arrive at another host or service.
 
-```bash
+```bash title="Terminal"
 ip -br a
 ip route
 resolvectl status 2>/dev/null || cat /etc/resolv.conf
@@ -142,7 +142,7 @@ On a practice Ubuntu VM, classify host interfaces, capture route and DNS resolve
 
 Workspace: `~/rebash-networking/lab01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab01 && cd ~/rebash-networking/lab01
 set -euo pipefail
 hostname | tee hostname.txt
@@ -152,7 +152,9 @@ test -n "$(command -v ip)"
 test -n "$(command -v ss)"
 ```
 
-**Expected output:** `hostname.txt`, `admin-user.txt`, and `uname.txt` exist; `ip` and `ss` are on `PATH`.
+!!! example "Expected output"
+    `hostname.txt`, `admin-user.txt`, and `uname.txt` exist; `ip` and `ss` are on `PATH`.
+
 
 ### Real-world scenario
 
@@ -164,7 +166,7 @@ Your team receives a new Ubuntu jump server (bastion) in a cloud account. Before
 
 List every interface in brief form, then save a richer dump. Classify each non-`lo` interface as roughly LAN-facing (has a private IPv4) or special (docker/bridge/tunnel) in a short table file.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab01
 set -euo pipefail
 
@@ -190,13 +192,15 @@ ip -6 addr show | tee ip6-addr.txt
 grep -E 'host-nic-or-lan|loopback|virtual' interface-classification.txt
 ```
 
-**Expected output:** `ip-br-a.txt` lists `lo` and at least one other interface; `interface-classification.txt` has a header and rows with a `class` column.
+!!! example "Expected output"
+    `ip-br-a.txt` lists `lo` and at least one other interface; `interface-classification.txt` has a header and rows with a `class` column.
+
 
 #### Task 2 – Document routes and DNS resolvers
 
 Capture the routing table and resolver configuration. Optionally prove basic reachability with a short ping and a DNS query tool if available.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab01
 set -euo pipefail
 
@@ -221,13 +225,15 @@ fi
 ss -tuln | tee ss-tuln.txt
 ```
 
-**Expected output:** `ip-route.txt` shows a `default` route or local subnet routes; `resolvers.txt` is non-empty; `ss-tuln.txt` lists listening sockets (may be few on a fresh VM).
+!!! example "Expected output"
+    `ip-route.txt` shows a `default` route or local subnet routes; `resolvers.txt` is non-empty; `ss-tuln.txt` lists listening sockets (may be few on a fresh VM).
+
 
 #### Task 3 – Topology facts file and evidence pack
 
 Write a short topology facts document from the live data, then pack everything into a tarball for the ticket.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab01
 set -euo pipefail
 
@@ -238,7 +244,7 @@ PRIMARY_ADDR="$(ip -4 -o addr show dev "${PRIMARY_IF:-}" 2>/dev/null | awk '{pri
 
 Create `write-topology-facts.sh`:
 
-```bash
+```bash title="write-topology-facts.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 DEFAULT_VIA="$(ip route show default 2>/dev/null | awk '/default/ {print; exit}')"
@@ -257,7 +263,7 @@ PRIMARY_ADDR="$(ip -4 -o addr show dev "${PRIMARY_IF:-}" 2>/dev/null | awk '{pri
 } > topology-facts.txt
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x write-topology-facts.sh
 ./write-topology-facts.sh
 cat topology-facts.txt
@@ -272,7 +278,9 @@ ls -l networking-baseline.tgz | tee evidence-ls.txt
 test -s networking-baseline.tgz
 ```
 
-**Expected output:** `topology-facts.txt` names a primary interface when one exists; `networking-baseline.tgz` is non-empty.
+!!! example "Expected output"
+    `topology-facts.txt` names a primary interface when one exists; `networking-baseline.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -305,7 +313,7 @@ Write an executable script `~/rebash-networking/lab01/collect-baseline.sh` that 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab01
 set -euo pipefail
 # Keep evidence archives if you want them; otherwise remove working text files:

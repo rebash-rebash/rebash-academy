@@ -73,7 +73,7 @@ Text tools sit between raw files or streams and the answers you need for ops: fi
 | `sort` / `uniq` / `wc` | Order, unique, count | Top-N errors, line counts |
 | `xargs` | Turn lines into command arguments | Run a command on many files |
 
-```bash
+```bash title="Terminal"
 grep -n ERROR app.log
 sed 's/DEBUG/INFO/g' app.log
 awk -F: '{print $1}' /etc/passwd | head
@@ -91,7 +91,7 @@ Incidents are mostly reading text under time pressure. Engineers who can filter 
 4. **Compose** — pipes chain tools: `grep ERROR file | awk '{print $1}' | sort | uniq -c | sort -nr`.
 5. **Safe xargs** — `find . -name '*.log' -print0 | xargs -0 grep -H ERROR` so spaces in names do not break the command.
 
-```bash
+```bash title="Terminal"
 # Rank status codes from a space-separated sample access log (field 9 often holds the code)
 awk '{print $9}' access.log | sort | uniq -c | sort -nr | head
 ```
@@ -140,13 +140,15 @@ Build a small incident-style pipeline on sample logs: filter errors with grep, c
 
 Workspace: `~/rebash-linux/lab08`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab08 && cd ~/rebash-linux/lab08
 set -euo pipefail
 whoami | tee lab-user.txt
 ```
 
-**Expected output:** directory exists; `lab-user.txt` contains your username.
+!!! example "Expected output"
+    directory exists; `lab-user.txt` contains your username.
+
 
 ### Real-world scenario
 
@@ -158,7 +160,7 @@ A payment API on a practice VM is throwing errors after a deploy. You have a cop
 
 Create realistic sample files you can re-run the lab against.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab08
 set -euo pipefail
 
@@ -190,13 +192,15 @@ test "$(wc -l < app.log)" -eq 10
 test "$(wc -l < access.log)" -eq 7
 ```
 
-**Expected output:** `wc-samples.txt` shows 10 and 7 lines for the two files.
+!!! example "Expected output"
+    `wc-samples.txt` shows 10 and 7 lines for the two files.
+
 
 #### Task 2 – grep filter and sed cleanup
 
 Extract ERROR lines, then build a clean `code=…` column with sed.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab08
 set -euo pipefail
 
@@ -214,13 +218,15 @@ grep -E '^(TIMEOUT|AUTH|DB)$' error-codes.txt | tee error-codes-check.txt
 test "$(wc -l < error-codes.txt)" -eq 5
 ```
 
-**Expected output:** five ERROR lines; `error-codes.txt` lists codes such as `TIMEOUT`, `AUTH`, `DB` (one per line).
+!!! example "Expected output"
+    five ERROR lines; `error-codes.txt` lists codes such as `TIMEOUT`, `AUTH`, `DB` (one per line).
+
 
 #### Task 3 – awk reports and frequency ranking
 
 Rank error codes and HTTP status codes; pack evidence.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab08
 set -euo pipefail
 
@@ -251,7 +257,9 @@ ls -l text-processing-evidence.tgz | tee evidence-ls.txt
 test -s text-processing-evidence.tgz
 ```
 
-**Expected output:** `TIMEOUT` ranks highest among error codes; `502` appears in status ranks; `text-processing-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `TIMEOUT` ranks highest among error codes; `502` appears in status ranks; `text-processing-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -283,7 +291,7 @@ Write an executable script `~/rebash-linux/lab08/incident-summary.sh` that takes
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab08
 # Keep the evidence archive if you want it; otherwise remove lab artefacts:
 # rm -f app.log access.log *.txt incident-summary.sh text-processing-evidence.tgz

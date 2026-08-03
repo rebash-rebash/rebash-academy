@@ -147,7 +147,7 @@ Deploy a service with a Dockerfile `HEALTHCHECK`, collect logs with `docker logs
 
 Workspace: `~/rebash-docker/module-13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
 ```
 
@@ -161,7 +161,7 @@ On-call needs evidence that a container is healthy, emitting structured logs, an
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 WORKDIR /app
 COPY app.py .
@@ -173,7 +173,7 @@ CMD ["python", "app.py"]
 
 Create `app.py`:
 
-```python
+```python title="app.py"
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import sys
@@ -199,7 +199,7 @@ HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 
 Build and run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-13
 docker build -t rebash-log-lab:1.0.0 .
 docker run -d --name rebash-log-18130 -p 18130:8080 rebash-log-lab:1.0.0
@@ -208,14 +208,16 @@ curl -sS http://127.0.0.1:18130/healthz | tee curl-healthz.txt
 grep -q ok curl-healthz.txt
 ```
 
-**Expected output:** `curl-healthz.txt` contains `ok`.
+!!! example "Expected output"
+    `curl-healthz.txt` contains `ok`.
+
 
 #### Task 2 – Collect logs and stats evidence
 
 Collect stdout logs and one-shot resource snapshot:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-13
 docker logs rebash-log-18130 2>&1 | tee container-logs.txt
 grep -q 'startup service=rebash-log-lab' container-logs.txt
@@ -224,21 +226,25 @@ test -s stats-snapshot.txt
 ```
 {% endraw %}
 
-**Expected output:** `container-logs.txt` shows startup and health log lines; `stats-snapshot.txt` lists CPU and memory for the container.
+!!! example "Expected output"
+    `container-logs.txt` shows startup and health log lines; `stats-snapshot.txt` lists CPU and memory for the container.
+
 
 #### Task 3 – Prove health status via inspect
 
 Wait for the health probe to report healthy:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-13
 docker inspect rebash-log-18130 --format 'Health={{ "{{" }}.State.Health.Status{{ "}}" }} Status={{ "{{" }}.State.Status{{ "}}" }}' | tee health-inspect.txt
 grep -E 'Health=healthy|Health=starting' health-inspect.txt
 ```
 {% endraw %}
 
-**Expected output:** `health-inspect.txt` shows `Health=healthy` (or `starting` if probes have not finished — wait and re-run).
+!!! example "Expected output"
+    `health-inspect.txt` shows `Health=healthy` (or `starting` if probes have not finished — wait and re-run).
+
 
 ### Validation steps
 
@@ -270,7 +276,7 @@ Add a Compose file with `logging` driver options (`max-size`, `max-file`) and pr
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker rm -f rebash-log-18130 2>/dev/null || true
 docker rmi rebash-log-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-13/*.txt

@@ -162,7 +162,7 @@ Workspace: `~/rebash-helm/module-11`
 
 Offline packaging; optional install namespace `rebash-helm-m11`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-11/prod-chart/templates && cd ~/rebash-helm/module-11
 ```
 
@@ -176,7 +176,7 @@ Release engineering requires every chart bump to follow SemVer, carry consistent
 
 Create `prod-chart/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: prod-chart
 description: Production baseline chart for REBASH lab
@@ -187,7 +187,7 @@ appVersion: "1.27.4"
 
 Create `prod-chart/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 2
 image:
   repository: nginx
@@ -206,7 +206,7 @@ podDisruptionBudget:
 
 Create `prod-chart/templates/_helpers.tpl`:
 
-```yaml
+```yaml title="_helpers.tpl"
 {% raw %}
 {{- define "prod-chart.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
@@ -224,7 +224,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 Create `prod-chart/templates/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 {% raw %}
 apiVersion: apps/v1
 kind: Deployment
@@ -255,7 +255,7 @@ spec:
 
 Create `prod-chart/templates/pdb.yaml`:
 
-```yaml
+```yaml title="pdb.yaml"
 {% raw %}
 {{- if .Values.podDisruptionBudget.enabled }}
 apiVersion: policy/v1
@@ -276,7 +276,7 @@ spec:
 
 Lint and prove labels, resources, and PDB render:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-11
 helm lint ./prod-chart | tee lint.txt
 helm template prod-demo ./prod-chart 2>&1 | tee render.txt
@@ -287,7 +287,9 @@ grep -q 'cpu: 50m' render.txt
 grep -q '0 chart(s) failed' lint.txt
 ```
 
-**Expected output:** Render includes standard labels, resource requests/limits, and a PDB with `minAvailable: 1`.
+!!! example "Expected output"
+    Render includes standard labels, resource requests/limits, and a PDB with `minAvailable: 1`.
+
 
 #### Task 2 – Bump version and package the chart
 
@@ -304,7 +306,7 @@ appVersion: "1.27.4"
 
 Package and capture artefact evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-11
 helm package ./prod-chart | tee package.txt
 ls -1 prod-chart-*.tgz | tee package-list.txt
@@ -313,13 +315,15 @@ grep -q 'Chart.yaml' package-contents.txt
 grep -q 'prod-chart-1.1.0.tgz' package-list.txt
 ```
 
-**Expected output:** `package.txt` reports packaged path; `prod-chart-1.1.0.tgz` exists and contains `Chart.yaml` and templates.
+!!! example "Expected output"
+    `package.txt` reports packaged path; `prod-chart-1.1.0.tgz` exists and contains `Chart.yaml` and templates.
+
 
 #### Task 3 – Install from the packaged chart (optional)
 
 Install from the tarball to prove consumers can deploy the artefact:
 
-```bash
+```bash title="Terminal"
 kubectl create namespace rebash-helm-m11 --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade --install prod-demo prod-chart-1.1.0.tgz \
   -n rebash-helm-m11 --wait --timeout 3m | tee install.txt
@@ -329,7 +333,9 @@ grep -q 'prod-demo' list.txt
 grep -q 'prod-demo-web' pdb.txt
 ```
 
-**Expected output:** Release installs from `.tgz`; PDB exists in the namespace.
+!!! example "Expected output"
+    Release installs from `.tgz`; PDB exists in the namespace.
+
 
 ### Validation steps
 
@@ -353,7 +359,7 @@ Add a `values.schema.json` requiring `replicaCount` and prove lint catches a mis
 
 Create `prod-chart/values.schema.json`:
 
-```json
+```json title="values.schema.json"
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
@@ -364,14 +370,16 @@ Create `prod-chart/values.schema.json`:
 }
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-11
 helm lint ./prod-chart --values /dev/null 2>&1 | tee schema-lint.txt || true
 helm lint ./prod-chart | tee schema-lint-ok.txt
 grep -q '0 chart(s) failed' schema-lint-ok.txt
 ```
 
-**Expected output:** Lint with valid defaults passes; invalid/missing values may produce schema warnings depending on Helm version.
+!!! example "Expected output"
+    Lint with valid defaults passes; invalid/missing values may produce schema warnings depending on Helm version.
+
 
 ### Learning outcomes
 
@@ -382,7 +390,7 @@ grep -q '0 chart(s) failed' schema-lint-ok.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall prod-demo -n rebash-helm-m11 2>/dev/null || true
 kubectl delete namespace rebash-helm-m11 --ignore-not-found
 rm -f ~/rebash-helm/module-11/prod-chart-*.tgz

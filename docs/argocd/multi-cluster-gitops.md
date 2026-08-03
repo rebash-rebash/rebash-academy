@@ -102,7 +102,7 @@ destination:
 
 CLI registration (typical ops flow):
 
-```bash
+```bash title="Terminal"
 argocd cluster add staging-context --name staging --yes
 ```
 
@@ -152,7 +152,7 @@ Create a cluster secret **template** with placeholders, an Application targeting
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-10/clusters \
   ~/rebash-argocd/module-10/apps \
   ~/rebash-argocd/module-10/manifests \
@@ -169,7 +169,7 @@ A platform team documents cluster onboarding with a sealed-secret workflow. New 
 
 Create `clusters/cluster-secret-template.yaml`:
 
-```yaml
+```yaml title="cluster-secret-template.yaml"
 # TEMPLATE ONLY — replace placeholders before apply; do not commit real tokens.
 apiVersion: v1
 kind: Secret
@@ -194,7 +194,7 @@ stringData:
 
 Create `clusters/cluster-secret-incluster-note.yaml`:
 
-```yaml
+```yaml title="cluster-secret-incluster-note.yaml"
 # In-cluster registration is implicit — no secret required for:
 #   server: https://kubernetes.default.svc
 apiVersion: v1
@@ -209,20 +209,22 @@ data:
 
 Validate template structure (reject if bearer token looks real — placeholder check):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-10
 grep 'REPLACE_WITH' clusters/cluster-secret-template.yaml | tee placeholder-check-m10.txt
 grep 'argocd.argoproj.io/secret-type: cluster' clusters/cluster-secret-template.yaml
 kubectl apply --dry-run=client -f clusters/cluster-secret-incluster-note.yaml | tee incluster-note-dryrun-m10.txt
 ```
 
-**Expected output:** Placeholder strings present; in-cluster note ConfigMap validates.
+!!! example "Expected output"
+    Placeholder strings present; in-cluster note ConfigMap validates.
+
 
 #### Task 2 – Workload manifest for destination namespace
 
 Create `manifests/namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -231,7 +233,7 @@ metadata:
 
 Create `manifests/configmap.yaml`:
 
-```yaml
+```yaml title="configmap.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -245,7 +247,7 @@ data:
 
 Create `apps/application-incluster.yaml`:
 
-```yaml
+```yaml title="application-incluster.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -267,7 +269,7 @@ spec:
 
 Create `apps/application-external-stub.yaml`:
 
-```yaml
+```yaml title="application-external-stub.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -289,7 +291,7 @@ spec:
 
 Document server comparison:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-10
 grep -h 'server:' apps/application-incluster.yaml apps/application-external-stub.yaml \
   clusters/cluster-secret-incluster-note.yaml | tee server-compare-m10.txt
@@ -297,13 +299,15 @@ grep -q 'kubernetes.default.svc' server-compare-m10.txt
 grep -q 'STAGING_API_SERVER' server-compare-m10.txt
 ```
 
-**Expected output:** Two distinct server URLs documented — default in-cluster vs staging placeholder.
+!!! example "Expected output"
+    Two distinct server URLs documented — default in-cluster vs staging placeholder.
+
 
 #### Task 4 – Offline YAML validation script
 
 Create `scripts/validate_multicluster.py`:
 
-```python
+```python title="validate_multicluster.py"
 #!/usr/bin/env python3
 """Offline validation for multi-cluster lab manifests."""
 import sys
@@ -367,7 +371,7 @@ if __name__ == "__main__":
 
 Run validation and apply in-cluster Application (required):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-10
 chmod +x scripts/validate_multicluster.py
 python3 scripts/validate_multicluster.py . | tee validate-m10.txt
@@ -383,7 +387,9 @@ grep -q 'Synced' sync-incluster-m10.txt
 echo "in-cluster apply OK" | tee incluster-ok-m10.txt
 ```
 
-**Expected output:** Application applied; destination server is `https://kubernetes.default.svc`; sync status `Synced`.
+!!! example "Expected output"
+    Application applied; destination server is `https://kubernetes.default.svc`; sync status `Synced`.
+
 
 ### Validation steps
 
@@ -416,7 +422,7 @@ Create an Argo CD **Project** stub `apps/project-multicluster.yaml` with `destin
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application rebash-multicluster-incluster -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m10 --ignore-not-found
 # Do NOT delete cluster secrets you applied with real credentials via this lab template

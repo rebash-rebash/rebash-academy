@@ -60,7 +60,7 @@ A payments namespace shows intermittent 502s. You need a scripted readiness roll
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-k8s/{fixtures,out}
 cd ~/rebash-lab-python-k8s
 python3 -m venv .venv && source .venv/bin/activate
@@ -70,7 +70,7 @@ pip install 'kubernetes>=29.0,<32'
 ## Initial State — fixture
 Create `fixtures/pods.json`:
 
-```json
+```json title="pods.json"
 {
   "namespace": "payments",
   "pods": [
@@ -91,7 +91,7 @@ Create `k8s_health.py`:
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python k8s_health.py --fixture fixtures/pods.json
 python k8s_health.py --fixture fixtures/pods.json --fail-on-not-ready; echo $?  # 1
 ```

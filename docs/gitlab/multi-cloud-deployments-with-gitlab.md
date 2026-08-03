@@ -172,7 +172,7 @@ Workspace: `~/rebash-gitlab/module-11`
 
 File-first lab. Push to GitLab only when cloud identity providers are configured.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
 set -euo pipefail
 ```
@@ -187,7 +187,7 @@ A platform team standardises multi-cloud deploy patterns before cloud admins wir
 
 Create `multi-cloud-oidc.yaml`:
 
-```yaml
+```yaml title="multi-cloud-oidc.yaml"
 # Module 11 — OIDC deploy comparison (offline reference)
 clouds:
   aws:
@@ -219,7 +219,7 @@ environments:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-11
 set -euo pipefail
 python3 -c "
@@ -231,7 +231,9 @@ print('multi-cloud-oidc.yaml OK')
 "
 ```
 
-**Expected output:** `multi-cloud-oidc.yaml OK`
+!!! example "Expected output"
+    `multi-cloud-oidc.yaml OK`
+
 
 #### Task 2 – GitLab CI deploy stubs per cloud
 
@@ -286,7 +288,7 @@ deploy-gcp-stub:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-11
 set -euo pipefail
 python3 -c "
@@ -301,13 +303,15 @@ grep -q 'alpine:3.20' .gitlab-ci.yml
 grep -q 'id_tokens' .gitlab-ci.yml
 ```
 
-**Expected output:** `gitlab-ci OK` with three deploy stub job names; pinned Alpine image and `id_tokens` present.
+!!! example "Expected output"
+    `gitlab-ci OK` with three deploy stub job names; pinned Alpine image and `id_tokens` present.
+
 
 #### Task 3 – Cross-check matrix against pipeline
 
 Create `validate-multi-cloud.sh`:
 
-```bash
+```bash title="validate-multi-cloud.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "
@@ -325,14 +329,16 @@ echo 'module-11 multi-cloud lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-11
 set -euo pipefail
 chmod +x validate-multi-cloud.sh
 ./validate-multi-cloud.sh | tee validation.txt
 ```
 
-**Expected output:** `matrix matches CI stubs` then `module-11 multi-cloud lab passed`
+!!! example "Expected output"
+    `matrix matches CI stubs` then `module-11 multi-cloud lab passed`
+
 
 ### Validation steps
 
@@ -365,7 +371,7 @@ Add a `parallel: matrix` job that reads cloud names from `multi-cloud-oidc.yaml`
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-gitlab/module-11
 # Keep YAML for Module 12
 ```

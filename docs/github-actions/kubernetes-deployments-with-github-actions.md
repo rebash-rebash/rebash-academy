@@ -170,7 +170,7 @@ Create Kubernetes manifests, kubectl and Helm deploy workflow stubs, a rollback 
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-08/{k8s,charts/demo-app/templates,.github/workflows} && cd ~/rebash-github-actions/module-08
 set -euo pipefail
 ```
@@ -185,7 +185,7 @@ Platform SRE requires every service deploy through GitHub Actions with staging e
 
 Create `k8s/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -227,7 +227,7 @@ spec:
 
 Create `k8s/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -243,7 +243,7 @@ spec:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 grep -q 'kind: Deployment' k8s/deployment.yaml
@@ -252,7 +252,9 @@ grep -q 'kind: Service' k8s/service.yaml
 python3 -c "import yaml; yaml.safe_load(open('k8s/deployment.yaml')); yaml.safe_load(open('k8s/service.yaml')); print('manifests OK')"
 ```
 
-**Expected output:** `manifests OK`
+!!! example "Expected output"
+    `manifests OK`
+
 
 #### Task 2 – kubectl deploy workflow stub
 
@@ -294,7 +296,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 grep -q 'environment: staging' .github/workflows/k8s-deploy-kubectl.yml
@@ -302,13 +304,15 @@ grep -q 'deployment.rendered.yaml' .github/workflows/k8s-deploy-kubectl.yml
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/k8s-deploy-kubectl.yml')); print('kubectl workflow OK')"
 ```
 
-**Expected output:** `kubectl workflow OK`
+!!! example "Expected output"
+    `kubectl workflow OK`
+
 
 #### Task 3 – Helm chart stub and workflow
 
 Create `charts/demo-app/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: demo-app
 description: REBASH Module 8 stub chart
@@ -319,7 +323,7 @@ appVersion: "1.0.0"
 
 Create `charts/demo-app/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 2
 image:
   repository: ghcr.io/example/rebash-demo
@@ -356,7 +360,7 @@ spec:
 
 Create `.github/workflows/k8s-deploy-helm.yml`:
 
-```yaml
+```yaml title="k8s-deploy-helm.yml"
 name: Deploy with Helm (stub)
 on:
   workflow_dispatch:
@@ -384,20 +388,22 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 grep -q 'demo-app' charts/demo-app/Chart.yaml
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/k8s-deploy-helm.yml')); print('helm workflow OK')"
 ```
 
-**Expected output:** `helm workflow OK`
+!!! example "Expected output"
+    `helm workflow OK`
+
 
 #### Task 4 – Rollback check script and offline render test
 
 Create `rollback-check.sh`:
 
-```bash
+```bash title="rollback-check.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 NAMESPACE="${NAMESPACE:-staging}"
@@ -430,7 +436,7 @@ echo 'rollback-check.sh OK'
 
 Run and archive:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 chmod +x rollback-check.sh
@@ -444,7 +450,9 @@ tar -czf module-08-evidence.tgz k8s/ charts/ .github/workflows/ rollback-check.s
 ls -l module-08-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `rollback-check.sh OK`; `render OK`; tarball created.
+!!! example "Expected output"
+    `rollback-check.sh OK`; `render OK`; tarball created.
+
 
 **Optional — kind validation:**
 

@@ -143,13 +143,15 @@ Create a CI/CD stage map and a minimal Declarative `Jenkinsfile` under `~/rebash
 
 Workspace: `~/rebash-jenkins/module-01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-01 && cd ~/rebash-jenkins/module-01
 set -euo pipefail
 pwd | tee pwd-start.txt
 ```
 
-**Expected output:** `pwd-start.txt` ends with `module-01`.
+!!! example "Expected output"
+    `pwd-start.txt` ends with `module-01`.
+
 
 ### Real-world scenario
 
@@ -163,14 +165,14 @@ Write a stage map that separates “prove the change” from “ship the change.
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 ```
 
 Create `ci-cd-stages.yaml`:
 
-```yaml
+```yaml title="ci-cd-stages.yaml"
 ci:
   description: Continuous Integration — every PR or push
   stages:
@@ -200,7 +202,7 @@ ownership:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('ci-cd-stages.yaml') as f:
@@ -212,20 +214,22 @@ print('ci-cd-stages.yaml OK')
 " | tee stage-map-validate.txt
 ```
 
-**Expected output:** `stage-map-validate.txt` shows `ci-cd-stages.yaml OK`.
+!!! example "Expected output"
+    `stage-map-validate.txt` shows `ci-cd-stages.yaml OK`.
+
 
 #### Task 2 – Sketch controller versus agent responsibilities
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 ```
 
 Create `controller-agent.yaml`:
 
-```yaml
+```yaml title="controller-agent.yaml"
 controller:
   stores:
     - JENKINS_HOME
@@ -247,7 +251,7 @@ policy:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('controller-agent.yaml') as f:
@@ -258,13 +262,15 @@ print('controller-agent.yaml OK')
 " | tee architecture-validate.txt
 ```
 
-**Expected output:** `architecture-validate.txt` shows validation OK.
+!!! example "Expected output"
+    `architecture-validate.txt` shows validation OK.
+
 
 #### Task 3 – Write a minimal Declarative Jenkinsfile stub
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 
@@ -273,7 +279,7 @@ mkdir -p demo-app
 
 Create `demo-app/Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 // REBASH Academy — Module 1 Declarative stub (import in Module 2+)
 pipeline {
   agent any
@@ -304,7 +310,7 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 test -f demo-app/Jenkinsfile
 grep -q 'pipeline {' demo-app/Jenkinsfile
 grep -q 'stages {' demo-app/Jenkinsfile
@@ -315,20 +321,22 @@ cp demo-app/Jenkinsfile ./Jenkinsfile
 ls -l Jenkinsfile demo-app/Jenkinsfile | tee jenkinsfile-listing.txt
 ```
 
-**Expected output:** Listing shows both copies; `pipeline`, `stages`, `post`, and `agent any` present.
+!!! example "Expected output"
+    Listing shows both copies; `pipeline`, `stages`, `post`, and `agent any` present.
+
 
 #### Task 4 – Record LTS choice for the track
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 ```
 
 Create `lts-policy.yaml`:
 
-```yaml
+```yaml title="lts-policy.yaml"
 release_line:
   production: jenkins/jenkins:lts-jdk17
   labs: jenkins/jenkins:lts-jdk17
@@ -343,7 +351,7 @@ reference: https://www.jenkins.io/download/lts/
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('lts-policy.yaml') as f:
@@ -356,7 +364,9 @@ tar -czf module-01-evidence.tgz ci-cd-stages.yaml controller-agent.yaml lts-poli
 ls -l module-01-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** `module-01-evidence.tgz` exists; `evidence.txt` shows its size.
+!!! example "Expected output"
+    `module-01-evidence.tgz` exists; `evidence.txt` shows its size.
+
 
 ### Validation steps
 
@@ -386,7 +396,7 @@ Extend `demo-app/Jenkinsfile` with a third stage named `Package placeholder` tha
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Keep ~/rebash-jenkins/module-01 for Module 2 — no containers started in this lab
 ls ~/rebash-jenkins/module-01
 ```

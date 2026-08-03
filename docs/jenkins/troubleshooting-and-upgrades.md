@@ -137,7 +137,7 @@ Run a deliberate failing Pipeline, triage it with shell checks, practise Replay 
 
 Workspace: `~/rebash-jenkins/module-16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-16 && cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
@@ -152,14 +152,14 @@ Pager: “CI red across payments.” You need a triage checklist and an upgrade 
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
 
 Create `broken.Jenkinsfile`:
 
-```groovy
+```groovy title="broken.Jenkinsfile"
 pipeline {
   agent any
   stages {
@@ -180,7 +180,7 @@ pipeline {
 
 Create `triage-checks.sh`:
 
-```bash
+```bash title="triage-checks.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 LOG="${1:-console.log}"
@@ -192,26 +192,28 @@ echo triage_checks_ok
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x triage-checks.sh
 ```
 
 Create `expected-failure-markers.txt`:
 
-```text
+```text title="expected-failure-markers.txt"
 about_to_fail
 expected failure for Module 16 triage
 ```
 
 Verify:
 
-```bash
+```bash title="Terminal"
 grep -q "sh 'false'" broken.Jenkinsfile
 ```
 
 Create/run a lab job with `broken.Jenkinsfile`, paste Console Output to `console.log`, then run `./triage-checks.sh console.log | tee triage-result.txt`.
 
-**Expected output:** Triage script identifies `sh 'false'` as the cause.
+!!! example "Expected output"
+    Triage script identifies `sh 'false'` as the cause.
+
 
 #### Task 2 – Pipeline Replay drill (lab only)
 
@@ -222,14 +224,14 @@ Create/run a lab job with `broken.Jenkinsfile`, paste Console Output to `console
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
 
 Create `fixed.Jenkinsfile`:
 
-```groovy
+```groovy title="fixed.Jenkinsfile"
 pipeline {
   agent any
   stages {
@@ -245,26 +247,28 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 diff -u broken.Jenkinsfile fixed.Jenkinsfile | tee replay-fix.diff
 grep -q "sh 'true'" fixed.Jenkinsfile
 printf 'replay_lesson=commit_fix_to_git_not_replay_only\n' | tee replay-lesson.txt
 ```
 
-**Expected output:** Diff shows the one-line fix; Replay lesson captured in `replay-lesson.txt`.
+!!! example "Expected output"
+    Diff shows the one-line fix; Replay lesson captured in `replay-lesson.txt`.
+
 
 #### Task 3 – Agent and performance symptom sheet
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
 
 Create `symptoms.yaml`:
 
-```yaml
+```yaml title="symptoms.yaml"
 symptoms:
   - symptom: queued_forever
     likely_cause: no_matching_agent_or_executors_zero
@@ -288,7 +292,7 @@ symptoms:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('symptoms.yaml') as f:
@@ -298,20 +302,22 @@ print('symptoms.yaml OK')
 " | tee symptoms-validate.txt
 ```
 
-**Expected output:** Symptom YAML validates.
+!!! example "Expected output"
+    Symptom YAML validates.
+
 
 #### Task 4 – LTS upgrade plan YAML
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
 
 Create `lts-upgrade-plan.yaml`:
 
-```yaml
+```yaml title="lts-upgrade-plan.yaml"
 current:
   core_version: fill_from_ui
   image_tag: lts-jdk17
@@ -333,7 +339,7 @@ safe_restart:
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('lts-upgrade-plan.yaml') as f:
@@ -346,7 +352,9 @@ tar -czf module-16-evidence.tgz broken.Jenkinsfile fixed.Jenkinsfile triage-chec
 ls -l module-16-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Upgrade plan YAML validates; evidence archived.
+!!! example "Expected output"
+    Upgrade plan YAML validates; evidence archived.
+
 
 ### Validation steps
 
@@ -376,7 +384,7 @@ Capture `java -jar jenkins-cli.jar … list-plugins` output into `plugins-before
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Fix or delete the deliberately broken lab job
 ls ~/rebash-jenkins/module-16
 ```

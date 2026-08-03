@@ -160,7 +160,7 @@ Create `appproject.yaml` and `application.yaml`, apply them declaratively, sync 
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-04 && cd ~/rebash-argocd/module-04
 ```
 
@@ -174,7 +174,7 @@ A product squad needs guestbook deployed from the organisation’s allowed GitHu
 
 Create `appproject.yaml`:
 
-```yaml
+```yaml title="appproject.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
@@ -204,19 +204,21 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-04
 kubectl apply -f appproject.yaml | tee appproject-apply-m04.txt
 kubectl get appproject rebash-lab -n argocd | tee appproject-get-m04.txt
 ```
 
-**Expected output:** AppProject `rebash-lab` exists in namespace `argocd`.
+!!! example "Expected output"
+    AppProject `rebash-lab` exists in namespace `argocd`.
+
 
 #### Task 2 – Application CR (declarative)
 
 Create `application.yaml`:
 
-```yaml
+```yaml title="application.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -243,17 +245,19 @@ spec:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-04
 kubectl apply -f application.yaml | tee application-apply-m04.txt
 kubectl get application rebash-guestbook -n argocd | tee application-get-m04.txt
 ```
 
-**Expected output:** Application `rebash-guestbook` appears; sync may show `OutOfSync` briefly then progress.
+!!! example "Expected output"
+    Application `rebash-guestbook` appears; sync may show `OutOfSync` briefly then progress.
+
 
 #### Task 3 – Wait for sync and health
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-04
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
   application/rebash-guestbook -n argocd --timeout=300s | tee wait-synced-m04.txt
@@ -264,11 +268,13 @@ kubectl get deploy,svc -n rebash-argocd-m04 | tee workloads-m04.txt
 grep -q 'Synced' sync-health-m04.txt
 ```
 
-**Expected output:** Sync status `Synced`; health `Healthy` or `Progressing` then `Healthy`; Deployment and Service listed in `rebash-argocd-m04`.
+!!! example "Expected output"
+    Sync status `Synced`; health `Healthy` or `Progressing` then `Healthy`; Deployment and Service listed in `rebash-argocd-m04`.
+
 
 #### Task 4 – CLI verification (equivalent operations)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-04
 argocd app get rebash-guestbook | tee argocd-app-get-m04.txt
 argocd app sync rebash-guestbook --prune | tee argocd-app-sync-m04.txt || true
@@ -287,7 +293,9 @@ CLI create equivalent (reference — do not run if Application already exists):
 #   --sync-policy automated --auto-prune --self-heal
 ```
 
-**Expected output:** `argocd app get` shows Sync Status Synced and Health Status Healthy; resources listed under GROUP/KIND.
+!!! example "Expected output"
+    `argocd app get` shows Sync Status Synced and Health Status Healthy; resources listed under GROUP/KIND.
+
 
 ### Validation steps
 
@@ -320,7 +328,7 @@ Add a second Application manifest `guestbook-dev.yaml` that pins `targetRevision
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application rebash-guestbook -n argocd --wait=false
 kubectl delete appproject rebash-lab -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m04 --ignore-not-found

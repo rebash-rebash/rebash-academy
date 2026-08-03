@@ -158,13 +158,15 @@ Create a small app repo with Dockerfile + Declarative Pipeline that runs tests i
 
 Workspace: `~/rebash-jenkins/module-08`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-08 && cd ~/rebash-jenkins/module-08
 set -euo pipefail
 docker version | tee docker-version.txt
 ```
 
-**Expected output:** Client/server sections (agent host must see a daemon).
+!!! example "Expected output"
+    Client/server sections (agent host must see a daemon).
+
 
 ### Real-world scenario
 
@@ -176,7 +178,7 @@ Your Node service must build in CI with the same image developers use locally. S
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-08
 set -euo pipefail
 
@@ -186,13 +188,13 @@ mkdir -p docker-pipe-demo && cd docker-pipe-demo
 
 Create `app.js`:
 
-```javascript
+```javascript title="app.js"
 console.log('rebash-module-08');
 ```
 
 Create `package.json`:
 
-```json
+```json title="package.json"
 {
   "name": "docker-pipe-demo",
   "version": "0.1.0",
@@ -205,7 +207,7 @@ Create `package.json`:
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM node:20-alpine
 WORKDIR /app
 COPY package.json ./
@@ -215,7 +217,7 @@ CMD ["node", "app.js"]
 
 Create `Dockerfile.ci`:
 
-```dockerfile
+```dockerfile title="Dockerfile.ci"
 FROM node:20-alpine
 WORKDIR /app
 RUN apk add --no-cache git
@@ -223,7 +225,7 @@ RUN apk add --no-cache git
 
 Create `daemon-model.yaml`:
 
-```yaml
+```yaml title="daemon-model.yaml"
 lab_choice: fill_socket_or_dind
 options:
   sibling_socket:
@@ -237,7 +239,7 @@ untrusted_pr_policy: no_host_socket_for_fork_prs
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('daemon-model.yaml') as f:
@@ -250,20 +252,22 @@ cd ..
 test -f docker-pipe-demo/Dockerfile
 ```
 
-**Expected output:** App files and validated `daemon-model.yaml` exist.
+!!! example "Expected output"
+    App files and validated `daemon-model.yaml` exist.
+
 
 #### Task 2 – Declarative Pipeline with docker agent + image build
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-08/docker-pipe-demo
 set -euo pipefail
 ```
 
 Create `Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 pipeline {
   agent none
   options { timestamps() }
@@ -303,13 +307,15 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 # Note: label expression may need editing to match your Module 6 labels
 grep -q 'docker {' Jenkinsfile
 grep -q 'docker build' Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile contains docker agent and build stage.
+!!! example "Expected output"
+    Jenkinsfile contains docker agent and build stage.
+
 
 Wire this repo into Jenkins (Pipeline from SCM or Multibranch). Ensure the **Build image** stage runs on an agent that can talk to Docker. Adjust the label to `rebash-agent` if that is your Module 6 label.
 
@@ -317,14 +323,14 @@ Wire this repo into Jenkins (Pipeline from SCM or Multibranch). Ensure the **Bui
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-08/docker-pipe-demo
 set -euo pipefail
 ```
 
 Create `Jenkinsfile.dockerfile-agent`:
 
-```groovy
+```groovy title="Jenkinsfile.dockerfile-agent"
 pipeline {
   agent {
     dockerfile {
@@ -345,26 +351,28 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 test -f Jenkinsfile.dockerfile-agent
 ```
 
 Create job `rebash-demo/dockerfile-agent-demo` using this script (SCM or paste) and run once.
 
-**Expected output:** Stage prints `node` and `git` versions from the built CI image.
+!!! example "Expected output"
+    Stage prints `node` and `git` versions from the built CI image.
+
 
 #### Task 4 – Registry credentials pattern (Pipeline stub)
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-08
 set -euo pipefail
 ```
 
 Create `registry-push.Jenkinsfile`:
 
-```groovy
+```groovy title="registry-push.Jenkinsfile"
 // Credential ID registry-ci — do not commit passwords
 stage('Push image') {
   steps {
@@ -380,7 +388,7 @@ stage('Push image') {
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 grep -q registry-ci registry-push.Jenkinsfile
 grep -q 'docker.withRegistry' registry-push.Jenkinsfile
 
@@ -394,7 +402,9 @@ tar -czf module-08-evidence.tgz docker-pipe-demo/Jenkinsfile docker-pipe-demo/Do
 ls -l module-08-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Local image listed; evidence archive created.
+!!! example "Expected output"
+    Local image listed; evidence archive created.
+
 
 ### Validation steps
 
@@ -426,7 +436,7 @@ Extend the Pipeline with a third stage that tags the image as `${IMAGE_NAME}:git
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 docker rmi rebash/docker-pipe-demo:local 2>/dev/null || true
 # Remove BUILD_NUMBER tags created in Jenkins as needed
 ls ~/rebash-jenkins/module-08

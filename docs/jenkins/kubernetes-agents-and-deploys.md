@@ -146,7 +146,7 @@ Write a pod template YAML and a Declarative Pipeline that would run on Kubernete
 
 Workspace: `~/rebash-jenkins/module-13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-13 && cd ~/rebash-jenkins/module-13
 set -euo pipefail
 kubectl version --client | tee kubectl-client.txt || echo 'kubectl missing — YAML-only path' | tee kubectl-client.txt
@@ -162,7 +162,7 @@ Platform wants CI agents on Kubernetes next quarter. You must propose a pod temp
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 
@@ -171,7 +171,7 @@ mkdir -p k8s
 
 Create `k8s/ci-pod-template.yaml`:
 
-```yaml
+```yaml title="ci-pod-template.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -194,7 +194,7 @@ spec:
 
 Create `k8s/jenkins-agent-rbac.yaml`:
 
-```yaml
+```yaml title="jenkins-agent-rbac.yaml"
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -230,7 +230,7 @@ subjects:
 
 Create `k8s/jenkins-deploy-rbac.yaml`:
 
-```yaml
+```yaml title="jenkins-deploy-rbac.yaml"
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -253,25 +253,27 @@ rules:
 
 Run:
 
-```bash
+```bash title="Terminal"
 kubectl apply --dry-run=client -f k8s/ci-pod-template.yaml | tee dry-run-pod.txt
 kubectl apply --dry-run=client -f k8s/jenkins-agent-rbac.yaml | tee dry-run-agent-rbac.txt || true
 ```
 
-**Expected output:** Client dry-run validates YAML structure (namespace may warn if missing).
+!!! example "Expected output"
+    Client dry-run validates YAML structure (namespace may warn if missing).
+
 
 #### Task 2 – Pipeline sketch for K8s agent + gated deploy
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 ```
 
 Create `Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 pipeline {
   agent {
     kubernetes {
@@ -309,26 +311,28 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 # If plugin YAML expects only custom containers, adjust jnlp per your plugin docs
 grep -q 'kubernetes' Jenkinsfile
 grep -q 'Rollback' Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile references kubernetes agent and rollback note.
+!!! example "Expected output"
+    Jenkinsfile references kubernetes agent and rollback note.
+
 
 #### Task 3 – Local deploy dry-run (optional cluster)
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 ```
 
 Create `k8s/demo-deploy.yaml`:
 
-```yaml
+```yaml title="demo-deploy.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -350,7 +354,7 @@ spec:
 
 Create `deploy-rollback.sh`:
 
-```bash
+```bash title="deploy-rollback.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 NS=demo
@@ -363,7 +367,7 @@ kubectl -n "$NS" rollout history deploy/demo
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x deploy-rollback.sh
 
 if kubectl cluster-info >/dev/null 2>&1; then
@@ -377,20 +381,22 @@ fi
 grep -q rollout deploy-rollback.sh
 ```
 
-**Expected output:** Dry-run output or explicit no-cluster note; rollback commands in script.
+!!! example "Expected output"
+    Dry-run output or explicit no-cluster note; rollback commands in script.
+
 
 #### Task 4 – Least privilege and Jenkins cloud checklist
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 ```
 
 Create `k8s-cloud-checklist.yaml`:
 
-```yaml
+```yaml title="k8s-cloud-checklist.yaml"
 jenkins_url_reachable_from_pods: required
 cloud_credentials_least_privilege: required
 agent_sa_not_equal_deploy_sa: true
@@ -402,7 +408,7 @@ image_builds_prefer_kaniko_buildkit: true
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('k8s-cloud-checklist.yaml') as f:
@@ -415,7 +421,9 @@ tar -czf module-13-evidence.tgz k8s Jenkinsfile deploy-rollback.sh k8s-cloud-che
 ls -l module-13-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence archive created.
+!!! example "Expected output"
+    Evidence archive created.
+
 
 ### Validation steps
 
@@ -445,7 +453,7 @@ Add a `helm` chart skeleton under `chart/` with `Chart.yaml` and a Deployment te
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # kind delete cluster --name rebash-jenkins  # if you created one
 ls ~/rebash-jenkins/module-13
 ```

@@ -155,7 +155,7 @@ Deploy a deliberately broken Deployment in namespace `rebash-triage-lab`, diagno
 
 Workspace: `~/rebash-k8s/module-18`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
 ```
 
@@ -169,7 +169,7 @@ After a rushed manifest merge, the `web` Deployment in staging fails readiness c
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -180,7 +180,7 @@ metadata:
 
 Create `web-broken.yaml`:
 
-```yaml
+```yaml title="web-broken.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -238,7 +238,7 @@ spec:
 
 Apply and confirm failure:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-18
 set -euo pipefail
 kubectl apply -f namespace.yaml
@@ -247,13 +247,15 @@ kubectl rollout status deployment/web -n rebash-triage-lab --timeout=60s || true
 kubectl get pods -n rebash-triage-lab -l app=web | tee before-pods.txt
 ```
 
-**Expected output:** Pods `0/1 Ready` or restarts; not fully Available.
+!!! example "Expected output"
+    Pods `0/1 Ready` or restarts; not fully Available.
+
 
 #### Task 2 – Diagnose with describe, logs, and events
 
 Gather the standard triage chain before changing manifests.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-18
 kubectl get deploy,po,svc -n rebash-triage-lab -o wide | tee before-resources.txt
 kubectl describe deploy web -n rebash-triage-lab | tee before-describe.txt
@@ -263,13 +265,15 @@ kubectl get events -n rebash-triage-lab --sort-by=.lastTimestamp | tail -n 20 | 
 grep -Ei 'probe|healthz|unhealthy' before-events.txt before-pod-describe.txt
 ```
 
-**Expected output:** Events mention probe failures on `/healthz` (nginx default page is `/`).
+!!! example "Expected output"
+    Events mention probe failures on `/healthz` (nginx default page is `/`).
+
 
 #### Task 3 – Apply fixed manifest and verify Ready
 
 Create `web-fixed.yaml`:
 
-```yaml
+```yaml title="web-fixed.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -315,7 +319,7 @@ spec:
 
 Apply fix and prove recovery:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-18
 kubectl apply -f web-fixed.yaml
 kubectl rollout status deployment/web -n rebash-triage-lab --timeout=120s
@@ -324,17 +328,21 @@ kubectl get endpoints web -n rebash-triage-lab | tee after-endpoints.txt
 grep -q '1/1' after-pods.txt
 ```
 
-**Expected output:** Rollout succeeds; all Pods `1/1 Ready`; Endpoints populated.
+!!! example "Expected output"
+    Rollout succeeds; all Pods `1/1 Ready`; Endpoints populated.
+
 
 #### Task 4 – Archive before/after evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-18
 tar -czf module-18-triage-evidence.tgz namespace.yaml web-broken.yaml web-fixed.yaml before-*.txt after-*.txt
 ls -l module-18-triage-evidence.tgz
 ```
 
-**Expected output:** Tarball contains broken/fixed manifests and triage output files.
+!!! example "Expected output"
+    Tarball contains broken/fixed manifests and triage output files.
+
 
 ### Validation steps
 
@@ -367,7 +375,7 @@ Introduce a second failure by setting `image: nginx:does-not-exist-1.27` in a co
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-triage-lab --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/module-18/before-*.txt ~/rebash-k8s/module-18/after-*.txt ~/rebash-k8s/module-18/module-18-triage-evidence.tgz
 ```

@@ -167,7 +167,7 @@ Workspace: `~/rebash-gitlab/module-03`
 
 File-first lab. Push to GitLab only when tagged runners exist to claim jobs.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
 ```
 
@@ -181,7 +181,7 @@ Your platform team operates two runner fleets: `docker-linux` runners for contai
 
 Create `runner-tags.yaml`:
 
-```yaml
+```yaml title="runner-tags.yaml"
 runners:
   - name: shared-docker-linux
     scope: group
@@ -203,7 +203,7 @@ policy:
 
 Validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-03
 python3 -c "
 import yaml
@@ -214,19 +214,21 @@ print('OK executors', [r['executor'] for r in m['runners']])
 "
 ```
 
-**Expected output:** Prints `OK executors ['docker', 'shell']`.
+!!! example "Expected output"
+    Prints `OK executors ['docker', 'shell']`.
+
 
 #### Task 2 – Create tagged pipeline jobs
 
 Create `src/check.py`:
 
-```python
+```python title="check.py"
 print("runner-tags ok")
 ```
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 stages:
   - build
   - deploy
@@ -259,7 +261,7 @@ shell_deploy_stub:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-03
 python3 -c "
 import yaml
@@ -270,20 +272,24 @@ print('OK tagged jobs')
 "
 ```
 
-**Expected output:** Prints `OK tagged jobs`.
+!!! example "Expected output"
+    Prints `OK tagged jobs`.
+
 
 #### Task 3 – Simulate docker-stage logic locally
 
 Run the build script path without a runner:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-03
 python3 src/check.py | tee runner-out.txt
 python3 -c "print('build on docker executor')" | tee -a runner-out.txt
 grep -q 'runner-tags ok' runner-out.txt
 ```
 
-**Expected output:** `runner-out.txt` contains both `runner-tags ok` and `build on docker executor`.
+!!! example "Expected output"
+    `runner-out.txt` contains both `runner-tags ok` and `build on docker executor`.
+
 
 ### Validation steps
 
@@ -315,7 +321,7 @@ Add a `lint_mr` job tagged `docker-linux` with `rules: [{ if: $CI_PIPELINE_SOURC
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-03/runner-out.txt
 # Keep runner-tags.yaml and .gitlab-ci.yml for module 04
 ```

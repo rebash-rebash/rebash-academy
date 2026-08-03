@@ -173,7 +173,7 @@ Workspace: `~/rebash-gitlab/module-13`
 
 File-first lab. Test reports upload on GitLab runners; this lab validates XML and pipeline structure locally.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-13 && cd ~/rebash-gitlab/module-13
 set -euo pipefail
 ```
@@ -188,14 +188,14 @@ Quality engineering requires unit tests on every merge request with JUnit report
 
 Create `app/calc.py`:
 
-```python
+```python title="calc.py"
 def add(a: int, b: int) -> int:
     return a + b
 ```
 
 Create `tests/test_calc.py`:
 
-```python
+```python title="test_calc.py"
 from app.calc import add
 
 def test_add():
@@ -207,13 +207,13 @@ def test_add_zero():
 
 Create `requirements-dev.txt`:
 
-```text
+```text title="requirements-dev.txt"
 pytest>=8.0
 ```
 
 Run tests locally with JUnit output:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 python3 -m pip install -q -r requirements-dev.txt
@@ -222,13 +222,15 @@ test -f report.xml
 grep -q 'testsuite' report.xml
 ```
 
-**Expected output:** Pytest passes; `report.xml` contains a `testsuite` element.
+!!! example "Expected output"
+    Pytest passes; `report.xml` contains a `testsuite` element.
+
 
 #### Task 2 – Sample JUnit XML (reference fixture)
 
 Create `fixtures/sample-junit.xml`:
 
-```xml
+```xml title="sample-junit.xml"
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="module-13-fixture" tests="2" failures="0" errors="0" time="0.01">
   <testsuite name="tests.test_calc" tests="2" failures="0" errors="0" skipped="0" time="0.01">
@@ -240,7 +242,7 @@ Create `fixtures/sample-junit.xml`:
 
 Validate the fixture:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 grep -q 'test_add' fixtures/sample-junit.xml
@@ -253,7 +255,9 @@ print('sample-junit.xml OK')
 "
 ```
 
-**Expected output:** `sample-junit.xml OK`
+!!! example "Expected output"
+    `sample-junit.xml OK`
+
 
 #### Task 3 – GitLab CI with JUnit report artefacts
 
@@ -289,7 +293,7 @@ unit-tests:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 python3 -c "
@@ -303,13 +307,15 @@ print('gitlab-ci OK')
 grep -q 'python:3.12-alpine' .gitlab-ci.yml
 ```
 
-**Expected output:** `gitlab-ci OK`; pinned Python image and `when: always` on artefacts.
+!!! example "Expected output"
+    `gitlab-ci OK`; pinned Python image and `when: always` on artefacts.
+
 
 #### Task 4 – Local validation script
 
 Create `validate-tests.sh`:
 
-```bash
+```bash title="validate-tests.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 PYTHONPATH=. pytest tests/ --junitxml=junit-report.xml -q
@@ -321,14 +327,16 @@ echo 'module-13 testing lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 chmod +x validate-tests.sh
 ./validate-tests.sh | tee validation.txt
 ```
 
-**Expected output:** `module-13 testing lab passed`
+!!! example "Expected output"
+    `module-13 testing lab passed`
+
 
 ### Validation steps
 
@@ -361,7 +369,7 @@ Add an integration test job that `needs: [unit-tests]` and publishes a second JU
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-gitlab/module-13/.pytest_cache ~/rebash-gitlab/module-13/**/__pycache__ 2>/dev/null || true
 ls ~/rebash-gitlab/module-13
 ```

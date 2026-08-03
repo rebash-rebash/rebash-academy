@@ -57,7 +57,7 @@ Platform runs dozens of public hostnames. Manual calendar reminders failed; you 
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-certs/{fixtures,out}
 cd ~/rebash-lab-python-certs
 python3 -m venv .venv && source .venv/bin/activate
@@ -66,7 +66,7 @@ pip install 'cryptography>=42,<45'
 
 ## Initial State — create short-lived and long-lived PEMs
 
-```bash
+```bash title="Terminal"
 openssl req -x509 -newkey rsa:2048 -keyout fixtures/key.pem -out fixtures/soon.pem \
   -days 5 -nodes -subj "/CN=soon.example.test" 2>/dev/null
 openssl req -x509 -newkey rsa:2048 -keyout /tmp/k2.pem -out fixtures/later.pem \
@@ -84,7 +84,7 @@ Create `cert_monitor.py`:
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python cert_monitor.py --pem fixtures/soon.pem --pem fixtures/later.pem --warn-days 14; echo $?  # 1
 python -c 'import json; print(json.load(open("out/report.json")))'
 ```

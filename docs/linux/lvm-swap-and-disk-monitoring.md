@@ -69,7 +69,7 @@ LVM sits between physical disks and filesystems so you can grow logical volumes 
 | LV | Logical volume — block device you format and mount |
 | Swap | Backing for anonymous memory under RAM pressure |
 
-```bash
+```bash title="Terminal"
 sudo pvs; sudo vgs; sudo lvs
 swapon --show
 free -h
@@ -114,7 +114,7 @@ Build a loop-backed VG with a small LV, mount it, extend the LV using free VG sp
 
 Workspace: `~/rebash-linux/lab13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab13 && cd ~/rebash-linux/lab13
 set -euo pipefail
 sudo apt-get update -qq
@@ -124,7 +124,9 @@ free -h | tee free-before.txt
 swapon --show | tee swapon-before.txt || true
 ```
 
-**Expected output:** `lvm2` installed; baseline memory/swap files exist.
+!!! example "Expected output"
+    `lvm2` installed; baseline memory/swap files exist.
+
 
 ### Real-world scenario
 
@@ -134,7 +136,7 @@ An app data volume will need growth next month. You rehearse LVM create + online
 
 #### Task 1 – Loop PVs, VG, and LV
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab13
 set -euo pipefail
 
@@ -159,11 +161,13 @@ sudo lvs rebashvg | tee lvs-lab.txt
 echo 'before-extend' | sudo tee /mnt/rebash-lvm/note.txt >/dev/null
 ```
 
-**Expected output:** `vgs-lab.txt` shows free space in `rebashvg`; `df-before-extend.txt` shows ~200M-class size for the mount.
+!!! example "Expected output"
+    `vgs-lab.txt` shows free space in `rebashvg`; `df-before-extend.txt` shows ~200M-class size for the mount.
+
 
 #### Task 2 – Online extend LV + filesystem
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab13
 set -euo pipefail
 
@@ -179,11 +183,13 @@ test -s df-after-extend.txt
 grep -F 'before-extend' note-after.txt
 ```
 
-**Expected output:** `lvs-after.txt` shows a larger data LV (~300M); file content still present; `df-after-extend.txt` reflects growth.
+!!! example "Expected output"
+    `lvs-after.txt` shows a larger data LV (~300M); file content still present; `df-after-extend.txt` reflects growth.
+
 
 #### Task 3 – Swap + monitoring signals + evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab13
 set -euo pipefail
 
@@ -202,7 +208,9 @@ tar -czf lvm-evidence.tgz \
 ls -l lvm-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** evidence archive exists; swap/memory files captured (swap may be empty on some cloud images — that is OK).
+!!! example "Expected output"
+    evidence archive exists; swap/memory files captured (swap may be empty on some cloud images — that is OK).
+
 
 ### Validation steps
 
@@ -233,7 +241,7 @@ Add a third loop file `pv3.img` (128 MiB), `pvcreate` + `vgextend rebashvg`, t
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab13
 set -euo pipefail
 

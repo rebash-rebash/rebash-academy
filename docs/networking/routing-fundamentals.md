@@ -84,7 +84,7 @@ Most “cannot reach the database” tickets that are not DNS or firewall end up
 3. **Forward** — packet goes out the chosen device toward the next hop or local delivery.
 4. **Observe** — `ip route get 1.1.1.1` shows what the kernel would do for one destination.
 
-```bash
+```bash title="Terminal"
 ip route show
 ip route get 1.1.1.1
 ```
@@ -128,7 +128,7 @@ Document the main routing table, practise a temporary route **add/del inside a n
 
 Workspace: `~/rebash-networking/lab06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab06 && cd ~/rebash-networking/lab06
 set -euo pipefail
 hostname | tee hostname.txt
@@ -137,7 +137,9 @@ sudo -n true 2>/dev/null || sudo -v
 command -v ip | tee tools-present.txt
 ```
 
-**Expected output:** sudo works; `ip` is available.
+!!! example "Expected output"
+    sudo works; `ip` is available.
+
 
 ### Real-world scenario
 
@@ -147,7 +149,7 @@ Before approving a VPC peering change, you document how a lab VM currently route
 
 #### Task 1 – Document the main routing table and route lookup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab06
 set -euo pipefail
 
@@ -165,13 +167,15 @@ ip route get 127.0.0.1 2>&1 | tee ip-route-get-localhost.txt
 } | tee route-summary.txt
 ```
 
-**Expected output:** `ip-route.txt` lists routes; `ip-route-get-localhost.txt` succeeds; Internet lookup may work or explain missing default.
+!!! example "Expected output"
+    `ip-route.txt` lists routes; `ip-route-get-localhost.txt` succeeds; Internet lookup may work or explain missing default.
+
 
 #### Task 2 – Temporary unreachable route inside a network namespace
 
 This sandbox avoids breaking the host default route. Cleanup deletes the namespace (and its routes).
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab06
 set -euo pipefail
 
@@ -208,11 +212,13 @@ fi
 echo "route_removed_ok" | tee netns-route-removed.txt
 ```
 
-**Expected output:** Route appears after add, ping fails as unreachable (or equivalent error text), route is gone after delete, `netns-route-removed.txt` contains `route_removed_ok`.
+!!! example "Expected output"
+    Route appears after add, ping fails as unreachable (or equivalent error text), route is gone after delete, `netns-route-removed.txt` contains `route_removed_ok`.
+
 
 #### Task 3 – Traceroute evidence (safe) and pack; keep cleanup ready
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab06
 set -euo pipefail
 
@@ -237,7 +243,9 @@ ls -l routing-evidence.tgz | tee evidence-ls.txt
 test -s routing-evidence.tgz
 ```
 
-**Expected output:** `routing-evidence.tgz` is non-empty; traceroute file exists (full path, partial stars, or honest “not installed”).
+!!! example "Expected output"
+    `routing-evidence.tgz` is non-empty; traceroute file exists (full path, partial stars, or honest “not installed”).
+
 
 ### Validation steps
 
@@ -270,7 +278,7 @@ Create executable script `~/rebash-networking/lab06/netns-route-lab.sh` that: cr
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab06
 set -euo pipefail
 
@@ -290,7 +298,9 @@ ip route show | tee ip-route-after-cleanup.txt
 echo "cleanup_complete" | tee cleanup-complete.txt
 ```
 
-**Expected output:** Lab netns names are gone; main table has no leftover lab unreachable routes; `cleanup-complete.txt` exists.
+!!! example "Expected output"
+    Lab netns names are gone; main table has no leftover lab unreachable routes; `cleanup-complete.txt` exists.
+
 
 ## Validation
 

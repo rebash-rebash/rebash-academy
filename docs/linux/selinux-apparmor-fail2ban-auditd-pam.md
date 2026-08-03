@@ -71,7 +71,7 @@ Security layers sit around login and process execution. PAM authenticates. MAC c
 
 **PAM** stacks under `/etc/pam.d/` chain modules for `auth`, `account`, `password`, and `session`. SSH, sudo, and login all use PAM.
 
-```bash
+```bash title="Terminal"
 command -v getenforce >/dev/null && getenforce || echo 'no SELinux getenforce'
 command -v aa-status >/dev/null && sudo aa-status --enabled; sudo aa-status 2>/dev/null | head || echo 'no AppArmor tools'
 systemctl is-active auditd 2>/dev/null || true
@@ -132,7 +132,7 @@ On a practice VM, **detect and report** MAC (AppArmor and/or SELinux), auditd, F
 
 Workspace: `~/rebash-linux/lab21`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab21 && cd ~/rebash-linux/lab21
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -142,7 +142,9 @@ sudo -n true 2>/dev/null || sudo -v
 cat /etc/os-release | tee os-release.txt
 ```
 
-**Expected output:** identity and OS files exist; sudo works.
+!!! example "Expected output"
+    identity and OS files exist; sudo works.
+
 
 !!! warning "Safe lab rules"
     Do **not** run `setenforce 0` as a “fix”.  
@@ -158,7 +160,7 @@ A security questionnaire asks: “Is MAC enforcing? Is auditd running? Do you ra
 
 #### Task 1 – Detect MAC (AppArmor and SELinux) safely
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab21
 set -euo pipefail
 
@@ -193,11 +195,13 @@ set -euo pipefail
 } | tee mac-detect.log
 ```
 
-**Expected output:** `mac-detect.log` and status files exist; on Ubuntu you typically see AppArmor profiles; on RHEL-like hosts you see `getenforce` mode.
+!!! example "Expected output"
+    `mac-detect.log` and status files exist; on Ubuntu you typically see AppArmor profiles; on RHEL-like hosts you see `getenforce` mode.
+
 
 #### Task 2 – auditd and Fail2Ban status (detect only)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab21
 set -euo pipefail
 
@@ -229,11 +233,13 @@ test -s auditd-active.txt
 test -s fail2ban-status.txt
 ```
 
-**Expected output:** status files for auditd and Fail2Ban; either real status or a clear “not installed / inactive” note.
+!!! example "Expected output"
+    status files for auditd and Fail2Ban; either real status or a clear “not installed / inactive” note.
+
 
 #### Task 3 – Read PAM (no edits) and build posture report
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab21
 set -euo pipefail
 
@@ -285,7 +291,9 @@ ls -l security-posture.tgz | tee evidence-ls.txt
 test -s security-posture.tgz
 ```
 
-**Expected output:** `pam-sshd.txt` (or clear missing note), `posture-report.md`, and non-empty `security-posture.tgz`.
+!!! example "Expected output"
+    `pam-sshd.txt` (or clear missing note), `posture-report.md`, and non-empty `security-posture.tgz`.
+
 
 ### Validation steps
 
@@ -318,7 +326,7 @@ Write `~/rebash-linux/lab21/posture-check.sh` that prints `PASS` or `FAIL` for e
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab21
 set -euo pipefail
 # This lab is read-only for MAC/PAM — nothing to revert

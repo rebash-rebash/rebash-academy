@@ -71,7 +71,7 @@ A practical loop:
 5. **Action** — smallest safe change  
 6. **Proof** — symptom gone; evidence saved  
 
-```bash
+```bash title="Terminal"
 systemctl --failed
 journalctl -xe --no-pager | tail
 df -hT
@@ -113,14 +113,16 @@ Run a host fact pack, deploy a systemd unit that fails on purpose, diagnose it w
 
 Workspace: `~/rebash-linux/lab23`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab23 && cd ~/rebash-linux/lab23
 set -euo pipefail
 date -Is | tee incident-start.txt
 whoami | tee operator.txt
 ```
 
-**Expected output:** timestamp and operator files exist.
+!!! example "Expected output"
+    timestamp and operator files exist.
+
 
 ### Real-world scenario
 
@@ -130,7 +132,7 @@ A practice “health writer” service should create `/var/tmp/rebash-lab23.ok` 
 
 #### Task 1 – Host fact pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab23
 set -euo pipefail
 
@@ -145,11 +147,13 @@ ss -lntu | head -n 30 | tee ss.txt
 ip -br a | tee ip.txt
 ```
 
-**Expected output:** fact files created; systemd state captured (may be `running` or `degraded`).
+!!! example "Expected output"
+    fact files created; systemd state captured (may be `running` or `degraded`).
+
 
 #### Task 2 – Break a unit on purpose and diagnose
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab23
 set -euo pipefail
 
@@ -179,11 +183,13 @@ systemctl is-failed rebash-lab23.service | tee is-failed.txt
 test "$(cat is-failed.txt)" = "failed"
 ```
 
-**Expected output:** unit is `failed`; journal/status mention the missing ExecStart path.
+!!! example "Expected output"
+    unit is `failed`; journal/status mention the missing ExecStart path.
+
 
 #### Task 3 – Fix forward, prove recovery, pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab23
 set -euo pipefail
 
@@ -226,7 +232,9 @@ tar -czf troubleshooting-evidence.tgz \
 ls -l troubleshooting-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** unit `active`; `/var/tmp/rebash-lab23.ok` exists; evidence archive not empty.
+!!! example "Expected output"
+    unit `active`; `/var/tmp/rebash-lab23.ok` exists; evidence archive not empty.
+
 
 ### Validation steps
 
@@ -257,7 +265,7 @@ Extend the unit into a simple **restarting service** (`Type=simple`) that loops 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab23
 set -euo pipefail
 sudo systemctl disable --now rebash-lab23.service 2>/dev/null || true

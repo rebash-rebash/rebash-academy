@@ -159,7 +159,7 @@ Create a **kind** cluster, configure the **kubernetes** provider, apply **namesp
 
 Workspace: `~/rebash-terraform/module-18`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-18/{manifests,artefacts} && cd ~/rebash-terraform/module-18
 ```
 
@@ -173,7 +173,7 @@ You are bootstrapping a platform cluster repo. Terraform applies bootstrap names
 
 Create `kind-config.yaml`:
 
-```yaml
+```yaml title="kind-config.yaml"
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: rebash-module-18
@@ -183,7 +183,7 @@ nodes:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-18
 kind create cluster --config kind-config.yaml | tee artefacts/kind-create.log
 kind export kubeconfig --name rebash-module-18 --kubeconfig artefacts/kubeconfig
@@ -192,13 +192,15 @@ grep -q 'Ready' artefacts/nodes.txt
 echo "kind cluster OK" | tee artefacts/kind-ok.txt
 ```
 
-**Expected output:** kind cluster `rebash-module-18` running; at least one node `Ready`.
+!!! example "Expected output"
+    kind cluster `rebash-module-18` running; at least one node `Ready`.
+
 
 #### Task 2 – Configure Terraform kubernetes provider
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.9.0"
 
@@ -213,7 +215,7 @@ terraform {
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "kubeconfig_path" {
   type        = string
   description = "Path to kubeconfig for the kind cluster."
@@ -229,7 +231,7 @@ variable "cluster_name" {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "kubernetes" {
   config_path = "${path.module}/${var.kubeconfig_path}"
 }
@@ -237,7 +239,7 @@ provider "kubernetes" {
 
 Create `manifests/platform-namespace.yaml`:
 
-```yaml
+```yaml title="platform-namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -249,7 +251,7 @@ metadata:
 
 Create `manifests/platform-configmap.yaml`:
 
-```yaml
+```yaml title="platform-configmap.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -263,7 +265,7 @@ data:
 
 Create `manifests/platform-deployment.yaml`:
 
-```yaml
+```yaml title="platform-deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -290,7 +292,7 @@ spec:
 
 Create `kubernetes.tf`:
 
-```hcl
+```hcl title="kubernetes.tf"
 resource "kubernetes_manifest" "platform_namespace" {
   manifest = yamldecode(file("${path.module}/manifests/platform-namespace.yaml"))
 }
@@ -310,7 +312,7 @@ resource "kubernetes_manifest" "platform_deployment" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "namespace" {
   value = "platform"
 }
@@ -322,7 +324,7 @@ output "deployment_name" {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-18
 terraform init | tee artefacts/init.log
 terraform validate | tee artefacts/validate.log
@@ -330,13 +332,15 @@ grep -q 'Success' artefacts/validate.log
 echo "provider config OK" | tee artefacts/provider-ok.txt
 ```
 
-**Expected output:** Validate succeeds with kubernetes provider configured.
+!!! example "Expected output"
+    Validate succeeds with kubernetes provider configured.
+
 
 #### Task 3 – Apply in-cluster resources and prove with kubectl
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-18
 terraform apply -auto-approve -input=false | tee artefacts/apply.log
 kubectl --kubeconfig artefacts/kubeconfig get ns platform | tee artefacts/ns-platform.txt
@@ -350,13 +354,15 @@ grep -q 'Running' artefacts/pod-phase.txt
 echo "k8s apply OK" | tee artefacts/k8s-apply-ok.txt
 ```
 
-**Expected output:** Namespace, ConfigMap, and Deployment exist; pod phase `Running`.
+!!! example "Expected output"
+    Namespace, ConfigMap, and Deployment exist; pod phase `Running`.
+
 
 #### Task 4 – Document GitOps boundary and Helm bootstrap stub
 
 Create `docs/gitops-boundary.md`:
 
-```markdown
+```markdown title="gitops-boundary.md"
 # GitOps boundary
 
 | Managed by Terraform | Managed by GitOps |
@@ -369,14 +375,14 @@ Create `docs/gitops-boundary.md`:
 
 Create `helm.tf.example`:
 
-```hcl
+```hcl title="helm.tf.example"
 # Bootstrap-only Helm — enable after cluster exists; pin chart versions.
 # resource "helm_release" "argocd" { ... }
 ```
 
 Verify and capture evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-18
 grep -q 'Managed by GitOps' docs/gitops-boundary.md
 terraform state list | tee artefacts/state-list.txt
@@ -384,7 +390,9 @@ grep -q 'kubernetes_manifest.platform_deployment' artefacts/state-list.txt
 echo "gitops boundary OK" | tee artefacts/gitops-ok.txt
 ```
 
-**Expected output:** GitOps doc exists; state lists all three kubernetes_manifest resources.
+!!! example "Expected output"
+    GitOps doc exists; state lists all three kubernetes_manifest resources.
+
 
 ### Validation steps
 
@@ -417,7 +425,7 @@ Scale the Deployment to 2 replicas via Terraform (`replicas: 2` in manifest), ap
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-18
 terraform destroy -auto-approve
 kind delete cluster --name rebash-module-18

@@ -73,7 +73,7 @@ By the end of this lab, you will be able to:
 
 Create a dedicated lab project on GitLab.com (or use a fork). Set a consistent prefix:
 
-```bash
+```bash title="Terminal"
 export LAB_PREFIX="rebash-cicd-triage-$(whoami | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | cut -c1-12)"
 mkdir -p ~/rebash-lab-cicd && cd ~/rebash-lab-cicd
 git init -b main
@@ -99,7 +99,7 @@ Your job is to prove each layer with logs before fixing it.
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-cicd
 
 mkdir -p test app
@@ -126,11 +126,13 @@ EOF
 python3 -m pytest -q test/ && echo "local tests OK"
 ```
 
-**Expected output:** `1 passed` locally.
+!!! example "Expected output"
+    `1 passed` locally.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 python3 -m pytest -q test/ 2>&1 | grep -q "passed" && echo "baseline tests OK"
 ```
 
@@ -140,7 +142,7 @@ python3 -m pytest -q test/ 2>&1 | grep -q "passed" && echo "baseline tests OK"
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cat > .gitlab-ci.yml <<'EOF'
 stages:
   - lint
@@ -178,7 +180,9 @@ git add .
 git commit -m "feat: add rebash-status with initial CI (broken)"
 ```
 
-**Expected output:** Commit succeeds; pipeline will fail when pushed.
+!!! example "Expected output"
+    Commit succeeds; pipeline will fail when pushed.
+
 
 !!! note "Injected faults summary"
     | # | Fault | Symptom |
@@ -193,7 +197,7 @@ git commit -m "feat: add rebash-status with initial CI (broken)"
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 # Create empty project on GitLab.com, then:
 git remote add origin "git@gitlab.com:YOUR_GROUP/${LAB_PREFIX}.git"
 git push -u origin main
@@ -206,14 +210,16 @@ Open **CI/CD → Pipelines** and note:
 
 **Local lint alternative:**
 
-```bash
+```bash title="Terminal"
 # Replace PROJECT_ID and TOKEN with your values
 curl --silent --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
   --form "content=$(cat .gitlab-ci.yml)" \
   "https://gitlab.com/api/v4/projects/PROJECT_ID/ci/lint" | jq .
 ```
 
-**Expected output:** Lint or pipeline UI reports stage/script errors.
+!!! example "Expected output"
+    Lint or pipeline UI reports stage/script errors.
+
 
 **Validation:** Capture one log line showing `stage: verify` or `script can't be blank` or `ERROR: Job failed: exit code 4`.
 
@@ -231,15 +237,15 @@ curl --silent --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
    - Is `verify` declared under `stages:`?
    - Does the filesystem contain `tests/` or `test/`?
 
-```bash
+```bash title="Terminal"
 ls -la test/ tests/ 2>/dev/null || true
 grep -E '^stages:|verify|test' .gitlab-ci.yml
 ```
 
-**Expected output:**
+!!! example "Expected output"
+    - `test/` exists; `tests/` does not
+    - `stages:` lists `lint`, `test`, `build` — not `verify`
 
-- `test/` exists; `tests/` does not
-- `stages:` lists `lint`, `test`, `build` — not `verify`
 
 **Validation:** Written root cause for fault 1: "Job stage `verify` not in top-level stages list."
 
@@ -249,12 +255,14 @@ grep -E '^stages:|verify|test' .gitlab-ci.yml
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sed -i.bak 's/stage: verify/stage: test/' .gitlab-ci.yml
 grep 'stage: test' .gitlab-ci.yml
 ```
 
-**Expected output:** `unit-test` now uses `stage: test`.
+!!! example "Expected output"
+    `unit-test` now uses `stage: test`.
+
 
 **Validation:** Re-run CI lint; stage error cleared.
 
@@ -264,16 +272,18 @@ grep 'stage: test' .gitlab-ci.yml
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 sed -i.bak 's|pytest -q tests/|pytest -q test/|' .gitlab-ci.yml
 grep pytest .gitlab-ci.yml
 ```
 
-**Expected output:** `pytest -q test/`
+!!! example "Expected output"
+    `pytest -q test/`
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 docker run --rm -v "$PWD:/app" -w /app python:3.12-slim \
   bash -c 'pip install -q -r requirements.txt && pytest -q test/'
 ```
@@ -284,7 +294,7 @@ docker run --rm -v "$PWD:/app" -w /app python:3.12-slim \
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 cat > .gitlab-ci.yml <<'EOF'
 stages:
   - lint
@@ -322,7 +332,9 @@ build-artifact:
 EOF
 ```
 
-**Expected output:** All three jobs have non-empty `script` blocks.
+!!! example "Expected output"
+    All three jobs have non-empty `script` blocks.
+
 
 **Validation:** CI lint passes with no errors.
 
@@ -332,7 +344,7 @@ EOF
 
 **Instructions:**
 
-```bash
+```bash title="Terminal"
 git add .gitlab-ci.yml
 git commit -m "fix(ci): correct stage, test path, and lint script"
 git push origin main
@@ -340,11 +352,13 @@ git push origin main
 
 Watch the pipeline until all jobs succeed. Download the **dist.txt** artefact from **build-artifact**.
 
-**Expected output:** Pipeline status **passed**; artefact present.
+!!! example "Expected output"
+    Pipeline status **passed**; artefact present.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 # After downloading artefact from UI:
 cat dist.txt | grep -q "build ok" && echo "artefact OK"
 ```
@@ -398,7 +412,7 @@ For each of the three faults, write one paragraph covering:
 
 Delete the lab project on GitLab.com when finished, or archive it. Remove local clone if no longer needed:
 
-```bash
+```bash title="Terminal"
 cd ~ && rm -rf ~/rebash-lab-cicd
 ```
 

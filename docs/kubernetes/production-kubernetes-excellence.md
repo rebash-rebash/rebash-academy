@@ -158,7 +158,7 @@ Apply a production baseline in namespace `rebash-excellence-lab`: ResourceQuota,
 
 Workspace: `~/rebash-k8s/module-20`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-20 && cd ~/rebash-k8s/module-20
 ```
 
@@ -172,7 +172,7 @@ Before go-live, platform review requires a tenant namespace with quota guardrail
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -184,7 +184,7 @@ metadata:
 
 Create `resourcequota.yaml`:
 
-```yaml
+```yaml title="resourcequota.yaml"
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -201,20 +201,22 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-20
 kubectl apply -f namespace.yaml
 kubectl apply -f resourcequota.yaml
 kubectl get resourcequota tenant-quota -n rebash-excellence-lab
 ```
 
-**Expected output:** Quota `tenant-quota` listed with hard limits.
+!!! example "Expected output"
+    Quota `tenant-quota` listed with hard limits.
+
 
 #### Task 2 – Create production Deployment with probes and PDB
 
 Create `deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -270,7 +272,7 @@ spec:
 
 Create `pdb.yaml`:
 
-```yaml
+```yaml title="pdb.yaml"
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -285,7 +287,7 @@ spec:
 
 Apply and wait for Ready:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-20
 kubectl apply -f deployment.yaml
 kubectl apply -f pdb.yaml
@@ -293,13 +295,15 @@ kubectl rollout status deployment/api -n rebash-excellence-lab --timeout=120s
 kubectl get pdb api-pdb -n rebash-excellence-lab
 ```
 
-**Expected output:** Deployment Available; PDB shows `ALLOWED DISRUPTIONS` ≥ 1.
+!!! example "Expected output"
+    Deployment Available; PDB shows `ALLOWED DISRUPTIONS` ≥ 1.
+
 
 #### Task 3 – Add default-deny NetworkPolicy with explicit ingress
 
 Create `networkpolicy.yaml`:
 
-```yaml
+```yaml title="networkpolicy.yaml"
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -333,17 +337,19 @@ spec:
 
 Apply and list policies:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-20
 kubectl apply -f networkpolicy.yaml
 kubectl get networkpolicy -n rebash-excellence-lab | tee netpol-evidence.txt
 ```
 
-**Expected output:** Two NetworkPolicies in `rebash-excellence-lab`.
+!!! example "Expected output"
+    Two NetworkPolicies in `rebash-excellence-lab`.
+
 
 #### Task 4 – Package excellence evidence tarball
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-20
 kubectl get all,pdb,resourcequota,networkpolicy -n rebash-excellence-lab | tee excellence-status.txt
 kubectl describe deploy api -n rebash-excellence-lab | tee excellence-describe.txt
@@ -351,7 +357,9 @@ tar -czf module-20-excellence-evidence.tgz namespace.yaml resourcequota.yaml dep
 ls -l module-20-excellence-evidence.tgz
 ```
 
-**Expected output:** Tarball contains all baseline manifests and live status output.
+!!! example "Expected output"
+    Tarball contains all baseline manifests and live status output.
+
 
 ### Validation steps
 
@@ -384,7 +392,7 @@ Add a `LimitRange` default for containers (128Mi memory request) and prove a Pod
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-excellence-lab --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/module-20/*.txt ~/rebash-k8s/module-20/module-20-excellence-evidence.tgz
 ```

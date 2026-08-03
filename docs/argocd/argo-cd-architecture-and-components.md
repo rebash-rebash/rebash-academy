@@ -158,7 +158,7 @@ Install or verify Argo CD on a **kind** cluster, collect live pod evidence from 
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-02 && cd ~/rebash-argocd/module-02
 export KUBECONFIG="$(kind get kubeconfig-path --name rebash-argocd 2>/dev/null || kind get kubeconfig --name rebash-argocd)"
 ```
@@ -175,7 +175,7 @@ You join a platform team mid-incident: the UI loads but Applications stay Progre
 
 If Argo CD is not installed yet, run the Module 3 install script or:
 
-```bash
+```bash title="Terminal"
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -n argocd --server-side --force-conflicts \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -184,7 +184,7 @@ kubectl wait --for=condition=Available deployment/argocd-server -n argocd --time
 
 Collect pod evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-02
 kubectl get pods -n argocd -o wide | tee pod-evidence-m02.txt
 kubectl get pods -n argocd --no-headers | awk '{print $1}' | tee pod-names-m02.txt
@@ -194,11 +194,13 @@ grep -q 'argocd-application-controller' pod-names-m02.txt
 echo "control plane pods OK" | tee pods-ok-m02.txt
 ```
 
-**Expected output:** `pod-evidence-m02.txt` lists Running pods for server, repo-server, and application-controller.
+!!! example "Expected output"
+    `pod-evidence-m02.txt` lists Running pods for server, repo-server, and application-controller.
+
 
 #### Task 2 – Map services and CRDs
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-02
 kubectl get svc -n argocd | tee svc-evidence-m02.txt
 kubectl get crd applications.argoproj.io applicationsets.argoproj.io | tee crd-evidence-m02.txt
@@ -207,11 +209,13 @@ grep -q applications.argoproj.io crd-evidence-m02.txt
 echo "services and CRDs OK" | tee svc-crd-ok-m02.txt
 ```
 
-**Expected output:** `argocd-server` Service exists; Application CRD registered.
+!!! example "Expected output"
+    `argocd-server` Service exists; Application CRD registered.
+
 
 Create `application-ref.yaml`:
 
-```yaml
+```yaml title="application-ref.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -236,7 +240,7 @@ spec:
 
 Apply and wait for sync:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-02
 kubectl apply -f application-ref.yaml | tee app-apply-m02.txt
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
@@ -248,7 +252,9 @@ kubectl get deploy,svc -n rebash-argocd-m02 | tee app-workloads-m02.txt
 echo "Application sync OK" | tee app-sync-ok-m02.txt
 ```
 
-**Expected output:** Application reports `Synced`; guestbook workloads appear in `rebash-argocd-m02`.
+!!! example "Expected output"
+    Application reports `Synced`; guestbook workloads appear in `rebash-argocd-m02`.
+
 
 ### Validation steps
 
@@ -281,7 +287,7 @@ Extend `collect-evidence.sh` to append `kubectl get svc -n argocd` and flag if `
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete application architecture-lab-ref -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m02 --ignore-not-found
 rm -f ~/rebash-argocd/module-02/*-m02.txt

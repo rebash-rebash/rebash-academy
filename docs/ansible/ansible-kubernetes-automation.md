@@ -100,7 +100,7 @@ Typical flow:
 
 If the collection is missing in a restricted lab, fall back to:
 
-```bash
+```bash title="Terminal"
 kubectl apply -f manifests/ --dry-run=client
 ```
 
@@ -139,7 +139,7 @@ Create Kubernetes manifests and an Ansible playbook using `kubernetes.core.k8s` 
 
 Workspace: `~/rebash-ansible/module-13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-13/{manifests,playbooks} && cd ~/rebash-ansible/module-13
 ansible --version | tee ansible-version.txt
 ```
@@ -154,7 +154,7 @@ Your platform team must seed a `rebash-demo` namespace with application config a
 
 Create `manifests/namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -165,7 +165,7 @@ metadata:
 
 Create `manifests/configmap-app.yaml`:
 
-```yaml
+```yaml title="configmap-app.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -178,7 +178,7 @@ data:
 
 Create `manifests/deployment-web.yaml`:
 
-```yaml
+```yaml title="deployment-web.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -208,7 +208,7 @@ spec:
 
 Validate YAML parses offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-13
 python3 - <<'PY' | tee yaml-validate.txt
 import yaml, pathlib, sys
@@ -219,13 +219,15 @@ PY
 grep -c '^OK ' yaml-validate.txt
 ```
 
-**Expected output:** Three lines starting with `OK manifests/…`; grep count is `3`.
+!!! example "Expected output"
+    Three lines starting with `OK manifests/…`; grep count is `3`.
+
 
 #### Task 2 – Create collection requirements and playbook
 
 Create `requirements.yml`:
 
-```yaml
+```yaml title="requirements.yml"
 collections:
   - name: kubernetes.core
     version: ">=5.0.0"
@@ -267,7 +269,7 @@ Create `playbooks/site-k8s.yml`:
 
 Install collection and run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-13
 ansible-galaxy collection install -r requirements.yml
 export KUBECONFIG="${KUBECONFIG:-$(kind get kubeconfig-path --name rebash-ansible 2>/dev/null || echo "$HOME/.kube/config")}"
@@ -280,11 +282,13 @@ grep -q 'rebash-app-config' cluster-state.txt
 echo "live apply OK" | tee apply-ok.txt
 ```
 
-**Expected output:** Deployment and ConfigMap exist in `rebash-demo`; deployment reaches Available.
+!!! example "Expected output"
+    Deployment and ConfigMap exist in `rebash-demo`; deployment reaches Available.
+
 
 #### Task 4 – Package evidence tarball
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-13
 tar -czf module-13-evidence.tgz \
   manifests/ playbooks/ requirements.yml \
@@ -294,7 +298,9 @@ ls -lh module-13-evidence.tgz | tee tarball.txt
 test -s module-13-evidence.tgz
 ```
 
-**Expected output:** Non-empty `module-13-evidence.tgz` listing manifests and validation logs.
+!!! example "Expected output"
+    Non-empty `module-13-evidence.tgz` listing manifests and validation logs.
+
 
 ### Validation steps
 
@@ -325,7 +331,7 @@ Extend the playbook with `kubernetes.core.k8s_info` to assert the Deployment has
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-demo --ignore-not-found
 rm -rf ~/rebash-ansible/module-13
 ```

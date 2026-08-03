@@ -68,7 +68,7 @@ deploy.yaml  -->  safe_load  -->  schema checks  -->  exit 0 | 2
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python/configs
 cd ~/rebash-lab-python
 python3 -m venv .venv
@@ -80,21 +80,21 @@ pip install 'PyYAML>=6.0,<7'
 
 Create `configs/deploy-ok.yaml`:
 
-```yaml
+```yaml title="deploy-ok.yaml"
 name: payments-api
 replicas: 2
 ```
 
 Create `configs/deploy-bad.yaml`:
 
-```yaml
+```yaml title="deploy-bad.yaml"
 name: payments-api
 replicas: zero
 ```
 
 Create `configs/not-yaml.yaml`:
 
-```yaml
+```yaml title="not-yaml.yaml"
 ::: this is not yaml
 ```
 
@@ -135,7 +135,7 @@ Accept multiple paths; exit `2` if any file fails.
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python validate_config.py configs/deploy-ok.yaml; echo $?   # 0
 python validate_config.py configs/deploy-bad.yaml; echo $?  # 2
 python validate_config.py configs/not-yaml.yaml; echo $?    # 2

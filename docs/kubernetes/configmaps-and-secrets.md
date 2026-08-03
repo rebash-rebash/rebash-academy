@@ -167,7 +167,7 @@ Create ConfigMap and Secret objects, run a Pod that consumes them via `envFrom` 
 
 Workspace: `~/rebash-k8s/module-08` on a disposable kind or minikube cluster. Do not use a shared production API server.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-08 && cd ~/rebash-k8s/module-08
 ```
 
@@ -181,7 +181,7 @@ Platform engineering is onboarding **billing-api** into a new namespace. Non-sen
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -192,7 +192,7 @@ metadata:
 
 Create `configmap.yaml`:
 
-```yaml
+```yaml title="configmap.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -219,19 +219,21 @@ stringData:
 
 Apply and list objects:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08
 kubectl apply -f namespace.yaml -f configmap.yaml -f secret.yaml
 kubectl get configmap,secret -n rebash-m08 | tee objects-m08.txt
 ```
 
-**Expected output:** `objects-m08.txt` lists `billing-config` and `billing-secret`.
+!!! example "Expected output"
+    `objects-m08.txt` lists `billing-config` and `billing-secret`.
+
 
 #### Task 2 – Pod consuming envFrom and volumes
 
 Create `pod.yaml`:
 
-```yaml
+```yaml title="pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -271,20 +273,22 @@ spec:
 
 Apply and wait for Ready:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08
 kubectl apply -f pod.yaml
 kubectl wait --for=condition=Ready pod/billing-consumer -n rebash-m08 --timeout=120s
 kubectl get pod billing-consumer -n rebash-m08 | tee pod-m08.txt
 ```
 
-**Expected output:** `pod-m08.txt` shows `billing-consumer` in `Running` with `1/1` Ready.
+!!! example "Expected output"
+    `pod-m08.txt` shows `billing-consumer` in `Running` with `1/1` Ready.
+
 
 #### Task 3 – Prove config without leaking Secret values
 
 Show ConfigMap data inside the Pod and list Secret **keys only** from the API — do not `kubectl get secret -o yaml` or `echo` token values into evidence.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-08
 kubectl exec -n rebash-m08 billing-consumer -- sh -c 'echo APP_ENV=$APP_ENV; cat /etc/config/welcome.message' | tee config-evidence.txt
 kubectl get secret billing-secret -n rebash-m08 -o jsonpath='{range $k,$v := .data}{ $k }{"\n"}{end}' | tee secret-keys-only.txt
@@ -293,7 +297,9 @@ grep -q 'Billing API ready' config-evidence.txt
 grep -q 'api-token' secret-keys-only.txt
 ```
 
-**Expected output:** `config-evidence.txt` contains `APP_ENV=staging` and `Billing API ready`. `secret-keys-only.txt` lists `api-token` without decoded values.
+!!! example "Expected output"
+    `config-evidence.txt` contains `APP_ENV=staging` and `Billing API ready`. `secret-keys-only.txt` lists `api-token` without decoded values.
+
 
 ### Validation steps
 
@@ -324,7 +330,7 @@ Add a Downward API env var for the Pod name: extend `pod.yaml` with `env.valueFr
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m08 --ignore-not-found
 ```
 

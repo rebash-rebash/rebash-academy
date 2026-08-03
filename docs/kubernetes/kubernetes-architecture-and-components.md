@@ -169,7 +169,7 @@ Workspace: `~/rebash-k8s/module-01-arch`
 
 Use a disposable **kind** cluster. Never target a shared production API server.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-01-arch && cd ~/rebash-k8s/module-01-arch
 kubectl cluster-info | tee cluster-info.txt
 kubectl get nodes | tee nodes-ready-check.txt
@@ -186,33 +186,37 @@ During a cluster health review, your lead asks you to prove which nodes exist, w
 
 Record node roles, versions, and runtime information.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-01-arch
 kubectl get nodes -o wide | tee nodes-wide.txt
 kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.nodeInfo.kubeletVersion}{"\t"}{.status.nodeInfo.containerRuntimeVersion}{"\n"}{end}' | tee node-runtime.txt
 grep -q Ready nodes-wide.txt
 ```
 
-**Expected output:** `nodes-wide.txt` lists Ready nodes with internal IPs and container runtime versions.
+!!! example "Expected output"
+    `nodes-wide.txt` lists Ready nodes with internal IPs and container runtime versions.
+
 
 #### Task 2 – List kube-system components
 
 Identify control-plane and node agents running as Pods.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-01-arch
 kubectl get pods -n kube-system -o wide | tee kube-system-pods.txt
 kubectl get pods -n kube-system -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,STATUS:.status.phase | tee kube-system-summary.txt
 grep -E 'coredns|kube-proxy|etcd|apiserver|scheduler|controller' kube-system-pods.txt | tee control-plane-hits.txt || true
 ```
 
-**Expected output:** `kube-system-pods.txt` shows system Pods (names vary by distribution); most entries are `Running`.
+!!! example "Expected output"
+    `kube-system-pods.txt` shows system Pods (names vary by distribution); most entries are `Running`.
+
 
 #### Task 3 – Build arch-evidence from live cluster output
 
 Create `build-arch-evidence.sh`:
 
-```bash
+```bash title="build-arch-evidence.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 {
@@ -234,14 +238,16 @@ test "$(wc -l < arch-evidence.txt)" -gt 10
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-01-arch
 chmod +x build-arch-evidence.sh
 ./build-arch-evidence.sh
 grep -q 'cluster component evidence' arch-evidence.txt
 ```
 
-**Expected output:** `arch-evidence.txt` contains live command output and control-plane component hits; line count exceeds 10.
+!!! example "Expected output"
+    `arch-evidence.txt` contains live command output and control-plane component hits; line count exceeds 10.
+
 
 ### Validation steps
 
@@ -271,7 +277,7 @@ Add one line per node to `arch-evidence.txt` showing which `kube-system` DaemonS
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-01-arch
 # Evidence files are local only — no cluster resources to delete
 rm -f nodes-wide.txt node-runtime.txt kube-system-pods.txt kube-system-summary.txt control-plane-hits.txt arch-evidence-lines.txt

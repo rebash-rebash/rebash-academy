@@ -115,7 +115,7 @@ Demonstrate fast-forward merge, then create a divergent three-way merge with a d
 
 Workspace: `~/rebash-git/module-06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-06 && cd ~/rebash-git/module-06
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ Two engineers change the same `replicas` key in a deployment manifest on differe
 
 Merge a branch with no divergence.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-06
 set -euo pipefail
 rm -rf merge-lab
@@ -151,13 +151,15 @@ grep -q 'scale to 2' ../ff-graph.txt
 cd ..
 ```
 
-**Expected output:** Linear history; no merge commit; replicas: 2 on main.
+!!! example "Expected output"
+    Linear history; no merge commit; replicas: 2 on main.
+
 
 #### Task 2 – Create divergent branches with conflicting edits
 
 Both `main` and `feature/scale` change replicas differently.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-06/merge-lab
 set -euo pipefail
 git switch -c feature/scale
@@ -173,7 +175,9 @@ grep -q 'both modified' ../conflict-status.txt
 cd ..
 ```
 
-**Expected output:** Merge stops with conflict markers in `deploy.yaml`.
+!!! example "Expected output"
+    Merge stops with conflict markers in `deploy.yaml`.
+
 
 #### Task 3 – Resolve conflict and complete merge
 
@@ -187,7 +191,7 @@ replicas: 3
 
 Complete the merge:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-06/merge-lab
 set -euo pipefail
 git add deploy.yaml
@@ -201,7 +205,9 @@ ls -l ../module-06-merge-evidence.tgz | tee ../merge-evidence.txt
 cd ..
 ```
 
-**Expected output:** Merge commit exists; file clean; graph shows merge node.
+!!! example "Expected output"
+    Merge commit exists; file clean; graph shows merge node.
+
 
 ### Validation steps
 
@@ -231,7 +237,7 @@ cd ..
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-06/merge-lab
 ```
 

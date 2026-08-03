@@ -117,7 +117,7 @@ Build commit history where commit #5 introduces invalid pipeline timeout; bisect
 
 Workspace: `~/rebash-git/module-16/bisect-lab`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-16/bisect-lab && cd ~/rebash-git/module-16/bisect-lab
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ Deploy pipeline started timing out after a series of merges. Last green tag `v-g
 
 #### Task 1 – History with hidden bad commit
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-16
 set -euo pipefail
 rm -rf bisect-lab
@@ -153,13 +153,15 @@ grep -q 'commit 8' ../bisect-log.txt
 cd ..
 ```
 
-**Expected output:** Eight commits; commit 5 has timeout 0; v-good on older good commit.
+!!! example "Expected output"
+    Eight commits; commit 5 has timeout 0; v-good on older good commit.
+
 
 #### Task 2 – Test script and automated bisect
 
 Create `test-timeout.sh`:
 
-```bash
+```bash title="test-timeout.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 val=$(grep -o '[0-9]*' pipeline.env | head -1)
@@ -172,7 +174,7 @@ fi
 
 Run bisect:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-16/bisect-lab
 set -euo pipefail
 chmod +x test-timeout.sh
@@ -186,11 +188,13 @@ grep -q 'commit 5' ../bisect-run-out.txt || grep -q 'pipeline config' ../bisect-
 cd ..
 ```
 
-**Expected output:** Bisect identifies commit 5 as first bad; reset returns to main.
+!!! example "Expected output"
+    Bisect identifies commit 5 as first bad; reset returns to main.
+
 
 #### Task 3 – Evidence and verification
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-16/bisect-lab
 set -euo pipefail
 git show HEAD~3:pipeline.env | tee ../good-file.txt
@@ -201,7 +205,9 @@ ls -l ../module-16-bisect-evidence.tgz | tee ../bisect-evidence.txt
 cd ..
 ```
 
-**Expected output:** Good tag file shows timeout 300; evidence archived.
+!!! example "Expected output"
+    Good tag file shows timeout 300; evidence archived.
+
 
 ### Validation steps
 
@@ -231,7 +237,7 @@ Introduce skip case: one commit deletes `pipeline.env` — extend script to exit
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-16/bisect-lab && git bisect reset 2>/dev/null || true
 ```
 

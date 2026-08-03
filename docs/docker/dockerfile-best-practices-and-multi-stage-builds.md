@@ -148,7 +148,7 @@ Workspace: `~/rebash-docker/module-06`
 
 Two Dockerfiles live side by side for size comparison.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
 ```
 
@@ -162,14 +162,14 @@ Security review flagged a Go toolchain left in a production image. You refactor 
 
 Create `app.sh`:
 
-```bash
+```bash title="app.sh"
 #!/bin/sh
 echo 'rebash-mod06 artefact'
 ```
 
 Create `Dockerfile.single`:
 
-```dockerfile
+```dockerfile title="Dockerfile.single"
 FROM alpine:3.20
 RUN apk add --no-cache bash
 WORKDIR /app
@@ -180,7 +180,7 @@ CMD ["/app/app.sh"]
 
 Create `Dockerfile.multi`:
 
-```dockerfile
+```dockerfile title="Dockerfile.multi"
 FROM alpine:3.20 AS build
 RUN apk add --no-cache bash
 WORKDIR /src
@@ -195,12 +195,14 @@ USER appuser
 CMD ["cat", "/app/out.txt"]
 ```
 
-**Expected output:** Three files exist in the lab directory.
+!!! example "Expected output"
+    Three files exist in the lab directory.
+
 
 #### Task 2 – Build both tags and record sizes
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-06
 docker build -f Dockerfile.single -t rebash-mod06:single .
 docker build -f Dockerfile.multi -t rebash-mod06:multi .
@@ -209,11 +211,13 @@ grep -q 'rebash-mod06' image-size-compare.txt
 ```
 {% endraw %}
 
-**Expected output:** `image-size-compare.txt` lists both tags with size columns (multi-stage is typically smaller or equal without bash in the final stage).
+!!! example "Expected output"
+    `image-size-compare.txt` lists both tags with size columns (multi-stage is typically smaller or equal without bash in the final stage).
+
 
 #### Task 3 – Run multi-stage image and prove non-root USER
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-06
 docker run --rm rebash-mod06:multi | tee multi-out.txt
 grep -q 'rebash-mod06 artefact' multi-out.txt
@@ -221,7 +225,9 @@ docker run --rm rebash-mod06:multi id -u | tee multi-uid.txt
 grep -q '10001' multi-uid.txt
 ```
 
-**Expected output:** `multi-out.txt` prints the artefact line; `multi-uid.txt` shows UID `10001`.
+!!! example "Expected output"
+    `multi-out.txt` prints the artefact line; `multi-uid.txt` shows UID `10001`.
+
 
 ### Validation steps
 
@@ -243,12 +249,12 @@ Add a `.dockerignore` excluding `*.txt`, rebuild multi-stage only, and append th
 
 Create `.dockerignore`:
 
-```text
+```text title=".dockerignore"
 *.txt
 ```
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-06
 docker build -f Dockerfile.multi -t rebash-mod06:multi-v2 .
 docker image ls rebash-mod06:multi-v2 --format '{{ "{{" }}.Size{{ "}}" }}' | tee multi-v2-size.txt
@@ -256,7 +262,9 @@ test -s multi-v2-size.txt
 ```
 {% endraw %}
 
-**Expected output:** `multi-v2-size.txt` contains a size string for the rebuilt image.
+!!! example "Expected output"
+    `multi-v2-size.txt` contains a size string for the rebuilt image.
+
 
 ### Learning outcomes
 
@@ -266,7 +274,7 @@ test -s multi-v2-size.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-06
 docker rmi rebash-mod06:single rebash-mod06:multi rebash-mod06:multi-v2 2>/dev/null || true
 ```

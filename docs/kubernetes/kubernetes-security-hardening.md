@@ -155,7 +155,7 @@ Deploy a hardened Pod with restrictive `securityContext` (non-root, no privilege
 
 Workspace: `~/rebash-k8s/module-10-hard` on a disposable lab cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
 ```
 
@@ -169,7 +169,7 @@ Security review flagged a web front-end running as root with a writable root fil
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -180,7 +180,7 @@ metadata:
 
 Create `deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -234,20 +234,22 @@ spec:
 
 Apply and wait:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-10-hard
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/web-secure -n rebash-m10-hard --timeout=120s
 kubectl get pods -n rebash-m10-hard -l app=web-secure | tee secure-pods.txt
 ```
 
-**Expected output:** Pod is `Running` with `1/1` Ready.
+!!! example "Expected output"
+    Pod is `Running` with `1/1` Ready.
+
 
 #### Task 2 – Verify securityContext in the live Pod
 
 Inspect the admitted Pod spec:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-10-hard
 POD="$(kubectl get pod -n rebash-m10-hard -l app=web-secure -o jsonpath='{.items[0].metadata.name}')"
 kubectl get pod "$POD" -n rebash-m10-hard -o jsonpath='{.spec.containers[0].securityContext}' | tee security-context.json
@@ -256,7 +258,9 @@ kubectl exec -n rebash-m10-hard "$POD" -- id | tee pod-id.txt
 grep -q 'uid=101' pod-id.txt
 ```
 
-**Expected output:** JSON shows hardened flags; `pod-id.txt` shows non-root UID 101.
+!!! example "Expected output"
+    JSON shows hardened flags; `pod-id.txt` shows non-root UID 101.
+
 
 #### Task 3 – Optional NetworkPolicy stub
 
@@ -283,13 +287,15 @@ spec:
 
 Apply and confirm admission:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-10-hard
 kubectl apply -f networkpolicy.yaml
 kubectl get networkpolicy -n rebash-m10-hard | tee netpol-m10-hard.txt
 ```
 
-**Expected output:** `web-secure-isolate` NetworkPolicy listed. If your CNI ignores policies, note that in your evidence — do not assume segmentation works without testing.
+!!! example "Expected output"
+    `web-secure-isolate` NetworkPolicy listed. If your CNI ignores policies, note that in your evidence — do not assume segmentation works without testing.
+
 
 ### Validation steps
 
@@ -320,7 +326,7 @@ Add a `readinessProbe` on `httpGet` port 8080 path `/` and capture `kubectl desc
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m10-hard --ignore-not-found
 ```
 

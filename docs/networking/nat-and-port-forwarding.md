@@ -68,7 +68,7 @@ NAT sits on a boundary host or appliance. Outbound traffic is often SNAT/PAT’d
 
 **NAT** rewrites the IP header (and often the transport port) as packets cross a trust or address boundary. Private ranges such as `10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16` commonly need SNAT to reach the public internet. **Port forwarding** is DNAT plus a matching filter allow so clients can reach `public_ip:port` and land on `private_ip:port`.
 
-```bash
+```bash title="Terminal"
 # Read-only — never invent rules from memory
 ip route show
 sudo iptables -t nat -L -n -v 2>/dev/null || sudo nft list ruleset 2>/dev/null | head -n 80
@@ -133,7 +133,7 @@ On a practice Ubuntu VM, collect **read-mostly** NAT and routing evidence under 
 
 Workspace: `~/rebash-networking/lab13`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab13 && cd ~/rebash-networking/lab13
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -143,7 +143,9 @@ command -v iptables >/dev/null && echo iptables=yes | tee tools.txt || echo ipta
 command -v nft >/dev/null && echo nft=yes | tee -a tools.txt || echo nft=no | tee -a tools.txt
 ```
 
-**Expected output:** `ip-addr.txt` and `ip-route.txt` exist; `tools.txt` lists which NAT tools are present.
+!!! example "Expected output"
+    `ip-addr.txt` and `ip-route.txt` exist; `tools.txt` lists which NAT tools are present.
+
 
 ### Real-world scenario
 
@@ -153,7 +155,7 @@ Security asks how private application VMs reach the internet and how a staging w
 
 #### Task 1 – Read routes and NAT tables (safe)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab13
 set -euo pipefail
 
@@ -177,13 +179,15 @@ fi
 sysctl net.ipv4.ip_forward 2>/dev/null | tee ip-forward.txt || true
 ```
 
-**Expected output:** At least `routing-snapshot.txt` and either `iptables-nat.txt` or `nft-ruleset.txt` (empty NAT chains are normal on a plain desktop).
+!!! example "Expected output"
+    At least `routing-snapshot.txt` and either `iptables-nat.txt` or `nft-ruleset.txt` (empty NAT chains are normal on a plain desktop).
+
 
 #### Task 2 – Optional namespace SNAT demo (isolated, then destroy)
 
 This uses two network namespaces and a veth pair. It does **not** change your host default route. Skip if you lack `sudo` for `ip netns`.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab13
 set -euo pipefail
 
@@ -221,25 +225,27 @@ sudo ip netns del rebash-nat-b
 echo "namespaces removed" | tee ns-cleanup.txt
 ```
 
-**Expected output:** `ns-ping.txt` shows successful pings; `ns-cleanup.txt` confirms namespaces were removed.
+!!! example "Expected output"
+    `ns-ping.txt` shows successful pings; `ns-cleanup.txt` confirms namespaces were removed.
+
 
 #### Task 3 – Evidence pack and mental model notes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab13
 set -euo pipefail
 ```
 
 Create `nat-mental-model.txt`:
 
-```text
+```text title="nat-mental-model.txt"
 SNAT/PAT: private source rewritten for egress (cloud NAT gateway).
 DNAT: public destination:port rewritten to private target (port forward).
 Conntrack: remembers reverse mapping for replies.
 NAT is not a firewall — filter policy still required.
 ```
 
-```bash
+```bash title="Terminal"
 tar -czf nat-evidence.tgz \
   admin-user.txt ip-addr.txt ip-route.txt tools.txt \
   routing-snapshot.txt ip-forward.txt nat-mental-model.txt \
@@ -255,7 +261,9 @@ ls -l nat-evidence.tgz | tee evidence-ls.txt
 test -s nat-evidence.tgz
 ```
 
-**Expected output:** `nat-evidence.tgz` is non-empty; `evidence-ls.txt` shows its size.
+!!! example "Expected output"
+    `nat-evidence.tgz` is non-empty; `evidence-ls.txt` shows its size.
+
 
 ### Validation steps
 
@@ -287,7 +295,7 @@ Write a short script `map-dnat.sh` that prints a table of “public port → pri
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab13
 set -euo pipefail
 

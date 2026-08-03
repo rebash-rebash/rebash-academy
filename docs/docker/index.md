@@ -73,7 +73,7 @@ Production images · Compose stacks · registry strategy · scanning · security
 
 ## Diagrams
 
-```bash
+```bash title="Terminal"
 python3 scripts/generate-excalidraw-svg.py
 ```
 

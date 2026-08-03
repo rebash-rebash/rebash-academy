@@ -187,7 +187,7 @@ Build a multi-cloud **facade** with a **live AWS S3 bucket** (sandbox credential
 
 Workspace: `~/rebash-terraform/module-17`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-17/modules/{aws-storage,network/azure,network/gcp} && cd ~/rebash-terraform/module-17
 ```
 
@@ -201,7 +201,7 @@ Your platform team publishes a `landing-zone` facade consumed by product squads.
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.9.0"
 
@@ -228,7 +228,7 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "aws" {
   alias  = "sandbox"
   region = var.aws_region
@@ -239,7 +239,7 @@ provider "docker" {}
 
 Create `variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "aws_region" {
   type    = string
   default = "ap-south-1"
@@ -259,7 +259,7 @@ variable "use_localstack" {
 
 Create `modules/aws-storage/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "bucket_prefix" {
   type = string
 }
@@ -271,7 +271,7 @@ variable "tags" {
 
 Create `modules/aws-storage/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_providers {
     aws = {
@@ -308,7 +308,7 @@ resource "aws_s3_bucket_public_access_block" "lab" {
 
 Create `modules/aws-storage/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "bucket_name" {
   value = aws_s3_bucket.lab.id
 }
@@ -335,26 +335,28 @@ provider "aws" {
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-17
 aws sts get-caller-identity | tee artefacts/aws-identity.txt
 echo "aws identity OK" | tee artefacts/aws-ok.txt
 ```
 
-**Expected output:** AWS identity JSON (or LocalStack endpoint documented in tfvars).
+!!! example "Expected output"
+    AWS identity JSON (or LocalStack endpoint documented in tfvars).
+
 
 #### Task 2 – Docker network modules for Azure/GCP facades
 
 Create `modules/network/azure/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "name" { type = string }
 variable "labels" { type = map(string) }
 ```
 
 Create `modules/network/azure/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_providers {
     docker = { source = "kreuzwerker/docker" }
@@ -371,7 +373,7 @@ resource "docker_network" "azure_facade" {
 
 Create `modules/network/azure/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "network_id" {
   value = docker_network.azure_facade.id
 }
@@ -383,14 +385,14 @@ output "network_name" {
 
 Create `modules/network/gcp/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "name" { type = string }
 variable "labels" { type = map(string) }
 ```
 
 Create `modules/network/gcp/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_providers {
     docker = { source = "kreuzwerker/docker" }
@@ -407,7 +409,7 @@ resource "docker_network" "gcp_facade" {
 
 Create `modules/network/gcp/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "network_id" {
   value = docker_network.gcp_facade.id
 }
@@ -421,7 +423,7 @@ output "network_name" {
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 module "aws_storage" {
   source = "./modules/aws-storage"
   providers = {
@@ -467,7 +469,7 @@ resource "local_file" "summary" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "aws_bucket_name" {
   value = module.aws_storage.bucket_name
 }
@@ -484,7 +486,7 @@ output "gcp_network_name" {
 Apply and prove:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-17
 mkdir -p artefacts
 terraform init | tee artefacts/init.log
@@ -504,13 +506,15 @@ echo "multi-cloud apply OK" | tee artefacts/apply-ok.txt
 ```
 {% endraw %}
 
-**Expected output:** S3 bucket exists (empty listing OK); two Docker networks present; summary JSON written.
+!!! example "Expected output"
+    S3 bucket exists (empty listing OK); two Docker networks present; summary JSON written.
+
 
 #### Task 4 – Document separate-state production path
 
 Create `docs/live-apply.md`:
 
-```markdown
+```markdown title="live-apply.md"
 # Production multi-cloud separation
 
 1. **Separate state** per cloud — never one state file for AWS + Azure + GCP.
@@ -522,14 +526,16 @@ Create `docs/live-apply.md`:
 
 Verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-17
 grep -q 'Separate state' docs/live-apply.md
 terraform output -json | tee artefacts/outputs.json
 grep -q 'aws_bucket_name' artefacts/outputs.json
 ```
 
-**Expected output:** Documentation exists; outputs JSON lists all three cloud facade results.
+!!! example "Expected output"
+    Documentation exists; outputs JSON lists all three cloud facade results.
+
 
 ### Validation steps
 
@@ -562,7 +568,7 @@ Add `modules/storage/azure` outputting a Docker volume named `rebash-azure-vol` 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-17
 terraform destroy -auto-approve
 rm -rf .terraform artefacts

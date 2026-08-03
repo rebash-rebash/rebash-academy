@@ -137,7 +137,7 @@ Build a Python sample app with unit and integration tests, author a matrix test 
 
 Workspace: `~/rebash-github-actions/module-12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-12/{app,tests/unit,tests/integration,.github/workflows} && cd ~/rebash-github-actions/module-12
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -153,14 +153,14 @@ A platform team requires unit tests on every push, integration tests after unit 
 
 Create `app/calc.py`:
 
-```python
+```python title="calc.py"
 def add(a: int, b: int) -> int:
     return a + b
 ```
 
 Create `tests/unit/test_calc.py`:
 
-```python
+```python title="test_calc.py"
 from app.calc import add
 
 def test_add():
@@ -169,7 +169,7 @@ def test_add():
 
 Create `tests/integration/test_api_stub.py`:
 
-```python
+```python title="test_api_stub.py"
 def test_integration_placeholder():
     # Stand-in for HTTP/DB integration
     assert True
@@ -177,14 +177,14 @@ def test_integration_placeholder():
 
 Create `requirements-dev.txt`:
 
-```text
+```text title="requirements-dev.txt"
 pytest>=8.0
 pytest-cov>=4.0
 ```
 
 Run tests locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 python3 -m pip install -q -r requirements-dev.txt
@@ -192,7 +192,9 @@ PYTHONPATH=. pytest tests/unit -q | tee unit-local.txt
 PYTHONPATH=. pytest tests/integration -q | tee integration-local.txt
 ```
 
-**Expected output:** Both pytest runs pass; output captured in `unit-local.txt` and `integration-local.txt`.
+!!! example "Expected output"
+    Both pytest runs pass; output captured in `unit-local.txt` and `integration-local.txt`.
+
 
 #### Task 2 – Matrix test workflow with job chain
 
@@ -257,7 +259,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/test.yml')); print('test workflow OK')"
@@ -265,13 +267,15 @@ grep -q 'matrix:' .github/workflows/test.yml
 grep -q 'needs: unit' .github/workflows/test.yml
 ```
 
-**Expected output:** `test workflow OK`; matrix and `needs` present.
+!!! example "Expected output"
+    `test workflow OK`; matrix and `needs` present.
+
 
 #### Task 3 – Local workflow structure checks
 
 Create `validate-tests.sh`:
 
-```bash
+```bash title="validate-tests.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 PYTHONPATH=. pytest tests/unit tests/integration -q
@@ -282,25 +286,29 @@ echo 'module-12 test lab passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 chmod +x validate-tests.sh
 ./validate-tests.sh | tee validation.txt
 ```
 
-**Expected output:** `module-12 test lab passed`
+!!! example "Expected output"
+    `module-12 test lab passed`
+
 
 #### Task 4 – Evidence archive
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 tar -czf module-12-evidence.tgz app tests requirements-dev.txt .github/workflows/test.yml *.txt validate-tests.sh
 ls -l module-12-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence tarball listed.
+!!! example "Expected output"
+    Evidence tarball listed.
+
 
 ### Validation steps
 
@@ -332,7 +340,7 @@ Add a `services:` block with `postgres:16` and rewrite the integration test to c
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-github-actions/module-12/__pycache__ ~/rebash-github-actions/module-12/**/__pycache__ 2>/dev/null || true
 ls ~/rebash-github-actions/module-12
 ```

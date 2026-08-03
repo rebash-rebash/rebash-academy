@@ -72,7 +72,7 @@ A **unit** describes something systemd can manage. A **service** unit usually ha
 | `edit` / drop-in | Override without rewriting the whole unit |
 | `mask` | Make start impossible (stronger than disable) |
 
-```bash
+```bash title="Terminal"
 systemctl status cron.service
 systemctl cat cron.service
 journalctl -u cron.service -n 20 --no-pager
@@ -137,7 +137,7 @@ Create a local `rebash-lab.service` that writes a heartbeat line on a schedule-f
 
 Workspace: `~/rebash-linux/lab10`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab10 && cd ~/rebash-linux/lab10
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -146,7 +146,9 @@ test -n "$(command -v systemctl)"
 sudo -n true 2>/dev/null || sudo -v
 ```
 
-**Expected output:** `systemctl` works; sudo is available (password once if needed).
+!!! example "Expected output"
+    `systemctl` works; sudo is available (password once if needed).
+
 
 ### Real-world scenario
 
@@ -156,7 +158,7 @@ Your team needs a tiny “sidecar” style helper on an Ubuntu app VM: a supervi
 
 #### Task 1 – Install unit and start the service
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab10
 set -euo pipefail
 
@@ -202,11 +204,13 @@ test "$(cat service-active.txt)" = "active"
 systemctl status rebash-lab.service --no-pager | tee service-status.txt
 ```
 
-**Expected output:** `service-active.txt` is `active`; status shows the unit running.
+!!! example "Expected output"
+    `service-active.txt` is `active`; status shows the unit running.
+
 
 #### Task 2 – journalctl evidence and heartbeat file
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab10
 set -euo pipefail
 
@@ -227,11 +231,13 @@ systemctl show rebash-lab.service -p FragmentPath -p DropInPaths -p MainPID \
   | tee service-show.txt
 ```
 
-**Expected output:** heartbeat log has lines; journal or log copy shows `heartbeat ok`; `MainPID` is set.
+!!! example "Expected output"
+    heartbeat log has lines; journal or log copy shows `heartbeat ok`; `MainPID` is set.
+
 
 #### Task 3 – Drop-in override and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab10
 set -euo pipefail
 
@@ -261,7 +267,9 @@ ls -l systemd-service-evidence.tgz | tee evidence-ls.txt
 test -s systemd-service-evidence.tgz
 ```
 
-**Expected output:** `systemctl cat` includes the drop-in; Environment shows `REBASH_LAB=1`; archive is non-empty.
+!!! example "Expected output"
+    `systemctl cat` includes the drop-in; Environment shows `REBASH_LAB=1`; archive is non-empty.
+
 
 ### Validation steps
 
@@ -293,7 +301,7 @@ Add a second drop-in `20-security.conf` that sets `NoNewPrivileges=yes` for `reb
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab10
 set -euo pipefail
 

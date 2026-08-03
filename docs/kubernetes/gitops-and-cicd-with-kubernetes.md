@@ -166,7 +166,7 @@ Create a GitOps repository layout (`apps/demo` + `clusters/dev`), a CI workflow 
 
 Workspace: `~/rebash-k8s/module-15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev,.github/workflows}
 cd ~/rebash-k8s/module-15
 ```
@@ -181,7 +181,7 @@ Your platform team adopts GitOps: application manifests live in `apps/demo`, env
 
 Create `apps/demo/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -221,7 +221,7 @@ spec:
 
 Create `apps/demo/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -238,7 +238,7 @@ spec:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 python3 -c "
@@ -249,13 +249,15 @@ print('apps/demo manifests OK')
 "
 ```
 
-**Expected output:** `apps/demo manifests OK`
+!!! example "Expected output"
+    `apps/demo manifests OK`
+
 
 #### Task 2 – Create dev cluster overlay with Kustomize
 
 Create `clusters/dev/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: rebash-gitops-lab
@@ -269,7 +271,7 @@ commonLabels:
 
 Create `clusters/dev/namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -281,7 +283,7 @@ metadata:
 
 Render and validate:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 if command -v kustomize >/dev/null 2>&1; then
@@ -296,7 +298,9 @@ python3 -c "import yaml; list(yaml.safe_load_all(open('clusters/dev/rendered.yam
 grep -q 'namespace: rebash-gitops-lab' clusters/dev/rendered.yaml
 ```
 
-**Expected output:** `rendered overlay OK`; rendered YAML includes `rebash-gitops-lab`.
+!!! example "Expected output"
+    `rendered overlay OK`; rendered YAML includes `rebash-gitops-lab`.
+
 
 #### Task 3 – Create CI workflow stub for kubectl dry-run
 
@@ -333,7 +337,7 @@ jobs:
 
 Validate offline (no cluster required):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/k8s-manifest-dry-run.yml')); print('workflow YAML OK')"
@@ -341,13 +345,15 @@ grep -q 'dry-run=client' .github/workflows/k8s-manifest-dry-run.yml
 grep -q 'kubectl kustomize clusters/dev' .github/workflows/k8s-manifest-dry-run.yml
 ```
 
-**Expected output:** `workflow YAML OK`
+!!! example "Expected output"
+    `workflow YAML OK`
+
 
 #### Task 4 – Apply dev overlay and capture evidence
 
 Apply the GitOps dev overlay to your lab cluster and prove Ready.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 kubectl apply -k clusters/dev
@@ -358,7 +364,9 @@ tar -czf module-15-gitops-evidence.tgz apps/demo clusters/dev .github/workflows/
 ls -l module-15-gitops-evidence.tgz
 ```
 
-**Expected output:** Deployment Available; tarball lists manifests and evidence.
+!!! example "Expected output"
+    Deployment Available; tarball lists manifests and evidence.
+
 
 ### Validation steps
 
@@ -391,7 +399,7 @@ Add a `ConfigMap` generator in `clusters/dev/kustomization.yaml` that sets `LOG_
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-gitops-lab --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/module-15/clusters/dev/rendered.yaml ~/rebash-k8s/module-15/gitops-evidence.txt ~/rebash-k8s/module-15/module-15-gitops-evidence.tgz
 ```

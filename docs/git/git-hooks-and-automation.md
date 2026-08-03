@@ -120,7 +120,7 @@ Create a repo with shell `pre-commit` and `commit-msg` hooks that block unstaged
 
 Workspace: `~/rebash-git/related/hooks`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/related/hooks && cd ~/rebash-git/related/hooks
 set -euo pipefail
 ```
@@ -135,7 +135,7 @@ Platform team requires `feat:`/`fix:`/`chore:` prefixes and blocks commits conta
 
 Create `.git/hooks/pre-commit`:
 
-```bash
+```bash title="pre-commit"
 #!/usr/bin/env bash
 set -euo pipefail
 staged=$(git diff --cached --name-only --diff-filter=ACM || true)
@@ -153,7 +153,7 @@ exit 0
 
 Bootstrap the repo:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/hooks
 set -euo pipefail
 rm -rf hooks-lab
@@ -169,13 +169,15 @@ test -x .git/hooks/pre-commit
 cd ..
 ```
 
-**Expected output:** Initial commit succeeds; pre-commit hook executable.
+!!! example "Expected output"
+    Initial commit succeeds; pre-commit hook executable.
+
 
 #### Task 2 – commit-msg hook and rejection test
 
 Create `.git/hooks/commit-msg`:
 
-```bash
+```bash title="commit-msg"
 #!/usr/bin/env bash
 set -euo pipefail
 msg_file=$1
@@ -187,7 +189,7 @@ head -1 "$msg_file" | grep -qE '^(feat|fix|chore|docs|ci)(\(.+\))?: .+' || {
 
 Test rejection and acceptance:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/hooks/hooks-lab
 set -euo pipefail
 chmod +x .git/hooks/commit-msg
@@ -203,13 +205,15 @@ grep -q 'feat: extend' ../good-msg-result.txt
 cd ..
 ```
 
-**Expected output:** Bad message rejected; good Conventional message accepted.
+!!! example "Expected output"
+    Bad message rejected; good Conventional message accepted.
+
 
 #### Task 3 – Shared pre-commit config and evidence
 
 Create `.pre-commit-config.yaml`:
 
-```yaml
+```yaml title=".pre-commit-config.yaml"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -224,7 +228,7 @@ repos:
 
 Commit and archive evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/hooks/hooks-lab
 set -euo pipefail
 git add .pre-commit-config.yaml
@@ -236,7 +240,9 @@ ls -l ../related-hooks-evidence.tgz | tee ../hooks-evidence.txt
 cd ..
 ```
 
-**Expected output:** Three commits; shared YAML committed; evidence tarball created.
+!!! example "Expected output"
+    Three commits; shared YAML committed; evidence tarball created.
+
 
 ### Validation steps
 
@@ -266,7 +272,7 @@ Add `pre-push` hook that runs `terraform validate` when `*.tf` changed — block
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/related/hooks/hooks-lab
 ```
 

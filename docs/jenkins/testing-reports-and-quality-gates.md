@@ -154,7 +154,7 @@ Create a tiny project that emits JUnit XML, publish it from Pipeline, run a para
 
 Workspace: `~/rebash-jenkins/module-12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-12 && cd ~/rebash-jenkins/module-12
 set -euo pipefail
 ```
@@ -169,7 +169,7 @@ Your service must not deploy when unit tests fail. Managers want Jenkins test tr
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-12
 set -euo pipefail
 
@@ -180,7 +180,7 @@ cd quality-demo
 
 Create `tests/test_math.py`:
 
-```python
+```python title="test_math.py"
 def test_add():
     assert 1 + 1 == 2
 
@@ -190,7 +190,7 @@ def test_mul():
 
 Create `generate_junit.py`:
 
-```python
+```python title="generate_junit.py"
 """Minimal JUnit XML writer for labs without pytest installed on the agent."""
 from pathlib import Path
 xml = """<?xml version="1.0" encoding="UTF-8"?>
@@ -214,20 +214,22 @@ grep -q 'testcase' reports/junit.xml
 cd ..
 ```
 
-**Expected output:** `reports/junit.xml` contains `testcase` elements.
+!!! example "Expected output"
+    `reports/junit.xml` contains `testcase` elements.
+
 
 #### Task 2 – Pipeline with junit publish, parallel, and deploy gate
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-12/quality-demo
 set -euo pipefail
 ```
 
 Create `Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 pipeline {
   agent any
   options { timestamps() }
@@ -290,27 +292,29 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 grep -q 'junit' Jenkinsfile
 grep -q 'parallel' Jenkinsfile
 ```
 
 Create/run job `rebash-demo/quality-demo` (SCM or paste). Open the build → **Test Result**.
 
-**Expected output:** Tests published; parallel branches visible.
+!!! example "Expected output"
+    Tests published; parallel branches visible.
+
 
 #### Task 3 – Failure gate drill
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-12/quality-demo
 set -euo pipefail
 ```
 
 Create `generate_junit_fail.py`:
 
-```python
+```python title="generate_junit_fail.py"
 from pathlib import Path
 xml = """<?xml version="1.0" encoding="UTF-8"?>
 <testsuite name="quality-demo" tests="2" failures="1" errors="0" skipped="0">
@@ -326,7 +330,7 @@ Path('reports/junit.xml').write_text(xml, encoding='utf-8')
 
 Create `failure-drill.sh`:
 
-```bash
+```bash title="failure-drill.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 generate_junit_fail.py
@@ -336,14 +340,14 @@ echo failure_xml_ok
 
 Verify:
 
-```bash
+```bash title="Terminal"
 chmod +x failure-drill.sh
 ./failure-drill.sh | tee failure-drill.txt
 ```
 
 Create `Jenkinsfile.fail`:
 
-```groovy
+```groovy title="Jenkinsfile.fail"
 pipeline {
   agent any
   options { timestamps() }
@@ -360,17 +364,19 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 grep -q generate_junit_fail Jenkinsfile.fail
 ```
 
-**Expected output:** Failing XML generator runs locally; swap `Jenkinsfile.fail` into the job to observe non-green test publishing.
+!!! example "Expected output"
+    Failing XML generator runs locally; swap `Jenkinsfile.fail` into the job to observe non-green test publishing.
+
 
 #### Task 4 – HTML report stub and notification Pipeline fragment
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-12
 set -euo pipefail
 
@@ -379,13 +385,13 @@ mkdir -p quality-demo/reports/html
 
 Create `quality-demo/reports/html/index.html`:
 
-```html
+```html title="index.html"
 <html><body><h1>quality-demo coverage stub</h1><p>Module 12 lab</p></body></html>
 ```
 
 Create `publish-html-snippet.groovy`:
 
-```groovy
+```groovy title="publish-html-snippet.groovy"
 publishHTML(target: [
   reportName: 'Coverage stub',
   reportDir: 'reports/html',
@@ -396,7 +402,7 @@ publishHTML(target: [
 
 Create `notify-stub.Jenkinsfile`:
 
-```groovy
+```groovy title="notify-stub.Jenkinsfile"
 post {
   failure {
     echo 'NOTIFY_STUB: build failed — wire Slack/email via credentials, do not put tokens here'
@@ -409,7 +415,7 @@ post {
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 grep -q publishHTML publish-html-snippet.groovy
 grep -q NOTIFY_STUB notify-stub.Jenkinsfile
 
@@ -417,7 +423,9 @@ tar -czf module-12-evidence.tgz quality-demo/Jenkinsfile quality-demo/reports/ju
 ls -l module-12-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence archive created.
+!!! example "Expected output"
+    Evidence archive created.
+
 
 ### Validation steps
 
@@ -448,7 +456,7 @@ Add `publishHTML` (if plugin installed) for `reports/html`. Fail the build when 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-jenkins/module-12
 ```
 

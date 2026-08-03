@@ -69,7 +69,7 @@ Strict mode, traps, and logging sit between your script logic and the operator (
 
 A **`trap`** runs a function when a signal or special event happens. `trap on_err ERR` runs on command failure (with `set -E` so it also fires inside functions). `trap on_exit EXIT` always runs at the end for cleanup. **Logging** should go to stderr for humans and usually also to a rotating or dated file. **Debugging** uses `bash -x` (xtrace) so each command is printed before it runs.
 
-```bash
+```bash title="Terminal"
 set -euo pipefail
 set -E
 trap 'echo "ERR at line $LINENO" >&2' ERR
@@ -140,14 +140,16 @@ Build a small ops script under `~/rebash-shell/lab16` that uses strict mode, log
 
 Workspace: `~/rebash-shell/lab16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab16 && cd ~/rebash-shell/lab16
 set -euo pipefail
 bash --version | head -n1 | tee bash-version.txt
 command -v bash | tee bash-path.txt
 ```
 
-**Expected output:** `bash-version.txt` and `bash-path.txt` exist; Bash version is 4.2 or newer.
+!!! example "Expected output"
+    `bash-version.txt` and `bash-path.txt` exist; Bash version is 4.2 or newer.
+
 
 ### Real-world scenario
 
@@ -161,7 +163,7 @@ Create `preflight.sh` with `set -euo pipefail`, a log helper, and an EXIT trap t
 
 Create `preflight.sh`:
 
-```bash
+```bash title="preflight.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 set -E
@@ -244,7 +246,7 @@ main "$@"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab16
 set -euo pipefail
 
@@ -256,13 +258,15 @@ grep -F 'final_exit=0' preflight.log
 ```
 
 
-**Expected output:** stdout shows `RESULT=ok`; `preflight.log` contains INFO lines and `final_exit=0`.
+!!! example "Expected output"
+    stdout shows `RESULT=ok`; `preflight.log` contains INFO lines and `final_exit=0`.
+
 
 #### Task 2 – Intentional failure path and exit code
 
 Run the failure mode and capture the exit code. Confirm the ERR/EXIT path logged the problem.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab16
 set -euo pipefail
 
@@ -278,13 +282,15 @@ grep -E 'final_exit=3|ERROR' preflight.log | tee fail-log-snip.txt
 test ! -s fail-stdout.txt || ! grep -q 'RESULT=ok' fail-stdout.txt
 ```
 
-**Expected output:** `fail-exit-code.txt` contains `3`; stderr and log show the ERROR; no successful `RESULT=ok` on the fail path.
+!!! example "Expected output"
+    `fail-exit-code.txt` contains `3`; stderr and log show the ERROR; no successful `RESULT=ok` on the fail path.
+
 
 #### Task 3 – Debug with bash -x and evidence pack
 
 Capture an xtrace of the success path, then pack proof files for the ticket.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab16
 set -euo pipefail
 
@@ -301,7 +307,9 @@ tar -czf error-handling-evidence.tgz \
 ls -l error-handling-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `trace-xtrace.txt` shows expanded commands; `error-handling-evidence.tgz` is non-empty.
+!!! example "Expected output"
+    `trace-xtrace.txt` shows expanded commands; `error-handling-evidence.tgz` is non-empty.
+
 
 ### Validation steps
 
@@ -334,7 +342,7 @@ Extend `preflight.sh` (or add `preflight-retry.sh`) so a flaky check retries **t
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab16
 set -euo pipefail
 rm -f preflight.log fail-stdout.txt fail-stderr.txt trace-stdout.txt trace-xtrace.txt

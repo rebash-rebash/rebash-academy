@@ -171,7 +171,7 @@ Workspace: `~/rebash-k8s/module-01`
 
 Use a disposable local cluster. Never target a shared production API server.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-01 && cd ~/rebash-k8s/module-01
 ```
 
@@ -185,7 +185,7 @@ You join a platform team onboarding call. Before anyone deploys applications, yo
 
 Confirm client and server versions, node readiness, and API reachability.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-01
 kubectl version --output=yaml | tee cluster-version.yaml
 kubectl get nodes -o wide | tee nodes-wide.txt
@@ -193,13 +193,15 @@ kubectl cluster-info | tee cluster-info.txt
 grep -q Ready nodes-wide.txt
 ```
 
-**Expected output:** `nodes-wide.txt` lists at least one node in `Ready` state; `cluster-info.txt` shows a reachable control plane URL.
+!!! example "Expected output"
+    `nodes-wide.txt` lists at least one node in `Ready` state; `cluster-info.txt` shows a reachable control plane URL.
+
 
 #### Task 2 – Write and validate orchestration-facts.yaml
 
 Create `orchestration-facts.yaml`:
 
-```yaml
+```yaml title="orchestration-facts.yaml"
 cluster_purpose: lab-onboarding
 why_orchestration:
   - self_healing: controllers recreate failed Pods on healthy nodes
@@ -215,7 +217,7 @@ validated: false
 
 Create `validate-facts.py`:
 
-```python
+```python title="validate-facts.py"
 #!/usr/bin/env python3
 from pathlib import Path
 
@@ -233,19 +235,21 @@ print("orchestration-facts.yaml: structure OK")
 
 Run validation:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-01
 python3 validate-facts.py | tee validate-out.txt
 grep -q 'structure OK' validate-out.txt
 ```
 
-**Expected output:** `validate-out.txt` contains `orchestration-facts.yaml: structure OK`.
+!!! example "Expected output"
+    `validate-out.txt` contains `orchestration-facts.yaml: structure OK`.
+
 
 #### Task 3 – Smoke-test the API with a pause Pod
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -254,7 +258,7 @@ metadata:
 
 Create `pause-pod.yaml`:
 
-```yaml
+```yaml title="pause-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -279,7 +283,7 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-01
 kubectl apply -f namespace.yaml
 kubectl apply -f pause-pod.yaml
@@ -287,7 +291,9 @@ kubectl wait --for=condition=Ready pod/pause-smoke -n rebash-m01 --timeout=120s
 kubectl get pod pause-smoke -n rebash-m01 -o wide | tee pause-evidence.txt
 ```
 
-**Expected output:** Pod `pause-smoke` shows `1/1 Ready` with a node name in `pause-evidence.txt`.
+!!! example "Expected output"
+    Pod `pause-smoke` shows `1/1 Ready` with a node name in `pause-evidence.txt`.
+
 
 ### Validation steps
 
@@ -318,7 +324,7 @@ Add a fifth bullet to `why_orchestration` describing **declarative desired state
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m01 --ignore-not-found --wait=true
 ```
 

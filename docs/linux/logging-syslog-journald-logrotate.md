@@ -66,7 +66,7 @@ Applications and units emit logs to journald and/or text files; logrotate manage
 
 **journald** stores binary, indexed logs. **syslog** daemons traditionally write text files such as `/var/log/syslog`. **logrotate** runs on a schedule (often daily via cron/timers) to rotate, compress, and delete old log files based on rules in `/etc/logrotate.conf` and `/etc/logrotate.d/`.
 
-```bash
+```bash title="Terminal"
 journalctl -xe
 journalctl -u ssh.service -n 20 --no-pager
 ls /var/log
@@ -110,7 +110,7 @@ Query journald, create a sample application log with a dedicated logrotate rule,
 
 Workspace: `~/rebash-linux/lab18`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab18 && cd ~/rebash-linux/lab18
 set -euo pipefail
 test -n "$(command -v journalctl)"
@@ -118,7 +118,9 @@ test -n "$(command -v logrotate)"
 journalctl --version | head -n 1 | tee journalctl-version.txt
 ```
 
-**Expected output:** `journalctl` and `logrotate` exist; version file written.
+!!! example "Expected output"
+    `journalctl` and `logrotate` exist; version file written.
+
 
 ### Real-world scenario
 
@@ -128,7 +130,7 @@ A small app writes to `/var/log/rebash-lab18/app.log`. Disk alerts fired last mo
 
 #### Task 1 – Query journald
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab18
 set -euo pipefail
 
@@ -142,11 +144,13 @@ journalctl -t rebash-lab18 -n 5 --no-pager | tee journal-marker.txt
 grep -F 'rebash lab18 marker' journal-marker.txt
 ```
 
-**Expected output:** `journal-marker.txt` contains your logger line; boot list captured.
+!!! example "Expected output"
+    `journal-marker.txt` contains your logger line; boot list captured.
+
 
 #### Task 2 – Application log + logrotate rule
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab18
 set -euo pipefail
 
@@ -172,11 +176,13 @@ sudo logrotate -d /etc/logrotate.d/rebash-lab18 2>&1 | tee logrotate-debug.txt
 grep -Ei 'rebash-lab18|app.log' logrotate-debug.txt
 ```
 
-**Expected output:** `app.log` has 200 lines; debug output mentions the lab path; rule file installed.
+!!! example "Expected output"
+    `app.log` has 200 lines; debug output mentions the lab path; rule file installed.
+
 
 #### Task 3 – Force rotation and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab18
 set -euo pipefail
 
@@ -195,7 +201,9 @@ tar -czf logging-evidence.tgz \
 ls -l logging-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** more than one `app.log*` name after forced rotate; evidence archive exists.
+!!! example "Expected output"
+    more than one `app.log*` name after forced rotate; evidence archive exists.
+
 
 ### Validation steps
 
@@ -226,7 +234,7 @@ Write `/etc/logrotate.d/rebash-lab18-size` that rotates `/var/log/rebash-lab18/a
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab18
 set -euo pipefail
 sudo rm -f /etc/logrotate.d/rebash-lab18 /etc/logrotate.d/rebash-lab18-size

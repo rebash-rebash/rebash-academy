@@ -156,7 +156,7 @@ Create a ServiceAccount, Role, and RoleBinding, then prove allowed and denied AP
 
 Workspace: `~/rebash-k8s/module-10` on a disposable lab cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-10 && cd ~/rebash-k8s/module-10
 ```
 
@@ -170,7 +170,7 @@ A new **invoice-reader** microservice needs to list Pods in its namespace for he
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -181,7 +181,7 @@ metadata:
 
 Create `serviceaccount.yaml`:
 
-```yaml
+```yaml title="serviceaccount.yaml"
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -191,19 +191,21 @@ metadata:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-10
 kubectl apply -f namespace.yaml -f serviceaccount.yaml
 kubectl get sa invoice-reader -n rebash-m10 | tee sa-m10.txt
 ```
 
-**Expected output:** `sa-m10.txt` lists `invoice-reader` in namespace `rebash-m10`.
+!!! example "Expected output"
+    `sa-m10.txt` lists `invoice-reader` in namespace `rebash-m10`.
+
 
 #### Task 2 – Role and RoleBinding
 
 Create `role.yaml`:
 
-```yaml
+```yaml title="role.yaml"
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -217,7 +219,7 @@ rules:
 
 Create `rolebinding.yaml`:
 
-```yaml
+```yaml title="rolebinding.yaml"
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -235,13 +237,15 @@ roleRef:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-10
 kubectl apply -f role.yaml -f rolebinding.yaml
 kubectl get role,rolebinding -n rebash-m10 | tee rbac-m10.txt
 ```
 
-**Expected output:** `rbac-m10.txt` shows `pod-reader` Role and `invoice-reader-pods` RoleBinding.
+!!! example "Expected output"
+    `rbac-m10.txt` shows `pod-reader` Role and `invoice-reader-pods` RoleBinding.
+
 
 #### Task 3 – Prove permissions with auth can-i
 
@@ -249,7 +253,7 @@ Create a sample Pod so `list pods` is meaningful, then test allow and deny:
 
 Create `sample-pod.yaml`:
 
-```yaml
+```yaml title="sample-pod.yaml"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -262,7 +266,7 @@ spec:
       command: ["sh", "-c", "sleep 3600"]
 ```
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-10
 kubectl apply -f sample-pod.yaml
 SA="system:serviceaccount:rebash-m10:invoice-reader"
@@ -274,7 +278,9 @@ grep -q no can-i-delete.txt
 grep -q no can-i-secrets.txt
 ```
 
-**Expected output:** `yes` for list pods; `no` for delete pods and get secrets.
+!!! example "Expected output"
+    `yes` for list pods; `no` for delete pods and get secrets.
+
 
 ### Validation steps
 
@@ -305,7 +311,7 @@ Add a second Role `event-reader` (`get`, `list` on `events`) and bind it to the 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m10 --ignore-not-found
 ```
 

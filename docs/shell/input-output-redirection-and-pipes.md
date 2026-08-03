@@ -81,7 +81,7 @@ Common operators:
 | `tee file` | Copy stdin to file and to stdout |
 | `<< EOF` | Here-document body until `EOF` |
 
-```bash
+```bash title="Terminal"
 printf 'data\n'
 printf 'progress\n' >&2
 ```
@@ -100,7 +100,7 @@ Monitoring and CI often capture stdout as the artefact and treat a zero exit as 
 
 Process substitution (`<(cmd)`) is a Bash feature that presents command output as a temporary file path — useful for `diff <(cmd1) <(cmd2)`. Prefer it when both sides are commands; use a here-document when you need literal multi-line text in the script.
 
-```bash
+```bash title="Terminal"
 diff -u <(printf 'a\n') <(printf 'b\n') || true
 ```
 
@@ -138,13 +138,15 @@ Under `~/rebash-shell/lab04`, separate stdout/stderr, use `tee` and pipes, prove
 
 Workspace: `~/rebash-shell/lab04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab04 && cd ~/rebash-shell/lab04
 set -euo pipefail
 whoami | tee lab-user.txt
 ```
 
-**Expected output:** workspace exists; `lab-user.txt` written.
+!!! example "Expected output"
+    workspace exists; `lab-user.txt` written.
+
 
 ### Real-world scenario
 
@@ -156,7 +158,7 @@ A health-check job prints `OK` on stdout for a load balancer probe, but engineer
 
 Create `streams.sh`:
 
-```bash
+```bash title="streams.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -167,7 +169,7 @@ printf 'progress: checks done\n' >&2
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab04
 set -euo pipefail
 
@@ -186,11 +188,13 @@ grep -q 'progress: checks done' merged.txt
 ```
 
 
-**Expected output:** `stdout.txt` has only the result line; `stderr.txt` has progress; `merged.txt` contains both.
+!!! example "Expected output"
+    `stdout.txt` has only the result line; `stderr.txt` has progress; `merged.txt` contains both.
+
 
 #### Task 2 – Pipes, tee, and pipefail
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab04
 set -euo pipefail
 
@@ -221,7 +225,9 @@ echo "pipefail_exit=$rc_pf" | tee pipe-pipefail.txt
 test "$rc_pf" -ne 0
 ```
 
-**Expected output:** `count-a.txt` is `2`; masked exit is `0`; pipefail exit is non-zero.
+!!! example "Expected output"
+    `count-a.txt` is `2`; masked exit is `0`; pipefail exit is non-zero.
+
 
 #### Task 3 – Variable-expanded report (and optional process substitution)
 
@@ -229,7 +235,7 @@ Build `report.txt` from shell variables (same outcome as an unquoted here-docume
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab04
 set -euo pipefail
 
@@ -263,7 +269,9 @@ ls -l io-evidence.tgz | tee evidence-ls.txt
 ```
 
 
-**Expected output:** `report.txt` includes host and timestamp; identical process-substitution diff is empty; differing diff has markers; evidence archive exists.
+!!! example "Expected output"
+    `report.txt` includes host and timestamp; identical process-substitution diff is empty; differing diff has markers; evidence archive exists.
+
 
 ### Validation steps
 
@@ -294,7 +302,7 @@ Write `probe.sh` that prints `RESULT=ok` or `RESULT=fail` on stdout, writes a ti
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab04
 rm -f diff-same.txt
 # Keep evidence archive and key logs, or:

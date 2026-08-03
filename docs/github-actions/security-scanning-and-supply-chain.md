@@ -133,7 +133,7 @@ Create a unified security workflow stub with CodeQL, Trivy filesystem scan, depe
 
 Workspace: `~/rebash-github-actions/module-11`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-11/{.github/workflows,app} && cd ~/rebash-github-actions/module-11
 set -euo pipefail
 ```
@@ -148,7 +148,7 @@ DevSecOps requires every service repository to run static analysis, container/fi
 
 Create `app/main.py`:
 
-```python
+```python title="main.py"
 """Module 11 lab fixture — not production code."""
 def greet(name: str) -> str:
     return f"hello, {name}"
@@ -217,20 +217,22 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/security-scan.yml')); print('security workflow OK')"
 grep -c '@[0-9a-f]\{40\}' .github/workflows/security-scan.yml | tee pin-count.txt
 ```
 
-**Expected output:** `security workflow OK`; pin-count shows multiple SHA references.
+!!! example "Expected output"
+    `security workflow OK`; pin-count shows multiple SHA references.
+
 
 #### Task 2 – Pinning policy as YAML and enforcement script
 
 Create `action-pinning-policy.yaml`:
 
-```yaml
+```yaml title="action-pinning-policy.yaml"
 # Action pinning policy (Module 11)
 rules:
   - id: sha-required
@@ -251,7 +253,7 @@ review_checklist:
 
 Create `check-unpinned-actions.sh`:
 
-```bash
+```bash title="check-unpinned-actions.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 # Fail if any uses: line pins a floating @vN tag instead of a 40-char SHA
@@ -271,7 +273,7 @@ echo "check-unpinned-actions: all uses lines SHA-pinned or official actions/*"
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 python3 -c "
@@ -286,7 +288,9 @@ chmod +x check-unpinned-actions.sh
 ./check-unpinned-actions.sh | tee pin-check.txt
 ```
 
-**Expected output:** `action-pinning-policy.yaml OK`; `pin-check.txt` confirms no floating `@v` tags in the lab workflow.
+!!! example "Expected output"
+    `action-pinning-policy.yaml OK`; `pin-check.txt` confirms no floating `@v` tags in the lab workflow.
+
 
 #### Task 3 – Offline validation script
 
@@ -301,7 +305,7 @@ Create `sbom/sbom.json` (placeholder artefact for local validation):
 
 Create `validate-security-lab.sh`:
 
-```bash
+```bash title="validate-security-lab.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/security-scan.yml'))"
@@ -317,7 +321,7 @@ echo 'module-11 validation passed'
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 mkdir -p sbom
@@ -325,18 +329,22 @@ chmod +x validate-security-lab.sh
 ./validate-security-lab.sh | tee validation.txt
 ```
 
-**Expected output:** `module-11 validation passed`
+!!! example "Expected output"
+    `module-11 validation passed`
+
 
 #### Task 4 – Evidence bundle
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 tar -czf module-11-evidence.tgz .github/workflows/security-scan.yml app/main.py action-pinning-policy.yaml check-unpinned-actions.sh validate-security-lab.sh
 ls -l module-11-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence archive listed in `evidence.txt`
+!!! example "Expected output"
+    Evidence archive listed in `evidence.txt`
+
 
 ### Validation steps
 
@@ -369,7 +377,7 @@ Add the floating-tag check from Task 2 as a job in `security-scan.yml` that runs
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Retain lab under ~/rebash-github-actions/module-11
 ls ~/rebash-github-actions/module-11
 ```

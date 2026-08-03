@@ -76,7 +76,7 @@ Secure networking · IAM governance · EKS/ECS · serverless patterns · CI/CD �
 
 ## Diagrams
 
-```bash
+```bash title="Terminal"
 python3 scripts/generate-excalidraw-svg.py
 ```
 

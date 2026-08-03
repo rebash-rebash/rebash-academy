@@ -62,7 +62,7 @@ Linux host with `/proc`.
 
 ## Initial State
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-shell/monitor/{bin,reports}
 cd ~/rebash-lab-shell/monitor
 ```
@@ -103,7 +103,7 @@ Run both checks; worst exit code wins. Write a short report under `reports/`.
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 rm -rf ~/rebash-lab-shell
 ```
 

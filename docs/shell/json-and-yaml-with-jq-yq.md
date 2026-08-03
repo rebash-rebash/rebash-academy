@@ -64,7 +64,7 @@ Scripts receive JSON/YAML from APIs or files, select fields with `jq`/`yq`, asse
 
 **JSON** is a structured text format with objects, arrays, strings, numbers, booleans, and null. **YAML** is indentation-based and often used for Kubernetes and Ansible; many YAML files map cleanly to JSON data models. **`jq`** reads JSON from a file or stdin and applies a filter (for example `.name`, `.spec.replicas`). **`yq`** applies similar expressions to YAML documents.
 
-```bash
+```bash title="Terminal"
 jq -r '.name' app.json
 yq -r '.metadata.name' app.yaml   # when yq v4 is installed
 ```
@@ -125,7 +125,7 @@ Create sample JSON and YAML, assert fields with `jq`, and parse YAML with `yq` w
 
 Workspace: `~/rebash-shell/lab14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab14 && cd ~/rebash-shell/lab14
 set -euo pipefail
 command -v jq | tee jq-path.txt
@@ -133,7 +133,9 @@ jq --version | tee jq-version.txt
 if command -v yq >/dev/null 2>&1; then yq --version | tee yq-version.txt; else echo 'yq=not-installed' | tee yq-version.txt; fi
 ```
 
-**Expected output:** `jq` path and version recorded; `yq-version.txt` notes installed or not.
+!!! example "Expected output"
+    `jq` path and version recorded; `yq-version.txt` notes installed or not.
+
 
 ### Real-world scenario
 
@@ -145,7 +147,7 @@ A deploy job receives an app descriptor as JSON and a small Kubernetes-style YAM
 
 Create `app.json`:
 
-```json
+```json title="app.json"
 {
   "service": {
     "name": "payments",
@@ -159,7 +161,7 @@ Create `app.json`:
 
 Create `app.yaml`:
 
-```yaml
+```yaml title="app.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -179,7 +181,7 @@ spec:
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab14
 set -euo pipefail
 
@@ -204,11 +206,13 @@ echo "jq_asserts=OK" | tee jq-asserts.txt
 ```
 
 
-**Expected output:** `jq-fields.txt` lists the four fields; `jq-asserts.txt` says `OK`.
+!!! example "Expected output"
+    `jq-fields.txt` lists the four fields; `jq-asserts.txt` says `OK`.
+
 
 #### Task 2 – Negative assert (must fail)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab14
 set -euo pipefail
 
@@ -221,11 +225,13 @@ echo "negative_test_exit=$ec" | tee jq-negative.txt
 test "$ec" -ne 0
 ```
 
-**Expected output:** `negative_test_exit` is non-zero (assert correctly rejected the wrong name).
+!!! example "Expected output"
+    `negative_test_exit` is non-zero (assert correctly rejected the wrong name).
+
 
 #### Task 3 – yq when installed, fallback otherwise
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab14
 set -euo pipefail
 
@@ -284,7 +290,9 @@ tar -czf json-yaml-evidence.tgz \
 ls -l json-yaml-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** YAML path is `OK` (via `yq` or PyYAML) or honest `SKIP`; archive exists.
+!!! example "Expected output"
+    YAML path is `OK` (via `yq` or PyYAML) or honest `SKIP`; archive exists.
+
 
 ### Validation steps
 
@@ -317,7 +325,7 @@ Write `assert-app.sh` that takes a JSON file path as `$1`, asserts `.replicas >=
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab14
 set -euo pipefail
 # Keep samples/evidence if you want; otherwise:

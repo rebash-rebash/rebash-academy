@@ -62,7 +62,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-linux-services/{bin,logs}
 cd ~/rebash-lab-linux-services
 ```
@@ -75,7 +75,7 @@ No heartbeat unit installed.
 
 ### Task 1 — Heartbeat script
 
-```bash
+```bash title="Terminal"
 cat > ~/rebash-lab-linux-services/bin/heartbeat.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -90,7 +90,7 @@ tail -n 2 logs/heartbeat.log
 
 ### Task 2 — systemd service + timer
 
-```bash
+```bash title="Terminal"
 sudo tee /etc/systemd/system/rebash-heartbeat.service >/dev/null <<EOF
 [Unit]
 Description=REBASH lab heartbeat
@@ -125,7 +125,7 @@ systemctl status rebash-heartbeat.service --no-pager
 
 ### Task 3 — Journal analysis
 
-```bash
+```bash title="Terminal"
 journalctl -u rebash-heartbeat.service -n 20 --no-pager
 journalctl -u rebash-heartbeat.timer -n 10 --no-pager
 journalctl -u rebash-heartbeat.service --since "10 minutes ago" -o short-iso | tee ~/rebash-lab-linux-services/journal-sample.txt
@@ -135,7 +135,7 @@ journalctl -u rebash-heartbeat.service --since "10 minutes ago" -o short-iso | t
 
 Break the script path temporarily:
 
-```bash
+```bash title="Terminal"
 mv ~/rebash-lab-linux-services/bin/heartbeat.sh ~/rebash-lab-linux-services/bin/heartbeat.sh.bak
 sudo systemctl start rebash-heartbeat.service || true
 systemctl status rebash-heartbeat.service --no-pager -l
@@ -149,7 +149,7 @@ Write a three-line root-cause note in `~/rebash-lab-linux-services/rca.txt`.
 
 ### Task 5 — logrotate sketch
 
-```bash
+```bash title="Terminal"
 sudo tee /etc/logrotate.d/rebash-heartbeat >/dev/null <<EOF
 $HOME/rebash-lab-linux-services/logs/*.log {
     weekly
@@ -186,7 +186,7 @@ sudo logrotate -d /etc/logrotate.d/rebash-heartbeat 2>&1 | tee ~/rebash-lab-linu
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 sudo systemctl disable --now rebash-heartbeat.timer 2>/dev/null || true
 sudo rm -f /etc/systemd/system/rebash-heartbeat.service /etc/systemd/system/rebash-heartbeat.timer
 sudo rm -f /etc/logrotate.d/rebash-heartbeat

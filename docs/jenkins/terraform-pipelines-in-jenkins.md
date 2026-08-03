@@ -129,7 +129,7 @@ Create a Docker-backed Terraform module, run init/plan/apply/destroy in a Pipeli
 
 Workspace: `~/rebash-jenkins/module-14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-14 && cd ~/rebash-jenkins/module-14
 set -euo pipefail
 docker info | tee docker-info.txt
@@ -146,7 +146,7 @@ Platform requires every infrastructure change to show a Jenkins-stored plan befo
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-14
 set -euo pipefail
 
@@ -156,7 +156,7 @@ mkdir -p tf-demo && cd tf-demo
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
@@ -195,7 +195,7 @@ output "url" {
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # tf-demo
 
 Docker-provider Terraform lab for Jenkins Pipeline patterns.
@@ -204,7 +204,7 @@ Requires Docker Engine; no cloud credentials.
 
 Run:
 
-```bash
+```bash title="Terminal"
 docker info >/dev/null
 terraform init | tee ../init.txt
 terraform validate | tee ../validate.txt
@@ -215,20 +215,22 @@ grep -q 'docker_container.rebash' ../plan.txt
 cd ..
 ```
 
-**Expected output:** `plan.txt` shows `docker_container.rebash` will be created; `tfplan` exists.
+!!! example "Expected output"
+    `plan.txt` shows `docker_container.rebash` will be created; `tfplan` exists.
+
 
 #### Task 2 – Jenkinsfile with plan artefact and gated apply
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-14/tf-demo
 set -euo pipefail
 ```
 
 Create `Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 pipeline {
   agent any
   options {
@@ -302,20 +304,22 @@ pipeline {
 
 Verify:
 
-```bash
+```bash title="Terminal"
 # Repo root layout note: if job SCM root is module-14, paths above work when tf-demo nested
 grep -q 'terraform plan' Jenkinsfile
 grep -q 'input message' Jenkinsfile
 ```
 
-**Expected output:** Gated apply/destroy parameters present.
+!!! example "Expected output"
+    Gated apply/destroy parameters present.
+
 
 #### Task 3 – Pipeline simulation: apply, prove, destroy
 
 Create `pipeline-simulate.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/tf-demo"
@@ -334,7 +338,7 @@ echo pipeline_simulate_ok
 
 Run and archive evidence:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-14
 set -euo pipefail
 chmod +x pipeline-simulate.sh
@@ -342,20 +346,22 @@ chmod +x pipeline-simulate.sh
 grep -q pipeline_simulate_ok pipeline-simulate.txt
 ```
 
-**Expected output:** `container-proof.txt` shows the container running before destroy; `pipeline-simulate.txt` ends with `pipeline_simulate_ok`.
+!!! example "Expected output"
+    `container-proof.txt` shows the container running before destroy; `pipeline-simulate.txt` ends with `pipeline_simulate_ok`.
+
 
 #### Task 4 – Destroy discipline script
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-14
 set -euo pipefail
 ```
 
 Create `destroy-checks.sh`:
 
-```bash
+```bash title="destroy-checks.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 grep -q 'params.DESTROY' tf-demo/Jenkinsfile
@@ -366,7 +372,7 @@ echo destroy_policy_ok
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 chmod +x destroy-checks.sh
 ./destroy-checks.sh | tee destroy-checks.txt
 
@@ -375,7 +381,9 @@ tar -czf module-14-evidence.tgz tf-demo/main.tf tf-demo/Jenkinsfile pipeline-sim
 ls -l module-14-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Evidence archive created; `destroy-checks.txt` contains `destroy_policy_ok`.
+!!! example "Expected output"
+    Evidence archive created; `destroy-checks.txt` contains `destroy_policy_ok`.
+
 
 ### Validation steps
 
@@ -407,7 +415,7 @@ Add a second Pipeline job `tf-plan-only` that sets `APPLY` default false and can
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-14/tf-demo
 terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f rebash-jenkins-tf-lab 2>/dev/null || true

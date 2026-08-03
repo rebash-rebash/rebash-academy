@@ -79,13 +79,13 @@ You will create a **broken** Compose project on purpose, then triage it.
 
 **Objective:** Materialise the failing staging stack using create-file steps (no shell heredocs).
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-compose/{api,web} && cd ~/rebash-lab-compose
 ```
 
 Create `api/Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 WORKDIR /app
 COPY server.py .
@@ -95,7 +95,7 @@ CMD ["python", "server.py"]
 
 Create `api/server.py`:
 
-```python
+```python title="server.py"
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 
@@ -131,7 +131,7 @@ HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 
 Create `web/Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM python:3.12-alpine
 WORKDIR /app
 COPY proxy.py .
@@ -141,7 +141,7 @@ CMD ["python", "proxy.py"]
 
 Create `web/proxy.py`:
 
-```python
+```python title="proxy.py"
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.request import Request, urlopen
 import os
@@ -217,7 +217,7 @@ networks:
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 test -f compose.yaml && test -f api/server.py && echo "project ready" | tee task1-ready.txt
 ```
 
@@ -225,7 +225,7 @@ test -f compose.yaml && test -f api/server.py && echo "project ready" | tee task
 
 **Objective:** Capture evidence before editing.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-compose
 docker compose up -d --build
 docker compose ps
@@ -234,7 +234,9 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18080/ || true
 curl -sS http://127.0.0.1:18080/ || true
 ```
 
-**Expected output:** `web` may be up but `/` returns 502; or healthchecks fail. Logs show connection or 401 errors.
+!!! example "Expected output"
+    `web` may be up but `/` returns 502; or healthchecks fail. Logs show connection or 401 errors.
+
 
 **Validation:** Note one symptom and one hypothesis before changing YAML.
 
@@ -242,14 +244,16 @@ curl -sS http://127.0.0.1:18080/ || true
 
 **Objective:** Confirm DNS/name and token issues.
 
-```bash
+```bash title="Terminal"
 docker compose exec api wget -qO- http://127.0.0.1:8080/healthz || \
   docker compose exec api python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/healthz').read().decode())"
 docker compose exec web printenv | sort | grep -E 'API_|TOKEN' || true
 docker compose exec web getent hosts api || docker compose exec web nslookup api || true
 ```
 
-**Expected output:** Service DNS name is `api`, not `api.internal`. Token missing on `web`.
+!!! example "Expected output"
+    Service DNS name is `api`, not `api.internal`. Token missing on `web`.
+
 
 ### Task 4 — Repair compose and recreate
 
@@ -293,17 +297,19 @@ networks:
 
 Recreate the stack:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-compose
 docker compose up -d --build
 docker compose ps | tee compose-fixed-ps.txt
 ```
 
-**Expected output:** Both services healthy/running.
+!!! example "Expected output"
+    Both services healthy/running.
+
 
 **Validation:**
 
-```bash
+```bash title="Terminal"
 curl -sS http://127.0.0.1:18080/healthz | tee web-health-fixed.txt
 curl -sS http://127.0.0.1:18080/ | tee web-root-fixed.txt
 grep -q rebash-status web-root-fixed.txt
@@ -315,7 +321,7 @@ grep -q rebash-status web-root-fixed.txt
 
 Create `.env.example`:
 
-```bash
+```bash title=".env.example"
 API_TOKEN=replace-me-locally
 ```
 
@@ -327,7 +333,7 @@ API_TOKEN=lab-secret
 
 Update `compose.yaml` to use `env_file: [.env]` on both services instead of inline `API_TOKEN`, then recreate and capture proof:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-compose
 docker compose up -d --build
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18080/ | tee recovery-http-code.txt
@@ -363,7 +369,7 @@ test -s recovery-evidence.tar.gz
 
 ## Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-lab-compose
 docker compose down -v --remove-orphans
 cd ~

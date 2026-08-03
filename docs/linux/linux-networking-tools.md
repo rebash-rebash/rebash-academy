@@ -78,7 +78,7 @@ Networking tools sit above the kernel TCP/IP stack. Applications open sockets; t
 
 `ip` replaces `ifconfig` for addresses, routes, and the neighbour (ARP) cache. `ss` replaces `netstat` for socket state. Keep both ideas: **configuration** (`ip`) and **who is talking** (`ss`).
 
-```bash
+```bash title="Terminal"
 ip -br a
 ip route
 ss -tulpn
@@ -144,7 +144,7 @@ On a practice Ubuntu VM, collect addresses, routes, listeners, DNS, HTTP, a port
 
 Workspace: `~/rebash-linux/lab14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab14 && cd ~/rebash-linux/lab14
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -156,7 +156,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   iproute2 iputils-ping dnsutils curl netcat-openbsd tcpdump traceroute
 ```
 
-**Expected output:** packages install (or already present); you can run `ip`, `ss`, `dig`, `curl`, `nc`, `tcpdump`.
+!!! example "Expected output"
+    packages install (or already present); you can run `ip`, `ss`, `dig`, `curl`, `nc`, `tcpdump`.
+
 
 ### Real-world scenario
 
@@ -166,7 +168,7 @@ Users say the portal is slow. Before you touch the load balancer, the on-call en
 
 #### Task 1 – Addresses, routes, and listeners
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab14
 set -euo pipefail
 
@@ -181,11 +183,13 @@ test -s ip-route.txt
 grep -E 'LISTEN|UNCONN' ss-listen.txt
 ```
 
-**Expected output:** at least one UP interface with an address; a non-empty route table; `ss` shows listening sockets (for example `ssh` on port 22).
+!!! example "Expected output"
+    at least one UP interface with an address; a non-empty route table; `ss` shows listening sockets (for example `ssh` on port 22).
+
 
 #### Task 2 – DNS and HTTP checks
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab14
 set -euo pipefail
 
@@ -204,11 +208,13 @@ curl -sS -I --max-time 15 https://example.com | tee curl-headers.txt
 grep -E 'HTTP/|location:| LocatioN:' -i curl-headers.txt
 ```
 
-**Expected output:** `dig-a.txt` has at least one IPv4 address; `curl-headers.txt` shows an HTTP status line (often `HTTP/2 200` or a redirect).
+!!! example "Expected output"
+    `dig-a.txt` has at least one IPv4 address; `curl-headers.txt` shows an HTTP status line (often `HTTP/2 200` or a redirect).
+
 
 #### Task 3 – Port probe, short capture, evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab14
 set -euo pipefail
 
@@ -231,7 +237,9 @@ tar -czf network-evidence.tgz \
 ls -l network-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `nc` reports success/open to `1.1.1.1:53`; `dns-sample.pcap` is not empty; `network-evidence.tgz` exists.
+!!! example "Expected output"
+    `nc` reports success/open to `1.1.1.1:53`; `dns-sample.pcap` is not empty; `network-evidence.tgz` exists.
+
 
 ### Validation steps
 
@@ -264,7 +272,7 @@ Start a temporary listener with `nc -l 127.0.0.1 9999` in one terminal (or backg
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab14
 set -euo pipefail
 # Stop any leftover challenge listener if you started one

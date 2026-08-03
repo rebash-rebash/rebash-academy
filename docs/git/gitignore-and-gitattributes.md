@@ -117,7 +117,7 @@ Bootstrap an IaC-style repo where secrets and state are ignored, shell scripts u
 
 Workspace: `~/rebash-git/module-04`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-04 && cd ~/rebash-git/module-04
 set -euo pipefail
 ```
@@ -134,7 +134,7 @@ Write ignore rules and verify untracked secrets stay invisible to `git add .`.
 
 Create `.gitignore`:
 
-```gitignore
+```gitignore title=".gitignore"
 .env
 *.tfstate
 *.tfstate.*
@@ -144,7 +144,7 @@ dist/
 
 Bootstrap the repo and verify ignores:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-04
 set -euo pipefail
 rm -rf iac-repo
@@ -166,7 +166,9 @@ git commit -m 'chore: add Terraform stub and gitignore'
 cd ..
 ```
 
-**Expected output:** Only `main.tf` and `.gitignore` staged; `.env`, state, and `dist/` absent from status.
+!!! example "Expected output"
+    Only `main.tf` and `.gitignore` staged; `.env`, state, and `dist/` absent from status.
+
 
 #### Task 2 – Add .gitattributes for LF normalisation
 
@@ -174,7 +176,7 @@ Enforce LF on text IaC files.
 
 Create `.gitattributes`:
 
-```gitattributes
+```gitattributes title=".gitattributes"
 * text=auto eol=lf
 *.sh text eol=lf
 *.tf text eol=lf
@@ -184,14 +186,14 @@ dist/** -diff
 
 Create `deploy.sh`:
 
-```bash
+```bash title="deploy.sh"
 #!/bin/sh
 echo ok
 ```
 
 Commit and verify attributes:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-04/iac-repo
 set -euo pipefail
 git add .gitattributes deploy.sh
@@ -202,13 +204,15 @@ git check-attr diff dist/out.bin 2>/dev/null | tee ../attr-diff.txt || true
 cd ..
 ```
 
-**Expected output:** `check-attr` reports `eol: lf` for `deploy.sh`.
+!!! example "Expected output"
+    `check-attr` reports `eol: lf` for `deploy.sh`.
+
 
 #### Task 3 – Simulate tracked secret removal and evidence pack
 
 If a secret was tracked, remove from index without deleting locally.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-04/iac-repo
 set -euo pipefail
 # Simulate mistake: force-add then fix
@@ -227,7 +231,9 @@ ls -l ../module-04-ignore-evidence.tgz | tee ../ignore-evidence.txt
 cd ..
 ```
 
-**Expected output:** `.env` not in tracked list; `check-ignore` cites `.gitignore` rule.
+!!! example "Expected output"
+    `.env` not in tracked list; `check-ignore` cites `.gitignore` rule.
+
 
 ### Validation steps
 
@@ -257,7 +263,7 @@ Add `!.env.example` with safe placeholder values, track it, and prove `git check
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-04/
 ```
 

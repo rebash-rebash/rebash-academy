@@ -93,7 +93,7 @@ The workflow moves from author-time configuration through CLI phases to provider
 
 #### Recommended local sequence
 
-```bash
+```bash title="Terminal"
 terraform fmt -recursive
 terraform init
 terraform validate
@@ -140,7 +140,7 @@ Useful flags:
 
 #### terraform fmt and validate
 
-```bash
+```bash title="Terminal"
 terraform fmt -recursive -check   # CI: fail if unformatted
 terraform validate                # after init
 ```
@@ -182,7 +182,7 @@ Build a Docker stack (network + nginx container), run the full **`fmt` → `init
 
 Workspace: `~/rebash-terraform/module-03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-03 && cd ~/rebash-terraform/module-03
 ```
 
@@ -198,7 +198,7 @@ You are building a **CI template** for a new internal service. Ticket **CI-203**
 
 Create `versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.5.0, < 2.0.0"
 
@@ -215,7 +215,7 @@ provider "docker" {}
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 resource "docker_network" "workflow" {
   name = "rebash-module-03-net"
 }
@@ -239,13 +239,15 @@ resource "docker_container" "web" {
 }
 ```
 
-**Expected output:** `versions.tf` and `main.tf` exist with network, image, and container resources.
+!!! example "Expected output"
+    `versions.tf` and `main.tf` exist with network, image, and container resources.
+
 
 #### Task 2 – Format, init, and validate
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-03
 terraform fmt -recursive
 terraform init | tee 01-init.txt
@@ -254,14 +256,16 @@ grep -q 'Success' 02-validate.txt
 echo "validate OK" | tee validate-evidence.txt
 ```
 
-**Expected output:** `02-validate.txt` contains `Success! The configuration is valid.`; `validate-evidence.txt` contains `validate OK`.
+!!! example "Expected output"
+    `02-validate.txt` contains `Success! The configuration is valid.`; `validate-evidence.txt` contains `validate OK`.
+
 
 #### Task 3 – Plan, apply, verify, and destroy
 
 Run:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-03
 terraform plan -out=tfplan -no-color | tee 03-plan.txt
 grep -q 'Plan:' 03-plan.txt
@@ -278,7 +282,9 @@ echo "workflow cycle OK" | tee workflow-evidence.txt
 ```
 {% endraw %}
 
-**Expected output:** `03-plan.txt` shows resources to add; `docker-ps.txt` shows container **Up**; second plan exits 0 (no changes); `06-destroy.txt` includes `Destroy complete!`; container absent after destroy; `workflow-evidence.txt` contains `workflow cycle OK`.
+!!! example "Expected output"
+    `03-plan.txt` shows resources to add; `docker-ps.txt` shows container **Up**; second plan exits 0 (no changes); `06-destroy.txt` includes `Destroy complete!`; container absent after destroy; `workflow-evidence.txt` contains `workflow cycle OK`.
+
 
 ### Validation steps
 
@@ -304,7 +310,7 @@ echo "workflow cycle OK" | tee workflow-evidence.txt
 Create `workflow-gate.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-03
@@ -321,12 +327,14 @@ echo "CI gate simulation OK"
 
 Run:
 
-```bash
+```bash title="Terminal"
 chmod +x ~/rebash-terraform/module-03/workflow-gate.sh
 ~/rebash-terraform/module-03/workflow-gate.sh | tee challenge-gate.txt
 ```
 
-**Expected output:** `challenge-gate.txt` contains `CI gate simulation OK`.
+!!! example "Expected output"
+    `challenge-gate.txt` contains `CI gate simulation OK`.
+
 
 ### Learning outcomes
 
@@ -337,7 +345,7 @@ chmod +x ~/rebash-terraform/module-03/workflow-gate.sh
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-03
 terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f rebash-module-03-web 2>/dev/null || true

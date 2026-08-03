@@ -135,7 +135,7 @@ Build an inventory CLI (`invcli.py`) with argparse: `--help`, subcommands `list`
 
 Workspace: `~/rebash-python/lab12`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab12 && cd ~/rebash-python/lab12
 set -euo pipefail
 python3 -m venv .venv
@@ -143,7 +143,9 @@ source .venv/bin/activate
 python -c "import argparse; print('ok')"
 ```
 
-**Expected output:** `ok`
+!!! example "Expected output"
+    `ok`
+
 
 ### Real-world scenario
 
@@ -153,7 +155,7 @@ Your team wants a tiny inventory helper for CI: `list` prints host names from a 
 
 #### Task 1 – Sample inventory and CLI skeleton
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab12
 set -euo pipefail
 source .venv/bin/activate
@@ -163,7 +165,7 @@ mkdir -p data
 
 Create `data/hosts.csv`:
 
-```text
+```text title="hosts.csv"
 name,env,ip
 web-01,prod,10.0.1.11
 web-02,prod,10.0.1.12
@@ -172,7 +174,7 @@ db-01,prod,10.0.2.11
 
 Create `invcli.py`:
 
-```python
+```python title="invcli.py"
 from __future__ import annotations
 
 import argparse
@@ -253,16 +255,18 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 test -f data/hosts.csv
 test -f invcli.py
 ```
 
-**Expected output:** `data/hosts.csv` and `invcli.py` exist.
+!!! example "Expected output"
+    `data/hosts.csv` and `invcli.py` exist.
+
 
 #### Task 2 – Prove --help and happy-path subcommands
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab12
 set -euo pipefail
 source .venv/bin/activate
@@ -284,11 +288,13 @@ test "$(python invcli.py check --path data/hosts.csv >/dev/null; echo $?)" -eq 0
 grep -F 'ok hosts=3' check-ok.txt
 ```
 
-**Expected output:** Help mentions `list` and `check`; list prints three names; check exits 0 with `ok hosts=3` on stderr.
+!!! example "Expected output"
+    Help mentions `list` and `check`; list prints three names; check exits 0 with `ok hosts=3` on stderr.
+
 
 #### Task 3 – Prove failure exit codes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab12
 set -euo pipefail
 source .venv/bin/activate
@@ -312,7 +318,9 @@ grep -F 'empty inventory' check-empty.err
 echo "exit-codes missing=$code_missing empty=$code_empty" | tee task3-ok.txt
 ```
 
-**Expected output:** Missing file → exit 2; header-only CSV → exit 3; `task3-ok.txt` records both codes.
+!!! example "Expected output"
+    Missing file → exit 2; header-only CSV → exit 3; `task3-ok.txt` records both codes.
+
 
 ### Validation steps
 
@@ -336,7 +344,7 @@ Add a Typer (or Click) alternative `invcli_typer.py` with the same `list` and `c
 
 Example install:
 
-```bash
+```bash title="Terminal"
 python -m pip install 'typer>=0.12'
 ```
 
@@ -348,7 +356,7 @@ python -m pip install 'typer>=0.12'
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab12
 set -euo pipefail
 # rm -rf .venv __pycache__ data *.py *.txt *.err

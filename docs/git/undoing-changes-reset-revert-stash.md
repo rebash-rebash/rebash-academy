@@ -118,7 +118,7 @@ Stash experimental pipeline edits, soft-reset an unpushed commit and recommit, t
 
 Workspace: `~/rebash-git/module-07` (subdir `undo-lab`)
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-07/undo-lab && cd ~/rebash-git/module-07/undo-lab
 set -euo pipefail
 ```
@@ -131,7 +131,7 @@ You started risky pipeline edits, must switch to hotfix branch (stash). Locally 
 
 #### Task 1 – Stash and restore WIP
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07
 set -euo pipefail
 rm -rf undo-lab && mkdir undo-lab && cd undo-lab
@@ -151,11 +151,13 @@ grep -q 'experimental: true' deploy.yaml
 cd ..
 ```
 
-**Expected output:** Clean tree after stash; file restored after pop.
+!!! example "Expected output"
+    Clean tree after stash; file restored after pop.
+
 
 #### Task 2 – Soft reset unpushed commit
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07/undo-lab
 set -euo pipefail
 git add deploy.yaml
@@ -169,13 +171,15 @@ grep -q 'experimental flag' ../after-soft-reset.txt
 cd ..
 ```
 
-**Expected output:** One commit with improved message; changes remained staged through soft reset.
+!!! example "Expected output"
+    One commit with improved message; changes remained staged through soft reset.
+
 
 #### Task 3 – Revert bad commit on shared history
 
 Simulate bad deploy commit then revert.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07/undo-lab
 set -euo pipefail
 printf 'replicas: 99\n' > deploy.yaml
@@ -192,7 +196,9 @@ ls -l ../module-07-undo-evidence.tgz | tee ../undo-evidence.txt
 cd ..
 ```
 
-**Expected output:** Revert commit present; bad scale undone in file content.
+!!! example "Expected output"
+    Revert commit present; bad scale undone in file content.
+
 
 ### Validation steps
 
@@ -221,7 +227,7 @@ Create script `safe-undo.sh` that prints whether to use stash, reset, or revert 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-07/undo-lab
 ```
 

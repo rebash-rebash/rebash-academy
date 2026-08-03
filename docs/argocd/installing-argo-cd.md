@@ -77,7 +77,7 @@ Installation deploys the component map from Module 2 into namespace `argocd`. Yo
 
 Argo CD ships as plain Kubernetes YAML:
 
-```bash
+```bash title="Terminal"
 kubectl create namespace argocd
 kubectl apply -n argocd --server-side --force-conflicts \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -112,7 +112,7 @@ CLI installation options:
 
 Initial password retrieval:
 
-```bash
+```bash title="Terminal"
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d; echo
 ```
@@ -155,7 +155,7 @@ Install Argo CD on kind or minikube with a verification script, wait for Ready p
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-argocd/module-03 && cd ~/rebash-argocd/module-03
 ```
 
@@ -171,7 +171,7 @@ You provision a new platform cluster for a development fleet. Security mandates 
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -184,19 +184,21 @@ metadata:
 
 Apply it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-03
 kubectl apply -f namespace.yaml | tee namespace-apply-m03.txt
 kubectl get namespace rebash-argocd-m03 | tee namespace-get-m03.txt
 ```
 
-**Expected output:** Namespace `rebash-argocd-m03` shows Active status.
+!!! example "Expected output"
+    Namespace `rebash-argocd-m03` shows Active status.
+
 
 #### Task 2 – Install verification script
 
 Create `install-argocd.sh`:
 
-```bash
+```bash title="install-argocd.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -238,7 +240,7 @@ log "Install verification complete"
 
 Run the install:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-03
 chmod +x install-argocd.sh
 ./install-argocd.sh
@@ -247,7 +249,9 @@ test -f admin-password-m03.txt
 echo "install script: OK" | tee install-summary-m03.txt
 ```
 
-**Expected output:** Pods reach Running/Available; `admin-password-m03.txt` contains a single-line password; `install-summary-m03.txt` shows `install script: OK`.
+!!! example "Expected output"
+    Pods reach Running/Available; `admin-password-m03.txt` contains a single-line password; `install-summary-m03.txt` shows `install script: OK`.
+
 
 #### Task 3 – Port-forward and CLI login (lab only)
 
@@ -256,13 +260,13 @@ echo "install script: OK" | tee install-summary-m03.txt
 
 In one terminal, start port-forward:
 
-```bash
+```bash title="Terminal"
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 In another terminal:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-03
 ARGOCD_PASS="$(cat admin-password-m03.txt)"
 argocd login localhost:8080 --username admin --password "${ARGOCD_PASS}" --insecure | tee login-m03.txt
@@ -270,11 +274,13 @@ argocd version --client | tee argocd-client-version-m03.txt
 argocd cluster list | tee cluster-list-m03.txt
 ```
 
-**Expected output:** `login-m03.txt` reports successful authentication; `cluster-list-m03.txt` shows `https://kubernetes.default.svc` as in-cluster destination.
+!!! example "Expected output"
+    `login-m03.txt` reports successful authentication; `cluster-list-m03.txt` shows `https://kubernetes.default.svc` as in-cluster destination.
+
 
 #### Task 4 – Collect readiness evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-03
 kubectl get crd applications.argoproj.io | tee crd-evidence-m03.txt
 kubectl get pods -n argocd --field-selector=status.phase=Running --no-headers | wc -l | tee running-pods-m03.txt
@@ -282,7 +288,9 @@ test "$(cat running-pods-m03.txt)" -ge 4
 echo "readiness evidence: OK" | tee readiness-m03.txt
 ```
 
-**Expected output:** CRD exists; at least four Running pods in `argocd`; `readiness-m03.txt` confirms OK.
+!!! example "Expected output"
+    CRD exists; at least four Running pods in `argocd`; `readiness-m03.txt` confirms OK.
+
 
 ### Validation steps
 
@@ -316,7 +324,7 @@ Download the HA manifest URL to `ha-install-ref.yaml` with `curl -Lo` (do not ap
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Stop port-forward with Ctrl+C in that terminal
 kubectl delete namespace rebash-argocd-m03 --ignore-not-found
 kubectl delete namespace argocd --ignore-not-found

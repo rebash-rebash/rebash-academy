@@ -71,7 +71,7 @@ region="${REGION:-ap-south-1}"
 
 Expand with quotes in almost all ops code:
 
-```bash
+```bash title="Terminal"
 printf 'region=%s\n' "$region"
 ```
 
@@ -154,13 +154,15 @@ Under `~/rebash-shell/lab03`, prove quoting differences, use defaults and arithm
 
 Workspace: `~/rebash-shell/lab03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab03 && cd ~/rebash-shell/lab03
 set -euo pipefail
 whoami | tee lab-user.txt
 ```
 
-**Expected output:** workspace exists; `lab-user.txt` is written.
+!!! example "Expected output"
+    workspace exists; `lab-user.txt` is written.
+
 
 ### Real-world scenario
 
@@ -172,7 +174,7 @@ A cleanup script deleted the wrong files because a directory name contained a sp
 
 Create `quoting-demo.sh`:
 
-```bash
+```bash title="quoting-demo.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -196,7 +198,7 @@ wc -l < "$path_with_space" | tee line-count.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab03
 set -euo pipefail
 
@@ -210,13 +212,15 @@ grep -q '<data/my>' quoting-unsafe.txt
 ```
 
 
-**Expected output:** Safe line shows one `<data/my reports/summary.txt>` argument; unsafe line splits into more than one `<>` chunk; `line-count.txt` is `1`.
+!!! example "Expected output"
+    Safe line shows one `<data/my reports/summary.txt>` argument; unsafe line splits into more than one `<>` chunk; `line-count.txt` is `1`.
+
 
 #### Task 2 – Defaults and arithmetic
 
 Create `defaults-math.sh`:
 
-```bash
+```bash title="defaults-math.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -245,7 +249,7 @@ test "$remaining" -eq 2
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab03
 set -euo pipefail
 
@@ -257,13 +261,15 @@ grep -q 'region=ap-south-1' defaults-math.txt
 ```
 
 
-**Expected output:** Default run uses `ap-south-1` and `remaining=2`; override run shows `eu-west-1`.
+!!! example "Expected output"
+    Default run uses `ap-south-1` and `remaining=2`; override run shows `eu-west-1`.
+
 
 #### Task 3 – readonly and export to a child
 
 Create `export-readonly.sh`:
 
-```bash
+```bash title="export-readonly.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -295,7 +301,7 @@ grep -q 'child_LOCAL_ONLY=missing' child-env.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab03
 set -euo pipefail
 
@@ -310,7 +316,9 @@ ls -l variables-evidence.tgz | tee evidence-ls.txt
 ```
 
 
-**Expected output:** Child sees `APP_ENV=lab` and missing `LOCAL_ONLY`; reassign exit is non-zero; evidence archive exists.
+!!! example "Expected output"
+    Child sees `APP_ENV=lab` and missing `LOCAL_ONLY`; reassign exit is non-zero; evidence archive exists.
+
 
 ### Validation steps
 
@@ -341,7 +349,7 @@ Write `config-summary.sh` that reads optional env vars `APP_NAME` (default `demo
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab03
 rm -f readonly-reassign.out
 # Keep evidence and demos, or remove the workspace:

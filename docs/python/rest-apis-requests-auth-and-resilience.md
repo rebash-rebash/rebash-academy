@@ -159,7 +159,7 @@ Call `httpbin.org` (or `example.com`) with timeouts and retries, assert statuses
 
 Workspace: `~/rebash-python/lab14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab14 && cd ~/rebash-python/lab14
 set -euo pipefail
 python3 -m venv .venv
@@ -170,7 +170,9 @@ python -m pip install 'requests>=2.31,<3'
 python -c "import requests; print(requests.__version__)" | tee requests-version.txt
 ```
 
-**Expected output:** `requests-version.txt` shows a 2.x version.
+!!! example "Expected output"
+    `requests-version.txt` shows a 2.x version.
+
 
 ### Real-world scenario
 
@@ -183,7 +185,7 @@ You are writing a small uptime helper for an internal admin API. Security wants 
 
 Create `fetch_status.py`:
 
-```python
+```python title="fetch_status.py"
 #!/usr/bin/env python3
 """GET with explicit timeout and status handling."""
 from __future__ import annotations
@@ -234,7 +236,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab14
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -243,14 +245,16 @@ python fetch_status.py | tee live-get-run.txt
 test -s live-get.json
 ```
 
-**Expected output:** `live-get.json` exists; status `200` when online, or a recorded error when offline (lab continues).
+!!! example "Expected output"
+    `live-get.json` exists; status `200` when online, or a recorded error when offline (lab continues).
+
 
 #### Task 2 – Simple retry loop for transient failures
 
 
 Create `fetch_with_retry.py`:
 
-```python
+```python title="fetch_with_retry.py"
 #!/usr/bin/env python3
 """Retry GET on 429/5xx with bounded attempts (safe for idempotent GET)."""
 from __future__ import annotations
@@ -301,7 +305,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab14
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -310,14 +314,16 @@ python fetch_with_retry.py | tee retry-run.txt
 test -s retry-get.json
 ```
 
-**Expected output:** `retry-get.json` records attempt count; online runs end with `status_code` 200.
+!!! example "Expected output"
+    `retry-get.json` records attempt count; online runs end with `status_code` 200.
+
 
 #### Task 3 – Offline mock fallback and evidence pack
 
 
 Create `mock-response.json`:
 
-```json
+```json title="mock-response.json"
 {
   "args": {},
   "headers": {"User-Agent": "rebash-lab14"},
@@ -327,7 +333,7 @@ Create `mock-response.json`:
 
 Create `api_client.py`:
 
-```python
+```python title="api_client.py"
 #!/usr/bin/env python3
 """Live GET or offline mock — never log secrets."""
 from __future__ import annotations
@@ -398,7 +404,7 @@ if __name__ == "__main__":
 
 Create `pack_evidence.py`:
 
-```python
+```python title="pack_evidence.py"
 import json
 from pathlib import Path
 
@@ -411,7 +417,7 @@ print("evidence pack ok")
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab14
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -421,7 +427,9 @@ LAB14_FORCE_MOCK=0 python api_client.py | tee api-run.txt || python api_client.p
 python pack_evidence.py
 ```
 
-**Expected output:** `api-evidence.json` shows `mode` of `mock`, `live`, or `mock-fallback`; `lab14-evidence.json` packs the artefacts.
+!!! example "Expected output"
+    `api-evidence.json` shows `mode` of `mock`, `live`, or `mock-fallback`; `lab14-evidence.json` packs the artefacts.
+
 
 ### Validation steps
 
@@ -452,7 +460,7 @@ Add a `POST` to `https://httpbin.org/post` with a small JSON body `{"source":"la
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab14
 deactivate 2>/dev/null || true
 # rm -rf .venv

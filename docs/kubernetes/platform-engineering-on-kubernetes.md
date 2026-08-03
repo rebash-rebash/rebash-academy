@@ -156,7 +156,7 @@ Create a tiny PlatformContract CustomResourceDefinition (CRD) and sample custom 
 
 Workspace: `~/rebash-k8s/module-16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-16 && cd ~/rebash-k8s/module-16
 ```
 
@@ -170,7 +170,7 @@ Your internal developer platform exposes a **PlatformContract** API so product t
 
 Create `platform-contract-crd.yaml`:
 
-```yaml
+```yaml title="platform-contract-crd.yaml"
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -219,20 +219,22 @@ spec:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('platform-contract-crd.yaml')); print('CRD YAML OK')"
 grep -q 'platformcontracts.platform.rebash.io' platform-contract-crd.yaml
 ```
 
-**Expected output:** `CRD YAML OK`
+!!! example "Expected output"
+    `CRD YAML OK`
+
 
 #### Task 2 – Create namespace and sample PlatformContract
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -243,7 +245,7 @@ metadata:
 
 Create `sample-platform-contract.yaml`:
 
-```yaml
+```yaml title="sample-platform-contract.yaml"
 apiVersion: platform.rebash.io/v1
 kind: PlatformContract
 metadata:
@@ -259,7 +261,7 @@ spec:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 python3 -c "
@@ -270,13 +272,15 @@ print('sample CR YAML OK')
 "
 ```
 
-**Expected output:** `sample CR YAML OK`
+!!! example "Expected output"
+    `sample CR YAML OK`
+
 
 #### Task 3 – Apply CRD and prove the API is registered
 
 Install the extension API, wait for Established, then apply the sample contract.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 kubectl apply -f platform-contract-crd.yaml
@@ -288,13 +292,15 @@ kubectl get platformcontracts -n rebash-platform-lab | tee platform-contracts.tx
 kubectl get pc checkout-api -n rebash-platform-lab -o yaml | tee sample-pc.yaml
 ```
 
-**Expected output:** CRD `Established`; `checkout-api` listed under `platformcontracts.platform.rebash.io/v1`.
+!!! example "Expected output"
+    CRD `Established`; `checkout-api` listed under `platformcontracts.platform.rebash.io/v1`.
+
 
 #### Task 4 – Package platform evidence bundle
 
 Archive manifests and live object proof for handover.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 kubectl api-resources | grep -i platformcontract | tee api-resources.txt
@@ -302,7 +308,9 @@ tar -czf module-16-platform-evidence.tgz platform-contract-crd.yaml namespace.ya
 ls -l module-16-platform-evidence.tgz
 ```
 
-**Expected output:** Tarball created; `api-resources.txt` lists `platformcontracts`.
+!!! example "Expected output"
+    Tarball created; `api-resources.txt` lists `platformcontracts`.
+
 
 ### Validation steps
 
@@ -335,7 +343,7 @@ Add a second PlatformContract with `tier: prod` and `replicas: 3`, then use `kub
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete platformcontract checkout-api -n rebash-platform-lab --ignore-not-found
 kubectl delete namespace rebash-platform-lab --ignore-not-found --wait=true
 kubectl delete crd platformcontracts.platform.rebash.io --ignore-not-found

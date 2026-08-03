@@ -86,7 +86,7 @@ Troubleshooting is a loop: reproduce → fingerprint environment → capture tra
 | `ImportError` / `ModuleNotFoundError` | Missing package or wrong venv/`PYTHONPATH` |
 | Broad `except:` / `except Exception: pass` | Real error hidden; job looks “fine” or fails late |
 
-```bash
+```bash title="Terminal"
 python3 -c 'import sys,platform; print(sys.version); print(platform.platform())'
 ```
 
@@ -154,13 +154,15 @@ Under `~/rebash-python/lab27`, break-fix a small automation script: capture befo
 
 Workspace: `~/rebash-python/lab27`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab27 && cd ~/rebash-python/lab27
 set -euo pipefail
 python3 --version | tee python-version.txt
 ```
 
-**Expected output:** `python-version.txt` shows Python 3.10+.
+!!! example "Expected output"
+    `python-version.txt` shows Python 3.10+.
+
 
 ### Real-world scenario
 
@@ -174,7 +176,7 @@ Create a broken job and a triage runner that records fingerprint + traceback.
 
 Create `broken_job.py`:
 
-```python
+```python title="broken_job.py"
 """Intentionally broken automation for troubleshooting practice."""
 from __future__ import annotations
 
@@ -221,7 +223,7 @@ if __name__ == "__main__":
 
 Create `triage.py`:
 
-```python
+```python title="triage.py"
 """Capture environment fingerprint + traceback for a target script."""
 from __future__ import annotations
 
@@ -285,7 +287,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab27
 set -euo pipefail
 set +e
@@ -303,7 +305,9 @@ grep -F 'python_executable=' env-fingerprint-before.txt
 ```
 
 
-**Expected output:** triage fails; `traceback-before.txt` mentions `NameError` and/or import failure; fingerprint file is non-empty.
+!!! example "Expected output"
+    triage fails; `traceback-before.txt` mentions `NameError` and/or import failure; fingerprint file is non-empty.
+
 
 Note: because `load_rules` swallows exceptions, you may see **`NameError: name 'servcie' is not defined`** first (empty rules still reach `render_report`). That is intentional — bad `except` changes what you see.
 
@@ -312,7 +316,7 @@ Note: because `load_rules` swallows exceptions, you may see **`NameError: name '
 
 Create `fixed_job.py`:
 
-```python
+```python title="fixed_job.py"
 """Fixed automation after triage (lab27)."""
 from __future__ import annotations
 
@@ -360,17 +364,19 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab27
 set -euo pipefail
 python3 -m py_compile fixed_job.py
 ```
 
-**Expected output:** `fixed_job.py` compiles cleanly.
+!!! example "Expected output"
+    `fixed_job.py` compiles cleanly.
+
 
 #### Task 3 – After evidence and comparison pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab27
 set -euo pipefail
 
@@ -406,7 +412,9 @@ tar -czf lab27-evidence.tgz \
 ls -l lab27-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** after triage is OK; `after-run.stdout` shows `RESULT=ok`; evidence archive exists.
+!!! example "Expected output"
+    after triage is OK; `after-run.stdout` shows `RESULT=ok`; evidence archive exists.
+
 
 ### Validation steps
 
@@ -439,7 +447,7 @@ Add a second broken mode: write `broken_job_v2.py` that raises `ImportError` **w
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab27
 set -euo pipefail
 rm -rf __pycache__

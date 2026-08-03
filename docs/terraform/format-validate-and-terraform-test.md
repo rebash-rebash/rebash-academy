@@ -150,7 +150,7 @@ Build a reusable **Docker label** module, gate it with `fmt` and `validate`, and
 
 Workspace: `~/rebash-terraform/module-14`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-14/modules/label && cd ~/rebash-terraform/module-14
 ```
 
@@ -164,7 +164,7 @@ Your platform team publishes an internal `label` module that standardises contai
 
 Create `modules/label/versions.tf`:
 
-```hcl
+```hcl title="versions.tf"
 terraform {
   required_version = ">= 1.9.0"
 
@@ -179,7 +179,7 @@ terraform {
 
 Create `modules/label/variables.tf`:
 
-```hcl
+```hcl title="variables.tf"
 variable "name" {
   type        = string
   description = "Base resource name."
@@ -204,7 +204,7 @@ variable "image" {
 
 Create `modules/label/main.tf`:
 
-```hcl
+```hcl title="main.tf"
 locals {
   standard_label = "${var.name}-${var.environment}"
 }
@@ -228,7 +228,7 @@ resource "docker_container" "labelled" {
 
 Create `modules/label/outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "standard_label" {
   description = "Normalised name-environment label."
   value       = local.standard_label
@@ -247,20 +247,22 @@ output "container_name" {
 
 Format and validate the module:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-14/modules/label
 terraform fmt -recursive
 terraform init -backend=false | tee ../../artefacts/init-label.log
 terraform validate | tee ../../artefacts/validate-label.log
 ```
 
-**Expected output:** `validate-label.log` contains `Success! The configuration is valid.`
+!!! example "Expected output"
+    `validate-label.log` contains `Success! The configuration is valid.`
+
 
 #### Task 2 – Author native Terraform tests with real apply
 
 Create `modules/label/tests/label.tftest.hcl`:
 
-```hcl
+```hcl title="label.tftest.hcl"
 variables {
   name        = "api"
   environment = "dev"
@@ -305,7 +307,7 @@ run "invalid_environment_fails" {
 Run the test suite:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-terraform/module-14/artefacts
 cd ~/rebash-terraform/module-14/modules/label
 terraform test | tee ../../artefacts/test-results.log
@@ -314,7 +316,9 @@ grep -q 'api-dev' ../../artefacts/test-container-ps.txt
 ```
 {% endraw %}
 
-**Expected output:** Three test runs pass; `api-dev` container running after apply test.
+!!! example "Expected output"
+    Three test runs pass; `api-dev` container running after apply test.
+
 
 #### Task 3 – Wire a root module and fmt-check gate
 
@@ -335,13 +339,13 @@ terraform {
 
 Create `providers.tf`:
 
-```hcl
+```hcl title="providers.tf"
 provider "docker" {}
 ```
 
 Create `main.tf`:
 
-```hcl
+```hcl title="main.tf"
 module "app_label" {
   source = "./modules/label"
 
@@ -352,7 +356,7 @@ module "app_label" {
 
 Create `outputs.tf`:
 
-```hcl
+```hcl title="outputs.tf"
 output "app_label" {
   value = module.app_label.standard_label
 }
@@ -364,7 +368,7 @@ output "container_name" {
 
 Simulate CI format check and validate the root:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-14
 terraform fmt -check -recursive | tee artefacts/fmt-check.log
 terraform init -backend=false | tee artefacts/init-root.log
@@ -373,14 +377,16 @@ terraform plan -input=false | tee artefacts/plan-root.log
 grep -q 'module.app_label.docker_container.labelled' artefacts/plan-root.log
 ```
 
-**Expected output:** `fmt-check.log` is empty (exit 0); plan shows `payments-staging` container.
+!!! example "Expected output"
+    `fmt-check.log` is empty (exit 0); plan shows `payments-staging` container.
+
 
 #### Task 4 – Author a CI gate script
 
 Create `scripts/ci-gates.sh`:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -403,14 +409,16 @@ echo "ci-gates: OK"
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-14
 chmod +x scripts/ci-gates.sh
 ./scripts/ci-gates.sh | tee artefacts/ci-gates.log
 grep -q 'ci-gates: OK' artefacts/ci-gates.log
 ```
 
-**Expected output:** `ci-gates.log` records fmt, validate, test success, and running test container.
+!!! example "Expected output"
+    `ci-gates.log` records fmt, validate, test success, and running test container.
+
 
 ### Validation steps
 
@@ -442,7 +450,7 @@ Add a fourth test run `plan_prod` with `environment = "prod"` and an assert that
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-terraform/module-14/modules/label
 terraform test -destroy
 cd ~/rebash-terraform/module-14

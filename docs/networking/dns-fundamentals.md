@@ -123,7 +123,7 @@ Query `example.com` with `dig` (A/AAAA/NS and optional `+trace`), compare result
 
 Workspace: `~/rebash-networking/lab10`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-networking/lab10 && cd ~/rebash-networking/lab10
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -131,7 +131,9 @@ command -v dig >/dev/null || { sudo apt-get update && sudo apt-get install -y dn
 dig -v 2>&1 | head -n 1 | tee dig-version.txt || true
 ```
 
-**Expected output:** `dig` is available; workspace ready.
+!!! example "Expected output"
+    `dig` is available; workspace ready.
+
 
 ### Real-world scenario
 
@@ -141,7 +143,7 @@ After a DNS provider change, one VM still hits the old site. You must show which
 
 #### Task 1 – Resolver config vs dig A/AAAA/NS
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab10
 set -euo pipefail
 
@@ -160,11 +162,13 @@ dig example.com A | tee dig-a-full.txt
 grep -E '^;; (SERVER|Query time)|ANSWER SECTION' dig-a-full.txt || test -s dig-a-full.txt
 ```
 
-**Expected output:** `dig-a-short.txt` has at least one IPv4 address; NS and AAAA files exist (AAAA may be empty on some paths — A must not be).
+!!! example "Expected output"
+    `dig-a-short.txt` has at least one IPv4 address; NS and AAAA files exist (AAAA may be empty on some paths — A must not be).
+
 
 #### Task 2 – Trace or stepwise path
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab10
 set -euo pipefail
 
@@ -183,18 +187,20 @@ fi
 getent hosts example.com | tee getent-example.txt || true
 ```
 
-**Expected output:** either a usable `dig-trace.txt` or a successful query against an authoritative NS in `dig-from-auth.txt`.
+!!! example "Expected output"
+    either a usable `dig-trace.txt` or a successful query against an authoritative NS in `dig-from-auth.txt`.
+
 
 #### Task 3 – Evidence script
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab10
 set -euo pipefail
 ```
 
 Create `dns-fundamentals-evidence.sh`:
 
-```bash
+```bash title="dns-fundamentals-evidence.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 OUT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -213,7 +219,7 @@ OUT_DIR="$(cd "$(dirname "$0")" && pwd)"
 } | tee "$OUT_DIR/evidence-run.txt"
 ```
 
-```bash
+```bash title="Terminal"
 chmod +x dns-fundamentals-evidence.sh
 ./dns-fundamentals-evidence.sh
 test -s evidence-run.txt
@@ -229,7 +235,9 @@ tar -czf dns-fundamentals-evidence.tgz \
 ls -l dns-fundamentals-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `dns-fundamentals-evidence.sh` runs and writes `evidence-run.txt`; archive is non-empty.
+!!! example "Expected output"
+    `dns-fundamentals-evidence.sh` runs and writes `evidence-run.txt`; archive is non-empty.
+
 
 ### Validation steps
 
@@ -261,7 +269,7 @@ Extend `dns-fundamentals-evidence.sh` to also print `resolvectl status 2>/dev/nu
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-networking/lab10
 # Inspection-only — optional: rm -f dns-fundamentals-evidence.tgz *.txt
 ```

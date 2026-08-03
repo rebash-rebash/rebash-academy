@@ -153,7 +153,7 @@ Create a GitHub Actions workflow stub for Docker CI, a local `build-ci.sh` that 
 
 Workspace: `~/rebash-docker/module-15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-15/.github/workflows && cd ~/rebash-docker/module-15
 ```
 
@@ -167,7 +167,7 @@ Your team wants Docker builds gated in CI before merge. You add a workflow that 
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM alpine:3.20
 ARG APP_VERSION=dev
 RUN echo "rebash-cicd-lab ${APP_VERSION}" > /version.txt
@@ -198,19 +198,21 @@ jobs:
 
 Validate YAML locally:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-15
 python3 -c "import yaml, pathlib; yaml.safe_load(pathlib.Path('.github/workflows/docker-ci.yml').read_text()); print('yaml_ok')" | tee yaml-check.txt
 grep -q yaml_ok yaml-check.txt
 ```
 
-**Expected output:** `yaml-check.txt` contains `yaml_ok`.
+!!! example "Expected output"
+    `yaml-check.txt` contains `yaml_ok`.
+
 
 #### Task 2 – Local CI build script
 
 Create `build-ci.sh`:
 
-```bash
+```bash title="build-ci.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -224,21 +226,23 @@ echo "build-ci ok"
 
 Run the local pipeline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-15
 chmod +x build-ci.sh
 ./build-ci.sh pr-local | tee ci-local.txt
 grep -q 'build-ci ok' ci-local.txt
 ```
 
-**Expected output:** `ci-local.txt` ends with `build-ci ok`; `build-output.txt` shows the version string.
+!!! example "Expected output"
+    `ci-local.txt` ends with `build-ci ok`; `build-output.txt` shows the version string.
+
 
 #### Task 3 – Tag and inspect build artefact
 
 Prove the image exists with expected metadata:
 
 {% raw %}
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-15
 docker images rebash-cicd-lab --format '{{ "{{" }}.Repository{{ "}}" }}:{{ "{{" }}.Tag{{ "}}" }} {{ "{{" }}.ID{{ "}}" }}' | tee ci-images.txt
 grep -q 'rebash-cicd-lab:pr-local' ci-images.txt
@@ -247,7 +251,9 @@ test -s ci-id.txt
 ```
 {% endraw %}
 
-**Expected output:** `ci-images.txt` lists `rebash-cicd-lab:pr-local`; `ci-id.txt` contains `Id=sha256:…`.
+!!! example "Expected output"
+    `ci-images.txt` lists `rebash-cicd-lab:pr-local`; `ci-id.txt` contains `Id=sha256:…`.
+
 
 ### Validation steps
 
@@ -278,7 +284,7 @@ Extend `build-ci.sh` to run Trivy when installed and fail on CRITICAL findings b
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-15
 docker rmi rebash-cicd-lab:pr-local rebash-cicd-lab:ci 2>/dev/null || true
 rm -f *.txt build-ci.sh Dockerfile

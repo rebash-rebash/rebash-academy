@@ -52,7 +52,7 @@ httpx/requests. Optional real webhook. **Estimated cost:** £0.
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-slack/out
 cd ~/rebash-lab-python-slack
 python3 -m venv .venv && source .venv/bin/activate
@@ -67,7 +67,7 @@ No webhook required. Optionally export a test webhook for live send.
 
 Create `slack_notify.py`:
 
-```bash
+```bash title="slack_notify.py"
 python slack_notify.py --title "Disk warning" --text "/ at 92%" --severity warning
 # default dry-run writes out/payload.json
 python slack_notify.py --title "Disk warning" --text "/ at 92%" --send  # needs SLACK_WEBHOOK_URL
@@ -77,7 +77,7 @@ Refuse `--send` without env var (exit `2`). Redact webhook in logs (show only la
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python slack_notify.py --title "Test" --text "hello"
 test -f out/payload.json
 SLACK_WEBHOOK_URL= python slack_notify.py --title t --text x --send; echo $?  # 2

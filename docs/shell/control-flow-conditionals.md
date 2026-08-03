@@ -64,7 +64,7 @@ Conditionals sit between inputs (args, files, command statuses) and the actions 
 
 An `if` statement runs a command or test. Exit status **0** means “true”; non-zero means “false”.
 
-```bash
+```bash title="Terminal"
 if [[ -f "$cfg" ]]; then
   printf 'config ok\n'
 elif [[ -z "${cfg:-}" ]]; then
@@ -151,7 +151,7 @@ Build a small service-helper style script under `~/rebash-shell/lab05` that vali
 
 Workspace: `~/rebash-shell/lab05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab05 && cd ~/rebash-shell/lab05
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -159,7 +159,9 @@ mkdir -p conf
 printf 'mode=lab\n' > conf/app.conf
 ```
 
-**Expected output:** `conf/app.conf` exists; workspace ready.
+!!! example "Expected output"
+    `conf/app.conf` exists; workspace ready.
+
 
 ### Real-world scenario
 
@@ -171,7 +173,7 @@ Your team wants a tiny wrapper, `svcctl.sh`, for a practice app: actions `start`
 
 Create `precondition.sh`:
 
-```bash
+```bash title="precondition.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -194,7 +196,7 @@ fi
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab05
 set -euo pipefail
 
@@ -219,13 +221,15 @@ grep -q 'not found' miss.stderr
 ```
 
 
-**Expected output:** success path writes `precheck-ok.txt`; empty path exits `2`; missing file exits `3`.
+!!! example "Expected output"
+    success path writes `precheck-ok.txt`; empty path exits `2`; missing file exits `3`.
+
 
 #### Task 2 – case statement on CLI args
 
 Create `svcctl.sh`:
 
-```bash
+```bash title="svcctl.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -270,7 +274,7 @@ exit 0
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab05
 set -euo pipefail
 
@@ -297,11 +301,13 @@ grep -q 'Usage:' noarg.stderr
 ```
 
 
-**Expected output:** `start` and `status` succeed; unknown and missing-arg paths exit `2` with stderr messages.
+!!! example "Expected output"
+    `start` and `status` succeed; unknown and missing-arg paths exit `2` with stderr messages.
+
 
 #### Task 3 – Combine tests and pack evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab05
 set -euo pipefail
 
@@ -328,7 +334,9 @@ tar -czf conditionals-evidence.tgz \
 ls -l conditionals-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** start without config exits `3`; evidence archive is non-empty; `conf/app.conf` is restored.
+!!! example "Expected output"
+    start without config exits `3`; evidence archive is non-empty; `conf/app.conf` is restored.
+
 
 ### Validation steps
 
@@ -359,7 +367,7 @@ Extend `svcctl.sh` into `svcctl-v2.sh` that accepts an optional second argument 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab05
 rm -f empty.stdout miss.stdout unknown.stdout noarg.stdout start-miss.stdout
 # Keep svcctl.sh and evidence, or:

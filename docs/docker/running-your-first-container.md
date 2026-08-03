@@ -148,7 +148,7 @@ Workspace: `~/rebash-docker/module-03`
 
 Host port **18083** is reserved for this lab to avoid clashes with other modules.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-docker/module-03 && cd ~/rebash-docker/module-03
 ```
 
@@ -160,7 +160,7 @@ You deploy a sidecar nginx container on a jump server to serve a static health p
 
 #### Task 1 – Run detached with a unique name and published port
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-03
 docker run -d --name rebash-cli-web -p 18083:80 nginx:1.27-alpine
 docker ps --filter name=rebash-cli-web --format 'table {{ "{{" }}.Names{{ "}}" }}\t{{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.Ports{{ "}}" }}' | tee cli-ps.txt
@@ -169,22 +169,26 @@ curl -sI http://127.0.0.1:18083 | head -n 5 | tee cli-headers.txt
 grep -qi 'HTTP/' cli-headers.txt
 ```
 
-**Expected output:** `cli-ps.txt` shows `rebash-cli-web` Up with `18083->80`; headers include `HTTP/1.1 200` or `HTTP/2 200`.
+!!! example "Expected output"
+    `cli-ps.txt` shows `rebash-cli-web` Up with `18083->80`; headers include `HTTP/1.1 200` or `HTTP/2 200`.
+
 
 #### Task 2 – Logs and exec into the running container
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-03
 docker logs rebash-cli-web 2>&1 | tail -n 15 | tee cli-logs.txt
 docker exec rebash-cli-web nginx -v 2>&1 | tee cli-exec-nginx-v.txt
 grep -qi 'nginx' cli-exec-nginx-v.txt
 ```
 
-**Expected output:** `cli-logs.txt` has nginx startup lines; `cli-exec-nginx-v.txt` prints an nginx version.
+!!! example "Expected output"
+    `cli-logs.txt` has nginx startup lines; `cli-exec-nginx-v.txt` prints an nginx version.
+
 
 #### Task 3 – Stop, confirm exited, and remove
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-03
 docker stop rebash-cli-web | tee cli-stop.txt
 docker ps -a --filter name=rebash-cli-web --format '{{ "{{" }}.Status{{ "}}" }}' | tee cli-status-after-stop.txt
@@ -193,7 +197,9 @@ docker rm rebash-cli-web | tee cli-rm.txt
 ! docker ps -a --filter name=rebash-cli-web --quiet | grep -q .
 ```
 
-**Expected output:** Status shows `Exited`; container name no longer appears in `docker ps -a`.
+!!! example "Expected output"
+    Status shows `Exited`; container name no longer appears in `docker ps -a`.
+
 
 ### Validation steps
 
@@ -213,7 +219,7 @@ docker rm rebash-cli-web | tee cli-rm.txt
 
 Re-run the lifecycle with `--rm` so removal is automatic after stop:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-03
 docker run -d --rm --name rebash-cli-auto -p 18084:80 nginx:1.27-alpine
 docker stop rebash-cli-auto
@@ -221,7 +227,9 @@ docker stop rebash-cli-auto
 echo 'auto-removed ok' | tee cli-challenge.txt
 ```
 
-**Expected output:** `cli-challenge.txt` exists; `rebash-cli-auto` is gone after stop.
+!!! example "Expected output"
+    `cli-challenge.txt` exists; `rebash-cli-auto` is gone after stop.
+
 
 ### Learning outcomes
 
@@ -231,7 +239,7 @@ echo 'auto-removed ok' | tee cli-challenge.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-docker/module-03
 docker rm -f rebash-cli-web rebash-cli-auto 2>/dev/null || true
 docker rmi nginx:1.27-alpine 2>/dev/null || true

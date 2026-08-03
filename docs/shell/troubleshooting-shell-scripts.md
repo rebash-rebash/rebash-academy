@@ -81,7 +81,7 @@ Troubleshooting is a loop: reproduce → isolate → fix → verify. Traces (`ba
 5. **Fix** — smallest correct change; keep strict mode.
 6. **Verify** — before/after evidence; add a regression assert when useful.
 
-```bash
+```bash title="Terminal"
 export PS4='+${BASH_SOURCE[0]}:${LINENO}: '
 env -i PATH=/usr/bin:/bin HOME="$HOME" bash -x ./script.sh args
 ```
@@ -130,13 +130,15 @@ Start from a **broken** inventory script under `~/rebash-shell/lab18`, capture i
 
 Workspace: `~/rebash-shell/lab18`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab18 && cd ~/rebash-shell/lab18
 set -euo pipefail
 bash --version | head -n1 | tee bash-version.txt
 ```
 
-**Expected output:** `bash-version.txt` exists.
+!!! example "Expected output"
+    `bash-version.txt` exists.
+
 
 ### Real-world scenario
 
@@ -150,7 +152,7 @@ The script below is intentionally wrong: weak quoting, no `pipefail`, and it for
 
 Create `sample data/services.txt`:
 
-```text
+```text title="services.txt"
 nginx.service
 ssh.service
 cron.service
@@ -159,7 +161,7 @@ redis.service
 
 Create `inventory-broken.sh`:
 
-```bash
+```bash title="inventory-broken.sh"
 #!/usr/bin/env bash
 # BROKEN on purpose — do not use in production
 set -euo
@@ -178,7 +180,7 @@ exit 0
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab18
 set -euo pipefail
 
@@ -209,7 +211,9 @@ grep -F 'matches=0' before-nomatch-out.txt | tee before-nomatch-snip.txt
 ```
 
 
-**Expected output:** spaces path fails or errors (`before-spaces-err.txt` / non-zero exit). No-match on `./services.txt` still exits `0` with `matches=0` — that is the CI bug.
+!!! example "Expected output"
+    spaces path fails or errors (`before-spaces-err.txt` / non-zero exit). No-match on `./services.txt` still exits `0` with `matches=0` — that is the CI bug.
+
 
 #### Task 2 – Fix quoting, pipefail, and exit codes
 
@@ -217,7 +221,7 @@ Write `inventory-fixed.sh` with correct quoting, `set -euo pipefail`, and honest
 
 Create `inventory-fixed.sh`:
 
-```bash
+```bash title="inventory-fixed.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -267,7 +271,7 @@ main "$@"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab18
 set -euo pipefail
 
@@ -289,13 +293,15 @@ grep -F 'RESULT=status=nomatch' after-nomatch-out.txt | tee after-nomatch-snip.t
 ```
 
 
-**Expected output:** spaces path succeeds with `RESULT=status=ok`; no-match path exits `3`.
+!!! example "Expected output"
+    spaces path succeeds with `RESULT=status=ok`; no-match path exits `3`.
+
 
 #### Task 3 – Minimal-env reproduce and evidence pack
 
 Prove the fixed script still works under a cron-like environment, then pack before/after proof.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab18
 set -euo pipefail
 
@@ -320,7 +326,9 @@ tar -czf troubleshooting-evidence.tgz \
 ls -l troubleshooting-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** minimal-env run prints `RESULT=status=ok`; `troubleshooting-evidence.tgz` exists.
+!!! example "Expected output"
+    minimal-env run prints `RESULT=status=ok`; `troubleshooting-evidence.tgz` exists.
+
 
 ### Validation steps
 
@@ -353,7 +361,7 @@ Add `inventory-fixed.sh` support for a `--pipefail-demo` flag that runs `false |
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab18
 set -euo pipefail
 rm -rf "sample data"

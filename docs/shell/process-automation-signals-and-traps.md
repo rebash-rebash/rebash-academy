@@ -62,7 +62,7 @@ Scripts sit between humans or schedulers and Linux processes. Signals ask the pr
 
 A **process** is a running program with a process ID (PID). **`ps`** lists processes. **`kill`** sends a signal to a PID (default is `TERM`). **`jobs`**, **`&`**, and **`wait`** manage background work started by the current shell. A **signal** is a small message from the kernel (for example Ctrl-C → `SIGINT`, stop request → `SIGTERM`). Bash **`trap`** runs a command or function when a named signal arrives, or when the shell exits (`EXIT`).
 
-```bash
+```bash title="Terminal"
 ps -o pid,ppid,stat,cmd
 kill -TERM "$pid"
 trap 'rm -rf "$WORKDIR"' EXIT
@@ -135,14 +135,16 @@ Build a Bash script that registers cleanup traps, starts a background sleeper, s
 
 Workspace: `~/rebash-shell/lab11`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-shell/lab11 && cd ~/rebash-shell/lab11
 set -euo pipefail
 bash --version | head -n1 | tee bash-version.txt
 test -n "$(command -v kill)"
 ```
 
-**Expected output:** `bash-version.txt` exists; `kill` is on `PATH`.
+!!! example "Expected output"
+    `bash-version.txt` exists; `kill` is on `PATH`.
+
 
 ### Real-world scenario
 
@@ -156,7 +158,7 @@ Write a script that creates a work directory, registers traps, and leaves a mark
 
 Create `trap-demo.sh`:
 
-```bash
+```bash title="trap-demo.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -186,7 +188,7 @@ echo "workdir=$WORKDIR"
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab11
 set -euo pipefail
 
@@ -194,7 +196,9 @@ chmod +x trap-demo.sh
 ```
 
 
-**Expected output:** `trap-demo.sh` is executable.
+!!! example "Expected output"
+    `trap-demo.sh` is executable.
+
 
 #### Task 2 – Background job and kill demo
 
@@ -202,7 +206,7 @@ Extend the script to start a background `sleep`, record its PID, stop it with `T
 
 Create `trap-demo.sh`:
 
-```bash
+```bash title="trap-demo.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -249,7 +253,7 @@ exit 0
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab11
 set -euo pipefail
 
@@ -259,13 +263,15 @@ chmod +x trap-demo.sh
 ```
 
 
-**Expected output:** `child-pid.txt` and `child-stopped.txt` exist; `run.log` shows the child PID; script exits 0.
+!!! example "Expected output"
+    `child-pid.txt` and `child-stopped.txt` exist; `run.log` shows the child PID; script exits 0.
+
 
 #### Task 3 – Prove the trap ran
 
 Assert the marker file and that the work directory was removed.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab11
 set -euo pipefail
 
@@ -297,7 +303,9 @@ tar -czf process-evidence.tgz \
 ls -l process-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** Both marker files contain `cleanup_ran=yes`; `work` and `work-int` are gone; `process-evidence.tgz` is not empty.
+!!! example "Expected output"
+    Both marker files contain `cleanup_ran=yes`; `work` and `work-int` are gone; `process-evidence.tgz` is not empty.
+
 
 ### Validation steps
 
@@ -330,7 +338,7 @@ Add a lock file `lab11.lock` that the script creates at start and removes in `cl
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-shell/lab11
 set -euo pipefail
 rm -rf work work-int

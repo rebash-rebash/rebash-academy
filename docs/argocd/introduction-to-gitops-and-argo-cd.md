@@ -157,7 +157,7 @@ Build a Kustomize manifest bundle under `~/rebash-argocd/module-01`, apply it to
 
 Workspace: `~/rebash-argocd/module-01` on your workstation.
 
-```bash
+```bash title="Terminal"
 kind create cluster --name rebash-argocd 2>/dev/null || true
 mkdir -p ~/rebash-argocd/module-01/base && cd ~/rebash-argocd/module-01
 export KUBECONFIG="$(kind get kubeconfig-path --name rebash-argocd 2>/dev/null || kind get kubeconfig --name rebash-argocd)"
@@ -175,7 +175,7 @@ Your platform team onboards a new microservice squad. Before granting Argo CD sy
 
 Create `base/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -209,7 +209,7 @@ spec:
 
 Create `base/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -227,7 +227,7 @@ spec:
 
 Create `base/kustomization.yaml`:
 
-```yaml
+```yaml title="kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: rebash-argocd-m01
@@ -242,7 +242,7 @@ commonLabels:
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -254,7 +254,7 @@ metadata:
 
 Build and inspect rendered manifests:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-01
 kubectl kustomize base | tee build-m01.yaml
 grep -q 'kind: Deployment' build-m01.yaml
@@ -263,13 +263,15 @@ grep -q 'nginxinc/nginx-unprivileged:1.27-alpine' build-m01.yaml
 echo "kustomize build: OK" | tee kustomize-validate.txt
 ```
 
-**Expected output:** `kustomize-validate.txt` shows `kustomize build: OK`; `build-m01.yaml` contains Deployment, Service, and pinned image tag.
+!!! example "Expected output"
+    `kustomize-validate.txt` shows `kustomize build: OK`; `build-m01.yaml` contains Deployment, Service, and pinned image tag.
+
 
 #### Task 3 – Apply to kind and prove workload state
 
 Apply namespace and application bundle:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-01
 kubectl apply -f namespace.yaml | tee apply-ns-m01.txt
 kubectl apply -k base | tee apply-app-m01.txt
@@ -280,13 +282,15 @@ grep -q '1/1' cluster-state-m01.txt || kubectl get pods -n rebash-argocd-m01 --n
 echo "live apply OK" | tee apply-summary-m01.txt
 ```
 
-**Expected output:** Deployment Available; pod Running; Service exists in `rebash-argocd-m01`.
+!!! example "Expected output"
+    Deployment Available; pod Running; Service exists in `rebash-argocd-m01`.
+
 
 #### Task 4 – Simulate drift and re-apply (GitOps reconcile preview)
 
 Introduce drift, then re-apply from Git manifests:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-argocd/module-01
 kubectl scale deployment rebash-gitops-demo -n rebash-argocd-m01 --replicas=2 | tee drift-scale-m01.txt
 kubectl get deployment rebash-gitops-demo -n rebash-argocd-m01 -o jsonpath='{.spec.replicas}{"\n"}' | tee drift-replicas-m01.txt
@@ -297,7 +301,9 @@ grep -q '^1$' after-reconcile-m01.txt
 echo "drift corrected" | tee drift-fix-m01.txt
 ```
 
-**Expected output:** Manual scale to 2 replicas; re-apply from Kustomize restores `replicas: 1` — the same behaviour Argo CD self-heal provides when enabled.
+!!! example "Expected output"
+    Manual scale to 2 replicas; re-apply from Kustomize restores `replicas: 1` — the same behaviour Argo CD self-heal provides when enabled.
+
 
 ### Validation steps
 
@@ -329,7 +335,7 @@ Add `overlays/dev/kustomization.yaml` that sets `replicas: 2` via a strategic me
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-argocd-m01 --ignore-not-found
 # Optional: kind delete cluster --name rebash-argocd
 rm -rf ~/rebash-argocd/module-01

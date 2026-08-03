@@ -59,7 +59,7 @@ Python 3.12+ (stdlib `json` only). **Estimated cost:** £0.
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-json/{ok,bad}
 cd ~/rebash-lab-python-json
 python3 -m venv .venv && source .venv/bin/activate
@@ -69,19 +69,19 @@ python3 -m venv .venv && source .venv/bin/activate
 
 Create `ok/service.json`:
 
-```json
+```json title="service.json"
 {"name": "checkout", "port": 8080, "replicas": 2}
 ```
 
 Create `bad/service.json`:
 
-```json
+```json title="service.json"
 {"name": "", "port": 99999, "replicas": 0}
 ```
 
 Prepare remaining files:
 
-```bash
+```bash title="Terminal"
 echo 'not-json' > bad/broken.json
 ```
 
@@ -91,7 +91,7 @@ Create `validate_json.py` with positional path(s). Load JSON, collect all schema
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python validate_json.py ok/service.json; echo $?      # 0
 python validate_json.py bad/service.json; echo $?     # 2
 python validate_json.py bad/broken.json; echo $?      # 2

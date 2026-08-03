@@ -72,7 +72,7 @@ The shell keeps a **current working directory**. Commands resolve relative paths
 | View content | `cat`, `less`, `head`, `tail` |
 | Inspect | `stat`, `file`, `history` |
 
-```bash
+```bash title="Terminal"
 pwd
 ls -la
 mkdir -p project/src
@@ -93,7 +93,7 @@ Automation, deploys, and incident response all assume you can navigate and chang
 6. `cat` dumps a whole file; `less` pages; `head`/`tail` show ends (`tail -f` follows).
 7. `stat` shows inode metadata; `file` guesses content type; `history` lists past commands.
 
-```bash
+```bash title="Terminal"
 cp -a src dest
 mv oldname newname
 head -n 20 app.log
@@ -142,14 +142,16 @@ Build a real mini project tree with copy/move/view/inspect operations, prove eac
 
 Workspace: `~/rebash-linux/lab03`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab03 && cd ~/rebash-linux/lab03
 set -euo pipefail
 pwd | tee pwd-start.txt
 rm -rf demo-app
 ```
 
-**Expected output:** `pwd-start.txt` ends with `lab03`; clean slate for `demo-app`.
+!!! example "Expected output"
+    `pwd-start.txt` ends with `lab03`; clean slate for `demo-app`.
+
 
 ### Real-world scenario
 
@@ -159,7 +161,7 @@ You are preparing a small application directory on a jump host: README, config s
 
 #### Task 1 – Create a project tree and files
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab03
 set -euo pipefail
 
@@ -190,11 +192,13 @@ test -f demo-app/README.md
 test -d demo-app/logs
 ```
 
-**Expected output:** `tree-created.txt` lists `demo-app` paths including `README.md`, `src/main.sh`, and `logs/app.log`.
+!!! example "Expected output"
+    `tree-created.txt` lists `demo-app` paths including `README.md`, `src/main.sh`, and `logs/app.log`.
+
 
 #### Task 2 – Copy, move, view, and inspect
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab03
 set -euo pipefail
 
@@ -218,11 +222,13 @@ test ! -e demo-app/scripts/run.sh
 grep -q 'demo-app' readme-cat.txt
 ```
 
-**Expected output:** `run.sh` is gone and `start.sh` exists; `file-types.txt` shows text types; `stat-short.txt` has size and mode.
+!!! example "Expected output"
+    `run.sh` is gone and `start.sh` exists; `file-types.txt` shows text types; `stat-short.txt` has size and mode.
+
 
 #### Task 3 – Safe delete proof, history snippet, evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab03
 set -euo pipefail
 
@@ -249,7 +255,9 @@ ls -l cli-fileops-evidence.tgz | tee evidence-ls.txt
 test -s cli-fileops-evidence.tgz
 ```
 
-**Expected output:** `rm-proof.txt` confirms scratch removal; archive includes the `demo-app` tree and is non-empty.
+!!! example "Expected output"
+    `rm-proof.txt` confirms scratch removal; archive includes the `demo-app` tree and is non-empty.
+
 
 ### Validation steps
 
@@ -288,7 +296,7 @@ Run it once and keep the script as your stretch artefact.
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab03
 # Keep cli-fileops-evidence.tgz if you want it.
 # rm -rf demo-app *.txt cli-fileops-evidence.tgz

@@ -54,6 +54,6 @@ Follow the course in order:
 
 ## Diagrams
 
-```bash
+```bash title="Terminal"
 python3 scripts/generate-excalidraw-svg.py
 ```

@@ -115,7 +115,7 @@ Create a feature branch with three WIP commits, rebase onto advanced `main`, squ
 
 Workspace: `~/rebash-git/module-07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-07 && cd ~/rebash-git/module-07
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ Before opening a PR for a pipeline change, you rebase onto latest `main` and squ
 
 Three commits on feature; one new commit on main.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07
 set -euo pipefail
 rm -rf rebase-lab
@@ -155,13 +155,15 @@ git commit -am 'chore: add lint on main'
 cd ..
 ```
 
-**Expected output:** Feature three commits behind new main commit.
+!!! example "Expected output"
+    Feature three commits behind new main commit.
+
 
 #### Task 2 – Rebase feature onto main
 
 Replay feature commits on top of lint commit.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07/rebase-lab
 set -euo pipefail
 git switch feature/oidc
@@ -172,13 +174,15 @@ grep -q 'wip: add deploy' ../after-rebase.txt
 cd ..
 ```
 
-**Expected output:** Feature commits sit above main's lint commit.
+!!! example "Expected output"
+    Feature commits sit above main's lint commit.
+
 
 #### Task 3 – Squash WIP commits with GIT_SEQUENCE_EDITOR
 
 Combine three WIP commits into one feat commit non-interactively.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-07/rebase-lab
 set -euo pipefail
 export GIT_SEQUENCE_EDITOR="sed -i.bak '2,3s/^pick/squash/'"
@@ -195,7 +199,9 @@ ls -l ../module-07-rebase-evidence.tgz | tee ../rebase-evidence.txt
 cd ..
 ```
 
-**Expected output:** One commit on feature above main; combined pipeline changes.
+!!! example "Expected output"
+    One commit on feature above main; combined pipeline changes.
+
 
 ### Validation steps
 
@@ -225,7 +231,7 @@ Use `git rebase -i` to **reword** the squash commit message to include ticket `P
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-07/rebase-lab
 ```
 

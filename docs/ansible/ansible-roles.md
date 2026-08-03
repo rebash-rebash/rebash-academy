@@ -140,7 +140,7 @@ Create a `common` role with defaults, tasks, handlers, a template, and a static 
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-08/{playbooks,roles/common/{defaults,vars,tasks,handlers,templates,files,meta}}
 cd ~/rebash-ansible/module-08
 ```
@@ -157,7 +157,7 @@ Every server in your organisation receives a standard banner file and a marker f
 
 Create `roles/common/defaults/main.yml`:
 
-```yaml
+```yaml title="main.yml"
 ---
 common_banner: "REBASH Academy baseline"
 common_marker_path: /tmp/rebash-common-applied
@@ -166,7 +166,7 @@ common_create_marker: true
 
 Create `roles/common/vars/main.yml`:
 
-```yaml
+```yaml title="main.yml"
 ---
 common_role_version: "1.0.0"
 ```
@@ -175,7 +175,7 @@ common_role_version: "1.0.0"
 
 Create `roles/common/files/baseline.txt`:
 
-```text
+```text title="baseline.txt"
 Common role static file — do not edit on host.
 ```
 
@@ -191,7 +191,7 @@ Create `roles/common/templates/motd.j2`:
 
 Create `roles/common/handlers/main.yml`:
 
-```yaml
+```yaml title="main.yml"
 ---
 - name: common marker updated
   ansible.builtin.debug:
@@ -227,7 +227,7 @@ Create `roles/common/tasks/main.yml`:
 
 Create `roles/common/meta/main.yml`:
 
-```yaml
+```yaml title="main.yml"
 ---
 galaxy_info:
   author: rebash
@@ -262,7 +262,7 @@ Create `playbooks/site.yml`:
 
 Syntax-check and run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-08
 ansible-playbook playbooks/site.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/site.yml | tee run-site.txt
@@ -271,18 +271,22 @@ grep -q 'Module 08 lab host' /tmp/rebash-motd.txt
 grep -q 'PLAY RECAP' run-site.txt
 ```
 
-**Expected output:** Syntax check passes; `/tmp/rebash-motd.txt` contains `Module 08 lab host`; recap shows success.
+!!! example "Expected output"
+    Syntax check passes; `/tmp/rebash-motd.txt` contains `Module 08 lab host`; recap shows success.
+
 
 #### Task 4 – Prove idempotency and handler behaviour
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-08
 ansible-playbook playbooks/site.yml | tee run-idempotent.txt
 grep -E 'changed=0|changed=1' run-idempotent.txt | tee changed-summary.txt
 test -f /tmp/rebash-common-applied
 ```
 
-**Expected output:** Second run reports few or zero changes; marker file exists.
+!!! example "Expected output"
+    Second run reports few or zero changes; marker file exists.
+
 
 ### Validation steps
 
@@ -314,7 +318,7 @@ Add `roles/common/tasks/assert.yml` and `import_tasks: assert.yml` at the end of
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f /tmp/rebash-motd.txt /tmp/rebash-baseline.txt /tmp/rebash-common-applied
 # Keep ~/rebash-ansible/module-08 for portfolio review
 ```

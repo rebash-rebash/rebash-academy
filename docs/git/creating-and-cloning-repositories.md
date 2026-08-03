@@ -124,7 +124,7 @@ comments: false
 
 Bootstrap a real project history.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03
 set -euo pipefail
 rm -rf app remotes clone
@@ -140,13 +140,15 @@ git log --oneline | tee ../init-log.txt
 cd ..
 ```
 
-**Expected output:** `init-log.txt` shows the initial commit.
+!!! example "Expected output"
+    `init-log.txt` shows the initial commit.
+
 
 #### Task 2 – Create bare remote and push
 
 Bare remotes accept pushes like GitHub.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03
 set -euo pipefail
 git init --bare remotes/app.git
@@ -159,13 +161,15 @@ git --git-dir=remotes/app.git log --oneline | tee bare-log.txt
 grep -q 'initial commit' bare-log.txt
 ```
 
-**Expected output:** Bare remote contains the commit; `origin` points at it.
+!!! example "Expected output"
+    Bare remote contains the commit; `origin` points at it.
+
 
 #### Task 3 – Clone and verify
 
 CI-style fresh checkout.
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-03
 set -euo pipefail
 git clone remotes/app.git clone
@@ -177,7 +181,9 @@ tar -czf ../module-03-evidence.tgz -C .. init-log.txt remote-v.txt bare-log.txt 
 ls -l ../module-03-evidence.tgz | tee ../evidence.txt
 ```
 
-**Expected output:** Clone has `origin` and matching history; evidence archived.
+!!! example "Expected output"
+    Clone has `origin` and matching history; evidence archived.
+
 
     ### Validation steps
 

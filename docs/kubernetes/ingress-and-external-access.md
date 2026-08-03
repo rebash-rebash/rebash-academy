@@ -168,7 +168,7 @@ Create Deployment, Service, and Ingress manifests; validate them with dry-run; e
 
 Workspace: `~/rebash-k8s/module-06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-06 && cd ~/rebash-k8s/module-06
 ```
 
@@ -182,7 +182,7 @@ You must publish an internal demo app at `/` on host `demo.lab.local`. Productio
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -191,7 +191,7 @@ metadata:
 
 Create `web-backend.yaml`:
 
-```yaml
+```yaml title="web-backend.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -228,7 +228,7 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-06
 kubectl apply -f namespace.yaml
 kubectl apply -f web-backend.yaml
@@ -236,13 +236,15 @@ kubectl rollout status deployment/web -n rebash-m06 --timeout=120s
 kubectl get svc web -n rebash-m06 | tee svc.txt
 ```
 
-**Expected output:** Service `web` exists with ClusterIP assigned.
+!!! example "Expected output"
+    Service `web` exists with ClusterIP assigned.
+
 
 #### Task 2 – Ingress manifest and validation
 
 Create `ingress.yaml`:
 
-```yaml
+```yaml title="ingress.yaml"
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -265,7 +267,7 @@ spec:
 
 Validate before or after apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-06
 kubectl apply --dry-run=client -f ingress.yaml | tee ingress-dry-run.txt
 kubectl apply -f ingress.yaml
@@ -273,7 +275,9 @@ kubectl get ingress web -n rebash-m06 | tee ingress-status.txt
 kubectl describe ingress web -n rebash-m06 | tee ingress-describe.txt
 ```
 
-**Expected output:** Ingress object created; `ingress-status.txt` shows NAME and CLASS (ADDRESS may be empty without a controller).
+!!! example "Expected output"
+    Ingress object created; `ingress-status.txt` shows NAME and CLASS (ADDRESS may be empty without a controller).
+
 
 #### Task 3 – NodePort fallback proof
 
@@ -297,7 +301,7 @@ spec:
 
 Apply and test (kind maps node ports to localhost):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-06
 kubectl apply -f web-nodeport.yaml
 kubectl get svc web-nodeport -n rebash-m06 -o wide | tee nodeport.txt
@@ -306,7 +310,9 @@ curl -sS -o /dev/null -w '%{http_code}\n' "http://127.0.0.1:${NODE_PORT}/" | tee
 grep -q 200 nodeport-curl.txt
 ```
 
-**Expected output:** HTTP `200` via NodePort on kind/minikube (if port reachable). If Ingress controller is installed, also test `demo.lab.local` via `/etc/hosts` and document ADDRESS in `ingress-status.txt`.
+!!! example "Expected output"
+    HTTP `200` via NodePort on kind/minikube (if port reachable). If Ingress controller is installed, also test `demo.lab.local` via `/etc/hosts` and document ADDRESS in `ingress-status.txt`.
+
 
 ### Validation steps
 
@@ -336,7 +342,7 @@ Install ingress-nginx on kind, re-apply `ingress.yaml`, add `127.0.0.1 demo.lab.
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m06 --ignore-not-found --wait=true
 ```
 

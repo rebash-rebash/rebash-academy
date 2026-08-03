@@ -69,7 +69,7 @@ Permissions sit between identity (UID/GID) and the filesystem. Mode bits, ACLs, 
 
 POSIX permissions use three classes. Directories need the execute bit to **traverse** (enter) the path. ACLs add entries such as `user:alice:rwx`. Sticky (`+t`) on a directory restricts unlinking to the file owner (plus root). SUID on an executable runs it as the file owner; SGID runs as the file group. SGID on a directory often makes new files inherit the directory’s group.
 
-```bash
+```bash title="Terminal"
 ls -l
 stat -c '%A %U %G %n' file
 umask
@@ -121,7 +121,7 @@ On a practice Ubuntu VM, create a shared project directory with correct group mo
 
 Workspace: `~/rebash-linux/lab07`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab07 && cd ~/rebash-linux/lab07
 set -euo pipefail
 sudo apt-get update -qq
@@ -130,7 +130,9 @@ umask | tee umask-default.txt
 whoami | tee lab-admin.txt
 ```
 
-**Expected output:** `acl` tools available; `umask-default.txt` shows a value such as `0022`.
+!!! example "Expected output"
+    `acl` tools available; `umask-default.txt` shows a value such as `0022`.
+
 
 ### Real-world scenario
 
@@ -140,7 +142,7 @@ Your team shares a deploy drop folder on a practice VM. Security wants: (1) grou
 
 #### Task 1 – Group, users, and POSIX modes
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab07
 set -euo pipefail
 
@@ -163,11 +165,13 @@ stat -c '%A %U %G %n' /opt/rebash-perm/shared /opt/rebash-perm/shared/app.txt | 
 getent group rebash-perm | tee group-rebash-perm.txt
 ```
 
-**Expected output:** directory mode shows `rwx` for group and `s` in the group-execute position (SGID); `app.txt` group is `rebash-perm`.
+!!! example "Expected output"
+    directory mode shows `rwx` for group and `s` in the group-execute position (SGID); `app.txt` group is `rebash-perm`.
+
 
 #### Task 2 – ACL for the contractor (read-only)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab07
 set -euo pipefail
 
@@ -184,11 +188,13 @@ grep -Ei 'Permission denied|denied' contractor-write-deny.txt
 grep -F 'user:rebash-contractor:r' getfacl-shared.txt
 ```
 
-**Expected output:** `getfacl` lists the contractor ACL; read succeeds; write is denied.
+!!! example "Expected output"
+    `getfacl` lists the contractor ACL; read succeeds; write is denied.
+
 
 #### Task 3 – Sticky drop box and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab07
 set -euo pipefail
 
@@ -218,7 +224,9 @@ tar -czf permissions-evidence.tgz \
 ls -l permissions-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** sticky delete is denied; `ls-drop.txt` shows `t` in the mode; evidence archive exists.
+!!! example "Expected output"
+    sticky delete is denied; `ls-drop.txt` shows `t` in the mode; evidence archive exists.
+
 
 ### Validation steps
 
@@ -249,7 +257,7 @@ Add a **default ACL** on `/opt/rebash-perm/shared` so new files grant `rebash-co
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab07
 set -euo pipefail
 

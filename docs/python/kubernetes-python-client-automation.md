@@ -141,7 +141,7 @@ Under `~/rebash-python/lab18`, list namespaces/pods when kubeconfig works; other
 
 Workspace: `~/rebash-python/lab18`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab18/manifests && cd ~/rebash-python/lab18
 set -euo pipefail
 python3 -m venv .venv
@@ -153,7 +153,9 @@ python -m pip install 'kubernetes>=29,<32' || true
 command -v kubectl >/dev/null && kubectl config current-context 2>/dev/null | tee kube-context.txt || echo "no-kubeconfig" | tee kube-context.txt
 ```
 
-**Expected output:** venv ready; `kube-context.txt` has a context name or `no-kubeconfig`.
+!!! example "Expected output"
+    venv ready; `kube-context.txt` has a context name or `no-kubeconfig`.
+
 
 ### Real-world scenario
 
@@ -166,7 +168,7 @@ Your platform team wants a Python health inventory: namespaces and Pod phases fo
 
 Create `generate_manifests.py`:
 
-```python
+```python title="generate_manifests.py"
 #!/usr/bin/env python3
 """Generate sample manifests and validate YAML structure."""
 from __future__ import annotations
@@ -250,7 +252,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab18
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -261,14 +263,16 @@ test -s manifest-evidence.json
 python -c 'import json; d=json.load(open("manifest-evidence.json")); assert len(d["docs"])==2; print("yaml ok")'
 ```
 
-**Expected output:** two manifests; `manifest-evidence.json` lists Deployment and Service with dry-run notes.
+!!! example "Expected output"
+    two manifests; `manifest-evidence.json` lists Deployment and Service with dry-run notes.
+
 
 #### Task 2 – Live read-only list (or honest skip)
 
 
 Create `k8s_inventory.py`:
 
-```python
+```python title="k8s_inventory.py"
 #!/usr/bin/env python3
 """Read-only namespace/pod inventory — never destroy."""
 from __future__ import annotations
@@ -343,7 +347,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab18
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -352,14 +356,16 @@ python k8s_inventory.py | tee inventory-run.txt
 test -s k8s-inventory.json
 ```
 
-**Expected output:** `k8s-inventory.json` with `mode` `live` or `skipped-live` — both acceptable.
+!!! example "Expected output"
+    `k8s-inventory.json` with `mode` `live` or `skipped-live` — both acceptable.
+
 
 #### Task 3 – Destroy refusal and evidence pack
 
 
 Create `pack_evidence.py`:
 
-```python
+```python title="pack_evidence.py"
 import json
 from pathlib import Path
 
@@ -375,7 +381,7 @@ print("evidence ok")
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab18
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -390,7 +396,9 @@ grep -F 'REFUSED' destroy-denied.txt
 python pack_evidence.py
 ```
 
-**Expected output:** destroy refused; `lab18-evidence.json` merges manifest + inventory evidence.
+!!! example "Expected output"
+    destroy refused; `lab18-evidence.json` merges manifest + inventory evidence.
+
 
 ### Validation steps
 
@@ -421,7 +429,7 @@ Add a ConfigMap manifest (`rebash-lab18-config`) with two keys, validate it in `
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab18
 deactivate 2>/dev/null || true
 # Do NOT kind delete cluster / kubectl delete ns from this lab.

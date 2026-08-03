@@ -72,7 +72,7 @@ Disk capacity is per **mount**. File attributes live on the **inode**. Tools rep
 | `du` | How much space does this **directory tree** use? |
 | `stat` / `ls -l` | Who owns it, what mode, what size and times? |
 
-```bash
+```bash title="Terminal"
 df -hT
 df -i
 du -sh ~
@@ -119,14 +119,16 @@ On a practice Ubuntu VM, build a sample directory tree, measure it with `du`, co
 
 Workspace: `~/rebash-linux/lab05`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-linux/lab05 && cd ~/rebash-linux/lab05
 set -euo pipefail
 whoami | tee lab-user.txt
 df -hT . | tee df-workspace.txt
 ```
 
-**Expected output:** `lab-user.txt` and `df-workspace.txt` exist; workspace is on a real mount.
+!!! example "Expected output"
+    `lab-user.txt` and `df-workspace.txt` exist; workspace is on a real mount.
+
 
 ### Real-world scenario
 
@@ -136,7 +138,7 @@ On-call reports “disk almost full” on a practice app VM. Before you expand t
 
 #### Task 1 – Build a sample tree and measure with `du`
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab05
 set -euo pipefail
 
@@ -157,11 +159,13 @@ du -ah sample-tree | sort -h | tail -n 8 | tee du-largest.txt
 test "$(du -sb sample-tree/logs | awk '{print $1}')" -gt "$(du -sb sample-tree/data | awk '{print $1}')"
 ```
 
-**Expected output:** `du-total.txt` shows roughly 12M+ for the tree; `du-depth1.txt` lists `logs`, `cache`, and `data`; `logs` is larger than `data`.
+!!! example "Expected output"
+    `du-total.txt` shows roughly 12M+ for the tree; `du-depth1.txt` lists `logs`, `cache`, and `data`; `logs` is larger than `data`.
+
 
 #### Task 2 – Mount capacity with `df` (blocks and inodes)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab05
 set -euo pipefail
 
@@ -175,11 +179,13 @@ test -s df-hT.txt
 test -s df-i.txt
 ```
 
-**Expected output:** `df-hT.txt` shows filesystem type and free space; `df-i.txt` shows inode use; workspace mount appears in `df-here-and-root.txt`.
+!!! example "Expected output"
+    `df-hT.txt` shows filesystem type and free space; `df-i.txt` shows inode use; workspace mount appears in `df-here-and-root.txt`.
+
 
 #### Task 3 – File attributes with `stat` and evidence pack
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab05
 set -euo pipefail
 
@@ -199,7 +205,9 @@ tar -czf disk-usage-evidence.tgz \
 ls -l disk-usage-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `stat-summary.txt` shows mode/owner/size; `log-bytes.txt` is `8388608`; evidence archive is not empty.
+!!! example "Expected output"
+    `stat-summary.txt` shows mode/owner/size; `log-bytes.txt` is `8388608`; evidence archive is not empty.
+
 
 ### Validation steps
 
@@ -230,7 +238,7 @@ Write `~/rebash-linux/lab05/capacity-scan.sh` that: (1) prints `df -hT` for `.`,
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-linux/lab05
 set -euo pipefail
 rm -rf sample-tree

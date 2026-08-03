@@ -111,7 +111,7 @@ Mental model: **inventory + playbook → control node → connection → module 
 4. Ansible copies module code, runs it, collects **changed/ok/failed** status, and optionally gathers facts.
 5. Handlers run once at the end if notified (e.g. restart nginx after config change).
 
-```bash
+```bash title="Terminal"
 # Ad-hoc connectivity check (after install — Module 2)
 ansible localhost -m ping -c local
 ```
@@ -158,7 +158,7 @@ Create inventory and a baseline playbook under `~/rebash-ansible/module-01`, app
 
 Workspace: `~/rebash-ansible/module-01`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-ansible/module-01/{files,group_vars} && cd ~/rebash-ansible/module-01
 ```
 
@@ -174,7 +174,7 @@ You join a platform team onboarding Ansible. Before any production SSH, the lead
 
 Create `ansible.cfg`:
 
-```ini
+```ini title="ansible.cfg"
 [defaults]
 inventory = ./inventory.ini
 host_key_checking = False
@@ -183,21 +183,21 @@ interpreter_python = auto_silent
 
 Create `inventory.ini`:
 
-```ini
+```ini title="inventory.ini"
 [local]
 localhost ansible_connection=local
 ```
 
 Create `group_vars/local.yml`:
 
-```yaml
+```yaml title="local.yml"
 lab_module: module-01
 app_name: rebash-cm-lab
 ```
 
 Create `files/baseline.conf`:
 
-```
+```text title="baseline.conf"
 app_name=rebash-cm-lab
 managed_by=ansible
 ```
@@ -235,7 +235,7 @@ Create `baseline.yml`:
 
 Syntax-check and apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-01
 ansible-playbook baseline.yml --syntax-check | tee syntax-check.txt
 ansible-playbook baseline.yml | tee playbook-run.txt
@@ -245,11 +245,13 @@ grep -q rebash-cm-lab ~/rebash-ansible/module-01/lab/baseline.conf
 cat ~/rebash-ansible/module-01/lab/onboarding.txt | tee onboarding-proof.txt
 ```
 
-**Expected output:** Play recap success; `baseline.conf` and `onboarding.txt` exist; `onboarding-proof.txt` shows `module=module-01`.
+!!! example "Expected output"
+    Play recap success; `baseline.conf` and `onboarding.txt` exist; `onboarding-proof.txt` shows `module=module-01`.
+
 
 #### Task 2 – Prove connectivity and inventory merge
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-01
 ansible -i inventory.ini local -m ping | tee ping-local.txt
 ansible-inventory -i inventory.ini --host localhost | tee host-localhost.json
@@ -258,13 +260,15 @@ grep -q lab_module host-localhost.json
 echo "inventory and ping OK" | tee connectivity-ok.txt
 ```
 
-**Expected output:** Ping returns `"ping": "pong"`; host vars include `lab_module`.
+!!! example "Expected output"
+    Ping returns `"ping": "pong"`; host vars include `lab_module`.
+
 
 #### Task 3 – Diagnose and fix wrong inventory group
 
 Create `needs-local-group.yml`:
 
-```yaml
+```yaml title="needs-local-group.yml"
 ---
 - name: Play targeting wrong group name
   hosts: labhosts
@@ -277,7 +281,7 @@ Create `needs-local-group.yml`:
 
 Run with the broken group (inventory has `local`, not `labhosts`):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-01
 ansible-playbook needs-local-group.yml | tee inventory-miss.txt
 grep -Ei 'skipping.*no hosts matched|0 hosts' inventory-miss.txt
@@ -285,24 +289,28 @@ grep -Ei 'skipping.*no hosts matched|0 hosts' inventory-miss.txt
 
 Fix the play — edit `needs-local-group.yml` and change `hosts: labhosts` to `hosts: local`. Re-run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-01
 ansible-playbook needs-local-group.yml | tee inventory-hit.txt
 grep -q 'labhosts task ran' inventory-hit.txt || grep -q 'PLAY RECAP' inventory-hit.txt
 echo "inventory fix OK" | tee inventory-fix-ok.txt
 ```
 
-**Expected output:** First run shows no matching hosts; second run completes after fixing `hosts:`.
+!!! example "Expected output"
+    First run shows no matching hosts; second run completes after fixing `hosts:`.
+
 
 #### Task 4 – Idempotent second apply
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-01
 ansible-playbook baseline.yml | tee playbook-run2.txt
 grep -E 'changed=0|changed=1' playbook-run2.txt | tail -1 | tee idempotency-line.txt
 ```
 
-**Expected output:** Second run reports zero or minimal changes when files already match desired state.
+!!! example "Expected output"
+    Second run reports zero or minimal changes when files already match desired state.
+
 
 ### Validation steps
 
@@ -335,7 +343,7 @@ Add a task to `baseline.yml` that runs `ansible -m command -a "test -f {{ lab_ro
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-ansible/module-01
 ansible-playbook -i inventory.ini -e '{"lab_root":"~/rebash-ansible/module-01/lab"}' \
   -c local localhost -m file -a "path=~/rebash-ansible/module-01/lab state=absent" 2>/dev/null || \

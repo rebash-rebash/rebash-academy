@@ -51,7 +51,7 @@ PyYAML. **Estimated cost:** £0.
 
 ## Environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-lab-python-deploy/{manifests,out}
 cd ~/rebash-lab-python-deploy
 python3 -m venv .venv && source .venv/bin/activate
@@ -62,7 +62,7 @@ pip install 'PyYAML>=6.0,<7'
 
 Create `manifests/good.yaml`:
 
-```yaml
+```yaml title="good.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata: {name: api}
@@ -79,7 +79,7 @@ spec:
 
 Create `manifests/bad.yaml`:
 
-```yaml
+```yaml title="bad.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata: {name: api}
@@ -97,7 +97,7 @@ Create `validate_deployment.py` that walks containers and reports missing probes
 
 ## Validation
 
-```bash
+```bash title="Terminal"
 python validate_deployment.py manifests/good.yaml; echo $?  # 0
 python validate_deployment.py manifests/bad.yaml; echo $?   # 2
 ```

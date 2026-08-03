@@ -186,7 +186,7 @@ Apply production-style manifests combining Deployment (with pod anti-affinity), 
 
 Workspace: `~/rebash-k8s/module-patterns` on a disposable lab cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-patterns && cd ~/rebash-k8s/module-patterns
 ```
 
@@ -200,7 +200,7 @@ mkdir -p ~/rebash-k8s/module-patterns && cd ~/rebash-k8s/module-patterns
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -209,7 +209,7 @@ metadata:
 
 Create `deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -250,20 +250,22 @@ spec:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-patterns
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/payments-api -n rebash-m-patterns --timeout=120s
 kubectl get pods -n rebash-m-patterns -o wide | tee patterns-pods-wide.txt
 ```
 
-**Expected output:** Two Ready replicas; `patterns-pods-wide.txt` shows node placement (same node on single-node labs is acceptable with preferred anti-affinity).
+!!! example "Expected output"
+    Two Ready replicas; `patterns-pods-wide.txt` shows node placement (same node on single-node labs is acceptable with preferred anti-affinity).
+
 
 #### Task 2 – PodDisruptionBudget
 
 Create `pdb.yaml`:
 
-```yaml
+```yaml title="pdb.yaml"
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -278,7 +280,7 @@ spec:
 
 Apply and verify:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-patterns
 kubectl apply -f pdb.yaml
 kubectl get pdb payments-api-pdb -n rebash-m-patterns | tee patterns-pdb.txt
@@ -286,13 +288,15 @@ kubectl describe pdb payments-api-pdb -n rebash-m-patterns | tee patterns-pdb-de
 grep -E 'Min Available|Allowed disruptions' patterns-pdb-describe.txt
 ```
 
-**Expected output:** PDB shows `minAvailable: 1` and current allowed disruptions.
+!!! example "Expected output"
+    PDB shows `minAvailable: 1` and current allowed disruptions.
+
 
 #### Task 3 – HorizontalPodAutoscaler
 
 Create `hpa.yaml`:
 
-```yaml
+```yaml title="hpa.yaml"
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -316,7 +320,7 @@ spec:
 
 Apply and describe:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-patterns
 kubectl apply -f hpa.yaml
 kubectl get hpa,pdb,deploy -n rebash-m-patterns | tee patterns-objects.txt
@@ -326,7 +330,9 @@ if ! kubectl top pods -n rebash-m-patterns >/dev/null 2>&1; then
 fi
 ```
 
-**Expected output:** HPA, PDB, and Deployment listed; HPA min/max replicas documented.
+!!! example "Expected output"
+    HPA, PDB, and Deployment listed; HPA min/max replicas documented.
+
 
 ### Validation steps
 
@@ -357,7 +363,7 @@ Run `kubectl drain <node> --ignore-daemonsets --delete-emptydir-data` on a multi
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m-patterns --ignore-not-found
 ```
 
@@ -390,7 +396,7 @@ Confirm the lab before moving on:
 
 
 
-```bash
+```bash title="Terminal"
 # HPA inspection
 kubectl autoscale deployment votestack-api --cpu-percent=70 --min=2 --max=10 -n votestack
 kubectl get hpa -n votestack -w

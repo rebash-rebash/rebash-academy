@@ -116,7 +116,7 @@ Run three drills: detached HEAD rescue, auth diagnostics script, merge abort and
 
 Workspace: `~/rebash-git/module-16`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-16 && cd ~/rebash-git/module-16
 set -euo pipefail
 ```
@@ -129,7 +129,7 @@ On-call runbook requires engineers to prove they can recover from common Git fai
 
 #### Task 1 – Detached HEAD drill
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-16
 set -euo pipefail
 rm -rf trouble-lab
@@ -150,13 +150,15 @@ grep -q 'hotfix on detached' ../detached-rescue.txt
 cd ..
 ```
 
-**Expected output:** Detached state detected; branch `hotfix/from-tag` preserves commit.
+!!! example "Expected output"
+    Detached state detected; branch `hotfix/from-tag` preserves commit.
+
 
 #### Task 2 – Auth diagnostics script
 
 Create `auth-diagnose.sh`:
 
-```bash
+```bash title="auth-diagnose.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo '=== git version ==='
@@ -174,7 +176,7 @@ echo 'diagnose_complete'
 
 Run the script:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-16
 set -euo pipefail
 chmod +x auth-diagnose.sh
@@ -184,11 +186,13 @@ test "$(wc -l < auth-diagnose.txt)" -ge 8
 cd ..
 ```
 
-**Expected output:** `auth-diagnose.txt` with Git version, credential, and SSH probe results.
+!!! example "Expected output"
+    `auth-diagnose.txt` with Git version, credential, and SSH probe results.
+
 
 #### Task 3 – Merge abort and recovery drill
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-16/trouble-lab
 set -euo pipefail
 git switch main
@@ -207,7 +211,9 @@ ls -l ../module-16-trouble-evidence.tgz | tee ../trouble-evidence.txt
 cd ..
 ```
 
-**Expected output:** Merge aborted; main content unchanged from bad merge.
+!!! example "Expected output"
+    Merge aborted; main content unchanged from bad merge.
+
 
 ### Validation steps
 
@@ -237,7 +243,7 @@ Start rebase, cause conflict, run `git rebase --abort`, verify original branch t
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/module-16/
 ```
 

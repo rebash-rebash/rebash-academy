@@ -189,7 +189,7 @@ Create a multi-stage Dockerfile, `.dockerignore`, and a GHCR build workflow stub
 
 ### Lab environment
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-github-actions/module-07/{app/dist,.github/workflows} && cd ~/rebash-github-actions/module-07
 set -euo pipefail
 ```
@@ -202,7 +202,7 @@ Your microservice must build a minimal nginx image on every merge to `main`, tag
 
 #### Task 1 – Create application stub and Dockerfile
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 echo '<html><body><h1>REBASH Module 7</h1></body></html>' > app/dist/index.html
@@ -210,7 +210,7 @@ echo '<html><body><h1>REBASH Module 7</h1></body></html>' > app/dist/index.html
 
 Create `.dockerignore`:
 
-```text
+```text title=".dockerignore"
 .git
 .github
 *.md
@@ -219,7 +219,7 @@ module-*-evidence.tgz
 
 Create `Dockerfile`:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM nginx:1.27-alpine
 COPY app/dist/ /usr/share/nginx/html/
 RUN chown -R nginx:nginx /usr/share/nginx/html
@@ -229,7 +229,7 @@ EXPOSE 8080
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 grep -q 'USER nginx' Dockerfile
@@ -237,7 +237,9 @@ grep -q '.git' .dockerignore
 test -f app/dist/index.html
 ```
 
-**Expected output:** All checks pass.
+!!! example "Expected output"
+    All checks pass.
+
 
 #### Task 2 – Write GHCR build workflow stub
 
@@ -287,7 +289,7 @@ jobs:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 grep -q 'docker/build-push-action@v6' .github/workflows/docker-build.yml
@@ -296,13 +298,15 @@ grep -q 'docker/metadata-action@v5' .github/workflows/docker-build.yml
 python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/docker-build.yml')); assert d['permissions']['packages']=='write'; print('docker workflow OK')"
 ```
 
-**Expected output:** `docker workflow OK`
+!!! example "Expected output"
+    `docker workflow OK`
+
 
 #### Task 3 – Offline structure validation script
 
 Create `validate-docker-pipeline.sh`:
 
-```bash
+```bash title="validate-docker-pipeline.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 test -f Dockerfile
@@ -315,18 +319,20 @@ echo "validate-docker-pipeline: OK"
 
 Run it:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 chmod +x validate-docker-pipeline.sh
 ./validate-docker-pipeline.sh | tee validate-output.txt
 ```
 
-**Expected output:** `validate-docker-pipeline: OK`
+!!! example "Expected output"
+    `validate-docker-pipeline: OK`
+
 
 #### Task 4 – Optional local Docker build and archive
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 
@@ -342,7 +348,9 @@ tar -czf module-07-evidence.tgz Dockerfile .dockerignore .github/workflows/ app/
 ls -l module-07-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Tarball created; docker step skipped or succeeds.
+!!! example "Expected output"
+    Tarball created; docker step skipped or succeeds.
+
 
 **Optional — push to GHCR:**
 

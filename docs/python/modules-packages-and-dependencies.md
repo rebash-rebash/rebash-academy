@@ -91,7 +91,7 @@ Copy-pasted helpers drift. Broken `sys.path.insert` hacks work on one laptop and
 5. **Pin third-party deps** — `requirements.txt`  
 6. **Run** — `python run_greet.py` inside the venv  
 
-```bash
+```bash title="Terminal"
 export PYTHONPATH=.
 python -c "from mypkg.greet import hello; print(hello('lab'))"
 ```
@@ -135,7 +135,7 @@ Create `~/rebash-python/lab06` with package `mypkg/`, prove imports via `PYTHONP
 
 Workspace: `~/rebash-python/lab06`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-python/lab06 && cd ~/rebash-python/lab06
 set -euo pipefail
 python3 -m venv .venv
@@ -145,7 +145,9 @@ python -c 'import sys; assert sys.version_info >= (3, 11)'
 python -V | tee python-version.txt
 ```
 
-**Expected output:** venv ready with Python 3.11+.
+!!! example "Expected output"
+    venv ready with Python 3.11+.
+
 
 ### Real-world scenario
 
@@ -155,7 +157,7 @@ Your team is splitting a single `tools.py` into a small internal library so inve
 
 #### Task 1 – Package layout and PYTHONPATH import
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -166,7 +168,7 @@ mkdir -p mypkg
 
 Create `mypkg/__init__.py`:
 
-```python
+```python title="__init__.py"
 """Small REBASH lab package for Module 6."""
 
 __all__ = ["greet"]
@@ -174,7 +176,7 @@ __all__ = ["greet"]
 
 Create `mypkg/greet.py`:
 
-```python
+```python title="greet.py"
 """Greeting helpers shared by lab scripts."""
 from __future__ import annotations
 
@@ -191,7 +193,7 @@ def banner(name: str, *, shout: bool = False) -> str:
 
 Create `run_greet.py`:
 
-```python
+```python title="run_greet.py"
 """Runner that imports the local mypkg package."""
 from __future__ import annotations
 
@@ -213,7 +215,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash
+```bash title="Terminal"
 # PYTHONPATH makes the project root importable without install
 export PYTHONPATH=.
 python -c "from mypkg.greet import hello; assert hello('lab') == 'hello lab'"
@@ -222,11 +224,13 @@ grep -F 'hello platform' path-run.txt
 grep -F 'HELLO PLATFORM' path-run.txt
 ```
 
-**Expected output:** asserts pass; `path-run.txt` shows normal and shouted greetings.
+!!! example "Expected output"
+    asserts pass; `path-run.txt` shows normal and shouted greetings.
+
 
 #### Task 2 – Editable install with pyproject.toml
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -235,7 +239,7 @@ source .venv/bin/activate
 
 Create `pyproject.toml`:
 
-```toml
+```toml title="pyproject.toml"
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -255,7 +259,7 @@ include = ["mypkg*"]
 
 Run:
 
-```bash
+```bash title="Terminal"
 python -m pip install --upgrade pip
 python -m pip install -e .
 python -c "import mypkg, rich; from mypkg.greet import hello; print(hello('editable')); print('rich-ok', rich.__name__)" | tee editable-run.txt
@@ -268,11 +272,13 @@ python run_greet.py ci | tee editable-runner.txt
 grep -F 'hello ci' editable-runner.txt
 ```
 
-**Expected output:** editable install succeeds; imports work with `PYTHONPATH` unset.
+!!! example "Expected output"
+    editable install succeeds; imports work with `PYTHONPATH` unset.
+
 
 #### Task 3 – Freeze requirements and evidence
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -281,13 +287,13 @@ source .venv/bin/activate
 
 Create `requirements.txt`:
 
-```text
+```text title="requirements.txt"
 rich==13.9.4
 ```
 
 Run:
 
-```bash
+```bash title="Terminal"
 python -m pip freeze | tee requirements-full.txt
 grep -E '^rich==' requirements.txt
 
@@ -309,7 +315,9 @@ tar -czf lab06-evidence.tgz \
 ls -l lab06-evidence.tgz | tee evidence-ls.txt
 ```
 
-**Expected output:** `requirements.txt` pins rich; import proof shows a path under `lab06`; evidence archive exists.
+!!! example "Expected output"
+    `requirements.txt` pins rich; import proof shows a path under `lab06`; evidence archive exists.
+
 
 ### Validation steps
 
@@ -341,7 +349,7 @@ Add `mypkg/hosts.py` with `normalize_hosts(names: list[str]) -> list[str]` that 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091

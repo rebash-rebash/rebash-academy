@@ -173,7 +173,7 @@ Create a Deployment with resource requests and a HorizontalPodAutoscaler (HPA), 
 
 Workspace: `~/rebash-k8s/module-13` on a disposable lab cluster.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-k8s/module-13 && cd ~/rebash-k8s/module-13
 ```
 
@@ -187,7 +187,7 @@ Traffic to **checkout-api** is spiky. Platform engineering wants an HPA on CPU u
 
 Create `namespace.yaml`:
 
-```yaml
+```yaml title="namespace.yaml"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -196,7 +196,7 @@ metadata:
 
 Create `deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -228,20 +228,22 @@ spec:
 
 Apply:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-13
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/checkout-api -n rebash-m13 --timeout=120s
 kubectl get deploy checkout-api -n rebash-m13 | tee deploy-m13.txt
 ```
 
-**Expected output:** Deployment shows `2/2` Ready replicas.
+!!! example "Expected output"
+    Deployment shows `2/2` Ready replicas.
+
 
 #### Task 2 – HorizontalPodAutoscaler manifest
 
 Create `hpa.yaml`:
 
-```yaml
+```yaml title="hpa.yaml"
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -265,7 +267,7 @@ spec:
 
 Apply and describe:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-13
 kubectl apply -f hpa.yaml
 kubectl get hpa checkout-api-hpa -n rebash-m13 | tee hpa-m13.txt
@@ -273,13 +275,15 @@ kubectl describe hpa checkout-api-hpa -n rebash-m13 | tee hpa-describe-m13.txt
 grep -E 'Min replicas|Max replicas|checkout-api' hpa-describe-m13.txt
 ```
 
-**Expected output:** HPA exists with min 2, max 5, targeting `checkout-api`.
+!!! example "Expected output"
+    HPA exists with min 2, max 5, targeting `checkout-api`.
+
 
 #### Task 3 – Interpret metrics availability
 
 Check whether the HPA can read metrics:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-k8s/module-13
 if kubectl top pods -n rebash-m13 >/dev/null 2>&1; then
   kubectl top pods -n rebash-m13 | tee hpa-metrics-m13.txt
@@ -289,7 +293,9 @@ fi
 kubectl describe hpa checkout-api-hpa -n rebash-m13 | grep -E 'AbleToScale|ScalingActive|FailedGetResourceMetric' | tee hpa-conditions-m13.txt || true
 ```
 
-**Expected output:** Either live CPU metrics or conditions explaining missing metrics API — both are valid lab outcomes if documented.
+!!! example "Expected output"
+    Either live CPU metrics or conditions explaining missing metrics API — both are valid lab outcomes if documented.
+
 
 ### Validation steps
 
@@ -320,7 +326,7 @@ Lower `averageUtilization` to 10 and run a CPU load Job in the namespace; captur
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 kubectl delete namespace rebash-m13 --ignore-not-found
 ```
 

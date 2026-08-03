@@ -117,7 +117,7 @@ Generate SSH signing key, configure Git, create signed commit, and add `.gitleak
 
 Workspace: `~/rebash-git/module-15`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/module-15 && cd ~/rebash-git/module-15
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ DevSecOps mandates signed commits on platform repos and documents secret scannin
 
 #### Task 1 – SSH signing key (lab-only)
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-15
 set -euo pipefail
 rm -rf security-lab ~/.ssh/rebash-sign-key 2>/dev/null || true
@@ -148,11 +148,13 @@ echo "$(cat ~/.ssh/rebash-sign-key.pub) namespaces=\"git\" $(git config user.ema
 cd ..
 ```
 
-**Expected output:** Signing key and allowed_signers for local verification.
+!!! example "Expected output"
+    Signing key and allowed_signers for local verification.
+
 
 #### Task 2 – Signed commit and verify
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-15/security-lab
 set -euo pipefail
 printf '# secure service\n' > README.md
@@ -165,13 +167,15 @@ grep -Ei 'Good|valid' ../verify-out.txt || git log -1 --format='%G?' | grep -q '
 cd ..
 ```
 
-**Expected output:** Signature verification good or unknown key locally (G/U); commit created with signing enabled.
+!!! example "Expected output"
+    Signature verification good or unknown key locally (G/U); commit created with signing enabled.
+
 
 #### Task 3 – Secret scanning configuration and checks
 
 Create `.gitleaks.toml`:
 
-```toml
+```toml title=".gitleaks.toml"
 title = "rebash lab gitleaks config"
 [allowlist]
 paths = ["allowed_signers"]
@@ -179,7 +183,7 @@ paths = ["allowed_signers"]
 
 Create `secret-scan-checks.sh`:
 
-```bash
+```bash title="secret-scan-checks.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 echo 'scan_target=working_tree'
@@ -193,7 +197,7 @@ echo 'scan_complete'
 
 Run scans and commit:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/module-15/security-lab
 set -euo pipefail
 chmod +x secret-scan-checks.sh
@@ -206,7 +210,9 @@ ls -l ../module-15-security-evidence.tgz | tee ../security-evidence.txt
 cd ..
 ```
 
-**Expected output:** Gitleaks config and scan script committed; `secret-scan-results.txt` shows scan completed.
+!!! example "Expected output"
+    Gitleaks config and scan script committed; `secret-scan-results.txt` shows scan completed.
+
 
 ### Validation steps
 
@@ -236,7 +242,7 @@ Run `gitleaks detect --no-git -v` or `trufflehog filesystem .` on a dummy file c
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 # Remove lab signing key when done:
 # rm -f ~/.ssh/rebash-sign-key ~/.ssh/rebash-sign-key.pub
 ls ~/rebash-git/module-15/security-lab

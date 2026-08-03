@@ -126,7 +126,7 @@ Simulate a mini delivery chain: bare remote as forge, PR branch CI script that r
 
 Workspace: `~/rebash-git/related/cicd`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/related/cicd && cd ~/rebash-git/related/cicd
 set -euo pipefail
 ```
@@ -139,7 +139,7 @@ Service repo uses PR validation; merge to `main` produces deploy manifest consum
 
 #### Task 1 – Bare remote, app repo, feature branch
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/cicd
 set -euo pipefail
 rm -rf app remotes origin.git
@@ -161,13 +161,15 @@ echo "$FEATURE_SHA" > ../feature-sha.txt
 cd ..
 ```
 
-**Expected output:** Feature branch one commit ahead; SHA saved.
+!!! example "Expected output"
+    Feature branch one commit ahead; SHA saved.
+
 
 #### Task 2 – Simulated CI on feature SHA
 
 Create `ci-validate.sh`:
 
-```bash
+```bash title="ci-validate.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 SHA=${1:?sha required}
@@ -179,7 +181,7 @@ echo "ci_validate=pass sha=$SHA"
 
 Run CI simulation and merge:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/cicd/app
 set -euo pipefail
 chmod +x ci-validate.sh
@@ -192,13 +194,15 @@ echo "$MAIN_SHA" > ../main-sha.txt
 cd ..
 ```
 
-**Expected output:** CI script validates feature SHA; merge to main succeeds.
+!!! example "Expected output"
+    CI script validates feature SHA; merge to main succeeds.
+
 
 #### Task 3 – Tag release and deploy manifest
 
 Create `DEPLOY_MANIFEST.json` from the tagged commit SHA:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/cicd/app
 set -euo pipefail
 git tag -a v0.1.0 -m 'Release v0.1.0'
@@ -215,7 +219,9 @@ ls -l ../related-cicd-evidence.tgz | tee ../cicd-evidence.txt
 cd ..
 ```
 
-**Expected output:** Tag pushed; manifest pins SHA; evidence tarball created.
+!!! example "Expected output"
+    Tag pushed; manifest pins SHA; evidence tarball created.
+
 
 ### Validation steps
 
@@ -245,7 +251,7 @@ Add `ci-plan.sh` that diffs `app.yaml` between `main` and feature SHA — simula
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/related/cicd/
 ```
 

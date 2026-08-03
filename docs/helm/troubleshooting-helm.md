@@ -161,7 +161,7 @@ Workspace: `~/rebash-helm/module-12`
 
 Helm 3 against kind/minikube; release namespace `rebash-helm-m12`.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-helm/module-12/triage-chart/templates && cd ~/rebash-helm/module-12
 ```
 
@@ -175,7 +175,7 @@ On-call receives “Helm upgrade failed.” You must decide whether the failure 
 
 Create `triage-chart/Chart.yaml`:
 
-```yaml
+```yaml title="Chart.yaml"
 apiVersion: v2
 name: triage-chart
 description: Lab chart for Helm troubleshooting
@@ -186,7 +186,7 @@ appVersion: "1.27.4"
 
 Create `triage-chart/values.yaml`:
 
-```yaml
+```yaml title="values.yaml"
 replicaCount: 1
 image:
   repository: nginx
@@ -224,14 +224,16 @@ spec:
 
 Capture the render failure (`.Values.feature` is undefined):
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-12
 helm lint ./triage-chart 2>&1 | tee lint-broken.txt || true
 helm template triage-demo ./triage-chart --debug 2>&1 | tee template-broken.txt || true
 grep -qi 'nil pointer\|error' template-broken.txt
 ```
 
-**Expected output:** Template fails with a nil pointer or similar error referencing `.Values.feature`.
+!!! example "Expected output"
+    Template fails with a nil pointer or similar error referencing `.Values.feature`.
+
 
 #### Task 2 – Fix the template and prove clean render
 
@@ -248,7 +250,7 @@ feature:
 
 Re-run lint and template:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-12
 helm lint ./triage-chart | tee lint-fixed.txt
 helm template triage-demo ./triage-chart | grep -E '^kind:' | tee kinds-fixed.txt
@@ -256,7 +258,9 @@ grep -q '0 chart(s) failed' lint-fixed.txt
 grep -q 'Deployment' kinds-fixed.txt
 ```
 
-**Expected output:** Lint passes; template renders a Deployment without errors.
+!!! example "Expected output"
+    Lint passes; template renders a Deployment without errors.
+
 
 #### Task 3 – Install, fail an upgrade, then roll back
 
@@ -264,7 +268,7 @@ Install the good release, attempt a bad-image upgrade, inspect history, and roll
 
 Create `bad-image-values.yaml`:
 
-```yaml
+```yaml title="bad-image-values.yaml"
 replicaCount: 1
 image:
   repository: nginx
@@ -275,7 +279,7 @@ feature:
 
 Run the failed-upgrade drill:
 
-```bash
+```bash title="Terminal"
 kubectl create namespace rebash-helm-m12 --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade --install triage-demo ./triage-chart \
   -n rebash-helm-m12 --wait --timeout 3m | tee install-good.txt
@@ -289,7 +293,7 @@ grep -qi 'ImagePull\|ErrImage\|failed' upgrade-bad.txt || grep -qi 'ImagePull' p
 
 Roll back to the last good revision:
 
-```bash
+```bash title="Terminal"
 helm rollback triage-demo 1 -n rebash-helm-m12 --wait --timeout 3m | tee rollback.txt
 helm history triage-demo -n rebash-helm-m12 | tee history-after-rollback.txt
 helm status triage-demo -n rebash-helm-m12 | tee status-after-rollback.txt
@@ -298,7 +302,9 @@ grep -q 'deployed' status-after-rollback.txt
 grep -q 'superseded\|deployed' history-after-rollback.txt
 ```
 
-**Expected output:** Bad upgrade fails or leaves release in failed/pending state; rollback restores deployed status and Ready pods.
+!!! example "Expected output"
+    Bad upgrade fails or leaves release in failed/pending state; rollback restores deployed status and Ready pods.
+
 
 ### Validation steps
 
@@ -320,7 +326,7 @@ grep -q 'superseded\|deployed' history-after-rollback.txt
 
 Repeat the bad-image upgrade using `--atomic --wait` and capture that Helm auto-rolls back without manual `helm rollback`:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-helm/module-12
 helm upgrade triage-demo ./triage-chart \
   -n rebash-helm-m12 -f bad-image-values.yaml --atomic --wait --timeout 2m 2>&1 | tee atomic-fail.txt || true
@@ -329,7 +335,9 @@ helm history triage-demo -n rebash-helm-m12 | tee history-atomic.txt
 grep -q 'deployed' status-atomic.txt
 ```
 
-**Expected output:** Atomic upgrade fails; release remains on the last deployed revision without manual rollback.
+!!! example "Expected output"
+    Atomic upgrade fails; release remains on the last deployed revision without manual rollback.
+
 
 ### Learning outcomes
 
@@ -340,7 +348,7 @@ grep -q 'deployed' status-atomic.txt
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 helm uninstall triage-demo -n rebash-helm-m12 2>/dev/null || true
 kubectl delete namespace rebash-helm-m12 --ignore-not-found
 ```

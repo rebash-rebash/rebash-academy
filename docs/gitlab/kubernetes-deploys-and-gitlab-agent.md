@@ -169,7 +169,7 @@ Workspace: `~/rebash-gitlab/module-09` with manifests in `manifests/`
 
 File-first lab. YAML validates without a cluster; apply steps are optional.
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09
 ```
 
@@ -183,7 +183,7 @@ Your platform team deploys microservices with the GitLab Agent for Kubernetes in
 
 Create `manifests/deployment.yaml`:
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -208,7 +208,7 @@ spec:
 
 Create `manifests/service.yaml`:
 
-```yaml
+```yaml title="service.yaml"
 apiVersion: v1
 kind: Service
 metadata:
@@ -224,7 +224,7 @@ spec:
 
 Validate manifests:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-09
 python3 -c "
 import yaml, pathlib
@@ -234,13 +234,15 @@ for f in ['manifests/deployment.yaml', 'manifests/service.yaml']:
 "
 ```
 
-**Expected output:** Two lines: `OK manifests/deployment.yaml Deployment` and `OK manifests/service.yaml Service`.
+!!! example "Expected output"
+    Two lines: `OK manifests/deployment.yaml Deployment` and `OK manifests/service.yaml Service`.
+
 
 #### Task 2 – Create deploy pipeline stub
 
 Create `.gitlab-ci.yml`:
 
-```yaml
+```yaml title=".gitlab-ci.yml"
 stages:
   - validate
   - deploy
@@ -276,7 +278,7 @@ deploy_staging:
 
 Validate offline:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-09
 python3 -c "
 import yaml
@@ -287,13 +289,15 @@ print('OK k8s deploy stub')
 "
 ```
 
-**Expected output:** Prints `OK k8s deploy stub`.
+!!! example "Expected output"
+    Prints `OK k8s deploy stub`.
+
 
 #### Task 3 – Optional cluster dry-run or offline manifest check
 
 If `kubectl` is available:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-09
 kubectl apply -f manifests/ --dry-run=client | tee k8s-dryrun.txt
 grep -q 'deployment.apps/rebash-gitlab-lab' k8s-dryrun.txt
@@ -301,7 +305,7 @@ grep -q 'deployment.apps/rebash-gitlab-lab' k8s-dryrun.txt
 
 If no cluster is available:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-gitlab/module-09
 python3 -c "
 import yaml, pathlib
@@ -311,7 +315,9 @@ print('offline manifest check ok')
 " | tee k8s-dryrun.txt
 ```
 
-**Expected output:** Dry-run output lists the Deployment, or `k8s-dryrun.txt` contains `offline manifest check ok`.
+!!! example "Expected output"
+    Dry-run output lists the Deployment, or `k8s-dryrun.txt` contains `offline manifest check ok`.
+
 
 ### Validation steps
 
@@ -343,7 +349,7 @@ Add `manifests/kustomization.yaml` listing both resources and change the deploy 
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 rm -f ~/rebash-gitlab/module-09/k8s-dryrun.txt
 # Keep manifests/ and .gitlab-ci.yml for later modules
 ```

@@ -164,7 +164,7 @@ Create a Shared Library Git repository with a `vars/` step, document controller 
 
 Workspace: `~/rebash-jenkins/module-09`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-jenkins/module-09 && cd ~/rebash-jenkins/module-09
 set -euo pipefail
 ```
@@ -179,7 +179,7 @@ Three squads duplicate Slack notify and git metadata stages. Platform will publi
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 
@@ -191,7 +191,7 @@ git init -b main
 
 Create `vars/sayHello.groovy`:
 
-```groovy
+```groovy title="sayHello.groovy"
 def call(String name = 'world') {
   echo "Hello, ${name} — from rebash-ci Shared Library"
 }
@@ -199,7 +199,7 @@ def call(String name = 'world') {
 
 Create `vars/ciMeta.groovy`:
 
-```groovy
+```groovy title="ciMeta.groovy"
 def call() {
   echo "JOB_NAME=${env.JOB_NAME}"
   echo "BUILD_NUMBER=${env.BUILD_NUMBER}"
@@ -209,7 +209,7 @@ def call() {
 
 Create `src/org/rebash/Strings.groovy`:
 
-```groovy
+```groovy title="Strings.groovy"
 package org.rebash
 
 class Strings implements Serializable {
@@ -221,7 +221,7 @@ class Strings implements Serializable {
 
 Create `README.md`:
 
-```markdown
+```markdown title="README.md"
 # rebash-ci Shared Library
 
 ## Usage
@@ -235,7 +235,7 @@ steps:
 
 Commit and record:
 
-```bash
+```bash title="Terminal"
 git add vars src README.md
 git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Initial rebash-ci library with sayHello and ciMeta'
 git tag -a v0.1.0 -m 'v0.1.0'
@@ -243,7 +243,9 @@ git log -1 --oneline | tee ../lib-commit.txt
 pwd | tee ../lib-path.txt
 ```
 
-**Expected output:** Tag `v0.1.0` created; path recorded.
+!!! example "Expected output"
+    Tag `v0.1.0` created; path recorded.
+
 
 #### Task 2 – Configure the library in Jenkins
 
@@ -257,14 +259,14 @@ pwd | tee ../lib-path.txt
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 ```
 
 Create `library-config.yaml`:
 
-```yaml
+```yaml title="library-config.yaml"
 name: rebash-ci
 scope: folder_rebash_demo_or_global
 default_version: v0.1.0
@@ -275,7 +277,7 @@ implicit_load: false
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 from pathlib import Path
@@ -289,13 +291,15 @@ print('library-config.yaml OK')
 " | tee library-config-validate.txt
 ```
 
-**Expected output:** Config YAML validates; library saved in UI.
+!!! example "Expected output"
+    Config YAML validates; library saved in UI.
+
 
 #### Task 3 – Consumer Jenkinsfile
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 
@@ -304,7 +308,7 @@ mkdir -p consumer-app
 
 Create `consumer-app/Jenkinsfile`:
 
-```groovy
+```groovy title="Jenkinsfile"
 @Library('rebash-ci@v0.1.0') _
 pipeline {
   agent any
@@ -324,7 +328,7 @@ pipeline {
 
 Create `consumer-job.yaml`:
 
-```yaml
+```yaml title="consumer-job.yaml"
 job: rebash-demo/lib-consumer
 definition: pipeline_script_or_scm_consumer_app
 library_pin: rebash-ci@v0.1.0
@@ -333,26 +337,28 @@ expected_console: Hello from rebash-ci Shared Library
 
 Verify:
 
-```bash
+```bash title="Terminal"
 grep -q lib-consumer consumer-job.yaml
 ```
 
 Create/run `lib-consumer` and confirm console output.
 
-**Expected output:** Build success; library echo lines visible.
+!!! example "Expected output"
+    Build success; library echo lines visible.
+
 
 #### Task 4 – Versioning and trust memo
 
 Run:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 ```
 
 Create `trust-policy.yaml`:
 
-```yaml
+```yaml title="trust-policy.yaml"
 pin: tag_v0.1.0_for_reproducibility
 platform: cut_tags_after_review
 trusted_library: merge_rights_equal_script_approval_power
@@ -362,7 +368,7 @@ rollback: retag_or_point_jobs_at_previous_tag
 
 Validate and archive:
 
-```bash
+```bash title="Terminal"
 python3 -c "
 import yaml
 with open('trust-policy.yaml') as f:
@@ -375,7 +381,9 @@ tar -czf module-09-evidence.tgz rebash-ci-lib/vars rebash-ci-lib/README.md consu
 ls -l module-09-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** Archive present.
+!!! example "Expected output"
+    Archive present.
+
 
 ### Validation steps
 
@@ -407,7 +415,7 @@ Add `vars/requireLabel.groovy` that errors if `env.NODE_LABELS` / label checks f
 
 Keep `rebash-ci` library config for later modules. Remove experimental consumer jobs if cluttered.
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-jenkins/module-09
 ```
 

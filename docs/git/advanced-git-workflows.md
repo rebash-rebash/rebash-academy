@@ -130,7 +130,7 @@ Simulate three mini workflow tracks in one lab repo, produce `workflow-matrix.ya
 
 Workspace: `~/rebash-git/related/workflows`
 
-```bash
+```bash title="Terminal"
 mkdir -p ~/rebash-git/related/workflows && cd ~/rebash-git/related/workflows
 set -euo pipefail
 ```
@@ -143,7 +143,7 @@ Engineering leadership asks platform team to document why SaaS services use GitH
 
 #### Task 1 – GitHub Flow track simulation
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/workflows
 set -euo pipefail
 rm -rf wf-lab
@@ -163,11 +163,13 @@ grep -q 'feature/flag-demo' ../github-flow-graph.txt
 cd ..
 ```
 
-**Expected output:** Single merge to main representing PR flow.
+!!! example "Expected output"
+    Single merge to main representing PR flow.
+
 
 #### Task 2 – GitFlow-style release branch simulation
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/workflows/wf-lab
 set -euo pipefail
 git switch -c develop
@@ -186,13 +188,15 @@ grep -q 'v0.2.0' ../gitflow-tags.txt
 cd ..
 ```
 
-**Expected output:** Release branch merged to main; tag v0.2.0; back-merge to develop.
+!!! example "Expected output"
+    Release branch merged to main; tag v0.2.0; back-merge to develop.
+
 
 #### Task 3 – Workflow matrix YAML and CONTRIBUTING snippet
 
 Create `workflow-matrix.yaml`:
 
-```yaml
+```yaml title="workflow-matrix.yaml"
 criteria:
   - simplicity
   - scheduled_release_fit
@@ -225,7 +229,7 @@ recommendations:
 
 Create `validate-workflow-matrix.sh`:
 
-```bash
+```bash title="validate-workflow-matrix.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 grep -q 'github_flow:' workflow-matrix.yaml
@@ -236,7 +240,7 @@ echo 'matrix_ok'
 
 Create `CONTRIBUTING.md`:
 
-```markdown
+```markdown title="CONTRIBUTING.md"
 ## Git workflow (platform services)
 
 - Branch from `main`: `feature/`, `fix/`, `chore/`
@@ -248,7 +252,7 @@ Create `CONTRIBUTING.md`:
 
 Validate and commit:
 
-```bash
+```bash title="Terminal"
 cd ~/rebash-git/related/workflows/wf-lab
 set -euo pipefail
 chmod +x validate-workflow-matrix.sh
@@ -263,7 +267,9 @@ ls -l ../related-workflows-evidence.tgz | tee ../workflows-evidence.txt
 cd ..
 ```
 
-**Expected output:** Workflow matrix YAML validated; operational CONTRIBUTING committed; evidence tarball.
+!!! example "Expected output"
+    Workflow matrix YAML validated; operational CONTRIBUTING committed; evidence tarball.
+
 
 ### Validation steps
 
@@ -293,7 +299,7 @@ Add trunk-based simulation: three tiny commits directly on `main` in `trunk-sand
 
 ### Cleanup
 
-```bash
+```bash title="Terminal"
 ls ~/rebash-git/related/workflows/wf-lab
 ```
 
